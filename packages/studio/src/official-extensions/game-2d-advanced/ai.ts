@@ -209,6 +209,16 @@ API global injetada como window.SZGameKit:
   "heroi", "veneno", turnos) aplica status (inimigo = 1º foe vivo). Padrão:
   rpgOnBattleEnd → "se rpgBattleWon(): rpgBattleReward(20); setState('vitoria') senão
   endGame()".
+  👑 CHEFES (R30): ⭐ o inimigo AGORA usa os golpes ensinados a ele (rpgTeachMove/
+  rpgTeachHeal pelo NOME do foe; antes o foeStep só batia pela força). rpgAddBoss(nome,
+  vida, força, defesa) = inimigo MAIOR com barra proeminente + coroa. battlerLife(nome)/
+  battlerMaxLife(nome) = a vida de QUALQUER combatente (herói "Você", aliados/inimigos
+  por nome; 0 fora) → a receita de FASE: "se battlerLife('Chefe') < battlerMaxLife(
+  'Chefe')/2: ...". rpgOnFoeTurn(nome, fn) = IA de chefe (no turno dele roda fn no lugar
+  do ataque comum); DENTRO: rpgFoeUse(nome, "golpe") (usa um golpe ensinado) e
+  rpgFoeHitAll(nome, dano) (golpe de área em TODO o time). Padrão: rpgOnFoeTurn("Chefe",
+  () => { se battlerLife < metade: rpgFoeHitAll('Chefe', 25); senão rpgFoeUse('Chefe',
+  'Garra') }).
 - 🗺️ Mundo & profundidade (tiles do Ninja Adventure; GERAL, vale fora do RPG):
   loadTilemap(nome, assetDeMapa) lê um MAPA do Pinta (grade+peças+sólidos juntos,
   via ASSET_META). No onDraw, drawTilemap(nome, "chão") ANTES dos personagens e

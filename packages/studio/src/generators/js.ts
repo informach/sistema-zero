@@ -1776,6 +1776,21 @@ function compileStatementCode(
       return `${pad}SZGameKit.rpgTeachMove(${JSON.stringify(stmt.who)}, ${JSON.stringify(stmt.move)}, ${compileExpr(valueToExpr(stmt.dmg), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.cost), 0, identifiers, recAt(base))});`
     case 'gk:rpgTeachHeal':
       return `${pad}SZGameKit.rpgTeachHeal(${JSON.stringify(stmt.who)}, ${JSON.stringify(stmt.move)}, ${compileExpr(valueToExpr(stmt.amount), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.cost), 0, identifiers, recAt(base))});`
+    case 'gk:rpgAddBoss':
+      return `${pad}SZGameKit.rpgAddBoss(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.str), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.def), 0, identifiers, recAt(base))});`
+    case 'gk:rpgFoeUse':
+      return `${pad}SZGameKit.rpgFoeUse(${JSON.stringify(stmt.name)}, ${JSON.stringify(stmt.move)});`
+    case 'gk:rpgFoeHitAll':
+      return `${pad}SZGameKit.rpgFoeHitAll(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.dmg), 0, identifiers, recAt(base))});`
+    case 'gk:rpgOnFoeTurn': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.rpgOnFoeTurn(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+    }
     case 'gk:rpgOnBattleEnd': {
       const body = compileStatements(
         stmt.body,
@@ -4843,6 +4858,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'gk:rpgOnTalk':
     case 'gk:rpgOnMap':
     case 'gk:rpgOnBattleEnd':
+    case 'gk:rpgOnFoeTurn':
     case 'gk:rpgCutscene':
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
@@ -5404,6 +5420,16 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'gk:rpgTeachHeal':
       collectExprIdentifiers(valueToExpr(stmt.amount), names)
       collectExprIdentifiers(valueToExpr(stmt.cost), names)
+      return
+    case 'gk:rpgAddBoss':
+      collectExprIdentifiers(valueToExpr(stmt.hp), names)
+      collectExprIdentifiers(valueToExpr(stmt.str), names)
+      collectExprIdentifiers(valueToExpr(stmt.def), names)
+      return
+    case 'gk:rpgFoeUse':
+      return
+    case 'gk:rpgFoeHitAll':
+      collectExprIdentifiers(valueToExpr(stmt.dmg), names)
       return
     case 'gk:createCharacter':
       names.add(stmt.varName)
@@ -6622,6 +6648,8 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'gk:rpgHasSave':
     case 'gk:rpgLevel':
     case 'gk:rpgXp':
+    case 'gk:battlerLife': // 👑 o nome é STRING — sem refs
+    case 'gk:battlerMaxLife':
     case 'gk:tdCoins': // 🏰 R26: as moedas — sem refs
     case 'gk:rpgCurrentMap': // 🌍 o nome do mapa — sem refs
       // mold/flag/item são STRING; os getters de estado não têm refs.

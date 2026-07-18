@@ -3810,6 +3810,33 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
             COST: cost,
           })
     }
+    case 'gk:rpgAddBoss': {
+      const hp = exprToValueBlock(valueToExpr(stmt.hp))
+      const str = exprToValueBlock(valueToExpr(stmt.str))
+      const def = exprToValueBlock(valueToExpr(stmt.def))
+      return hp === null || str === null || def === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_rpg_add_boss', { NAME: stmt.name }, {}, stmt.__id, {
+            HP: hp,
+            STR: str,
+            DEF: def,
+          })
+    }
+    case 'gk:rpgOnFoeTurn':
+      return block(
+        'sz_gk_rpg_on_foe_turn',
+        { NAME: stmt.name },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'gk:rpgFoeUse':
+      return block('sz_gk_rpg_foe_use', { NAME: stmt.name, MOVE: stmt.move }, {}, stmt.__id)
+    case 'gk:rpgFoeHitAll': {
+      const dmg = exprToValueBlock(valueToExpr(stmt.dmg))
+      return dmg === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_rpg_foe_hit_all', { NAME: stmt.name }, {}, stmt.__id, { DMG: dmg })
+    }
     case 'gk:rpgOnBattleEnd':
       return block(
         'sz_gk_rpg_on_battle_end',
@@ -7136,6 +7163,10 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_gk_rpg_level', {})
     case 'gk:rpgXp':
       return block('sz_gk_rpg_xp', {})
+    case 'gk:battlerLife':
+      return block('sz_gk_battler_life', { NAME: expr.name })
+    case 'gk:battlerMaxLife':
+      return block('sz_gk_battler_max_life', { NAME: expr.name })
     case 'gk:rpgCurrentMap':
       return block('sz_gk_rpg_current_map', {})
     case 'gk:boardGet': {

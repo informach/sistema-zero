@@ -20,6 +20,7 @@ import {
   florestaNinjaExample,
   invasaoDosOvnisExample,
   meuPrimeiroJogoExample,
+  oChefaoExample,
   quebraBlocosExample,
   reinoAbertoExample,
   saltoNaFlorestaExample,
@@ -113,6 +114,7 @@ describe('game-2d-advanced — exemplo Caça-moedas', () => {
       'Defesa do Reino',
       'Reino Aberto',
       'Batalha em Equipe',
+      'O Chefao',
       'Cobrinha',
       'Quebra-blocos',
     ])
@@ -1751,6 +1753,91 @@ describe('game-2d-advanced — exemplo Quebra-blocos (raquete)', () => {
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
       expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(quebraBlocosExample.ir.js)
+    } finally {
+      ws.dispose()
+    }
+  })
+})
+
+const SOURCE_CHEFAO = `SZGameKit.setup({ width: 960, height: 640, background: "#1a1420", accent: "#ff8c42" });
+SZGameKit.setScreenText("menu", "O Chefao", "Fale com o Guardiao (espaco) e enfrente o Dragao! Quando ele fica com metade da vida, vira fera.", "Comecar");
+SZGameKit.setScreenText("vitoria", "Voce venceu o Dragao!", "O reino esta salvo.", "Jogar de novo");
+const heroi = SZGameKit.createCharacter({ image: "", w: 48, h: 48, speed: 320, color: "#4a9eff" });
+SZGameKit.rpgBattleStats(80, 14, 4);
+SZGameKit.rpgTeachMove("Voce", "Investida", 20, 3);
+SZGameKit.rpgTeachHeal("Voce", "Curar", 22, 4);
+SZGameKit.rpgTeachMove("Dragao", "Garra", 16, 0);
+SZGameKit.rpgTeachMove("Dragao", "Baforada", 30, 0);
+SZGameKit.rpgOnFoeTurn("Dragao", function () {
+  if (SZGameKit.battlerLife("Dragao") < SZGameKit.battlerMaxLife("Dragao") / 2) {
+    SZGameKit.rpgFoeHitAll("Dragao", 22);
+  } else {
+    SZGameKit.rpgFoeUse("Dragao", "Garra");
+  }
+});
+SZGameKit.rpgOnMap("caverna", function () {
+  SZGameKit.rpgCreateNpc("Guardiao", 4, 3, "", "");
+  SZGameKit.placeCharacter(heroi, SZGameKit.rpgCell(2), SZGameKit.rpgCell(3));
+});
+SZGameKit.rpgOnTalk("Guardiao", function () {
+  SZGameKit.rpgSay("O Dragao acordou! Enfrente-o, heroi!", "Guardiao");
+  SZGameKit.rpgAddBoss("Dragao", 160, 9, 3);
+  SZGameKit.rpgBattleStart("Lacaio", 24, 5, 0);
+});
+SZGameKit.rpgOnBattleEnd(function () {
+  if (SZGameKit.rpgBattleWon()) {
+    SZGameKit.rpgBattleReward(40);
+    SZGameKit.setState("vitoria");
+  } else {
+    SZGameKit.endGame();
+  }
+});
+SZGameKit.onUpdate(function (dt) {
+  SZGameKit.rpgMoveGrid(heroi, 64, dt);
+});
+SZGameKit.onDraw(function (ctx) {
+  SZGameKit.drawBackground("#241a2e", true);
+  SZGameKit.rpgDrawNpcs();
+  SZGameKit.drawCharacter(heroi);
+});
+SZGameKit.start();
+`
+
+describe('game-2d-advanced — exemplo O Chefao (👑 chefes)', () => {
+  it('IR embutida é válida, sem rawJS, e usa os blocos de chefe', () => {
+    const parsed = SZIRSchema.safeParse(oChefaoExample.ir)
+    expect(parsed.success).toBe(true)
+    const types = collectTypes(oChefaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    for (const t of [
+      'gk:rpgAddBoss',
+      'gk:rpgOnFoeTurn',
+      'gk:rpgFoeUse',
+      'gk:rpgFoeHitAll',
+      'gk:battlerLife',
+      'gk:battlerMaxLife',
+    ]) {
+      expect(types.has(t)).toBe(true)
+    }
+  })
+
+  it('drift: parseJS(SOURCE) devolve EXATAMENTE a IR embutida', () => {
+    expect(stripIds(parseJS(SOURCE_CHEFAO))).toEqual(oChefaoExample.ir.js)
+  })
+
+  it('fixpoint textual: gerar -> parsear -> gerar é byte-estável', () => {
+    const code1 = compileStatements(oChefaoExample.ir.js, 0)
+    expect(compileStatements(stripIds(parseJS(code1)), 0)).toBe(code1)
+  })
+
+  it('round-trip por BLOCOS: IR -> workspace -> IR estável', () => {
+    const state = buildWorkspaceStateFromIR(
+      oChefaoExample.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
+    )
+    const ws = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
+      expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(oChefaoExample.ir.js)
     } finally {
       ws.dispose()
     }

@@ -497,6 +497,10 @@ export function compileExpr(
       return 'SZGameKit.rpgLevel()'
     case 'gk:rpgXp':
       return 'SZGameKit.rpgXp()'
+    case 'gk:battlerLife':
+      return `SZGameKit.battlerLife(${JSON.stringify(expr.name)})`
+    case 'gk:battlerMaxLife':
+      return `SZGameKit.battlerMaxLife(${JSON.stringify(expr.name)})`
     case 'gk:rpgCurrentMap':
       return 'SZGameKit.rpgCurrentMap()'
     case 'gk:boardGet':

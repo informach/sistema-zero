@@ -5307,7 +5307,11 @@ export const gameKitRuntime = `(function () {
     // 💬 Menu de escolha (KeyboardMenu do Pizza) no canvas: ↑/↓/espaço + clique.
     menu: null,           // {title, options:[{label, fn}], index} — herói TRAVADO
     menuBuilding: null,   // coletando as opções (montagem do menu)
-    menuRects: []         // retângulos das opções p/ o clique (recalculado no draw)
+    menuRects: [],        // retângulos das opções p/ o clique (recalculado no draw)
+    // 👑 IA de chefe: nome do inimigo -> fn do "Quando for a vez do inimigo".
+    // Registro PERSISTENTE (como onUpdate) — sobrevive ao recomeço; se o inimigo
+    // não estiver na batalha, o hook simplesmente não dispara.
+    foeTurnHooks: nameMap()
   };
   var SAVE_KEY = 'szgk-rpg-save'; // localStorage do preview (persiste por projeto)
   var DIALOG_CPS = 30; // velocidade do typewriter (chars/segundo)
@@ -6105,6 +6109,7 @@ export const gameKitRuntime = `(function () {
     var b = makeBattler(def.name, side, def.hp, def.str, def.def, def.look, def.color);
     var mv = rpg.movesByName[def.name];
     if (mv) for (var i = 0; i < mv.length; i++) b.moves.push(mv[i]);
+    if (def.boss) b.boss = true; // 👑 CHEFÃO: maior + barra proeminente
     return b;
   }
   function firstAlive(list) { for (var i = 0; i < list.length; i++) if (list[i].alive && list[i].hp > 0) return list[i]; return null; }
@@ -6130,6 +6135,51 @@ export const gameKitRuntime = `(function () {
   function rpgAddFoe(name, hp, str, def, color) {
     rpg.foeQueue.push({ name: text(name, 'Inimigo'), hp: num(hp, 20), str: num(str, 5), def: num(def, 0), look: '', color: text(color, '#e05a5a') });
   }
+  // 👑 O CHEFÃO: um inimigo da próxima batalha desenhado MAIOR, com barra proeminente.
+  function rpgAddBoss(name, hp, str, def) {
+    rpg.foeQueue.push({ name: text(name, 'Chefão'), hp: num(hp, 120), str: num(str, 9), def: num(def, 2), look: '', color: '#b23b6e', boss: true });
+  }
+  // 👑 R30: ler a vida de um combatente (herói/aliado/inimigo) por NOME — a chave
+  // das FASES de chefe ("se a vida do Chefe < metade: fica furioso").
+  function findBattler(name) {
+    var b = rpg.battle; if (!b) return null;
+    var nm = text(name, '');
+    for (var i = 0; i < b.allies.length; i++) if (b.allies[i].name === nm) return b.allies[i];
+    for (var j = 0; j < b.foes.length; j++) if (b.foes[j].name === nm) return b.foes[j];
+    return null;
+  }
+  function battlerLife(name) { var c = findBattler(name); return c ? Math.max(0, c.hp) : 0; }
+  function battlerMaxLife(name) { var c = findBattler(name); return c ? c.max : 0; }
+  // 👑 IA de chefe: o corpo roda na vez daquele inimigo (no lugar do ataque padrão).
+  function rpgOnFoeTurn(name, fn) {
+    if (typeof fn !== 'function') return;
+    rpg.foeTurnHooks[text(name, 'Inimigo')] = fn;
+  }
+  // O inimigo NOMEADO usa um golpe ENSINADO (dano num aliado ao acaso, ou cura nele).
+  function rpgFoeUse(name, moveName) {
+    if (!rpg.battle) return;
+    var f = findBattler(name); if (!f || !f.alive) return;
+    var mn = text(moveName, ''), mv = null;
+    for (var i = 0; i < f.moves.length; i++) if (f.moves[i].name === mn) { mv = f.moves[i]; break; }
+    if (!mv) { warnOnce('foeuse:' + f.name + mn, 'o inimigo "' + f.name + '" não tem o golpe "' + mn + '" — ensine com "Ensinar o golpe"'); return; }
+    if (mv.heal) foeHeal(f, mv); else foeHit(f, mv);
+  }
+  // O golpe ASSINATURA de chefão: acerta TODO o time de uma vez.
+  function rpgFoeHitAll(name, dmg) {
+    var b = rpg.battle; if (!b) return;
+    var f = findBattler(name);
+    var base = Math.max(0, num(dmg, 10));
+    var allies = aliveList(b.allies);
+    for (var i = 0; i < allies.length; i++) {
+      var v = allies[i];
+      var d = rollDamage(base, v.def);
+      if (v.defending) d = Math.max(d > 0 ? 1 : 0, Math.round(d / 2));
+      v.hp -= d;
+      if (d > 0) floatText('-' + d, v.x + v.w / 2, v.y, '#ff6b6b', 22);
+      if (v.hp <= 0) { v.hp = 0; v.alive = false; }
+    }
+    b.message = (f ? f.name : text(name, 'O inimigo')) + ' atingiu TODO o time!';
+  }
   function rpgTeachMove(who, moveName, dmg, cost) {
     var k = text(who, 'Você');
     if (!rpg.movesByName[k]) rpg.movesByName[k] = [];
@@ -6144,12 +6194,15 @@ export const gameKitRuntime = `(function () {
   }
   function layoutRow(list, cy) {
     var n = list.length; if (n === 0) return;
-    var sz = 72, gap = 28;
-    var totalW = n * sz + (n - 1) * gap;
-    var startX = (config.w - totalW) / 2;
+    var sz = 72, boss = 112, gap = 28;
+    var totalW = 0;
+    for (var k = 0; k < n; k++) totalW += (list[k].boss ? boss : sz) + (k ? gap : 0);
+    var x = (config.w - totalW) / 2;
     for (var i = 0; i < n; i++) {
       var c = list[i];
-      c.w = sz; c.h = sz; c.x = startX + i * (sz + gap); c.y = cy - sz / 2;
+      var s = c.boss ? boss : sz;
+      c.w = s; c.h = s; c.x = x; c.y = cy - s / 2; // topos alinhados; o chefão desce mais
+      x += s + gap;
     }
   }
   function layoutBattlers() {
@@ -6277,22 +6330,44 @@ export const gameKitRuntime = `(function () {
     b.phase = 'foes'; b.t = 0; b.actor = null; b.target = null; b.foeIdx = 0; rpg.menu = null;
     b.message = 'Vez dos inimigos...';
   }
-  // Um inimigo age por tique (a IA ataca um aliado vivo ao acaso).
+  // Um inimigo ATACA um aliado vivo ao acaso (com um golpe, ou pela força).
+  function foeHit(f, mv) {
+    var b = rpg.battle; if (!b) return;
+    var allies = aliveList(b.allies);
+    if (allies.length === 0) { loseBattle(); return; }
+    var victim = allies[Math.floor(Math.random() * allies.length)];
+    var dmg = rollDamage(mv ? mv.dmg : f.str, victim.def);
+    if (f.blind > 0) { f.blind -= 1; if (Math.random() < 0.33) dmg = 0; }
+    if (victim.defending) dmg = Math.max(dmg > 0 ? 1 : 0, Math.round(dmg / 2));
+    victim.hp -= dmg;
+    if (dmg > 0) floatText('-' + dmg, victim.x + victim.w / 2, victim.y, '#ff6b6b', 24);
+    b.message = mv ? (f.name + ' usou ' + mv.name + ' e causou ' + dmg + ' em ' + victim.name + '!')
+                   : (f.name + ' atacou ' + victim.name + ' (' + dmg + ').');
+    if (victim.hp <= 0) { victim.hp = 0; victim.alive = false; b.message += ' ' + victim.name + ' caiu!'; }
+  }
+  function foeHeal(f, mv) {
+    var b = rpg.battle; if (!b) return;
+    f.hp = Math.min(f.max, f.hp + mv.dmg);
+    floatText('+' + mv.dmg, f.x + f.w / 2, f.y, '#4ade80', 22);
+    b.message = f.name + ' usou ' + mv.name + ' (+' + mv.dmg + ' de vida).';
+  }
+  // A vez de um inimigo por tique. ⭐ R30 fix: o inimigo USA os golpes ensinados
+  // (antes ignorava f.moves e só batia pela força — golpe/cura/AoE de chefe eram
+  // impossíveis). Modelo do pkmEnemyTurn. E o hook de IA de chefe manda, se houver.
   function foeStep() {
     var b = rpg.battle; if (!b) return;
     var foes = aliveList(b.foes);
     if (b.foeIdx >= foes.length) { endRound(); return; }
     var f = foes[b.foeIdx]; b.foeIdx += 1;
-    var allies = aliveList(b.allies);
-    if (allies.length === 0) { loseBattle(); return; }
-    var victim = allies[Math.floor(Math.random() * allies.length)];
-    var dmg = rollDamage(f.str, victim.def);
-    if (f.blind > 0) { f.blind -= 1; if (Math.random() < 0.33) dmg = 0; }
-    if (victim.defending) dmg = Math.max(dmg > 0 ? 1 : 0, Math.round(dmg / 2));
-    victim.hp -= dmg;
-    if (dmg > 0) floatText('-' + dmg, victim.x + victim.w / 2, victim.y, '#ff6b6b', 24);
-    b.message = f.name + ' atacou ' + victim.name + ' (' + dmg + ').';
-    if (victim.hp <= 0) { victim.hp = 0; victim.alive = false; b.message += ' ' + victim.name + ' caiu!'; }
+    if (aliveList(b.allies).length === 0) { loseBattle(); return; }
+    var hook = rpg.foeTurnHooks[f.name];
+    if (hook) {
+      try { hook(); } catch (e) { warn('erro na vez de ' + f.name + ': ' + e); }
+    } else {
+      var mv = (f.moves && f.moves.length) ? f.moves[Math.floor(Math.random() * f.moves.length)] : null;
+      if (mv && mv.heal) foeHeal(f, mv);
+      else foeHit(f, mv);
+    }
     b.t = 0;
     if (aliveList(b.allies).length === 0) { loseBattle(); return; }
   }
@@ -6400,10 +6475,12 @@ export const gameKitRuntime = `(function () {
       }
       ctx2d.save();
       ctx2d.fillStyle = c.alive ? '#ffffff' : '#ff8080';
-      ctx2d.font = '13px sans-serif'; ctx2d.textAlign = 'center';
-      ctx2d.fillText(c.name, c.x + c.w / 2, c.y - 10);
+      // 👑 O chefão ganha nome maior (com coroa) e barra de vida mais grossa.
+      ctx2d.font = (c.boss ? 'bold 17px' : '13px') + ' sans-serif'; ctx2d.textAlign = 'center';
+      ctx2d.fillText((c.boss ? '👑 ' : '') + c.name, c.x + c.w / 2, c.y - 10);
       ctx2d.restore();
-      drawBar(Math.max(0, c.hp), c.max, c.x, c.y + c.h + 4, c.w, 7, c.hp > c.max * 0.3 ? '#4ade80' : '#ef4444');
+      var bh = c.boss ? 12 : 7;
+      drawBar(Math.max(0, c.hp), c.max, c.x, c.y + c.h + 4, c.w, bh, c.hp > c.max * 0.3 ? '#4ade80' : '#ef4444');
     }
   }
   function drawBattleMessage(b) {
@@ -6810,6 +6887,13 @@ export const gameKitRuntime = `(function () {
     rpgTeachHeal: guard('rpgTeachHeal', rpgTeachHeal),
     rpgLevel: guard('rpgLevel', function () { return rpg.playerLevel; }),
     rpgXp: guard('rpgXp', function () { return rpg.playerXp; }),
+    // ----- 👑 R30: chefes (o inimigo usa golpes; ler vida; IA de chefe) -----
+    rpgAddBoss: guard('rpgAddBoss', rpgAddBoss),
+    battlerLife: guard('battlerLife', battlerLife),
+    battlerMaxLife: guard('battlerMaxLife', battlerMaxLife),
+    rpgOnFoeTurn: guard('rpgOnFoeTurn', rpgOnFoeTurn),
+    rpgFoeUse: guard('rpgFoeUse', rpgFoeUse),
+    rpgFoeHitAll: guard('rpgFoeHitAll', rpgFoeHitAll),
     // ----- 🎬 V6: cenas & NPCs vivos -----
     rpgCutscene: guard('rpgCutscene', rpgCutscene),
     rpgWait: guard('rpgWait', rpgWait),
@@ -7056,7 +7140,7 @@ export const gameKitRuntime = `(function () {
       value: function () {
         var b = rpg.battle;
         if (!b) return null;
-        function snap(c) { return { name: c.name, side: c.side, hp: c.hp, max: c.max, energy: c.energy, alive: c.alive, poison: c.poison, regen: c.regen, str: c.str, def: c.def, moves: c.moves.length }; }
+        function snap(c) { return { name: c.name, side: c.side, hp: c.hp, max: c.max, energy: c.energy, alive: c.alive, poison: c.poison, regen: c.regen, str: c.str, def: c.def, moves: c.moves.length, boss: !!c.boss }; }
         var i;
         var allies = []; for (i = 0; i < b.allies.length; i++) allies.push(snap(b.allies[i]));
         var foes = []; for (i = 0; i < b.foes.length; i++) foes.push(snap(b.foes[i]));

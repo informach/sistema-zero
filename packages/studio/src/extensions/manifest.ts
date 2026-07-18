@@ -126,7 +126,10 @@ const MAX_CATEGORY_CHARS = 60
 // sanidade contra dados malformados não precisa ser apertada.
 // E de novo (40k → 48k), no 6º review: com 274 blocos (🛤️ Caminhos + 🏰 Kit
 // Defesa de Torre), 40k já apertava. Mesma lógica: é sanidade, não limite de UI.
-const MAX_DOCS_CHARS = 48_000
+// E de novo (48k → 60k), no R30 (cartas + tabuleiro + chefes): ~35 blocos e um
+// Kit Cartas novos deixaram a doc do Jogo 2D Avançado em 47,9k/48k — sem folga
+// para explicar os gêneros novos. Sanidade, não UI.
+const MAX_DOCS_CHARS = 60_000
 // Espelho do MAX_DOCS_CHARS para o CONTEXTO DA IA (ExtensionDefinition.ai.
 // promptContext): ele é concatenado CRU no system prompt (state/aiAdapter →
 // ai/prompts.buildSystemPrompt) e NÃO tem teto em runtime DE PROPÓSITO —
@@ -134,7 +137,8 @@ const MAX_DOCS_CHARS = 48_000
 // trava é de SANIDADE, validada em teste (extensions/__tests__/manifest.test.ts)
 // contra TODAS as extensões oficiais. Hoje o maior (game-2d-advanced) tem ~30k;
 // estourou o teto? ENXUGUE o ai.ts — cada char daqui custa em toda chamada.
-export const MAX_PROMPT_CONTEXT_CHARS = 36_000
+// Subiu 36k → 42k no R30 (as receitas de cartas/tabuleiro/chefe não cabiam).
+export const MAX_PROMPT_CONTEXT_CHARS = 42_000
 const MAX_EXAMPLES = 50
 
 export const ExtensionExampleSchema = z.object({

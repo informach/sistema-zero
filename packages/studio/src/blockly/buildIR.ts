@@ -650,6 +650,10 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'gk:rpgLevel' }
     case 'sz_gk_rpg_xp':
       return { type: 'gk:rpgXp' }
+    case 'sz_gk_battler_life':
+      return { type: 'gk:battlerLife', name: f(block, 'NAME') }
+    case 'sz_gk_battler_max_life':
+      return { type: 'gk:battlerMaxLife', name: f(block, 'NAME') }
     case 'sz_gk_rpg_current_map':
       return { type: 'gk:rpgCurrentMap' }
     case 'sz_gk_board_get':
@@ -6332,6 +6336,44 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           move: f(block, 'MOVE'),
           amount: exprInput(block, 'AMOUNT', { type: 'num', value: 12 }),
           cost: exprInput(block, 'COST', { type: 'num', value: 3 }),
+        },
+      }
+    case 'sz_gk_rpg_add_boss':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgAddBoss',
+          name: f(block, 'NAME'),
+          hp: exprInput(block, 'HP', { type: 'num', value: 120 }),
+          str: exprInput(block, 'STR', { type: 'num', value: 9 }),
+          def: exprInput(block, 'DEF', { type: 'num', value: 2 }),
+        },
+      }
+    case 'sz_gk_rpg_on_foe_turn':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgOnFoeTurn',
+          name: f(block, 'NAME'),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_gk_rpg_foe_use':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:rpgFoeUse', name: f(block, 'NAME'), move: f(block, 'MOVE') },
+      }
+    case 'sz_gk_rpg_foe_hit_all':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgFoeHitAll',
+          name: f(block, 'NAME'),
+          dmg: exprInput(block, 'DMG', { type: 'num', value: 15 }),
         },
       }
     case 'sz_gk_rpg_on_battle_end':

@@ -1453,6 +1453,81 @@ export const gameKitBlocks = [
     tooltip:
       'Verdadeiro se a ÚLTIMA batalha terminou em vitória. Use no "quando a batalha terminar".',
   },
+  // ---- 👑 R30: chefes e chefões da batalha por turnos ----
+  {
+    type: 'sz_gk_rpg_add_boss',
+    message0: 'Pôr o CHEFÃO %1 (vida %2, força %3, defesa %4)',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'Dragão' },
+      { type: 'input_value', name: 'HP', check: 'JSValue' },
+      { type: 'input_value', name: 'STR', check: 'JSValue' },
+      { type: 'input_value', name: 'DEF', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Como "Adicionar inimigo", mas um CHEFÃO: aparece MAIOR, com barra de vida grande e o nome com coroa. O chefe da fase. Ensine golpes a ele pelo nome. Use antes de "Começar a batalha".',
+  },
+  {
+    type: 'sz_gk_battler_life',
+    message0: 'a vida de %1 na batalha',
+    args0: [{ type: 'field_input', name: 'NAME', text: 'Dragão' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'A vida atual daquele combatente (o herói é "Você"; aliados e inimigos pelo nome). É a chave das FASES do chefe: "se a vida do Dragão < metade: fica furioso". Fora da batalha dá 0.',
+  },
+  {
+    type: 'sz_gk_battler_max_life',
+    message0: 'a vida máxima de %1 na batalha',
+    args0: [{ type: 'field_input', name: 'NAME', text: 'Dragão' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'A vida CHEIA daquele combatente. Junte com "a vida de …" para achar a fração (metade, um terço) e disparar as fases do chefe.',
+  },
+  {
+    type: 'sz_gk_rpg_on_foe_turn',
+    message0: 'Quando for a vez do inimigo %1',
+    args0: [{ type: 'field_input', name: 'NAME', text: 'Dragão' }],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'A IA do chefe: no turno daquele inimigo, roda os SEUS blocos (no lugar do ataque comum). Dentro, use "o inimigo usa o golpe" / "acerta todo o time" e leia "a vida de …" para mudar de fase.',
+  },
+  {
+    type: 'sz_gk_rpg_foe_use',
+    message0: 'O inimigo %1 usa o golpe %2',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'Dragão' },
+      { type: 'field_input', name: 'MOVE', text: 'Baforada' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O inimigo usa um golpe que você ENSINOU a ele (com "Ensinar o golpe" para o nome dele). Use dentro de "Quando for a vez do inimigo".',
+  },
+  {
+    type: 'sz_gk_rpg_foe_hit_all',
+    message0: 'O inimigo %1 acerta TODO o time (dano %2)',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'Dragão' },
+      { type: 'input_value', name: 'DMG', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O golpe de área do chefão: acerta TODO o seu time de uma vez. Use dentro de "Quando for a vez do inimigo".',
+  },
 
   // ---- 🎬 Cenas (cutscene) & NPCs vivos ----
   {
@@ -4572,6 +4647,12 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
       'sz_gk_rpg_battle_won',
       'sz_gk_rpg_level',
       'sz_gk_rpg_xp',
+      'sz_gk_rpg_add_boss',
+      'sz_gk_battler_life',
+      'sz_gk_battler_max_life',
+      'sz_gk_rpg_on_foe_turn',
+      'sz_gk_rpg_foe_use',
+      'sz_gk_rpg_foe_hit_all',
     ],
   },
   // ---- 👾 KIT MONSTRINHOS (o atalho do gênero "pegue e treine bichinhos") ----
@@ -4781,6 +4862,8 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_rpg_battle_start: { HP: numShadow(20), STR: numShadow(5), DEF: numShadow(2) },
   sz_gk_rpg_add_ally: { HP: numShadow(24), STR: numShadow(6), DEF: numShadow(1) },
   sz_gk_rpg_add_foe: { HP: numShadow(20), STR: numShadow(5), DEF: numShadow(0) },
+  sz_gk_rpg_add_boss: { HP: numShadow(120), STR: numShadow(9), DEF: numShadow(2) },
+  sz_gk_rpg_foe_hit_all: { DMG: numShadow(15) },
   sz_gk_rpg_teach_move: { DMG: numShadow(12), COST: numShadow(3) },
   sz_gk_rpg_teach_heal: { AMOUNT: numShadow(12), COST: numShadow(3) },
   sz_gk_rpg_set_special: { DMG: numShadow(14), COST: numShadow(4) },

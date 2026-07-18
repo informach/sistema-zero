@@ -249,6 +249,9 @@ export type JSExpr =
   | (JSExprCommon & { type: 'gk:rpgHasSave' })
   | (JSExprCommon & { type: 'gk:rpgLevel' })
   | (JSExprCommon & { type: 'gk:rpgXp' })
+  // 👑 R30: a vida de um combatente na batalha (por nome) — as fases do chefe.
+  | (JSExprCommon & { type: 'gk:battlerLife'; name: string })
+  | (JSExprCommon & { type: 'gk:battlerMaxLife'; name: string })
   // 🌍 Mundo aberto: o nome do mapa atual.
   | (JSExprCommon & { type: 'gk:rpgCurrentMap' })
   // 🧩 Tabuleiro/grade: ler valor, contar e checar limites (reporters).
@@ -737,6 +740,8 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('gk:rpgHasSave'), ...idField }),
     z.object({ type: z.literal('gk:rpgLevel'), ...idField }),
     z.object({ type: z.literal('gk:rpgXp'), ...idField }),
+    z.object({ type: z.literal('gk:battlerLife'), name: irText(), ...idField }),
+    z.object({ type: z.literal('gk:battlerMaxLife'), name: irText(), ...idField }),
     z.object({ type: z.literal('gk:rpgCurrentMap'), ...idField }),
     z.object({
       type: z.literal('gk:boardGet'),
@@ -2874,6 +2879,17 @@ export type JSStatement =
       amount: number | JSExpr
       cost: number | JSExpr
     })
+  // 👑 R30: chefes — chefão (maior + barra), IA de chefe e golpes do inimigo.
+  | (JSStatementCommon & {
+      type: 'gk:rpgAddBoss'
+      name: string
+      hp: number | JSExpr
+      str: number | JSExpr
+      def: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:rpgOnFoeTurn'; name: string; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'gk:rpgFoeUse'; name: string; move: string })
+  | (JSStatementCommon & { type: 'gk:rpgFoeHitAll'; name: string; dmg: number | JSExpr })
   // 🎬 Cenas & NPCs vivos: folha de andar direcional + cutscene por gravação +
   // NPC que anda/vagueia + gatilho ao pisar numa célula.
   | (JSStatementCommon & {
@@ -6666,6 +6682,27 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('gk:rpgAddBoss'),
+      name: irText(),
+      hp: z.union([JSExprSchema, z.number()]),
+      str: z.union([JSExprSchema, z.number()]),
+      def: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgOnFoeTurn'),
+      name: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:rpgFoeUse'), name: irText(), move: irText(), ...idField }),
+    z.object({
+      type: z.literal('gk:rpgFoeHitAll'),
+      name: irText(),
+      dmg: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('gk:rpgOnBattleEnd'),
       body: z.array(JSStatementSchema),
       ...idField,
@@ -9397,6 +9434,10 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:rpgAddFoe',
   'gk:rpgTeachMove',
   'gk:rpgTeachHeal',
+  'gk:rpgAddBoss',
+  'gk:rpgOnFoeTurn',
+  'gk:rpgFoeUse',
+  'gk:rpgFoeHitAll',
   'gk:setWalkSheet',
   'gk:rpgCutscene',
   'gk:rpgWait',

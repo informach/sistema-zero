@@ -4364,6 +4364,12 @@ function matchGameKitRpgExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (method === 'rpgHasSave' && args.length === 0) return { type: 'gk:rpgHasSave' }
   if (method === 'rpgLevel' && args.length === 0) return { type: 'gk:rpgLevel' }
   if (method === 'rpgXp' && args.length === 0) return { type: 'gk:rpgXp' }
+  if (method === 'battlerLife' && args[0]?.type === 'StringLiteral') {
+    return { type: 'gk:battlerLife', name: args[0].value as string }
+  }
+  if (method === 'battlerMaxLife' && args[0]?.type === 'StringLiteral') {
+    return { type: 'gk:battlerMaxLife', name: args[0].value as string }
+  }
   if (method === 'rpgCurrentMap' && args.length === 0) return { type: 'gk:rpgCurrentMap' }
   return null
 }
@@ -4967,6 +4973,34 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
     case 'rpgOnBattleEnd': {
       if (!isFn(args[0])) return null
       return { type: 'gk:rpgOnBattleEnd', body: bodyOfFn(args[0], source, ctx) }
+    }
+    case 'rpgAddBoss': {
+      // SZGameKit.rpgAddBoss("nome", hp, str, def)
+      if (args[0]?.type !== 'StringLiteral') return null
+      const hp = toExpr(args[1], ctx)
+      const str = toExpr(args[2], ctx)
+      const def = toExpr(args[3], ctx)
+      if (!isSimpleValue(hp) || !isSimpleValue(str) || !isSimpleValue(def)) return null
+      return { type: 'gk:rpgAddBoss', name: args[0].value as string, hp, str, def }
+    }
+    case 'rpgFoeUse': {
+      if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'gk:rpgFoeUse', name: args[0].value as string, move: args[1].value as string }
+    }
+    case 'rpgFoeHitAll': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const dmg = toExpr(args[1], ctx)
+      return isSimpleValue(dmg)
+        ? { type: 'gk:rpgFoeHitAll', name: args[0].value as string, dmg }
+        : null
+    }
+    case 'rpgOnFoeTurn': {
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
+      return {
+        type: 'gk:rpgOnFoeTurn',
+        name: args[0].value as string,
+        body: bodyOfFn(args[1], source, ctx),
+      }
     }
     case 'setWalkSheet': {
       const charVar = identifierName(args[0])
@@ -11067,6 +11101,8 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'gk:rpgHasSave':
     case 'gk:rpgLevel':
     case 'gk:rpgXp':
+    case 'gk:battlerLife':
+    case 'gk:battlerMaxLife':
     case 'gk:rpgCurrentMap':
     case 'g3k:worldSize':
     case 'g3k:countAlive':

@@ -201,6 +201,13 @@ interface GameKitApi {
   rpgTeachHeal: Fn
   rpgLevel: Fn
   rpgXp: Fn
+  // 👑 R30 — chefes
+  rpgAddBoss: Fn
+  battlerLife: (name: string) => number
+  battlerMaxLife: (name: string) => number
+  rpgOnFoeTurn: Fn
+  rpgFoeUse: Fn
+  rpgFoeHitAll: Fn
   // V9 — mapa de tiles + profundidade
   cameraShake: Fn
   loadTilemap: Fn
@@ -428,6 +435,7 @@ interface BattlerSnap {
   str: number
   def: number
   moves: number
+  boss: boolean
 }
 interface BattleSnap {
   phase: string
@@ -510,7 +518,7 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 288 métodos (spawn_named reusa spawnFromMold)', () => {
+  it('expõe os 294 métodos (spawn_named reusa spawnFromMold)', () => {
     const { api } = loadRuntime()
     const expected = [
       // v1 (33)
@@ -654,6 +662,13 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'rpgAddFoe',
       'rpgTeachMove',
       'rpgTeachHeal',
+      // 👑 R30 — chefes (6)
+      'rpgAddBoss',
+      'battlerLife',
+      'battlerMaxLife',
+      'rpgOnFoeTurn',
+      'rpgFoeUse',
+      'rpgFoeHitAll',
       // V9 — mapa de tiles + profundidade (6)
       'cameraShake',
       'loadTilemap',
@@ -2616,7 +2631,7 @@ describe('SZGameKit — R12: Kit Plataforma', () => {
     h.api.setState('jogando')
     h.api.loadTilemap('mundo', 'mapa')
     h.nextFrame(16) // estabelece currentDt (~0.016) p/ o cruzamento de plano
-    const c = h.api.createCharacter({ w: 32, h: 32 })
+    const c = h.api.createCharacter({ w: 32, h: 32 }) as { x: number; y: number }
 
     // CAINDO por cima: pé (62) acima do topo da plataforma (64), vy>0 → pousa.
     h.api.placeCharacter(c, 80, 30) // bottom = 62
@@ -3769,5 +3784,75 @@ describe('SZGameKit — R29: robustez (nomes perigosos, softlock, cura)', () => 
     api.setVelocity(ball3, 0, 200)
     api.paddleBounce(ball3, paddle)
     expect(api.velocityOf(ball3, 'y')).toBe(200) // intocado
+  })
+})
+
+describe('SZGameKit — R30: 👑 chefes (o inimigo usa golpes, ler vida, IA de chefe)', () => {
+  it('⭐ o inimigo USA o golpe ensinado (antes o foeStep ignorava f.moves)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(100, 3, 0) // herói vida 100, força fraca
+    h.api.rpgTeachMove('Bruxo', 'Chama', 40, 0) // golpe FORTE ensinado ao INIMIGO
+    h.api.rpgBattleStart('Bruxo', 120, 1, 0) // foe força 1: sem o golpe mal me arranha
+    expect(h.api.state()).toBe('batalha')
+    const before = h.api.battlerLife('Você')
+    pickAction(h, 1, 'Atacar') // uma rodada inteira: herói ataca, depois o Bruxo age
+    // Com o golpe (40), o herói perde MUITO mais do que a força 1 causaria (bite-check
+    // do fix: com o bug de volta, before-after ≈ 1 e isto falha).
+    expect(before - h.api.battlerLife('Você')).toBeGreaterThan(20)
+  })
+
+  it('"a vida de … na batalha" lê qualquer combatente + o CHEFÃO entra marcado', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(30, 7, 0)
+    h.api.rpgAddBoss('Dragão', 200, 9, 2) // o chefão entra na fila
+    h.api.rpgBattleStart('Capanga', 20, 3, 0) // + um capanga normal
+    expect(h.api.state()).toBe('batalha')
+    const snap = battleSnap(h)
+    const dragao = snap?.foes.find((f) => f.name === 'Dragão')
+    const capanga = snap?.foes.find((f) => f.name === 'Capanga')
+    expect(dragao?.boss).toBe(true) // marcado → desenhado maior, com barra proeminente
+    expect(capanga?.boss).toBe(false)
+    expect(h.api.battlerLife('Dragão')).toBe(200)
+    expect(h.api.battlerMaxLife('Dragão')).toBe(200)
+    expect(h.api.battlerLife('Você')).toBe(30)
+    expect(h.api.battlerLife('naoexiste')).toBe(0) // seguro fora
+  })
+
+  it('"o inimigo usa o golpe" desfere o golpe ensinado a ele (e avisa se não tem)', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(100, 3, 0)
+    h.api.rpgTeachMove('Ogro', 'Marreta', 30, 0)
+    h.api.rpgBattleStart('Ogro', 100, 1, 0)
+    const before = h.api.battlerLife('Você')
+    h.api.rpgFoeUse('Ogro', 'Marreta') // aciona o golpe direto
+    expect(before - h.api.battlerLife('Você')).toBeGreaterThan(15)
+    const now = h.api.battlerLife('Você')
+    h.api.rpgFoeUse('Ogro', 'GolpeInexistente') // golpe que ele NÃO tem: no-op + aviso
+    expect(h.api.battlerLife('Você')).toBe(now)
+  })
+
+  it('a IA de chefe manda na vez dele: "acerta TODO o time" atinge todos os aliados', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.rpgBattleStats(100, 3, 0)
+    h.api.rpgAddAlly('Amigo', 100, 3, 0, '#4ade80') // o herói + um aliado
+    h.api.rpgOnFoeTurn('Titã', () => {
+      h.api.rpgFoeHitAll('Titã', 25) // o golpe de área do chefão
+    })
+    h.api.rpgBattleStart('Titã', 400, 1, 0) // tanque: a batalha não acaba
+    expect(h.api.state()).toBe('batalha')
+    const heroBefore = h.api.battlerLife('Você')
+    const amigoBefore = h.api.battlerLife('Amigo')
+    const t = pickAction(h, 1, 'Atacar') // vez do herói
+    pickAction(h, t, 'Atacar') // vez do Amigo → depois o Titã age (hit_all via a IA)
+    expect(h.api.battlerLife('Você')).toBeLessThan(heroBefore)
+    expect(h.api.battlerLife('Amigo')).toBeLessThan(amigoBefore)
   })
 })

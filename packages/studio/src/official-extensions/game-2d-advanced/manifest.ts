@@ -10,6 +10,7 @@ import {
   florestaNinjaExample,
   invasaoDosOvnisExample,
   meuPrimeiroJogoExample,
+  oChefaoExample,
   quebraBlocosExample,
   reinoAbertoExample,
   saltoNaFlorestaExample,
@@ -19,7 +20,7 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.28.0',
+  version: '0.29.0',
   description:
     'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som, faíscas e tabuleiro de grade — dá para inventar qualquer jogo 2D. E seis atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial), 🚀 nave (a invasão que marcha, desce e acelera) e 🏰 defesa de torre (caminho, ondas, torres que miram).',
   category: 'games',
@@ -801,6 +802,16 @@ música da praia" e o nome no HUD.
 - **Quando a batalha terminar / ganhei a batalha?** — decida o rumo: vitória →
   tela de vitória (+ XP), derrota → fim de jogo, fuga → tentar de novo.
 
+> 👑 **Chefes e chefões:** ⭐ o inimigo AGORA usa os golpes que você ensina a ele
+> (pelo NOME dele — "Ensinar o golpe … para 'Dragão'") — dá-lhe especiais e curas.
+> **Pôr o CHEFÃO …** entra um inimigo MAIOR, com barra de vida grande e coroa.
+> **a vida de … na batalha** (e **a vida máxima de …**) lê QUALQUER combatente → é
+> a receita de FASE: *"se a vida do Chefão < metade: fica furioso"*. E **Quando for
+> a vez do inimigo … : fazer** é a IA do chefe — no lugar do ataque comum, roda os
+> seus blocos; dentro, **O inimigo … usa o golpe …** (um golpe ensinado) e **O
+> inimigo … acerta TODO o time (dano …)** (o golpe de área). Assim o chefão muda de
+> padrão conforme apanha, como nos jogos de verdade.
+
 ### 🎬 Cenas & NPCs vivos (em 🎬 cenas)
 
 O jeito profissional de contar história:
@@ -973,6 +984,7 @@ das moedas. Tudo receita — o kit dá só o esqueleto do gênero.
     defesaDoReinoExample,
     reinoAbertoExample,
     batalhaEmEquipeExample,
+    oChefaoExample,
     cobrinhaExample,
     quebraBlocosExample,
   ],
