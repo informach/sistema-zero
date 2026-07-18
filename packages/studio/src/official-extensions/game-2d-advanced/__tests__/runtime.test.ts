@@ -220,6 +220,12 @@ interface GameKitApi {
   overlapGroups: Fn
   bounceOnEdges: Fn
   wrapEdges: Fn
+  paddleBounce: Fn
+  boardCreate: Fn
+  boardSet: Fn
+  boardGet: Fn
+  boardCount: Fn
+  boardIn: Fn
   everySeconds: Fn
   cooldownReady: Fn
   tileAt: Fn
@@ -498,7 +504,7 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 282 métodos (spawn_named reusa spawnFromMold)', () => {
+  it('expõe os 288 métodos (spawn_named reusa spawnFromMold)', () => {
     const { api } = loadRuntime()
     const expected = [
       // v1 (33)
@@ -661,6 +667,12 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'overlapGroups',
       'bounceOnEdges',
       'wrapEdges',
+      'paddleBounce',
+      'boardCreate',
+      'boardSet',
+      'boardGet',
+      'boardCount',
+      'boardIn',
       'everySeconds',
       'cooldownReady',
       'tileAt',
@@ -3665,5 +3677,65 @@ describe('SZGameKit — R29: robustez (nomes perigosos, softlock, cura)', () => 
     pickAction(h, t, 'Curar') // escolhe o golpe de cura
     // O inimigo NÃO perdeu vida (cura ≠ dano): o golpe curou em vez de ferir.
     expect(battleSnap(h)?.foes[0]?.hp).toBe(foeHp0)
+  })
+
+  it('🧩 D1: tabuleiro — criar/pôr/ler/contar/cabe (a base do Snake e do Match-3)', () => {
+    const h = loadRuntime()
+    const api = h.api as unknown as {
+      boardCreate: (n: string, c: number, r: number, empty: unknown) => void
+      boardSet: (n: string, v: unknown, c: number, r: number) => void
+      boardGet: (n: string, c: number, r: number) => unknown
+      boardCount: (n: string, v: unknown) => number
+      boardIn: (n: string, c: number, r: number) => boolean
+    }
+    api.boardCreate('mapa', 4, 3, 0) // 4×3 preenchido de 0 ("vazio")
+    expect(api.boardCount('mapa', 0)).toBe(12) // tudo vazio no começo
+    api.boardSet('mapa', 1, 2, 1) // corpo da cobrinha em (2,1)
+    api.boardSet('mapa', 1, 0, 0)
+    expect(api.boardGet('mapa', 2, 1)).toBe(1)
+    expect(api.boardCount('mapa', 1)).toBe(2)
+    expect(api.boardCount('mapa', 0)).toBe(10)
+    // Fora da grade: pôr é ignorado (não estoura), ler devolve o "vazio", cabe = false.
+    api.boardSet('mapa', 9, 99, 99)
+    expect(api.boardCount('mapa', 9)).toBe(0)
+    expect(api.boardGet('mapa', 99, 99)).toBe(0)
+    expect(api.boardIn('mapa', 3, 2)).toBe(true) // último canto válido
+    expect(api.boardIn('mapa', 4, 2)).toBe(false) // 1 coluna além = parede
+    // Tabuleiro inexistente é seguro (não trava).
+    expect(api.boardGet('naoexiste', 0, 0)).toBe(0)
+    expect(api.boardIn('naoexiste', 0, 0)).toBe(false)
+  })
+
+  it('🧱 D2: rebater na raquete — inverte o vy e o ângulo vem do ponto de impacto', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    const api = h.api as unknown as {
+      createCharacter: (o: Record<string, number>) => Record<string, number>
+      placeCharacter: (c: Record<string, number>, x: number, y: number) => void
+      setVelocity: (c: Record<string, number>, vx: number, vy: number) => void
+      velocityOf: (c: Record<string, number>, axis: 'x' | 'y') => number
+      paddleBounce: (ball: Record<string, number>, paddle: Record<string, number>) => void
+    }
+    const paddle = api.createCharacter({ w: 100, h: 16 })
+    api.placeCharacter(paddle, 100, 400) // centro x=150
+    // A bola desce (vy>0) e ENCOSTA na raquete (que está embaixo dela).
+    const ball = api.createCharacter({ w: 16, h: 16 })
+    api.placeCharacter(ball, 142, 392) // centro x=150 (bate no MEIO)
+    api.setVelocity(ball, 0, 200)
+    api.paddleBounce(ball, paddle)
+    expect(api.velocityOf(ball, 'y')).toBeLessThan(0) // subiu (rebateu p/ cima)
+    expect(Math.abs(api.velocityOf(ball, 'x'))).toBeLessThan(1) // meio da raquete = reto
+    // Batendo na BEIRA direita da raquete, ganha vx positivo (abre o ângulo).
+    const ball2 = api.createCharacter({ w: 16, h: 16 })
+    api.placeCharacter(ball2, 188, 392) // centro x=196, à direita do centro 150
+    api.setVelocity(ball2, 0, 200)
+    api.paddleBounce(ball2, paddle)
+    expect(api.velocityOf(ball2, 'x')).toBeGreaterThan(0)
+    // Sem encostar (longe), nada muda.
+    const ball3 = api.createCharacter({ w: 16, h: 16 })
+    api.placeCharacter(ball3, 142, 0)
+    api.setVelocity(ball3, 0, 200)
+    api.paddleBounce(ball3, paddle)
+    expect(api.velocityOf(ball3, 'y')).toBe(200) // intocado
   })
 })

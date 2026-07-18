@@ -1907,6 +1907,20 @@ export const gameKitBlocks = [
     tooltip: 'Bateu na borda, volta — a bolinha do pong e do breakout.',
   },
   {
+    type: 'sz_gk_paddle_bounce',
+    message0: 'Rebater %1 na raquete %2',
+    args0: [
+      { type: 'field_name_picker', name: 'BALL', text: 'bola', kind: 'character' },
+      { type: 'field_name_picker', name: 'PADDLE', text: 'raquete', kind: 'character' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Quando a bola encosta na raquete, ela QUICA: a direção pra cima/baixo inverte e a direção de lado vem do PONTO que bateu (na beirada, sai mais de lado). É o coração do Breakout e do Pong. Combine com "quicar nas bordas" (paredes) no "A cada quadro".',
+  },
+  {
     type: 'sz_gk_wrap_edges',
     message0: 'Fazer %1 atravessar para o outro lado',
     args0: [{ type: 'field_name_picker', name: 'WHO', text: 'nave', kind: 'character' }],
@@ -1914,6 +1928,77 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip: 'Saiu por um lado, aparece no outro — o Pac-Man e o Asteroids.',
+  },
+  // ---- 🧩 Tabuleiro / grade (Snake, Match-3, Sokoban, puzzles) ----
+  {
+    type: 'sz_gk_board_create',
+    message0: 'Criar o tabuleiro %1 com %2 colunas × %3 linhas (vazio = %4)',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'tabuleiro' },
+      { type: 'input_value', name: 'COLS', check: 'JSValue' },
+      { type: 'input_value', name: 'ROWS', check: 'JSValue' },
+      { type: 'input_value', name: 'EMPTY', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria uma GRADE de células por nome (colunas × linhas), tudo começando com o valor "vazio" (ex.: 0). É o coração dos jogos de grade: Cobrinha, Match-3, Sokoban, campo-minado, quebra-cabeças. Você varre a grade com "repita" e lê/escreve por (coluna, linha).',
+  },
+  {
+    type: 'sz_gk_board_set',
+    message0: 'No tabuleiro %1, pôr %2 na coluna %3, linha %4',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'tabuleiro' },
+      { type: 'input_value', name: 'VALUE', check: 'JSValue' },
+      { type: 'input_value', name: 'COL', check: 'JSValue' },
+      { type: 'input_value', name: 'ROW', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Escreve um valor numa célula da grade (fora dos limites, não faz nada).',
+  },
+  {
+    type: 'sz_gk_board_get',
+    message0: 'o valor do tabuleiro %1 em (coluna %2, linha %3)',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'tabuleiro' },
+      { type: 'input_value', name: 'COL', check: 'JSValue' },
+      { type: 'input_value', name: 'ROW', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Lê o valor de uma célula. Fora dos limites, devolve o valor "vazio" do tabuleiro.',
+  },
+  {
+    type: 'sz_gk_board_count',
+    message0: 'quantas células do tabuleiro %1 têm o valor %2',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'tabuleiro' },
+      { type: 'input_value', name: 'VALUE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Conta quantas células têm um valor — ex.: quantas minas, quantas peças de uma cor.',
+  },
+  {
+    type: 'sz_gk_board_in',
+    message0: 'a (coluna %2, linha %3) cabe no tabuleiro %1 ?',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'tabuleiro' },
+      { type: 'input_value', name: 'COL', check: 'JSValue' },
+      { type: 'input_value', name: 'ROW', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Verdadeiro se a célula está DENTRO da grade — o jeito de saber se a cobrinha bateu na parede ou se um movimento sai do tabuleiro.',
   },
   {
     type: 'sz_gk_collide_tilemap',
@@ -4172,6 +4257,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
       'sz_gk_thrust',
       'sz_gk_apply_friction',
       'sz_gk_bounce_on_edges',
+      'sz_gk_paddle_bounce',
       'sz_gk_wrap_edges',
     ],
   },
@@ -4179,6 +4265,19 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     name: '🧱 Colisão sólida',
     colour: C,
     types: ['sz_gk_collide_tilemap', 'sz_gk_collide_group', 'sz_gk_overlap_groups'],
+  },
+  {
+    // 🧩 GERAL: uma grade nomeada de células (a criança varre com "repita" +
+    // ler/pôr). Destrava Snake, Match-3, Sokoban, campo-minado, puzzles de grade.
+    name: '🧩 Tabuleiro',
+    colour: C,
+    types: [
+      'sz_gk_board_create',
+      'sz_gk_board_set',
+      'sz_gk_board_get',
+      'sz_gk_board_count',
+      'sz_gk_board_in',
+    ],
   },
   {
     name: '⏱️ Tempo',
@@ -4605,6 +4704,11 @@ const txtShadow = (text: string) => ({ shadow: { type: 'sz_val_text', fields: { 
 const numShadow = (value: number) => ({ shadow: { type: 'sz_val_number', fields: { NUM: value } } })
 export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_setup: { W: numShadow(1280), H: numShadow(720) },
+  sz_gk_board_create: { COLS: numShadow(10), ROWS: numShadow(10), EMPTY: numShadow(0) },
+  sz_gk_board_set: { VALUE: numShadow(1), COL: numShadow(0), ROW: numShadow(0) },
+  sz_gk_board_get: { COL: numShadow(0), ROW: numShadow(0) },
+  sz_gk_board_count: { VALUE: numShadow(1) },
+  sz_gk_board_in: { COL: numShadow(0), ROW: numShadow(0) },
   sz_gk_set_screen_text: {
     TITLE: txtShadow('Meu Jogo'),
     TEXT: txtShadow('WASD ou setas para andar'),

@@ -499,6 +499,12 @@ export function compileExpr(
       return 'SZGameKit.rpgXp()'
     case 'gk:rpgCurrentMap':
       return 'SZGameKit.rpgCurrentMap()'
+    case 'gk:boardGet':
+      return `SZGameKit.boardGet(${JSON.stringify(expr.name)}, ${compileExpr(valueToExpr(expr.col), 0, identifiers, rec)}, ${compileExpr(valueToExpr(expr.row), 0, identifiers, rec)})`
+    case 'gk:boardCount':
+      return `SZGameKit.boardCount(${JSON.stringify(expr.name)}, ${compileExpr(valueToExpr(expr.value), 0, identifiers, rec)})`
+    case 'gk:boardIn':
+      return `SZGameKit.boardIn(${JSON.stringify(expr.name)}, ${compileExpr(valueToExpr(expr.col), 0, identifiers, rec)}, ${compileExpr(valueToExpr(expr.row), 0, identifiers, rec)})`
     case 'gk:kills':
       return 'SZGameKit.kills()'
     // ---- Jogo 3D Avançado (game-3d-advanced) ----

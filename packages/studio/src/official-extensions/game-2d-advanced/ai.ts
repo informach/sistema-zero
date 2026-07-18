@@ -200,7 +200,9 @@ API global injetada como window.SZGameKit:
   agem por IA. rpgAddAlly(nome, vida, força, defesa, cor) = aliado no SEU time
   (persiste; o herói já entra); rpgAddFoe(nome, vida, força, defesa, cor) = MAIS um
   inimigo na próxima batalha; rpgTeachMove("Você"|nomeDoAliado, "golpe", dano, custo)
-  = golpes NOMEADOS (vários por lutador; gastam energia). rpgSetSpecial(nome, dano,
+  = golpes NOMEADOS (vários por lutador; gastam energia). rpgTeachHeal("Você"|
+  nomeDoAliado, "golpe", cura, custo) = golpe de CURA (devolve VIDA em vez de ferir —
+  a Curandeira; aparece no mesmo painel de ação). rpgSetSpecial(nome, dano,
   custo) = 1 golpe do herói (compat); rpgGivePotion(nome, cura) abastece o Item;
   rpgBattleReward(xp) no rpgOnBattleEnd (se ganhou) → sobe de nível (+vida/força/
   defesa, aviso "subiu:nivel"); rpgLevel()/rpgXp() getters; rpgInflict("inimigo"|
@@ -225,7 +227,9 @@ API global injetada como window.SZGameKit:
   velocityOf(quem, "x"|"y") escrevem E LEEM (ler destrava "se velocityOf(h,'y') >
   0: tocar cair"); jump(quem, forca) só age NO CHÃO (padrão 660; é o que impede
   pulo infinito); isOnGround(quem); setTerminalVelocity(quem, max) limita a queda
-  (padrão 900); bounceOnEdges(quem)/wrapEdges(quem).
+  (padrão 900); bounceOnEdges(quem)/wrapEdges(quem); paddleBounce(bola, raquete) =
+  rebate a bola na raquete invertendo vy e ABRINDO o ângulo pelo ponto de impacto
+  (meio = reto, beirada = aberto). Com o bounceOnEdges nas paredes = Breakout/Pong.
   ⭐ ORDEM OBRIGATÓRIA no onUpdate, nesta sequência: applyGravity → moveByVelocity
   → collide*. A gravidade zera onGround; SÓ o pouso da colisão (vy > 0) liga de
   volta. Fora dessa ordem o personagem vibra ou atravessa o chão.
@@ -335,6 +339,14 @@ API global injetada como window.SZGameKit:
   peca, folha) = mapa por CÓDIGO (masmorra sorteada) → setTileAt num laço.
   moveWithCustomKeys(quem, cima, baixo, esq, dir, dt) = 2º jogador (o moveWithKeys
   tem WASD E setas no MESMO personagem).
+- 🧩 Tabuleiro (GERAL — a grade nomeada dos jogos de grade; Snake/Match-3/Sokoban/
+  campo-minado/puzzle): boardCreate(nome, cols, rows, vazio) cria a grade cheia do
+  valor "vazio" (0, "", "grama"…); boardSet(nome, valor, col, row) grava numa
+  célula (fora da grade = ignora); boardGet(nome, col, row) lê (fora = o "vazio");
+  boardCount(nome, valor) conta as células com aquele valor; boardIn(nome, col,
+  row) testa se cabe (parede/limite). SEM bloco de laço DE PROPÓSITO: varra a grade
+  com o "repita" do núcleo + boardGet/boardSet (a criança MONTA a mecânica). Cobrinha
+  = uma lista de células + o tabuleiro marcando o corpo (bateu no corpo = perdeu).
 - 🥊 Kit Luta (Street Fighter — o ATALHO do gênero; luta "na unha" segue possível
   com personagem + applyGravity + attackFacing + didHit + hurt + knockback):
   lutaMatch(a, b, rounds, segundos) casa os DOIS e grava o "home" de cada um da

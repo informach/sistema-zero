@@ -4,11 +4,13 @@ import {
   batalhaEmEquipeExample,
   bichinhosDoQuintalExample,
   cacaMoedasExample,
+  cobrinhaExample,
   defesaDoReinoExample,
   dueloDosBonecosExample,
   florestaNinjaExample,
   invasaoDosOvnisExample,
   meuPrimeiroJogoExample,
+  quebraBlocosExample,
   reinoAbertoExample,
   saltoNaFlorestaExample,
   vilaDoDragaoExample,
@@ -17,9 +19,9 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.26.0',
+  version: '0.27.0',
   description:
-    'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som e faíscas — dá para inventar qualquer jogo 2D. E seis atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial), 🚀 nave (a invasão que marcha, desce e acelera) e 🏰 defesa de torre (caminho, ondas, torres que miram).',
+    'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som, faíscas e tabuleiro de grade — dá para inventar qualquer jogo 2D. E seis atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial), 🚀 nave (a invasão que marcha, desce e acelera) e 🏰 defesa de torre (caminho, ondas, torres que miram).',
   category: 'games',
   official: true,
   enabledByDefault: false,
@@ -128,8 +130,6 @@ O que o motor já faz por você (cada um tem a sua seção mais abaixo):
 
 - O desenho recomeça do zero a cada quadro: pinte o fundo primeiro ("Pintar o
   fundo" já apaga o quadro anterior).
-- "Quando entrar no estado jogando" é onde se REINICIA a partida (zerar pontos,
-  recolocar personagens) — aí "Jogar de novo" funciona de graça.
 - A largura/altura do jogo são fixas: use "a largura do jogo" nas contas de
   limite e de posição aleatória.
 
@@ -247,9 +247,9 @@ desliga); convive com o "Girar" (um soma no outro).
 ("se andando, tocar andar; senão, tocar parado"): repetir a mesma não reinicia.
 Desenhou no Pinta? O seletor lista as animações da folha e preenche os números.
 
-**O problema que aparece quando o jogo cresce:** você manda golpear, e no quadro
-seguinte a animação de andar apaga o golpe. Toda animação atropela a anterior. A
-saída é dizer que aquela animação **não pode ser interrompida**:
+**O problema quando o jogo cresce:** você manda golpear e, no quadro seguinte, a
+animação de andar apaga o golpe — toda animação atropela a anterior. A saída é
+dizer que aquela **não pode ser interrompida**:
 
 - **Tocar a animação … uma vez só** toca e PARA no último quadro (golpe, morrer,
   abrir o baú), e **a animação de … acabou?** diz quando terminou.
@@ -263,19 +263,16 @@ saída é dizer que aquela animação **não pode ser interrompida**:
   mais próximo (caindo parece pular; pular parece andar).
 - **o estado de …** conta o que ele está fazendo agora, para o resto do jogo.
 
-Quem usa "Atacar na direção" ganha a trava de graça: o golpe já se põe no estado
-"golpe" sozinho, e a animação dele é esticada para durar exatamente o golpe — por
-isso um quadro pulado num computador lento não estraga nada.
+Quem usa "Atacar na direção" ganha a trava de graça: o golpe já entra no estado
+"golpe" sozinho e a animação dura exatamente o golpe (um quadro pulado não estraga).
 
 ### 🎥 Câmera (mundos maiores que a tela)
 
-**Fazer a câmera seguir** liga um mundo maior: a tela vira uma janela que
-acompanha o personagem, presa nas bordas do mundo. O "Desenhar o jogo" passa a
-desenhar o MUNDO; **Desenhar por cima (HUD)** desenha DEPOIS, preso na tela
-(placar, barras) — a separação profissional entre mundo e painel. **o canto
-x/y da câmera** dizem que pedaço do mundo aparece. **Tremer a câmera** dá um
-abalo de impacto (explosão, o chefe pisando) — funciona com a câmera ligada ou
-desligada.
+**Fazer a câmera seguir** liga um mundo maior: a tela vira uma janela que segue o
+personagem, presa nas bordas do mundo. O "Desenhar o jogo" passa a desenhar o
+MUNDO; **Desenhar por cima (HUD)** desenha DEPOIS, preso na tela (placar, barras).
+**o canto x/y da câmera** dizem que pedaço aparece. **Tremer a câmera** dá o abalo
+de impacto (explosão, o chefe pisando), com a câmera ligada ou não.
 
 **Fazer a câmera seguir … pelo mapa** é o atalho do MUNDO GIGANTE: o tamanho do
 mundo vem do próprio mapa de tiles (colunas × célula) — sem fazer conta. E o
@@ -296,10 +293,9 @@ para X graus** roda o desenho em volta do centro.
 desde o instante em que você aperta — e aí quem aperta primeiro sempre ganha,
 sempre. Não dá para ler o outro, nem para desviar, nem para punir quem errou.
 
-Com o recuo, o golpe tem três partes, como nos jogos de verdade: o braço indo (o
-recuo), o momento em que machuca (o retângulo branco aparece só aqui!), e a volta.
-Golpe rápido sai antes mas machuca pouco; golpe pesado demora, mas se acertar o
-outro fica travado tempo suficiente para você emendar outro. **Isso é o combo.**
+Com o recuo, o golpe tem três partes: o braço indo, o momento em que machuca (o
+retângulo branco só aparece aqui!) e a volta. Rápido sai antes mas machuca pouco;
+pesado demora, mas trava o outro tempo bastante para você emendar — **o combo.**
 Deixe 0 e 0 para o golpe inteiro machucar, como antes.
 
 ### 🗺️ Mundo & profundidade
@@ -339,14 +335,16 @@ primitivos: você liga do seu jeito, na ordem de verdade.
   impede atravessar o chão numa queda longa.
 - **Fazer … quicar nas bordas** / **… atravessar para o outro lado** — a bolinha
   do pong e o Pac-Man saindo pela lateral.
+- **Rebater … na raquete …** — a bola quica na raquete e o ÂNGULO muda pelo ponto
+  que bateu (meio = reto, beirada = aberto). Com o "quicar nas bordas" nas paredes,
+  é o Breakout e o Pong inteiros.
 
 ### 🚀 Inércia e atrito (em ⚙️ Física)
 
 **Empurrar … no ângulo … com força …** SOMA velocidade em vez de trocar: a nave
-continua andando depois que você solta o botão. É o que faz um Asteroids —
-"Mover no ângulo" apaga a velocidade de antes e o resultado nunca desliza.
-Use dentro do "A cada quadro": a força é POR SEGUNDO (px/s², padrão 6000), então
-o empurrão fica igual em qualquer computador, rápido ou lento.
+continua andando depois que você solta o botão (é o Asteroids; "Mover no ângulo"
+apagaria a velocidade de antes). Use no "A cada quadro": a força é POR SEGUNDO
+(px/s², padrão 6000), igual em qualquer computador.
 **Frear … com atrito …** tira a velocidade aos poucos: 0.9 = chão normal, 0.1 =
 gelo. Com os dois, você tem carro, hóquei, nave e patinação.
 
@@ -458,6 +456,21 @@ o inimigo com mais vida, o mais baixo na tela, o mais avançado no caminho. É
 assim que a torre de defesa mira no "líder" da fila. Sem nenhum vivo, devolve
 nada.
 
+### 🧩 Tabuleiro (jogos de grade)
+
+Uma grade NOMEADA de células que você lê e escreve por (coluna, linha) — a peça
+que faltava para Cobrinha, Match-3, Sokoban, campo-minado e puzzles.
+
+- **Criar o tabuleiro … com … colunas × … linhas (vazio = …)** — no começo; o
+  "vazio" preenche toda célula (0, \`""\`, "grama"…).
+- **No tabuleiro …, pôr … na coluna …, linha …** — grava um valor numa célula.
+- **o valor do tabuleiro … em (coluna …, linha …)** — lê (fora da grade = o vazio).
+- **quantas células … têm o valor …** — conta (minas restantes, peças de uma cor).
+- **a (coluna …, linha …) cabe no tabuleiro …?** — testa a parede/limite.
+
+Não há bloco de laço de propósito: você VARRE a grade com o "repita" do núcleo +
+ler/pôr — é assim que se aprende a mexer numa grade de verdade.
+
 ### 🛤️ Caminhos
 
 Um caminho é uma trilha nomeada de pontos — a versão "linha" da região (que é
@@ -480,10 +493,8 @@ fundo longe anda devagar, o perto anda rápido — profundidade de graça). Cong
 na pausa, como tudo.
 
 **Pintar o fundo preso à câmera** é a paralaxe para jogos COM câmera: o fundo
-acompanha a posição da câmera a um fator (0 = céu ao longe, quase parado; 1 =
-colado no mundo). A diferença: "rolando" anda por VELOCIDADE (tela fixa); este
-segue a POSIÇÃO da câmera (mundo grande). Ligue a "Câmera segue" e ponha duas
-camadas em fatores diferentes para dar profundidade de verdade.
+segue a POSIÇÃO da câmera a um fator (0 = céu ao longe, quase parado; 1 = colado
+no mundo). Duas camadas em fatores diferentes = profundidade de verdade.
 
 ### ✨ Estourar a folha (em ✨ Faíscas)
 
@@ -554,6 +565,14 @@ Alguns clássicos não precisam de bloco novo — saem da combinação certa:
 - **Colecionável semeado no mapa:** um laço que varre as células; onde a peça é a
   marcada, "Nascer" uma moeda ali e apagar a peça — espalha itens pelo mapa
   desenhado no Pinta.
+- **Cobrinha (Snake):** um 🧩 Tabuleiro marca onde está o corpo; a cada passo, ande
+  a cabeça uma célula, marque a nova e apague a cauda. Comeu a maçã = não apaga a
+  cauda (cresce). Bateu na parede ou no próprio corpo = perdeu.
+- **Quebra-blocos (Breakout):** a bola com velocidade + "quicar nas bordas" +
+  "Rebater na raquete"; os blocos são um enxame, e "Quando a bola e um bloco se
+  tocarem" recolhe o bloco e o motor já inverteu o rumo pela raquete/parede.
+- **Flappy / Corrida infinita:** gravidade na ave + "pular" ao apertar (ou "Pintar
+  o fundo rolando"); os canos/obstáculos são um enxame e "Quando se tocarem" = fim.
 
 ## 🏃 Kit Plataforma
 
@@ -685,11 +704,9 @@ PALAVRA, e ela decide o ritmo inteiro do golpe: o **rápido** sai quase na hora
 mas empurra pouco; o **médio** fica no meio; o **pesado** demora para sair, mas
 derruba e trava o outro por muito tempo.
 
-⭐ **É daqui que sai o combo, e ninguém precisa programar nada:** o pesado trava
-o outro por mais tempo do que você leva para se recuperar. Sobra uma frestinha —
-e dá para emendar um rápido. Experimente chute → soco: encaixa. Cada golpe do
-combo machuca um pouco menos que o anterior (senão um combo grande mataria de
-uma vez).
+⭐ **É daqui que sai o combo:** o pesado trava o outro por mais tempo do que você
+leva para se recuperar — sobra uma frestinha e dá para emendar um rápido (chute →
+soco encaixa). Cada golpe machuca um pouco menos (senão mataria de uma vez).
 
 - **atravessa a defesa ✓** é o agarrão: vence quem só fica defendendo (defender
   para sempre também perde no relógio).
@@ -749,10 +766,9 @@ O RPG de mundo aberto tem DOIS jeitos (e dá para misturar):
 2. **Mapas ligados pelas bordas (estilo Zelda)** — dentro de cada **Quando
    chegar no mapa**: declare **Este mapa tem … × … células** e **Ligar a borda
    … deste mapa ao mapa …**. Atravessou a borda → entra no vizinho pelo lado
-   oposto, na MESMA linha (e sai o aviso \`mapa:<nome>\`, como nas portas).
-   Ligue a borda ESPELHADA no outro mapa também (leste de um = oeste do outro).
-   Borda sem ligação = fim do mundo (o herói só vira). Com a câmera ligada, o
-   **Este mapa tem** também vira a trava dela — cada mapa pode ter um tamanho.
+   oposto, na MESMA linha (aviso \`mapa:<nome>\`). Ligue a borda ESPELHADA no
+   outro mapa (leste de um = oeste do outro); borda sem ligação = fim do mundo.
+   Com a câmera ligada, o **Este mapa tem** também vira a trava dela.
 
 **o nome do mapa de agora** completa: "se o mapa de agora = praia → tocar a
 música da praia" e o nome no HUD.
@@ -775,6 +791,8 @@ música da praia" e o nome no HUD.
   e eles aparecem no painel de ação. Cada golpe gasta energia.
 - **Golpe especial** (dano forte que gasta energia; a energia recupera por turno)
   + **Ganhar a poção** (cura, usada pelo botão Item) — as armas do RPG.
+- **Ensinar o golpe de CURA … para …** — um golpe que devolve VIDA em vez de ferir
+  (a Curandeira do time). Gasta energia e aparece no painel de ação, como os outros.
 - **Ganhar XP** (no "quando a batalha terminar", se venceu) → o herói **sobe de
   nível** (mais vida/força/defesa + aviso \`subiu:nivel\`); **meu nível** / **meu
   XP** mostram a progressão. **Aplicar veneno/regenerar/atrapalhar** dá um status
@@ -864,8 +882,7 @@ de 3 no ar.
 - **Chefe**: um molde de vida alta + **Nascer com apelido** ("chefe") + **barra
   de vida** + padrões com "A cada N s" e "Atirar um leque". Nenhum bloco novo.
 - **Asteroide que se parte**: no "Quando se tocarem" tiro × asteroide-grande,
-  nasça 2 do molde pequeno na posição dele (± um empurrãozinho no ângulo) e
-  recolha o grande.
+  nasça 2 do molde pequeno na posição dele e recolha o grande.
 - **Escudo**: **machucar … 0 de vida com 3 s de invencibilidade** — pisca e fica
   imune, sem tirar vida. É o escudo num bloco.
 - **3 vidas**: uma variável + **corações** no HUD (o exemplo "Invasão dos Óvnis"
@@ -956,5 +973,7 @@ das moedas. Tudo receita — o kit dá só o esqueleto do gênero.
     defesaDoReinoExample,
     reinoAbertoExample,
     batalhaEmEquipeExample,
+    cobrinhaExample,
+    quebraBlocosExample,
   ],
 }

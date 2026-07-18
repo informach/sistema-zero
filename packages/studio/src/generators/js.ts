@@ -1854,6 +1854,12 @@ function compileStatementCode(
       return `${pad}SZGameKit.setTerminalVelocity(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.max), 0, identifiers, recAt(base))});`
     case 'gk:bounceOnEdges':
       return `${pad}SZGameKit.bounceOnEdges(${identifiers.get(stmt.charVar)});`
+    case 'gk:paddleBounce':
+      return `${pad}SZGameKit.paddleBounce(${identifiers.get(stmt.ballVar)}, ${identifiers.get(stmt.paddleVar)});`
+    case 'gk:boardCreate':
+      return `${pad}SZGameKit.boardCreate(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.cols), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.rows), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.empty), 0, identifiers, recAt(base))});`
+    case 'gk:boardSet':
+      return `${pad}SZGameKit.boardSet(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.value), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.col), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.row), 0, identifiers, recAt(base))});`
     case 'gk:wrapEdges':
       return `${pad}SZGameKit.wrapEdges(${identifiers.get(stmt.charVar)});`
     case 'gk:collideTilemap':
@@ -4874,6 +4880,20 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'gk:wrapEdges':
       names.add(stmt.charVar)
       return
+    case 'gk:paddleBounce':
+      names.add(stmt.ballVar)
+      names.add(stmt.paddleVar)
+      return
+    case 'gk:boardCreate':
+      collectExprIdentifiers(valueToExpr(stmt.cols), names)
+      collectExprIdentifiers(valueToExpr(stmt.rows), names)
+      collectExprIdentifiers(valueToExpr(stmt.empty), names)
+      return
+    case 'gk:boardSet':
+      collectExprIdentifiers(valueToExpr(stmt.value), names)
+      collectExprIdentifiers(valueToExpr(stmt.col), names)
+      collectExprIdentifiers(valueToExpr(stmt.row), names)
+      return
     case 'gk:collideTilemap':
     case 'gk:collideGroup':
     case 'gk:breakTileAt':
@@ -6581,6 +6601,14 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'gk:tileAt':
       collectExprIdentifiers(valueToExpr(expr.x), names)
       collectExprIdentifiers(valueToExpr(expr.y), names)
+      return
+    case 'gk:boardGet':
+    case 'gk:boardIn':
+      collectExprIdentifiers(valueToExpr(expr.col), names)
+      collectExprIdentifiers(valueToExpr(expr.row), names)
+      return
+    case 'gk:boardCount':
+      collectExprIdentifiers(valueToExpr(expr.value), names)
       return
     case 'gk:countActive':
     case 'gk:timeSurvived':

@@ -3916,6 +3916,37 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     }
     case 'gk:bounceOnEdges':
       return block('sz_gk_bounce_on_edges', { WHO: stmt.charVar }, {}, stmt.__id)
+    case 'gk:paddleBounce':
+      return block(
+        'sz_gk_paddle_bounce',
+        { BALL: stmt.ballVar, PADDLE: stmt.paddleVar },
+        {},
+        stmt.__id,
+      )
+    case 'gk:boardCreate': {
+      const cols = exprToValueBlock(valueToExpr(stmt.cols))
+      const rows = exprToValueBlock(valueToExpr(stmt.rows))
+      const empty = exprToValueBlock(valueToExpr(stmt.empty))
+      return cols === null || rows === null || empty === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_board_create', { NAME: stmt.name }, {}, stmt.__id, {
+            COLS: cols,
+            ROWS: rows,
+            EMPTY: empty,
+          })
+    }
+    case 'gk:boardSet': {
+      const value = exprToValueBlock(valueToExpr(stmt.value))
+      const col = exprToValueBlock(valueToExpr(stmt.col))
+      const row = exprToValueBlock(valueToExpr(stmt.row))
+      return value === null || col === null || row === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_board_set', { NAME: stmt.name }, {}, stmt.__id, {
+            VALUE: value,
+            COL: col,
+            ROW: row,
+          })
+    }
     case 'gk:wrapEdges':
       return block('sz_gk_wrap_edges', { WHO: stmt.charVar }, {}, stmt.__id)
     case 'gk:collideTilemap':
@@ -7101,6 +7132,26 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_gk_rpg_xp', {})
     case 'gk:rpgCurrentMap':
       return block('sz_gk_rpg_current_map', {})
+    case 'gk:boardGet': {
+      const col = exprToValueBlock(valueToExpr(expr.col))
+      const row = exprToValueBlock(valueToExpr(expr.row))
+      return col === null || row === null
+        ? null
+        : block('sz_gk_board_get', { NAME: expr.name }, {}, expr.__id, { COL: col, ROW: row })
+    }
+    case 'gk:boardCount': {
+      const value = exprToValueBlock(valueToExpr(expr.value))
+      return value === null
+        ? null
+        : block('sz_gk_board_count', { NAME: expr.name }, {}, expr.__id, { VALUE: value })
+    }
+    case 'gk:boardIn': {
+      const col = exprToValueBlock(valueToExpr(expr.col))
+      const row = exprToValueBlock(valueToExpr(expr.row))
+      return col === null || row === null
+        ? null
+        : block('sz_gk_board_in', { NAME: expr.name }, {}, expr.__id, { COL: col, ROW: row })
+    }
     // ---- Jogo 3D Avançado (game-3d-advanced) ----
     case 'g3k:worldSize':
       return block('sz_g3k_world_size', {})

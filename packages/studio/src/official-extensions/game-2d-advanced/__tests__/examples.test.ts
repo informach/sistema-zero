@@ -14,11 +14,13 @@ import {
   batalhaEmEquipeExample,
   bichinhosDoQuintalExample,
   cacaMoedasExample,
+  cobrinhaExample,
   defesaDoReinoExample,
   dueloDosBonecosExample,
   florestaNinjaExample,
   invasaoDosOvnisExample,
   meuPrimeiroJogoExample,
+  quebraBlocosExample,
   reinoAbertoExample,
   saltoNaFlorestaExample,
   vilaDoDragaoExample,
@@ -111,6 +113,8 @@ describe('game-2d-advanced — exemplo Caça-moedas', () => {
       'Defesa do Reino',
       'Reino Aberto',
       'Batalha em Equipe',
+      'Cobrinha',
+      'Quebra-blocos',
     ])
     expect(gameKitExtension.minLevel).toBe('intermediario-2d')
   })
@@ -1547,6 +1551,206 @@ describe('game-2d-advanced — exemplo Meu primeiro jogo (mínimo)', () => {
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
       expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(meuPrimeiroJogoExample.ir.js)
+    } finally {
+      ws.dispose()
+    }
+  })
+})
+
+const SOURCE_COBRINHA = `SZGameKit.setup({ width: 640, height: 640, background: "#0b160b", accent: "#4ade80" });
+SZGameKit.setScreenText("menu", "Cobrinha", "Use as SETAS para virar. Coma as macas e cresca!", "Jogar");
+SZGameKit.setScreenText("fim", "Perdeu!", "A cobra bateu. Tente de novo!", "Jogar de novo");
+let cabecaCol = 8;
+let cabecaLin = 8;
+let dirCol = 1;
+let dirLin = 0;
+let tamanho = 4;
+let macaCol = 12;
+let macaLin = 8;
+SZGameKit.onEnterState("jogando", function () {
+  SZGameKit.boardCreate("cobra", 16, 16, 0);
+  cabecaCol = 8;
+  cabecaLin = 8;
+  dirCol = 1;
+  dirLin = 0;
+  tamanho = 4;
+  macaCol = 12;
+  macaLin = 8;
+  SZGameKit.boardSet("cobra", tamanho, cabecaCol, cabecaLin);
+});
+SZGameKit.onUpdate(function (dt) {
+  if (SZGameKit.keyPressed("arrowleft")) {
+    dirCol = 0 - 1;
+    dirLin = 0;
+  }
+  if (SZGameKit.keyPressed("arrowright")) {
+    dirCol = 1;
+    dirLin = 0;
+  }
+  if (SZGameKit.keyPressed("arrowup")) {
+    dirCol = 0;
+    dirLin = 0 - 1;
+  }
+  if (SZGameKit.keyPressed("arrowdown")) {
+    dirCol = 0;
+    dirLin = 1;
+  }
+  if (SZGameKit.everySeconds("passo", 0.16)) {
+    cabecaCol = cabecaCol + dirCol;
+    cabecaLin = cabecaLin + dirLin;
+    if (SZGameKit.boardIn("cobra", cabecaCol, cabecaLin)) {
+      if (SZGameKit.boardGet("cobra", cabecaCol, cabecaLin) > 0) {
+        SZGameKit.endGame();
+      }
+      if (cabecaCol === macaCol) {
+        if (cabecaLin === macaLin) {
+          tamanho = tamanho + 1;
+          macaCol = Math.floor(Math.random() * 16);
+          macaLin = Math.floor(Math.random() * 16);
+        }
+      }
+      for (let coluna = 0; coluna < 16; coluna++) {
+        for (let linha = 0; linha < 16; linha++) {
+          if (SZGameKit.boardGet("cobra", coluna, linha) > 0) {
+            SZGameKit.boardSet("cobra", SZGameKit.boardGet("cobra", coluna, linha) - 1, coluna, linha);
+          }
+        }
+      }
+      SZGameKit.boardSet("cobra", tamanho, cabecaCol, cabecaLin);
+    } else {
+      SZGameKit.endGame();
+    }
+  }
+});
+SZGameKit.onDraw(function (ctx) {
+  SZGameKit.drawBackground("#0b160b", true);
+  ctx.fillStyle = "#ef4444";
+  ctx.fillRect(macaCol * 40 + 4, macaLin * 40 + 4, 32, 32);
+  for (let coluna = 0; coluna < 16; coluna++) {
+    for (let linha = 0; linha < 16; linha++) {
+      if (SZGameKit.boardGet("cobra", coluna, linha) > 0) {
+        ctx.fillStyle = "#4ade80";
+        ctx.fillRect(coluna * 40 + 2, linha * 40 + 2, 36, 36);
+      }
+    }
+  }
+});
+SZGameKit.start();
+`
+
+describe('game-2d-advanced — exemplo Cobrinha (🧩 Tabuleiro)', () => {
+  it('IR embutida é válida, sem rawJS, e usa o primitivo de tabuleiro', () => {
+    const parsed = SZIRSchema.safeParse(cobrinhaExample.ir)
+    expect(parsed.success).toBe(true)
+    const types = collectTypes(cobrinhaExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    for (const t of ['gk:boardCreate', 'gk:boardSet', 'gk:boardGet', 'gk:boardIn']) {
+      expect(types.has(t)).toBe(true)
+    }
+    // Prova a identidade "a criança MONTA": nada de laço mágico — varre com o repeat do núcleo.
+    expect(types.has('forRange')).toBe(true)
+  })
+
+  it('drift: parseJS(SOURCE) devolve EXATAMENTE a IR embutida', () => {
+    expect(stripIds(parseJS(SOURCE_COBRINHA))).toEqual(cobrinhaExample.ir.js)
+  })
+
+  it('fixpoint textual: gerar -> parsear -> gerar é byte-estável', () => {
+    const code1 = compileStatements(cobrinhaExample.ir.js, 0)
+    expect(compileStatements(stripIds(parseJS(code1)), 0)).toBe(code1)
+  })
+
+  it('round-trip por BLOCOS: IR -> workspace -> IR estável', () => {
+    const state = buildWorkspaceStateFromIR(
+      cobrinhaExample.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
+    )
+    const ws = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
+      expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(cobrinhaExample.ir.js)
+    } finally {
+      ws.dispose()
+    }
+  })
+})
+
+const SOURCE_QUEBRA = `SZGameKit.setup({ width: 800, height: 600, background: "#0b1020", accent: "#22d3ee" });
+SZGameKit.setScreenText("menu", "Quebra-blocos", "Mova a raquete com as SETAS. Nao deixe a bola cair!", "Jogar");
+SZGameKit.setScreenText("fim", "A bola caiu!", "Tente de novo!", "Jogar de novo");
+const raquete = SZGameKit.createCharacter({ image: "", w: 120, h: 18, speed: 520, color: "#22d3ee" });
+const bola = SZGameKit.createCharacter({ image: "", w: 16, h: 16, speed: 0, color: "#fde047" });
+SZGameKit.defineMold("bloco", { w: 72, h: 24, health: 1, speed: 0, damage: 0, color: "#f472b6" });
+SZGameKit.onEnterState("jogando", function () {
+  SZGameKit.placeCharacter(raquete, 340, 540);
+  SZGameKit.placeCharacter(bola, 392, 300);
+  SZGameKit.setVelocity(bola, 220, 260);
+  for (let linha = 0; linha < 3; linha++) {
+    for (let coluna = 0; coluna < 9; coluna++) {
+      SZGameKit.spawnFromMold("bloco", 40 + coluna * 84, 80 + linha * 36);
+    }
+  }
+});
+SZGameKit.onUpdate(function (dt) {
+  if (SZGameKit.keyDown("arrowleft")) {
+    SZGameKit.setProperty(raquete, "x", SZGameKit.propertyOf(raquete, "x") - 520 * dt);
+  }
+  if (SZGameKit.keyDown("arrowright")) {
+    SZGameKit.setProperty(raquete, "x", SZGameKit.propertyOf(raquete, "x") + 520 * dt);
+  }
+  SZGameKit.keepOnScreen(raquete);
+  SZGameKit.moveByVelocity(bola, dt);
+  SZGameKit.bounceOnEdges(bola);
+  SZGameKit.paddleBounce(bola, raquete);
+  SZGameKit.forEachActive("bloco", function (item) {
+    if (SZGameKit.touching(bola, item)) {
+      SZGameKit.recycle(item);
+      SZGameKit.setVelocity(bola, SZGameKit.velocityOf(bola, "x"), 0 - SZGameKit.velocityOf(bola, "y"));
+    }
+  });
+  if (SZGameKit.propertyOf(bola, "y") > SZGameKit.height()) {
+    SZGameKit.endGame();
+  }
+  if (SZGameKit.countActive("bloco") <= 0) {
+    SZGameKit.setState("vitoria");
+  }
+});
+SZGameKit.onDraw(function (ctx) {
+  SZGameKit.drawBackground("#0b1020", false);
+  SZGameKit.drawActive("bloco");
+  SZGameKit.drawCharacter(raquete);
+  SZGameKit.drawCharacter(bola);
+});
+SZGameKit.start();
+`
+
+describe('game-2d-advanced — exemplo Quebra-blocos (raquete)', () => {
+  it('IR embutida é válida, sem rawJS, e usa a raquete (paddleBounce)', () => {
+    const parsed = SZIRSchema.safeParse(quebraBlocosExample.ir)
+    expect(parsed.success).toBe(true)
+    const types = collectTypes(quebraBlocosExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    for (const t of ['gk:paddleBounce', 'gk:bounceOnEdges', 'gk:moveByVelocity']) {
+      expect(types.has(t)).toBe(true)
+    }
+  })
+
+  it('drift: parseJS(SOURCE) devolve EXATAMENTE a IR embutida', () => {
+    expect(stripIds(parseJS(SOURCE_QUEBRA))).toEqual(quebraBlocosExample.ir.js)
+  })
+
+  it('fixpoint textual: gerar -> parsear -> gerar é byte-estável', () => {
+    const code1 = compileStatements(quebraBlocosExample.ir.js, 0)
+    expect(compileStatements(stripIds(parseJS(code1)), 0)).toBe(code1)
+  })
+
+  it('round-trip por BLOCOS: IR -> workspace -> IR estável', () => {
+    const state = buildWorkspaceStateFromIR(
+      quebraBlocosExample.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
+    )
+    const ws = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
+      expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(quebraBlocosExample.ir.js)
     } finally {
       ws.dispose()
     }

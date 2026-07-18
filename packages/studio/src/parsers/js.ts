@@ -4224,6 +4224,20 @@ function matchGameKitExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
       return { type: 'gk:tileAt', map: args[0].value as string, x, y }
     }
   }
+  if ((method === 'boardGet' || method === 'boardIn') && args[0]?.type === 'StringLiteral') {
+    const col = toExpr(args[1], ctx)
+    const row = toExpr(args[2], ctx)
+    if (isSimpleValue(col) && isSimpleValue(row)) {
+      const t = method === 'boardGet' ? 'gk:boardGet' : 'gk:boardIn'
+      return { type: t, name: args[0].value as string, col, row }
+    }
+  }
+  if (method === 'boardCount' && args[0]?.type === 'StringLiteral') {
+    const value = toExpr(args[1], ctx)
+    if (isSimpleValue(value)) {
+      return { type: 'gk:boardCount', name: args[0].value as string, value }
+    }
+  }
   if (method === 'isDead') {
     const charVar = identifierName(args[0])
     if (charVar) return { type: 'gk:isDead', charVar }
@@ -5067,6 +5081,29 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
     case 'bounceOnEdges': {
       const charVar = identifierName(args[0])
       return charVar ? { type: 'gk:bounceOnEdges', charVar } : null
+    }
+    case 'paddleBounce': {
+      const ballVar = identifierName(args[0])
+      const paddleVar = identifierName(args[1])
+      return ballVar && paddleVar ? { type: 'gk:paddleBounce', ballVar, paddleVar } : null
+    }
+    case 'boardCreate': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const cols = toExpr(args[1], ctx)
+      const rows = toExpr(args[2], ctx)
+      const empty = toExpr(args[3], ctx)
+      return isSimpleValue(cols) && isSimpleValue(rows) && isSimpleValue(empty)
+        ? { type: 'gk:boardCreate', name: args[0].value as string, cols, rows, empty }
+        : null
+    }
+    case 'boardSet': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const value = toExpr(args[1], ctx)
+      const col = toExpr(args[2], ctx)
+      const row = toExpr(args[3], ctx)
+      return isSimpleValue(value) && isSimpleValue(col) && isSimpleValue(row)
+        ? { type: 'gk:boardSet', name: args[0].value as string, value, col, row }
+        : null
     }
     case 'wrapEdges': {
       const charVar = identifierName(args[0])
@@ -10966,6 +11003,9 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'gk:facingOf':
     case 'gk:cooldownReady':
     case 'gk:tileAt':
+    case 'gk:boardGet':
+    case 'gk:boardCount':
+    case 'gk:boardIn':
     // 🧭 R15 — sem estar AQUI, o statement que os usa vira rawJS inteiro
     case 'gk:isInside':
     case 'gk:overlapPercent':

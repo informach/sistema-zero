@@ -2155,6 +2155,63 @@ export const gameKitRuntime = `(function () {
     who._prevX = who.x;
     who._prevY = who.y;
   }
+  // 🧱 Rebater na RAQUETE (Breakout/Pong): quando a bola encosta na raquete, a
+  // velocidade Y inverte (afasta) e a X vem do PONTO do impacto — bater na beirada
+  // manda a bola mais de lado. Complementa o "quicar nas bordas" (paredes).
+  function paddleBounce(ball, paddle) {
+    if (!ball || typeof ball !== 'object' || !paddle || typeof paddle !== 'object') return;
+    var bx = num(ball.x, 0) + num(ball.w, 0) / 2, by = num(ball.y, 0) + num(ball.h, 0) / 2;
+    var px = num(paddle.x, 0) + num(paddle.w, 0) / 2, py = num(paddle.y, 0) + num(paddle.h, 0) / 2;
+    var overX = Math.abs(bx - px) <= num(paddle.w, 0) / 2 + num(ball.w, 0) / 2;
+    var overY = Math.abs(by - py) <= num(paddle.h, 0) / 2 + num(ball.h, 0) / 2;
+    if (!overX || !overY) return;
+    var vy = num(ball.vy, 0);
+    var speed = Math.max(1, Math.sqrt(num(ball.vx, 0) * num(ball.vx, 0) + vy * vy));
+    // Afasta a bola no eixo Y (raquete embaixo → sobe; raquete em cima → desce).
+    ball.vy = (by <= py ? -1 : 1) * Math.abs(vy || speed);
+    // Ângulo pelo ponto de impacto (-1 na beirada esquerda, +1 na direita).
+    var off = Math.max(-1, Math.min(1, (bx - px) / Math.max(1, num(paddle.w, 1) / 2)));
+    ball.vx = off * speed;
+  }
+
+  // ---- 🧩 Tabuleiro / grade (Snake, Match-3, Sokoban, campo-minado, puzzles) ----
+  // Uma grade NOMEADA de células; a criança varre com "repita" do núcleo + ler/pôr.
+  var boards = Object.create(null); // nome -> {cols, rows, empty, cells:[]} (flat row*cols+col)
+  function boardAt(name) { return boards[text(name, 'tabuleiro')] || null; }
+  function boardCreate(name, cols, rows, empty) {
+    var c = Math.max(1, Math.round(num(cols, 8)));
+    var r = Math.max(1, Math.round(num(rows, 8)));
+    var cells = [];
+    for (var i = 0; i < c * r; i++) cells.push(empty);
+    boards[text(name, 'tabuleiro')] = { cols: c, rows: r, empty: empty, cells: cells };
+  }
+  function boardSet(name, value, col, row) {
+    var b = boardAt(name);
+    if (!b) { warnOnce('board:' + text(name, ''), 'o tabuleiro "' + text(name, '') + '" não existe — crie com "Criar o tabuleiro"'); return; }
+    var cc = Math.round(num(col, 0)), rr = Math.round(num(row, 0));
+    if (cc < 0 || cc >= b.cols || rr < 0 || rr >= b.rows) return; // fora da grade: ignora
+    b.cells[rr * b.cols + cc] = value;
+  }
+  function boardGet(name, col, row) {
+    var b = boardAt(name);
+    if (!b) return 0;
+    var cc = Math.round(num(col, 0)), rr = Math.round(num(row, 0));
+    if (cc < 0 || cc >= b.cols || rr < 0 || rr >= b.rows) return b.empty; // fora → "vazio"
+    return b.cells[rr * b.cols + cc];
+  }
+  function boardCount(name, value) {
+    var b = boardAt(name);
+    if (!b) return 0;
+    var n = 0;
+    for (var i = 0; i < b.cells.length; i++) if (b.cells[i] === value) n += 1;
+    return n;
+  }
+  function boardIn(name, col, row) {
+    var b = boardAt(name);
+    if (!b) return false;
+    var cc = Math.round(num(col, 0)), rr = Math.round(num(row, 0));
+    return cc >= 0 && cc < b.cols && rr >= 0 && rr < b.rows;
+  }
 
   // ---- ⏱️ Tempo (acumulador de dt — NÃO relógio de parede: pausa tem que pausar) ----
   var secondTimers = Object.create(null);
@@ -6776,6 +6833,12 @@ export const gameKitRuntime = `(function () {
     overlapGroups: guard('overlapGroups', overlapGroups),
     bounceOnEdges: guard('bounceOnEdges', bounceOnEdges),
     wrapEdges: guard('wrapEdges', wrapEdges),
+    paddleBounce: guard('paddleBounce', paddleBounce),
+    boardCreate: guard('boardCreate', boardCreate),
+    boardSet: guard('boardSet', boardSet),
+    boardGet: guard('boardGet', boardGet),
+    boardCount: guard('boardCount', boardCount),
+    boardIn: guard('boardIn', boardIn),
     everySeconds: guard('everySeconds', everySeconds),
     waitThen: guard('waitThen', waitThen),
     cooldownReady: guard('cooldownReady', cooldownReady),

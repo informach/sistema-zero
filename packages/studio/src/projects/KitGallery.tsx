@@ -61,6 +61,8 @@ const KIT_EMOJI: Record<string, string> = {
   'Reino Aberto': '🌍',
   'Batalha em Equipe': '⚔️',
   'Meu primeiro jogo': '🕹️',
+  Cobrinha: '🐍',
+  'Quebra-blocos': '🧱',
   'Boneco de formas': '🪆',
   'Noite enevoada': '🌙',
   'Enxame que gira': '🐝',
