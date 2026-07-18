@@ -4079,6 +4079,22 @@ const GK_PICK_MODES = new Set(['maior', 'menor'])
 const GK_PICK_PROPS = new Set([...GK_ENTITY_PROPS, 'pathProgress'])
 // 🌿 R25: espelha o dropdown de status do rpgInflict (veneno é o default).
 const GK_RPG_STATUS = new Set(['veneno', 'regenera', 'atrapalha'])
+// R29: espelha o dropdown de QUEM do rpgInflict (fora → rawJS, como os outros).
+const GK_INFLICT_WHO = new Set(['inimigo', 'heroi'])
+// R29: espelha o dropdown de efeito do playEffect (10 opções fixas; fora → rawJS,
+// senão a Ponte reversa coagia p/ a 1ª opção "coin" e reescrevia o código da criança).
+const GK_FX_KINDS = new Set([
+  'coin',
+  'hit',
+  'explosion',
+  'jump',
+  'laser',
+  'hurt',
+  'powerup',
+  'win',
+  'gameover',
+  'click',
+])
 // 🌍 Mundo aberto: espelha o dropdown de borda do rpgConnectEdge (fora → rawJS).
 const GK_EDGE_SIDES = new Set(['norte', 'sul', 'leste', 'oeste'])
 const GK_ENTITY_STATES = new Set([
@@ -4861,8 +4877,9 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
     }
     case 'rpgInflict': {
       if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
-      // R25: status desconhecido → rawJS (o dropdown coage; não engolir calado).
+      // R25/R29: status E quem desconhecidos → rawJS (os dropdowns coagem; não engolir).
       if (!GK_RPG_STATUS.has(args[1].value as string)) return null
+      if (!GK_INFLICT_WHO.has(args[0].value as string)) return null
       const turns = toExpr(args[2], ctx)
       return isSimpleValue(turns)
         ? {
@@ -4943,6 +4960,8 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
     }
     case 'rpgFace': {
       if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
+      // R29: direção fora do dropdown (baixo/cima/esquerda/direita) → rawJS.
+      if (!GK_FACING_DIRS.has(args[1].value as string)) return null
       return { type: 'gk:rpgFace', npc: args[0].value as string, dir: args[1].value as string }
     }
     case 'rpgNpcWalkTo': {
@@ -6154,6 +6173,8 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
     }
     case 'playEffect': {
       if (args[0]?.type !== 'StringLiteral') return null
+      // R29: efeito fora do dropdown → rawJS (senão a Ponte coage p/ "coin").
+      if (!GK_FX_KINDS.has(args[0].value as string)) return null
       return { type: 'gk:playEffect', fx: args[0].value as string }
     }
     case 'playTone': {

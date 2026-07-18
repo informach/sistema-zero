@@ -8,6 +8,7 @@ import {
   dueloDosBonecosExample,
   florestaNinjaExample,
   invasaoDosOvnisExample,
+  meuPrimeiroJogoExample,
   reinoAbertoExample,
   saltoNaFlorestaExample,
   vilaDoDragaoExample,
@@ -18,7 +19,7 @@ export const gameKitManifest: ExtensionManifest = {
   name: 'Jogo 2D Avançado',
   version: '0.26.0',
   description:
-    'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som e faíscas — dá para inventar qualquer jogo 2D. E cinco atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial) e 🚀 nave (a invasão que marcha, desce e acelera).',
+    'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som e faíscas — dá para inventar qualquer jogo 2D. E seis atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial), 🚀 nave (a invasão que marcha, desce e acelera) e 🏰 defesa de torre (caminho, ondas, torres que miram).',
   category: 'games',
   official: true,
   enabledByDefault: false,
@@ -59,10 +60,19 @@ O que o motor já faz por você (cada um tem a sua seção mais abaixo):
    você der é o que o personagem usa.
 3. **Criar o personagem** — quantos quiser. Nasce no centro; sem imagem, vira um
    retângulo da cor.
-4. **A cada quadro (dt)** — a mecânica: mover, testar "encostou", somar pontos…
-5. **Desenhar o jogo (ctx)** — o visual: fundo, personagens, placar (os blocos
+4. **Quando entrar no estado "jogando"** — zere os pontos e recoloque os
+   personagens AQUI. É o que faz o "Jogar de novo" recomeçar limpo (sem isto, a
+   2ª partida abre com o placar e os inimigos da 1ª).
+5. **A cada quadro (dt)** — a mecânica: mover, testar "encostou", somar pontos…
+6. **Desenhar o jogo (ctx)** — o visual: fundo, personagens, placar (os blocos
    de Canvas funcionam aqui dentro, com esse pincel).
-6. **Começar o jogo** — uma vez, NO FIM: carrega tudo e liga o laço.
+7. **Começar o jogo** — uma vez, NO FIM: carrega tudo e liga o laço.
+
+> ⭐ **Seu jogo abre no MENU, não jogando.** Ao rodar, você vê a tela de menu —
+> clique no botão **Jogar** (ele já vem pronto) para a partida começar. É por isso
+> que o "A cada quadro" e o "Desenhar o jogo" parecem "não rodar" antes de clicar:
+> eles só valem no estado \`jogando\`. (Sem tela de menu? Um bloco "Mudar o estado
+> para jogando" no começo pula direto para o jogo.)
 
 ### Estados
 
@@ -434,7 +444,9 @@ de dano, a área segura. **está dentro da região?** pergunta se encostou.
 raro, o crítico. **a distância entre … e …** é a conta central do stealth (raio de
 detecção), da torre (alcance) e do inimigo que só persegue se estiver perto. **o
 ponto x y está dentro de …?** junta com "o mouse x/y" e você tem point-and-click,
-cartas, match-3 e tower defense.
+cartas e tower defense (detectar O CLIQUE). Para jogos de GRADE (match-3, Cobrinha,
+Sokoban, campo-minado), a peça que faltava é o **🧩 Tabuleiro** — uma grade nomeada
+que você lê e escreve por (coluna, linha).
 
 **um vivo qualquer do molde …** sorteia UM dos vivos do enxame (irmão do "o mais
 perto de"): é como o jogo de nave escolhe qual invasor atira, quem ganha o
@@ -932,6 +944,7 @@ O exemplo "Defesa do Reino" monta exatamente isso. Torre de gelo? Some um
 das moedas. Tudo receita — o kit dá só o esqueleto do gênero.
 `,
   examples: [
+    meuPrimeiroJogoExample,
     cacaMoedasExample,
     arenaGoblinsExample,
     vilaDoDragaoExample,

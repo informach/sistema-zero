@@ -3948,50 +3948,6 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     ],
   },
   {
-    name: '🖼️ Telas',
-    colour: C,
-    types: [
-      'sz_gk_set_screen_text',
-      'sz_gk_create_screen',
-      'sz_gk_add_button',
-      'sz_gk_show_screen',
-      'sz_gk_hide_screens',
-    ],
-  },
-  {
-    name: '🚦 Estados',
-    colour: C,
-    types: [
-      'sz_gk_set_state',
-      'sz_gk_on_enter_state',
-      'sz_gk_game_state',
-      'sz_gk_state_is',
-      'sz_gk_pause',
-      'sz_gk_resume',
-      'sz_gk_return_to_menu',
-      'sz_gk_end_game',
-    ],
-  },
-  {
-    name: '🔁 A cada quadro',
-    colour: C,
-    types: [
-      'sz_gk_on_update',
-      'sz_gk_on_draw',
-      'sz_gk_on_draw_hud',
-      'sz_gk_draw_background',
-      'sz_gk_scroll_image',
-      'sz_gk_parallax_layer',
-    ],
-  },
-  {
-    // 🛤️ R25 — caminho é polilinha nomeada (irmão da 🧭 Região, que é retângulo
-    // nomeado). GERAL: serve TD, corrida, patrulha e cutscene em trilho.
-    name: '🛤️ Caminhos',
-    colour: C,
-    types: ['sz_gk_define_path', 'sz_gk_path_point', 'sz_gk_follow_path', 'sz_gk_path_progress'],
-  },
-  {
     // Era a única categoria inchada (14). Ficou com o CICLO DE VIDA do
     // personagem: criar, mover, posicionar, desenhar — e o renascer, que veio do
     // Kit Plataforma (o runtime dele não tem NADA de plataforma: é "guardar um
@@ -4043,6 +3999,43 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
       'sz_gk_mouse_y',
       'sz_gk_mouse_down',
       'sz_gk_move_with_custom_keys',
+    ],
+  },
+  {
+    name: '🖼️ Telas',
+    colour: C,
+    types: [
+      'sz_gk_set_screen_text',
+      'sz_gk_create_screen',
+      'sz_gk_add_button',
+      'sz_gk_show_screen',
+      'sz_gk_hide_screens',
+    ],
+  },
+  {
+    name: '🚦 Estados',
+    colour: C,
+    types: [
+      'sz_gk_set_state',
+      'sz_gk_on_enter_state',
+      'sz_gk_game_state',
+      'sz_gk_state_is',
+      'sz_gk_pause',
+      'sz_gk_resume',
+      'sz_gk_return_to_menu',
+      'sz_gk_end_game',
+    ],
+  },
+  {
+    name: '🔁 A cada quadro',
+    colour: C,
+    types: [
+      'sz_gk_on_update',
+      'sz_gk_on_draw',
+      'sz_gk_on_draw_hud',
+      'sz_gk_draw_background',
+      'sz_gk_scroll_image',
+      'sz_gk_parallax_layer',
     ],
   },
   {
@@ -4155,6 +4148,14 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
       'sz_gk_break_tile_at',
       'sz_gk_create_empty_tilemap',
     ],
+  },
+  {
+    // 🛤️ R25 — caminho é polilinha nomeada (irmão da 🧭 Região, que é retângulo
+    // nomeado). GERAL: serve TD, corrida, patrulha e cutscene em trilho. R29: desceu
+    // de perto do topo (era niche demais para a 5ª posição) p/ junto do mundo/mapa.
+    name: '🛤️ Caminhos',
+    colour: C,
+    types: ['sz_gk_define_path', 'sz_gk_path_point', 'sz_gk_follow_path', 'sz_gk_path_progress'],
   },
   {
     // ⚙️ GERAL: a física que faz plataforma/corrida/flappy/breakout existirem.
@@ -4564,7 +4565,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
 ]
 
 // Cores por GRUPO (R24). Antes era um gradiente único de 44 tons do teal —
-// vizinhos quase iguais e os 5 kits-pai espremidos na ponta escura, todos
+// vizinhos quase iguais e os kits-pai espremidos na ponta escura, todos
 // parecidos. Agora: as GERAIS ganham o gradiente com o passo dobrado (28 tons)
 // e cada KIT ganha um tom-base PRÓPRIO bem espaçado do MESMO teal (a identidade
 // da categoria de topo continua teal — deslocar o matiz brigaria com o
@@ -4865,8 +4866,8 @@ const toolboxBlock = (type: string) => {
   return inputs ? { kind: 'block' as const, type, inputs } : { kind: 'block' as const, type }
 }
 
-// R23: os kits viram chips-PAI — o 1º nível fica com as ~28 gerais + 5 kits
-// (🏃 🥊 🧙 👾 🚀) em vez de 44 chips planos; as sub-categorias abrem DENTRO
+// R23: os kits viram chips-PAI — o 1º nível fica com as ~29 gerais + 6 kits
+// (🏃 🥊 🧙 👾 🚀 🏰) em vez de 44 chips planos; as sub-categorias abrem DENTRO
 // do pai (a toolbox é recursiva; filtros/poda/testes já recursam). Os NOMES
 // das filhas mantêm o prefixo "Kit X:" — a doc os cita e o docDrift os casa.
 // R24: o pai tem tom-base PRÓPRIO (KIT_BASES); as filhas são sombras dele.

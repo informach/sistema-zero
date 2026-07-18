@@ -18,6 +18,7 @@ import {
   dueloDosBonecosExample,
   florestaNinjaExample,
   invasaoDosOvnisExample,
+  meuPrimeiroJogoExample,
   reinoAbertoExample,
   saltoNaFlorestaExample,
   vilaDoDragaoExample,
@@ -98,6 +99,7 @@ beforeAll(() => {
 describe('game-2d-advanced — exemplo Caça-moedas', () => {
   it('o manifest registra o exemplo (e a vitrine o herda do catálogo)', () => {
     expect(gameKitExtension.manifest.examples.map((e) => e.name)).toEqual([
+      'Meu primeiro jogo',
       'Caça-moedas profissional',
       'Arena dos Goblins',
       'Vila do Dragão',
@@ -1487,6 +1489,64 @@ describe('game-2d-advanced — exemplo Batalha em Equipe (⚔️ batalha em equi
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
       expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(batalhaEmEquipeExample.ir.js)
+    } finally {
+      ws.dispose()
+    }
+  })
+})
+
+const SOURCE_PRIMEIRO = `SZGameKit.setup({ width: 800, height: 600, background: "#1e2a3a", accent: "#ffd166" });
+SZGameKit.setScreenText("menu", "Meu primeiro jogo", "Use as SETAS para andar. Clique em Jogar para comecar!", "Jogar");
+const heroi = SZGameKit.createCharacter({ image: "", w: 48, h: 48, speed: 260, color: "#4ade80" });
+SZGameKit.onUpdate(function (dt) {
+  SZGameKit.moveWithKeys(heroi, dt);
+  SZGameKit.keepOnScreen(heroi);
+});
+SZGameKit.onDraw(function (ctx) {
+  SZGameKit.drawBackground("#1e2a3a", true);
+  SZGameKit.drawCharacter(heroi);
+});
+SZGameKit.start();
+`
+
+describe('game-2d-advanced — exemplo Meu primeiro jogo (mínimo)', () => {
+  it('IR embutida é válida, sem rawJS, e é MESMO mínima (sem molde/estado/tela extra)', () => {
+    const parsed = SZIRSchema.safeParse(meuPrimeiroJogoExample.ir)
+    expect(parsed.success).toBe(true)
+    const types = collectTypes(meuPrimeiroJogoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    for (const t of [
+      'gk:setup',
+      'gk:createCharacter',
+      'gk:onUpdate',
+      'gk:moveWithKeys',
+      'gk:onDraw',
+      'gk:start',
+    ]) {
+      expect(types.has(t)).toBe(true)
+    }
+    // Mínimo de verdade: nada de moldes/enxames nem estados custom.
+    expect(types.has('gk:defineMold')).toBe(false)
+    expect(types.has('gk:onEnterState')).toBe(false)
+  })
+
+  it('drift: parseJS(SOURCE) devolve EXATAMENTE a IR embutida', () => {
+    expect(stripIds(parseJS(SOURCE_PRIMEIRO))).toEqual(meuPrimeiroJogoExample.ir.js)
+  })
+
+  it('fixpoint textual: gerar -> parsear -> gerar é byte-estável', () => {
+    const code1 = compileStatements(meuPrimeiroJogoExample.ir.js, 0)
+    expect(compileStatements(stripIds(parseJS(code1)), 0)).toBe(code1)
+  })
+
+  it('round-trip por BLOCOS: IR -> workspace -> IR estável', () => {
+    const state = buildWorkspaceStateFromIR(
+      meuPrimeiroJogoExample.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
+    )
+    const ws = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
+      expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(meuPrimeiroJogoExample.ir.js)
     } finally {
       ws.dispose()
     }
