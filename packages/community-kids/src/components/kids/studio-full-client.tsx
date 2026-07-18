@@ -34,6 +34,7 @@ export function StudioFullClient({
   viewerId,
   challenge = null,
   tier,
+  showExamples = false,
 }: {
   viewerId: string | null
   /**
@@ -44,6 +45,13 @@ export function StudioFullClient({
   challenge?: { key: string; title: string } | null
   /** Modos + perfil de blocos derivados do RANK do aluno (ver `resolveStudioTier`). */
   tier: StudioTier
+  /**
+   * Mostrar os EXEMPLOS prontos — a vitrine "Que jogo você quer criar?" na lista
+   * E os "Exemplos clássicos" no painel de Extensões. Ligado SÓ p/ a equipe
+   * interna enquanto o catálogo é validado (a página deriva de `session.role`);
+   * o cliente segue sem exemplos. Default `false`.
+   */
+  showExamples?: boolean
 }) {
   const [mod, setMod] = useState<StudioModule | null>(null)
   const [loadError, setLoadError] = useState(false)
@@ -184,6 +192,7 @@ export function StudioFullClient({
           onOpenProject={openProject}
           theme={studioTheme}
           professional={proAvailable}
+          showExamples={showExamples}
         />
       ) : (
         <EditorScreen
@@ -193,6 +202,7 @@ export function StudioFullClient({
           share={share}
           theme={studioTheme}
           tier={tier}
+          showExamples={showExamples}
         />
       )}
     </div>
@@ -207,6 +217,7 @@ function EditorScreen({
   share,
   theme,
   tier,
+  showExamples,
 }: {
   mod: StudioModule
   projectId: string
@@ -214,6 +225,7 @@ function EditorScreen({
   share: StudioShareAdapter
   theme: 'light' | 'dark'
   tier: StudioTier
+  showExamples: boolean
 }) {
   const adapter = useMemo(() => mod.createLocalPersistenceAdapter(), [mod])
   const [state, setState] = useState<EditorState>({ status: 'loading' })
@@ -292,6 +304,8 @@ function EditorScreen({
       level={tier.level}
       allowedModes={tier.allowedModes}
       allowLevelReveal={tier.allowLevelReveal}
+      // Exemplos "clássicos" no painel de Extensões — só p/ a equipe (ver a página).
+      showExamples={showExamples}
     />
   )
 }
