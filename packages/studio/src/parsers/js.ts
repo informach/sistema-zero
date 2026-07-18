@@ -4316,6 +4316,15 @@ function matchGameKitExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     const charVar = identifierName(args[0])
     if (charVar) return { type: 'gk:pathProgress', charVar }
   }
+  if (method === 'rollDice') {
+    const faces = toExpr(args[0], ctx)
+    if (isSimpleValue(faces)) return { type: 'gk:rollDice', faces }
+  }
+  if (method === 'currentPlayer' && args.length === 0) return { type: 'gk:currentPlayer' }
+  if (method === 'spaceOf') {
+    const who = identifierName(args[0])
+    if (who) return { type: 'gk:spaceOf', who }
+  }
   if (
     method === 'pickActive' &&
     args[0]?.type === 'StringLiteral' &&
@@ -5151,6 +5160,28 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
       return isSimpleValue(value) && isSimpleValue(col) && isSimpleValue(row)
         ? { type: 'gk:boardSet', name: args[0].value as string, value, col, row }
         : null
+    }
+    case 'playersSetup': {
+      const n = toExpr(args[0], ctx)
+      return isSimpleValue(n) ? { type: 'gk:playersSetup', n } : null
+    }
+    case 'nextPlayer':
+      return { type: 'gk:nextPlayer' }
+    case 'onTurnChange': {
+      if (!isFn(args[0])) return null
+      return { type: 'gk:onTurnChange', body: bodyOfFn(args[0], source, ctx) }
+    }
+    case 'moveAlongTrack': {
+      const who = identifierName(args[0])
+      if (!who || args[2]?.type !== 'StringLiteral') return null
+      const spaces = toExpr(args[1], ctx)
+      return isSimpleValue(spaces)
+        ? { type: 'gk:moveAlongTrack', who, spaces, path: args[2].value as string }
+        : null
+    }
+    case 'onLandSpace': {
+      if (!isFn(args[0])) return null
+      return { type: 'gk:onLandSpace', body: bodyOfFn(args[0], source, ctx) }
     }
     case 'wrapEdges': {
       const charVar = identifierName(args[0])
@@ -11103,6 +11134,9 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'gk:rpgXp':
     case 'gk:battlerLife':
     case 'gk:battlerMaxLife':
+    case 'gk:rollDice':
+    case 'gk:currentPlayer':
+    case 'gk:spaceOf':
     case 'gk:rpgCurrentMap':
     case 'g3k:worldSize':
     case 'g3k:countAlive':

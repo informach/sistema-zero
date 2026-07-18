@@ -5,6 +5,7 @@ import {
   bichinhosDoQuintalExample,
   cacaMoedasExample,
   cobrinhaExample,
+  corridaTabuleiroExample,
   defesaDoReinoExample,
   dueloDosBonecosExample,
   florestaNinjaExample,
@@ -20,7 +21,7 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.29.0',
+  version: '0.30.0',
   description:
     'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som, faíscas e tabuleiro de grade — dá para inventar qualquer jogo 2D. E seis atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial), 🚀 nave (a invasão que marcha, desce e acelera) e 🏰 defesa de torre (caminho, ondas, torres que miram).',
   category: 'games',
@@ -484,6 +485,24 @@ quanto ele já andou, de 0 a 100 — é assim que você sabe QUEM chegou (dentro
 "para cada vivo": *"se o progresso de item = 100: tirar uma vida e recolher"*).
 Serve para o inimigo de defesa de torre, a patrulha, a esteira, o NPC num trilho
 de cena, a corrida.
+
+### 🎲 Turnos & tabuleiro
+
+As peças para MONTAR um Ludo, Jogo da Vida ou Banco Imobiliário — a criança liga
+a lógica, como sempre.
+
+- **rolar um dado de … lados** (em 🎲 Sorte & medida) — sorteia 1 até o número de
+  lados (um dado de 6 dá 1 a 6). É o motor do turno: role e ande esse tanto.
+- **começar com … jogadores** / **o jogador da vez** / **passar a vez** — o
+  rodízio de turno (um anel: depois do último volta ao 1). **Quando a vez mudar**
+  roda ao passar a vez (anuncie "Vez do jogador X").
+- **A trilha de CASAS** reusa o 🛤️ Caminhos: cada **ponto** do "Criar o caminho" é
+  uma casa. **Andar … N casas na trilha …** avança a peça N casas e PARA na casa
+  (desliza suave e avisa \`casa:parou\`). **a casa de …** diz onde a peça está (0 =
+  a primeira). **Quando um peão parar numa casa** roda ao terminar de andar — lá
+  dentro, *"se a casa de peao = 7: pague aluguel"* (dê/tire pontos, mande voltar,
+  pule a vez). A RECEITA do turno: role o dado → ande as casas → resolva a casa →
+  passe a vez.
 
 ### 🌌 Fundo que rola (em 🔁 A cada quadro)
 
@@ -985,6 +1004,7 @@ das moedas. Tudo receita — o kit dá só o esqueleto do gênero.
     reinoAbertoExample,
     batalhaEmEquipeExample,
     oChefaoExample,
+    corridaTabuleiroExample,
     cobrinhaExample,
     quebraBlocosExample,
   ],

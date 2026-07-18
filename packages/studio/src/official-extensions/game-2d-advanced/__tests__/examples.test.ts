@@ -15,6 +15,7 @@ import {
   bichinhosDoQuintalExample,
   cacaMoedasExample,
   cobrinhaExample,
+  corridaTabuleiroExample,
   defesaDoReinoExample,
   dueloDosBonecosExample,
   florestaNinjaExample,
@@ -115,6 +116,7 @@ describe('game-2d-advanced — exemplo Caça-moedas', () => {
       'Reino Aberto',
       'Batalha em Equipe',
       'O Chefao',
+      'Corrida de Tabuleiro',
       'Cobrinha',
       'Quebra-blocos',
     ])
@@ -1838,6 +1840,103 @@ describe('game-2d-advanced — exemplo O Chefao (👑 chefes)', () => {
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
       expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(oChefaoExample.ir.js)
+    } finally {
+      ws.dispose()
+    }
+  })
+})
+
+const SOURCE_CORRIDA = `SZGameKit.setup({ width: 900, height: 600, background: "#1b3a2a", accent: "#ffd166" });
+SZGameKit.setScreenText("menu", "Corrida de Tabuleiro", "Clique para rolar o dado e andar as casas. Dois peoes: chegue ao fim e pegue os pontos da casa premiada!", "Jogar");
+const azul = SZGameKit.createCharacter({ image: "", w: 36, h: 36, speed: 0, color: "#4a9eff" });
+const vermelho = SZGameKit.createCharacter({ image: "", w: 36, h: 36, speed: 0, color: "#ef4444" });
+let pontosAzul = 0;
+let pontosVermelho = 0;
+SZGameKit.definePath("trilha", function () {
+  SZGameKit.pathPoint(120, 480);
+  SZGameKit.pathPoint(260, 480);
+  SZGameKit.pathPoint(400, 480);
+  SZGameKit.pathPoint(540, 420);
+  SZGameKit.pathPoint(680, 340);
+  SZGameKit.pathPoint(680, 200);
+  SZGameKit.pathPoint(520, 150);
+  SZGameKit.pathPoint(380, 150);
+});
+SZGameKit.onEnterState("jogando", function () {
+  SZGameKit.playersSetup(2);
+  pontosAzul = 0;
+  pontosVermelho = 0;
+  SZGameKit.placeCharacter(azul, 120, 480);
+  SZGameKit.placeCharacter(vermelho, 120, 480);
+});
+SZGameKit.onTurnChange(function () {
+  SZGameKit.emit("vez:mudou");
+});
+SZGameKit.onLandSpace(function () {
+  if (SZGameKit.currentPlayer() === 1) {
+    if (SZGameKit.spaceOf(azul) === 7) {
+      pontosAzul = pontosAzul + 10;
+    }
+  } else {
+    if (SZGameKit.spaceOf(vermelho) === 7) {
+      pontosVermelho = pontosVermelho + 10;
+    }
+  }
+});
+SZGameKit.onGameClick(function (px, py) {
+  const passos = SZGameKit.rollDice(6);
+  if (SZGameKit.currentPlayer() === 1) {
+    SZGameKit.moveAlongTrack(azul, passos, "trilha");
+  } else {
+    SZGameKit.moveAlongTrack(vermelho, passos, "trilha");
+  }
+  SZGameKit.nextPlayer();
+});
+SZGameKit.onDraw(function (ctx) {
+  SZGameKit.drawBackground("#1b3a2a", true);
+  SZGameKit.drawCharacter(azul);
+  SZGameKit.drawCharacter(vermelho);
+});
+SZGameKit.start();
+`
+
+describe('game-2d-advanced — exemplo Corrida de Tabuleiro (🎲 tabuleiro)', () => {
+  it('IR embutida é válida, sem rawJS, e usa dado + turnos + trilha de casas', () => {
+    const parsed = SZIRSchema.safeParse(corridaTabuleiroExample.ir)
+    expect(parsed.success).toBe(true)
+    const types = collectTypes(corridaTabuleiroExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    for (const t of [
+      'gk:rollDice',
+      'gk:playersSetup',
+      'gk:currentPlayer',
+      'gk:nextPlayer',
+      'gk:onTurnChange',
+      'gk:moveAlongTrack',
+      'gk:spaceOf',
+      'gk:onLandSpace',
+    ]) {
+      expect(types.has(t)).toBe(true)
+    }
+  })
+
+  it('drift: parseJS(SOURCE) devolve EXATAMENTE a IR embutida', () => {
+    expect(stripIds(parseJS(SOURCE_CORRIDA))).toEqual(corridaTabuleiroExample.ir.js)
+  })
+
+  it('fixpoint textual: gerar -> parsear -> gerar é byte-estável', () => {
+    const code1 = compileStatements(corridaTabuleiroExample.ir.js, 0)
+    expect(compileStatements(stripIds(parseJS(code1)), 0)).toBe(code1)
+  })
+
+  it('round-trip por BLOCOS: IR -> workspace -> IR estável', () => {
+    const state = buildWorkspaceStateFromIR(
+      corridaTabuleiroExample.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
+    )
+    const ws = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
+      expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(corridaTabuleiroExample.ir.js)
     } finally {
       ws.dispose()
     }

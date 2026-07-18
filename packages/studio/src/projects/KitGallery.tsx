@@ -64,6 +64,7 @@ const KIT_EMOJI: Record<string, string> = {
   Cobrinha: '🐍',
   'Quebra-blocos': '🧱',
   'O Chefao': '👑',
+  'Corrida de Tabuleiro': '🎲',
   'Boneco de formas': '🪆',
   'Noite enevoada': '🌙',
   'Enxame que gira': '🐝',

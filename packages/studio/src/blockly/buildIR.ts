@@ -609,6 +609,12 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'gk:navePowerOf', charVar: f(block, 'WHO') }
     case 'sz_gk_path_progress':
       return { type: 'gk:pathProgress', charVar: f(block, 'WHO') }
+    case 'sz_gk_roll_dice':
+      return { type: 'gk:rollDice', faces: exprInput(block, 'FACES', { type: 'num', value: 6 }) }
+    case 'sz_gk_current_player':
+      return { type: 'gk:currentPlayer' }
+    case 'sz_gk_space_of':
+      return { type: 'gk:spaceOf', who: f(block, 'WHO') }
     case 'sz_gk_pick_active':
       return {
         type: 'gk:pickActive',
@@ -6575,6 +6581,38 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           col: exprInput(block, 'COL', { type: 'num', value: 0 }),
           row: exprInput(block, 'ROW', { type: 'num', value: 0 }),
         },
+      }
+    case 'sz_gk_players_setup':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:playersSetup', n: exprInput(block, 'N', { type: 'num', value: 2 }) },
+      }
+    case 'sz_gk_next_player':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:nextPlayer' } }
+    case 'sz_gk_on_turn_change':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:onTurnChange', body: getStatementChildren(block, 'BODY', seen) },
+      }
+    case 'sz_gk_move_along_track':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:moveAlongTrack',
+          who: f(block, 'WHO'),
+          spaces: exprInput(block, 'SPACES', { type: 'num', value: 1 }),
+          path: f(block, 'PATH'),
+        },
+      }
+    case 'sz_gk_on_land_space':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:onLandSpace', body: getStatementChildren(block, 'BODY', seen) },
       }
     case 'sz_gk_wrap_edges':
       seen.add('game-2d-advanced')

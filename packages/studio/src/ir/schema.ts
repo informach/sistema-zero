@@ -268,6 +268,10 @@ export type JSExpr =
       col: number | JSExpr
       row: number | JSExpr
     })
+  // 🎲 R30 — jogos de tabuleiro: dado, jogador da vez e a casa da peça (reporters).
+  | (JSExprCommon & { type: 'gk:rollDice'; faces: number | JSExpr })
+  | (JSExprCommon & { type: 'gk:currentPlayer' })
+  | (JSExprCommon & { type: 'gk:spaceOf'; who: string })
   // 🥷 Ação em tempo real: "o golpe de A acertou B?" (caixa de golpe à frente).
   | (JSExprCommon & { type: 'gk:didHit'; aVar: string; bVar: string })
   // ⚙️ Física geral (R11): valores que o jogo INTEIRO precisa poder ler.
@@ -763,6 +767,13 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       row: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
+    z.object({
+      type: z.literal('gk:rollDice'),
+      faces: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:currentPlayer'), ...idField }),
+    z.object({ type: z.literal('gk:spaceOf'), who: irText(), ...idField }),
     z.object({ type: z.literal('gk:didHit'), aVar: irText(), bVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:isOnGround'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('gk:isInside'), charVar: irText(), region: irText(), ...idField }),
@@ -2970,6 +2981,17 @@ export type JSStatement =
       col: number | JSExpr
       row: number | JSExpr
     })
+  // 🎲 R30 — jogos de tabuleiro: ordem de turno (anel) + trilha de casas.
+  | (JSStatementCommon & { type: 'gk:playersSetup'; n: number | JSExpr })
+  | (JSStatementCommon & { type: 'gk:nextPlayer' })
+  | (JSStatementCommon & { type: 'gk:onTurnChange'; body: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'gk:moveAlongTrack'
+      who: string
+      spaces: number | JSExpr
+      path: string
+    })
+  | (JSStatementCommon & { type: 'gk:onLandSpace'; body: JSStatement[] })
   | (JSStatementCommon & { type: 'gk:collideTilemap'; charVar: string; map: string })
   | (JSStatementCommon & { type: 'gk:collideGroup'; charVar: string; mold: string })
   | (JSStatementCommon & {
@@ -6825,6 +6847,21 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       row: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
+    z.object({
+      type: z.literal('gk:playersSetup'),
+      n: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:nextPlayer'), ...idField }),
+    z.object({ type: z.literal('gk:onTurnChange'), body: z.array(JSStatementSchema), ...idField }),
+    z.object({
+      type: z.literal('gk:moveAlongTrack'),
+      who: irText(),
+      spaces: z.union([JSExprSchema, z.number()]),
+      path: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('gk:onLandSpace'), body: z.array(JSStatementSchema), ...idField }),
     z.object({ type: z.literal('gk:wrapEdges'), charVar: irText(), ...idField }),
     z.object({
       type: z.literal('gk:collideTilemap'),
@@ -9463,6 +9500,11 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:paddleBounce',
   'gk:boardCreate',
   'gk:boardSet',
+  'gk:playersSetup',
+  'gk:nextPlayer',
+  'gk:onTurnChange',
+  'gk:moveAlongTrack',
+  'gk:onLandSpace',
   'gk:wrapEdges',
   'gk:collideTilemap',
   'gk:collideGroup',

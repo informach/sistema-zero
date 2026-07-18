@@ -208,6 +208,15 @@ interface GameKitApi {
   rpgOnFoeTurn: Fn
   rpgFoeUse: Fn
   rpgFoeHitAll: Fn
+  // 🎲 R30 — jogos de tabuleiro
+  rollDice: (faces: number) => number
+  playersSetup: Fn
+  currentPlayer: () => number
+  nextPlayer: Fn
+  onTurnChange: Fn
+  moveAlongTrack: Fn
+  spaceOf: (who: unknown) => number
+  onLandSpace: Fn
   // V9 — mapa de tiles + profundidade
   cameraShake: Fn
   loadTilemap: Fn
@@ -518,7 +527,7 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 294 métodos (spawn_named reusa spawnFromMold)', () => {
+  it('expõe os 302 métodos (spawn_named reusa spawnFromMold)', () => {
     const { api } = loadRuntime()
     const expected = [
       // v1 (33)
@@ -669,6 +678,15 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'rpgOnFoeTurn',
       'rpgFoeUse',
       'rpgFoeHitAll',
+      // 🎲 R30 — jogos de tabuleiro (8)
+      'rollDice',
+      'playersSetup',
+      'currentPlayer',
+      'nextPlayer',
+      'onTurnChange',
+      'moveAlongTrack',
+      'spaceOf',
+      'onLandSpace',
       // V9 — mapa de tiles + profundidade (6)
       'cameraShake',
       'loadTilemap',
@@ -3854,5 +3872,59 @@ describe('SZGameKit — R30: 👑 chefes (o inimigo usa golpes, ler vida, IA de 
     pickAction(h, t, 'Atacar') // vez do Amigo → depois o Titã age (hit_all via a IA)
     expect(h.api.battlerLife('Você')).toBeLessThan(heroBefore)
     expect(h.api.battlerLife('Amigo')).toBeLessThan(amigoBefore)
+  })
+})
+
+describe('SZGameKit — R30: 🎲 jogos de tabuleiro (dado, turnos, trilha de casas)', () => {
+  it('🎲 o dado sorteia 1..N (nunca 0, nunca N+1)', () => {
+    const h = loadRuntime()
+    for (let i = 0; i < 200; i++) {
+      const v = h.api.rollDice(6)
+      expect(v).toBeGreaterThanOrEqual(1)
+      expect(v).toBeLessThanOrEqual(6)
+    }
+    expect(h.api.rollDice(1)).toBe(1) // dado de 1 lado sempre dá 1
+  })
+
+  it('🔁 ordem de turno: o anel roda 1→2→3→1 e dispara "quando a vez mudar"', () => {
+    const h = loadRuntime()
+    let changes = 0
+    h.api.onTurnChange(() => {
+      changes += 1
+    })
+    h.api.playersSetup(3)
+    expect(h.api.currentPlayer()).toBe(1)
+    h.api.nextPlayer()
+    expect(h.api.currentPlayer()).toBe(2)
+    h.api.nextPlayer()
+    expect(h.api.currentPlayer()).toBe(3)
+    h.api.nextPlayer()
+    expect(h.api.currentPlayer()).toBe(1) // volta ao começo (anel)
+    expect(changes).toBe(3)
+  })
+
+  it('🎯 a peça anda N casas na trilha, PARA na casa e dispara o "parou numa casa"', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.definePath('tabuleiro', () => {
+      h.api.pathPoint(100, 100)
+      h.api.pathPoint(200, 100)
+      h.api.pathPoint(300, 100)
+      h.api.pathPoint(400, 100)
+      h.api.pathPoint(500, 100)
+    })
+    const peao = h.api.createCharacter({ w: 32, h: 32 })
+    let landed = 0
+    h.api.onLandSpace(() => {
+      landed += 1
+    })
+    expect(h.api.spaceOf(peao)).toBe(0) // começa na casa 0
+    h.api.moveAlongTrack(peao, 3, 'tabuleiro')
+    expect(h.api.spaceOf(peao)).toBe(3) // andou 3 casas
+    expect(landed).toBe(1)
+    h.api.moveAlongTrack(peao, 5, 'tabuleiro') // passa do fim → PARA na última (casa 4)
+    expect(h.api.spaceOf(peao)).toBe(4)
+    expect(landed).toBe(2)
   })
 })

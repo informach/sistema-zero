@@ -292,6 +292,14 @@ API global injetada como window.SZGameKit:
   emit "caminho:fim"; QUEM chegou = no forEach, "se pathProgress(item)===100".
   Serve tower defense/patrulha/esteira/cutscene em trilho/corrida. Pontos podem
   ficar fora da tela.
+- 🎲 Turnos & tabuleiro (R30 — Ludo/Jogo da Vida; a criança MONTA): rollDice(lados)
+  = sorteia 1..lados (o dado, em 🎲 Sorte & medida). Ordem de turno (anel):
+  playersSetup(n) · currentPlayer() (a vez, 1..n) · nextPlayer() (rodízio; volta ao 1)
+  · onTurnChange(fn). Trilha de CASAS (reusa 🛤️: cada pathPoint é uma casa):
+  moveAlongTrack(quem, casas, "trilha") avança N casas e PARA na casa (desliza +
+  emit "casa:parou") · spaceOf(quem) = o índice da casa (0 = 1ª) · onLandSpace(fn)
+  roda ao parar. Receita do turno: role o dado → moveAlongTrack esse tanto → no
+  onLandSpace "se spaceOf(peao)===7: pontos" → nextPlayer.
 - 🔁 parallaxLayer(imagem, fatorX, fatorY) = fundo preso à CÂMERA (0 = céu ao
   longe, 1 = colado no mundo); precisa da câmera ligada. O scrollImage rola por
   VELOCIDADE (tela fixa); este segue a POSIÇÃO (mundo grande) — o sunnyland.

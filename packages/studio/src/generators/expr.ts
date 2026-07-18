@@ -509,6 +509,12 @@ export function compileExpr(
       return `SZGameKit.boardCount(${JSON.stringify(expr.name)}, ${compileExpr(valueToExpr(expr.value), 0, identifiers, rec)})`
     case 'gk:boardIn':
       return `SZGameKit.boardIn(${JSON.stringify(expr.name)}, ${compileExpr(valueToExpr(expr.col), 0, identifiers, rec)}, ${compileExpr(valueToExpr(expr.row), 0, identifiers, rec)})`
+    case 'gk:rollDice':
+      return `SZGameKit.rollDice(${compileExpr(valueToExpr(expr.faces), 0, identifiers, rec)})`
+    case 'gk:currentPlayer':
+      return 'SZGameKit.currentPlayer()'
+    case 'gk:spaceOf':
+      return `SZGameKit.spaceOf(${identifiers.get(expr.who)})`
     case 'gk:kills':
       return 'SZGameKit.kills()'
     // ---- Jogo 3D Avançado (game-3d-advanced) ----

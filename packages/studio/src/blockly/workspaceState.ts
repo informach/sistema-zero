@@ -3980,6 +3980,26 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
             ROW: row,
           })
     }
+    case 'gk:playersSetup': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      return n === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_players_setup', {}, {}, stmt.__id, { N: n })
+    }
+    case 'gk:nextPlayer':
+      return block('sz_gk_next_player', {}, {}, stmt.__id)
+    case 'gk:onTurnChange':
+      return block('sz_gk_on_turn_change', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
+    case 'gk:moveAlongTrack': {
+      const spaces = exprToValueBlock(valueToExpr(stmt.spaces))
+      return spaces === null
+        ? rawJSBlock(stmt)
+        : block('sz_gk_move_along_track', { WHO: stmt.who, PATH: stmt.path }, {}, stmt.__id, {
+            SPACES: spaces,
+          })
+    }
+    case 'gk:onLandSpace':
+      return block('sz_gk_on_land_space', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
     case 'gk:wrapEdges':
       return block('sz_gk_wrap_edges', { WHO: stmt.charVar }, {}, stmt.__id)
     case 'gk:collideTilemap':
@@ -7189,6 +7209,14 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
         ? null
         : block('sz_gk_board_in', { NAME: expr.name }, {}, expr.__id, { COL: col, ROW: row })
     }
+    case 'gk:rollDice': {
+      const faces = exprToValueBlock(valueToExpr(expr.faces))
+      return faces === null ? null : block('sz_gk_roll_dice', {}, {}, expr.__id, { FACES: faces })
+    }
+    case 'gk:currentPlayer':
+      return block('sz_gk_current_player', {})
+    case 'gk:spaceOf':
+      return block('sz_gk_space_of', { WHO: expr.who })
     // ---- Jogo 3D Avançado (game-3d-advanced) ----
     case 'g3k:worldSize':
       return block('sz_g3k_world_size', {})

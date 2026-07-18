@@ -1878,6 +1878,30 @@ function compileStatementCode(
       return `${pad}SZGameKit.boardCreate(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.cols), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.rows), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.empty), 0, identifiers, recAt(base))});`
     case 'gk:boardSet':
       return `${pad}SZGameKit.boardSet(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.value), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.col), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.row), 0, identifiers, recAt(base))});`
+    case 'gk:playersSetup':
+      return `${pad}SZGameKit.playersSetup(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))});`
+    case 'gk:nextPlayer':
+      return `${pad}SZGameKit.nextPlayer();`
+    case 'gk:onTurnChange': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.onTurnChange(function () {\n${body}\n${pad}});`
+    }
+    case 'gk:moveAlongTrack':
+      return `${pad}SZGameKit.moveAlongTrack(${identifiers.get(stmt.who)}, ${compileExpr(valueToExpr(stmt.spaces), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.path)});`
+    case 'gk:onLandSpace': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.onLandSpace(function () {\n${body}\n${pad}});`
+    }
     case 'gk:wrapEdges':
       return `${pad}SZGameKit.wrapEdges(${identifiers.get(stmt.charVar)});`
     case 'gk:collideTilemap':
@@ -4913,6 +4937,19 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.col), names)
       collectExprIdentifiers(valueToExpr(stmt.row), names)
       return
+    case 'gk:playersSetup':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      return
+    case 'gk:nextPlayer':
+      return
+    case 'gk:moveAlongTrack':
+      names.add(stmt.who)
+      collectExprIdentifiers(valueToExpr(stmt.spaces), names)
+      return
+    case 'gk:onTurnChange':
+    case 'gk:onLandSpace':
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
     case 'gk:collideTilemap':
     case 'gk:collideGroup':
     case 'gk:breakTileAt':
@@ -6639,6 +6676,13 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'gk:boardCount':
       collectExprIdentifiers(valueToExpr(expr.value), names)
       return
+    case 'gk:rollDice':
+      collectExprIdentifiers(valueToExpr(expr.faces), names)
+      return
+    case 'gk:spaceOf':
+      names.add(expr.who)
+      return
+    case 'gk:currentPlayer':
     case 'gk:countActive':
     case 'gk:timeSurvived':
     case 'gk:kills':

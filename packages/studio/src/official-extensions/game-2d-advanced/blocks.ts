@@ -3603,6 +3603,91 @@ export const gameKitBlocks = [
     tooltip:
       'Quanto do caminho aquele personagem já andou, de 0 (começo) a 100 (fim). 0 se ele não segue caminho nenhum.',
   },
+  // ---- 🎲 R30: jogos de TABULEIRO (dado + ordem de turno + trilha de casas) ----
+  {
+    type: 'sz_gk_roll_dice',
+    message0: 'rolar um dado de %1 lados',
+    args0: [{ type: 'input_value', name: 'FACES', check: 'JSValue' }],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Sorteia um número de 1 até o número de lados (um dado de 6 dá 1 a 6). O coração dos jogos de tabuleiro: role e ande esse tanto de casas.',
+  },
+  {
+    type: 'sz_gk_players_setup',
+    message0: 'começar com %1 jogadores',
+    args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Prepara a ordem de turno para N jogadores (a vez começa no jogador 1). Use no "Preparar". Depois "passar a vez" roda o rodízio 1 → 2 → … → 1.',
+  },
+  {
+    type: 'sz_gk_current_player',
+    message0: 'o jogador da vez',
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'De quem é a vez agora (1, 2, 3…). Use para mostrar "Vez do jogador X" e para decidir quem move a peça.',
+  },
+  {
+    type: 'sz_gk_next_player',
+    message0: 'passar a vez',
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Passa para o próximo jogador (volta ao 1 depois do último). Dispara o "Quando a vez mudar".',
+  },
+  {
+    type: 'sz_gk_on_turn_change',
+    message0: 'Quando a vez mudar',
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda toda vez que "passar a vez" muda o jogador. Bom para anunciar de quem é a vez e reposicionar a câmera na peça dele.',
+  },
+  {
+    type: 'sz_gk_move_along_track',
+    message0: 'Andar %1 %2 casas na trilha %3',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'peao', kind: 'character' },
+      { type: 'input_value', name: 'SPACES', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'PATH', text: 'trilha', kind: 'path' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Anda a peça N casas pela trilha (cada "ponto" do caminho é uma casa) e PARA na casa. Avisa "casa:parou" e roda o "Quando um peão parar numa casa".',
+  },
+  {
+    type: 'sz_gk_space_of',
+    message0: 'a casa de %1',
+    args0: [{ type: 'field_name_picker', name: 'WHO', text: 'peao', kind: 'character' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Em qual casa a peça está (0 = a primeira). Use para ligar "se a casa de peao = 7: pague aluguel".',
+  },
+  {
+    type: 'sz_gk_on_land_space',
+    message0: 'Quando um peão parar numa casa',
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda quando qualquer peça termina de andar numa casa. Dentro, use "a casa de …" para saber onde parou e dar/tirar pontos, mandar voltar, etc.',
+  },
   {
     type: 'sz_gk_pick_active',
     message0: 'o vivo do molde %1 com %2 %3',
@@ -4318,6 +4403,22 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     types: ['sz_gk_define_path', 'sz_gk_path_point', 'sz_gk_follow_path', 'sz_gk_path_progress'],
   },
   {
+    // 🎲 GERAL (R30): as peças de JOGO DE TABULEIRO — a criança monta o Ludo/Jogo
+    // da Vida. Ordem de turno (anel) + a trilha de CASAS (estende 🛤️ Caminhos:
+    // cada "ponto" vira uma casa). O dado mora na 🎲 Sorte & medida.
+    name: '🎲 Turnos & tabuleiro',
+    colour: C,
+    types: [
+      'sz_gk_players_setup',
+      'sz_gk_current_player',
+      'sz_gk_next_player',
+      'sz_gk_on_turn_change',
+      'sz_gk_move_along_track',
+      'sz_gk_space_of',
+      'sz_gk_on_land_space',
+    ],
+  },
+  {
     // ⚙️ GERAL: a física que faz plataforma/corrida/flappy/breakout existirem.
     // A receita é sempre: gravidade → mover pela velocidade → colidir.
     name: '⚙️ Física',
@@ -4445,6 +4546,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     colour: C,
     types: [
       'sz_gk_chance',
+      'sz_gk_roll_dice',
       'sz_gk_distance_between',
       'sz_gk_point_in',
       'sz_gk_random_active',
@@ -4944,6 +5046,9 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   // 🛤️ R25 — caminhos + paralaxe + explosão por folha
   sz_gk_path_point: { X: numShadow(100), Y: numShadow(100) },
   sz_gk_follow_path: { SPEED: numShadow(120) },
+  sz_gk_roll_dice: { FACES: numShadow(6) },
+  sz_gk_players_setup: { N: numShadow(2) },
+  sz_gk_move_along_track: { SPACES: numShadow(1) },
   sz_gk_parallax_layer: { FX: numShadow(0.3), FY: numShadow(1) },
   sz_gk_sheet_burst: {
     FRAMES: numShadow(4),

@@ -4670,6 +4670,50 @@ export const gameKitRuntime = `(function () {
     return Math.max(0, Math.min(100, ((base + seg) / rec.total) * 100));
   }
 
+  // ---- 🎲 R30 — Jogos de TABULEIRO: dado + ordem de turno + trilha de casas ----
+  // Peças NEUTRAS: a criança MONTA o Ludo/Jogo-da-Vida. (o dado vai na 🎲 Sorte.)
+  function rollDice(faces) {
+    var n = Math.max(1, Math.round(num(faces, 6)));
+    return Math.floor(Math.random() * n) + 1;
+  }
+  // Ordem de turno = um ANEL puro (1..N). Generaliza o nextAliveAfter das batalhas.
+  var turnRing = { count: 1, current: 1 };
+  var turnHooks = []; // fns do "Quando a vez mudar"
+  function playersSetup(n) {
+    turnRing.count = Math.max(1, Math.round(num(n, 2)));
+    turnRing.current = 1;
+  }
+  function currentPlayer() { return turnRing.current; }
+  function nextPlayer() {
+    turnRing.current = (turnRing.current % turnRing.count) + 1;
+    for (var i = 0; i < turnHooks.length; i++) {
+      try { turnHooks[i](); } catch (e) { warn('erro no "Quando a vez mudar": ' + e); }
+    }
+  }
+  function onTurnChange(fn) { if (typeof fn === 'function') turnHooks.push(fn); }
+  // Trilha de casas: cada PONTO do caminho (🛤️) vira uma casa discreta. A peça
+  // guarda o índice da casa (_spaceIdx) e desliza (tween) até ela, PARANDO.
+  var landHooks = []; // fns do "Quando um peão parar numa casa"
+  function moveAlongTrack(who, spaces, pathName) {
+    if (!who || typeof who !== 'object') return;
+    var k = text(pathName, '');
+    var rec = paths[k];
+    if (!rec) { warnOnce('track:' + k, 'a trilha "' + k + '" não existe — crie com "Criar o caminho"'); return; }
+    var idx = Math.round(num(who._spaceIdx, 0)) + Math.round(num(spaces, 1));
+    idx = Math.max(0, Math.min(rec.pts.length - 1, idx));
+    who._spaceIdx = idx; who._trackName = k;
+    var p = rec.pts[idx];
+    tweenTo(who, p.x - who.w / 2, p.y - who.h / 2, 0.3); // desliza suave até a casa
+    emit('casa:parou', who);
+    for (var i = 0; i < landHooks.length; i++) {
+      try { landHooks[i](); } catch (e) { warn('erro no "Quando um peão parar numa casa": ' + e); }
+    }
+  }
+  function spaceOf(who) {
+    return (who && typeof who === 'object') ? Math.max(0, Math.round(num(who._spaceIdx, 0))) : 0;
+  }
+  function onLandSpace(fn) { if (typeof fn === 'function') landHooks.push(fn); }
+
   // ---- ✨ R25 — explosao por FOLHA one-shot (a explosion.png do Chris em 1
   // bloco; hoje custa spawn + playAnimOnce + vigiar animEnded + recycle). ----
   function sheetBurst(name, frames, fps, x, y, size) {
@@ -7010,6 +7054,15 @@ export const gameKitRuntime = `(function () {
     pathPoint: guard('pathPoint', pathPoint),
     followPath: guard('followPath', followPath),
     pathProgress: guard('pathProgress', pathProgress),
+    // ----- 🎲 R30: jogos de tabuleiro (dado, turnos, trilha de casas) -----
+    rollDice: guard('rollDice', rollDice),
+    playersSetup: guard('playersSetup', playersSetup),
+    currentPlayer: guard('currentPlayer', currentPlayer),
+    nextPlayer: guard('nextPlayer', nextPlayer),
+    onTurnChange: guard('onTurnChange', onTurnChange),
+    moveAlongTrack: guard('moveAlongTrack', moveAlongTrack),
+    spaceOf: guard('spaceOf', spaceOf),
+    onLandSpace: guard('onLandSpace', onLandSpace),
     pickActive: guard('pickActive', pickActive),
     parallaxLayer: guard('parallaxLayer', parallaxLayer),
     sheetBurst: guard('sheetBurst', sheetBurst),
