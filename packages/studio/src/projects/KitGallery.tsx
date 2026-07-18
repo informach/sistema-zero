@@ -64,6 +64,7 @@ const KIT_EMOJI: Record<string, string> = {
   Cobrinha: '🐍',
   'Quebra-blocos': '🧱',
   'O Chefao': '👑',
+  'O Chefao da Ficha': '🐲',
   'Corrida de Tabuleiro': '🎲',
   'Jogo da Memoria': '🃏',
   'Duelo de Cartas': '🃏',
@@ -113,7 +114,13 @@ function buildGroups(): Array<{ label: string; entries: KitEntry[] }> {
     groups.push({
       label,
       entries: ext.manifest.examples.map((example) =>
-        toEntry(ext.manifest.id, example.name, example.description ?? '', example.ir),
+        toEntry(
+          ext.manifest.id,
+          example.name,
+          example.description ?? '',
+          example.ir,
+          example.assets,
+        ),
       ),
     })
   }

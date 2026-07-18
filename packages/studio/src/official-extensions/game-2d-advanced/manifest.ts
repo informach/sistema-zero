@@ -14,6 +14,7 @@ import {
   jogoDaMemoriaExample,
   meuPrimeiroJogoExample,
   oChefaoExample,
+  oChefaoFichaExample,
   quebraBlocosExample,
   reinoAbertoExample,
   saltoNaFlorestaExample,
@@ -23,7 +24,7 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.38.0',
+  version: '0.39.0',
   description:
     'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som, faíscas e tabuleiro de grade — dá para inventar qualquer jogo 2D. E seis atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial), 🚀 nave (a invasão que marcha, desce e acelera) e 🏰 defesa de torre (caminho, ondas, torres que miram).',
   category: 'games',
@@ -1126,6 +1127,7 @@ do núcleo) e blocos gerais.
     reinoAbertoExample,
     batalhaEmEquipeExample,
     oChefaoExample,
+    oChefaoFichaExample,
     corridaTabuleiroExample,
     jogoDaMemoriaExample,
     dueloDeCartasExample,

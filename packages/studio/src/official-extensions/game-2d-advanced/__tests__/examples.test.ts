@@ -24,6 +24,7 @@ import {
   jogoDaMemoriaExample,
   meuPrimeiroJogoExample,
   oChefaoExample,
+  oChefaoFichaExample,
   quebraBlocosExample,
   reinoAbertoExample,
   saltoNaFlorestaExample,
@@ -118,6 +119,7 @@ describe('game-2d-advanced — exemplo Caça-moedas', () => {
       'Reino Aberto',
       'Batalha em Equipe',
       'O Chefao',
+      'O Chefao da Ficha',
       'Corrida de Tabuleiro',
       'Jogo da Memoria',
       'Duelo de Cartas',
@@ -2131,6 +2133,102 @@ describe('game-2d-advanced — exemplo Duelo de Cartas (🃏 Kit Cartas)', () =>
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
       expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(dueloDeCartasExample.ir.js)
+    } finally {
+      ws.dispose()
+    }
+  })
+})
+
+const SOURCE_CHEFAO_FICHA = `SZGameKit.setup({ width: 480, height: 320, background: "#0f1020", accent: "#ffcc44" });
+SZGameKit.setScreenBg("menu", "#241033", "");
+SZGameKit.setScreenBg("vitoria", "#0a2a14", "");
+SZGameKit.setScreenText("menu", "O Chefão da Ficha", "Fale com o Guardião (espaço) e enfrente o Dragão!", "Começar");
+SZGameKit.setScreenText("vitoria", "Você venceu o Dragão!", "O reino está salvo.", "Jogar de novo");
+const heroi = SZGameKit.createCharacter({ image: "", w: 40, h: 40, speed: 300, color: "#4a9eff" });
+SZGameKit.rpgBattleStats(60, 12, 3);
+SZGameKit.rpgSetSpecial("Investida", 20, 4);
+SZGameKit.rpgGivePotion("Poção", 25);
+SZGameKit.rpgDefineBattler("Dragão", 120, 9, 2, "dragao", "#b23b6e", true);
+SZGameKit.rpgDefineBattler("Capanga", 24, 5, 0, "", "#e05a5a", false);
+SZGameKit.rpgTeachMove("Dragão", "Baforada", 26, 0);
+SZGameKit.rpgOnFoeTurn("Dragão", function () {
+  if (SZGameKit.battlerLife("Dragão") < SZGameKit.battlerMaxLife("Dragão") / 2) {
+    SZGameKit.rpgFoeHitAll("Dragão", 16);
+  } else {
+    SZGameKit.rpgFoeUse("Dragão", "Baforada");
+  }
+});
+SZGameKit.rpgOnMap("caverna", function () {
+  SZGameKit.rpgCreateNpc("Guardião", 4, 3, "", "");
+  SZGameKit.placeCharacter(heroi, SZGameKit.rpgCell(2), SZGameKit.rpgCell(3));
+});
+SZGameKit.rpgOnTalk("Guardião", function () {
+  SZGameKit.rpgSay("O Dragão acordou! Enfrente-o!", "Guardião");
+  SZGameKit.rpgAddFoeNamed("Capanga");
+  SZGameKit.rpgHealHero();
+  SZGameKit.rpgBattleNamed("Dragão");
+});
+SZGameKit.rpgOnBattleEnd(function () {
+  if (SZGameKit.rpgBattleWon()) {
+    SZGameKit.setState("vitoria");
+  } else {
+    SZGameKit.endGame();
+  }
+});
+SZGameKit.onUpdate(function (dt) {
+  SZGameKit.rpgMoveGrid(heroi, 64, dt);
+});
+SZGameKit.onDraw(function (ctx) {
+  SZGameKit.drawBackground("#241a2e", true);
+  SZGameKit.rpgDrawNpcs();
+  SZGameKit.drawCharacter(heroi);
+});
+SZGameKit.start();
+`
+
+describe('game-2d-advanced — exemplo O Chefao da Ficha (ficha + imagem + fundo)', () => {
+  it('IR embutida é válida, sem rawJS, e usa ficha + imagem + fundo', () => {
+    const parsed = SZIRSchema.safeParse(oChefaoFichaExample.ir)
+    expect(parsed.success).toBe(true)
+    const types = collectTypes(oChefaoFichaExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    for (const t of [
+      'gk:setScreenBg',
+      'gk:rpgDefineBattler',
+      'gk:rpgAddFoeNamed',
+      'gk:rpgHealHero',
+      'gk:rpgBattleNamed',
+    ]) {
+      expect(types.has(t)).toBe(true)
+    }
+  })
+
+  it('traz o sprite do Dragao como asset de imagem embutido', () => {
+    const assets = oChefaoFichaExample.assets ?? []
+    expect(assets.length).toBe(1)
+    const asset = assets[0]
+    expect(asset?.name).toBe('dragao')
+    expect(asset?.kind).toBe('image')
+    expect(asset?.dataUrl.startsWith('data:image/png;base64,')).toBe(true)
+  })
+
+  it('drift: parseJS(SOURCE) devolve EXATAMENTE a IR embutida', () => {
+    expect(stripIds(parseJS(SOURCE_CHEFAO_FICHA))).toEqual(oChefaoFichaExample.ir.js)
+  })
+
+  it('fixpoint textual: gerar -> parsear -> gerar é byte-estável', () => {
+    const code1 = compileStatements(oChefaoFichaExample.ir.js, 0)
+    expect(compileStatements(stripIds(parseJS(code1)), 0)).toBe(code1)
+  })
+
+  it('round-trip por BLOCOS: IR -> workspace -> IR estável', () => {
+    const state = buildWorkspaceStateFromIR(
+      oChefaoFichaExample.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
+    )
+    const ws = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
+      expect(stripIds(buildIRFromWorkspace(ws).js)).toEqual(oChefaoFichaExample.ir.js)
     } finally {
       ws.dispose()
     }

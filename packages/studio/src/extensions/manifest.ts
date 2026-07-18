@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type { ProjectAsset } from '#core'
 import { SZIRSchema } from '#ir'
 import type { ExtensionManifest } from './types'
 
@@ -146,6 +147,23 @@ export const ExtensionExampleSchema = z.object({
   description: z.string().max(MAX_DESCRIPTION_CHARS).optional(),
   // Pré-guarda de profundidade/tamanho ANTES do parse recursivo do SZIRSchema.
   ir: BoundedExampleIRSchema,
+  // Assets embutidos (só imagens minúsculas). Forma permissiva (custom mantém
+  // width/height/source/libId e infere ProjectAsset — espelha o `ir` acima); a
+  // sanitização real é do projectStore ao criar o projeto.
+  assets: z
+    .array(
+      z.custom<ProjectAsset>(
+        (v) =>
+          typeof v === 'object' &&
+          v !== null &&
+          typeof (v as { id?: unknown }).id === 'string' &&
+          typeof (v as { name?: unknown }).name === 'string' &&
+          typeof (v as { kind?: unknown }).kind === 'string' &&
+          typeof (v as { dataUrl?: unknown }).dataUrl === 'string',
+        { error: 'asset de exemplo malformado' },
+      ),
+    )
+    .optional(),
 })
 
 export const ExtensionManifestSchema = z.object({
