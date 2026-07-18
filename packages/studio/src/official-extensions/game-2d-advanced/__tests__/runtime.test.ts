@@ -521,13 +521,13 @@ function pickAction(h: Harness, from: number, match: string, maxFrames = 40): nu
     h.nextFrame(t)
   }
   const open = battleSnap(h)
-  if (!open || !open.menuOpen) return t
+  if (!open?.menuOpen) return t
   const idx = open.menuLabels.findIndex((l) => l.includes(match))
   if (idx < 0) return t
   let guard = 0
   while (h.api.state() === 'batalha' && guard++ < 12) {
     const cur = battleSnap(h)
-    if (!cur || !cur.menuOpen || cur.menuIndex === idx) break
+    if (!cur?.menuOpen || cur.menuIndex === idx) break
     h.fire('keydown', { key: 'ArrowDown' })
     t += 100
     h.nextFrame(t)
@@ -541,7 +541,7 @@ function pickAction(h: Harness, from: number, match: string, maxFrames = 40): nu
   // fim). Assim pickAction representa uma RODADA inteira (o teste pode medir depois).
   for (let i = 0; i < 40 && h.api.state() === 'batalha'; i++) {
     const s = battleSnap(h)
-    if (s && s.menuOpen) break // o próximo turno do jogador já abriu
+    if (s?.menuOpen) break // o próximo turno do jogador já abriu
     t += 100
     h.nextFrame(t)
   }
