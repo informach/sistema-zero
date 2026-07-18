@@ -161,6 +161,11 @@ export interface TilemapLayer {
   visible: boolean
   /** Índices de tile por célula, row-major; -1 = vazio. */
   cells: Int16Array
+  /**
+   * Camada "da frente": desenhada POR CIMA do jogador (copa de árvore, telhado).
+   * No Estúdio vira um 2º tilemap desenhado depois do sprite. Ausente = fundo.
+   */
+  front?: boolean
 }
 
 export interface TilemapAsset extends PintaAssetBase {
@@ -727,7 +732,13 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
           if (!(l.cells instanceof Int16Array) || l.cells.length !== cellCount) return null
           const name =
             typeof l.name === 'string' && l.name.trim() ? l.name.trim().slice(0, 30) : 'Camada'
-          return { id: l.id, name, visible: l.visible !== false, cells: l.cells }
+          return {
+            id: l.id,
+            name,
+            visible: l.visible !== false,
+            cells: l.cells,
+            ...(l.front === true ? { front: true } : {}),
+          }
         })
         .filter((l): l is TilemapLayer => l !== null)
       if (layers.length === 0) return null

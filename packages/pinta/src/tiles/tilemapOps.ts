@@ -146,18 +146,43 @@ export function toggleLayerVisible(tilemap: TilemapAsset, layerId: string): Tile
   return withLayer(tilemap, layerId, (layer) => ({ ...layer, visible: !layer.visible }))
 }
 
+/** Marca/desmarca a camada como "da frente" (desenhada por cima do jogador). */
+export function toggleLayerFront(tilemap: TilemapAsset, layerId: string): TilemapAsset {
+  return withLayer(tilemap, layerId, (layer) => ({ ...layer, front: !layer.front }))
+}
+
 /**
  * A visão ACHATADA das camadas visíveis (a de cima vence): é o que o render, o
- * export de grade e o PNG achatado usam. -1 = vazio.
+ * export de grade e o PNG achatado usam. -1 = vazio. `include` filtra quais
+ * camadas entram (ex.: só as de fundo, ou só as "da frente").
  */
-export function flattenLayers(tilemap: TilemapAsset): Int16Array {
+export function flattenLayers(
+  tilemap: TilemapAsset,
+  include?: (layer: TilemapLayer) => boolean,
+): Int16Array {
   const out = new Int16Array(tilemap.cols * tilemap.rows).fill(-1)
   for (const layer of tilemap.layers) {
     if (!layer.visible) continue
+    if (include && !include(layer)) continue
     for (let i = 0; i < out.length; i += 1) {
       const value = layer.cells[i] ?? -1
       if (value >= 0) out[i] = value
     }
   }
   return out
+}
+
+/** Achatado das camadas de FUNDO (tudo menos as marcadas "da frente"). */
+export function flattenBackground(tilemap: TilemapAsset): Int16Array {
+  return flattenLayers(tilemap, (l) => l.front !== true)
+}
+
+/** Achatado só das camadas "da frente" (desenhadas por cima do jogador). */
+export function flattenFront(tilemap: TilemapAsset): Int16Array {
+  return flattenLayers(tilemap, (l) => l.front === true)
+}
+
+/** Verdadeiro se o mapa tem ao menos uma camada da frente VISÍVEL e não-vazia. */
+export function hasFrontLayer(tilemap: TilemapAsset): boolean {
+  return tilemap.layers.some((l) => l.front === true && l.visible && l.cells.some((v) => v >= 0))
 }

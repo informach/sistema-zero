@@ -3,12 +3,16 @@ import { createTilemapAsset, PINTA_LIMITS, sanitizePintaAsset } from '../core/pr
 import {
   addLayer,
   cellAt,
+  flattenBackground,
+  flattenFront,
   flattenLayers,
   floodFillCells,
   growTilemap,
+  hasFrontLayer,
   removeLayer,
   setCell,
   setCells,
+  toggleLayerFront,
   toggleLayerVisible,
 } from './tilemapOps'
 
@@ -116,6 +120,35 @@ describe('growTilemap', () => {
     // O Int16Array vai DIRETO ao IndexedDB (structured clone), não por JSON —
     // o sanitize aceita o asset com os cells reais.
     expect(sanitizePintaAsset(tilemap)).not.toBeNull()
+  })
+})
+
+describe('camada da frente (F4)', () => {
+  it('flattenBackground/flattenFront separam pelas camadas marcadas; hasFrontLayer', () => {
+    const { tilemap, layerId } = makeMap(2, 1)
+    let out = setCell(tilemap, layerId, 0, 0, 1) // camada de fundo: célula 0 = tile 1
+    out = addLayer(out, 'copa')
+    const front = out.layers[1]
+    if (!front) throw new Error('camada esperada')
+    out = setCell(out, front.id, 1, 0, 5) // camada da frente (ainda não marcada): célula 1
+    out = toggleLayerFront(out, front.id) // marca como frente
+
+    expect(hasFrontLayer(out)).toBe(true)
+    expect([...flattenBackground(out)]).toEqual([1, -1]) // só o fundo
+    expect([...flattenFront(out)]).toEqual([-1, 5]) // só a frente
+    // flatten sem filtro = tudo (o editor vê o mapa inteiro)
+    expect([...flattenLayers(out)]).toEqual([1, 5])
+  })
+
+  it('toggleLayerFront alterna e sanitize preserva o flag', () => {
+    const { tilemap, layerId } = makeMap(1, 1)
+    const marked = toggleLayerFront(tilemap, layerId)
+    expect(marked.layers[0]?.front).toBe(true)
+    expect(sanitizePintaAsset(marked)?.kind).toBe('tilemap')
+    const round = sanitizePintaAsset(marked)
+    if (round?.kind === 'tilemap') expect(round.layers[0]?.front).toBe(true)
+    // sem frente visível/não-vazia → hasFrontLayer falso
+    expect(hasFrontLayer(toggleLayerFront(marked, layerId))).toBe(false)
   })
 })
 

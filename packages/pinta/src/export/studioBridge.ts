@@ -13,12 +13,14 @@ import {
   type PintaAsset,
   resolveAssetPalette,
   type TilemapAsset,
+  type TilemapLayer,
 } from '../core/project'
 import type { PintaSpriteMeta, PintaTilemapMeta, PintaTilesetMeta } from '../core/types'
 import { packTileset, tilesetPngDataUrl } from '../tiles/packTileset'
 import { packVectorTileset, vectorTilesetPngDataUrl } from '../tiles/packVectorTileset'
 import { tilemapThumbnail } from '../tiles/renderTilemap'
 import { vectorTilemapPngDataUrl } from '../tiles/renderVectorTilemap'
+import { hasFrontLayer } from '../tiles/tilemapOps'
 import { vectorPngDataUrl } from '../vector/rasterize'
 import { bitmapToPngDataUrl } from './png'
 import { packSpritesheet, spritesheetPngDataUrl } from './spritesheet'
@@ -35,6 +37,11 @@ export interface StudioPayload {
   tileset?: PintaTilesetMeta
   /** Só tilemaps: grade jogável + folha de peças EMBUTIDA (mapa auto-contido). */
   tilemap?: PintaTilemapMeta
+  /**
+   * Só tilemaps COM camada "da frente": a grade só das camadas da frente (mesma
+   * folha embutida) — o Estúdio desenha por cima do jogador.
+   */
+  tilemapFront?: PintaTilemapMeta
 }
 
 /** Extrai as animações da geometria da folha (mesma p/ pixel e vetor). */
@@ -87,13 +94,14 @@ export function tilemapMetaFrom(
   tilemap: TilemapAsset,
   tileset: AnyTilesetAsset,
   sheet: { dataUrl: string; width: number; height: number },
+  include?: (layer: TilemapLayer) => boolean,
 ): PintaTilemapMeta {
   const platformIdx = indicesOf(tileset.platform)
   return {
     tileSize: tileset.tileSize,
     cols: tilemap.cols,
     rows: tilemap.rows,
-    grid: tilemapToStudioGrid(tilemap),
+    grid: tilemapToStudioGrid(tilemap, include),
     solid: indicesOf(tileset.solid),
     ...(platformIdx.length ? { platform: platformIdx } : {}),
     tileset: sheet,
@@ -174,11 +182,17 @@ export async function buildStudioPayload(
         width: sheetPack.columns * tileset.tileSize,
         height: sheetPack.rows * tileset.tileSize,
       }
+      // Fundo = tudo menos as camadas "da frente"; a frente (se houver) vira um
+      // 2º meta que o Estúdio desenha DEPOIS do jogador.
+      const front = hasFrontLayer(asset)
       return {
         dataUrl,
         width: thumb.width,
         height: thumb.height,
-        tilemap: tilemapMetaFrom(asset, tileset, sheet),
+        tilemap: tilemapMetaFrom(asset, tileset, sheet, (l) => l.front !== true),
+        ...(front
+          ? { tilemapFront: tilemapMetaFrom(asset, tileset, sheet, (l) => l.front === true) }
+          : {}),
       }
     }
     case 'vector-background': {

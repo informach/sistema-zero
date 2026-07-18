@@ -39,12 +39,14 @@ import {
   growTilemap,
   removeLayer,
   setCells,
+  toggleLayerFront,
   toggleLayerVisible,
 } from '../../tiles/tilemapOps'
 import { usePintaGallery } from '../appContext'
 import { Button, IconButton, ToolButton } from '../ui/Button'
 import {
   BrickWall,
+  BringToFront,
   Eraser,
   Eye,
   EyeOff,
@@ -853,7 +855,25 @@ export function TilemapEditor(): JSX.Element | null {
                       }`}
                     >
                       {l.name}
+                      {l.front ? (
+                        <span className="ml-1 rounded bg-pin-accent/20 px-1 text-[10px] font-bold text-pin-accent">
+                          {COPY.tiles.frontBadge}
+                        </span>
+                      ) : null}
                     </button>
+                    <IconButton
+                      aria-label={`${COPY.tiles.frontLayer}: ${l.name}`}
+                      aria-pressed={l.front === true}
+                      active={l.front === true}
+                      title={COPY.tiles.frontLayer}
+                      onClick={() => {
+                        const state = editor.getState()
+                        if (state.asset.kind !== 'tilemap') return
+                        state.commit(toggleLayerFront(state.asset, l.id))
+                      }}
+                    >
+                      <BringToFront aria-hidden="true" className="size-5" />
+                    </IconButton>
                     <IconButton
                       aria-label={`${COPY.tiles.show} ou ${COPY.tiles.hide.toLowerCase()}: ${l.name}`}
                       aria-pressed={l.visible}

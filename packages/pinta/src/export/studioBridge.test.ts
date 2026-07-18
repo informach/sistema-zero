@@ -89,6 +89,28 @@ describe('metadados da ponte (puros, sem raster)', () => {
     })
   })
 
+  it('tilemapMetaFrom filtra a grade por camada (fundo × frente)', () => {
+    const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    const tilemap = createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 2, rows: 1 })
+    // camada de fundo com célula 0; camada da frente (marcada) com célula 1.
+    const bg = tilemap.layers[0]
+    if (!bg) throw new Error('camada esperada')
+    bg.cells.set([1, -1])
+    const frontLayer = {
+      id: 'front',
+      name: 'copa',
+      visible: true,
+      front: true,
+      cells: new Int16Array([-1, 2]),
+    }
+    const withFront = { ...tilemap, layers: [bg, frontLayer] }
+    const sheet = { dataUrl: 'data:image/png;base64,AAAA', width: 16, height: 16 }
+    const bgMeta = tilemapMetaFrom(withFront, tileset, sheet, (l) => l.front !== true)
+    const frontMeta = tilemapMetaFrom(withFront, tileset, sheet, (l) => l.front === true)
+    expect(bgMeta.grid).toBe('1 .')
+    expect(frontMeta.grid).toBe('. 2')
+  })
+
   it('tilemapMetaFrom leva platform quando o tileset tem peça plataforma', () => {
     const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
     tileset.tiles.push({ ...tileset.tiles[0] } as (typeof tileset.tiles)[number])

@@ -81,6 +81,29 @@ export function PintaClient({
         bridge.setPersonalAssetsNamespace(viewerId ?? '')
         return bridge.savePersonalAsset(asset)
       },
+      // "Jogar meu mapa": o Estúdio monta um JOGO pronto a partir do mapa e a
+      // criança vai direto pra lá. SÓ com o Estúdio Completo (senão cairia na
+      // tela bloqueada com o jogo já feito).
+      ...(studioOwned
+        ? {
+            sendGameToStudio: async (asset) => {
+              if (!asset.tilemap) return { ok: false }
+              const studio = await import('@sistemazero/studio')
+              studio.setStudioStorageNamespace(viewerId ?? '')
+              const project = await studio.buildTilemapGameProject({
+                name: asset.name,
+                dataUrl: asset.dataUrl,
+                width: asset.width,
+                height: asset.height,
+                tilemap: asset.tilemap,
+                tilemapFront: asset.tilemapFront,
+              })
+              if (!project) return { ok: false }
+              router.push('/estudio')
+              return { ok: true }
+            },
+          }
+        : {}),
       // Missão de arte do Pensa: abre a criação pré-configurada (1x no mount).
       ...(initialIntent ? { initialIntent } : {}),
     }),

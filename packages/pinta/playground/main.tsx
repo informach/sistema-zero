@@ -29,6 +29,16 @@ createRoot(root).render(
             })
             return { ok: true }
           },
+          sendGameToStudio: async (asset) => {
+            console.log('[playground] sendGameToStudio', {
+              name: asset.name,
+              hasTilemap: Boolean(asset.tilemap),
+              hasFront: Boolean(asset.tilemapFront),
+              grid: asset.tilemap?.grid,
+              frontGrid: asset.tilemapFront?.grid,
+            })
+            return { ok: true }
+          },
           onOpenStudio: () => console.log('[playground] onOpenStudio'),
         }}
       />

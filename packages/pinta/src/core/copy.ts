@@ -289,6 +289,9 @@ export const COPY = {
     showCollision: 'Ver as colisões do mapa',
     statusSize: (cols: number, rows: number) => `${cols} colunas × ${rows} linhas`,
     statusCell: (col: number, row: number) => `Coluna ${col} · Linha ${row}`,
+    frontLayer: 'Camada da frente (aparece por cima do jogador)',
+    frontBadge: 'frente',
+    playMap: 'Jogar meu mapa',
   },
   vector: {
     select: 'Selecionar',
@@ -380,6 +383,7 @@ export const COPY = {
     // grade no clipboard — o caminho de texto continua no "Baixar".
     mapSuccess: 'Seu mapa já está no Estúdio! Procure o bloco "Criar mapa do meu desenho".',
     mapSuccessLocked: 'Salvei! Quando o Estúdio for liberado, seu mapa vai estar lá.',
+    playSuccess: 'Pronto! Seu mapa virou um jogo no Estúdio. É só apertar Jogar!',
   },
   coach: {
     gotIt: 'Entendi!',

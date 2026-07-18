@@ -6,12 +6,18 @@
  * Round-trip garantido por teste que reimplementa o `parseGrid`/`parseSolidList`
  * do runtime (game-2d/runtime.ts).
  */
-import type { AnyTilesetAsset, TilemapAsset } from '../core/project'
+import type { AnyTilesetAsset, TilemapAsset, TilemapLayer } from '../core/project'
 import { flattenLayers } from '../tiles/tilemapOps'
 
-/** O texto de grade do bloco (camadas visíveis ACHATADAS, a de cima vence). */
-export function tilemapToStudioGrid(tilemap: TilemapAsset): string {
-  const cells = flattenLayers(tilemap)
+/**
+ * O texto de grade do bloco (camadas visíveis ACHATADAS, a de cima vence).
+ * `include` filtra as camadas (ex.: só fundo, ou só as "da frente").
+ */
+export function tilemapToStudioGrid(
+  tilemap: TilemapAsset,
+  include?: (layer: TilemapLayer) => boolean,
+): string {
+  const cells = flattenLayers(tilemap, include)
   const lines: string[] = []
   for (let row = 0; row < tilemap.rows; row += 1) {
     const parts: string[] = []
