@@ -336,7 +336,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_random_chance',
-    message0: 'tem chance de %1 %?',
+    message0: 'tem chance de %1%%?',
     args0: [{ type: 'input_value', name: 'PERCENT', check: 'JSValue' }],
     inputsInline: true,
     output: 'JSValue',
@@ -364,10 +364,10 @@ export const gameTwoDBlocks = [
   // ---- Tier 1: Vida e tempo ----
   {
     type: 'sz_g2d_set_health',
-    message0: 'Dar %1 de vida ao sprite %2',
+    message0: 'Dar ao sprite %1 %2 de vida',
     args0: [
-      { type: 'input_value', name: 'AMOUNT', check: 'JSValue' },
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
+      { type: 'input_value', name: 'AMOUNT', check: 'JSValue' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -1655,6 +1655,7 @@ export const gameTwoDBlocks = [
       { type: 'input_value', name: 'HINT', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'BG', colour: '#02111f' },
     ],
+    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -2531,10 +2532,12 @@ export const gameTwoDBlocks = [
 ]
 
 /**
- * Sub-categorias coloridas por domínio (à la Scratch/MakeCode): cada grupo tem a
- * SUA cor, e cada bloco herda a cor do seu grupo (cor = navegação — a criança acha
- * "o azul é sprite" sem ler). A ordem segue o fluxo mental: o que aparece → como
- * mexe → quando algo acontece → perguntas → enfeites → cenário.
+ * Sub-categorias do Jogo 2D (à la Scratch/MakeCode), na ordem do fluxo mental: o
+ * que aparece → como mexe → quando algo acontece → perguntas → enfeites → cenário.
+ * ⚠️ A `colour` de cada entrada abaixo é só um PLACEHOLDER: logo após o array,
+ * `SUBCAT_SHADES` reescreve TODAS para tons do ciano da categoria (o Jogo 2D é uma
+ * cor só no arco-íris da paleta; a distinção entre grupos é pelo NOME/emoji, não
+ * pela cor). Mudar o literal aqui não muda nada — ajuste `categoryShades(C, …)`.
  */
 const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
@@ -2647,9 +2650,12 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
+    // Só perguntas de VERDADE (booleanos ao vivo, para encaixar num "se"). Os
+    // blocos "Guardar em X se colide" são COMANDOS (gravam numa variável) — foram
+    // para 🎯 Mira e contas, junto das outras consultas/medidas de sprite.
     name: '❓ Perguntas',
     colour: '#ff8c1a',
-    types: ['sz_g2d_key_down', 'sz_g2d_touches', 'sz_g2d_collides', 'sz_g2d_circle_collides'],
+    types: ['sz_g2d_key_down', 'sz_g2d_touches'],
   },
   {
     name: '🎯 Mira e contas',
@@ -2659,6 +2665,8 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_move_toward',
       'sz_g2d_angle_to',
       'sz_g2d_distance',
+      'sz_g2d_collides',
+      'sz_g2d_circle_collides',
       'sz_g2d_random_between',
       'sz_g2d_random_chance',
       'sz_g2d_random_x',
@@ -2695,7 +2703,6 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_scale_sprite',
       'sz_g2d_draw_hitbox',
       'sz_g2d_show_fps',
-      'sz_g2d_game_over',
     ],
   },
   {
@@ -2748,12 +2755,13 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
-    name: '🎬 Telas e cenas',
+    name: '📺 Telas e cenas',
     colour: '#1098ad',
     types: [
       'sz_g2d_set_scene',
       'sz_g2d_scene_is',
       'sz_g2d_show_screen',
+      'sz_g2d_game_over',
       'sz_g2d_pause',
       'sz_g2d_resume',
       'sz_g2d_is_paused',
@@ -2989,12 +2997,41 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g2d_set_tile: { INDEX: numShadow(1) },
   sz_g2d_create_tilemap: { TILE: numShadow(32) },
   sz_g2d_draw_tilemap: { X: numShadow(0), Y: numShadow(0), SIZE: numShadow(0) },
-  sz_g2d_spawn_in_group: { W: numShadow(24), H: numShadow(24) },
-  sz_g2d_spawn_image_in_group: { W: numShadow(32), H: numShadow(32) },
-  sz_g2d_spawn_bullet: { R: numShadow(5) },
-  sz_g2d_spawn_asteroid: { SIZE: numShadow(40) },
+  // Todos os soquetes de VALOR nascem preenchidos: soquete vazio compila para
+  // `undefined` → o sprite nasce em posição/velocidade inválida (NaN) sem pista.
+  sz_g2d_spawn_in_group: {
+    X: numShadow(100),
+    Y: numShadow(100),
+    W: numShadow(24),
+    H: numShadow(24),
+    VX: numShadow(0),
+    VY: numShadow(0),
+  },
+  sz_g2d_spawn_image_in_group: {
+    X: numShadow(100),
+    Y: numShadow(100),
+    W: numShadow(32),
+    H: numShadow(32),
+    VX: numShadow(0),
+    VY: numShadow(0),
+  },
+  sz_g2d_spawn_bullet: {
+    X: numShadow(100),
+    Y: numShadow(100),
+    R: numShadow(5),
+    VX: numShadow(0),
+    VY: numShadow(-4),
+  },
+  sz_g2d_spawn_asteroid: {
+    X: numShadow(100),
+    Y: numShadow(100),
+    SIZE: numShadow(40),
+    VX: numShadow(0),
+    VY: numShadow(2),
+  },
   sz_g2d_spawn_asteroid_edge: { SIZE: numShadow(40), SPEED: numShadow(1.5) },
-  sz_g2d_spawn_obstacle: { SIZE: numShadow(44) },
+  sz_g2d_spawn_obstacle: { X: numShadow(400), SIZE: numShadow(44), VX: numShadow(-3) },
+  sz_g2d_spawn_egg: { X: numShadow(400), Y: numShadow(100), VX: numShadow(-3) },
   sz_g2d_prune_old: { SECONDS: numShadow(2) },
   sz_g2d_every_seconds: { SECS: numShadow(2) },
   sz_g2d_random_between: { MIN: numShadow(1), MAX: numShadow(6) },

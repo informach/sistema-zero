@@ -23,12 +23,14 @@ interface AssetAccessor {
  * Blocos que CRIAM um sprite nomeado (a fonte da lista do dropdown), e em qual
  * campo está a cor/imagem para a miniatura. Inclui os criadores genéricos E os dos
  * KITS (nave, dino, gorila) — senão a criança cria um sprite com "Criar nave" e o
- * seletor diz, ERRADO, que não há sprite nenhum. Todos guardam o nome no campo
- * `NAME`. ⚠️ Bloco novo que cria sprite nomeado? Adicione aqui.
+ * seletor diz, ERRADO, que não há sprite nenhum. Quase todos guardam o nome no
+ * campo `NAME`; quem usa outro campo informa em `nameField`. ⚠️ Bloco novo que
+ * cria sprite nomeado? Adicione aqui.
  */
-const SPRITE_DECL_BLOCKS: Record<string, { color?: string; image?: string }> = {
+const SPRITE_DECL_BLOCKS: Record<string, { color?: string; image?: string; nameField?: string }> = {
   sz_g2d_create_sprite: { color: 'COLOR' },
   sz_g2d_create_image_sprite: { image: 'IMAGE' },
+  sz_g2d_create_shape_sprite: { nameField: 'SPRITE' }, // criar sprite com figura (v0.23) — nome no campo SPRITE
   sz_g2d_create_ship: { color: 'BODY' }, // criar nave (Kit espaço)
   sz_g2d_create_dino: { color: 'COLOR' }, // criar dinossauro (Kit dino)
   sz_g2d_place_thrower: { color: 'COLOR' }, // pôr o gorila (Kit gorilas)
@@ -47,7 +49,7 @@ export function collectSprites(workspace: Blockly.Workspace | null | undefined):
   for (const block of workspace.getAllBlocks(false)) {
     const decl = SPRITE_DECL_BLOCKS[block.type]
     if (!decl) continue
-    const name = block.getFieldValue('NAME')
+    const name = block.getFieldValue(decl.nameField ?? 'NAME')
     if (!name || byName.has(name)) continue
     const color =
       decl.color && block.getField(decl.color) ? block.getFieldValue(decl.color) : undefined

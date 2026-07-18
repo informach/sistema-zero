@@ -158,8 +158,9 @@ const INTERMEDIARIO_2D: ReadonlySet<string> = new Set<string>([
   // os getters de posição (posição x/y, centro x/y), o aleatório NA TELA (x/y) e o
   // "Limpar a tela" ficam no INICIANTE — são o que o 1º jogo (Nave contra Asteroides)
   // usa; sem eles o iniciante não monta um shooter simples de ponta a ponta.
-  'sz_g2d_set_position',
-  'sz_g2d_set_velocity',
+  // "Mudar a posição/velocidade do sprite" também são INICIANTE (verbos básicos de
+  // "fazer o boneco andar" — moram na 1ª categoria 🎮 Sprites; escondê-los deixava
+  // o iniciante sem os comandos mais elementares).
   'sz_g2d_sprite_w',
   'sz_g2d_sprite_h',
   'sz_g2d_sprite_vx',
@@ -175,6 +176,9 @@ const INTERMEDIARIO_2D: ReadonlySet<string> = new Set<string>([
   'sz_g2d_send_to_back',
   'sz_g2d_sprite_angle',
   'sz_g2d_point_sprite',
+  // "Girar o sprite N graus" coabita com "Apontar para X graus" (mexer no ângulo
+  // do desenho não é mais difícil que apontar; um sem o outro confundia).
+  'sz_g2d_rotate_sprite',
   'sz_g2d_set_opacity',
   'sz_g2d_set_size',
   'sz_g2d_scale_sprite',
@@ -183,7 +187,9 @@ const INTERMEDIARIO_2D: ReadonlySet<string> = new Set<string>([
   'sz_g2d_camera_x',
   'sz_g2d_camera_y',
   'sz_g2d_get_health',
-  'sz_g2d_load_spritesheet',
+  // NOTA: "Carregar folha de quadros" é INICIANTE — é o ÚNICO declarador de folha,
+  // e os blocos de animar (Animar/Estado/Auto-animar) já são iniciante; sem ele a
+  // subcat 🎬 Animação abriria com o seletor de folha vazio no degrau iniciante.
   'sz_g2d_angle_to',
   'sz_g2d_distance',
   'sz_g2d_random_between',
@@ -316,7 +322,6 @@ const AVANCADO_2D: ReadonlySet<string> = new Set<string>([
   'sz_g2d_set_gravity',
   'sz_g2d_thrust',
   'sz_g2d_apply_friction',
-  'sz_g2d_rotate_sprite',
   'sz_g2d_collides',
   'sz_g2d_circle_collides',
   'sz_g2d_draw_frame',
