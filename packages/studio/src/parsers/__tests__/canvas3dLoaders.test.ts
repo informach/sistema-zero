@@ -5,6 +5,7 @@ import { buildIRFromWorkspace } from '../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../blockly/workspaceState'
 import { generateJS } from '../../generators/js'
+import { behaviorStatements } from '../../ir/behavior'
 import type { SZIR } from '../../ir/schema'
 import { parseJS } from '../js'
 
@@ -24,7 +25,7 @@ function roundtripBlocks(code: string): { rebuiltCode: string; stateJson: string
   try {
     Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
     return {
-      rebuiltCode: generateJS({ statements: buildIRFromWorkspace(ws).js }),
+      rebuiltCode: generateJS({ statements: behaviorStatements(buildIRFromWorkspace(ws)) }),
       stateJson: JSON.stringify(state),
     }
   } finally {

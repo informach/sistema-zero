@@ -71,7 +71,7 @@ export const VALUE_SOCKETS: Record<string, Record<string, number>> = {
   sz_t3d_rotate_axis: { DELTA: 0.01 },
   sz_t3d_set_scale: { X: 1, Y: 1, Z: 1 },
   sz_t3d_look_at: { X: 0, Y: 0, Z: 0 },
-  sz_t3d_lerp_position: { ALPHA: 0.1 },
+  sz_t3d_lerp_position: { ALPHA: 0.1, DT: 1 / 60 },
   sz_t3d_set_intensity: { N: 1 },
   sz_t3d_set_fog: { NEAR: 10, FAR: 100 },
   sz_t3d_set_matrix_at: { I: 0 },
@@ -89,16 +89,32 @@ export const VALUE_SOCKETS: Record<string, Record<string, number>> = {
   // Mundo procedural com primitivas — defaults leves o bastante para celular.
   sz_t3d_primitive: { W: 1, H: 1, D: 1 },
   sz_t3d_terrain: { SIZE: 160, SEGMENTS: 48, HILLS: 4, SMOOTH: 18 },
-  sz_t3d_road: { X1: -20, Z1: 0, X2: 20, Z2: 0, WIDTH: 6 },
+  sz_t3d_water_wave: { DT: 1 / 60 },
+  sz_t3d_grass_wave: { DT: 1 / 60 },
+  sz_t3d_road: { X1: -20, Z1: 0, X2: 20, Z2: 0, WIDTH: 6, SEGMENTS: 24 },
   sz_t3d_building: { X: 0, Z: 0, W: 8, H: 10, D: 8 },
+  sz_t3d_city: {
+    BLOCKS_X: 8,
+    BLOCKS_Z: 8,
+    SPACING: 14,
+    ROAD_WIDTH: 5,
+    MIN_HEIGHT: 5,
+    MAX_HEIGHT: 24,
+    SEED: 42,
+  },
   // Física própria: 3 subpassos protegem contra frames lentos sem espiral de CPU.
   sz_t3d_physics_setup: { GRAVITY: -22, SUBSTEPS: 3 },
   sz_t3d_physics_static_box: { X: 0, Y: 1, Z: 0, W: 2, H: 2, D: 2 },
+  sz_t3d_physics_static_sphere: { X: 0, Y: 1, Z: 0, RADIUS: 1 },
   sz_t3d_physics_body: { W: 1, H: 2, D: 1, FRICTION: 0.82, BOUNCE: 0 },
   sz_t3d_physics_move: { X: 0, Z: 0, SPEED: 6 },
   sz_t3d_physics_jump: { SPEED: 7 },
   sz_t3d_physics_trigger: { X: 0, Y: 1, Z: 0, W: 6, H: 2, D: 6 },
   sz_t3d_physics_step: { DT: 0.0166667 },
+  sz_t3d_physics_velocity: { X: 0, Y: 0, Z: 0 },
+  sz_t3d_physics_impulse: { X: 0, Y: 4, Z: 0 },
+  sz_t3d_physics_teleport: { X: 0, Y: 2, Z: 0 },
+  sz_t3d_physics_raycast: { OX: 0, OY: 2, OZ: 0, DX: 0, DY: -1, DZ: 0, MAX: 100 },
 }
 
 /**
@@ -129,6 +145,7 @@ export const COLOR_SOCKETS: Record<string, Record<string, string>> = {
   sz_t3d_terrain: { COLOR: '#65a30d' },
   sz_t3d_road: { COLOR: '#334155' },
   sz_t3d_building: { COLOR: '#f59e0b', ROOF: '#b91c1c' },
+  sz_t3d_city: { COLOR: '#94a3b8', ROOF: '#334155' },
 }
 
 /**

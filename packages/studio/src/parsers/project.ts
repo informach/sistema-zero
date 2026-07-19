@@ -1,5 +1,12 @@
-import type { HTMLNode, HTMLShell, SZIR } from '#ir'
-import { countAdvancedCSS, countAdvancedHTML, countAdvancedJS } from '#ir'
+import type { BehaviorIR, HTMLNode, HTMLShell, JSStatement, SZIRV2 } from '#ir'
+import {
+  BEHAVIOR_SECTION_MARKERS,
+  behaviorStatements,
+  countAdvancedCSS,
+  countAdvancedHTML,
+  countAdvancedJS,
+  splitLegacyBehavior,
+} from '#ir'
 import { parseCSS } from './css'
 import { extractInlineAssets } from './html'
 import { parseJSWithDiagnostics } from './js'
@@ -37,11 +44,11 @@ export interface ParseProjectDiagnostic {
 }
 
 export interface ParseProjectResult {
-  ir: SZIR
+  ir: SZIRV2
   diagnostics: ParseProjectDiagnostic[]
 }
 
-export function parseProjectFiles(input: ParseProjectInput): SZIR {
+export function parseProjectFiles(input: ParseProjectInput): SZIRV2 {
   return parseProjectFilesWithDiagnostics(input).ir
 }
 
@@ -66,11 +73,12 @@ function buildParseResult(
   jsSource: string,
 ): ParseProjectResult {
   const css = parseCSS(cssSource)
-  const jsResult = parseJSWithDiagnostics(jsSource)
-  const ir: SZIR = {
+  const jsResult = parseBehaviorSource(jsSource)
+  const ir: SZIRV2 = {
+    version: 2,
     html,
     css,
-    js: jsResult.statements,
+    behavior: jsResult.behavior,
     extensions: [],
     ...(htmlShell ? { htmlShell } : {}),
   }
@@ -78,7 +86,7 @@ function buildParseResult(
 
   pushAdvancedDiagnostic(diagnostics, 'index.html', countAdvancedHTML(html))
   pushAdvancedDiagnostic(diagnostics, 'style.css', countAdvancedCSS(css))
-  pushAdvancedDiagnostic(diagnostics, 'script.js', countAdvancedJS(jsResult.statements))
+  pushAdvancedDiagnostic(diagnostics, 'script.js', countAdvancedJS(behaviorStatements(ir)))
 
   for (const diagnostic of jsResult.diagnostics) {
     diagnostics.push({
@@ -89,6 +97,94 @@ function buildParseResult(
   }
 
   return { ir, diagnostics }
+}
+
+function parseBehaviorSource(source: string): {
+  behavior: BehaviorIR
+  diagnostics: ReturnType<typeof parseJSWithDiagnostics>['diagnostics']
+} {
+  const lines = stripGeneratedLifecycleEnvelope(source.split(/\r?\n/))
+  const startIndex = lines.findIndex((line) => line.trim() === BEHAVIOR_SECTION_MARKERS.start)
+  const eventsIndex = lines.findIndex((line) => line.trim() === BEHAVIOR_SECTION_MARKERS.events)
+  const loopsIndex = lines.findIndex((line) => line.trim() === BEHAVIOR_SECTION_MARKERS.loops)
+  if (!(startIndex >= 0 && eventsIndex > startIndex && loopsIndex > eventsIndex)) {
+    const legacy = parseJSWithDiagnostics(source)
+    return { behavior: splitLegacyBehavior(legacy.statements), diagnostics: legacy.diagnostics }
+  }
+
+  const start = parseJSWithDiagnostics(
+    [...lines.slice(0, startIndex), ...lines.slice(startIndex + 1, eventsIndex)].join('\n'),
+  )
+  const events = parseJSWithDiagnostics(lines.slice(eventsIndex + 1, loopsIndex).join('\n'))
+  const loops = parseJSWithDiagnostics(lines.slice(loopsIndex + 1).join('\n'))
+  return {
+    behavior: {
+      start: start.statements,
+      events: events.statements,
+      loops: unwrapGeneratedPeriodicLoops(loops.statements),
+    },
+    diagnostics: [...start.diagnostics, ...events.diagnostics, ...loops.diagnostics],
+  }
+}
+
+/** Desfaz apenas o adaptador automático emitido para raízes “A cada N”. */
+function unwrapGeneratedPeriodicLoops(statements: JSStatement[]): JSStatement[] {
+  return statements.flatMap((statement) => {
+    if (
+      statement.type === 'g2d:updateEachFrame' &&
+      statement.body.length === 1 &&
+      (statement.body[0]?.type === 'g2d:everyFrames' ||
+        statement.body[0]?.type === 'g2d:everySeconds')
+    ) {
+      return [statement.body[0]]
+    }
+    if (
+      statement.type === 'gk:onUpdate' &&
+      statement.body.length === 1 &&
+      statement.body[0]?.type === 'gk:everySeconds'
+    ) {
+      return [statement.body[0]]
+    }
+    return [statement]
+  })
+}
+
+const GENERATED_LIFECYCLE_OPENERS = new Set([
+  '(function __szProjectRun() {',
+  'SZGame2D.onStart(function __szProjectRun() {',
+  'SZGameKit.runProject(function __szProjectRun() {',
+  'SZGame3D.runProject(function __szProjectRun() {',
+  'SZGameKit3D.runProject(function __szProjectRun() {',
+  'SZWorld3D.runProject(function __szProjectRun() {',
+])
+
+const GENERATED_ENGINE_BOOTS = new Set([
+  'SZGameKit.start();',
+  'SZGameKit3D.start();',
+  'SZWorld3D.start();',
+])
+
+/** Remove somente a casca exata emitida pelo gerador; código do aluno fica intacto. */
+function stripGeneratedLifecycleEnvelope(sourceLines: string[]): string[] {
+  const lines = [...sourceLines]
+  const startMarker = lines.findIndex((line) => line.trim() === BEHAVIOR_SECTION_MARKERS.start)
+  if (startMarker < 1) return lines
+  const openerIndex = startMarker - 1
+  const opener = lines[openerIndex]?.trim() ?? ''
+  if (!GENERATED_LIFECYCLE_OPENERS.has(opener)) return lines
+
+  lines.splice(openerIndex, 1)
+  while (lines.length > 0 && lines.at(-1)?.trim() === '') lines.pop()
+  if (GENERATED_ENGINE_BOOTS.has(lines.at(-1)?.trim() ?? '')) lines.pop()
+  while (lines.length > 0 && lines.at(-1)?.trim() === '') lines.pop()
+
+  const expectedClose = opener.startsWith('SZGame2D.')
+    ? '}, "__sz-project");'
+    : opener.startsWith('(function')
+      ? '})();'
+      : '});'
+  if (lines.at(-1)?.trim() === expectedClose) lines.pop()
+  return lines
 }
 
 function pushAdvancedDiagnostic(

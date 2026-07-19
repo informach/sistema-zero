@@ -1,3 +1,5 @@
+export * from './behavior'
 export * from './helpers'
 export * from './ids'
+export * from './lifecycle'
 export * from './schema'

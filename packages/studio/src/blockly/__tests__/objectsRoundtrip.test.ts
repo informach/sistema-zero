@@ -1,6 +1,6 @@
 import * as Blockly from 'blockly/core'
 import { generateProjectFiles } from '#generators'
-import type { JSStatement } from '#ir'
+import { behaviorStatements, type JSStatement } from '#ir'
 import { parseProjectFiles } from '#parsers'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
@@ -85,7 +85,7 @@ describe('Objetos — round-trip código↔blocos', () => {
   const parsed2 = parseProjectFiles(regenerated)
 
   it('o ciclo bloco↔texto é estável (parse → gerar → parse não degrada)', () => {
-    expect(parsed2.js).toEqual(parsed1.js)
+    expect(parsed2.behavior).toEqual(parsed1.behavior)
   })
 
   it('o ciclo completo da Ponte (via Blockly real) preserva a IR — mutator e buildIR ok', () => {
@@ -118,11 +118,11 @@ describe('Objetos — round-trip código↔blocos', () => {
   })
 
   it('nada sobra como código avançado (rawCount == 0)', () => {
-    expect(rawCount(parsed1.js)).toBe(0)
+    expect(rawCount(behaviorStatements(parsed1))).toBe(0)
   })
 
   it('`this.velocidade.x` vira memberGet aninhado (objeto = minha propriedade)', () => {
-    const klass = parsed1.js.find((s) => s.type === 'classDecl')
+    const klass = behaviorStatements(parsed1).find((s) => s.type === 'classDecl')
     expect(klass?.type).toBe('classDecl')
     if (klass?.type !== 'classDecl') return
     const atualizar = klass.methods.find((m) => m.name === 'atualizar')
@@ -158,7 +158,7 @@ describe('Object.keys/values, acesso por chave e imagem — round-trip', () => {
   const parsed2 = parseProjectFiles(regenerated)
 
   it('o ciclo bloco↔texto é estável (parse → gerar → parse não degrada)', () => {
-    expect(parsed2.js).toEqual(parsed1.js)
+    expect(parsed2.behavior).toEqual(parsed1.behavior)
   })
 
   it('gera os blocos novos e nada sobra como avançado', () => {
@@ -166,7 +166,7 @@ describe('Object.keys/values, acesso por chave e imagem — round-trip', () => {
     for (const expected of ['sz_val_object_op', 'sz_val_index_get', 'sz_val_image']) {
       expect(types, `faltou o bloco ${expected}`).toContain(expected)
     }
-    expect(rawCount(parsed1.js)).toBe(0)
+    expect(rawCount(behaviorStatements(parsed1))).toBe(0)
   })
 
   it('via Blockly real: bloco → IR → código preserva a saída', () => {
@@ -204,7 +204,7 @@ describe('Resources — new Image + forEach + Object.keys + índice (Fase 4b)', 
   const parsed2 = parseProjectFiles(regenerated)
 
   it('o ciclo bloco↔texto é estável (parse → gerar → parse não degrada)', () => {
-    expect(parsed2.js).toEqual(parsed1.js)
+    expect(parsed2.behavior).toEqual(parsed1.behavior)
   })
 
   it('gera os blocos novos e nada sobra como avançado', () => {
@@ -217,7 +217,7 @@ describe('Resources — new Image + forEach + Object.keys + índice (Fase 4b)', 
     ]) {
       expect(types, `faltou o bloco ${expected}`).toContain(expected)
     }
-    expect(rawCount(parsed1.js)).toBe(0)
+    expect(rawCount(behaviorStatements(parsed1))).toBe(0)
   })
 
   it('via Blockly real: bloco → IR → código preserva a saída', () => {
@@ -258,7 +258,7 @@ describe('Resources completo — indexSet + img.onload viram blocos', () => {
   const parsed2 = parseProjectFiles(regenerated)
 
   it('o ciclo bloco↔texto é estável (parse → gerar → parse não degrada)', () => {
-    expect(parsed2.js).toEqual(parsed1.js)
+    expect(parsed2.behavior).toEqual(parsed1.behavior)
   })
 
   it('gera os blocos novos e nada sobra como avançado', () => {
@@ -266,7 +266,7 @@ describe('Resources completo — indexSet + img.onload viram blocos', () => {
     for (const expected of ['sz_js_index_set', 'sz_js_image_onload']) {
       expect(types, `faltou o bloco ${expected}`).toContain(expected)
     }
-    expect(rawCount(parsed1.js)).toBe(0)
+    expect(rawCount(behaviorStatements(parsed1))).toBe(0)
   })
 
   it('via Blockly real: bloco → IR → código preserva a saída', () => {

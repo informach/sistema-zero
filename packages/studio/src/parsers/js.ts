@@ -7,6 +7,10 @@ import {
   type JSExpr,
   type JSStatement,
 } from '#ir'
+import {
+  canvas3DMacroFromPlaceholder,
+  prepareCanvas3DSourceForParse,
+} from '../three/canvas3dMacroCodec'
 
 const BABEL_OPTS: ParserOptions = {
   sourceType: 'module',
@@ -35,9 +39,11 @@ export function parseJS(source: string): JSStatement[] {
 
 export function parseJSWithDiagnostics(source: string): ParseJSResult {
   if (!source.trim()) return { statements: [], diagnostics: [] }
+  const prepared = prepareCanvas3DSourceForParse(source)
+  const parseSource = prepared.source
   let ast: ReturnType<typeof parse>
   try {
-    ast = parse(source, BABEL_OPTS)
+    ast = parse(parseSource, BABEL_OPTS)
   } catch (error) {
     return {
       statements: [{ type: 'rawJS', code: source, advanced: true }],
@@ -59,7 +65,8 @@ export function parseJSWithDiagnostics(source: string): ParseJSResult {
   }
 
   const ctx: ParseCtx = {
-    source,
+    source: parseSource,
+    canvas3dMacros: prepared.macros,
     elementVars: new Map(),
     createdElementVars: new Set(),
     canvasElementVars: new Set(),
@@ -76,7 +83,7 @@ export function parseJSWithDiagnostics(source: string): ParseJSResult {
   // entrada não-parseável.
   let out: JSStatement[]
   try {
-    out = mapStatementList(ast.program.body, source, ctx)
+    out = mapStatementList(ast.program.body, parseSource, ctx)
   } catch (error) {
     return {
       statements: [{ type: 'rawJS', code: source, advanced: true }],
@@ -103,6 +110,8 @@ interface ParseCtx {
   /** Fonte JS completa — para `bodyOfFn`/`asRaw` a partir de matchers de VALOR
    * (ex.: o corpo de `new Promise((resolve) => { ... })` no `toExpr`). */
   source: string
+  /** Macros Canvas 3D íntegros extraídos de marcadores com checksum. */
+  canvas3dMacros: Map<string, JSStatement>
   elementVars: Map<string, string>
   /**
    * Variáveis que vieram de `document.createElement[NS](...)` (não de
@@ -980,6 +989,19 @@ function expandCompoundTarget(
 
 function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSStatement {
   const expr = node.expression
+  if (
+    expr?.type === 'CallExpression' &&
+    expr.callee?.type === 'Identifier' &&
+    expr.arguments?.length === 1 &&
+    expr.arguments[0]?.type === 'StringLiteral'
+  ) {
+    const macro = canvas3DMacroFromPlaceholder(
+      expr.callee.name,
+      expr.arguments[0].value,
+      ctx.canvas3dMacros,
+    )
+    if (macro) return macro
+  }
   // `await <valor>;` (statement) — ex.: `await Promise.all([...])` / `await new Promise(...)`.
   if (expr?.type === 'AwaitExpression') {
     const value = toExpr(expr.argument, ctx)
@@ -1059,16 +1081,20 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
   }
 
   // Canvas 3D: `loader.load(url, (modelo) => { … });` → loaderLoad (carregar um
-  // recurso async: modelo GLTF, textura, HDR…). Forma exata: 2 args, o 2º um
-  // arrow/função com 1 parâmetro. (GLTFLoader.load com onProgress/onError — 4
-  // args — segue como código avançado.)
+  // recurso async: modelo GLTF, textura, HDR…). Aceita tanto a forma legada com
+  // 2 args quanto a forma segura com callback de erro no 4º argumento.
   if (
     expr?.type === 'CallExpression' &&
     expr.callee?.type === 'MemberExpression' &&
     !expr.callee.computed &&
     expr.callee.object?.type === 'Identifier' &&
     expr.callee.property?.name === 'load' &&
-    expr.arguments?.length === 2 &&
+    (expr.arguments?.length === 2 ||
+      (expr.arguments?.length === 4 &&
+        expr.arguments[2]?.type === 'Identifier' &&
+        expr.arguments[2].name === 'undefined' &&
+        (expr.arguments[3]?.type === 'ArrowFunctionExpression' ||
+          expr.arguments[3]?.type === 'FunctionExpression'))) &&
     (expr.arguments[1]?.type === 'ArrowFunctionExpression' ||
       expr.arguments[1]?.type === 'FunctionExpression')
   ) {
@@ -1083,12 +1109,23 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
       params.length === 1 &&
       params[0]?.type === 'Identifier'
     ) {
+      const errorFn = expr.arguments.length === 4 ? expr.arguments[3] : undefined
+      const errorParams =
+        errorFn?.type === 'ArrowFunctionExpression' || errorFn?.type === 'FunctionExpression'
+          ? errorFn.params
+          : []
       return {
         type: 'loaderLoad',
         loaderVar: expr.callee.object.name as string,
         url: { type: 'str', value: urlArg.value as string },
         param: params[0].name as string,
         body: bodyOfFn(fn, source, ctx),
+        ...(errorFn && errorParams[0]?.type === 'Identifier'
+          ? {
+              errorParam: errorParams[0].name,
+              errorBody: bodyOfFn(errorFn, source, ctx),
+            }
+          : {}),
       }
     }
   }
@@ -2697,6 +2734,10 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
     n?.type === 'FunctionExpression' || n?.type === 'ArrowFunctionExpression'
 
   switch (method) {
+    case 'onStart': {
+      if (!isFn(args[0])) return null
+      return { type: 'g2d:onStart', body: bodyOfFn(args[0], source, ctx) }
+    }
     case 'gameLoop': {
       if (!isFn(args[0])) return null
       return { type: 'g2d:updateEachFrame', body: bodyOfFn(args[0], source, ctx) }
@@ -9489,6 +9530,10 @@ function matchGame3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     const bVar = identifierName(args[1])
     if (aVar && bVar) return { type: 'g3d:distanceTo', aVar, bVar }
   }
+  if (method === 'countSwarm') {
+    const swarmVar = identifierName(args[0])
+    if (swarmVar) return { type: 'g3d:countSwarm', swarmVar }
+  }
   if (method === 'isNear') {
     const aVar = identifierName(args[0])
     const bVar = identifierName(args[1])
@@ -11321,6 +11366,7 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g3d:crosserHit':
     case 'g3d:crosserRow':
     case 'g3d:distanceTo':
+    case 'g3d:countSwarm':
     case 'g3d:isNear':
     case 'g3d:raceHit':
     case 'g3d:raceLaps':

@@ -2,8 +2,7 @@ import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
 import { compileStatements, generateJS } from '#generators'
-import type { JSStatement } from '#ir'
-import { num, str, variable } from '#ir'
+import { behaviorStatements, type JSStatement, num, str, variable } from '#ir'
 import { parseJS } from '#parsers'
 import { socketInputsFor } from '../blocks/valueSockets'
 import { migrateIfElseBlocks } from '../migrateIfElse'
@@ -20,7 +19,7 @@ type IfStmt = Extract<JSStatement, { type: 'if' }>
 
 /** IR do (único) "Se" no workspace, embrulhado no frame de Comportamento. */
 function ifOf(ws: Blockly.Workspace): IfStmt {
-  const stmt = irInFrame(ws).js.find((s) => s.type === 'if')
+  const stmt = behaviorStatements(irInFrame(ws)).find((s) => s.type === 'if')
   if (stmt?.type !== 'if') throw new Error('sem if')
   return stmt
 }

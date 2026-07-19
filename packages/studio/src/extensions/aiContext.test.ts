@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+import { gameTwoDExtension } from '../official-extensions/game-2d'
 import { gameKitExtension } from '../official-extensions/game-2d-advanced'
 import { formatExtensionPromptContext } from './aiContext'
 
@@ -20,5 +21,16 @@ describe('formatExtensionPromptContext', () => {
 
     expect(typeof loadPromptContext).toBe('function')
     expect((await loadPromptContext?.())?.length).toBeGreaterThan(30_000)
+  })
+
+  it('usa um resumo curto do Jogo 2D e mantém o manual detalhado sob demanda', async () => {
+    const context = formatExtensionPromptContext([gameTwoDExtension])
+    const loadPromptContext = gameTwoDExtension.ai?.loadPromptContext
+
+    expect(context).toContain('Quando o jogo começar')
+    expect(context).toContain('passos fixos de 60 Hz')
+    expect(context.length).toBeLessThan(6_000)
+    expect(typeof loadPromptContext).toBe('function')
+    expect((await loadPromptContext?.())?.length).toBeGreaterThan(20_000)
   })
 })

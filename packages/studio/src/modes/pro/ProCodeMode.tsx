@@ -146,17 +146,17 @@ export function ProCodeMode(): JSX.Element {
   return (
     <ProWebContainerProvider>
       <PanelGroup direction="horizontal" className="h-full w-full">
-        <Panel defaultSize={20} minSize={14} maxSize={30}>
+        <Panel id="pro-files" order={1} defaultSize={20} minSize={14} maxSize={30}>
           <ProFileTree activeFile={activeFile} onSelectFile={handleSelectFile} />
         </Panel>
         <PanelResizeHandle className="sz-resize-handle sz-resize-handle--vertical" />
-        <Panel defaultSize={showPreview ? 45 : 80} minSize={28}>
+        <Panel id="pro-code" order={2} defaultSize={showPreview ? 45 : 80} minSize={28}>
           {codeEditor}
         </Panel>
         {showPreview && (
           <>
             <PanelResizeHandle className="sz-resize-handle sz-resize-handle--vertical" />
-            <Panel defaultSize={35} minSize={20}>
+            <Panel id="pro-preview" order={3} defaultSize={35} minSize={20}>
               <ProPreview />
             </Panel>
           </>

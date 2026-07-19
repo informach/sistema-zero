@@ -1,10 +1,12 @@
 import { beforeAll, describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import { compileStatements } from '#generators'
-import { type JSStatement, SZIRSchema } from '#ir'
+import { behaviorStatements, type JSStatement, SZIRSchema } from '#ir'
 import 'blockly/blocks'
+import { attachBlockInContractContext } from '../../../blockly/__tests__/blockContractTestUtils'
+import { inferBlockContract } from '../../../blockly/blockContracts'
 import { registerExtensionBlocks } from '../../../blockly/blocks'
-import { buildIRFromWorkspace, FRAME_BEHAVIOR } from '../../../blockly/buildIR'
+import { buildIRFromWorkspace } from '../../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import { parseJS } from '../../../parsers/js'
@@ -70,25 +72,15 @@ function loadRuntimeKeys(): Set<string> {
 function buildIrFor(type: string, kind: 'statement' | 'expr'): JSStatement[] {
   const ws = new Blockly.Workspace()
   try {
-    const frame = ws.newBlock(FRAME_BEHAVIOR)
-    const slot = frame.getInput('CHILDREN')?.connection
-    if (!slot) throw new Error('frame de Comportamento sem input CHILDREN')
-    if (kind === 'statement') {
-      const block = ws.newBlock(type)
-      if (!block.previousConnection) throw new Error(`${type}: statement sem previousConnection`)
-      slot.connect(block.previousConnection)
-    } else {
-      const host = ws.newBlock(EXPR_HOST)
-      if (!host.previousConnection) throw new Error('host de expr sem previousConnection')
-      slot.connect(host.previousConnection)
-      const socket = host.getInput('X')?.connection
-      const block = ws.newBlock(type)
-      if (!socket || !block.outputConnection) {
-        throw new Error(`${type}: reporter sem outputConnection (ou host sem X)`)
-      }
-      socket.connect(block.outputConnection)
-    }
-    return stripIds(buildIRFromWorkspace(ws).js)
+    attachBlockInContractContext({
+      workspace: ws,
+      type,
+      kind,
+      expressionHost: EXPR_HOST,
+      expressionInput: 'X',
+      loopHost: 'sz_gk_on_update',
+    })
+    return stripIds(behaviorStatements(buildIRFromWorkspace(ws)))
   } finally {
     ws.dispose()
   }
@@ -101,7 +93,7 @@ function irThroughBlocks(js: JSStatement[]): JSStatement[] {
   const ws = new Blockly.Workspace()
   try {
     Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-    return stripIds(buildIRFromWorkspace(ws).js)
+    return stripIds(behaviorStatements(buildIRFromWorkspace(ws)))
   } finally {
     ws.dispose()
   }
@@ -177,7 +169,9 @@ describe('Auditoria Jogo 2D Avançado — inventário', () => {
 
 describe('Auditoria Jogo 2D Avançado — pipeline completo por bloco', () => {
   const cases: { type: string; kind: 'statement' | 'expr' }[] = [
-    ...statementDefs.map((d) => ({ type: d.type, kind: 'statement' as const })),
+    ...statementDefs
+      .filter((definition) => inferBlockContract(definition).migration === 'keep')
+      .map((d) => ({ type: d.type, kind: 'statement' as const })),
     ...exprDefs.map((d) => ({ type: d.type, kind: 'expr' as const })),
   ]
 

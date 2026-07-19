@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import { generateProjectFiles } from '#generators'
-import { SZIRSchema } from '#ir'
+import { SZIRV2Schema } from '#ir'
 import 'blockly/blocks'
 import { buildIRFromWorkspace } from '../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../blockly/setup'
@@ -252,7 +252,7 @@ describe('parsers — plataforma vertical "na mão" (núcleo, sem extensão)', (
     expect(
       [...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:') || t.startsWith('gk:')),
     ).toBe(false)
-    expect(SZIRSchema.safeParse(ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(ir).success).toBe(true)
     // a mecânica de ensino aparece: classes, função de colisão AABB (overlap),
     // laços, gravidade/plataforma no "se", laço de quadro e Canvas DEDICADO (a
     // câmera é save+scale+translate; o herói e os blocos são fillRect).

@@ -48,6 +48,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Troca a cor que aparece atrás de todos os objetos da cena 3D.',
   },
   {
     type: 'sz_g3d_set_camera',
@@ -77,6 +78,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Cria um cubo com todos os lados do mesmo tamanho e a cor escolhida.',
   },
   {
     type: 'sz_g3d_create_sphere',
@@ -91,6 +93,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Cria uma esfera com o raio e a cor escolhidos.',
   },
   {
     type: 'sz_g3d_create_block',
@@ -123,6 +126,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Coloca o objeto nas coordenadas x, y e z da cena 3D.',
   },
   {
     type: 'sz_g3d_set_rotation',
@@ -1293,6 +1297,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Cria um cilindro com o raio, a altura e a cor escolhidos.',
   },
   {
     type: 'sz_g3d_create_cone',
@@ -1308,6 +1313,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Cria um cone com o raio da base, a altura e a cor escolhidos.',
   },
   {
     type: 'sz_g3d_create_plane',
@@ -1339,6 +1345,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Cria um anel 3D; raio controla o tamanho e grossura controla o tubo.',
   },
   {
     type: 'sz_g3d_create_model',
@@ -1580,6 +1587,14 @@ export const gameThreeDBlocks = [
     tooltip: 'Cria uma cópia de um objeto e a coloca no enxame, na posição dada.',
   },
   {
+    type: 'sz_g3d_count_swarm',
+    message0: 'quantidade de cópias no enxame %1',
+    args0: [{ type: 'field_name_picker', name: 'SWARM', text: 'enxame', kind: 'group3d' }],
+    output: 'JSValue',
+    colour: '#f472b6',
+    tooltip: 'Mostra quantas cópias existem agora no enxame.',
+  },
+  {
     type: 'sz_g3d_for_each_swarm',
     message0: 'Para cada %1 do enxame %2',
     args0: [
@@ -1765,7 +1780,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
-    name: '🏃 Física avançada',
+    name: '🏃 Corpo & colisões',
     colour: C,
     types: [
       'sz_g3d_body',
@@ -1824,6 +1839,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     types: [
       'sz_g3d_create_swarm',
       'sz_g3d_spawn_in_swarm',
+      'sz_g3d_count_swarm',
       'sz_g3d_for_each_swarm',
       'sz_g3d_remove_from_swarm',
       'sz_g3d_prune_swarm',
@@ -1895,9 +1911,23 @@ SUBCATS.forEach((sc, i) => {
 const COLOUR_BY_TYPE = new Map<string, string>(
   SUBCATS.flatMap((sc) => sc.types.map((t) => [t, sc.colour] as const)),
 )
+const STACKED_INPUT_TYPES = new Set([
+  'sz_g3d_create_block',
+  'sz_g3d_run_enemies',
+  'sz_g3d_add_row',
+  'sz_g3d_slide_between',
+  'sz_g3d_move_towards',
+  'sz_g3d_create_cylinder',
+  'sz_g3d_create_cone',
+  'sz_g3d_create_plane',
+  'sz_g3d_create_torus',
+  'sz_g3d_add_point_light',
+  'sz_g3d_spawn_in_swarm',
+])
 for (const b of gameThreeDBlocks) {
   const colour = COLOUR_BY_TYPE.get(b.type)
   if (colour) b.colour = colour
+  if (STACKED_INPUT_TYPES.has(b.type)) (b as { inputsInline?: boolean }).inputsInline = false
 }
 
 const CATEGORIZED = new Set(SUBCATS.flatMap((sc) => sc.types))
@@ -1911,14 +1941,21 @@ const numShadow = (value: number) => ({ shadow: { type: 'sz_val_number', fields:
  * valor padrão preenchido ao arrastar da paleta. Cresce a cada campo convertido.
  */
 const G3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
+  sz_g3d_set_camera: { X: numShadow(4), Y: numShadow(3), Z: numShadow(6) },
   sz_g3d_create_box: { SIZE: numShadow(1) },
   sz_g3d_create_sphere: { RADIUS: numShadow(0.5) },
   sz_g3d_create_block: { W: numShadow(10), H: numShadow(0.5), D: numShadow(50) },
+  sz_g3d_set_position: { X: numShadow(0), Y: numShadow(0), Z: numShadow(0) },
+  sz_g3d_set_rotation: { X: numShadow(0), Y: numShadow(0), Z: numShadow(0) },
+  sz_g3d_set_scale: { FACTOR: numShadow(1) },
   sz_g3d_create_cylinder: { RADIUS: numShadow(0.5), HEIGHT: numShadow(1) },
   sz_g3d_create_cone: { RADIUS: numShadow(0.5), HEIGHT: numShadow(1) },
   sz_g3d_create_plane: { W: numShadow(10), D: numShadow(10) },
   sz_g3d_create_torus: { RADIUS: numShadow(0.5), TUBE: numShadow(0.2) },
   sz_g3d_control_keys: { SPEED: numShadow(0.05) },
+  sz_g3d_set_velocity: { X: numShadow(0), Y: numShadow(0), Z: numShadow(0) },
+  sz_g3d_jump: { FORCE: numShadow(0.08) },
+  sz_g3d_grid_position: { ROW: numShadow(0), COL: numShadow(0) },
   sz_g3d_move_in_circle: { RADIUS: numShadow(7), SPEED: numShadow(0.02) },
   sz_g3d_slide_between: { MIN: numShadow(-5), MAX: numShadow(5), SPEED: numShadow(0.05) },
   sz_g3d_spin: { SPEED: numShadow(0.03) },
@@ -1928,6 +1965,10 @@ const G3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
     Z: numShadow(0),
     FACTOR: numShadow(0.1),
   },
+  sz_g3d_move_by: { X: numShadow(0), Y: numShadow(0), Z: numShadow(0) },
+  sz_g3d_rotate_by: { AMOUNT: numShadow(0.01) },
+  sz_g3d_look_at_point: { X: numShadow(0), Y: numShadow(0), Z: numShadow(0) },
+  sz_g3d_move_forward: { DIST: numShadow(0.05) },
   sz_g3d_body: { GRAVITY: numShadow(-0.01) },
   sz_g3d_platformer_controls: { SPEED: numShadow(0.08), JUMP: numShadow(0.18) },
   sz_g3d_fps_controls: { SPEED: numShadow(0.08) },

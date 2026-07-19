@@ -22,11 +22,15 @@ interface AssetAccessor {
 export function filterAssetsForPicker(
   assets: readonly ProjectAsset[],
   kind: 'image' | '3d' | 'audio',
-  filter?: 'tilemap',
+  filter?: 'tilemap' | 'model3d' | 'environment3d',
 ): ProjectAsset[] {
   return assets.filter((a) => {
     if (!a) return false
-    if (kind === '3d') return a.kind === 'model3d' || a.kind === 'environment3d'
+    if (kind === '3d') {
+      if (filter === 'model3d') return a.kind === 'model3d'
+      if (filter === 'environment3d') return a.kind === 'environment3d'
+      return a.kind === 'model3d' || a.kind === 'environment3d'
+    }
     if (kind === 'audio') return a.kind === 'audio'
     return a.kind === 'image' && (filter !== 'tilemap' || Boolean(a.tilemap))
   })
@@ -100,7 +104,7 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
    * (o bloco "Criar mapa do meu desenho" não deve oferecer imagens comuns).
    * Vem da DEFINIÇÃO do bloco (`filter` no JSON) — estrutural, não serializa.
    */
-  private assetFilter?: 'tilemap'
+  private assetFilter?: 'tilemap' | 'model3d' | 'environment3d'
   /**
    * Que FAMÍLIA de asset a grade lista: `'image'` (padrão), `'3d'` (modelo .glb /
    * céu .hdr) ou `'audio'` (som). Vem da DEFINIÇÃO do bloco (`kind` no JSON) —
@@ -108,7 +112,11 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
    */
   private assetKind: 'image' | '3d' | 'audio'
 
-  constructor(text: string, filter?: 'tilemap', kind: 'image' | '3d' | 'audio' = 'image') {
+  constructor(
+    text: string,
+    filter?: 'tilemap' | 'model3d' | 'environment3d',
+    kind: 'image' | '3d' | 'audio' = 'image',
+  ) {
     super(text)
     this.assetFilter = filter
     this.assetKind = kind
@@ -122,7 +130,11 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
     const kind = options.kind === '3d' || options.kind === 'audio' ? options.kind : 'image'
     return new FieldAssetPicker(
       `${options.text ?? ''}`,
-      options.filter === 'tilemap' ? 'tilemap' : undefined,
+      options.filter === 'tilemap' ||
+        options.filter === 'model3d' ||
+        options.filter === 'environment3d'
+        ? options.filter
+        : undefined,
       kind,
     )
   }

@@ -89,4 +89,41 @@ describe('Fase 3 — keyframes multi-passo + atalhos CSS', () => {
     expect(grid).toContain('grid-template-columns')
     expect(grid).toContain('repeat(3, 1fr)')
   })
+
+  it('fluxos completos: aplica fonte, hover e animação sem propriedade manual', () => {
+    const font = cssFromBlock('sz_css_use_font', {
+      SELECTOR: 'body',
+      FONT: 'Press Start 2P',
+    })
+    expect(font).toEqual([
+      {
+        selector: 'body',
+        declarations: { 'font-family': '"Press Start 2P", sans-serif' },
+        __id: expect.any(String),
+      },
+    ])
+
+    const animation = cssFromBlock('sz_css_apply_animation', {
+      SELECTOR: '#caixa',
+      NAME: 'pulsar',
+      SECONDS: 1.5,
+      REPEAT: 'infinite',
+    })
+    expect(animation[0]?.declarations.animation).toBe('pulsar 1.5s ease-in-out infinite')
+
+    const ws = new Blockly.Workspace()
+    const hover = ws.newBlock('sz_css_hover')
+    hover.setFieldValue('#caixa', 'SELECTOR')
+    const declaration = ws.newBlock('sz_css_decl')
+    declaration.setFieldValue('background-color', 'PROP')
+    declaration.setFieldValue('#7c3aed', 'VALUE')
+    hover
+      .getInput('CHILDREN')
+      ?.connection?.connect(declaration.previousConnection as Blockly.Connection)
+    const css = irInFrame(ws, 'css').css
+    expect(css[0]).toMatchObject({
+      selector: '#caixa:hover',
+      declarations: { 'background-color': '#7c3aed' },
+    })
+  })
 })

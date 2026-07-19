@@ -1,7 +1,13 @@
 import { buildWorkspaceStateFromIR, registerExtensionBlocks } from '#blockly'
 import type { Project } from '#core'
 import type { ExtensionDefinition } from '#extensions'
-import { type JSStatement, type SZIR, statementIsExtension } from '#ir'
+import {
+  type JSStatement,
+  normalizeSZIR,
+  type SZIRInput,
+  type SZIRV2,
+  statementIsExtension,
+} from '#ir'
 import { findExtension, OFFICIAL_CATALOG } from '#official-extensions'
 import { type ProjectStoreApi, useProjectStore } from './projectStore'
 
@@ -60,7 +66,7 @@ export function countExtensionBlocksInProject(project: Project, extId: string): 
 export function removeExtensionArtifacts(
   project: Project,
   extId: string,
-): { ir: SZIR | null; blocksState: unknown | null } {
+): { ir: SZIRInput | null; blocksState: unknown | null } {
   const ir = project.ir ? removeExtensionFromIR(project.ir, extId) : null
   if (ir) return { ir, blocksState: buildWorkspaceStateFromIR(ir) }
 
@@ -106,10 +112,15 @@ function wrapperChildren(wrapper: unknown): unknown[] {
   return children
 }
 
-function removeExtensionFromIR(ir: SZIR, extId: string): SZIR {
+function removeExtensionFromIR(input: SZIRInput, extId: string): SZIRV2 {
+  const ir = normalizeSZIR(input)
   return {
     ...ir,
-    js: removeExtensionStatements(ir.js, extId),
+    behavior: {
+      start: removeExtensionStatements(ir.behavior.start, extId),
+      events: removeExtensionStatements(ir.behavior.events, extId),
+      loops: removeExtensionStatements(ir.behavior.loops, extId),
+    },
     extensions: ir.extensions.filter((extension) => extension.extensionId !== extId),
   }
 }

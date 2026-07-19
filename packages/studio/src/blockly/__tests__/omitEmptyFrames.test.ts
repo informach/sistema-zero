@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
-import type { SZIR } from '../../ir/schema'
-import { FRAME_APPEARANCE, FRAME_BEHAVIOR, FRAME_STRUCTURE } from '../buildIR'
-import { buildWorkspaceStateFromIR } from '../workspaceState'
+import type { SZIR, SZIRV2 } from '../../ir/schema'
+import { FRAME_EVENTS, FRAME_LOOPS, FRAME_START, FRAME_STRUCTURE } from '../buildIR'
+import { buildWorkspaceStateFromIR, emptyFramesBlocksState } from '../workspaceState'
 
 /**
  * `omitEmptyAuxFrames` (Bug: num projeto só-JS — ex.: Canvas 3D — os frames
@@ -20,18 +20,18 @@ const jsOnly: SZIR = {
   extensions: [],
 }
 
-describe('buildWorkspaceStateFromIR — omitEmptyAuxFrames', () => {
-  it('SEM a opção: sempre os 3 frames (compat do seed de projeto novo)', () => {
+describe('buildWorkspaceStateFromIR — áreas opcionais', () => {
+  it('projeto só-JS legado cria somente Ao iniciar', () => {
     const types = frameTypes(buildWorkspaceStateFromIR(jsOnly))
-    expect(types).toEqual([FRAME_STRUCTURE, FRAME_APPEARANCE, FRAME_BEHAVIOR])
+    expect(types).toEqual([FRAME_START])
   })
 
-  it('projeto só-JS: omite Estrutura e Aparência vazias, mantém Comportamento', () => {
+  it('a opção legada não ressuscita áreas vazias', () => {
     const types = frameTypes(buildWorkspaceStateFromIR(jsOnly, { omitEmptyAuxFrames: true }))
-    expect(types).toEqual([FRAME_BEHAVIOR])
+    expect(types).toEqual([FRAME_START])
   })
 
-  it('com HTML mas sem CSS: mantém Estrutura + Comportamento, omite Aparência', () => {
+  it('com HTML sem comportamento cria somente Estrutura', () => {
     const withHtml: SZIR = {
       html: [{ type: 'element', tag: 'p', attrs: {}, children: [{ type: 'text', text: 'oi' }] }],
       css: [],
@@ -39,6 +39,25 @@ describe('buildWorkspaceStateFromIR — omitEmptyAuxFrames', () => {
       extensions: [],
     }
     const types = frameTypes(buildWorkspaceStateFromIR(withHtml, { omitEmptyAuxFrames: true }))
-    expect(types).toEqual([FRAME_STRUCTURE, FRAME_BEHAVIOR])
+    expect(types).toEqual([FRAME_STRUCTURE])
+  })
+
+  it('preserva as seções explícitas da IR v2', () => {
+    const v2: SZIRV2 = {
+      version: 2,
+      html: [],
+      css: [],
+      behavior: {
+        start: [],
+        events: [{ type: 'event', target: 'botao', event: 'click', body: [] }],
+        loops: [{ type: 'animationLoop', body: [] }],
+      },
+      extensions: [],
+    }
+    expect(frameTypes(buildWorkspaceStateFromIR(v2))).toEqual([FRAME_EVENTS, FRAME_LOOPS])
+  })
+
+  it('workspace inicial permanece completamente vazio', () => {
+    expect(frameTypes(emptyFramesBlocksState())).toEqual([])
   })
 })

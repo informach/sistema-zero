@@ -4,6 +4,7 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useShallow } from 'zustand/react/shallow'
 import { buildWorkspaceStateFromIR, isBlocksStateEmpty } from '#blockly'
 import { t } from '#core'
+import { normalizeSZIR } from '#ir'
 import { BlocksWorkspaceEditor } from '../components/blocks/BlocksWorkspaceEditor'
 import { ModeLimitationsNotice } from '../components/layout/ModeLimitationsNotice'
 import { NarrowPanels } from '../components/layout/NarrowPanels'
@@ -114,7 +115,15 @@ export function BlocksMode(): JSX.Element {
     if (blocksHydration === 'pending') return
     if (filesAheadOfBlocks) return
     if (!isBlocksStateEmpty(blocksState)) return
-    if (ir.html.length === 0 && ir.css.length === 0 && ir.js.length === 0) return
+    const behavior = normalizeSZIR(ir).behavior
+    if (
+      ir.html.length === 0 &&
+      ir.css.length === 0 &&
+      behavior.start.length === 0 &&
+      behavior.events.length === 0 &&
+      behavior.loops.length === 0
+    )
+      return
     applyProjectState({ blocksState: buildWorkspaceStateFromIR(ir, { omitEmptyAuxFrames: true }) })
   }, [hasProject, blocksState, ir, blocksHydration, filesAheadOfBlocks, applyProjectState])
 
@@ -156,7 +165,15 @@ export function BlocksMode(): JSX.Element {
         if (current.ir || !isBlocksStateEmpty(current.blocksState)) return
         if (state.blocksHydration === 'pending' || state.blocksHydration === 'restored') return
         const derived = parseProjectFiles(current.files)
-        if (derived.html.length === 0 && derived.css.length === 0 && derived.js.length === 0) return
+        const behavior = derived.behavior
+        if (
+          derived.html.length === 0 &&
+          derived.css.length === 0 &&
+          behavior.start.length === 0 &&
+          behavior.events.length === 0 &&
+          behavior.loops.length === 0
+        )
+          return
         state.hydrateProjectState({
           ir: derived,
           blocksState: buildWorkspaceStateFromIR(derived, { omitEmptyAuxFrames: true }),
@@ -190,13 +207,13 @@ export function BlocksMode(): JSX.Element {
     <div className="flex h-full w-full min-h-0 flex-col">
       <ModeLimitationsNotice />
       <PanelGroup direction="horizontal" className="min-h-0 w-full flex-1">
-        <Panel defaultSize={showPreview ? 65 : 100} minSize={30}>
+        <Panel id="blocks-workspace" order={1} defaultSize={showPreview ? 65 : 100} minSize={30}>
           <BlocksWorkspaceEditor />
         </Panel>
         {showPreview && (
           <>
             <PanelResizeHandle className="sz-resize-handle sz-resize-handle--vertical" />
-            <Panel defaultSize={35} minSize={20}>
+            <Panel id="blocks-preview" order={2} defaultSize={35} minSize={20}>
               <PreviewIframe />
             </Panel>
           </>

@@ -166,6 +166,20 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
     ]) {
       expect(names.has(n)).toBe(false)
     }
+
+    // Unidades pedagógicas não aparecem pela metade: a criança sempre recebe
+    // o contêiner junto das peças que dependem dele.
+    for (const t of [
+      'sz_html_ul',
+      'sz_html_li',
+      'sz_html_form',
+      'sz_html_label',
+      'sz_html_input',
+      'sz_html_textarea',
+      'sz_html_button',
+    ]) {
+      expect(types.has(t)).toBe(true)
+    }
   })
 
   it('INTERMEDIÁRIO-3D (≡ intermediário antigo): programação real + Jogo 3D + Mundo 3D; sem avançado', () => {
@@ -176,17 +190,12 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
       'sz_g2d_sprite_vx',
       'sz_math_arithmetic',
       'sz_g3d_create_scene',
+      'sz_g3d_get_pos',
     ]) {
       expect(types.has(t)).toBe(true)
     }
     // Funções é flyout DINÂMICO (custom) → conferimos pela categoria, não por bloco.
-    for (const t of [
-      'sz_js_class',
-      'sz_val_object',
-      'sz_g2d_apply_velocity',
-      'sz_g3d_get_pos',
-      'sz_svg_path',
-    ]) {
+    for (const t of ['sz_js_class', 'sz_val_object', 'sz_g2d_apply_velocity', 'sz_svg_path']) {
       expect(types.has(t)).toBe(false)
     }
     expect(names.has('🧩 Funções')).toBe(true)
@@ -219,13 +228,13 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
     const { types, names } = paletteAt('iniciante-3d')
     expect(types.has('sz_g2d_create_sprite')).toBe(true) // inclui o degrau abaixo
     expect(types.has('sz_g3d_create_scene')).toBe(true) // facilitador 3D
+    expect(types.has('sz_g3d_get_pos')).toBe(true) // toda a extensão é iniciante-3d
     expect(names.has('Jogo 3D')).toBe(true)
     for (const t of [
       'sz_js_while', // int-2d ainda não
       'sz_math_arithmetic',
       'sz_g2d_sprite_vx',
       'sz_w3d_setup', // Mundo 3D é int-3d
-      'sz_g3d_get_pos', // engine 3D é av-3d
     ]) {
       expect(types.has(t)).toBe(false)
     }
@@ -234,18 +243,18 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
 
   it('INTERMEDIÁRIO-2D: programação real entra e o iniciante-3d ABAIXO segue visível (escada única)', () => {
     const { types, names } = paletteAt('intermediario-2d')
-    for (const t of ['sz_js_while', 'sz_math_arithmetic', 'sz_g2d_sprite_vx']) {
+    for (const t of ['sz_js_while', 'sz_math_arithmetic', 'sz_g2d_sprite_vx', 'sz_g3d_get_pos']) {
       expect(types.has(t)).toBe(true)
     }
     // Pina a semântica de escada TOTAL: o degrau 2D inclui o iniciante-3d abaixo.
     expect(types.has('sz_g3d_create_scene')).toBe(true)
     expect(names.has('🧩 Funções')).toBe(true)
-    for (const t of ['sz_w3d_setup', 'sz_g3d_get_pos', 'sz_js_class', 'sz_adv_raw_js']) {
+    for (const t of ['sz_w3d_setup', 'sz_js_class', 'sz_adv_raw_js']) {
       expect(types.has(t)).toBe(false)
     }
   })
 
-  it('AVANÇADO-2D: classes/objetos/cru/trig entram; engine 3D (av-3d) ainda não', () => {
+  it('AVANÇADO-2D: classes/objetos/cru/trig e Jogo 3D entram; Jogo 3D Avançado ainda não', () => {
     const { types, names } = paletteAt('avancado-2d')
     for (const t of [
       'sz_val_object',
@@ -254,13 +263,14 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
       'sz_math_trig',
       'sz_svg_path',
       'sz_w3d_setup', // int-3d, abaixo do av-2d
+      'sz_g3d_get_pos', // Jogo 3D inteiro está no piso iniciante-3d
+      'sz_g3d_body',
     ]) {
       expect(types.has(t)).toBe(true)
     }
     for (const n of ['🏛️ Classes', '📦 Objetos', 'Avançado']) expect(names.has(n)).toBe(true)
-    // O que fica SÓ para o topo: engine 3D + three.js cru.
-    expect(types.has('sz_g3d_get_pos')).toBe(false)
-    expect(types.has('sz_g3d_body')).toBe(false)
+    // O que fica SÓ para o topo: Jogo 3D Avançado + three.js cru.
+    expect(types.has('sz_g3k_setup')).toBe(false)
     expect(names.has('Canvas 3D')).toBe(false)
   })
 })

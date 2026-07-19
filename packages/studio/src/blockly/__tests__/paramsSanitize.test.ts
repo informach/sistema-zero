@@ -1,6 +1,7 @@
 import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
+import { behaviorStatements } from '#ir'
 import { ensureBlocklyInitialized } from '../setup'
 import { irInFrame } from './frameTestUtils'
 
@@ -10,7 +11,7 @@ interface ParamsApi extends Blockly.Block {
 
 function ctorParamsOf(ws: Blockly.Workspace): string[] {
   const ir = irInFrame(ws)
-  const decl = ir.js.find((s) => s.type === 'classDecl')
+  const decl = behaviorStatements(ir).find((s) => s.type === 'classDecl')
   if (decl?.type !== 'classDecl') throw new Error('sem classDecl')
   return decl.ctorParams ?? []
 }

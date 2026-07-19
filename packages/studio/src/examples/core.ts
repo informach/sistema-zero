@@ -1,5 +1,5 @@
 import type { ExampleExperience, ProjectAsset } from '#core'
-import type { SZIR } from '#ir'
+import { normalizeSZIR, type SZIR, type SZIRV2 } from '#ir'
 
 /**
  * Exemplo CLÁSSICO (sem extensão): um projeto pronto montado SÓ com blocos
@@ -12,7 +12,7 @@ export interface CoreExample {
   name: string
   experience: ExampleExperience
   description: string
-  ir: SZIR
+  ir: SZIRV2
   /** Assets embutidos que o exemplo precisa (ex.: imagem de fundo por CSS). */
   assets?: ProjectAsset[]
 }
@@ -33,7 +33,7 @@ export const gorilasNaMaoExample: CoreExample = {
   experience: 'game',
   description:
     'Mini-Gorillas montado SÓ com blocos genéricos (HTML + CSS + Canvas): arraste a bomba para mirar, o vento empurra e a gravidade puxa; acerte o alvo verde. Tem um moinho SVG que gira por CSS (e acelera com o vento), painel de HTML, cor do céu pelo modo do sistema e botão de tela cheia. Abra e edite à vontade.',
-  ir: gorilasNaMaoIr,
+  ir: normalizeSZIR(gorilasNaMaoIr),
 }
 
 // "Invasores do Espaço (na mão)": o Space Invaders CLÁSSICO de tutorial (Franks
@@ -58,7 +58,7 @@ export const invadersNaMaoExample: CoreExample = {
   experience: 'game',
   description:
     'O Space Invaders clássico montado SÓ com blocos do núcleo (sem a extensão Jogo 2D): classes com construtor, pool de tiros, ondas de inimigos que descem, colisão e teclado (setas movem, 1 atira). Fundo estrelado por CSS com imagem do projeto. Abra, jogue e edite à vontade.',
-  ir: invadersNaMaoIr,
+  ir: normalizeSZIR(invadersNaMaoIr),
   assets: [
     {
       id: 'core-invaders-bg',
@@ -90,7 +90,7 @@ export const plataformaVerticalNaMaoExample: CoreExample = {
   experience: 'game',
   description:
     'Uma plataforma vertical montada SÓ com blocos do núcleo (sem extensão): pule (W) e ande (A/D) subindo pelas plataformas; a gravidade puxa, os blocos sólidos seguram e as tábuas finas só pegam quando você cai em cima. A câmera acompanha o herói subindo. Abra e edite à vontade.',
-  ir: plataformaVerticalNaMaoIr,
+  ir: normalizeSZIR(plataformaVerticalNaMaoIr),
 }
 
 // "Portas do Castelo (na mão)": o platformer kings-and-pigs do Chris Courses
@@ -110,7 +110,7 @@ export const portasDoCasteloNaMaoExample: CoreExample = {
   experience: 'game',
   description:
     'Um platformer montado SÓ com blocos do núcleo (sem extensão): ande (A/D) e pule (W) pelas plataformas até a PORTA — ela dispara um fade preto na mão e leva você para a próxima fase, depois o fade some. A gravidade puxa e os blocos sólidos seguram. Abra e edite à vontade.',
-  ir: portasDoCasteloNaMaoIr,
+  ir: normalizeSZIR(portasDoCasteloNaMaoIr),
 }
 
 // "Defesa da Torre (na mão)": a defesa de torre do Chris Courses (Downloads/
@@ -131,7 +131,7 @@ export const defesaDaTorreNaMaoExample: CoreExample = {
   experience: 'game',
   description:
     'Um tower defense montado SÓ com blocos do núcleo (sem extensão): os inimigos seguem o caminho, você clica nos lugares livres para comprar torres (50 moedas) que miram o inimigo mais perto e atiram sozinhas; cada inimigo derrotado dá moedas e cada um que passa tira uma vida. As ondas crescem. Abra e edite à vontade.',
-  ir: defesaDaTorreNaMaoIr,
+  ir: normalizeSZIR(defesaDaTorreNaMaoIr),
 }
 
 // "Duelo (na mão)": o fighting-game do Chris Courses (Downloads/Fight/
@@ -149,7 +149,7 @@ export const dueloNaMaoExample: CoreExample = {
   experience: 'game',
   description:
     'Um jogo de luta para DOIS no mesmo teclado, montado SÓ com blocos do núcleo (sem extensão): Azul anda com A/D, pula com W e golpeia com F; Vermelho anda com as setas, pula com ↑ e golpeia com Enter. Cada golpe que encosta tira vida (barras no topo), e ganha quem tiver mais vida quando o tempo acabar. Abra e edite à vontade.',
-  ir: dueloNaMaoIr,
+  ir: normalizeSZIR(dueloNaMaoIr),
 }
 
 // "Passeio 3D (na mão)": um mini-mundo dirigível em three.js CRU (categoria
@@ -181,7 +181,7 @@ export const passeio3dNaMaoExample: CoreExample = {
   experience: 'exploration',
   description:
     'Um mundo 3D aberto para DIRIGIR, montado SÓ com blocos do núcleo Canvas 3D (three.js de verdade, sem extensão): um carrinho de caixas que você guia com WASD por uma floresta de árvores, com névoa de distância, câmera que segue por trás com suavidade e um ciclo de dia e noite que muda a cor do céu. Agora com SOM: o motor ronca junto do carrinho (áudio posicional que acelera com você) e H buzina. É o "jogo de carrinho" do Bruno Simon na sua versão mais simples. Abra a Ponte para ver o código three.js e edite à vontade.',
-  ir: passeio3dNaMaoIr,
+  ir: normalizeSZIR(passeio3dNaMaoIr),
   assets: [
     {
       id: 'core-passeio-motor',
@@ -290,6 +290,8 @@ const folioCanvasProceduralIr: SZIR = {
       z2: canvasNum(0),
       width: canvasNum(7),
       color: canvasColor('#334155'),
+      heightFunction: 'alturaChao',
+      segments: canvasNum(48),
     },
     {
       type: 'buildingSetup',
@@ -302,6 +304,7 @@ const folioCanvasProceduralIr: SZIR = {
       depth: canvasNum(10),
       color: canvasColor('#f59e0b'),
       roofColor: canvasColor('#9f1239'),
+      heightFunction: 'alturaChao',
     },
     {
       type: 'buildingSetup',
@@ -314,6 +317,7 @@ const folioCanvasProceduralIr: SZIR = {
       depth: canvasNum(9),
       color: canvasColor('#38bdf8'),
       roofColor: canvasColor('#1e3a8a'),
+      heightFunction: 'alturaChao',
     },
     {
       type: 'primitiveSetup',
@@ -333,26 +337,16 @@ const folioCanvasProceduralIr: SZIR = {
       maxSubSteps: canvasNum(3),
     },
     {
-      type: 'physicsLiteStaticBox',
+      type: 'physicsLiteStaticObject',
       world: 'fisica',
       id: 'estudio',
-      x: canvasNum(18),
-      y: canvasNum(5),
-      z: canvasNum(-12),
-      width: canvasNum(14),
-      height: canvasNum(10),
-      depth: canvasNum(10),
+      object: 'estudio',
     },
     {
-      type: 'physicsLiteStaticBox',
+      type: 'physicsLiteStaticObject',
       world: 'fisica',
       id: 'galeria',
-      x: canvasNum(-20),
-      y: canvasNum(4),
-      z: canvasNum(14),
-      width: canvasNum(16),
-      height: canvasNum(8),
-      depth: canvasNum(9),
+      object: 'galeria',
     },
     {
       type: 'physicsLiteBody',
@@ -366,52 +360,17 @@ const folioCanvasProceduralIr: SZIR = {
       friction: canvasNum(0.82),
       bounce: canvasNum(0),
     },
-    { type: 'var', name: 'movimentoX', value: canvasNum(0) },
-    { type: 'var', name: 'movimentoZ', value: canvasNum(0) },
+    { type: 'var', name: 'teclas', value: { type: 'objectLiteral', entries: [] }, kind: 'const' },
     {
       type: 'event',
       target: 'document',
       event: 'keydown',
       body: [
         {
-          type: 'if',
-          cond: {
-            type: 'binop',
-            op: '===',
-            left: { type: 'eventProp', prop: 'key' },
-            right: { type: 'str', value: 'w' },
-          },
-          then: [{ type: 'assign', name: 'movimentoZ', value: canvasNum(-1) }],
-        },
-        {
-          type: 'if',
-          cond: {
-            type: 'binop',
-            op: '===',
-            left: { type: 'eventProp', prop: 'key' },
-            right: { type: 'str', value: 's' },
-          },
-          then: [{ type: 'assign', name: 'movimentoZ', value: canvasNum(1) }],
-        },
-        {
-          type: 'if',
-          cond: {
-            type: 'binop',
-            op: '===',
-            left: { type: 'eventProp', prop: 'key' },
-            right: { type: 'str', value: 'a' },
-          },
-          then: [{ type: 'assign', name: 'movimentoX', value: canvasNum(-1) }],
-        },
-        {
-          type: 'if',
-          cond: {
-            type: 'binop',
-            op: '===',
-            left: { type: 'eventProp', prop: 'key' },
-            right: { type: 'str', value: 'd' },
-          },
-          then: [{ type: 'assign', name: 'movimentoX', value: canvasNum(1) }],
+          type: 'indexSet',
+          object: { type: 'var', name: 'teclas' },
+          index: { type: 'eventProp', prop: 'key' },
+          value: { type: 'bool', value: true },
         },
         {
           type: 'if',
@@ -430,22 +389,57 @@ const folioCanvasProceduralIr: SZIR = {
       target: 'document',
       event: 'keyup',
       body: [
-        { type: 'assign', name: 'movimentoX', value: canvasNum(0) },
-        { type: 'assign', name: 'movimentoZ', value: canvasNum(0) },
+        {
+          type: 'indexSet',
+          object: { type: 'var', name: 'teclas' },
+          index: { type: 'eventProp', prop: 'key' },
+          value: { type: 'bool', value: false },
+        },
       ],
     },
     {
       type: 'animationLoop',
+      deltaVar: 'dt',
       body: [
         {
           type: 'physicsLiteMove',
           world: 'fisica',
           id: 'jogador',
-          x: { type: 'var', name: 'movimentoX' },
-          z: { type: 'var', name: 'movimentoZ' },
+          x: {
+            type: 'binop',
+            op: '-',
+            left: {
+              type: 'ternary',
+              condition: { type: 'index', arrayVar: 'teclas', index: { type: 'str', value: 'd' } },
+              whenTrue: canvasNum(1),
+              whenFalse: canvasNum(0),
+            },
+            right: {
+              type: 'ternary',
+              condition: { type: 'index', arrayVar: 'teclas', index: { type: 'str', value: 'a' } },
+              whenTrue: canvasNum(1),
+              whenFalse: canvasNum(0),
+            },
+          },
+          z: {
+            type: 'binop',
+            op: '-',
+            left: {
+              type: 'ternary',
+              condition: { type: 'index', arrayVar: 'teclas', index: { type: 'str', value: 's' } },
+              whenTrue: canvasNum(1),
+              whenFalse: canvasNum(0),
+            },
+            right: {
+              type: 'ternary',
+              condition: { type: 'index', arrayVar: 'teclas', index: { type: 'str', value: 'w' } },
+              whenTrue: canvasNum(1),
+              whenFalse: canvasNum(0),
+            },
+          },
           speed: canvasNum(8),
         },
-        { type: 'physicsLiteStep', world: 'fisica', dt: canvasNum(1 / 60) },
+        { type: 'physicsLiteStep', world: 'fisica', dt: { type: 'var', name: 'dt' } },
         {
           type: 'memberCall',
           object: { type: 'var', name: 'renderizador' },
@@ -465,7 +459,7 @@ export const folioCanvasProceduralExample: CoreExample = {
   experience: 'exploration',
   description:
     'Projeto-prova sem extensão e sem assets: terreno, estrada, prédios, personagem e colisões são blocos nativos do Canvas 3D. WASD move, espaço pula e todo o JavaScript Three.js pode ser reconstruído de volta em blocos.',
-  ir: folioCanvasProceduralIr,
+  ir: normalizeSZIR(folioCanvasProceduralIr),
 }
 
 export const CORE_EXAMPLES: readonly CoreExample[] = [

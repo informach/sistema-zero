@@ -1,6 +1,7 @@
 export const gameThreeDPromptContext = `Extensão: Jogo 3D (id: game-3d)
 
 API global injetada como window.SZGame3D (wrapper sobre Three.js):
+- createFullscreenScene(background) -> world: caminho recomendado; cria canvas responsivo em tela cheia.
 - createScene(canvasId) -> world { scene, camera, renderer }: cria cena+câmera+luz (com sombras).
 - setBackground(world, color) / setCameraPosition(world, x, y, z).
 - createBox(world, { size, color }) -> mesh ; createSphere(world, { radius, color }) -> mesh.
@@ -9,7 +10,7 @@ API global injetada como window.SZGame3D (wrapper sobre Three.js):
 - animate(world, fn): loop com setAnimationLoop; redesenha a cena a cada quadro.
 
 Física (chamar DENTRO do animate):
-- setVelocity(obj, x, y, z): define a velocidade por quadro em cada eixo.
+- setVelocity(obj, x, y, z): define a velocidade base em cada eixo; o runtime ajusta pelo tempo do quadro.
 - controlWithKeys(obj, speed): anda no plano X/Z com WASD ou setas.
 - applyGravity(obj, ground): puxa p/ baixo e para/quica no chão (andando pela velocidade).
 - jump(obj, force): impulso p/ cima (só funciona se estiver no chão).
@@ -26,7 +27,7 @@ Kit "Desvie":
   longe acelerando e descarta os que passam. Chamar dentro do animate.
 - stop(world): para o loop (fim de jogo).
 
-Genéricos de grade/isométrico (mundo z-up, 1 tile = 1 unidade — p/ jogos tipo tabuleiro/Frogger):
+Genéricos de grade/isométrico (chão X-Z, y = altura, 1 tile = 1 unidade):
 - isometricCamera(world, followObj | null): troca p/ câmera ortográfica isométrica; segue o objeto.
 - gridPosition(obj, row, col): coloca o objeto numa casa da grade.
 - gridStep(obj): a cada quadro, anda uma casa por vez (setas) com um saltinho.
@@ -44,7 +45,7 @@ Kit "Travessia" (atravessar a rua / Crossy Road):
 - crosserHit(player, world): bateu num veículo? crosserRow(player): pontuação (linha).
 - crosserReset(player, world): recomeça.
 
-Genéricos top-down/circular (mundo z-up — p/ jogos de pista/relógio/órbita):
+Genéricos top-down/circular (chão X-Z, y = altura — p/ jogos de pista/relógio/órbita):
 - topCamera(world, followObj | null): câmera ortográfica aérea (de cima); segue o objeto se dado.
 - moveInCircle(obj, raio, velocidade): gira o objeto numa circunferência (centro na origem), virado p/ frente.
 - distanceTo(a, b): distância entre dois objetos. isNear(a, b, dist): estão a menos de "dist"?
@@ -65,7 +66,7 @@ Genéricos de movimento/física (SEM lib de física — feita na mão; p/ queda/
 - getVel(obj, "x"|"y"|"z") / getSpeed(obj) / isMoving(obj): LER a velocidade por eixo, a total (magnitude) e se o objeto está se movendo (true/false) — a velocidade é a que setVelocity grava.
 - moveBy(obj, dx, dy, dz): mover relativo (soma à posição). rotateBy(obj, "y", radianos): girar relativo.
 - moveTowards(obj, x, y, z, força): aproxima aos poucos (lerp; força 0 a 1). dt(world): segundos do quadro —
-  multiplique a velocidade por dt p/ o jogo correr igual em qualquer máquina (o "A cada frame 3D" já passa dt).
+  use dt apenas na matemática manual; os blocos de movimento e física já compensam FPS automaticamente.
 - lookAtObject(a, b) / lookAtPoint(obj, x, y, z): virar A para olhar B / um ponto (mira robusta).
 - moveForward(obj, dist): andar p/ frente (na direção que olha). faceVelocity(obj): virar p/ a direção do movimento.
 - angleTo(a, b): ângulo (radianos) de A para B no plano do chão (X-Z) — p/ mirar/girar.
@@ -121,9 +122,10 @@ Kit "Empilhar" (torre de blocos / Stack — mundo y-up):
 - stackScore(world): pontuação (andares). stackGameOver(world): a torre caiu? stackReset(world): recomeça.
 
 Quando ajudar o aluno com 3D:
-- Lembre de criar o <canvas> no HTML primeiro.
+- Prefira createFullscreenScene, que cria o canvas sozinho; use createScene somente quando o layout pedir um canvas HTML específico.
 - Crie os objetos UMA vez (fora do animate); dentro do loop só mova/anime/teste colisão.
 - Eixos: x = direita, y = cima, z = em direção à câmera. Rotação em radianos.
+- Todos os blocos Jogo 3D são iniciante-3d; a aula filtra quais aparecem com allowBlocks.
 - Para um jogo de desviar: jogador = cubo; chão = caixa larga em y baixo; no animate use
   controlWithKeys + se keyDown("Space") -> jump + applyGravity + runEnemies + se hitAny -> stop.
 - Para um jogo de atravessar a rua (Travessia): createCrossingScene + createCrosser +

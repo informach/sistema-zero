@@ -240,7 +240,9 @@ export function buildCoreToolbox(
       contents: [
         { kind: 'block', type: 'sz_frame_structure' },
         { kind: 'block', type: 'sz_frame_appearance' },
-        { kind: 'block', type: 'sz_frame_behavior' },
+        { kind: 'block', type: 'sz_frame_start' },
+        { kind: 'block', type: 'sz_frame_events' },
+        { kind: 'block', type: 'sz_frame_loops' },
       ],
     },
   ]

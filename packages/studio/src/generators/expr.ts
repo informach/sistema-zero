@@ -333,6 +333,8 @@ export function compileExpr(
       return `SZGame3D.touchesBox(${identifiers.get(expr.objVar)}, ${identifiers.get(expr.groupVar)})`
     case 'g3d:distanceTo':
       return `SZGame3D.distanceTo(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+    case 'g3d:countSwarm':
+      return `SZGame3D.countSwarm(${identifiers.get(expr.swarmVar)})`
     case 'g3d:isNear':
       return `SZGame3D.isNear(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)}, ${compileExpr(valueToExpr(expr.dist), 0, identifiers, rec)})`
     case 'g3d:raceHit':

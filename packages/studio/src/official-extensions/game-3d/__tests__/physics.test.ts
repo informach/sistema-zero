@@ -29,6 +29,8 @@ interface Obj3D {
   scale: Vec3
   rotation: Vec3
   userData: { sz: Meta }
+  geometry?: { disposed?: boolean }
+  material?: { color?: { value?: unknown }; opacity?: number; disposed?: boolean }
 }
 interface Renderer {
   setAnimationLoop(fn: unknown): void
@@ -39,6 +41,7 @@ interface World {
   camera: { position: Vec3; lookAt: () => void }
   scene: { children: unknown[] }
   _objects: unknown[]
+  _dt?: number
   _stack?: {
     layers: unknown[]
     overhangs: unknown[]
@@ -68,6 +71,7 @@ interface API {
   hitAny(o: Obj3D, g: Group): boolean
   runEnemies(w: World, g: Group, ground: Obj3D, every: number, speed: number): void
   stop(w: World): void
+  gridPosition(o: Obj3D, row: number, col: number): void
   gridMove(o: Obj3D, dir: string): void
   gridStep(o: Obj3D): void
   moveAcross(g: Group, speed: number, min: number, max: number): void
@@ -101,9 +105,19 @@ interface API {
   platformerControls(o: Obj3D, w: World, speed: number, jump: number): void
   fpsControls(o: Obj3D, w: World, speed: number): void
   resolveCollision(a: Obj3D, b: Obj3D): void
+  createModel(w: World): unknown
+  addToModel(model: unknown, part: Obj3D): void
+  setColor(obj: unknown, color: string): void
+  setOpacity(obj: unknown, opacity: number): void
+  remove(w: World, obj: unknown): void
+  dispose(w: World): void
 }
 
-function loadRuntime(): { api: API; fire: (name: string, ev: unknown) => void } {
+function loadRuntime(): {
+  api: API
+  fire: (name: string, ev: unknown) => void
+  listenerCount: (name: string) => number
+} {
   type Listener = (ev: unknown) => void
   const listeners: Record<string, Listener[]> = {}
 
@@ -145,11 +159,13 @@ function loadRuntime(): { api: API; fire: (name: string, ev: unknown) => void } 
       background: unknown = null
       children: unknown[] = []
       add(o: unknown) {
+        ;(o as { parent?: unknown }).parent = this
         this.children.push(o)
       }
       remove(o: unknown) {
         const i = this.children.indexOf(o)
         if (i !== -1) this.children.splice(i, 1)
+        ;(o as { parent?: unknown }).parent = null
       }
     },
     Color: class {
@@ -166,7 +182,22 @@ function loadRuntime(): { api: API; fire: (name: string, ev: unknown) => void } 
       shadow = { camera: {} as Record<string, number>, mapSize: { set() {} } }
     },
     MeshStandardMaterial: class {
-      dispose() {}
+      color: { value: unknown; set: (value: unknown) => void }
+      opacity = 1
+      transparent = false
+      needsUpdate = false
+      disposed = false
+      constructor(options?: { color?: unknown }) {
+        this.color = {
+          value: options?.color,
+          set: (value: unknown) => {
+            this.color.value = value
+          },
+        }
+      }
+      dispose() {
+        this.disposed = true
+      }
     },
     Mesh: class {
       position = new V3(0, 0, 0)
@@ -183,10 +214,16 @@ function loadRuntime(): { api: API; fire: (name: string, ev: unknown) => void } 
       }
     },
     BoxGeometry: class {
-      dispose() {}
+      disposed = false
+      dispose() {
+        this.disposed = true
+      }
     },
     SphereGeometry: class {
-      dispose() {}
+      disposed = false
+      dispose() {
+        this.disposed = true
+      }
     },
     // AABB simples a partir da posição do objeto (suficiente p/ touchesBox em
     // objetos de topo; os modelos compostos são validados no browser).
@@ -222,13 +259,18 @@ function loadRuntime(): { api: API; fire: (name: string, ev: unknown) => void } 
       position = new V3(0, 0, 0)
       rotation = new V3(0, 0, 0)
       scale = new V3(1, 1, 1)
+      userData: Record<string, unknown> = {}
       children: unknown[] = []
       add(o: unknown) {
+        const child = o as { parent?: { remove?: (value: unknown) => void } }
+        if (child.parent?.remove) child.parent.remove(o)
+        child.parent = this
         this.children.push(o)
       }
       remove(o: unknown) {
         const i = this.children.indexOf(o)
         if (i !== -1) this.children.splice(i, 1)
+        ;(o as { parent?: unknown }).parent = null
       }
       traverse(fn: (o: unknown) => void) {
         fn(this)
@@ -250,6 +292,10 @@ function loadRuntime(): { api: API; fire: (name: string, ev: unknown) => void } 
       listeners[name] ??= []
       listeners[name].push(fn)
     },
+    removeEventListener(name: string, fn: Listener) {
+      const index = listeners[name]?.indexOf(fn) ?? -1
+      if (index !== -1) listeners[name]?.splice(index, 1)
+    },
     SZGame3D: undefined,
   } as unknown as Record<string, unknown>
 
@@ -262,6 +308,7 @@ function loadRuntime(): { api: API; fire: (name: string, ev: unknown) => void } 
     fire: (name: string, ev: unknown) => {
       for (const fn of listeners[name] ?? []) fn(ev)
     },
+    listenerCount: (name: string) => listeners[name]?.length ?? 0,
   }
 }
 
@@ -282,6 +329,14 @@ describe('gameThreeDRuntime — teclado', () => {
     expect(prevented).toBe(true)
     expect(api.keyDown('Space')).toBe(true)
   })
+
+  it('limpa teclas pressionadas quando a janela perde o foco', () => {
+    const { api, fire } = loadRuntime()
+    fire('keydown', { code: 'KeyW' })
+    expect(api.keyDown('KeyW')).toBe(true)
+    fire('blur', {})
+    expect(api.keyDown('KeyW')).toBe(false)
+  })
 })
 
 describe('gameThreeDRuntime — colisão (AABB)', () => {
@@ -295,6 +350,39 @@ describe('gameThreeDRuntime — colisão (AABB)', () => {
     expect(api.collides(a, b)).toBe(true)
     api.setPosition(b, 5, 0, 0)
     expect(api.collides(a, b)).toBe(false)
+  })
+})
+
+describe('gameThreeDRuntime — modelos compostos', () => {
+  it('aplica cor e opacidade a todas as primitivas filhas', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const model = api.createModel(world)
+    const head = api.createBox(world, { color: '#ffffff' })
+    const body = api.createBox(world, { color: '#ffffff' })
+    api.addToModel(model, head)
+    api.addToModel(model, body)
+
+    api.setColor(model, '#ff0000')
+    api.setOpacity(model, 0.4)
+
+    expect(head.material?.color?.value).toBe('#ff0000')
+    expect(body.material?.color?.value).toBe('#ff0000')
+    expect(head.material?.opacity).toBe(0.4)
+    expect(body.material?.opacity).toBe(0.4)
+  })
+
+  it('remover um modelo descarta geometrias e materiais descendentes', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const model = api.createModel(world)
+    const part = api.createBox(world)
+    api.addToModel(model, part)
+
+    api.remove(world, model)
+
+    expect(part.geometry?.disposed).toBe(true)
+    expect(part.material?.disposed).toBe(true)
   })
 })
 
@@ -420,9 +508,11 @@ describe('gameThreeDRuntime — grade genérica (gridMove/gridStep/moveAcross/to
     const world = api.createScene('tela')
     const p = api.createBox(world, { size: 1 })
     api.setPosition(p, 0, 0, 0)
+    api.gridPosition(p, 0, 0)
     api.gridMove(p, 'forward')
     for (let i = 0; i < 12; i++) api.gridStep(p)
-    expect(p.position.y).toBeGreaterThan(0.9)
+    expect(p.position.z).toBeGreaterThan(0.9)
+    expect(p.position.y).toBe(0)
   })
 
   it('moveAcross move os objetos e dá a volta nas bordas', () => {
@@ -457,32 +547,56 @@ describe('gameThreeDRuntime — grade genérica (gridMove/gridStep/moveAcross/to
 })
 
 describe('gameThreeDRuntime — movimento circular e distância (genéricos do Kit Corrida)', () => {
-  it('moveInCircle move o objeto numa circunferência (raio ~constante)', () => {
+  it('moveInCircle usa o plano do chão X-Z e preserva a altura Y', () => {
     const { api } = loadRuntime()
     const world = api.createScene('tela')
     const p = api.createBox(world, { size: 1 })
-    api.setPosition(p, 0, 0, 0)
+    api.setPosition(p, 0, 3, 0)
     api.moveInCircle(p, 5, 0.3)
     const x1 = p.position.x
-    const y1 = p.position.y
-    const r1 = Math.hypot(x1, y1)
+    const z1 = p.position.z
+    const r1 = Math.hypot(x1, z1)
     api.moveInCircle(p, 5, 0.3)
-    const r2 = Math.hypot(p.position.x, p.position.y)
+    const r2 = Math.hypot(p.position.x, p.position.z)
     expect(r1).toBeGreaterThan(4.5) // ~5
     expect(Math.abs(r2 - r1)).toBeLessThan(0.01) // raio constante ao girar
-    expect(p.position.x !== x1 || p.position.y !== y1).toBe(true) // andou
+    expect(p.position.x !== x1 || p.position.z !== z1).toBe(true) // andou
+    expect(p.position.y).toBe(3)
   })
 
-  it('distanceTo e isNear medem a distância no plano', () => {
+  it('distanceTo e isNear medem a distância no chão X-Z', () => {
     const { api } = loadRuntime()
     const world = api.createScene('tela')
     const a = api.createBox(world, { size: 1 })
     const b = api.createBox(world, { size: 1 })
     api.setPosition(a, 0, 0, 0)
-    api.setPosition(b, 3, 4, 0)
+    api.setPosition(b, 3, 99, 4)
     expect(api.distanceTo(a, b)).toBeCloseTo(5)
     expect(api.isNear(a, b, 6)).toBe(true)
     expect(api.isNear(a, b, 4)).toBe(false)
+  })
+})
+
+describe('gameThreeDRuntime — tempo consistente entre dispositivos', () => {
+  function travelForOneSecond(frameMs: number): number {
+    const { api, fire } = loadRuntime()
+    const world = api.createScene('tela')
+    const player = api.createBox(world, { size: 1 })
+    fire('keydown', { code: 'KeyD' })
+    api.animate(world, () => {
+      api.controlWithKeys(player, 0.05)
+      api.applyGravity(player, null as unknown as Obj3D)
+    })
+    const loop = world.renderer._loop as (time: number) => void
+    loop(1)
+    for (let time = frameMs; time <= 1000; time += frameMs) loop(time)
+    return player.position.x
+  }
+
+  it('percorre praticamente a mesma distância a 60 Hz e 120 Hz', () => {
+    const at60 = travelForOneSecond(1000 / 60)
+    const at120 = travelForOneSecond(1000 / 120)
+    expect(Math.abs(at60 - at120)).toBeLessThan(0.08)
   })
 })
 
@@ -689,6 +803,19 @@ describe('gameThreeDRuntime — física avançada (corpo, sólidos, presets)', (
     api.setPosition(b, 0, 0, 0)
     api.resolveCollision(a, b)
     expect(Math.abs(a.position.x)).toBeCloseTo(1, 1) // empurrado no eixo de menor penetração
+  })
+})
+
+describe('gameThreeDRuntime — ciclo de vida de listeners por mundo', () => {
+  it('remove o listener de grade ao descartar o mundo', () => {
+    const { api, listenerCount } = loadRuntime()
+    const world = api.createScene('tela')
+    const player = api.createBox(world, { size: 1 })
+    const baseline = listenerCount('keydown')
+    api.gridStep(player)
+    expect(listenerCount('keydown')).toBe(baseline + 1)
+    api.dispose(world)
+    expect(listenerCount('keydown')).toBe(baseline)
   })
 })
 // lookAtObject/lookAtPoint/moveForward/faceVelocity usam THREE.lookAt/getWorldDirection

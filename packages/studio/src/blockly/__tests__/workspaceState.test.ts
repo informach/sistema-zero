@@ -2,7 +2,7 @@ import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
 import { generateProjectFiles, generateProjectFilesWithMap } from '#generators'
-import { assignStableIdsToIR, type SZIR } from '#ir'
+import { assignStableIdsToIR, type SZIR, type SZIRV2 } from '#ir'
 import { parseProjectFiles } from '#parsers'
 import { buildIRFromWorkspace } from '../buildIR'
 import { ensureBlocklyInitialized } from '../setup'
@@ -640,26 +640,41 @@ describe('buildWorkspaceStateFromIR', () => {
   })
 
   it('animationLoop cancelável + cancelAnimationFrame fazem roundtrip sem avançado', () => {
-    const source: SZIR = {
+    const source: SZIRV2 = {
+      version: 2,
       html: [],
       css: [],
-      js: [
-        {
-          type: 'animationLoop',
-          handle: 'animId',
-          body: [{ type: 'consoleLog', value: { type: 'str', value: 'tick' } }],
-        },
-        { type: 'cancelAnimationFrame', handle: { type: 'var', name: 'animId' } },
-      ],
+      behavior: {
+        start: [],
+        events: [
+          {
+            type: 'event',
+            target: 'parar',
+            event: 'click',
+            body: [{ type: 'cancelAnimationFrame', handle: { type: 'var', name: 'animId' } }],
+          },
+        ],
+        loops: [
+          {
+            type: 'animationLoop',
+            handle: 'animId',
+            body: [{ type: 'consoleLog', value: { type: 'str', value: 'tick' } }],
+          },
+        ],
+      },
       extensions: [],
     }
     const files = generateProjectFiles({ ir: source, projectName: 'Anim' })
     const parsed = parseProjectFiles(files)
     // O id sobrevive ao parse da Ponte (animationLoop.handle preservado).
-    expect(parsed.js).toEqual([
+    expect(parsed.behavior.loops).toEqual([
       expect.objectContaining({ type: 'animationLoop', handle: 'animId' }),
-      expect.objectContaining({ type: 'cancelAnimationFrame' }),
     ])
+    const parsedEvent = parsed.behavior.events[0]
+    expect(parsedEvent?.type).toBe('event')
+    expect(parsedEvent?.type === 'event' ? parsedEvent.body[0]?.type : undefined).toBe(
+      'cancelAnimationFrame',
+    )
     const types = collectTypes(buildWorkspaceStateFromIR(parsed).blocks.blocks)
     expect(types).toContain('sz_canvas_anim_loop')
     expect(types).toContain('sz_canvas_cancel_anim')
@@ -679,8 +694,8 @@ describe('buildWorkspaceStateFromIR', () => {
     expect(files['script.js']).not.toContain('cancelAnimationFrame')
     expect(files['script.js']).not.toMatch(/let \w+;\n\s*function/)
     const parsed = parseProjectFiles(files)
-    expect(parsed.js[0]).toMatchObject({ type: 'animationLoop' })
-    expect(parsed.js[0]).not.toHaveProperty('handle')
+    expect(parsed.behavior.loops[0]).toMatchObject({ type: 'animationLoop' })
+    expect(parsed.behavior.loops[0]).not.toHaveProperty('handle')
   })
 
   it('Fase 1: função, chamada-comando e chamada-valor fazem roundtrip sem avançado', () => {

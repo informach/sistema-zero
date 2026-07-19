@@ -28,6 +28,11 @@ describe('filterAssetsForPicker — grade por família de asset', () => {
     expect(filterAssetsForPicker(ASSETS, '3d').map((x) => x.name)).toEqual(['caixa', 'ceu'])
   })
 
+  it('separa modelos GLB de ambientes HDR nos seletores dedicados', () => {
+    expect(filterAssetsForPicker(ASSETS, '3d', 'model3d').map((x) => x.name)).toEqual(['caixa'])
+    expect(filterAssetsForPicker(ASSETS, '3d', 'environment3d').map((x) => x.name)).toEqual(['ceu'])
+  })
+
   it("kind 'audio' → só sons", () => {
     expect(filterAssetsForPicker(ASSETS, 'audio').map((x) => x.name)).toEqual(['explosao'])
   })

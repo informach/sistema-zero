@@ -6,7 +6,7 @@ import { buildWorkspaceStateFromIR, isBlocksStateEmpty } from '#blockly'
 import { type InstalledExtension, t } from '#core'
 import type { GeneratedFiles, SourceMap, SourceMappedFile } from '#generators'
 import { buildCssSourceMapFromText } from '#generators'
-import { deepEqualIR, irBlockStructureEqual } from '#ir'
+import { deepEqualIR, irBlockStructureEqual, normalizeSZIR } from '#ir'
 import type { MonacoCursorPosition } from '#monaco'
 import type { ParseProjectDiagnostic } from '#parsers'
 import { extractInlineAssets } from '#parsers'
@@ -399,7 +399,15 @@ export function BridgeMode(): JSX.Element {
     if (!hasProject || !ir) return
     if (blocksHydration === 'pending') return
     if (!isBlocksStateEmpty(blocksState)) return
-    if (ir.html.length === 0 && ir.css.length === 0 && ir.js.length === 0) return
+    const behavior = normalizeSZIR(ir).behavior
+    if (
+      ir.html.length === 0 &&
+      ir.css.length === 0 &&
+      behavior.start.length === 0 &&
+      behavior.events.length === 0 &&
+      behavior.loops.length === 0
+    )
+      return
     applyProjectState({ blocksState: buildWorkspaceStateFromIR(ir, { omitEmptyAuxFrames: true }) })
   }, [hasProject, blocksState, ir, blocksHydration, applyProjectState])
 
@@ -594,17 +602,17 @@ export function BridgeMode(): JSX.Element {
     <div className="flex h-full w-full min-h-0 flex-col">
       <ModeLimitationsNotice />
       <PanelGroup direction="horizontal" className="min-h-0 w-full flex-1">
-        <Panel defaultSize={35} minSize={20}>
+        <Panel id="bridge-blocks" order={1} defaultSize={35} minSize={20}>
           <BlocklyPanel />
         </Panel>
         <PanelResizeHandle className="sz-resize-handle sz-resize-handle--vertical" />
-        <Panel defaultSize={showPreview ? 35 : 65} minSize={20}>
+        <Panel id="bridge-code" order={2} defaultSize={showPreview ? 35 : 65} minSize={20}>
           {codeEditor}
         </Panel>
         {showPreview && (
           <>
             <PanelResizeHandle className="sz-resize-handle sz-resize-handle--vertical" />
-            <Panel defaultSize={30} minSize={15}>
+            <Panel id="bridge-preview" order={3} defaultSize={30} minSize={15}>
               <PreviewIframe />
             </Panel>
           </>

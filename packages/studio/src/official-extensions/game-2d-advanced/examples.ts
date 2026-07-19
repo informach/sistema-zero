@@ -1,4 +1,27 @@
 import type { ExtensionExample } from '#extensions'
+import type { JSStatement } from '#ir'
+
+function isAdvancedPeriodicLoop(
+  statement: JSStatement,
+): statement is Extract<JSStatement, { type: 'gk:everySeconds' }> {
+  return statement.type === 'gk:everySeconds'
+}
+
+/** Eleva “A cada N segundos” para uma raiz de loop própria. */
+function withIndependentPeriodicLoops(example: ExtensionExample): ExtensionExample {
+  const lifted: JSStatement[] = []
+  const roots = example.ir.behavior.loops.map((root): JSStatement => {
+    if (root.type !== 'gk:onUpdate') return root
+    const periodic = root.body.filter(isAdvancedPeriodicLoop)
+    if (periodic.length === 0) return root
+    lifted.push(...periodic)
+    return { ...root, body: root.body.filter((statement) => !isAdvancedPeriodicLoop(statement)) }
+  })
+  return {
+    ...example,
+    ir: { ...example.ir, behavior: { ...example.ir.behavior, loops: [...roots, ...lifted] } },
+  }
+}
 
 /**
  * Exemplo bundlado: "Caça-moedas profissional" — o paradigma do kit inteiro num
@@ -20,153 +43,153 @@ export const cacaMoedasExample: ExtensionExample = {
     html: [],
     css: [],
     extensions: [{ extensionId: 'game-2d-advanced' }],
-    js: [
-      {
-        type: 'gk:setup',
-        w: { type: 'num', value: 960 },
-        h: { type: 'num', value: 540 },
-        bg: '#1a1a2e',
-        accent: '#4a9eff',
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'menu',
-        title: { type: 'str', value: 'Caça-moedas' },
-        text: { type: 'str', value: 'WASD ou setas para andar - Esc pausa' },
-        button: { type: 'str', value: 'Jogar' },
-      },
-      {
-        type: 'gk:createScreen',
-        name: 'vitoria',
-        title: { type: 'str', value: 'Você venceu!' },
-        text: { type: 'str', value: 'Pegou as 5 moedas!' },
-      },
-      {
-        type: 'gk:addButton',
-        screen: 'vitoria',
-        label: { type: 'str', value: 'Jogar de novo' },
-        body: [{ type: 'gk:restartGame' }],
-      },
-      {
-        type: 'gk:createCharacter',
-        varName: 'heroi',
-        image: '',
-        w: { type: 'num', value: 48 },
-        h: { type: 'num', value: 48 },
-        speed: { type: 'num', value: 320 },
-        color: '#4a9eff',
-      },
-      {
-        type: 'gk:createCharacter',
-        varName: 'moeda',
-        image: '',
-        w: { type: 'num', value: 28 },
-        h: { type: 'num', value: 28 },
-        speed: { type: 'num', value: 0 },
-        color: '#fbbf24',
-      },
-      { type: 'var', name: 'pontos', value: { type: 'num', value: 0 } },
-      {
-        type: 'gk:onGameStart',
-        body: [
-          { type: 'assign', name: 'pontos', value: { type: 'num', value: 0 } },
-          { type: 'gk:resetCharacter', charVar: 'heroi' },
-          {
-            type: 'gk:placeCharacter',
-            charVar: 'moeda',
-            x: { type: 'num', value: 700 },
-            y: { type: 'num', value: 120 },
-          },
-        ],
-      },
-      {
-        type: 'gk:onUpdate',
-        dtName: 'dt',
-        body: [
-          { type: 'gk:moveWithKeys', charVar: 'heroi', dtVar: 'dt' },
-          { type: 'gk:keepOnScreen', charVar: 'heroi' },
-          {
-            type: 'if',
-            cond: { type: 'gk:charactersTouch', aVar: 'heroi', bVar: 'moeda' },
-            then: [
-              {
-                type: 'assign',
-                name: 'pontos',
-                value: {
-                  type: 'binop',
-                  op: '+',
-                  left: { type: 'var', name: 'pontos' },
-                  right: { type: 'num', value: 1 },
-                },
-              },
-              {
-                type: 'gk:placeCharacter',
-                charVar: 'moeda',
-                x: {
-                  type: 'binop',
-                  op: '*',
-                  left: { type: 'randomFloat' },
-                  right: {
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'gk:setup',
+          w: { type: 'num', value: 960 },
+          h: { type: 'num', value: 540 },
+          bg: '#1a1a2e',
+          accent: '#4a9eff',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: { type: 'str', value: 'Caça-moedas' },
+          text: { type: 'str', value: 'WASD ou setas para andar - Esc pausa' },
+          button: { type: 'str', value: 'Jogar' },
+        },
+        {
+          type: 'gk:createScreen',
+          name: 'vitoria',
+          title: { type: 'str', value: 'Você venceu!' },
+          text: { type: 'str', value: 'Pegou as 5 moedas!' },
+        },
+        {
+          type: 'gk:addButton',
+          screen: 'vitoria',
+          label: { type: 'str', value: 'Jogar de novo' },
+          body: [{ type: 'gk:restartGame' }],
+        },
+        {
+          type: 'gk:createCharacter',
+          varName: 'heroi',
+          image: '',
+          w: { type: 'num', value: 48 },
+          h: { type: 'num', value: 48 },
+          speed: { type: 'num', value: 320 },
+          color: '#4a9eff',
+        },
+        {
+          type: 'gk:createCharacter',
+          varName: 'moeda',
+          image: '',
+          w: { type: 'num', value: 28 },
+          h: { type: 'num', value: 28 },
+          speed: { type: 'num', value: 0 },
+          color: '#fbbf24',
+        },
+        { type: 'var', name: 'pontos', value: { type: 'num', value: 0 } },
+        { type: 'assign', name: 'pontos', value: { type: 'num', value: 0 } },
+        { type: 'gk:resetCharacter', charVar: 'heroi' },
+        {
+          type: 'gk:placeCharacter',
+          charVar: 'moeda',
+          x: { type: 'num', value: 700 },
+          y: { type: 'num', value: 120 },
+        },
+      ],
+      events: [],
+      loops: [
+        {
+          type: 'gk:onUpdate',
+          dtName: 'dt',
+          body: [
+            { type: 'gk:moveWithKeys', charVar: 'heroi', dtVar: 'dt' },
+            { type: 'gk:keepOnScreen', charVar: 'heroi' },
+            {
+              type: 'if',
+              cond: { type: 'gk:charactersTouch', aVar: 'heroi', bVar: 'moeda' },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'pontos',
+                  value: {
                     type: 'binop',
-                    op: '-',
-                    left: { type: 'gk:gameWidth' },
-                    right: { type: 'num', value: 28 },
+                    op: '+',
+                    left: { type: 'var', name: 'pontos' },
+                    right: { type: 'num', value: 1 },
                   },
                 },
-                y: {
-                  type: 'binop',
-                  op: '*',
-                  left: { type: 'randomFloat' },
-                  right: {
+                {
+                  type: 'gk:placeCharacter',
+                  charVar: 'moeda',
+                  x: {
                     type: 'binop',
-                    op: '-',
-                    left: { type: 'gk:gameHeight' },
-                    right: { type: 'num', value: 28 },
+                    op: '*',
+                    left: { type: 'randomFloat' },
+                    right: {
+                      type: 'binop',
+                      op: '-',
+                      left: { type: 'gk:gameWidth' },
+                      right: { type: 'num', value: 28 },
+                    },
+                  },
+                  y: {
+                    type: 'binop',
+                    op: '*',
+                    left: { type: 'randomFloat' },
+                    right: {
+                      type: 'binop',
+                      op: '-',
+                      left: { type: 'gk:gameHeight' },
+                      right: { type: 'num', value: 28 },
+                    },
                   },
                 },
-              },
-              {
-                type: 'if',
-                cond: {
-                  type: 'binop',
-                  op: '>=',
-                  left: { type: 'var', name: 'pontos' },
-                  right: { type: 'num', value: 5 },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>=',
+                    left: { type: 'var', name: 'pontos' },
+                    right: { type: 'num', value: 5 },
+                  },
+                  then: [
+                    { type: 'gk:setState', name: 'venceu' },
+                    { type: 'gk:showScreen', name: 'vitoria' },
+                  ],
                 },
-                then: [
-                  { type: 'gk:setState', name: 'venceu' },
-                  { type: 'gk:showScreen', name: 'vitoria' },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'gk:onDraw',
-        ctxName: 'ctx',
-        body: [
-          { type: 'gk:drawBackground', color: '#0f3460', grid: true },
-          { type: 'gk:drawCharacter', charVar: 'heroi' },
-          { type: 'gk:drawCharacter', charVar: 'moeda' },
-          { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#ffffff' } },
-          { type: 'canvasFont', ctxVar: 'ctx', size: 24, family: 'sans-serif' },
-          {
-            type: 'canvasFillText',
-            ctxVar: 'ctx',
-            text: {
-              type: 'binop',
-              op: '+',
-              left: { type: 'str', value: 'Moedas: ' },
-              right: { type: 'var', name: 'pontos' },
+              ],
             },
-            x: { type: 'num', value: 20 },
-            y: { type: 'num', value: 40 },
-          },
-        ],
-      },
-      { type: 'gk:start' },
-    ],
+          ],
+        },
+        {
+          type: 'gk:onDraw',
+          ctxName: 'ctx',
+          body: [
+            { type: 'gk:drawBackground', color: '#0f3460', grid: true },
+            { type: 'gk:drawCharacter', charVar: 'heroi' },
+            { type: 'gk:drawCharacter', charVar: 'moeda' },
+            { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#ffffff' } },
+            { type: 'canvasFont', ctxVar: 'ctx', size: 24, family: 'sans-serif' },
+            {
+              type: 'canvasFillText',
+              ctxVar: 'ctx',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: { type: 'str', value: 'Moedas: ' },
+                right: { type: 'var', name: 'pontos' },
+              },
+              x: { type: 'num', value: 20 },
+              y: { type: 'num', value: 40 },
+            },
+          ],
+        },
+      ],
+    },
   },
 }
 
@@ -194,434 +217,433 @@ export const arenaGoblinsExample: ExtensionExample = {
     html: [],
     css: [],
     extensions: [{ extensionId: 'game-2d-advanced' }],
-    js: [
-      {
-        type: 'gk:setup',
-        w: {
-          type: 'num',
-          value: 960,
-        },
-        h: {
-          type: 'num',
-          value: 540,
-        },
-        bg: '#12203a',
-        accent: '#4a9eff',
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'menu',
-        title: {
-          type: 'str',
-          value: 'Arena dos Goblins',
-        },
-        text: {
-          type: 'str',
-          value: 'WASD anda - J golpeia - derrote 10!',
-        },
-        button: {
-          type: 'str',
-          value: 'Entrar na arena',
-        },
-      },
-      {
-        type: 'gk:defineLook',
-        name: 'goblin',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#e94f4f',
-            },
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 960,
           },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: {
-              type: 'num',
-              value: 0,
-            },
-            y: {
-              type: 'num',
-              value: 0,
-            },
-            w: {
-              type: 'num',
-              value: 40,
-            },
-            h: {
-              type: 'num',
-              value: 40,
-            },
+          h: {
+            type: 'num',
+            value: 540,
           },
-          {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#ffffff',
-            },
+          bg: '#12203a',
+          accent: '#4a9eff',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Arena dos Goblins',
           },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: {
-              type: 'num',
-              value: 26,
-            },
-            y: {
-              type: 'num',
-              value: 12,
-            },
-            w: {
-              type: 'num',
-              value: 6,
-            },
-            h: {
-              type: 'num',
-              value: 6,
-            },
+          text: {
+            type: 'str',
+            value: 'WASD anda - J golpeia - derrote 10!',
           },
-        ],
-        baseW: {
-          type: 'num',
-          value: 40,
-        },
-        baseH: {
-          type: 'num',
-          value: 40,
-        },
-      },
-      {
-        type: 'gk:defineMold',
-        name: 'goblin',
-        w: {
-          type: 'num',
-          value: 40,
-        },
-        h: {
-          type: 'num',
-          value: 40,
-        },
-        health: {
-          type: 'num',
-          value: 20,
-        },
-        speed: {
-          type: 'num',
-          value: 120,
-        },
-        damage: {
-          type: 'num',
-          value: 10,
-        },
-        color: '#e94f4f',
-        image: '',
-        look: 'goblin',
-      },
-      {
-        type: 'gk:defineEffect',
-        name: 'poeira',
-        count: {
-          type: 'num',
-          value: 14,
-        },
-        color: '#caa977',
-        size: {
-          type: 'num',
-          value: 4,
-        },
-        life: {
-          type: 'num',
-          value: 0.5,
-        },
-        speed: {
-          type: 'num',
-          value: 180,
-        },
-        gravity: {
-          type: 'num',
-          value: 260,
-        },
-      },
-      {
-        type: 'gk:setMission',
-        seconds: {
-          type: 'num',
-          value: 60,
-        },
-        killCount: {
-          type: 'num',
-          value: 10,
-        },
-      },
-      {
-        type: 'gk:createCharacter',
-        varName: 'heroi',
-        image: '',
-        w: {
-          type: 'num',
-          value: 48,
-        },
-        h: {
-          type: 'num',
-          value: 48,
-        },
-        speed: {
-          type: 'num',
-          value: 300,
-        },
-        color: '#4a9eff',
-      },
-      {
-        type: 'gk:onGameStart',
-        body: [
-          {
-            type: 'gk:resetCharacter',
-            charVar: 'heroi',
+          button: {
+            type: 'str',
+            value: 'Entrar na arena',
           },
-        ],
-      },
-      {
-        type: 'gk:startSpawner',
-        mold: 'goblin',
-        seconds: {
-          type: 'num',
-          value: 1.2,
         },
-      },
-      {
-        type: 'gk:onUpdate',
-        dtName: 'dt',
-        body: [
-          {
-            type: 'gk:moveWithKeys',
-            charVar: 'heroi',
-            dtVar: 'dt',
-          },
-          {
-            type: 'gk:keepOnScreen',
-            charVar: 'heroi',
-          },
-          {
-            type: 'gk:forEachActive',
-            mold: 'goblin',
-            itemName: 'item',
-            body: [
-              {
-                type: 'gk:seek',
-                charVar: 'item',
-                targetVar: 'heroi',
-                dtVar: 'dt',
+        {
+          type: 'gk:defineLook',
+          name: 'goblin',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: {
+                type: 'color',
+                value: '#e94f4f',
               },
-              {
-                type: 'gk:face',
-                charVar: 'item',
-                targetVar: 'heroi',
-              },
-              {
-                type: 'if',
-                cond: {
-                  type: 'logical',
-                  op: '&&',
-                  left: {
-                    type: 'gk:keyPressed',
-                    key: 'j',
-                  },
-                  right: {
-                    type: 'gk:touchCircle',
-                    aVar: 'heroi',
-                    bVar: 'item',
-                  },
-                },
-                then: [
-                  {
-                    type: 'gk:hurt',
-                    charVar: 'item',
-                    amount: {
-                      type: 'num',
-                      value: 10,
-                    },
-                    iframes: {
-                      type: 'num',
-                      value: 0.2,
-                    },
-                  },
-                  {
-                    type: 'gk:knockback',
-                    charVar: 'item',
-                    fromVar: 'heroi',
-                    force: {
-                      type: 'num',
-                      value: 300,
-                    },
-                  },
-                  {
-                    type: 'gk:playEffect',
-                    fx: 'hit',
-                  },
-                ],
-              },
-              {
-                type: 'if',
-                cond: {
-                  type: 'gk:isDead',
-                  charVar: 'item',
-                },
-                then: [
-                  {
-                    type: 'gk:burst',
-                    effect: 'poeira',
-                    x: {
-                      type: 'gk:charX',
-                      charVar: 'item',
-                    },
-                    y: {
-                      type: 'gk:charY',
-                      charVar: 'item',
-                    },
-                  },
-                  {
-                    type: 'gk:recycle',
-                    charVar: 'item',
-                  },
-                  {
-                    type: 'gk:emit',
-                    event: 'inimigo:morreu',
-                  },
-                ],
-              },
-              {
-                type: 'if',
-                cond: {
-                  type: 'logical',
-                  op: '&&',
-                  left: {
-                    type: 'gk:touchCircle',
-                    aVar: 'item',
-                    bVar: 'heroi',
-                  },
-                  right: {
-                    type: 'logicalNot',
-                    value: {
-                      type: 'gk:isInvincible',
-                      charVar: 'heroi',
-                    },
-                  },
-                },
-                then: [
-                  {
-                    type: 'gk:hurt',
-                    charVar: 'heroi',
-                    amount: {
-                      type: 'num',
-                      value: 10,
-                    },
-                    iframes: {
-                      type: 'num',
-                      value: 1,
-                    },
-                  },
-                  {
-                    type: 'gk:knockback',
-                    charVar: 'heroi',
-                    fromVar: 'item',
-                    force: {
-                      type: 'num',
-                      value: 400,
-                    },
-                  },
-                  {
-                    type: 'gk:playEffect',
-                    fx: 'hurt',
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            type: 'gk:cullOffscreen',
-            mold: 'goblin',
-            margin: {
-              type: 'num',
-              value: 200,
             },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              w: {
+                type: 'num',
+                value: 40,
+              },
+              h: {
+                type: 'num',
+                value: 40,
+              },
+            },
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: {
+                type: 'color',
+                value: '#ffffff',
+              },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 26,
+              },
+              y: {
+                type: 'num',
+                value: 12,
+              },
+              w: {
+                type: 'num',
+                value: 6,
+              },
+              h: {
+                type: 'num',
+                value: 6,
+              },
+            },
+          ],
+          baseW: {
+            type: 'num',
+            value: 40,
           },
-          {
-            type: 'if',
-            cond: {
-              type: 'gk:isDead',
+          baseH: {
+            type: 'num',
+            value: 40,
+          },
+        },
+        {
+          type: 'gk:defineMold',
+          name: 'goblin',
+          w: {
+            type: 'num',
+            value: 40,
+          },
+          h: {
+            type: 'num',
+            value: 40,
+          },
+          health: {
+            type: 'num',
+            value: 20,
+          },
+          speed: {
+            type: 'num',
+            value: 120,
+          },
+          damage: {
+            type: 'num',
+            value: 10,
+          },
+          color: '#e94f4f',
+          image: '',
+          look: 'goblin',
+        },
+        {
+          type: 'gk:defineEffect',
+          name: 'poeira',
+          count: {
+            type: 'num',
+            value: 14,
+          },
+          color: '#caa977',
+          size: {
+            type: 'num',
+            value: 4,
+          },
+          life: {
+            type: 'num',
+            value: 0.5,
+          },
+          speed: {
+            type: 'num',
+            value: 180,
+          },
+          gravity: {
+            type: 'num',
+            value: 260,
+          },
+        },
+        {
+          type: 'gk:setMission',
+          seconds: {
+            type: 'num',
+            value: 60,
+          },
+          killCount: {
+            type: 'num',
+            value: 10,
+          },
+        },
+        {
+          type: 'gk:createCharacter',
+          varName: 'heroi',
+          image: '',
+          w: {
+            type: 'num',
+            value: 48,
+          },
+          h: {
+            type: 'num',
+            value: 48,
+          },
+          speed: {
+            type: 'num',
+            value: 300,
+          },
+          color: '#4a9eff',
+        },
+        {
+          type: 'gk:resetCharacter',
+          charVar: 'heroi',
+        },
+        {
+          type: 'gk:startSpawner',
+          mold: 'goblin',
+          seconds: {
+            type: 'num',
+            value: 1.2,
+          },
+        },
+      ],
+      events: [
+        {
+          type: 'gk:onEvent',
+          event: 'inimigo:morreu',
+          body: [
+            {
+              type: 'gk:missionKill',
+            },
+            {
+              type: 'gk:playEffect',
+              fx: 'explosion',
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'gk:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'gk:moveWithKeys',
+              charVar: 'heroi',
+              dtVar: 'dt',
+            },
+            {
+              type: 'gk:keepOnScreen',
               charVar: 'heroi',
             },
-            then: [
-              {
-                type: 'gk:endGame',
+            {
+              type: 'gk:forEachActive',
+              mold: 'goblin',
+              itemName: 'item',
+              body: [
+                {
+                  type: 'gk:seek',
+                  charVar: 'item',
+                  targetVar: 'heroi',
+                  dtVar: 'dt',
+                },
+                {
+                  type: 'gk:face',
+                  charVar: 'item',
+                  targetVar: 'heroi',
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logical',
+                    op: '&&',
+                    left: {
+                      type: 'gk:keyPressed',
+                      key: 'j',
+                    },
+                    right: {
+                      type: 'gk:touchCircle',
+                      aVar: 'heroi',
+                      bVar: 'item',
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'gk:hurt',
+                      charVar: 'item',
+                      amount: {
+                        type: 'num',
+                        value: 10,
+                      },
+                      iframes: {
+                        type: 'num',
+                        value: 0.2,
+                      },
+                    },
+                    {
+                      type: 'gk:knockback',
+                      charVar: 'item',
+                      fromVar: 'heroi',
+                      force: {
+                        type: 'num',
+                        value: 300,
+                      },
+                    },
+                    {
+                      type: 'gk:playEffect',
+                      fx: 'hit',
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'gk:isDead',
+                    charVar: 'item',
+                  },
+                  then: [
+                    {
+                      type: 'gk:burst',
+                      effect: 'poeira',
+                      x: {
+                        type: 'gk:charX',
+                        charVar: 'item',
+                      },
+                      y: {
+                        type: 'gk:charY',
+                        charVar: 'item',
+                      },
+                    },
+                    {
+                      type: 'gk:recycle',
+                      charVar: 'item',
+                    },
+                    {
+                      type: 'gk:emit',
+                      event: 'inimigo:morreu',
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logical',
+                    op: '&&',
+                    left: {
+                      type: 'gk:touchCircle',
+                      aVar: 'item',
+                      bVar: 'heroi',
+                    },
+                    right: {
+                      type: 'logicalNot',
+                      value: {
+                        type: 'gk:isInvincible',
+                        charVar: 'heroi',
+                      },
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'gk:hurt',
+                      charVar: 'heroi',
+                      amount: {
+                        type: 'num',
+                        value: 10,
+                      },
+                      iframes: {
+                        type: 'num',
+                        value: 1,
+                      },
+                    },
+                    {
+                      type: 'gk:knockback',
+                      charVar: 'heroi',
+                      fromVar: 'item',
+                      force: {
+                        type: 'num',
+                        value: 400,
+                      },
+                    },
+                    {
+                      type: 'gk:playEffect',
+                      fx: 'hurt',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'gk:cullOffscreen',
+              mold: 'goblin',
+              margin: {
+                type: 'num',
+                value: 200,
               },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'gk:onEvent',
-        event: 'inimigo:morreu',
-        body: [
-          {
-            type: 'gk:missionKill',
-          },
-          {
-            type: 'gk:playEffect',
-            fx: 'explosion',
-          },
-        ],
-      },
-      {
-        type: 'gk:onDraw',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'gk:drawBackground',
-            color: '#0f3460',
-            grid: true,
-          },
-          {
-            type: 'gk:drawActive',
-            mold: 'goblin',
-          },
-          {
-            type: 'gk:drawCharacter',
-            charVar: 'heroi',
-          },
-          {
-            type: 'gk:drawEffects',
-          },
-          {
-            type: 'gk:drawHealthBar',
-            charVar: 'heroi',
-            max: {
-              type: 'num',
-              value: 0,
             },
-          },
-          {
-            type: 'gk:drawTimer',
-            x: {
-              type: 'num',
-              value: 20,
+            {
+              type: 'if',
+              cond: {
+                type: 'gk:isDead',
+                charVar: 'heroi',
+              },
+              then: [
+                {
+                  type: 'gk:endGame',
+                },
+              ],
             },
-            y: {
-              type: 'num',
-              value: 40,
+          ],
+        },
+        {
+          type: 'gk:onDraw',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'gk:drawBackground',
+              color: '#0f3460',
+              grid: true,
             },
-          },
-        ],
-      },
-      {
-        type: 'gk:start',
-      },
-    ],
+            {
+              type: 'gk:drawActive',
+              mold: 'goblin',
+            },
+            {
+              type: 'gk:drawCharacter',
+              charVar: 'heroi',
+            },
+            {
+              type: 'gk:drawEffects',
+            },
+            {
+              type: 'gk:drawHealthBar',
+              charVar: 'heroi',
+              max: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'gk:drawTimer',
+              x: {
+                type: 'num',
+                value: 20,
+              },
+              y: {
+                type: 'num',
+                value: 40,
+              },
+            },
+          ],
+        },
+      ],
+    },
   },
 }
 
@@ -645,940 +667,946 @@ export const vilaDoDragaoExample: ExtensionExample = {
     html: [],
     css: [],
     extensions: [{ extensionId: 'game-2d-advanced' }],
-    js: [
-      {
-        type: 'gk:setup',
-        w: {
-          type: 'num',
-          value: 960,
-        },
-        h: {
-          type: 'num',
-          value: 640,
-        },
-        bg: '#1c1330',
-        accent: '#fbbf24',
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'menu',
-        title: {
-          type: 'str',
-          value: 'Vila do Dragão',
-        },
-        text: {
-          type: 'str',
-          value: 'Setas andam - espaço conversa - derrote o dragão!',
-        },
-        button: {
-          type: 'str',
-          value: 'Começar a aventura',
-        },
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'vitoria',
-        title: {
-          type: 'str',
-          value: 'Vila salva!',
-        },
-        text: {
-          type: 'str',
-          value: 'O dragão foi derrotado. Você é uma lenda!',
-        },
-        button: {
-          type: 'str',
-          value: '',
-        },
-      },
-      {
-        type: 'gk:defineLook',
-        name: 'ferreiro',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#8b5a2b',
-            },
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 960,
           },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: {
-              type: 'num',
-              value: 12,
-            },
-            y: {
-              type: 'num',
-              value: 24,
-            },
-            w: {
-              type: 'num',
-              value: 40,
-            },
-            h: {
-              type: 'num',
-              value: 40,
-            },
+          h: {
+            type: 'num',
+            value: 640,
           },
-          {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#f3c78a',
-            },
-          },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: {
-              type: 'num',
-              value: 20,
-            },
-            y: {
-              type: 'num',
-              value: 8,
-            },
-            w: {
-              type: 'num',
-              value: 24,
-            },
-            h: {
-              type: 'num',
-              value: 20,
-            },
-          },
-        ],
-        baseW: {
-          type: 'num',
-          value: 64,
+          bg: '#1c1330',
+          accent: '#fbbf24',
         },
-        baseH: {
-          type: 'num',
-          value: 64,
-        },
-      },
-      {
-        type: 'gk:defineLook',
-        name: 'dragao',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#2f9e44',
-            },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Vila do Dragão',
           },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: {
-              type: 'num',
-              value: 8,
-            },
-            y: {
-              type: 'num',
-              value: 16,
-            },
-            w: {
-              type: 'num',
-              value: 48,
-            },
-            h: {
-              type: 'num',
-              value: 40,
-            },
+          text: {
+            type: 'str',
+            value: 'Setas andam - espaço conversa - derrote o dragão!',
           },
-          {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#b2f2bb',
-            },
+          button: {
+            type: 'str',
+            value: 'Começar a aventura',
           },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: {
-              type: 'num',
-              value: 16,
-            },
-            y: {
-              type: 'num',
-              value: 24,
-            },
-            w: {
-              type: 'num',
-              value: 10,
-            },
-            h: {
-              type: 'num',
-              value: 10,
-            },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Vila salva!',
           },
-          {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#e03131',
-            },
+          text: {
+            type: 'str',
+            value: 'O dragão foi derrotado. Você é uma lenda!',
           },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: {
-              type: 'num',
-              value: 40,
-            },
-            y: {
-              type: 'num',
-              value: 24,
-            },
-            w: {
-              type: 'num',
-              value: 8,
-            },
-            h: {
-              type: 'num',
-              value: 8,
-            },
+          button: {
+            type: 'str',
+            value: '',
           },
-        ],
-        baseW: {
-          type: 'num',
-          value: 64,
         },
-        baseH: {
-          type: 'num',
-          value: 64,
-        },
-      },
-      {
-        type: 'gk:rpgBattleStats',
-        hp: {
-          type: 'num',
-          value: 30,
-        },
-        str: {
-          type: 'num',
-          value: 8,
-        },
-        def: {
-          type: 'num',
-          value: 2,
-        },
-      },
-      {
-        type: 'gk:rpgSetSpecial',
-        name: 'Espada flamejante',
-        dmg: {
-          type: 'num',
-          value: 18,
-        },
-        cost: {
-          type: 'num',
-          value: 4,
-        },
-      },
-      {
-        type: 'gk:createCharacter',
-        varName: 'heroi',
-        image: '',
-        w: {
-          type: 'num',
-          value: 64,
-        },
-        h: {
-          type: 'num',
-          value: 64,
-        },
-        speed: {
-          type: 'num',
-          value: 260,
-        },
-        color: '#4a9eff',
-      },
-      { type: 'gk:rpgSetStartMap', map: 'vila' },
-      {
-        type: 'gk:rpgCreateMap',
-        map: 'vila',
-        cols: { type: 'num', value: 15 },
-        rows: { type: 'num', value: 10 },
-        ctxName: 'ctx',
-        body: [
-          { type: 'gk:drawBackground', color: '#5c7f45', grid: false },
-          { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#d8c28f' } },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: { type: 'num', value: 0 },
-            y: { type: 'num', value: 128 },
-            w: { type: 'num', value: 960 },
-            h: { type: 'num', value: 128 },
-          },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: { type: 'num', value: 512 },
-            y: { type: 'num', value: 128 },
-            w: { type: 'num', value: 128 },
-            h: { type: 'num', value: 320 },
-          },
-          { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#7f3f2b' } },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: { type: 'num', value: 64 },
-            y: { type: 'num', value: 32 },
-            w: { type: 'num', value: 160 },
-            h: { type: 'num', value: 96 },
-          },
-          { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#30343b' } },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: { type: 'num', value: 320 },
-            y: { type: 'num', value: 64 },
-            w: { type: 'num', value: 64 },
-            h: { type: 'num', value: 128 },
-          },
-          { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#3c2f2f' } },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: { type: 'num', value: 560 },
-            y: { type: 'num', value: 384 },
-            w: { type: 'num', value: 96 },
-            h: { type: 'num', value: 64 },
-          },
-          {
-            type: 'if',
-            cond: { type: 'gk:rpgHasItem', item: 'chave' },
-            then: [
-              {
-                type: 'canvasFillStyle',
-                ctxVar: 'ctx',
-                color: { type: 'color', value: '#f3c969' },
+        {
+          type: 'gk:defineLook',
+          name: 'ferreiro',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: {
+                type: 'color',
+                value: '#8b5a2b',
               },
-              {
-                type: 'canvasFillRect',
-                ctxVar: 'ctx',
-                x: { type: 'num', value: 584 },
-                y: { type: 'num', value: 396 },
-                w: { type: 'num', value: 48 },
-                h: { type: 'num', value: 52 },
-              },
-            ],
-          },
-          { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#ffffff' } },
-          { type: 'canvasFont', ctxVar: 'ctx', size: 24, family: 'sans-serif' },
-          {
-            type: 'canvasFillText',
-            ctxVar: 'ctx',
-            text: { type: 'str', value: 'VILA DO DRAGÃO' },
-            x: { type: 'num', value: 24 },
-            y: { type: 'num', value: 34 },
-          },
-          { type: 'canvasFont', ctxVar: 'ctx', size: 18, family: 'sans-serif' },
-          {
-            type: 'canvasFillText',
-            ctxVar: 'ctx',
-            text: { type: 'str', value: 'FERRARIA' },
-            x: { type: 'num', value: 304 },
-            y: { type: 'num', value: 56 },
-          },
-          {
-            type: 'canvasFillText',
-            ctxVar: 'ctx',
-            text: { type: 'str', value: 'Ferreiro' },
-            x: { type: 'num', value: 430 },
-            y: { type: 'num', value: 190 },
-          },
-          {
-            type: 'canvasFillText',
-            ctxVar: 'ctx',
-            text: { type: 'str', value: 'PORTA DA CAVERNA' },
-            x: { type: 'num', value: 564 },
-            y: { type: 'num', value: 478 },
-          },
-        ],
-      },
-      {
-        type: 'gk:rpgCreateMap',
-        map: 'caverna',
-        cols: { type: 'num', value: 12 },
-        rows: { type: 'num', value: 8 },
-        ctxName: 'ctx',
-        body: [
-          { type: 'gk:drawBackground', color: '#17131f', grid: false },
-          { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#31283d' } },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: { type: 'num', value: 0 },
-            y: { type: 'num', value: 0 },
-            w: { type: 'num', value: 768 },
-            h: { type: 'num', value: 64 },
-          },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: { type: 'num', value: 0 },
-            y: { type: 'num', value: 448 },
-            w: { type: 'num', value: 768 },
-            h: { type: 'num', value: 64 },
-          },
-          { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#8f3b24' } },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: { type: 'num', value: 256 },
-            y: { type: 'num', value: 384 },
-            w: { type: 'num', value: 256 },
-            h: { type: 'num', value: 32 },
-          },
-          { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#7a263a' } },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: { type: 'num', value: 480 },
-            y: { type: 'num', value: 96 },
-            w: { type: 'num', value: 112 },
-            h: { type: 'num', value: 112 },
-          },
-          { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#ffffff' } },
-          { type: 'canvasFont', ctxVar: 'ctx', size: 24, family: 'sans-serif' },
-          {
-            type: 'canvasFillText',
-            ctxVar: 'ctx',
-            text: { type: 'str', value: 'CAVERNA DO DRAGÃO' },
-            x: { type: 'num', value: 24 },
-            y: { type: 'num', value: 34 },
-          },
-          { type: 'canvasFont', ctxVar: 'ctx', size: 18, family: 'sans-serif' },
-          {
-            type: 'canvasFillText',
-            ctxVar: 'ctx',
-            text: { type: 'str', value: 'SAÍDA' },
-            x: { type: 'num', value: 8 },
-            y: { type: 'num', value: 310 },
-          },
-          {
-            type: 'canvasFillText',
-            ctxVar: 'ctx',
-            text: { type: 'str', value: 'Dragão' },
-            x: { type: 'num', value: 496 },
-            y: { type: 'num', value: 88 },
-          },
-        ],
-      },
-      {
-        type: 'gk:rpgOnEnterMap',
-        map: 'vila',
-        body: [
-          {
-            type: 'gk:placeCharacter',
-            charVar: 'heroi',
-            x: {
-              type: 'gk:rpgCell',
-              n: {
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: {
                 type: 'num',
-                value: 2,
+                value: 12,
               },
-            },
-            y: {
-              type: 'gk:rpgCell',
-              n: {
+              y: {
                 type: 'num',
-                value: 2,
+                value: 24,
+              },
+              w: {
+                type: 'num',
+                value: 40,
+              },
+              h: {
+                type: 'num',
+                value: 40,
               },
             },
-          },
-          {
-            type: 'gk:rpgBlockCell',
-            cx: {
-              type: 'num',
-              value: 5,
-            },
-            cy: {
-              type: 'num',
-              value: 1,
-            },
-          },
-          {
-            type: 'gk:rpgBlockCell',
-            cx: {
-              type: 'num',
-              value: 5,
-            },
-            cy: {
-              type: 'num',
-              value: 2,
-            },
-          },
-          {
-            type: 'gk:rpgCreateNpc',
-            name: 'ferreiro',
-            cx: {
-              type: 'num',
-              value: 7,
-            },
-            cy: {
-              type: 'num',
-              value: 3,
-            },
-            image: '',
-            look: 'ferreiro',
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'logicalNot',
-              value: {
-                type: 'gk:rpgHasFlag',
-                flag: 'intro',
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: {
+                type: 'color',
+                value: '#f3c78a',
               },
             },
-            then: [
-              {
-                type: 'gk:rpgCutscene',
-                body: [
-                  {
-                    type: 'gk:rpgNpcWalkTo',
-                    npc: 'ferreiro',
-                    cx: {
-                      type: 'num',
-                      value: 3,
-                    },
-                    cy: {
-                      type: 'num',
-                      value: 2,
-                    },
-                  },
-                  {
-                    type: 'gk:rpgFace',
-                    npc: 'ferreiro',
-                    dir: 'left',
-                  },
-                  {
-                    type: 'gk:rpgSay',
-                    text: {
-                      type: 'str',
-                      value: 'Ei, viajante! A vila do dragao precisa de voce.',
-                    },
-                    speaker: {
-                      type: 'str',
-                      value: 'Ferreiro',
-                    },
-                  },
-                  {
-                    type: 'gk:rpgSay',
-                    text: {
-                      type: 'str',
-                      value: 'O dragão roubou o ouro. Tome a chave e entre na caverna ao sul!',
-                    },
-                    speaker: { type: 'str', value: 'Ferreiro' },
-                  },
-                  { type: 'gk:rpgAddFlag', flag: 'missao-pronta' },
-                ],
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 20,
               },
-              {
-                type: 'gk:rpgAddFlag',
-                flag: 'intro',
+              y: {
+                type: 'num',
+                value: 8,
               },
-            ],
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'gk:rpgHasItem',
-              item: 'chave',
+              w: {
+                type: 'num',
+                value: 24,
+              },
+              h: {
+                type: 'num',
+                value: 20,
+              },
             },
-            then: [
-              {
-                type: 'gk:rpgCreateDoor',
-                cx: {
-                  type: 'num',
-                  value: 9,
+          ],
+          baseW: {
+            type: 'num',
+            value: 64,
+          },
+          baseH: {
+            type: 'num',
+            value: 64,
+          },
+        },
+        {
+          type: 'gk:defineLook',
+          name: 'dragao',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: {
+                type: 'color',
+                value: '#2f9e44',
+              },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 8,
+              },
+              y: {
+                type: 'num',
+                value: 16,
+              },
+              w: {
+                type: 'num',
+                value: 48,
+              },
+              h: {
+                type: 'num',
+                value: 40,
+              },
+            },
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: {
+                type: 'color',
+                value: '#b2f2bb',
+              },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 16,
+              },
+              y: {
+                type: 'num',
+                value: 24,
+              },
+              w: {
+                type: 'num',
+                value: 10,
+              },
+              h: {
+                type: 'num',
+                value: 10,
+              },
+            },
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: {
+                type: 'color',
+                value: '#e03131',
+              },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 40,
+              },
+              y: {
+                type: 'num',
+                value: 24,
+              },
+              w: {
+                type: 'num',
+                value: 8,
+              },
+              h: {
+                type: 'num',
+                value: 8,
+              },
+            },
+          ],
+          baseW: {
+            type: 'num',
+            value: 64,
+          },
+          baseH: {
+            type: 'num',
+            value: 64,
+          },
+        },
+        {
+          type: 'gk:rpgBattleStats',
+          hp: {
+            type: 'num',
+            value: 30,
+          },
+          str: {
+            type: 'num',
+            value: 8,
+          },
+          def: {
+            type: 'num',
+            value: 2,
+          },
+        },
+        {
+          type: 'gk:rpgSetSpecial',
+          name: 'Espada flamejante',
+          dmg: {
+            type: 'num',
+            value: 18,
+          },
+          cost: {
+            type: 'num',
+            value: 4,
+          },
+        },
+        {
+          type: 'gk:createCharacter',
+          varName: 'heroi',
+          image: '',
+          w: {
+            type: 'num',
+            value: 64,
+          },
+          h: {
+            type: 'num',
+            value: 64,
+          },
+          speed: {
+            type: 'num',
+            value: 260,
+          },
+          color: '#4a9eff',
+        },
+        { type: 'gk:rpgSetStartMap', map: 'vila' },
+        {
+          type: 'gk:rpgCreateMap',
+          map: 'vila',
+          cols: { type: 'num', value: 15 },
+          rows: { type: 'num', value: 10 },
+          ctxName: 'ctx',
+          body: [
+            { type: 'gk:drawBackground', color: '#5c7f45', grid: false },
+            { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#d8c28f' } },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 0 },
+              y: { type: 'num', value: 128 },
+              w: { type: 'num', value: 960 },
+              h: { type: 'num', value: 128 },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 512 },
+              y: { type: 'num', value: 128 },
+              w: { type: 'num', value: 128 },
+              h: { type: 'num', value: 320 },
+            },
+            { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#7f3f2b' } },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 64 },
+              y: { type: 'num', value: 32 },
+              w: { type: 'num', value: 160 },
+              h: { type: 'num', value: 96 },
+            },
+            { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#30343b' } },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 320 },
+              y: { type: 'num', value: 64 },
+              w: { type: 'num', value: 64 },
+              h: { type: 'num', value: 128 },
+            },
+            { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#3c2f2f' } },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 560 },
+              y: { type: 'num', value: 384 },
+              w: { type: 'num', value: 96 },
+              h: { type: 'num', value: 64 },
+            },
+            {
+              type: 'if',
+              cond: { type: 'gk:rpgHasItem', item: 'chave' },
+              then: [
+                {
+                  type: 'canvasFillStyle',
+                  ctxVar: 'ctx',
+                  color: { type: 'color', value: '#f3c969' },
                 },
-                cy: {
-                  type: 'num',
-                  value: 6,
+                {
+                  type: 'canvasFillRect',
+                  ctxVar: 'ctx',
+                  x: { type: 'num', value: 584 },
+                  y: { type: 'num', value: 396 },
+                  w: { type: 'num', value: 48 },
+                  h: { type: 'num', value: 52 },
                 },
-                map: 'caverna',
+              ],
+            },
+            { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#ffffff' } },
+            { type: 'canvasFont', ctxVar: 'ctx', size: 24, family: 'sans-serif' },
+            {
+              type: 'canvasFillText',
+              ctxVar: 'ctx',
+              text: { type: 'str', value: 'VILA DO DRAGÃO' },
+              x: { type: 'num', value: 24 },
+              y: { type: 'num', value: 34 },
+            },
+            { type: 'canvasFont', ctxVar: 'ctx', size: 18, family: 'sans-serif' },
+            {
+              type: 'canvasFillText',
+              ctxVar: 'ctx',
+              text: { type: 'str', value: 'FERRARIA' },
+              x: { type: 'num', value: 304 },
+              y: { type: 'num', value: 56 },
+            },
+            {
+              type: 'canvasFillText',
+              ctxVar: 'ctx',
+              text: { type: 'str', value: 'Ferreiro' },
+              x: { type: 'num', value: 430 },
+              y: { type: 'num', value: 190 },
+            },
+            {
+              type: 'canvasFillText',
+              ctxVar: 'ctx',
+              text: { type: 'str', value: 'PORTA DA CAVERNA' },
+              x: { type: 'num', value: 564 },
+              y: { type: 'num', value: 478 },
+            },
+          ],
+        },
+        {
+          type: 'gk:rpgCreateMap',
+          map: 'caverna',
+          cols: { type: 'num', value: 12 },
+          rows: { type: 'num', value: 8 },
+          ctxName: 'ctx',
+          body: [
+            { type: 'gk:drawBackground', color: '#17131f', grid: false },
+            { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#31283d' } },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 0 },
+              y: { type: 'num', value: 0 },
+              w: { type: 'num', value: 768 },
+              h: { type: 'num', value: 64 },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 0 },
+              y: { type: 'num', value: 448 },
+              w: { type: 'num', value: 768 },
+              h: { type: 'num', value: 64 },
+            },
+            { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#8f3b24' } },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 256 },
+              y: { type: 'num', value: 384 },
+              w: { type: 'num', value: 256 },
+              h: { type: 'num', value: 32 },
+            },
+            { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#7a263a' } },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 480 },
+              y: { type: 'num', value: 96 },
+              w: { type: 'num', value: 112 },
+              h: { type: 'num', value: 112 },
+            },
+            { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#ffffff' } },
+            { type: 'canvasFont', ctxVar: 'ctx', size: 24, family: 'sans-serif' },
+            {
+              type: 'canvasFillText',
+              ctxVar: 'ctx',
+              text: { type: 'str', value: 'CAVERNA DO DRAGÃO' },
+              x: { type: 'num', value: 24 },
+              y: { type: 'num', value: 34 },
+            },
+            { type: 'canvasFont', ctxVar: 'ctx', size: 18, family: 'sans-serif' },
+            {
+              type: 'canvasFillText',
+              ctxVar: 'ctx',
+              text: { type: 'str', value: 'SAÍDA' },
+              x: { type: 'num', value: 8 },
+              y: { type: 'num', value: 310 },
+            },
+            {
+              type: 'canvasFillText',
+              ctxVar: 'ctx',
+              text: { type: 'str', value: 'Dragão' },
+              x: { type: 'num', value: 496 },
+              y: { type: 'num', value: 88 },
+            },
+          ],
+        },
+      ],
+      events: [
+        {
+          type: 'gk:rpgOnEnterMap',
+          map: 'vila',
+          body: [
+            {
+              type: 'gk:placeCharacter',
+              charVar: 'heroi',
+              x: {
+                type: 'gk:rpgCell',
+                n: {
+                  type: 'num',
+                  value: 2,
+                },
               },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'gk:rpgOnEnterMap',
-        map: 'caverna',
-        body: [
-          {
-            type: 'gk:placeCharacter',
-            charVar: 'heroi',
-            x: {
-              type: 'gk:rpgCell',
-              n: {
+              y: {
+                type: 'gk:rpgCell',
+                n: {
+                  type: 'num',
+                  value: 2,
+                },
+              },
+            },
+            {
+              type: 'gk:rpgBlockCell',
+              cx: {
+                type: 'num',
+                value: 5,
+              },
+              cy: {
                 type: 'num',
                 value: 1,
               },
             },
-            y: {
-              type: 'gk:rpgCell',
-              n: {
+            {
+              type: 'gk:rpgBlockCell',
+              cx: {
                 type: 'num',
                 value: 5,
               },
+              cy: {
+                type: 'num',
+                value: 2,
+              },
             },
-          },
-          {
-            type: 'gk:rpgCreateNpc',
-            name: 'dragao',
-            cx: {
-              type: 'num',
-              value: 8,
+            {
+              type: 'gk:rpgCreateNpc',
+              name: 'ferreiro',
+              cx: {
+                type: 'num',
+                value: 7,
+              },
+              cy: {
+                type: 'num',
+                value: 3,
+              },
+              image: '',
+              look: 'ferreiro',
             },
-            cy: {
-              type: 'num',
-              value: 2,
-            },
-            image: '',
-            look: 'dragao',
-          },
-          {
-            type: 'gk:rpgCreateDoor',
-            cx: {
-              type: 'num',
-              value: 0,
-            },
-            cy: {
-              type: 'num',
-              value: 5,
-            },
-            map: 'vila',
-          },
-          {
-            type: 'gk:rpgOnStep',
-            cx: {
-              type: 'num',
-              value: 4,
-            },
-            cy: {
-              type: 'num',
-              value: 5,
-            },
-            body: [
-              {
-                type: 'gk:rpgSay',
-                text: {
-                  type: 'str',
-                  value: 'Cheiro de enxofre... o dragao esta perto!',
-                },
-                speaker: {
-                  type: 'str',
-                  value: '',
+            {
+              type: 'if',
+              cond: {
+                type: 'logicalNot',
+                value: {
+                  type: 'gk:rpgHasFlag',
+                  flag: 'intro',
                 },
               },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'gk:rpgOnTalk',
-        npc: 'ferreiro',
-        body: [
-          {
-            type: 'if',
-            cond: {
-              type: 'gk:rpgHasFlag',
-              flag: 'aceitou-missao',
+              then: [
+                {
+                  type: 'gk:rpgCutscene',
+                  body: [
+                    {
+                      type: 'gk:rpgNpcWalkTo',
+                      npc: 'ferreiro',
+                      cx: {
+                        type: 'num',
+                        value: 3,
+                      },
+                      cy: {
+                        type: 'num',
+                        value: 2,
+                      },
+                    },
+                    {
+                      type: 'gk:rpgFace',
+                      npc: 'ferreiro',
+                      dir: 'left',
+                    },
+                    {
+                      type: 'gk:rpgSay',
+                      text: {
+                        type: 'str',
+                        value: 'Ei, viajante! A vila do dragao precisa de voce.',
+                      },
+                      speaker: {
+                        type: 'str',
+                        value: 'Ferreiro',
+                      },
+                    },
+                    {
+                      type: 'gk:rpgSay',
+                      text: {
+                        type: 'str',
+                        value: 'O dragão roubou o ouro. Tome a chave e entre na caverna ao sul!',
+                      },
+                      speaker: { type: 'str', value: 'Ferreiro' },
+                    },
+                    { type: 'gk:rpgAddFlag', flag: 'missao-pronta' },
+                  ],
+                },
+                {
+                  type: 'gk:rpgAddFlag',
+                  flag: 'intro',
+                },
+              ],
             },
-            then: [
-              {
-                type: 'gk:rpgSay',
-                text: {
-                  type: 'str',
-                  value: 'A caverna fica no canto de baixo. Boa sorte!',
-                },
-                speaker: {
-                  type: 'str',
-                  value: 'Ferreiro',
-                },
-              },
-            ],
-            else: [
-              {
-                type: 'gk:rpgSay',
-                text: {
-                  type: 'str',
-                  value: 'O dragão roubou o ouro da vila!',
-                },
-                speaker: {
-                  type: 'str',
-                  value: 'Ferreiro',
-                },
-              },
-              {
-                type: 'gk:rpgSay',
-                text: {
-                  type: 'str',
-                  value: 'Tome a chave da caverna e esta poção. Só você pode nos salvar!',
-                },
-                speaker: {
-                  type: 'str',
-                  value: 'Ferreiro',
-                },
-              },
-              {
-                type: 'gk:rpgGiveItem',
+            {
+              type: 'if',
+              cond: {
+                type: 'gk:rpgHasItem',
                 item: 'chave',
-                image: '',
               },
-              {
-                type: 'gk:rpgGivePotion',
-                name: 'Poção',
-                heal: {
+              then: [
+                {
+                  type: 'gk:rpgCreateDoor',
+                  cx: {
+                    type: 'num',
+                    value: 9,
+                  },
+                  cy: {
+                    type: 'num',
+                    value: 6,
+                  },
+                  map: 'caverna',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'gk:rpgOnEnterMap',
+          map: 'caverna',
+          body: [
+            {
+              type: 'gk:placeCharacter',
+              charVar: 'heroi',
+              x: {
+                type: 'gk:rpgCell',
+                n: {
                   type: 'num',
-                  value: 20,
+                  value: 1,
                 },
               },
-              {
-                type: 'gk:rpgAddFlag',
+              y: {
+                type: 'gk:rpgCell',
+                n: {
+                  type: 'num',
+                  value: 5,
+                },
+              },
+            },
+            {
+              type: 'gk:rpgCreateNpc',
+              name: 'dragao',
+              cx: {
+                type: 'num',
+                value: 8,
+              },
+              cy: {
+                type: 'num',
+                value: 2,
+              },
+              image: '',
+              look: 'dragao',
+            },
+            {
+              type: 'gk:rpgCreateDoor',
+              cx: {
+                type: 'num',
+                value: 0,
+              },
+              cy: {
+                type: 'num',
+                value: 5,
+              },
+              map: 'vila',
+            },
+          ],
+        },
+        {
+          type: 'gk:rpgOnStep',
+          cx: { type: 'num', value: 4 },
+          cy: { type: 'num', value: 5 },
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '===',
+                left: { type: 'gk:rpgCurrentMap' },
+                right: { type: 'str', value: 'caverna' },
+              },
+              then: [
+                {
+                  type: 'gk:rpgSay',
+                  text: {
+                    type: 'str',
+                    value: 'Cheiro de enxofre... o dragao esta perto!',
+                  },
+                  speaker: { type: 'str', value: '' },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'gk:rpgOnTalk',
+          npc: 'ferreiro',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'gk:rpgHasFlag',
                 flag: 'aceitou-missao',
               },
-              {
-                type: 'gk:rpgCreateDoor',
-                cx: {
-                  type: 'num',
-                  value: 9,
-                },
-                cy: {
-                  type: 'num',
-                  value: 6,
-                },
-                map: 'caverna',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'gk:rpgOnTalk',
-        npc: 'dragao',
-        body: [
-          {
-            type: 'gk:rpgBattleStart',
-            name: 'Dragão',
-            hp: {
-              type: 'num',
-              value: 40,
-            },
-            str: {
-              type: 'num',
-              value: 6,
-            },
-            def: {
-              type: 'num',
-              value: 3,
-            },
-          },
-        ],
-      },
-      {
-        type: 'gk:rpgOnBattleEnd',
-        body: [
-          {
-            type: 'if',
-            cond: {
-              type: 'gk:rpgBattleWon',
-            },
-            then: [
-              {
-                type: 'gk:rpgBattleReward',
-                xp: {
-                  type: 'num',
-                  value: 25,
-                },
-              },
-              {
-                type: 'gk:setState',
-                name: 'vitoria',
-              },
-            ],
-            else: [
-              {
-                type: 'gk:endGame',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'gk:onUpdate',
-        dtName: 'dt',
-        body: [
-          {
-            type: 'if',
-            cond: {
-              type: 'logical',
-              op: '&&',
-              left: { type: 'gk:rpgHasFlag', flag: 'missao-pronta' },
-              right: {
-                type: 'logicalNot',
-                value: { type: 'gk:rpgHasItem', item: 'chave' },
-              },
-            },
-            then: [
-              { type: 'gk:rpgGiveItem', item: 'chave', image: '' },
-              { type: 'gk:rpgGivePotion', name: 'Poção', heal: { type: 'num', value: 20 } },
-              { type: 'gk:rpgAddFlag', flag: 'aceitou-missao' },
-              {
-                type: 'gk:rpgCreateDoor',
-                cx: { type: 'num', value: 9 },
-                cy: { type: 'num', value: 6 },
-                map: 'caverna',
-              },
-            ],
-          },
-          {
-            type: 'gk:rpgMoveGrid',
-            charVar: 'heroi',
-            cell: {
-              type: 'num',
-              value: 64,
-            },
-            dtVar: 'dt',
-          },
-        ],
-      },
-      {
-        type: 'gk:onDraw',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'gk:rpgDrawNpcs',
-          },
-          {
-            type: 'gk:drawCharacter',
-            charVar: 'heroi',
-          },
-        ],
-      },
-      {
-        type: 'gk:onDrawHud',
-        ctxName: 'ctx',
-        body: [
-          { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#161923' } },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: { type: 'num', value: 14 },
-            y: { type: 'num', value: 500 },
-            w: { type: 'num', value: 610 },
-            h: { type: 'num', value: 124 },
-          },
-          { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#ffffff' } },
-          { type: 'canvasFont', ctxVar: 'ctx', size: 19, family: 'sans-serif' },
-          {
-            type: 'if',
-            cond: {
-              type: 'binop',
-              op: '===',
-              left: { type: 'gk:rpgCurrentMap' },
-              right: { type: 'str', value: 'vila' },
-            },
-            then: [
-              {
-                type: 'if',
-                cond: { type: 'gk:rpgHasFlag', flag: 'aceitou-missao' },
-                then: [
-                  {
-                    type: 'canvasFillText',
-                    ctxVar: 'ctx',
-                    text: { type: 'str', value: 'Objetivo: entre na caverna' },
-                    x: { type: 'num', value: 32 },
-                    y: { type: 'num', value: 536 },
+              then: [
+                {
+                  type: 'gk:rpgSay',
+                  text: {
+                    type: 'str',
+                    value: 'A caverna fica no canto de baixo. Boa sorte!',
                   },
-                  {
-                    type: 'canvasFillText',
-                    ctxVar: 'ctx',
-                    text: {
-                      type: 'str',
-                      value: 'Siga o caminho até a porta no canto inferior direito.',
+                  speaker: {
+                    type: 'str',
+                    value: 'Ferreiro',
+                  },
+                },
+              ],
+              else: [
+                {
+                  type: 'gk:rpgSay',
+                  text: {
+                    type: 'str',
+                    value: 'O dragão roubou o ouro da vila!',
+                  },
+                  speaker: {
+                    type: 'str',
+                    value: 'Ferreiro',
+                  },
+                },
+                {
+                  type: 'gk:rpgSay',
+                  text: {
+                    type: 'str',
+                    value: 'Tome a chave da caverna e esta poção. Só você pode nos salvar!',
+                  },
+                  speaker: {
+                    type: 'str',
+                    value: 'Ferreiro',
+                  },
+                },
+                {
+                  type: 'gk:rpgGiveItem',
+                  item: 'chave',
+                  image: '',
+                },
+                {
+                  type: 'gk:rpgGivePotion',
+                  name: 'Poção',
+                  heal: {
+                    type: 'num',
+                    value: 20,
+                  },
+                },
+                {
+                  type: 'gk:rpgAddFlag',
+                  flag: 'aceitou-missao',
+                },
+                {
+                  type: 'gk:rpgCreateDoor',
+                  cx: {
+                    type: 'num',
+                    value: 9,
+                  },
+                  cy: {
+                    type: 'num',
+                    value: 6,
+                  },
+                  map: 'caverna',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'gk:rpgOnTalk',
+          npc: 'dragao',
+          body: [
+            {
+              type: 'gk:rpgBattleStart',
+              name: 'Dragão',
+              hp: {
+                type: 'num',
+                value: 40,
+              },
+              str: {
+                type: 'num',
+                value: 6,
+              },
+              def: {
+                type: 'num',
+                value: 3,
+              },
+            },
+          ],
+        },
+        {
+          type: 'gk:rpgOnBattleEnd',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'gk:rpgBattleWon',
+              },
+              then: [
+                {
+                  type: 'gk:rpgBattleReward',
+                  xp: {
+                    type: 'num',
+                    value: 25,
+                  },
+                },
+                {
+                  type: 'gk:setState',
+                  name: 'vitoria',
+                },
+              ],
+              else: [
+                {
+                  type: 'gk:endGame',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'gk:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: { type: 'gk:rpgHasFlag', flag: 'missao-pronta' },
+                right: {
+                  type: 'logicalNot',
+                  value: { type: 'gk:rpgHasItem', item: 'chave' },
+                },
+              },
+              then: [
+                { type: 'gk:rpgGiveItem', item: 'chave', image: '' },
+                { type: 'gk:rpgGivePotion', name: 'Poção', heal: { type: 'num', value: 20 } },
+                { type: 'gk:rpgAddFlag', flag: 'aceitou-missao' },
+                {
+                  type: 'gk:rpgCreateDoor',
+                  cx: { type: 'num', value: 9 },
+                  cy: { type: 'num', value: 6 },
+                  map: 'caverna',
+                },
+              ],
+            },
+            {
+              type: 'gk:rpgMoveGrid',
+              charVar: 'heroi',
+              cell: {
+                type: 'num',
+                value: 64,
+              },
+              dtVar: 'dt',
+            },
+          ],
+        },
+        {
+          type: 'gk:onDraw',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'gk:rpgDrawNpcs',
+            },
+            {
+              type: 'gk:drawCharacter',
+              charVar: 'heroi',
+            },
+          ],
+        },
+        {
+          type: 'gk:onDrawHud',
+          ctxName: 'ctx',
+          body: [
+            { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#161923' } },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 14 },
+              y: { type: 'num', value: 500 },
+              w: { type: 'num', value: 610 },
+              h: { type: 'num', value: 124 },
+            },
+            { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#ffffff' } },
+            { type: 'canvasFont', ctxVar: 'ctx', size: 19, family: 'sans-serif' },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '===',
+                left: { type: 'gk:rpgCurrentMap' },
+                right: { type: 'str', value: 'vila' },
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: { type: 'gk:rpgHasFlag', flag: 'aceitou-missao' },
+                  then: [
+                    {
+                      type: 'canvasFillText',
+                      ctxVar: 'ctx',
+                      text: { type: 'str', value: 'Objetivo: entre na caverna' },
+                      x: { type: 'num', value: 32 },
+                      y: { type: 'num', value: 536 },
                     },
-                    x: { type: 'num', value: 32 },
-                    y: { type: 'num', value: 566 },
-                  },
-                ],
-                else: [
-                  {
-                    type: 'canvasFillText',
-                    ctxVar: 'ctx',
-                    text: { type: 'str', value: 'Objetivo: ouça o Ferreiro' },
-                    x: { type: 'num', value: 32 },
-                    y: { type: 'num', value: 536 },
-                  },
-                  {
-                    type: 'canvasFillText',
-                    ctxVar: 'ctx',
-                    text: { type: 'str', value: 'Ele está vindo falar com você.' },
-                    x: { type: 'num', value: 32 },
-                    y: { type: 'num', value: 566 },
-                  },
-                ],
-              },
-            ],
-            else: [
-              {
-                type: 'canvasFillText',
-                ctxVar: 'ctx',
-                text: { type: 'str', value: 'Objetivo: enfrente o Dragão' },
-                x: { type: 'num', value: 32 },
-                y: { type: 'num', value: 536 },
-              },
-              {
-                type: 'canvasFillText',
-                ctxVar: 'ctx',
-                text: { type: 'str', value: 'ESPAÇO: enfrentar o Dragão' },
-                x: { type: 'num', value: 32 },
-                y: { type: 'num', value: 566 },
-              },
-            ],
-          },
-          {
-            type: 'canvasFillText',
-            ctxVar: 'ctx',
-            text: { type: 'str', value: 'Mover: setas/WASD  •  Interagir: ESPAÇO' },
-            x: { type: 'num', value: 32 },
-            y: { type: 'num', value: 602 },
-          },
-          {
-            type: 'gk:rpgDrawInventory',
-            x: {
-              type: 'num',
-              value: 650,
+                    {
+                      type: 'canvasFillText',
+                      ctxVar: 'ctx',
+                      text: {
+                        type: 'str',
+                        value: 'Siga o caminho até a porta no canto inferior direito.',
+                      },
+                      x: { type: 'num', value: 32 },
+                      y: { type: 'num', value: 566 },
+                    },
+                  ],
+                  else: [
+                    {
+                      type: 'canvasFillText',
+                      ctxVar: 'ctx',
+                      text: { type: 'str', value: 'Objetivo: ouça o Ferreiro' },
+                      x: { type: 'num', value: 32 },
+                      y: { type: 'num', value: 536 },
+                    },
+                    {
+                      type: 'canvasFillText',
+                      ctxVar: 'ctx',
+                      text: { type: 'str', value: 'Ele está vindo falar com você.' },
+                      x: { type: 'num', value: 32 },
+                      y: { type: 'num', value: 566 },
+                    },
+                  ],
+                },
+              ],
+              else: [
+                {
+                  type: 'canvasFillText',
+                  ctxVar: 'ctx',
+                  text: { type: 'str', value: 'Objetivo: enfrente o Dragão' },
+                  x: { type: 'num', value: 32 },
+                  y: { type: 'num', value: 536 },
+                },
+                {
+                  type: 'canvasFillText',
+                  ctxVar: 'ctx',
+                  text: { type: 'str', value: 'ESPAÇO: enfrentar o Dragão' },
+                  x: { type: 'num', value: 32 },
+                  y: { type: 'num', value: 566 },
+                },
+              ],
             },
-            y: {
-              type: 'num',
-              value: 540,
+            {
+              type: 'canvasFillText',
+              ctxVar: 'ctx',
+              text: { type: 'str', value: 'Mover: setas/WASD  •  Interagir: ESPAÇO' },
+              x: { type: 'num', value: 32 },
+              y: { type: 'num', value: 602 },
             },
-          },
-        ],
-      },
-      {
-        type: 'gk:start',
-      },
-    ],
+            {
+              type: 'gk:rpgDrawInventory',
+              x: {
+                type: 'num',
+                value: 650,
+              },
+              y: {
+                type: 'num',
+                value: 540,
+              },
+            },
+          ],
+        },
+      ],
+    },
   },
 }
 
@@ -1601,458 +1629,456 @@ export const florestaNinjaExample: ExtensionExample = {
     html: [],
     css: [],
     extensions: [{ extensionId: 'game-2d-advanced' }],
-    js: [
-      {
-        type: 'gk:setup',
-        w: {
-          type: 'num',
-          value: 800,
-        },
-        h: {
-          type: 'num',
-          value: 600,
-        },
-        bg: '#16281c',
-        accent: '#8fe388',
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'menu',
-        title: {
-          type: 'str',
-          value: 'Floresta Ninja',
-        },
-        text: {
-          type: 'str',
-          value: 'WASD anda, ESPACO ataca. Derrote os ninjas!',
-        },
-        button: {
-          type: 'str',
-          value: 'Começar',
-        },
-      },
-      {
-        type: 'gk:createScreen',
-        name: 'vitoria',
-        title: {
-          type: 'str',
-          value: 'Você venceu!',
-        },
-        text: {
-          type: 'str',
-          value: 'Os ninjas foram derrotados!',
-        },
-      },
-      {
-        type: 'gk:addButton',
-        screen: 'vitoria',
-        label: {
-          type: 'str',
-          value: 'Jogar de novo',
-        },
-        body: [
-          {
-            type: 'gk:restartGame',
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 800,
           },
-        ],
-      },
-      {
-        type: 'gk:createCharacter',
-        varName: 'heroi',
-        image: '',
-        w: {
-          type: 'num',
-          value: 40,
-        },
-        h: {
-          type: 'num',
-          value: 40,
-        },
-        speed: {
-          type: 'num',
-          value: 220,
-        },
-        color: '#8fe388',
-      },
-      {
-        type: 'gk:createCharacter',
-        varName: 'ninja1',
-        image: '',
-        w: {
-          type: 'num',
-          value: 36,
-        },
-        h: {
-          type: 'num',
-          value: 36,
-        },
-        speed: {
-          type: 'num',
-          value: 80,
-        },
-        color: '#e0526a',
-      },
-      {
-        type: 'gk:createCharacter',
-        varName: 'ninja2',
-        image: '',
-        w: {
-          type: 'num',
-          value: 36,
-        },
-        h: {
-          type: 'num',
-          value: 36,
-        },
-        speed: {
-          type: 'num',
-          value: 80,
-        },
-        color: '#e0526a',
-      },
-      {
-        type: 'gk:defineEffect',
-        name: 'poeira',
-        count: {
-          type: 'num',
-          value: 14,
-        },
-        color: '#d9f5c8',
-        size: {
-          type: 'num',
-          value: 4,
-        },
-        life: {
-          type: 'num',
-          value: 0.5,
-        },
-        speed: {
-          type: 'num',
-          value: 180,
-        },
-        gravity: {
-          type: 'num',
-          value: 120,
-        },
-      },
-      {
-        type: 'gk:onGameStart',
-        body: [
-          {
-            type: 'gk:placeCharacter',
-            charVar: 'heroi',
-            x: {
-              type: 'num',
-              value: 380,
-            },
-            y: {
-              type: 'num',
-              value: 280,
-            },
+          h: {
+            type: 'num',
+            value: 600,
           },
-          {
-            type: 'gk:placeCharacter',
-            charVar: 'ninja1',
-            x: {
-              type: 'num',
-              value: 120,
-            },
-            y: {
-              type: 'num',
-              value: 120,
-            },
+          bg: '#16281c',
+          accent: '#8fe388',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Floresta Ninja',
           },
-          {
-            type: 'gk:placeCharacter',
-            charVar: 'ninja2',
-            x: {
-              type: 'num',
-              value: 620,
-            },
-            y: {
-              type: 'num',
-              value: 440,
-            },
+          text: {
+            type: 'str',
+            value: 'WASD anda, ESPACO ataca. Derrote os ninjas!',
           },
-        ],
-      },
-      {
-        type: 'gk:onUpdate',
-        dtName: 'dt',
-        body: [
-          {
-            type: 'gk:moveWithKeys',
-            charVar: 'heroi',
-            dtVar: 'dt',
+          button: {
+            type: 'str',
+            value: 'Começar',
           },
-          {
-            type: 'gk:keepOnScreen',
-            charVar: 'heroi',
+        },
+        {
+          type: 'gk:createScreen',
+          name: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Você venceu!',
           },
-          {
-            type: 'if',
-            cond: {
-              type: 'gk:keyPressed',
-              key: ' ',
+          text: {
+            type: 'str',
+            value: 'Os ninjas foram derrotados!',
+          },
+        },
+        {
+          type: 'gk:addButton',
+          screen: 'vitoria',
+          label: {
+            type: 'str',
+            value: 'Jogar de novo',
+          },
+          body: [
+            {
+              type: 'gk:restartGame',
             },
-            then: [
-              {
-                type: 'gk:attackFacing',
-                charVar: 'heroi',
-                range: {
-                  type: 'num',
-                  value: 46,
-                },
-                duration: {
-                  type: 'num',
-                  value: 0.25,
-                },
+          ],
+        },
+        {
+          type: 'gk:createCharacter',
+          varName: 'heroi',
+          image: '',
+          w: {
+            type: 'num',
+            value: 40,
+          },
+          h: {
+            type: 'num',
+            value: 40,
+          },
+          speed: {
+            type: 'num',
+            value: 220,
+          },
+          color: '#8fe388',
+        },
+        {
+          type: 'gk:createCharacter',
+          varName: 'ninja1',
+          image: '',
+          w: {
+            type: 'num',
+            value: 36,
+          },
+          h: {
+            type: 'num',
+            value: 36,
+          },
+          speed: {
+            type: 'num',
+            value: 80,
+          },
+          color: '#e0526a',
+        },
+        {
+          type: 'gk:createCharacter',
+          varName: 'ninja2',
+          image: '',
+          w: {
+            type: 'num',
+            value: 36,
+          },
+          h: {
+            type: 'num',
+            value: 36,
+          },
+          speed: {
+            type: 'num',
+            value: 80,
+          },
+          color: '#e0526a',
+        },
+        {
+          type: 'gk:defineEffect',
+          name: 'poeira',
+          count: {
+            type: 'num',
+            value: 14,
+          },
+          color: '#d9f5c8',
+          size: {
+            type: 'num',
+            value: 4,
+          },
+          life: {
+            type: 'num',
+            value: 0.5,
+          },
+          speed: {
+            type: 'num',
+            value: 180,
+          },
+          gravity: {
+            type: 'num',
+            value: 120,
+          },
+        },
+        {
+          type: 'gk:placeCharacter',
+          charVar: 'heroi',
+          x: {
+            type: 'num',
+            value: 380,
+          },
+          y: {
+            type: 'num',
+            value: 280,
+          },
+        },
+        {
+          type: 'gk:placeCharacter',
+          charVar: 'ninja1',
+          x: {
+            type: 'num',
+            value: 120,
+          },
+          y: {
+            type: 'num',
+            value: 120,
+          },
+        },
+        {
+          type: 'gk:placeCharacter',
+          charVar: 'ninja2',
+          x: {
+            type: 'num',
+            value: 620,
+          },
+          y: {
+            type: 'num',
+            value: 440,
+          },
+        },
+      ],
+      events: [],
+      loops: [
+        {
+          type: 'gk:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'gk:moveWithKeys',
+              charVar: 'heroi',
+              dtVar: 'dt',
+            },
+            {
+              type: 'gk:keepOnScreen',
+              charVar: 'heroi',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'gk:keyPressed',
+                key: ' ',
               },
-            ],
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'logicalNot',
-              value: {
-                type: 'gk:isDead',
-                charVar: 'ninja1',
-              },
-            },
-            then: [
-              {
-                type: 'gk:patrolAround',
-                charVar: 'ninja1',
-                ox: {
-                  type: 'num',
-                  value: 120,
-                },
-                oy: {
-                  type: 'num',
-                  value: 120,
-                },
-                radius: {
-                  type: 'num',
-                  value: 130,
-                },
-              },
-              {
-                type: 'if',
-                cond: {
-                  type: 'gk:didHit',
-                  aVar: 'heroi',
-                  bVar: 'ninja1',
-                },
-                then: [
-                  {
-                    type: 'gk:hurt',
-                    charVar: 'ninja1',
-                    amount: {
-                      type: 'num',
-                      value: 5,
-                    },
-                    iframes: {
-                      type: 'num',
-                      value: 0,
-                    },
+              then: [
+                {
+                  type: 'gk:attackFacing',
+                  charVar: 'heroi',
+                  range: {
+                    type: 'num',
+                    value: 46,
                   },
-                  {
-                    type: 'gk:burst',
-                    effect: 'poeira',
-                    x: {
-                      type: 'gk:charX',
+                  duration: {
+                    type: 'num',
+                    value: 0.25,
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logicalNot',
+                value: {
+                  type: 'gk:isDead',
+                  charVar: 'ninja1',
+                },
+              },
+              then: [
+                {
+                  type: 'gk:patrolAround',
+                  charVar: 'ninja1',
+                  ox: {
+                    type: 'num',
+                    value: 120,
+                  },
+                  oy: {
+                    type: 'num',
+                    value: 120,
+                  },
+                  radius: {
+                    type: 'num',
+                    value: 130,
+                  },
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'gk:didHit',
+                    aVar: 'heroi',
+                    bVar: 'ninja1',
+                  },
+                  then: [
+                    {
+                      type: 'gk:hurt',
                       charVar: 'ninja1',
+                      amount: {
+                        type: 'num',
+                        value: 5,
+                      },
+                      iframes: {
+                        type: 'num',
+                        value: 0,
+                      },
                     },
-                    y: {
-                      type: 'gk:charY',
-                      charVar: 'ninja1',
+                    {
+                      type: 'gk:burst',
+                      effect: 'poeira',
+                      x: {
+                        type: 'gk:charX',
+                        charVar: 'ninja1',
+                      },
+                      y: {
+                        type: 'gk:charY',
+                        charVar: 'ninja1',
+                      },
                     },
-                  },
-                  {
-                    type: 'gk:playEffect',
-                    fx: 'hit',
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'logicalNot',
-              value: {
-                type: 'gk:isDead',
-                charVar: 'ninja2',
-              },
+                    {
+                      type: 'gk:playEffect',
+                      fx: 'hit',
+                    },
+                  ],
+                },
+              ],
             },
-            then: [
-              {
-                type: 'gk:patrolAround',
-                charVar: 'ninja2',
-                ox: {
-                  type: 'num',
-                  value: 620,
-                },
-                oy: {
-                  type: 'num',
-                  value: 440,
-                },
-                radius: {
-                  type: 'num',
-                  value: 130,
+            {
+              type: 'if',
+              cond: {
+                type: 'logicalNot',
+                value: {
+                  type: 'gk:isDead',
+                  charVar: 'ninja2',
                 },
               },
-              {
-                type: 'if',
-                cond: {
-                  type: 'gk:didHit',
-                  aVar: 'heroi',
-                  bVar: 'ninja2',
-                },
-                then: [
-                  {
-                    type: 'gk:hurt',
-                    charVar: 'ninja2',
-                    amount: {
-                      type: 'num',
-                      value: 5,
-                    },
-                    iframes: {
-                      type: 'num',
-                      value: 0,
-                    },
+              then: [
+                {
+                  type: 'gk:patrolAround',
+                  charVar: 'ninja2',
+                  ox: {
+                    type: 'num',
+                    value: 620,
                   },
-                  {
-                    type: 'gk:burst',
-                    effect: 'poeira',
-                    x: {
-                      type: 'gk:charX',
+                  oy: {
+                    type: 'num',
+                    value: 440,
+                  },
+                  radius: {
+                    type: 'num',
+                    value: 130,
+                  },
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'gk:didHit',
+                    aVar: 'heroi',
+                    bVar: 'ninja2',
+                  },
+                  then: [
+                    {
+                      type: 'gk:hurt',
                       charVar: 'ninja2',
+                      amount: {
+                        type: 'num',
+                        value: 5,
+                      },
+                      iframes: {
+                        type: 'num',
+                        value: 0,
+                      },
                     },
-                    y: {
-                      type: 'gk:charY',
-                      charVar: 'ninja2',
+                    {
+                      type: 'gk:burst',
+                      effect: 'poeira',
+                      x: {
+                        type: 'gk:charX',
+                        charVar: 'ninja2',
+                      },
+                      y: {
+                        type: 'gk:charY',
+                        charVar: 'ninja2',
+                      },
                     },
-                  },
-                  {
-                    type: 'gk:playEffect',
-                    fx: 'hit',
-                  },
-                ],
+                    {
+                      type: 'gk:playEffect',
+                      fx: 'hit',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: {
+                  type: 'gk:isDead',
+                  charVar: 'ninja1',
+                },
+                right: {
+                  type: 'gk:isDead',
+                  charVar: 'ninja2',
+                },
               },
-            ],
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'logical',
-              op: '&&',
-              left: {
-                type: 'gk:isDead',
-                charVar: 'ninja1',
+              then: [
+                {
+                  type: 'gk:setState',
+                  name: 'vitoria',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'gk:onDraw',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'gk:drawBackground',
+              color: '#16281c',
+              grid: true,
+            },
+            {
+              type: 'gk:drawShadow',
+              charVar: 'heroi',
+            },
+            {
+              type: 'gk:drawCharacter',
+              charVar: 'heroi',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logicalNot',
+                value: {
+                  type: 'gk:isDead',
+                  charVar: 'ninja1',
+                },
               },
-              right: {
-                type: 'gk:isDead',
-                charVar: 'ninja2',
+              then: [
+                {
+                  type: 'gk:drawShadow',
+                  charVar: 'ninja1',
+                },
+                {
+                  type: 'gk:drawCharacter',
+                  charVar: 'ninja1',
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logicalNot',
+                value: {
+                  type: 'gk:isDead',
+                  charVar: 'ninja2',
+                },
+              },
+              then: [
+                {
+                  type: 'gk:drawShadow',
+                  charVar: 'ninja2',
+                },
+                {
+                  type: 'gk:drawCharacter',
+                  charVar: 'ninja2',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'gk:onDrawHud',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'gk:drawHearts',
+              current: {
+                type: 'num',
+                value: 3,
+              },
+              max: {
+                type: 'num',
+                value: 3,
+              },
+              x: {
+                type: 'num',
+                value: 20,
+              },
+              y: {
+                type: 'num',
+                value: 20,
               },
             },
-            then: [
-              {
-                type: 'gk:setState',
-                name: 'vitoria',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'gk:onDraw',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'gk:drawBackground',
-            color: '#16281c',
-            grid: true,
-          },
-          {
-            type: 'gk:drawShadow',
-            charVar: 'heroi',
-          },
-          {
-            type: 'gk:drawCharacter',
-            charVar: 'heroi',
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'logicalNot',
-              value: {
-                type: 'gk:isDead',
-                charVar: 'ninja1',
-              },
-            },
-            then: [
-              {
-                type: 'gk:drawShadow',
-                charVar: 'ninja1',
-              },
-              {
-                type: 'gk:drawCharacter',
-                charVar: 'ninja1',
-              },
-            ],
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'logicalNot',
-              value: {
-                type: 'gk:isDead',
-                charVar: 'ninja2',
-              },
-            },
-            then: [
-              {
-                type: 'gk:drawShadow',
-                charVar: 'ninja2',
-              },
-              {
-                type: 'gk:drawCharacter',
-                charVar: 'ninja2',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'gk:onDrawHud',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'gk:drawHearts',
-            current: {
-              type: 'num',
-              value: 3,
-            },
-            max: {
-              type: 'num',
-              value: 3,
-            },
-            x: {
-              type: 'num',
-              value: 20,
-            },
-            y: {
-              type: 'num',
-              value: 20,
-            },
-          },
-        ],
-      },
-      {
-        type: 'gk:start',
-      },
-    ],
+          ],
+        },
+      ],
+    },
   },
 }
 
@@ -2076,823 +2102,822 @@ export const saltoNaFlorestaExample: ExtensionExample = {
     html: [],
     css: [],
     extensions: [{ extensionId: 'game-2d-advanced' }],
-    js: [
-      {
-        type: 'gk:setup',
-        w: {
-          type: 'num',
-          value: 960,
-        },
-        h: {
-          type: 'num',
-          value: 540,
-        },
-        bg: '#87ceeb',
-        accent: '#e07a3f',
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'menu',
-        title: {
-          type: 'str',
-          value: 'Salto na Floresta',
-        },
-        text: {
-          type: 'str',
-          value: 'Setas ou A/D para andar - espaço para pular - pise nos bichos!',
-        },
-        button: {
-          type: 'str',
-          value: 'Jogar',
-        },
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'vitoria',
-        title: {
-          type: 'str',
-          value: 'Você chegou!',
-        },
-        text: {
-          type: 'str',
-          value: 'Pegou as 5 frutas e chegou na bandeira!',
-        },
-        button: {
-          type: 'str',
-          value: 'Jogar de novo',
-        },
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'fim',
-        title: {
-          type: 'str',
-          value: 'Ai!',
-        },
-        text: {
-          type: 'str',
-          value: 'Um bicho te pegou. Tente de novo!',
-        },
-        button: {
-          type: 'str',
-          value: 'Jogar de novo',
-        },
-      },
-      {
-        type: 'gk:setJumpFeel',
-        coyote: {
-          type: 'num',
-          value: 0.1,
-        },
-        buffer: {
-          type: 'num',
-          value: 0.1,
-        },
-        hold: {
-          type: 'num',
-          value: 0.3,
-        },
-        gravity: {
-          type: 'num',
-          value: 2160,
-        },
-      },
-      {
-        type: 'gk:defineMold',
-        name: 'chao',
-        w: {
-          type: 'num',
-          value: 200,
-        },
-        h: {
-          type: 'num',
-          value: 40,
-        },
-        health: {
-          type: 'num',
-          value: 1,
-        },
-        speed: {
-          type: 'num',
-          value: 0,
-        },
-        damage: {
-          type: 'num',
-          value: 0,
-        },
-        color: '#3f7d3f',
-        image: '',
-        look: '',
-      },
-      {
-        type: 'gk:defineMold',
-        name: 'tabua',
-        w: {
-          type: 'num',
-          value: 120,
-        },
-        h: {
-          type: 'num',
-          value: 12,
-        },
-        health: {
-          type: 'num',
-          value: 1,
-        },
-        speed: {
-          type: 'num',
-          value: 0,
-        },
-        damage: {
-          type: 'num',
-          value: 0,
-        },
-        color: '#a0522d',
-        image: '',
-        look: '',
-      },
-      {
-        type: 'gk:defineMold',
-        name: 'movel',
-        w: {
-          type: 'num',
-          value: 120,
-        },
-        h: {
-          type: 'num',
-          value: 16,
-        },
-        health: {
-          type: 'num',
-          value: 1,
-        },
-        speed: {
-          type: 'num',
-          value: 0,
-        },
-        damage: {
-          type: 'num',
-          value: 0,
-        },
-        color: '#c08040',
-        image: '',
-        look: '',
-      },
-      {
-        type: 'gk:defineMold',
-        name: 'bicho',
-        w: {
-          type: 'num',
-          value: 36,
-        },
-        h: {
-          type: 'num',
-          value: 36,
-        },
-        health: {
-          type: 'num',
-          value: 1,
-        },
-        speed: {
-          type: 'num',
-          value: 0,
-        },
-        damage: {
-          type: 'num',
-          value: 10,
-        },
-        color: '#8b3a3a',
-        image: '',
-        look: '',
-      },
-      {
-        type: 'gk:defineMold',
-        name: 'fruta',
-        w: {
-          type: 'num',
-          value: 22,
-        },
-        h: {
-          type: 'num',
-          value: 22,
-        },
-        health: {
-          type: 'num',
-          value: 1,
-        },
-        speed: {
-          type: 'num',
-          value: 0,
-        },
-        damage: {
-          type: 'num',
-          value: 0,
-        },
-        color: '#e6398b',
-        image: '',
-        look: '',
-      },
-      {
-        type: 'gk:defineEffect',
-        name: 'poeira',
-        count: {
-          type: 'num',
-          value: 10,
-        },
-        color: '#ffffff',
-        size: {
-          type: 'num',
-          value: 4,
-        },
-        life: {
-          type: 'num',
-          value: 0.4,
-        },
-        speed: {
-          type: 'num',
-          value: 120,
-        },
-        gravity: {
-          type: 'num',
-          value: 300,
-        },
-      },
-      {
-        type: 'gk:createCharacter',
-        varName: 'heroi',
-        image: '',
-        w: {
-          type: 'num',
-          value: 34,
-        },
-        h: {
-          type: 'num',
-          value: 46,
-        },
-        speed: {
-          type: 'num',
-          value: 240,
-        },
-        color: '#2b6cb0',
-      },
-      {
-        type: 'var',
-        name: 'frutas',
-        value: {
-          type: 'num',
-          value: 0,
-        },
-      },
-      {
-        type: 'gk:onGameStart',
-        body: [
-          {
-            type: 'assign',
-            name: 'frutas',
-            value: {
-              type: 'num',
-              value: 0,
-            },
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 960,
           },
-          {
-            type: 'gk:setCheckpoint',
-            x: {
-              type: 'num',
-              value: 60,
-            },
-            y: {
-              type: 'num',
-              value: 300,
-            },
+          h: {
+            type: 'num',
+            value: 540,
           },
-          {
-            type: 'gk:respawn',
-            charVar: 'heroi',
+          bg: '#87ceeb',
+          accent: '#e07a3f',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Salto na Floresta',
           },
-          {
-            type: 'gk:spawnFromMold',
-            mold: 'chao',
-            x: {
-              type: 'num',
-              value: 0,
-            },
-            y: {
-              type: 'num',
-              value: 460,
-            },
+          text: {
+            type: 'str',
+            value: 'Setas ou A/D para andar - espaço para pular - pise nos bichos!',
           },
-          {
-            type: 'gk:spawnFromMold',
-            mold: 'chao',
-            x: {
-              type: 'num',
-              value: 260,
-            },
-            y: {
-              type: 'num',
-              value: 460,
-            },
+          button: {
+            type: 'str',
+            value: 'Jogar',
           },
-          {
-            type: 'gk:spawnFromMold',
-            mold: 'chao',
-            x: {
-              type: 'num',
-              value: 700,
-            },
-            y: {
-              type: 'num',
-              value: 460,
-            },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Você chegou!',
           },
-          {
-            type: 'gk:spawnFromMold',
-            mold: 'chao',
-            x: {
-              type: 'num',
-              value: 520,
-            },
-            y: {
-              type: 'num',
-              value: 360,
-            },
+          text: {
+            type: 'str',
+            value: 'Pegou as 5 frutas e chegou na bandeira!',
           },
-          {
-            type: 'gk:spawnFromMold',
-            mold: 'tabua',
-            x: {
-              type: 'num',
-              value: 210,
-            },
-            y: {
-              type: 'num',
-              value: 300,
-            },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
           },
-          {
-            type: 'gk:spawnFromMold',
-            mold: 'tabua',
-            x: {
-              type: 'num',
-              value: 760,
-            },
-            y: {
-              type: 'num',
-              value: 260,
-            },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'Ai!',
           },
-          {
-            type: 'gk:spawnFromMold',
-            mold: 'movel',
-            x: {
-              type: 'num',
-              value: 380,
-            },
-            y: {
-              type: 'num',
-              value: 380,
-            },
+          text: {
+            type: 'str',
+            value: 'Um bicho te pegou. Tente de novo!',
           },
-          {
-            type: 'gk:spawnFromMold',
-            mold: 'bicho',
-            x: {
-              type: 'num',
-              value: 300,
-            },
-            y: {
-              type: 'num',
-              value: 424,
-            },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
           },
-          {
-            type: 'gk:spawnFromMold',
-            mold: 'bicho',
-            x: {
-              type: 'num',
-              value: 740,
-            },
-            y: {
-              type: 'num',
-              value: 424,
-            },
+        },
+        {
+          type: 'gk:setJumpFeel',
+          coyote: {
+            type: 'num',
+            value: 0.1,
           },
-          {
-            type: 'gk:spawnFromMold',
-            mold: 'fruta',
-            x: {
-              type: 'num',
-              value: 240,
-            },
-            y: {
-              type: 'num',
-              value: 250,
-            },
+          buffer: {
+            type: 'num',
+            value: 0.1,
           },
-          {
-            type: 'gk:spawnFromMold',
-            mold: 'fruta',
-            x: {
-              type: 'num',
-              value: 560,
-            },
-            y: {
-              type: 'num',
-              value: 310,
-            },
+          hold: {
+            type: 'num',
+            value: 0.3,
           },
-          {
-            type: 'gk:spawnFromMold',
-            mold: 'fruta',
-            x: {
-              type: 'num',
-              value: 800,
-            },
-            y: {
-              type: 'num',
-              value: 210,
-            },
+          gravity: {
+            type: 'num',
+            value: 2160,
           },
-          {
-            type: 'gk:spawnFromMold',
-            mold: 'fruta',
-            x: {
-              type: 'num',
-              value: 420,
-            },
-            y: {
-              type: 'num',
-              value: 330,
-            },
+        },
+        {
+          type: 'gk:defineMold',
+          name: 'chao',
+          w: {
+            type: 'num',
+            value: 200,
           },
-          {
-            type: 'gk:spawnFromMold',
-            mold: 'fruta',
-            x: {
-              type: 'num',
-              value: 120,
-            },
-            y: {
-              type: 'num',
-              value: 410,
-            },
+          h: {
+            type: 'num',
+            value: 40,
           },
-        ],
-      },
-      {
-        type: 'gk:onUpdate',
-        dtName: 'dt',
-        body: [
-          {
-            type: 'gk:forEachActive',
-            mold: 'movel',
-            itemName: 'item',
-            body: [
-              {
-                type: 'gk:movingPlatform',
-                charVar: 'item',
-                x1: {
-                  type: 'num',
-                  value: 380,
-                },
-                y1: {
-                  type: 'num',
-                  value: 380,
-                },
-                x2: {
-                  type: 'num',
-                  value: 620,
-                },
-                y2: {
-                  type: 'num',
-                  value: 380,
-                },
-                seconds: {
-                  type: 'num',
-                  value: 3,
-                },
-                dtVar: 'dt',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          damage: {
+            type: 'num',
+            value: 0,
+          },
+          color: '#3f7d3f',
+          image: '',
+          look: '',
+        },
+        {
+          type: 'gk:defineMold',
+          name: 'tabua',
+          w: {
+            type: 'num',
+            value: 120,
+          },
+          h: {
+            type: 'num',
+            value: 12,
+          },
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          damage: {
+            type: 'num',
+            value: 0,
+          },
+          color: '#a0522d',
+          image: '',
+          look: '',
+        },
+        {
+          type: 'gk:defineMold',
+          name: 'movel',
+          w: {
+            type: 'num',
+            value: 120,
+          },
+          h: {
+            type: 'num',
+            value: 16,
+          },
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          damage: {
+            type: 'num',
+            value: 0,
+          },
+          color: '#c08040',
+          image: '',
+          look: '',
+        },
+        {
+          type: 'gk:defineMold',
+          name: 'bicho',
+          w: {
+            type: 'num',
+            value: 36,
+          },
+          h: {
+            type: 'num',
+            value: 36,
+          },
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          damage: {
+            type: 'num',
+            value: 10,
+          },
+          color: '#8b3a3a',
+          image: '',
+          look: '',
+        },
+        {
+          type: 'gk:defineMold',
+          name: 'fruta',
+          w: {
+            type: 'num',
+            value: 22,
+          },
+          h: {
+            type: 'num',
+            value: 22,
+          },
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          damage: {
+            type: 'num',
+            value: 0,
+          },
+          color: '#e6398b',
+          image: '',
+          look: '',
+        },
+        {
+          type: 'gk:defineEffect',
+          name: 'poeira',
+          count: {
+            type: 'num',
+            value: 10,
+          },
+          color: '#ffffff',
+          size: {
+            type: 'num',
+            value: 4,
+          },
+          life: {
+            type: 'num',
+            value: 0.4,
+          },
+          speed: {
+            type: 'num',
+            value: 120,
+          },
+          gravity: {
+            type: 'num',
+            value: 300,
+          },
+        },
+        {
+          type: 'gk:createCharacter',
+          varName: 'heroi',
+          image: '',
+          w: {
+            type: 'num',
+            value: 34,
+          },
+          h: {
+            type: 'num',
+            value: 46,
+          },
+          speed: {
+            type: 'num',
+            value: 240,
+          },
+          color: '#2b6cb0',
+        },
+        {
+          type: 'var',
+          name: 'frutas',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'assign',
+          name: 'frutas',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'gk:setCheckpoint',
+          x: {
+            type: 'num',
+            value: 60,
+          },
+          y: {
+            type: 'num',
+            value: 300,
+          },
+        },
+        {
+          type: 'gk:respawn',
+          charVar: 'heroi',
+        },
+        {
+          type: 'gk:spawnFromMold',
+          mold: 'chao',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 460,
+          },
+        },
+        {
+          type: 'gk:spawnFromMold',
+          mold: 'chao',
+          x: {
+            type: 'num',
+            value: 260,
+          },
+          y: {
+            type: 'num',
+            value: 460,
+          },
+        },
+        {
+          type: 'gk:spawnFromMold',
+          mold: 'chao',
+          x: {
+            type: 'num',
+            value: 700,
+          },
+          y: {
+            type: 'num',
+            value: 460,
+          },
+        },
+        {
+          type: 'gk:spawnFromMold',
+          mold: 'chao',
+          x: {
+            type: 'num',
+            value: 520,
+          },
+          y: {
+            type: 'num',
+            value: 360,
+          },
+        },
+        {
+          type: 'gk:spawnFromMold',
+          mold: 'tabua',
+          x: {
+            type: 'num',
+            value: 210,
+          },
+          y: {
+            type: 'num',
+            value: 300,
+          },
+        },
+        {
+          type: 'gk:spawnFromMold',
+          mold: 'tabua',
+          x: {
+            type: 'num',
+            value: 760,
+          },
+          y: {
+            type: 'num',
+            value: 260,
+          },
+        },
+        {
+          type: 'gk:spawnFromMold',
+          mold: 'movel',
+          x: {
+            type: 'num',
+            value: 380,
+          },
+          y: {
+            type: 'num',
+            value: 380,
+          },
+        },
+        {
+          type: 'gk:spawnFromMold',
+          mold: 'bicho',
+          x: {
+            type: 'num',
+            value: 300,
+          },
+          y: {
+            type: 'num',
+            value: 424,
+          },
+        },
+        {
+          type: 'gk:spawnFromMold',
+          mold: 'bicho',
+          x: {
+            type: 'num',
+            value: 740,
+          },
+          y: {
+            type: 'num',
+            value: 424,
+          },
+        },
+        {
+          type: 'gk:spawnFromMold',
+          mold: 'fruta',
+          x: {
+            type: 'num',
+            value: 240,
+          },
+          y: {
+            type: 'num',
+            value: 250,
+          },
+        },
+        {
+          type: 'gk:spawnFromMold',
+          mold: 'fruta',
+          x: {
+            type: 'num',
+            value: 560,
+          },
+          y: {
+            type: 'num',
+            value: 310,
+          },
+        },
+        {
+          type: 'gk:spawnFromMold',
+          mold: 'fruta',
+          x: {
+            type: 'num',
+            value: 800,
+          },
+          y: {
+            type: 'num',
+            value: 210,
+          },
+        },
+        {
+          type: 'gk:spawnFromMold',
+          mold: 'fruta',
+          x: {
+            type: 'num',
+            value: 420,
+          },
+          y: {
+            type: 'num',
+            value: 330,
+          },
+        },
+        {
+          type: 'gk:spawnFromMold',
+          mold: 'fruta',
+          x: {
+            type: 'num',
+            value: 120,
+          },
+          y: {
+            type: 'num',
+            value: 410,
+          },
+        },
+      ],
+      events: [
+        {
+          type: 'gk:onEvent',
+          event: 'plataforma:pisou',
+          body: [
+            {
+              type: 'gk:burst',
+              effect: 'poeira',
+              x: {
+                type: 'gk:charX',
+                charVar: 'heroi',
               },
-            ],
-          },
-          {
-            type: 'gk:forEachActive',
-            mold: 'bicho',
-            itemName: 'item',
-            body: [
-              {
-                type: 'gk:patrolTurnAtWall',
-                charVar: 'item',
-                speed: {
-                  type: 'num',
-                  value: 60,
-                },
-              },
-              {
-                type: 'gk:applyGravity',
-                charVar: 'item',
-                g: {
-                  type: 'num',
-                  value: 2160,
-                },
-                dtVar: 'dt',
-              },
-              {
-                type: 'gk:moveByVelocity',
-                charVar: 'item',
-                dtVar: 'dt',
-              },
-              {
-                type: 'gk:collideGroup',
-                charVar: 'item',
-                mold: 'chao',
-              },
-            ],
-          },
-          {
-            type: 'gk:platformerHero',
-            charVar: 'heroi',
-            speed: {
-              type: 'num',
-              value: 240,
-            },
-            force: {
-              type: 'num',
-              value: 660,
-            },
-            dtVar: 'dt',
-          },
-          {
-            type: 'gk:dropThrough',
-            charVar: 'heroi',
-          },
-          {
-            type: 'gk:collideGroup',
-            charVar: 'heroi',
-            mold: 'chao',
-          },
-          {
-            type: 'gk:oneWayPlatform',
-            charVar: 'heroi',
-            mold: 'tabua',
-            dtVar: 'dt',
-          },
-          {
-            type: 'gk:rideOn',
-            charVar: 'heroi',
-            mold: 'movel',
-          },
-          {
-            type: 'gk:stompKill',
-            charVar: 'heroi',
-            mold: 'bicho',
-            bounce: {
-              type: 'num',
-              value: 400,
-            },
-          },
-          {
-            type: 'gk:platformerAnim',
-            charVar: 'heroi',
-          },
-          {
-            type: 'gk:forEachActive',
-            mold: 'fruta',
-            itemName: 'item',
-            body: [
-              {
-                type: 'if',
-                cond: {
-                  type: 'gk:charactersTouch',
-                  aVar: 'heroi',
-                  bVar: 'item',
-                },
-                then: [
-                  {
-                    type: 'assign',
-                    name: 'frutas',
-                    value: {
-                      type: 'binop',
-                      op: '+',
-                      left: {
-                        type: 'var',
-                        name: 'frutas',
-                      },
-                      right: {
-                        type: 'num',
-                        value: 1,
-                      },
-                    },
-                  },
-                  {
-                    type: 'gk:burst',
-                    effect: 'poeira',
-                    x: {
-                      type: 'gk:charX',
-                      charVar: 'item',
-                    },
-                    y: {
-                      type: 'gk:charY',
-                      charVar: 'item',
-                    },
-                  },
-                  {
-                    type: 'gk:recycle',
-                    charVar: 'item',
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            type: 'gk:forEachActive',
-            mold: 'bicho',
-            itemName: 'item',
-            body: [
-              {
-                type: 'if',
-                cond: {
-                  type: 'gk:charactersTouch',
-                  aVar: 'heroi',
-                  bVar: 'item',
-                },
-                then: [
-                  {
-                    type: 'gk:endGame',
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'binop',
-              op: '>',
-              left: {
+              y: {
                 type: 'gk:charY',
                 charVar: 'heroi',
               },
-              right: {
-                type: 'num',
-                value: 540,
-              },
             },
-            then: [
-              {
-                type: 'gk:respawn',
-                charVar: 'heroi',
-              },
-            ],
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'binop',
-              op: '>=',
-              left: {
-                type: 'var',
-                name: 'frutas',
-              },
-              right: {
-                type: 'num',
-                value: 5,
-              },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'gk:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'gk:forEachActive',
+              mold: 'movel',
+              itemName: 'item',
+              body: [
+                {
+                  type: 'gk:movingPlatform',
+                  charVar: 'item',
+                  x1: {
+                    type: 'num',
+                    value: 380,
+                  },
+                  y1: {
+                    type: 'num',
+                    value: 380,
+                  },
+                  x2: {
+                    type: 'num',
+                    value: 620,
+                  },
+                  y2: {
+                    type: 'num',
+                    value: 380,
+                  },
+                  seconds: {
+                    type: 'num',
+                    value: 3,
+                  },
+                  dtVar: 'dt',
+                },
+              ],
             },
-            then: [
-              {
-                type: 'gk:setState',
-                name: 'vitoria',
+            {
+              type: 'gk:forEachActive',
+              mold: 'bicho',
+              itemName: 'item',
+              body: [
+                {
+                  type: 'gk:patrolTurnAtWall',
+                  charVar: 'item',
+                  speed: {
+                    type: 'num',
+                    value: 60,
+                  },
+                },
+                {
+                  type: 'gk:applyGravity',
+                  charVar: 'item',
+                  g: {
+                    type: 'num',
+                    value: 2160,
+                  },
+                  dtVar: 'dt',
+                },
+                {
+                  type: 'gk:moveByVelocity',
+                  charVar: 'item',
+                  dtVar: 'dt',
+                },
+                {
+                  type: 'gk:collideGroup',
+                  charVar: 'item',
+                  mold: 'chao',
+                },
+              ],
+            },
+            {
+              type: 'gk:platformerHero',
+              charVar: 'heroi',
+              speed: {
+                type: 'num',
+                value: 240,
               },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'gk:onEvent',
-        event: 'plataforma:pisou',
-        body: [
-          {
-            type: 'gk:burst',
-            effect: 'poeira',
-            x: {
-              type: 'gk:charX',
+              force: {
+                type: 'num',
+                value: 660,
+              },
+              dtVar: 'dt',
+            },
+            {
+              type: 'gk:dropThrough',
               charVar: 'heroi',
             },
-            y: {
-              type: 'gk:charY',
+            {
+              type: 'gk:collideGroup',
+              charVar: 'heroi',
+              mold: 'chao',
+            },
+            {
+              type: 'gk:oneWayPlatform',
+              charVar: 'heroi',
+              mold: 'tabua',
+              dtVar: 'dt',
+            },
+            {
+              type: 'gk:rideOn',
+              charVar: 'heroi',
+              mold: 'movel',
+            },
+            {
+              type: 'gk:stompKill',
+              charVar: 'heroi',
+              mold: 'bicho',
+              bounce: {
+                type: 'num',
+                value: 400,
+              },
+            },
+            {
+              type: 'gk:platformerAnim',
               charVar: 'heroi',
             },
-          },
-        ],
-      },
-      {
-        type: 'gk:onDraw',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'memberCall',
-            object: {
-              type: 'var',
-              name: 'SZGameKit',
+            {
+              type: 'gk:forEachActive',
+              mold: 'fruta',
+              itemName: 'item',
+              body: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'gk:charactersTouch',
+                    aVar: 'heroi',
+                    bVar: 'item',
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'frutas',
+                      value: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'var',
+                          name: 'frutas',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 1,
+                        },
+                      },
+                    },
+                    {
+                      type: 'gk:burst',
+                      effect: 'poeira',
+                      x: {
+                        type: 'gk:charX',
+                        charVar: 'item',
+                      },
+                      y: {
+                        type: 'gk:charY',
+                        charVar: 'item',
+                      },
+                    },
+                    {
+                      type: 'gk:recycle',
+                      charVar: 'item',
+                    },
+                  ],
+                },
+              ],
             },
-            method: 'drawBackground',
-            args: [],
-          },
-          {
-            type: 'gk:drawActive',
-            mold: 'chao',
-          },
-          {
-            type: 'gk:drawActive',
-            mold: 'tabua',
-          },
-          {
-            type: 'gk:drawActive',
-            mold: 'movel',
-          },
-          {
-            type: 'gk:drawActive',
-            mold: 'fruta',
-          },
-          {
-            type: 'gk:drawActive',
-            mold: 'bicho',
-          },
-          {
-            type: 'gk:drawShadow',
-            charVar: 'heroi',
-          },
-          {
-            type: 'gk:drawCharacter',
-            charVar: 'heroi',
-          },
-          {
-            type: 'memberCall',
-            object: {
-              type: 'var',
-              name: 'SZGameKit',
+            {
+              type: 'gk:forEachActive',
+              mold: 'bicho',
+              itemName: 'item',
+              body: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'gk:charactersTouch',
+                    aVar: 'heroi',
+                    bVar: 'item',
+                  },
+                  then: [
+                    {
+                      type: 'gk:endGame',
+                    },
+                  ],
+                },
+              ],
             },
-            method: 'drawEffects',
-            args: [
-              {
-                type: 'var',
-                name: 'ctx',
-              },
-            ],
-          },
-          {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#ffffff',
-            },
-          },
-          {
-            type: 'canvasFont',
-            ctxVar: 'ctx',
-            size: 24,
-            family: 'sans-serif',
-          },
-          {
-            type: 'canvasFillText',
-            ctxVar: 'ctx',
-            text: {
-              type: 'binop',
-              op: '+',
-              left: {
+            {
+              type: 'if',
+              cond: {
                 type: 'binop',
-                op: '+',
+                op: '>',
                 left: {
-                  type: 'str',
-                  value: 'Frutas: ',
+                  type: 'gk:charY',
+                  charVar: 'heroi',
                 },
                 right: {
+                  type: 'num',
+                  value: 540,
+                },
+              },
+              then: [
+                {
+                  type: 'gk:respawn',
+                  charVar: 'heroi',
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '>=',
+                left: {
                   type: 'var',
                   name: 'frutas',
                 },
+                right: {
+                  type: 'num',
+                  value: 5,
+                },
               },
-              right: {
-                type: 'str',
-                value: '/5',
+              then: [
+                {
+                  type: 'gk:setState',
+                  name: 'vitoria',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'gk:onDraw',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'memberCall',
+              object: {
+                type: 'var',
+                name: 'SZGameKit',
+              },
+              method: 'drawBackground',
+              args: [],
+            },
+            {
+              type: 'gk:drawActive',
+              mold: 'chao',
+            },
+            {
+              type: 'gk:drawActive',
+              mold: 'tabua',
+            },
+            {
+              type: 'gk:drawActive',
+              mold: 'movel',
+            },
+            {
+              type: 'gk:drawActive',
+              mold: 'fruta',
+            },
+            {
+              type: 'gk:drawActive',
+              mold: 'bicho',
+            },
+            {
+              type: 'gk:drawShadow',
+              charVar: 'heroi',
+            },
+            {
+              type: 'gk:drawCharacter',
+              charVar: 'heroi',
+            },
+            {
+              type: 'memberCall',
+              object: {
+                type: 'var',
+                name: 'SZGameKit',
+              },
+              method: 'drawEffects',
+              args: [
+                {
+                  type: 'var',
+                  name: 'ctx',
+                },
+              ],
+            },
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: {
+                type: 'color',
+                value: '#ffffff',
               },
             },
-            x: {
-              type: 'num',
-              value: 20,
+            {
+              type: 'canvasFont',
+              ctxVar: 'ctx',
+              size: 24,
+              family: 'sans-serif',
             },
-            y: {
-              type: 'num',
-              value: 36,
+            {
+              type: 'canvasFillText',
+              ctxVar: 'ctx',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '+',
+                  left: {
+                    type: 'str',
+                    value: 'Frutas: ',
+                  },
+                  right: {
+                    type: 'var',
+                    name: 'frutas',
+                  },
+                },
+                right: {
+                  type: 'str',
+                  value: '/5',
+                },
+              },
+              x: {
+                type: 'num',
+                value: 20,
+              },
+              y: {
+                type: 'num',
+                value: 36,
+              },
             },
-          },
-        ],
-      },
-      {
-        type: 'gk:start',
-      },
-    ] as ExtensionExample['ir']['js'],
+          ],
+        },
+      ],
+    },
   },
 }
 
@@ -2921,1090 +2946,1094 @@ export const bichinhosDoQuintalExample: ExtensionExample = {
     html: [],
     css: [],
     extensions: [{ extensionId: 'game-2d-advanced' }],
-    js: [
-      {
-        type: 'gk:setup',
-        w: {
-          type: 'num',
-          value: 960,
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 960,
+          },
+          h: {
+            type: 'num',
+            value: 540,
+          },
+          bg: '#2d5a2d',
+          accent: '#e6398b',
         },
-        h: {
-          type: 'num',
-          value: 540,
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Bichinhos do Quintal',
+          },
+          text: {
+            type: 'str',
+            value: 'Setas para andar - espaço para falar - pegue 3 bichinhos!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar',
+          },
         },
-        bg: '#2d5a2d',
-        accent: '#e6398b',
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'menu',
-        title: {
-          type: 'str',
-          value: 'Bichinhos do Quintal',
+        {
+          type: 'gk:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Você conseguiu!',
+          },
+          text: {
+            type: 'str',
+            value: 'Pegou 3 bichinhos do quintal!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
+          },
         },
-        text: {
-          type: 'str',
-          value: 'Setas para andar - espaço para falar - pegue 3 bichinhos!',
-        },
-        button: {
-          type: 'str',
-          value: 'Jogar',
-        },
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'vitoria',
-        title: {
-          type: 'str',
-          value: 'Você conseguiu!',
-        },
-        text: {
-          type: 'str',
-          value: 'Pegou 3 bichinhos do quintal!',
-        },
-        button: {
-          type: 'str',
-          value: 'Jogar de novo',
-        },
-      },
-      {
-        type: 'gk:defineLook',
-        name: 'fogoso',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#e05a2b',
-            },
-          },
-          {
-            type: 'canvasBeginPath',
-            ctxVar: 'ctx',
-          },
-          {
-            type: 'memberCall',
-            object: {
-              type: 'var',
-              name: 'ctx',
-            },
-            method: 'arc',
-            args: [
-              {
-                type: 'num',
-                value: 20,
+        {
+          type: 'gk:defineLook',
+          name: 'fogoso',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: {
+                type: 'color',
+                value: '#e05a2b',
               },
-              {
-                type: 'num',
-                value: 20,
+            },
+            {
+              type: 'canvasBeginPath',
+              ctxVar: 'ctx',
+            },
+            {
+              type: 'memberCall',
+              object: {
+                type: 'var',
+                name: 'ctx',
               },
-              {
-                type: 'num',
-                value: 18,
+              method: 'arc',
+              args: [
+                {
+                  type: 'num',
+                  value: 20,
+                },
+                {
+                  type: 'num',
+                  value: 20,
+                },
+                {
+                  type: 'num',
+                  value: 18,
+                },
+                {
+                  type: 'num',
+                  value: 0,
+                },
+                {
+                  type: 'num',
+                  value: 6.28,
+                },
+              ],
+            },
+            {
+              type: 'canvasFill',
+              ctxVar: 'ctx',
+            },
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: {
+                type: 'color',
+                value: '#ffffff',
               },
-              {
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: {
                 type: 'num',
-                value: 0,
+                value: 12,
               },
-              {
+              y: {
                 type: 'num',
-                value: 6.28,
+                value: 14,
               },
-            ],
-          },
-          {
-            type: 'canvasFill',
-            ctxVar: 'ctx',
-          },
-          {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#ffffff',
-            },
-          },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: {
-              type: 'num',
-              value: 12,
-            },
-            y: {
-              type: 'num',
-              value: 14,
-            },
-            w: {
-              type: 'num',
-              value: 5,
-            },
-            h: {
-              type: 'num',
-              value: 6,
-            },
-          },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: {
-              type: 'num',
-              value: 23,
-            },
-            y: {
-              type: 'num',
-              value: 14,
-            },
-            w: {
-              type: 'num',
-              value: 5,
-            },
-            h: {
-              type: 'num',
-              value: 6,
-            },
-          },
-        ],
-        baseW: {
-          type: 'num',
-          value: 40,
-        },
-        baseH: {
-          type: 'num',
-          value: 40,
-        },
-      },
-      {
-        type: 'gk:defineLook',
-        name: 'folhinha',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#3f9d3f',
-            },
-          },
-          {
-            type: 'canvasBeginPath',
-            ctxVar: 'ctx',
-          },
-          {
-            type: 'memberCall',
-            object: {
-              type: 'var',
-              name: 'ctx',
-            },
-            method: 'arc',
-            args: [
-              {
+              w: {
                 type: 'num',
-                value: 20,
+                value: 5,
               },
-              {
+              h: {
                 type: 'num',
-                value: 20,
+                value: 6,
               },
-              {
-                type: 'num',
-                value: 18,
-              },
-              {
-                type: 'num',
-                value: 0,
-              },
-              {
-                type: 'num',
-                value: 6.28,
-              },
-            ],
-          },
-          {
-            type: 'canvasFill',
-            ctxVar: 'ctx',
-          },
-          {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#ffffff',
             },
-          },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: {
-              type: 'num',
-              value: 12,
-            },
-            y: {
-              type: 'num',
-              value: 14,
-            },
-            w: {
-              type: 'num',
-              value: 5,
-            },
-            h: {
-              type: 'num',
-              value: 6,
-            },
-          },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: {
-              type: 'num',
-              value: 23,
-            },
-            y: {
-              type: 'num',
-              value: 14,
-            },
-            w: {
-              type: 'num',
-              value: 5,
-            },
-            h: {
-              type: 'num',
-              value: 6,
-            },
-          },
-        ],
-        baseW: {
-          type: 'num',
-          value: 40,
-        },
-        baseH: {
-          type: 'num',
-          value: 40,
-        },
-      },
-      {
-        type: 'gk:defineLook',
-        name: 'gotinha',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#2b7de0',
-            },
-          },
-          {
-            type: 'canvasBeginPath',
-            ctxVar: 'ctx',
-          },
-          {
-            type: 'memberCall',
-            object: {
-              type: 'var',
-              name: 'ctx',
-            },
-            method: 'arc',
-            args: [
-              {
-                type: 'num',
-                value: 20,
-              },
-              {
-                type: 'num',
-                value: 20,
-              },
-              {
-                type: 'num',
-                value: 18,
-              },
-              {
-                type: 'num',
-                value: 0,
-              },
-              {
-                type: 'num',
-                value: 6.28,
-              },
-            ],
-          },
-          {
-            type: 'canvasFill',
-            ctxVar: 'ctx',
-          },
-          {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#ffffff',
-            },
-          },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: {
-              type: 'num',
-              value: 12,
-            },
-            y: {
-              type: 'num',
-              value: 14,
-            },
-            w: {
-              type: 'num',
-              value: 5,
-            },
-            h: {
-              type: 'num',
-              value: 6,
-            },
-          },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: {
-              type: 'num',
-              value: 23,
-            },
-            y: {
-              type: 'num',
-              value: 14,
-            },
-            w: {
-              type: 'num',
-              value: 5,
-            },
-            h: {
-              type: 'num',
-              value: 6,
-            },
-          },
-        ],
-        baseW: {
-          type: 'num',
-          value: 40,
-        },
-        baseH: {
-          type: 'num',
-          value: 40,
-        },
-      },
-      {
-        type: 'gk:defineLook',
-        name: 'fogozao',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#b03010',
-            },
-          },
-          {
-            type: 'canvasBeginPath',
-            ctxVar: 'ctx',
-          },
-          {
-            type: 'memberCall',
-            object: {
-              type: 'var',
-              name: 'ctx',
-            },
-            method: 'arc',
-            args: [
-              {
-                type: 'num',
-                value: 24,
-              },
-              {
-                type: 'num',
-                value: 24,
-              },
-              {
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: {
                 type: 'num',
                 value: 23,
               },
-              {
+              y: {
+                type: 'num',
+                value: 14,
+              },
+              w: {
+                type: 'num',
+                value: 5,
+              },
+              h: {
+                type: 'num',
+                value: 6,
+              },
+            },
+          ],
+          baseW: {
+            type: 'num',
+            value: 40,
+          },
+          baseH: {
+            type: 'num',
+            value: 40,
+          },
+        },
+        {
+          type: 'gk:defineLook',
+          name: 'folhinha',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: {
+                type: 'color',
+                value: '#3f9d3f',
+              },
+            },
+            {
+              type: 'canvasBeginPath',
+              ctxVar: 'ctx',
+            },
+            {
+              type: 'memberCall',
+              object: {
+                type: 'var',
+                name: 'ctx',
+              },
+              method: 'arc',
+              args: [
+                {
+                  type: 'num',
+                  value: 20,
+                },
+                {
+                  type: 'num',
+                  value: 20,
+                },
+                {
+                  type: 'num',
+                  value: 18,
+                },
+                {
+                  type: 'num',
+                  value: 0,
+                },
+                {
+                  type: 'num',
+                  value: 6.28,
+                },
+              ],
+            },
+            {
+              type: 'canvasFill',
+              ctxVar: 'ctx',
+            },
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: {
+                type: 'color',
+                value: '#ffffff',
+              },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 12,
+              },
+              y: {
+                type: 'num',
+                value: 14,
+              },
+              w: {
+                type: 'num',
+                value: 5,
+              },
+              h: {
+                type: 'num',
+                value: 6,
+              },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 23,
+              },
+              y: {
+                type: 'num',
+                value: 14,
+              },
+              w: {
+                type: 'num',
+                value: 5,
+              },
+              h: {
+                type: 'num',
+                value: 6,
+              },
+            },
+          ],
+          baseW: {
+            type: 'num',
+            value: 40,
+          },
+          baseH: {
+            type: 'num',
+            value: 40,
+          },
+        },
+        {
+          type: 'gk:defineLook',
+          name: 'gotinha',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: {
+                type: 'color',
+                value: '#2b7de0',
+              },
+            },
+            {
+              type: 'canvasBeginPath',
+              ctxVar: 'ctx',
+            },
+            {
+              type: 'memberCall',
+              object: {
+                type: 'var',
+                name: 'ctx',
+              },
+              method: 'arc',
+              args: [
+                {
+                  type: 'num',
+                  value: 20,
+                },
+                {
+                  type: 'num',
+                  value: 20,
+                },
+                {
+                  type: 'num',
+                  value: 18,
+                },
+                {
+                  type: 'num',
+                  value: 0,
+                },
+                {
+                  type: 'num',
+                  value: 6.28,
+                },
+              ],
+            },
+            {
+              type: 'canvasFill',
+              ctxVar: 'ctx',
+            },
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: {
+                type: 'color',
+                value: '#ffffff',
+              },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 12,
+              },
+              y: {
+                type: 'num',
+                value: 14,
+              },
+              w: {
+                type: 'num',
+                value: 5,
+              },
+              h: {
+                type: 'num',
+                value: 6,
+              },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 23,
+              },
+              y: {
+                type: 'num',
+                value: 14,
+              },
+              w: {
+                type: 'num',
+                value: 5,
+              },
+              h: {
+                type: 'num',
+                value: 6,
+              },
+            },
+          ],
+          baseW: {
+            type: 'num',
+            value: 40,
+          },
+          baseH: {
+            type: 'num',
+            value: 40,
+          },
+        },
+        {
+          type: 'gk:defineLook',
+          name: 'fogozao',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: {
+                type: 'color',
+                value: '#b03010',
+              },
+            },
+            {
+              type: 'canvasBeginPath',
+              ctxVar: 'ctx',
+            },
+            {
+              type: 'memberCall',
+              object: {
+                type: 'var',
+                name: 'ctx',
+              },
+              method: 'arc',
+              args: [
+                {
+                  type: 'num',
+                  value: 24,
+                },
+                {
+                  type: 'num',
+                  value: 24,
+                },
+                {
+                  type: 'num',
+                  value: 23,
+                },
+                {
+                  type: 'num',
+                  value: 0,
+                },
+                {
+                  type: 'num',
+                  value: 6.28,
+                },
+              ],
+            },
+            {
+              type: 'canvasFill',
+              ctxVar: 'ctx',
+            },
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: {
+                type: 'color',
+                value: '#ffcc00',
+              },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 20,
+              },
+              y: {
                 type: 'num',
                 value: 0,
               },
-              {
+              w: {
                 type: 'num',
-                value: 6.28,
+                value: 8,
               },
-            ],
-          },
-          {
-            type: 'canvasFill',
-            ctxVar: 'ctx',
-          },
-          {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#ffcc00',
-            },
-          },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: {
-              type: 'num',
-              value: 20,
-            },
-            y: {
-              type: 'num',
-              value: 0,
-            },
-            w: {
-              type: 'num',
-              value: 8,
-            },
-            h: {
-              type: 'num',
-              value: 10,
-            },
-          },
-        ],
-        baseW: {
-          type: 'num',
-          value: 48,
-        },
-        baseH: {
-          type: 'num',
-          value: 48,
-        },
-      },
-      {
-        type: 'gk:defineLook',
-        name: 'heroi',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#2b6cb0',
-            },
-          },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: {
-              type: 'num',
-              value: 6,
-            },
-            y: {
-              type: 'num',
-              value: 8,
-            },
-            w: {
-              type: 'num',
-              value: 28,
-            },
-            h: {
-              type: 'num',
-              value: 32,
-            },
-          },
-          {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#ffd9a0',
-            },
-          },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: {
-              type: 'num',
-              value: 10,
-            },
-            y: {
-              type: 'num',
-              value: 12,
-            },
-            w: {
-              type: 'num',
-              value: 20,
-            },
-            h: {
-              type: 'num',
-              value: 12,
-            },
-          },
-        ],
-        baseW: {
-          type: 'num',
-          value: 40,
-        },
-        baseH: {
-          type: 'num',
-          value: 48,
-        },
-      },
-      {
-        type: 'gk:pkmCreature',
-        name: 'Fogoso',
-        creatureType: 'fogo',
-        hp: {
-          type: 'num',
-          value: 30,
-        },
-        str: {
-          type: 'num',
-          value: 9,
-        },
-        def: {
-          type: 'num',
-          value: 4,
-        },
-        spd: {
-          type: 'num',
-          value: 7,
-        },
-        image: '',
-        look: 'fogoso',
-      },
-      {
-        type: 'gk:pkmCreature',
-        name: 'Folhinha',
-        creatureType: 'planta',
-        hp: {
-          type: 'num',
-          value: 34,
-        },
-        str: {
-          type: 'num',
-          value: 7,
-        },
-        def: {
-          type: 'num',
-          value: 6,
-        },
-        spd: {
-          type: 'num',
-          value: 4,
-        },
-        image: '',
-        look: 'folhinha',
-      },
-      {
-        type: 'gk:pkmCreature',
-        name: 'Gotinha',
-        creatureType: 'agua',
-        hp: {
-          type: 'num',
-          value: 32,
-        },
-        str: {
-          type: 'num',
-          value: 8,
-        },
-        def: {
-          type: 'num',
-          value: 5,
-        },
-        spd: {
-          type: 'num',
-          value: 6,
-        },
-        image: '',
-        look: 'gotinha',
-      },
-      {
-        type: 'gk:pkmCreature',
-        name: 'Fogozao',
-        creatureType: 'fogo',
-        hp: {
-          type: 'num',
-          value: 45,
-        },
-        str: {
-          type: 'num',
-          value: 13,
-        },
-        def: {
-          type: 'num',
-          value: 7,
-        },
-        spd: {
-          type: 'num',
-          value: 8,
-        },
-        image: '',
-        look: 'fogozao',
-      },
-      {
-        type: 'gk:pkmMove',
-        move: 'Brasa',
-        creature: 'Fogoso',
-        moveType: 'fogo',
-        dmg: {
-          type: 'num',
-          value: 20,
-        },
-        acc: {
-          type: 'num',
-          value: 90,
-        },
-        fx: 'bola',
-        color: '#ff8800',
-      },
-      {
-        type: 'gk:pkmMove',
-        move: 'Investida',
-        creature: 'Fogoso',
-        moveType: 'normal',
-        dmg: {
-          type: 'num',
-          value: 12,
-        },
-        acc: {
-          type: 'num',
-          value: 100,
-        },
-        fx: 'investida',
-        color: '#999999',
-      },
-      {
-        type: 'gk:pkmMove',
-        move: 'Chicote',
-        creature: 'Folhinha',
-        moveType: 'planta',
-        dmg: {
-          type: 'num',
-          value: 18,
-        },
-        acc: {
-          type: 'num',
-          value: 95,
-        },
-        fx: 'onda',
-        color: '#3f9d3f',
-      },
-      {
-        type: 'gk:pkmMove',
-        move: 'Jato',
-        creature: 'Gotinha',
-        moveType: 'agua',
-        dmg: {
-          type: 'num',
-          value: 18,
-        },
-        acc: {
-          type: 'num',
-          value: 95,
-        },
-        fx: 'bola',
-        color: '#2b7de0',
-      },
-      {
-        type: 'gk:pkmMove',
-        move: 'Labareda',
-        creature: 'Fogozao',
-        moveType: 'fogo',
-        dmg: {
-          type: 'num',
-          value: 32,
-        },
-        acc: {
-          type: 'num',
-          value: 75,
-        },
-        fx: 'raio',
-        color: '#ff4400',
-      },
-      {
-        type: 'gk:pkmTypeChart',
-        atk: 'fogo',
-        def: 'planta',
-        mult: {
-          type: 'num',
-          value: 2,
-        },
-      },
-      {
-        type: 'gk:pkmTypeChart',
-        atk: 'planta',
-        def: 'agua',
-        mult: {
-          type: 'num',
-          value: 2,
-        },
-      },
-      {
-        type: 'gk:pkmTypeChart',
-        atk: 'agua',
-        def: 'fogo',
-        mult: {
-          type: 'num',
-          value: 2,
-        },
-      },
-      {
-        type: 'gk:pkmEvolve',
-        from: 'Fogoso',
-        to: 'Fogozao',
-        level: {
-          type: 'num',
-          value: 8,
-        },
-      },
-      {
-        type: 'gk:pkmCatchDifficulty',
-        creature: 'Gotinha',
-        level: 'difícil',
-      },
-      {
-        type: 'gk:pkmEncounterRate',
-        percent: {
-          type: 'num',
-          value: 20,
-        },
-      },
-      {
-        type: 'gk:createCharacter',
-        varName: 'heroi',
-        image: '',
-        w: {
-          type: 'num',
-          value: 40,
-        },
-        h: {
-          type: 'num',
-          value: 48,
-        },
-        speed: {
-          type: 'num',
-          value: 200,
-        },
-        color: '#2b6cb0',
-      },
-      { type: 'gk:rpgSetStartMap', map: 'quintal' },
-      {
-        type: 'gk:rpgCreateMap',
-        map: 'quintal',
-        cols: { type: 'num', value: 15 },
-        rows: { type: 'num', value: 12 },
-        ctxName: 'ctx',
-        body: [{ type: 'gk:drawBackground', color: '#2d5a2d', grid: false }],
-      },
-      {
-        type: 'gk:rpgOnEnterMap',
-        map: 'quintal',
-        body: [
-          {
-            type: 'gk:rpgCreateNpc',
-            name: 'Cora',
-            cx: {
-              type: 'num',
-              value: 3,
-            },
-            cy: {
-              type: 'num',
-              value: 3,
-            },
-            image: '',
-            look: 'heroi',
-          },
-          {
-            type: 'gk:rpgCreateNpc',
-            name: 'Enfermeira',
-            cx: {
-              type: 'num',
-              value: 12,
-            },
-            cy: {
-              type: 'num',
-              value: 3,
-            },
-            image: '',
-            look: 'heroi',
-          },
-          {
-            type: 'gk:pkmGrassCells',
-            x1: {
-              type: 'num',
-              value: 5,
-            },
-            y1: {
-              type: 'num',
-              value: 6,
-            },
-            x2: {
-              type: 'num',
-              value: 13,
-            },
-            y2: {
-              type: 'num',
-              value: 10,
-            },
-          },
-          {
-            type: 'gk:pkmWild',
-            creature: 'Folhinha',
-            min: {
-              type: 'num',
-              value: 3,
-            },
-            max: {
-              type: 'num',
-              value: 6,
-            },
-          },
-          {
-            type: 'gk:pkmWild',
-            creature: 'Gotinha',
-            min: {
-              type: 'num',
-              value: 3,
-            },
-            max: {
-              type: 'num',
-              value: 6,
-            },
-          },
-          {
-            type: 'gk:placeCharacter',
-            charVar: 'heroi',
-            x: {
-              type: 'num',
-              value: 128,
-            },
-            y: {
-              type: 'num',
-              value: 128,
-            },
-          },
-        ],
-      },
-      {
-        type: 'gk:rpgOnTalk',
-        npc: 'Cora',
-        body: [
-          {
-            type: 'if',
-            cond: {
-              type: 'gk:rpgHasFlag',
-              flag: 'ganhou-inicial',
-            },
-            then: [
-              {
-                type: 'gk:rpgMenu',
-                title: {
-                  type: 'str',
-                  value: 'Quer mais bolas?',
-                },
-                body: [
-                  {
-                    type: 'gk:rpgOption',
-                    label: {
-                      type: 'str',
-                      value: 'Sim',
-                    },
-                    body: [
-                      {
-                        type: 'gk:pkmGiveBall',
-                        count: {
-                          type: 'num',
-                          value: 3,
-                        },
-                        power: {
-                          type: 'num',
-                          value: 60,
-                        },
-                      },
-                    ],
-                  },
-                  {
-                    type: 'gk:rpgOption',
-                    label: {
-                      type: 'str',
-                      value: 'Não',
-                    },
-                    body: [],
-                  },
-                ],
+              h: {
+                type: 'num',
+                value: 10,
               },
-            ],
-            else: [
-              {
-                type: 'gk:rpgSay',
-                text: {
-                  type: 'str',
-                  value: 'Leve o Fogoso e 5 bolas! Pegue 3 bichinhos no quintal!',
-                },
-                speaker: {
-                  type: 'str',
-                  value: 'Cora',
-                },
+            },
+          ],
+          baseW: {
+            type: 'num',
+            value: 48,
+          },
+          baseH: {
+            type: 'num',
+            value: 48,
+          },
+        },
+        {
+          type: 'gk:defineLook',
+          name: 'heroi',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: {
+                type: 'color',
+                value: '#2b6cb0',
               },
-              {
-                type: 'gk:pkmGive',
-                creature: 'Fogoso',
-                level: {
-                  type: 'num',
-                  value: 5,
-                },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 6,
               },
-              {
-                type: 'gk:pkmGiveBall',
-                count: {
-                  type: 'num',
-                  value: 5,
-                },
-                power: {
-                  type: 'num',
-                  value: 60,
-                },
+              y: {
+                type: 'num',
+                value: 8,
               },
-              {
-                type: 'gk:rpgAddFlag',
+              w: {
+                type: 'num',
+                value: 28,
+              },
+              h: {
+                type: 'num',
+                value: 32,
+              },
+            },
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: {
+                type: 'color',
+                value: '#ffd9a0',
+              },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 10,
+              },
+              y: {
+                type: 'num',
+                value: 12,
+              },
+              w: {
+                type: 'num',
+                value: 20,
+              },
+              h: {
+                type: 'num',
+                value: 12,
+              },
+            },
+          ],
+          baseW: {
+            type: 'num',
+            value: 40,
+          },
+          baseH: {
+            type: 'num',
+            value: 48,
+          },
+        },
+        {
+          type: 'gk:pkmCreature',
+          name: 'Fogoso',
+          creatureType: 'fogo',
+          hp: {
+            type: 'num',
+            value: 30,
+          },
+          str: {
+            type: 'num',
+            value: 9,
+          },
+          def: {
+            type: 'num',
+            value: 4,
+          },
+          spd: {
+            type: 'num',
+            value: 7,
+          },
+          image: '',
+          look: 'fogoso',
+        },
+        {
+          type: 'gk:pkmCreature',
+          name: 'Folhinha',
+          creatureType: 'planta',
+          hp: {
+            type: 'num',
+            value: 34,
+          },
+          str: {
+            type: 'num',
+            value: 7,
+          },
+          def: {
+            type: 'num',
+            value: 6,
+          },
+          spd: {
+            type: 'num',
+            value: 4,
+          },
+          image: '',
+          look: 'folhinha',
+        },
+        {
+          type: 'gk:pkmCreature',
+          name: 'Gotinha',
+          creatureType: 'agua',
+          hp: {
+            type: 'num',
+            value: 32,
+          },
+          str: {
+            type: 'num',
+            value: 8,
+          },
+          def: {
+            type: 'num',
+            value: 5,
+          },
+          spd: {
+            type: 'num',
+            value: 6,
+          },
+          image: '',
+          look: 'gotinha',
+        },
+        {
+          type: 'gk:pkmCreature',
+          name: 'Fogozao',
+          creatureType: 'fogo',
+          hp: {
+            type: 'num',
+            value: 45,
+          },
+          str: {
+            type: 'num',
+            value: 13,
+          },
+          def: {
+            type: 'num',
+            value: 7,
+          },
+          spd: {
+            type: 'num',
+            value: 8,
+          },
+          image: '',
+          look: 'fogozao',
+        },
+        {
+          type: 'gk:pkmMove',
+          move: 'Brasa',
+          creature: 'Fogoso',
+          moveType: 'fogo',
+          dmg: {
+            type: 'num',
+            value: 20,
+          },
+          acc: {
+            type: 'num',
+            value: 90,
+          },
+          fx: 'bola',
+          color: '#ff8800',
+        },
+        {
+          type: 'gk:pkmMove',
+          move: 'Investida',
+          creature: 'Fogoso',
+          moveType: 'normal',
+          dmg: {
+            type: 'num',
+            value: 12,
+          },
+          acc: {
+            type: 'num',
+            value: 100,
+          },
+          fx: 'investida',
+          color: '#999999',
+        },
+        {
+          type: 'gk:pkmMove',
+          move: 'Chicote',
+          creature: 'Folhinha',
+          moveType: 'planta',
+          dmg: {
+            type: 'num',
+            value: 18,
+          },
+          acc: {
+            type: 'num',
+            value: 95,
+          },
+          fx: 'onda',
+          color: '#3f9d3f',
+        },
+        {
+          type: 'gk:pkmMove',
+          move: 'Jato',
+          creature: 'Gotinha',
+          moveType: 'agua',
+          dmg: {
+            type: 'num',
+            value: 18,
+          },
+          acc: {
+            type: 'num',
+            value: 95,
+          },
+          fx: 'bola',
+          color: '#2b7de0',
+        },
+        {
+          type: 'gk:pkmMove',
+          move: 'Labareda',
+          creature: 'Fogozao',
+          moveType: 'fogo',
+          dmg: {
+            type: 'num',
+            value: 32,
+          },
+          acc: {
+            type: 'num',
+            value: 75,
+          },
+          fx: 'raio',
+          color: '#ff4400',
+        },
+        {
+          type: 'gk:pkmTypeChart',
+          atk: 'fogo',
+          def: 'planta',
+          mult: {
+            type: 'num',
+            value: 2,
+          },
+        },
+        {
+          type: 'gk:pkmTypeChart',
+          atk: 'planta',
+          def: 'agua',
+          mult: {
+            type: 'num',
+            value: 2,
+          },
+        },
+        {
+          type: 'gk:pkmTypeChart',
+          atk: 'agua',
+          def: 'fogo',
+          mult: {
+            type: 'num',
+            value: 2,
+          },
+        },
+        {
+          type: 'gk:pkmEvolve',
+          from: 'Fogoso',
+          to: 'Fogozao',
+          level: {
+            type: 'num',
+            value: 8,
+          },
+        },
+        {
+          type: 'gk:pkmCatchDifficulty',
+          creature: 'Gotinha',
+          level: 'difícil',
+        },
+        {
+          type: 'gk:pkmEncounterRate',
+          percent: {
+            type: 'num',
+            value: 20,
+          },
+        },
+        {
+          type: 'gk:createCharacter',
+          varName: 'heroi',
+          image: '',
+          w: {
+            type: 'num',
+            value: 40,
+          },
+          h: {
+            type: 'num',
+            value: 48,
+          },
+          speed: {
+            type: 'num',
+            value: 200,
+          },
+          color: '#2b6cb0',
+        },
+        { type: 'gk:rpgSetStartMap', map: 'quintal' },
+        {
+          type: 'gk:rpgCreateMap',
+          map: 'quintal',
+          cols: { type: 'num', value: 15 },
+          rows: { type: 'num', value: 12 },
+          ctxName: 'ctx',
+          body: [{ type: 'gk:drawBackground', color: '#2d5a2d', grid: false }],
+        },
+      ],
+      events: [
+        {
+          type: 'gk:rpgOnEnterMap',
+          map: 'quintal',
+          body: [
+            {
+              type: 'gk:rpgCreateNpc',
+              name: 'Cora',
+              cx: {
+                type: 'num',
+                value: 3,
+              },
+              cy: {
+                type: 'num',
+                value: 3,
+              },
+              image: '',
+              look: 'heroi',
+            },
+            {
+              type: 'gk:rpgCreateNpc',
+              name: 'Enfermeira',
+              cx: {
+                type: 'num',
+                value: 12,
+              },
+              cy: {
+                type: 'num',
+                value: 3,
+              },
+              image: '',
+              look: 'heroi',
+            },
+            {
+              type: 'gk:pkmGrassCells',
+              x1: {
+                type: 'num',
+                value: 5,
+              },
+              y1: {
+                type: 'num',
+                value: 6,
+              },
+              x2: {
+                type: 'num',
+                value: 13,
+              },
+              y2: {
+                type: 'num',
+                value: 10,
+              },
+            },
+            {
+              type: 'gk:pkmWild',
+              creature: 'Folhinha',
+              min: {
+                type: 'num',
+                value: 3,
+              },
+              max: {
+                type: 'num',
+                value: 6,
+              },
+            },
+            {
+              type: 'gk:pkmWild',
+              creature: 'Gotinha',
+              min: {
+                type: 'num',
+                value: 3,
+              },
+              max: {
+                type: 'num',
+                value: 6,
+              },
+            },
+            {
+              type: 'gk:placeCharacter',
+              charVar: 'heroi',
+              x: {
+                type: 'num',
+                value: 128,
+              },
+              y: {
+                type: 'num',
+                value: 128,
+              },
+            },
+          ],
+        },
+        {
+          type: 'gk:rpgOnTalk',
+          npc: 'Cora',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'gk:rpgHasFlag',
                 flag: 'ganhou-inicial',
               },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'gk:rpgOnTalk',
-        npc: 'Enfermeira',
-        body: [
-          {
-            type: 'gk:rpgSay',
-            text: {
-              type: 'str',
-              value: 'Deixe comigo!',
-            },
-            speaker: {
-              type: 'str',
-              value: 'Enfermeira',
-            },
-          },
-          {
-            type: 'gk:pkmHealTeam',
-          },
-        ],
-      },
-      {
-        type: 'gk:rpgOnBattleEnd',
-        body: [
-          {
-            type: 'if',
-            cond: {
-              type: 'gk:pkmCaught',
-            },
-            then: [
-              {
-                type: 'if',
-                cond: {
-                  type: 'binop',
-                  op: '>=',
-                  left: {
-                    type: 'gk:pkmTeamSize',
+              then: [
+                {
+                  type: 'gk:rpgMenu',
+                  title: {
+                    type: 'str',
+                    value: 'Quer mais bolas?',
                   },
-                  right: {
-                    type: 'num',
-                    value: 4,
+                  body: [
+                    {
+                      type: 'gk:rpgOption',
+                      label: {
+                        type: 'str',
+                        value: 'Sim',
+                      },
+                      body: [
+                        {
+                          type: 'gk:pkmGiveBall',
+                          count: {
+                            type: 'num',
+                            value: 3,
+                          },
+                          power: {
+                            type: 'num',
+                            value: 60,
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      type: 'gk:rpgOption',
+                      label: {
+                        type: 'str',
+                        value: 'Não',
+                      },
+                      body: [],
+                    },
+                  ],
+                },
+              ],
+              else: [
+                {
+                  type: 'gk:rpgSay',
+                  text: {
+                    type: 'str',
+                    value: 'Leve o Fogoso e 5 bolas! Pegue 3 bichinhos no quintal!',
+                  },
+                  speaker: {
+                    type: 'str',
+                    value: 'Cora',
                   },
                 },
-                then: [
-                  {
-                    type: 'gk:setState',
-                    name: 'vitoria',
+                {
+                  type: 'gk:pkmGive',
+                  creature: 'Fogoso',
+                  level: {
+                    type: 'num',
+                    value: 5,
                   },
-                ],
+                },
+                {
+                  type: 'gk:pkmGiveBall',
+                  count: {
+                    type: 'num',
+                    value: 5,
+                  },
+                  power: {
+                    type: 'num',
+                    value: 60,
+                  },
+                },
+                {
+                  type: 'gk:rpgAddFlag',
+                  flag: 'ganhou-inicial',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'gk:rpgOnTalk',
+          npc: 'Enfermeira',
+          body: [
+            {
+              type: 'gk:rpgSay',
+              text: {
+                type: 'str',
+                value: 'Deixe comigo!',
               },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'gk:onUpdate',
-        dtName: 'dt',
-        body: [
-          {
-            type: 'gk:rpgMoveGrid',
-            charVar: 'heroi',
-            cell: {
-              type: 'num',
-              value: 64,
+              speaker: {
+                type: 'str',
+                value: 'Enfermeira',
+              },
             },
-            dtVar: 'dt',
-          },
-        ],
-      },
-      {
-        type: 'gk:onDraw',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#4a8c4a',
+            {
+              type: 'gk:pkmHealTeam',
             },
-          },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: {
-              type: 'num',
-              value: 320,
+          ],
+        },
+        {
+          type: 'gk:rpgOnBattleEnd',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'gk:pkmCaught',
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>=',
+                    left: {
+                      type: 'gk:pkmTeamSize',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 4,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'gk:setState',
+                      name: 'vitoria',
+                    },
+                  ],
+                },
+              ],
             },
-            y: {
-              type: 'num',
-              value: 384,
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'gk:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'gk:rpgMoveGrid',
+              charVar: 'heroi',
+              cell: {
+                type: 'num',
+                value: 64,
+              },
+              dtVar: 'dt',
             },
-            w: {
-              type: 'num',
-              value: 576,
+          ],
+        },
+        {
+          type: 'gk:onDraw',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: {
+                type: 'color',
+                value: '#4a8c4a',
+              },
             },
-            h: {
-              type: 'num',
-              value: 320,
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 320,
+              },
+              y: {
+                type: 'num',
+                value: 384,
+              },
+              w: {
+                type: 'num',
+                value: 576,
+              },
+              h: {
+                type: 'num',
+                value: 320,
+              },
             },
-          },
-          {
-            type: 'gk:drawByDepth',
-            charVar: 'heroi',
-          },
-        ],
-      },
-      {
-        type: 'gk:onDrawHud',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'gk:pkmDrawTeam',
-            x: {
-              type: 'num',
-              value: 10,
+            {
+              type: 'gk:drawByDepth',
+              charVar: 'heroi',
             },
-            y: {
-              type: 'num',
-              value: 10,
+          ],
+        },
+        {
+          type: 'gk:onDrawHud',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'gk:pkmDrawTeam',
+              x: {
+                type: 'num',
+                value: 10,
+              },
+              y: {
+                type: 'num',
+                value: 10,
+              },
             },
-          },
-        ],
-      },
-      {
-        type: 'gk:start',
-      },
-    ] as ExtensionExample['ir']['js'],
+          ],
+        },
+      ],
+    },
   },
 }
 
@@ -4028,994 +4057,993 @@ export const invasaoDosOvnisExample: ExtensionExample = {
         extensionId: 'game-2d-advanced',
       },
     ],
-    js: [
-      {
-        type: 'gk:setup',
-        w: {
-          type: 'num',
-          value: 960,
-        },
-        h: {
-          type: 'num',
-          value: 540,
-        },
-        bg: '#0b1020',
-        accent: '#7cc7ff',
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'menu',
-        title: {
-          type: 'str',
-          value: 'Invasão dos Óvnis',
-        },
-        text: {
-          type: 'str',
-          value: 'Setas ou A/D movem - espaço atira - não deixe descerem!',
-        },
-        button: {
-          type: 'str',
-          value: 'Jogar',
-        },
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'fim',
-        title: {
-          type: 'str',
-          value: 'Fim de jogo',
-        },
-        text: {
-          type: 'str',
-          value: 'Os óvnis venceram desta vez. Tente de novo!',
-        },
-        button: {
-          type: 'str',
-          value: 'Jogar de novo',
-        },
-      },
-      {
-        type: 'gk:defineMold',
-        name: 'ovni',
-        w: {
-          type: 'num',
-          value: 44,
-        },
-        h: {
-          type: 'num',
-          value: 32,
-        },
-        health: {
-          type: 'num',
-          value: 1,
-        },
-        speed: {
-          type: 'num',
-          value: 0,
-        },
-        damage: {
-          type: 'num',
-          value: 10,
-        },
-        color: '#5ad66f',
-        image: '',
-        look: '',
-      },
-      {
-        type: 'gk:defineMold',
-        name: 'tiro',
-        w: {
-          type: 'num',
-          value: 6,
-        },
-        h: {
-          type: 'num',
-          value: 16,
-        },
-        health: {
-          type: 'num',
-          value: 1,
-        },
-        speed: {
-          type: 'num',
-          value: 0,
-        },
-        damage: {
-          type: 'num',
-          value: 0,
-        },
-        color: '#ffe066',
-        image: '',
-        look: '',
-      },
-      {
-        type: 'gk:defineMold',
-        name: 'tiro-ovni',
-        w: {
-          type: 'num',
-          value: 4,
-        },
-        h: {
-          type: 'num',
-          value: 12,
-        },
-        health: {
-          type: 'num',
-          value: 1,
-        },
-        speed: {
-          type: 'num',
-          value: 0,
-        },
-        damage: {
-          type: 'num',
-          value: 10,
-        },
-        color: '#ffffff',
-        image: '',
-        look: '',
-      },
-      {
-        type: 'gk:defineMold',
-        name: 'bomba',
-        w: {
-          type: 'num',
-          value: 24,
-        },
-        h: {
-          type: 'num',
-          value: 24,
-        },
-        health: {
-          type: 'num',
-          value: 1,
-        },
-        speed: {
-          type: 'num',
-          value: 0,
-        },
-        damage: {
-          type: 'num',
-          value: 0,
-        },
-        color: '#ff922b',
-        image: '',
-        look: '',
-      },
-      {
-        type: 'gk:defineEffect',
-        name: 'explosao',
-        count: {
-          type: 'num',
-          value: 16,
-        },
-        color: '#9775fa',
-        size: {
-          type: 'num',
-          value: 4,
-        },
-        life: {
-          type: 'num',
-          value: 0.5,
-        },
-        speed: {
-          type: 'num',
-          value: 200,
-        },
-        gravity: {
-          type: 'num',
-          value: 0,
-        },
-      },
-      {
-        type: 'gk:createCharacter',
-        varName: 'nave',
-        image: '',
-        w: {
-          type: 'num',
-          value: 52,
-        },
-        h: {
-          type: 'num',
-          value: 28,
-        },
-        speed: {
-          type: 'num',
-          value: 420,
-        },
-        color: '#7cc7ff',
-      },
-      {
-        type: 'var',
-        name: 'pontos',
-        value: {
-          type: 'num',
-          value: 0,
-        },
-      },
-      {
-        type: 'var',
-        name: 'vidas',
-        value: {
-          type: 'num',
-          value: 3,
-        },
-      },
-      {
-        type: 'var',
-        name: 'velocidade',
-        value: {
-          type: 'num',
-          value: 150,
-        },
-      },
-      {
-        type: 'gk:naveInvasionLine',
-        y: {
-          type: 'num',
-          value: 430,
-        },
-      },
-      {
-        type: 'gk:naveWaveShooter',
-        mold: 'ovni',
-        seconds: {
-          type: 'num',
-          value: 1.5,
-        },
-        bullet: 'tiro-ovni',
-        speed: {
-          type: 'num',
-          value: 300,
-        },
-      },
-      {
-        type: 'gk:onGameStart',
-        body: [
-          {
-            type: 'assign',
-            name: 'pontos',
-            value: {
-              type: 'num',
-              value: 0,
-            },
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 960,
           },
-          {
-            type: 'assign',
-            name: 'vidas',
-            value: {
-              type: 'num',
-              value: 3,
-            },
+          h: {
+            type: 'num',
+            value: 540,
           },
-          {
-            type: 'assign',
+          bg: '#0b1020',
+          accent: '#7cc7ff',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Invasão dos Óvnis',
+          },
+          text: {
+            type: 'str',
+            value: 'Setas ou A/D movem - espaço atira - não deixe descerem!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar',
+          },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'Fim de jogo',
+          },
+          text: {
+            type: 'str',
+            value: 'Os óvnis venceram desta vez. Tente de novo!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
+          },
+        },
+        {
+          type: 'gk:defineMold',
+          name: 'ovni',
+          w: {
+            type: 'num',
+            value: 44,
+          },
+          h: {
+            type: 'num',
+            value: 32,
+          },
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          damage: {
+            type: 'num',
+            value: 10,
+          },
+          color: '#5ad66f',
+          image: '',
+          look: '',
+        },
+        {
+          type: 'gk:defineMold',
+          name: 'tiro',
+          w: {
+            type: 'num',
+            value: 6,
+          },
+          h: {
+            type: 'num',
+            value: 16,
+          },
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          damage: {
+            type: 'num',
+            value: 0,
+          },
+          color: '#ffe066',
+          image: '',
+          look: '',
+        },
+        {
+          type: 'gk:defineMold',
+          name: 'tiro-ovni',
+          w: {
+            type: 'num',
+            value: 4,
+          },
+          h: {
+            type: 'num',
+            value: 12,
+          },
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          damage: {
+            type: 'num',
+            value: 10,
+          },
+          color: '#ffffff',
+          image: '',
+          look: '',
+        },
+        {
+          type: 'gk:defineMold',
+          name: 'bomba',
+          w: {
+            type: 'num',
+            value: 24,
+          },
+          h: {
+            type: 'num',
+            value: 24,
+          },
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          damage: {
+            type: 'num',
+            value: 0,
+          },
+          color: '#ff922b',
+          image: '',
+          look: '',
+        },
+        {
+          type: 'gk:defineEffect',
+          name: 'explosao',
+          count: {
+            type: 'num',
+            value: 16,
+          },
+          color: '#9775fa',
+          size: {
+            type: 'num',
+            value: 4,
+          },
+          life: {
+            type: 'num',
+            value: 0.5,
+          },
+          speed: {
+            type: 'num',
+            value: 200,
+          },
+          gravity: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'gk:createCharacter',
+          varName: 'nave',
+          image: '',
+          w: {
+            type: 'num',
+            value: 52,
+          },
+          h: {
+            type: 'num',
+            value: 28,
+          },
+          speed: {
+            type: 'num',
+            value: 420,
+          },
+          color: '#7cc7ff',
+        },
+        {
+          type: 'var',
+          name: 'pontos',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'vidas',
+          value: {
+            type: 'num',
+            value: 3,
+          },
+        },
+        {
+          type: 'var',
+          name: 'velocidade',
+          value: {
+            type: 'num',
+            value: 150,
+          },
+        },
+        {
+          type: 'gk:naveInvasionLine',
+          y: {
+            type: 'num',
+            value: 430,
+          },
+        },
+        {
+          type: 'gk:naveWaveShooter',
+          mold: 'ovni',
+          seconds: {
+            type: 'num',
+            value: 1.5,
+          },
+          bullet: 'tiro-ovni',
+          speed: {
+            type: 'num',
+            value: 300,
+          },
+        },
+        {
+          type: 'assign',
+          name: 'pontos',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'assign',
+          name: 'vidas',
+          value: {
+            type: 'num',
+            value: 3,
+          },
+        },
+        {
+          type: 'assign',
+          name: 'velocidade',
+          value: {
+            type: 'num',
+            value: 150,
+          },
+        },
+        {
+          type: 'gk:placeCharacter',
+          charVar: 'nave',
+          x: {
+            type: 'num',
+            value: 454,
+          },
+          y: {
+            type: 'num',
+            value: 480,
+          },
+        },
+        {
+          type: 'gk:naveWave',
+          mold: 'ovni',
+          cols: {
+            type: 'num',
+            value: 8,
+          },
+          rows: {
+            type: 'num',
+            value: 3,
+          },
+          gap: {
+            type: 'num',
+            value: 60,
+          },
+          speed: {
+            type: 'var',
             name: 'velocidade',
-            value: {
-              type: 'num',
-              value: 150,
-            },
           },
-          {
-            type: 'gk:placeCharacter',
-            charVar: 'nave',
-            x: {
-              type: 'num',
-              value: 454,
-            },
-            y: {
-              type: 'num',
-              value: 480,
-            },
+          drop: {
+            type: 'num',
+            value: 30,
           },
-          {
-            type: 'gk:naveWave',
-            mold: 'ovni',
-            cols: {
-              type: 'num',
-              value: 8,
-            },
-            rows: {
-              type: 'num',
-              value: 3,
-            },
-            gap: {
-              type: 'num',
-              value: 60,
-            },
-            speed: {
-              type: 'var',
+          accel: {
+            type: 'num',
+            value: 15,
+          },
+        },
+      ],
+      events: [
+        {
+          type: 'gk:onEvent',
+          event: 'onda:limpa',
+          body: [
+            {
+              type: 'assign',
               name: 'velocidade',
+              value: {
+                type: 'binop',
+                op: '*',
+                left: {
+                  type: 'var',
+                  name: 'velocidade',
+                },
+                right: {
+                  type: 'num',
+                  value: 1.2,
+                },
+              },
             },
-            drop: {
-              type: 'num',
-              value: 30,
-            },
-            accel: {
-              type: 'num',
-              value: 15,
-            },
-          },
-        ],
-      },
-      {
-        type: 'gk:onEvent',
-        event: 'onda:limpa',
-        body: [
-          {
-            type: 'assign',
-            name: 'velocidade',
-            value: {
-              type: 'binop',
-              op: '*',
-              left: {
+            {
+              type: 'gk:naveWave',
+              mold: 'ovni',
+              cols: {
+                type: 'num',
+                value: 8,
+              },
+              rows: {
+                type: 'num',
+                value: 3,
+              },
+              gap: {
+                type: 'num',
+                value: 60,
+              },
+              speed: {
                 type: 'var',
                 name: 'velocidade',
               },
-              right: {
+              drop: {
                 type: 'num',
-                value: 1.2,
+                value: 30,
               },
-            },
-          },
-          {
-            type: 'gk:naveWave',
-            mold: 'ovni',
-            cols: {
-              type: 'num',
-              value: 8,
-            },
-            rows: {
-              type: 'num',
-              value: 3,
-            },
-            gap: {
-              type: 'num',
-              value: 60,
-            },
-            speed: {
-              type: 'var',
-              name: 'velocidade',
-            },
-            drop: {
-              type: 'num',
-              value: 30,
-            },
-            accel: {
-              type: 'num',
-              value: 15,
-            },
-          },
-          {
-            type: 'gk:playEffect',
-            fx: 'win',
-          },
-        ],
-      },
-      {
-        type: 'gk:onEvent',
-        event: 'onda:invadiu',
-        body: [
-          {
-            type: 'gk:endGame',
-          },
-        ],
-      },
-      {
-        type: 'gk:onEvent',
-        event: 'bomba:acertou',
-        body: [
-          {
-            type: 'assign',
-            name: 'pontos',
-            value: {
-              type: 'binop',
-              op: '+',
-              left: {
-                type: 'var',
-                name: 'pontos',
-              },
-              right: {
+              accel: {
                 type: 'num',
-                value: 50,
+                value: 15,
               },
             },
-          },
-        ],
-      },
-      {
-        type: 'gk:onUpdate',
-        dtName: 'dt',
-        body: [
-          {
-            type: 'gk:naveShip',
-            charVar: 'nave',
-            speed: {
-              type: 'num',
-              value: 420,
+            {
+              type: 'gk:playEffect',
+              fx: 'win',
             },
-            lean: {
-              type: 'num',
-              value: 10,
+          ],
+        },
+        {
+          type: 'gk:onEvent',
+          event: 'onda:invadiu',
+          body: [
+            {
+              type: 'gk:endGame',
             },
-            dtVar: 'dt',
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'binop',
-              op: '===',
-              left: {
-                type: 'gk:navePowerOf',
-                charVar: 'nave',
-              },
-              right: {
-                type: 'str',
-                value: 'metralhadora',
-              },
-            },
-            then: [
-              {
-                type: 'if',
-                cond: {
-                  type: 'logical',
-                  op: '&&',
-                  left: {
-                    type: 'gk:keyDown',
-                    key: ' ',
-                  },
-                  right: {
-                    type: 'gk:cooldownReady',
-                    charVar: 'nave',
-                    seconds: {
-                      type: 'num',
-                      value: 0.12,
-                    },
-                  },
+          ],
+        },
+        {
+          type: 'gk:onEvent',
+          event: 'bomba:acertou',
+          body: [
+            {
+              type: 'assign',
+              name: 'pontos',
+              value: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'var',
+                  name: 'pontos',
                 },
-                then: [
-                  {
-                    type: 'gk:fanShot',
-                    charVar: 'nave',
-                    mold: 'tiro',
-                    count: {
-                      type: 'num',
-                      value: 1,
-                    },
-                    arc: {
-                      type: 'num',
-                      value: 0,
-                    },
-                    degrees: {
-                      type: 'num',
-                      value: -90,
-                    },
-                    speed: {
-                      type: 'num',
-                      value: 600,
-                    },
-                  },
-                  {
-                    type: 'gk:playEffect',
-                    fx: 'laser',
-                  },
-                ],
-              },
-            ],
-            elseif: [
-              {
-                cond: {
-                  type: 'binop',
-                  op: '===',
-                  left: {
-                    type: 'gk:navePowerOf',
-                    charVar: 'nave',
-                  },
-                  right: {
-                    type: 'str',
-                    value: 'leque',
-                  },
-                },
-                then: [
-                  {
-                    type: 'if',
-                    cond: {
-                      type: 'logical',
-                      op: '&&',
-                      left: {
-                        type: 'gk:keyPressed',
-                        key: ' ',
-                      },
-                      right: {
-                        type: 'gk:cooldownReady',
-                        charVar: 'nave',
-                        seconds: {
-                          type: 'num',
-                          value: 0.35,
-                        },
-                      },
-                    },
-                    then: [
-                      {
-                        type: 'gk:fanShot',
-                        charVar: 'nave',
-                        mold: 'tiro',
-                        count: {
-                          type: 'num',
-                          value: 5,
-                        },
-                        arc: {
-                          type: 'num',
-                          value: 40,
-                        },
-                        degrees: {
-                          type: 'num',
-                          value: -90,
-                        },
-                        speed: {
-                          type: 'num',
-                          value: 600,
-                        },
-                      },
-                      {
-                        type: 'gk:playEffect',
-                        fx: 'laser',
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-            else: [
-              {
-                type: 'if',
-                cond: {
-                  type: 'logical',
-                  op: '&&',
-                  left: {
-                    type: 'gk:keyPressed',
-                    key: ' ',
-                  },
-                  right: {
-                    type: 'gk:cooldownReady',
-                    charVar: 'nave',
-                    seconds: {
-                      type: 'num',
-                      value: 0.35,
-                    },
-                  },
-                },
-                then: [
-                  {
-                    type: 'gk:fanShot',
-                    charVar: 'nave',
-                    mold: 'tiro',
-                    count: {
-                      type: 'num',
-                      value: 1,
-                    },
-                    arc: {
-                      type: 'num',
-                      value: 0,
-                    },
-                    degrees: {
-                      type: 'num',
-                      value: -90,
-                    },
-                    speed: {
-                      type: 'num',
-                      value: 600,
-                    },
-                  },
-                  {
-                    type: 'gk:playEffect',
-                    fx: 'laser',
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            type: 'gk:forEachActive',
-            mold: 'tiro',
-            itemName: 'item',
-            body: [
-              {
-                type: 'gk:moveByVelocity',
-                charVar: 'item',
-                dtVar: 'dt',
-              },
-            ],
-          },
-          {
-            type: 'gk:forEachActive',
-            mold: 'tiro-ovni',
-            itemName: 'item',
-            body: [
-              {
-                type: 'gk:moveByVelocity',
-                charVar: 'item',
-                dtVar: 'dt',
-              },
-            ],
-          },
-          {
-            type: 'gk:cullOffscreen',
-            mold: 'tiro',
-            margin: {
-              type: 'num',
-              value: 100,
-            },
-          },
-          {
-            type: 'gk:cullOffscreen',
-            mold: 'tiro-ovni',
-            margin: {
-              type: 'num',
-              value: 100,
-            },
-          },
-          {
-            type: 'gk:overlapGroups',
-            aName: 'a',
-            moldA: 'tiro',
-            bName: 'b',
-            moldB: 'ovni',
-            body: [
-              {
-                type: 'gk:recycle',
-                charVar: 'a',
-              },
-              {
-                type: 'gk:burst',
-                effect: 'explosao',
-                x: {
-                  type: 'gk:charX',
-                  charVar: 'b',
-                },
-                y: {
-                  type: 'gk:charY',
-                  charVar: 'b',
-                },
-              },
-              {
-                type: 'gk:floatText',
-                text: {
-                  type: 'str',
-                  value: '+100',
-                },
-                x: {
-                  type: 'gk:charX',
-                  charVar: 'b',
-                },
-                y: {
-                  type: 'gk:charY',
-                  charVar: 'b',
-                },
-                color: '#ffffff',
-                size: {
+                right: {
                   type: 'num',
-                  value: 22,
+                  value: 50,
                 },
               },
-              {
-                type: 'assign',
-                name: 'pontos',
-                value: {
-                  type: 'binop',
-                  op: '+',
-                  left: {
-                    type: 'var',
-                    name: 'pontos',
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'gk:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'gk:naveShip',
+              charVar: 'nave',
+              speed: {
+                type: 'num',
+                value: 420,
+              },
+              lean: {
+                type: 'num',
+                value: 10,
+              },
+              dtVar: 'dt',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '===',
+                left: {
+                  type: 'gk:navePowerOf',
+                  charVar: 'nave',
+                },
+                right: {
+                  type: 'str',
+                  value: 'metralhadora',
+                },
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logical',
+                    op: '&&',
+                    left: {
+                      type: 'gk:keyDown',
+                      key: ' ',
+                    },
+                    right: {
+                      type: 'gk:cooldownReady',
+                      charVar: 'nave',
+                      seconds: {
+                        type: 'num',
+                        value: 0.12,
+                      },
+                    },
                   },
-                  right: {
+                  then: [
+                    {
+                      type: 'gk:fanShot',
+                      charVar: 'nave',
+                      mold: 'tiro',
+                      count: {
+                        type: 'num',
+                        value: 1,
+                      },
+                      arc: {
+                        type: 'num',
+                        value: 0,
+                      },
+                      degrees: {
+                        type: 'num',
+                        value: -90,
+                      },
+                      speed: {
+                        type: 'num',
+                        value: 600,
+                      },
+                    },
+                    {
+                      type: 'gk:playEffect',
+                      fx: 'laser',
+                    },
+                  ],
+                },
+              ],
+              elseif: [
+                {
+                  cond: {
+                    type: 'binop',
+                    op: '===',
+                    left: {
+                      type: 'gk:navePowerOf',
+                      charVar: 'nave',
+                    },
+                    right: {
+                      type: 'str',
+                      value: 'leque',
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'logical',
+                        op: '&&',
+                        left: {
+                          type: 'gk:keyPressed',
+                          key: ' ',
+                        },
+                        right: {
+                          type: 'gk:cooldownReady',
+                          charVar: 'nave',
+                          seconds: {
+                            type: 'num',
+                            value: 0.35,
+                          },
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'gk:fanShot',
+                          charVar: 'nave',
+                          mold: 'tiro',
+                          count: {
+                            type: 'num',
+                            value: 5,
+                          },
+                          arc: {
+                            type: 'num',
+                            value: 40,
+                          },
+                          degrees: {
+                            type: 'num',
+                            value: -90,
+                          },
+                          speed: {
+                            type: 'num',
+                            value: 600,
+                          },
+                        },
+                        {
+                          type: 'gk:playEffect',
+                          fx: 'laser',
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+              else: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logical',
+                    op: '&&',
+                    left: {
+                      type: 'gk:keyPressed',
+                      key: ' ',
+                    },
+                    right: {
+                      type: 'gk:cooldownReady',
+                      charVar: 'nave',
+                      seconds: {
+                        type: 'num',
+                        value: 0.35,
+                      },
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'gk:fanShot',
+                      charVar: 'nave',
+                      mold: 'tiro',
+                      count: {
+                        type: 'num',
+                        value: 1,
+                      },
+                      arc: {
+                        type: 'num',
+                        value: 0,
+                      },
+                      degrees: {
+                        type: 'num',
+                        value: -90,
+                      },
+                      speed: {
+                        type: 'num',
+                        value: 600,
+                      },
+                    },
+                    {
+                      type: 'gk:playEffect',
+                      fx: 'laser',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'gk:forEachActive',
+              mold: 'tiro',
+              itemName: 'item',
+              body: [
+                {
+                  type: 'gk:moveByVelocity',
+                  charVar: 'item',
+                  dtVar: 'dt',
+                },
+              ],
+            },
+            {
+              type: 'gk:forEachActive',
+              mold: 'tiro-ovni',
+              itemName: 'item',
+              body: [
+                {
+                  type: 'gk:moveByVelocity',
+                  charVar: 'item',
+                  dtVar: 'dt',
+                },
+              ],
+            },
+            {
+              type: 'gk:cullOffscreen',
+              mold: 'tiro',
+              margin: {
+                type: 'num',
+                value: 100,
+              },
+            },
+            {
+              type: 'gk:cullOffscreen',
+              mold: 'tiro-ovni',
+              margin: {
+                type: 'num',
+                value: 100,
+              },
+            },
+            {
+              type: 'gk:overlapGroups',
+              aName: 'a',
+              moldA: 'tiro',
+              bName: 'b',
+              moldB: 'ovni',
+              body: [
+                {
+                  type: 'gk:recycle',
+                  charVar: 'a',
+                },
+                {
+                  type: 'gk:burst',
+                  effect: 'explosao',
+                  x: {
+                    type: 'gk:charX',
+                    charVar: 'b',
+                  },
+                  y: {
+                    type: 'gk:charY',
+                    charVar: 'b',
+                  },
+                },
+                {
+                  type: 'gk:floatText',
+                  text: {
+                    type: 'str',
+                    value: '+100',
+                  },
+                  x: {
+                    type: 'gk:charX',
+                    charVar: 'b',
+                  },
+                  y: {
+                    type: 'gk:charY',
+                    charVar: 'b',
+                  },
+                  color: '#ffffff',
+                  size: {
                     type: 'num',
-                    value: 100,
+                    value: 22,
                   },
                 },
-              },
-              {
-                type: 'gk:playEffect',
-                fx: 'explosion',
-              },
-              {
-                type: 'if',
-                cond: {
-                  type: 'gk:chance',
-                  percent: {
-                    type: 'num',
-                    value: 8,
+                {
+                  type: 'assign',
+                  name: 'pontos',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'var',
+                      name: 'pontos',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 100,
+                    },
                   },
                 },
-                then: [
-                  {
-                    type: 'gk:navePowerup',
-                    charVar: 'nave',
-                    power: 'metralhadora',
-                    seconds: {
+                {
+                  type: 'gk:playEffect',
+                  fx: 'explosion',
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'gk:chance',
+                    percent: {
+                      type: 'num',
+                      value: 8,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'gk:navePowerup',
+                      charVar: 'nave',
+                      power: 'metralhadora',
+                      seconds: {
+                        type: 'num',
+                        value: 5,
+                      },
+                    },
+                    {
+                      type: 'gk:floatText',
+                      text: {
+                        type: 'str',
+                        value: 'METRALHADORA!',
+                      },
+                      x: {
+                        type: 'gk:charX',
+                        charVar: 'b',
+                      },
+                      y: {
+                        type: 'gk:charY',
+                        charVar: 'b',
+                      },
+                      color: '#ffe066',
+                      size: {
+                        type: 'num',
+                        value: 20,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'gk:chance',
+                    percent: {
                       type: 'num',
                       value: 5,
                     },
                   },
-                  {
-                    type: 'gk:floatText',
-                    text: {
-                      type: 'str',
-                      value: 'METRALHADORA!',
-                    },
-                    x: {
-                      type: 'gk:charX',
-                      charVar: 'b',
-                    },
-                    y: {
-                      type: 'gk:charY',
-                      charVar: 'b',
-                    },
-                    color: '#ffe066',
-                    size: {
-                      type: 'num',
-                      value: 20,
-                    },
-                  },
-                ],
-              },
-              {
-                type: 'if',
-                cond: {
-                  type: 'gk:chance',
-                  percent: {
-                    type: 'num',
-                    value: 5,
-                  },
-                },
-                then: [
-                  {
-                    type: 'gk:naveBomb',
-                    mold: 'bomba',
-                    radius: {
-                      type: 'num',
-                      value: 160,
-                    },
-                    target: 'ovni',
-                  },
-                ],
-              },
-              {
-                type: 'gk:recycle',
-                charVar: 'b',
-              },
-            ],
-          },
-          {
-            type: 'gk:forEachActive',
-            mold: 'tiro-ovni',
-            itemName: 'item',
-            body: [
-              {
-                type: 'if',
-                cond: {
-                  type: 'gk:charactersTouch',
-                  aVar: 'item',
-                  bVar: 'nave',
-                },
-                then: [
-                  {
-                    type: 'gk:recycle',
-                    charVar: 'item',
-                  },
-                  {
-                    type: 'if',
-                    cond: {
-                      type: 'logicalNot',
-                      value: {
-                        type: 'gk:isInvincible',
-                        charVar: 'nave',
+                  then: [
+                    {
+                      type: 'gk:naveBomb',
+                      mold: 'bomba',
+                      radius: {
+                        type: 'num',
+                        value: 160,
                       },
+                      target: 'ovni',
                     },
-                    then: [
-                      {
-                        type: 'gk:hurt',
-                        charVar: 'nave',
-                        amount: {
-                          type: 'num',
-                          value: 0,
-                        },
-                        iframes: {
-                          type: 'num',
-                          value: 1.5,
-                        },
-                      },
-                      {
-                        type: 'assign',
-                        name: 'vidas',
+                  ],
+                },
+                {
+                  type: 'gk:recycle',
+                  charVar: 'b',
+                },
+              ],
+            },
+            {
+              type: 'gk:forEachActive',
+              mold: 'tiro-ovni',
+              itemName: 'item',
+              body: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'gk:charactersTouch',
+                    aVar: 'item',
+                    bVar: 'nave',
+                  },
+                  then: [
+                    {
+                      type: 'gk:recycle',
+                      charVar: 'item',
+                    },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'logicalNot',
                         value: {
-                          type: 'binop',
-                          op: '-',
-                          left: {
-                            type: 'var',
-                            name: 'vidas',
-                          },
-                          right: {
-                            type: 'num',
-                            value: 1,
-                          },
-                        },
-                      },
-                      {
-                        type: 'gk:cameraShake',
-                        intensity: {
-                          type: 'num',
-                          value: 6,
-                        },
-                        seconds: {
-                          type: 'num',
-                          value: 0.3,
-                        },
-                      },
-                      {
-                        type: 'gk:playEffect',
-                        fx: 'hurt',
-                      },
-                      {
-                        type: 'gk:floatText',
-                        text: {
-                          type: 'str',
-                          value: '-1 vida',
-                        },
-                        x: {
-                          type: 'gk:charX',
+                          type: 'gk:isInvincible',
                           charVar: 'nave',
                         },
-                        y: {
-                          type: 'gk:charY',
-                          charVar: 'nave',
-                        },
-                        color: '#ff6b6b',
-                        size: {
-                          type: 'num',
-                          value: 20,
-                        },
                       },
-                      {
-                        type: 'if',
-                        cond: {
-                          type: 'binop',
-                          op: '<=',
-                          left: {
-                            type: 'var',
-                            name: 'vidas',
-                          },
-                          right: {
+                      then: [
+                        {
+                          type: 'gk:hurt',
+                          charVar: 'nave',
+                          amount: {
                             type: 'num',
                             value: 0,
                           },
-                        },
-                        then: [
-                          {
-                            type: 'gk:endGame',
+                          iframes: {
+                            type: 'num',
+                            value: 1.5,
                           },
-                        ],
-                      },
-                    ],
-                  },
-                ],
+                        },
+                        {
+                          type: 'assign',
+                          name: 'vidas',
+                          value: {
+                            type: 'binop',
+                            op: '-',
+                            left: {
+                              type: 'var',
+                              name: 'vidas',
+                            },
+                            right: {
+                              type: 'num',
+                              value: 1,
+                            },
+                          },
+                        },
+                        {
+                          type: 'gk:cameraShake',
+                          intensity: {
+                            type: 'num',
+                            value: 6,
+                          },
+                          seconds: {
+                            type: 'num',
+                            value: 0.3,
+                          },
+                        },
+                        {
+                          type: 'gk:playEffect',
+                          fx: 'hurt',
+                        },
+                        {
+                          type: 'gk:floatText',
+                          text: {
+                            type: 'str',
+                            value: '-1 vida',
+                          },
+                          x: {
+                            type: 'gk:charX',
+                            charVar: 'nave',
+                          },
+                          y: {
+                            type: 'gk:charY',
+                            charVar: 'nave',
+                          },
+                          color: '#ff6b6b',
+                          size: {
+                            type: 'num',
+                            value: 20,
+                          },
+                        },
+                        {
+                          type: 'if',
+                          cond: {
+                            type: 'binop',
+                            op: '<=',
+                            left: {
+                              type: 'var',
+                              name: 'vidas',
+                            },
+                            right: {
+                              type: 'num',
+                              value: 0,
+                            },
+                          },
+                          then: [
+                            {
+                              type: 'gk:endGame',
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'gk:onDraw',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'gk:drawBackground',
+              color: '#0b1020',
+              grid: false,
+            },
+            {
+              type: 'gk:naveStarfield',
+              count: {
+                type: 'num',
+                value: 100,
               },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'gk:onDraw',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'gk:drawBackground',
-            color: '#0b1020',
-            grid: false,
-          },
-          {
-            type: 'gk:naveStarfield',
-            count: {
-              type: 'num',
-              value: 100,
-            },
-            speed: {
-              type: 'num',
-              value: 20,
-            },
-          },
-          {
-            type: 'gk:drawActive',
-            mold: 'ovni',
-          },
-          {
-            type: 'gk:drawActive',
-            mold: 'tiro',
-          },
-          {
-            type: 'gk:drawActive',
-            mold: 'tiro-ovni',
-          },
-          {
-            type: 'gk:drawActive',
-            mold: 'bomba',
-          },
-          {
-            type: 'gk:drawCharacter',
-            charVar: 'nave',
-          },
-          {
-            type: 'gk:drawEffects',
-          },
-        ],
-      },
-      {
-        type: 'gk:onDrawHud',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'gk:drawHearts',
-            current: {
-              type: 'var',
-              name: 'vidas',
-            },
-            max: {
-              type: 'num',
-              value: 3,
-            },
-            x: {
-              type: 'num',
-              value: 20,
-            },
-            y: {
-              type: 'num',
-              value: 20,
-            },
-          },
-          {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#ffffff',
-            },
-          },
-          {
-            type: 'canvasFont',
-            ctxVar: 'ctx',
-            size: 24,
-            family: 'sans-serif',
-          },
-          {
-            type: 'canvasFillText',
-            ctxVar: 'ctx',
-            text: {
-              type: 'binop',
-              op: '+',
-              left: {
-                type: 'str',
-                value: 'Pontos: ',
+              speed: {
+                type: 'num',
+                value: 20,
               },
-              right: {
+            },
+            {
+              type: 'gk:drawActive',
+              mold: 'ovni',
+            },
+            {
+              type: 'gk:drawActive',
+              mold: 'tiro',
+            },
+            {
+              type: 'gk:drawActive',
+              mold: 'tiro-ovni',
+            },
+            {
+              type: 'gk:drawActive',
+              mold: 'bomba',
+            },
+            {
+              type: 'gk:drawCharacter',
+              charVar: 'nave',
+            },
+            {
+              type: 'gk:drawEffects',
+            },
+          ],
+        },
+        {
+          type: 'gk:onDrawHud',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'gk:drawHearts',
+              current: {
                 type: 'var',
-                name: 'pontos',
+                name: 'vidas',
+              },
+              max: {
+                type: 'num',
+                value: 3,
+              },
+              x: {
+                type: 'num',
+                value: 20,
+              },
+              y: {
+                type: 'num',
+                value: 20,
               },
             },
-            x: {
-              type: 'num',
-              value: 20,
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: {
+                type: 'color',
+                value: '#ffffff',
+              },
             },
-            y: {
-              type: 'num',
-              value: 70,
+            {
+              type: 'canvasFont',
+              ctxVar: 'ctx',
+              size: 24,
+              family: 'sans-serif',
             },
-          },
-        ],
-      },
-      {
-        type: 'gk:start',
-      },
-    ],
+            {
+              type: 'canvasFillText',
+              ctxVar: 'ctx',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'str',
+                  value: 'Pontos: ',
+                },
+                right: {
+                  type: 'var',
+                  name: 'pontos',
+                },
+              },
+              x: {
+                type: 'num',
+                value: 20,
+              },
+              y: {
+                type: 'num',
+                value: 70,
+              },
+            },
+          ],
+        },
+      ],
+    },
   },
 }
 
@@ -5040,391 +5068,390 @@ export const dueloDosBonecosExample: ExtensionExample = {
         extensionId: 'game-2d-advanced',
       },
     ],
-    js: [
-      {
-        type: 'gk:setup',
-        w: {
-          type: 'num',
-          value: 960,
-        },
-        h: {
-          type: 'num',
-          value: 540,
-        },
-        bg: '#241733',
-        accent: '#ffd166',
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'menu',
-        title: {
-          type: 'str',
-          value: 'Duelo dos Bonecos',
-        },
-        text: {
-          type: 'str',
-          value: 'A/D anda - W pula - S agacha - F defende - G soco - H chute - J agarrão',
-        },
-        button: {
-          type: 'str',
-          value: 'Lutar',
-        },
-      },
-      {
-        type: 'gk:defineMold',
-        name: 'chao',
-        w: {
-          type: 'num',
-          value: 960,
-        },
-        h: {
-          type: 'num',
-          value: 60,
-        },
-        health: {
-          type: 'num',
-          value: 1,
-        },
-        speed: {
-          type: 'num',
-          value: 0,
-        },
-        damage: {
-          type: 'num',
-          value: 0,
-        },
-        color: '#3d2b52',
-        image: '',
-        look: '',
-      },
-      {
-        type: 'gk:createCharacter',
-        varName: 'azul',
-        image: '',
-        w: {
-          type: 'num',
-          value: 50,
-        },
-        h: {
-          type: 'num',
-          value: 110,
-        },
-        speed: {
-          type: 'num',
-          value: 260,
-        },
-        color: '#4a9eff',
-      },
-      {
-        type: 'gk:createCharacter',
-        varName: 'vermelho',
-        image: '',
-        w: {
-          type: 'num',
-          value: 50,
-        },
-        h: {
-          type: 'num',
-          value: 110,
-        },
-        speed: {
-          type: 'num',
-          value: 260,
-        },
-        color: '#e0526a',
-      },
-      {
-        type: 'gk:lutaMove',
-        name: 'soco',
-        charVar: 'azul',
-        speed: 'rápido',
-        damage: {
-          type: 'num',
-          value: 8,
-        },
-        range: {
-          type: 'num',
-          value: 70,
-        },
-        pierce: false,
-        special: false,
-      },
-      {
-        type: 'gk:lutaMove',
-        name: 'chute',
-        charVar: 'azul',
-        speed: 'pesado',
-        damage: {
-          type: 'num',
-          value: 18,
-        },
-        range: {
-          type: 'num',
-          value: 90,
-        },
-        pierce: false,
-        special: false,
-      },
-      {
-        type: 'gk:lutaMove',
-        name: 'agarrao',
-        charVar: 'azul',
-        speed: 'médio',
-        damage: {
-          type: 'num',
-          value: 12,
-        },
-        range: {
-          type: 'num',
-          value: 60,
-        },
-        pierce: true,
-        special: false,
-      },
-      {
-        type: 'gk:lutaMove',
-        name: 'soco',
-        charVar: 'vermelho',
-        speed: 'rápido',
-        damage: {
-          type: 'num',
-          value: 8,
-        },
-        range: {
-          type: 'num',
-          value: 70,
-        },
-        pierce: false,
-        special: false,
-      },
-      {
-        type: 'gk:lutaMove',
-        name: 'chute',
-        charVar: 'vermelho',
-        speed: 'pesado',
-        damage: {
-          type: 'num',
-          value: 18,
-        },
-        range: {
-          type: 'num',
-          value: 90,
-        },
-        pierce: false,
-        special: false,
-      },
-      {
-        type: 'gk:lutaMove',
-        name: 'especial',
-        charVar: 'vermelho',
-        speed: 'médio',
-        damage: {
-          type: 'num',
-          value: 25,
-        },
-        range: {
-          type: 'num',
-          value: 110,
-        },
-        pierce: true,
-        special: true,
-      },
-      {
-        type: 'gk:onGameStart',
-        body: [
-          {
-            type: 'gk:spawnFromMold',
-            mold: 'chao',
-            x: {
-              type: 'num',
-              value: 0,
-            },
-            y: {
-              type: 'num',
-              value: 480,
-            },
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 960,
           },
-          {
-            type: 'gk:placeCharacter',
-            charVar: 'azul',
-            x: {
-              type: 'num',
-              value: 250,
-            },
-            y: {
-              type: 'num',
-              value: 370,
-            },
+          h: {
+            type: 'num',
+            value: 540,
           },
-          {
-            type: 'gk:placeCharacter',
-            charVar: 'vermelho',
-            x: {
-              type: 'num',
-              value: 660,
-            },
-            y: {
-              type: 'num',
-              value: 370,
-            },
+          bg: '#241733',
+          accent: '#ffd166',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Duelo dos Bonecos',
           },
-          {
-            type: 'gk:lutaMatch',
-            p1Var: 'azul',
-            p2Var: 'vermelho',
-            rounds: {
-              type: 'num',
-              value: 3,
-            },
-            seconds: {
-              type: 'num',
-              value: 45,
-            },
+          text: {
+            type: 'str',
+            value: 'A/D anda - W pula - S agacha - F defende - G soco - H chute - J agarrão',
           },
-          {
-            type: 'gk:lutaAI',
-            charVar: 'vermelho',
-            level: 'normal',
+          button: {
+            type: 'str',
+            value: 'Lutar',
           },
-        ],
-      },
-      {
-        type: 'gk:onEvent',
-        event: 'luta:acabou',
-        body: [
-          {
-            type: 'gk:setScreenText',
-            screen: 'fim',
-            title: {
-              type: 'str',
-              value: 'Fim da luta!',
-            },
-            text: {
-              type: 'binop',
-              op: '+',
-              left: {
+        },
+        {
+          type: 'gk:defineMold',
+          name: 'chao',
+          w: {
+            type: 'num',
+            value: 960,
+          },
+          h: {
+            type: 'num',
+            value: 60,
+          },
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          damage: {
+            type: 'num',
+            value: 0,
+          },
+          color: '#3d2b52',
+          image: '',
+          look: '',
+        },
+        {
+          type: 'gk:createCharacter',
+          varName: 'azul',
+          image: '',
+          w: {
+            type: 'num',
+            value: 50,
+          },
+          h: {
+            type: 'num',
+            value: 110,
+          },
+          speed: {
+            type: 'num',
+            value: 260,
+          },
+          color: '#4a9eff',
+        },
+        {
+          type: 'gk:createCharacter',
+          varName: 'vermelho',
+          image: '',
+          w: {
+            type: 'num',
+            value: 50,
+          },
+          h: {
+            type: 'num',
+            value: 110,
+          },
+          speed: {
+            type: 'num',
+            value: 260,
+          },
+          color: '#e0526a',
+        },
+        {
+          type: 'gk:lutaMove',
+          name: 'soco',
+          charVar: 'azul',
+          speed: 'rápido',
+          damage: {
+            type: 'num',
+            value: 8,
+          },
+          range: {
+            type: 'num',
+            value: 70,
+          },
+          pierce: false,
+          special: false,
+        },
+        {
+          type: 'gk:lutaMove',
+          name: 'chute',
+          charVar: 'azul',
+          speed: 'pesado',
+          damage: {
+            type: 'num',
+            value: 18,
+          },
+          range: {
+            type: 'num',
+            value: 90,
+          },
+          pierce: false,
+          special: false,
+        },
+        {
+          type: 'gk:lutaMove',
+          name: 'agarrao',
+          charVar: 'azul',
+          speed: 'médio',
+          damage: {
+            type: 'num',
+            value: 12,
+          },
+          range: {
+            type: 'num',
+            value: 60,
+          },
+          pierce: true,
+          special: false,
+        },
+        {
+          type: 'gk:lutaMove',
+          name: 'soco',
+          charVar: 'vermelho',
+          speed: 'rápido',
+          damage: {
+            type: 'num',
+            value: 8,
+          },
+          range: {
+            type: 'num',
+            value: 70,
+          },
+          pierce: false,
+          special: false,
+        },
+        {
+          type: 'gk:lutaMove',
+          name: 'chute',
+          charVar: 'vermelho',
+          speed: 'pesado',
+          damage: {
+            type: 'num',
+            value: 18,
+          },
+          range: {
+            type: 'num',
+            value: 90,
+          },
+          pierce: false,
+          special: false,
+        },
+        {
+          type: 'gk:lutaMove',
+          name: 'especial',
+          charVar: 'vermelho',
+          speed: 'médio',
+          damage: {
+            type: 'num',
+            value: 25,
+          },
+          range: {
+            type: 'num',
+            value: 110,
+          },
+          pierce: true,
+          special: true,
+        },
+        {
+          type: 'gk:spawnFromMold',
+          mold: 'chao',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 480,
+          },
+        },
+        {
+          type: 'gk:placeCharacter',
+          charVar: 'azul',
+          x: {
+            type: 'num',
+            value: 250,
+          },
+          y: {
+            type: 'num',
+            value: 370,
+          },
+        },
+        {
+          type: 'gk:placeCharacter',
+          charVar: 'vermelho',
+          x: {
+            type: 'num',
+            value: 660,
+          },
+          y: {
+            type: 'num',
+            value: 370,
+          },
+        },
+        {
+          type: 'gk:lutaMatch',
+          p1Var: 'azul',
+          p2Var: 'vermelho',
+          rounds: {
+            type: 'num',
+            value: 3,
+          },
+          seconds: {
+            type: 'num',
+            value: 45,
+          },
+        },
+        {
+          type: 'gk:lutaAI',
+          charVar: 'vermelho',
+          level: 'normal',
+        },
+      ],
+      events: [
+        {
+          type: 'gk:onEvent',
+          event: 'luta:acabou',
+          body: [
+            {
+              type: 'gk:setScreenText',
+              screen: 'fim',
+              title: {
                 type: 'str',
-                value: 'Venceu: ',
+                value: 'Fim da luta!',
               },
-              right: {
-                type: 'gk:lutaWinner',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'str',
+                  value: 'Venceu: ',
+                },
+                right: {
+                  type: 'gk:lutaWinner',
+                },
+              },
+              button: {
+                type: 'str',
+                value: 'Revanche',
               },
             },
-            button: {
-              type: 'str',
-              value: 'Revanche',
+            {
+              type: 'gk:playEffect',
+              fx: 'win',
             },
-          },
-          {
-            type: 'gk:playEffect',
-            fx: 'win',
-          },
-        ],
-      },
-      {
-        type: 'gk:onUpdate',
-        dtName: 'dt',
-        body: [
-          {
-            type: 'gk:lutaFighter',
-            charVar: 'azul',
-            left: 'a',
-            right: 'd',
-            jump: 'w',
-            crouch: 's',
-            guard: 'f',
-            dtVar: 'dt',
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'gk:keyPressed',
-              key: 'g',
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'gk:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'gk:lutaFighter',
+              charVar: 'azul',
+              left: 'a',
+              right: 'd',
+              jump: 'w',
+              crouch: 's',
+              guard: 'f',
+              dtVar: 'dt',
             },
-            then: [
-              {
-                type: 'gk:lutaAttack',
-                charVar: 'azul',
-                move: 'soco',
+            {
+              type: 'if',
+              cond: {
+                type: 'gk:keyPressed',
+                key: 'g',
               },
-            ],
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'gk:keyPressed',
-              key: 'h',
+              then: [
+                {
+                  type: 'gk:lutaAttack',
+                  charVar: 'azul',
+                  move: 'soco',
+                },
+              ],
             },
-            then: [
-              {
-                type: 'gk:lutaAttack',
-                charVar: 'azul',
-                move: 'chute',
+            {
+              type: 'if',
+              cond: {
+                type: 'gk:keyPressed',
+                key: 'h',
               },
-            ],
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'gk:keyPressed',
-              key: 'j',
+              then: [
+                {
+                  type: 'gk:lutaAttack',
+                  charVar: 'azul',
+                  move: 'chute',
+                },
+              ],
             },
-            then: [
-              {
-                type: 'gk:lutaAttack',
-                charVar: 'azul',
-                move: 'agarrao',
+            {
+              type: 'if',
+              cond: {
+                type: 'gk:keyPressed',
+                key: 'j',
               },
-            ],
-          },
-          {
-            type: 'gk:collideGroup',
-            charVar: 'azul',
-            mold: 'chao',
-          },
-          {
-            type: 'gk:collideGroup',
-            charVar: 'vermelho',
-            mold: 'chao',
-          },
-        ],
-      },
-      {
-        type: 'gk:onDraw',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'gk:drawBackground',
-            color: '#241733',
-            grid: false,
-          },
-          {
-            type: 'gk:drawActive',
-            mold: 'chao',
-          },
-          {
-            type: 'gk:drawCharacter',
-            charVar: 'azul',
-          },
-          {
-            type: 'gk:drawCharacter',
-            charVar: 'vermelho',
-          },
-        ],
-      },
-      {
-        type: 'gk:onDrawHud',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'gk:lutaDrawHud',
-          },
-        ],
-      },
-      {
-        type: 'gk:start',
-      },
-    ],
+              then: [
+                {
+                  type: 'gk:lutaAttack',
+                  charVar: 'azul',
+                  move: 'agarrao',
+                },
+              ],
+            },
+            {
+              type: 'gk:collideGroup',
+              charVar: 'azul',
+              mold: 'chao',
+            },
+            {
+              type: 'gk:collideGroup',
+              charVar: 'vermelho',
+              mold: 'chao',
+            },
+          ],
+        },
+        {
+          type: 'gk:onDraw',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'gk:drawBackground',
+              color: '#241733',
+              grid: false,
+            },
+            {
+              type: 'gk:drawActive',
+              mold: 'chao',
+            },
+            {
+              type: 'gk:drawCharacter',
+              charVar: 'azul',
+            },
+            {
+              type: 'gk:drawCharacter',
+              charVar: 'vermelho',
+            },
+          ],
+        },
+        {
+          type: 'gk:onDrawHud',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'gk:lutaDrawHud',
+            },
+          ],
+        },
+      ],
+    },
   },
 }
 
@@ -5445,964 +5472,963 @@ export const defesaDoReinoExample: ExtensionExample = {
         extensionId: 'game-2d-advanced',
       },
     ],
-    js: [
-      {
-        type: 'gk:setup',
-        w: {
-          type: 'num',
-          value: 960,
-        },
-        h: {
-          type: 'num',
-          value: 540,
-        },
-        bg: '#26331f',
-        accent: '#ffd166',
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'menu',
-        title: {
-          type: 'str',
-          value: 'Defesa do Reino',
-        },
-        text: {
-          type: 'str',
-          value: 'Clique nos lugares para comprar torres - não deixe os invasores passarem!',
-        },
-        button: {
-          type: 'str',
-          value: 'Defender',
-        },
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'fim',
-        title: {
-          type: 'str',
-          value: 'O reino caiu!',
-        },
-        text: {
-          type: 'str',
-          value: 'Os invasores passaram. Tente de novo!',
-        },
-        button: {
-          type: 'str',
-          value: 'Jogar de novo',
-        },
-      },
-      {
-        type: 'gk:defineMold',
-        name: 'invasor',
-        w: {
-          type: 'num',
-          value: 34,
-        },
-        h: {
-          type: 'num',
-          value: 34,
-        },
-        health: {
-          type: 'num',
-          value: 30,
-        },
-        speed: {
-          type: 'num',
-          value: 0,
-        },
-        damage: {
-          type: 'num',
-          value: 0,
-        },
-        color: '#e0526a',
-        image: '',
-        look: '',
-      },
-      {
-        type: 'gk:defineMold',
-        name: 'torre',
-        w: {
-          type: 'num',
-          value: 40,
-        },
-        h: {
-          type: 'num',
-          value: 40,
-        },
-        health: {
-          type: 'num',
-          value: 1,
-        },
-        speed: {
-          type: 'num',
-          value: 0,
-        },
-        damage: {
-          type: 'num',
-          value: 0,
-        },
-        color: '#4a9eff',
-        image: '',
-        look: '',
-      },
-      {
-        type: 'gk:defineMold',
-        name: 'tiro',
-        w: {
-          type: 'num',
-          value: 10,
-        },
-        h: {
-          type: 'num',
-          value: 10,
-        },
-        health: {
-          type: 'num',
-          value: 1,
-        },
-        speed: {
-          type: 'num',
-          value: 0,
-        },
-        damage: {
-          type: 'num',
-          value: 0,
-        },
-        color: '#ffe066',
-        image: '',
-        look: '',
-      },
-      {
-        type: 'gk:defineEffect',
-        name: 'estouro',
-        count: {
-          type: 'num',
-          value: 12,
-        },
-        color: '#ffd166',
-        size: {
-          type: 'num',
-          value: 4,
-        },
-        life: {
-          type: 'num',
-          value: 0.4,
-        },
-        speed: {
-          type: 'num',
-          value: 160,
-        },
-        gravity: {
-          type: 'num',
-          value: 0,
-        },
-      },
-      {
-        type: 'gk:createCharacter',
-        varName: 'castelo',
-        image: '',
-        w: {
-          type: 'num',
-          value: 44,
-        },
-        h: {
-          type: 'num',
-          value: 64,
-        },
-        speed: {
-          type: 'num',
-          value: 0,
-        },
-        color: '#f4a259',
-      },
-      {
-        type: 'var',
-        name: 'vidas',
-        value: {
-          type: 'num',
-          value: 5,
-        },
-      },
-      {
-        type: 'var',
-        name: 'leva',
-        value: {
-          type: 'num',
-          value: 3,
-        },
-      },
-      {
-        type: 'gk:definePath',
-        name: 'trilha',
-        body: [
-          {
-            type: 'gk:pathPoint',
-            x: {
-              type: 'num',
-              value: -40,
-            },
-            y: {
-              type: 'num',
-              value: 120,
-            },
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 960,
           },
-          {
-            type: 'gk:pathPoint',
-            x: {
-              type: 'num',
-              value: 300,
-            },
-            y: {
-              type: 'num',
-              value: 120,
-            },
+          h: {
+            type: 'num',
+            value: 540,
           },
-          {
-            type: 'gk:pathPoint',
-            x: {
-              type: 'num',
-              value: 300,
-            },
-            y: {
-              type: 'num',
-              value: 400,
-            },
+          bg: '#26331f',
+          accent: '#ffd166',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Defesa do Reino',
           },
-          {
-            type: 'gk:pathPoint',
-            x: {
-              type: 'num',
-              value: 660,
-            },
-            y: {
-              type: 'num',
-              value: 400,
-            },
+          text: {
+            type: 'str',
+            value: 'Clique nos lugares para comprar torres - não deixe os invasores passarem!',
           },
-          {
-            type: 'gk:pathPoint',
-            x: {
-              type: 'num',
-              value: 660,
-            },
-            y: {
-              type: 'num',
-              value: 200,
-            },
+          button: {
+            type: 'str',
+            value: 'Defender',
           },
-          {
-            type: 'gk:pathPoint',
-            x: {
-              type: 'num',
-              value: 1000,
-            },
-            y: {
-              type: 'num',
-              value: 200,
-            },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'O reino caiu!',
           },
-        ],
-      },
-      {
-        type: 'gk:tdSetCoins',
-        n: {
-          type: 'num',
-          value: 100,
+          text: {
+            type: 'str',
+            value: 'Os invasores passaram. Tente de novo!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
+          },
         },
-      },
-      {
-        type: 'gk:tdSlot',
-        x: {
-          type: 'num',
-          value: 300,
+        {
+          type: 'gk:defineMold',
+          name: 'invasor',
+          w: {
+            type: 'num',
+            value: 34,
+          },
+          h: {
+            type: 'num',
+            value: 34,
+          },
+          health: {
+            type: 'num',
+            value: 30,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          damage: {
+            type: 'num',
+            value: 0,
+          },
+          color: '#e0526a',
+          image: '',
+          look: '',
         },
-        y: {
-          type: 'num',
-          value: 220,
+        {
+          type: 'gk:defineMold',
+          name: 'torre',
+          w: {
+            type: 'num',
+            value: 40,
+          },
+          h: {
+            type: 'num',
+            value: 40,
+          },
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          damage: {
+            type: 'num',
+            value: 0,
+          },
+          color: '#4a9eff',
+          image: '',
+          look: '',
         },
-        size: {
-          type: 'num',
-          value: 60,
+        {
+          type: 'gk:defineMold',
+          name: 'tiro',
+          w: {
+            type: 'num',
+            value: 10,
+          },
+          h: {
+            type: 'num',
+            value: 10,
+          },
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          damage: {
+            type: 'num',
+            value: 0,
+          },
+          color: '#ffe066',
+          image: '',
+          look: '',
         },
-      },
-      {
-        type: 'gk:tdSlot',
-        x: {
-          type: 'num',
-          value: 420,
+        {
+          type: 'gk:defineEffect',
+          name: 'estouro',
+          count: {
+            type: 'num',
+            value: 12,
+          },
+          color: '#ffd166',
+          size: {
+            type: 'num',
+            value: 4,
+          },
+          life: {
+            type: 'num',
+            value: 0.4,
+          },
+          speed: {
+            type: 'num',
+            value: 160,
+          },
+          gravity: {
+            type: 'num',
+            value: 0,
+          },
         },
-        y: {
-          type: 'num',
-          value: 300,
+        {
+          type: 'gk:createCharacter',
+          varName: 'castelo',
+          image: '',
+          w: {
+            type: 'num',
+            value: 44,
+          },
+          h: {
+            type: 'num',
+            value: 64,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          color: '#f4a259',
         },
-        size: {
-          type: 'num',
-          value: 60,
+        {
+          type: 'var',
+          name: 'vidas',
+          value: {
+            type: 'num',
+            value: 5,
+          },
         },
-      },
-      {
-        type: 'gk:tdSlot',
-        x: {
-          type: 'num',
-          value: 560,
+        {
+          type: 'var',
+          name: 'leva',
+          value: {
+            type: 'num',
+            value: 3,
+          },
         },
-        y: {
-          type: 'num',
-          value: 320,
-        },
-        size: {
-          type: 'num',
-          value: 60,
-        },
-      },
-      {
-        type: 'gk:tdSlot',
-        x: {
-          type: 'num',
-          value: 660,
-        },
-        y: {
-          type: 'num',
-          value: 120,
-        },
-        size: {
-          type: 'num',
-          value: 60,
-        },
-      },
-      {
-        type: 'gk:tdOnBuy',
-        cost: {
-          type: 'num',
-          value: 50,
-        },
-        xName: 'lugarX',
-        yName: 'lugarY',
-        body: [
-          {
-            type: 'gk:spawnFromMold',
-            mold: 'torre',
-            x: {
-              type: 'binop',
-              op: '-',
-              left: {
-                type: 'var',
-                name: 'lugarX',
-              },
-              right: {
+        {
+          type: 'gk:definePath',
+          name: 'trilha',
+          body: [
+            {
+              type: 'gk:pathPoint',
+              x: {
                 type: 'num',
-                value: 20,
+                value: -40,
               },
-            },
-            y: {
-              type: 'binop',
-              op: '-',
-              left: {
-                type: 'var',
-                name: 'lugarY',
-              },
-              right: {
+              y: {
                 type: 'num',
-                value: 20,
+                value: 120,
               },
             },
-          },
-          {
-            type: 'gk:playEffect',
-            fx: 'click',
-          },
-        ],
-      },
-      {
-        type: 'gk:onEvent',
-        event: 'compra:negada',
-        body: [
-          {
-            type: 'gk:floatText',
-            text: {
-              type: 'str',
-              value: 'sem moedas!',
-            },
-            x: {
-              type: 'gk:mouseX',
-            },
-            y: {
-              type: 'gk:mouseY',
-            },
-            color: '#ff6b6b',
-            size: {
-              type: 'num',
-              value: 20,
-            },
-          },
-        ],
-      },
-      {
-        type: 'gk:onEvent',
-        event: 'invasor:passou',
-        body: [
-          {
-            type: 'assign',
-            name: 'vidas',
-            value: {
-              type: 'binop',
-              op: '-',
-              left: {
-                type: 'var',
-                name: 'vidas',
-              },
-              right: {
+            {
+              type: 'gk:pathPoint',
+              x: {
                 type: 'num',
-                value: 1,
+                value: 300,
               },
-            },
-          },
-          {
-            type: 'gk:cameraShake',
-            intensity: {
-              type: 'num',
-              value: 6,
-            },
-            seconds: {
-              type: 'num',
-              value: 0.3,
-            },
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'binop',
-              op: '<=',
-              left: {
-                type: 'var',
-                name: 'vidas',
-              },
-              right: {
+              y: {
                 type: 'num',
-                value: 0,
+                value: 120,
               },
             },
-            then: [
-              {
-                type: 'gk:endGame',
+            {
+              type: 'gk:pathPoint',
+              x: {
+                type: 'num',
+                value: 300,
               },
-            ],
+              y: {
+                type: 'num',
+                value: 400,
+              },
+            },
+            {
+              type: 'gk:pathPoint',
+              x: {
+                type: 'num',
+                value: 660,
+              },
+              y: {
+                type: 'num',
+                value: 400,
+              },
+            },
+            {
+              type: 'gk:pathPoint',
+              x: {
+                type: 'num',
+                value: 660,
+              },
+              y: {
+                type: 'num',
+                value: 200,
+              },
+            },
+            {
+              type: 'gk:pathPoint',
+              x: {
+                type: 'num',
+                value: 1000,
+              },
+              y: {
+                type: 'num',
+                value: 200,
+              },
+            },
+          ],
+        },
+        {
+          type: 'gk:tdSetCoins',
+          n: {
+            type: 'num',
+            value: 100,
           },
-        ],
-      },
-      {
-        type: 'gk:onEvent',
-        event: 'onda:limpa',
-        body: [
-          {
-            type: 'assign',
+        },
+        {
+          type: 'gk:tdSlot',
+          x: {
+            type: 'num',
+            value: 300,
+          },
+          y: {
+            type: 'num',
+            value: 220,
+          },
+          size: {
+            type: 'num',
+            value: 60,
+          },
+        },
+        {
+          type: 'gk:tdSlot',
+          x: {
+            type: 'num',
+            value: 420,
+          },
+          y: {
+            type: 'num',
+            value: 300,
+          },
+          size: {
+            type: 'num',
+            value: 60,
+          },
+        },
+        {
+          type: 'gk:tdSlot',
+          x: {
+            type: 'num',
+            value: 560,
+          },
+          y: {
+            type: 'num',
+            value: 320,
+          },
+          size: {
+            type: 'num',
+            value: 60,
+          },
+        },
+        {
+          type: 'gk:tdSlot',
+          x: {
+            type: 'num',
+            value: 660,
+          },
+          y: {
+            type: 'num',
+            value: 120,
+          },
+          size: {
+            type: 'num',
+            value: 60,
+          },
+        },
+        {
+          type: 'assign',
+          name: 'vidas',
+          value: {
+            type: 'num',
+            value: 5,
+          },
+        },
+        {
+          type: 'assign',
+          name: 'leva',
+          value: {
+            type: 'num',
+            value: 3,
+          },
+        },
+        {
+          type: 'gk:placeCharacter',
+          charVar: 'castelo',
+          x: {
+            type: 'num',
+            value: 936,
+          },
+          y: {
+            type: 'num',
+            value: 168,
+          },
+        },
+        {
+          type: 'gk:tdWave',
+          path: 'trilha',
+          count: {
+            type: 'var',
             name: 'leva',
-            value: {
-              type: 'binop',
-              op: '+',
-              left: {
+          },
+          mold: 'invasor',
+          gap: {
+            type: 'num',
+            value: 150,
+          },
+          speed: {
+            type: 'num',
+            value: 90,
+          },
+        },
+      ],
+      events: [
+        {
+          type: 'gk:tdOnBuy',
+          cost: {
+            type: 'num',
+            value: 50,
+          },
+          xName: 'lugarX',
+          yName: 'lugarY',
+          body: [
+            {
+              type: 'gk:spawnFromMold',
+              mold: 'torre',
+              x: {
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'var',
+                  name: 'lugarX',
+                },
+                right: {
+                  type: 'num',
+                  value: 20,
+                },
+              },
+              y: {
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'var',
+                  name: 'lugarY',
+                },
+                right: {
+                  type: 'num',
+                  value: 20,
+                },
+              },
+            },
+            {
+              type: 'gk:playEffect',
+              fx: 'click',
+            },
+          ],
+        },
+        {
+          type: 'gk:onEvent',
+          event: 'compra:negada',
+          body: [
+            {
+              type: 'gk:floatText',
+              text: {
+                type: 'str',
+                value: 'sem moedas!',
+              },
+              x: {
+                type: 'gk:mouseX',
+              },
+              y: {
+                type: 'gk:mouseY',
+              },
+              color: '#ff6b6b',
+              size: {
+                type: 'num',
+                value: 20,
+              },
+            },
+          ],
+        },
+        {
+          type: 'gk:onEvent',
+          event: 'invasor:passou',
+          body: [
+            {
+              type: 'assign',
+              name: 'vidas',
+              value: {
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'var',
+                  name: 'vidas',
+                },
+                right: {
+                  type: 'num',
+                  value: 1,
+                },
+              },
+            },
+            {
+              type: 'gk:cameraShake',
+              intensity: {
+                type: 'num',
+                value: 6,
+              },
+              seconds: {
+                type: 'num',
+                value: 0.3,
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '<=',
+                left: {
+                  type: 'var',
+                  name: 'vidas',
+                },
+                right: {
+                  type: 'num',
+                  value: 0,
+                },
+              },
+              then: [
+                {
+                  type: 'gk:endGame',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'gk:onEvent',
+          event: 'onda:limpa',
+          body: [
+            {
+              type: 'assign',
+              name: 'leva',
+              value: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'var',
+                  name: 'leva',
+                },
+                right: {
+                  type: 'num',
+                  value: 2,
+                },
+              },
+            },
+            {
+              type: 'gk:tdAddCoins',
+              n: {
+                type: 'num',
+                value: 25,
+              },
+            },
+            {
+              type: 'gk:tdWave',
+              path: 'trilha',
+              count: {
                 type: 'var',
                 name: 'leva',
               },
-              right: {
+              mold: 'invasor',
+              gap: {
                 type: 'num',
-                value: 2,
+                value: 150,
+              },
+              speed: {
+                type: 'num',
+                value: 90,
               },
             },
-          },
-          {
-            type: 'gk:tdAddCoins',
-            n: {
-              type: 'num',
-              value: 25,
-            },
-          },
-          {
-            type: 'gk:tdWave',
-            path: 'trilha',
-            count: {
-              type: 'var',
-              name: 'leva',
-            },
-            mold: 'invasor',
-            gap: {
-              type: 'num',
-              value: 150,
-            },
-            speed: {
-              type: 'num',
-              value: 90,
-            },
-          },
-        ],
-      },
-      {
-        type: 'gk:onGameStart',
-        body: [
-          {
-            type: 'assign',
-            name: 'vidas',
-            value: {
-              type: 'num',
-              value: 5,
-            },
-          },
-          {
-            type: 'assign',
-            name: 'leva',
-            value: {
-              type: 'num',
-              value: 3,
-            },
-          },
-          {
-            type: 'gk:placeCharacter',
-            charVar: 'castelo',
-            x: {
-              type: 'num',
-              value: 936,
-            },
-            y: {
-              type: 'num',
-              value: 168,
-            },
-          },
-          {
-            type: 'gk:tdWave',
-            path: 'trilha',
-            count: {
-              type: 'var',
-              name: 'leva',
-            },
-            mold: 'invasor',
-            gap: {
-              type: 'num',
-              value: 150,
-            },
-            speed: {
-              type: 'num',
-              value: 90,
-            },
-          },
-        ],
-      },
-      {
-        type: 'gk:onUpdate',
-        dtName: 'dt',
-        body: [
-          {
-            type: 'gk:forEachActive',
-            mold: 'torre',
-            itemName: 'torre',
-            body: [
-              {
-                type: 'if',
-                cond: {
-                  type: 'gk:cooldownReady',
-                  charVar: 'torre',
-                  seconds: {
-                    type: 'num',
-                    value: 0.8,
-                  },
-                },
-                then: [
-                  {
-                    type: 'var',
-                    name: 'alvo',
-                    value: {
-                      type: 'gk:pickActive',
-                      mold: 'invasor',
-                      mode: 'maior',
-                      prop: 'pathProgress',
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'gk:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'gk:forEachActive',
+              mold: 'torre',
+              itemName: 'torre',
+              body: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'gk:cooldownReady',
+                    charVar: 'torre',
+                    seconds: {
+                      type: 'num',
+                      value: 0.8,
                     },
-                    kind: 'const',
                   },
-                  {
-                    type: 'if',
-                    cond: {
+                  then: [
+                    {
                       type: 'var',
                       name: 'alvo',
-                    },
-                    then: [
-                      {
-                        type: 'if',
-                        cond: {
-                          type: 'binop',
-                          op: '<',
-                          left: {
-                            type: 'gk:distanceBetween',
-                            a: 'torre',
-                            b: 'alvo',
-                          },
-                          right: {
-                            type: 'num',
-                            value: 220,
-                          },
-                        },
-                        then: [
-                          {
-                            type: 'gk:spawnNamed',
-                            varName: 'tiro',
-                            mold: 'tiro',
-                            x: {
-                              type: 'gk:charX',
-                              charVar: 'torre',
-                            },
-                            y: {
-                              type: 'gk:charY',
-                              charVar: 'torre',
-                            },
-                          },
-                          {
-                            type: 'gk:launchTowards',
-                            charVar: 'tiro',
-                            targetVar: 'alvo',
-                            speed: {
-                              type: 'num',
-                              value: 420,
-                            },
-                          },
-                        ],
+                      value: {
+                        type: 'gk:pickActive',
+                        mold: 'invasor',
+                        mode: 'maior',
+                        prop: 'pathProgress',
                       },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            type: 'gk:forEachActive',
-            mold: 'tiro',
-            itemName: 'item',
-            body: [
-              {
-                type: 'gk:moveByVelocity',
-                charVar: 'item',
-                dtVar: 'dt',
-              },
-            ],
-          },
-          {
-            type: 'gk:cullOffscreen',
-            mold: 'tiro',
-            margin: {
-              type: 'num',
-              value: 60,
+                      kind: 'const',
+                    },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'var',
+                        name: 'alvo',
+                      },
+                      then: [
+                        {
+                          type: 'if',
+                          cond: {
+                            type: 'binop',
+                            op: '<',
+                            left: {
+                              type: 'gk:distanceBetween',
+                              a: 'torre',
+                              b: 'alvo',
+                            },
+                            right: {
+                              type: 'num',
+                              value: 220,
+                            },
+                          },
+                          then: [
+                            {
+                              type: 'gk:spawnNamed',
+                              varName: 'tiro',
+                              mold: 'tiro',
+                              x: {
+                                type: 'gk:charX',
+                                charVar: 'torre',
+                              },
+                              y: {
+                                type: 'gk:charY',
+                                charVar: 'torre',
+                              },
+                            },
+                            {
+                              type: 'gk:launchTowards',
+                              charVar: 'tiro',
+                              targetVar: 'alvo',
+                              speed: {
+                                type: 'num',
+                                value: 420,
+                              },
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
             },
-          },
-          {
-            type: 'gk:overlapGroups',
-            aName: 't',
-            moldA: 'tiro',
-            bName: 'inv',
-            moldB: 'invasor',
-            body: [
-              {
-                type: 'gk:recycle',
-                charVar: 't',
-              },
-              {
-                type: 'gk:hurt',
-                charVar: 'inv',
-                amount: {
-                  type: 'num',
-                  value: 15,
+            {
+              type: 'gk:forEachActive',
+              mold: 'tiro',
+              itemName: 'item',
+              body: [
+                {
+                  type: 'gk:moveByVelocity',
+                  charVar: 'item',
+                  dtVar: 'dt',
                 },
-                iframes: {
-                  type: 'num',
-                  value: 0,
-                },
+              ],
+            },
+            {
+              type: 'gk:cullOffscreen',
+              mold: 'tiro',
+              margin: {
+                type: 'num',
+                value: 60,
               },
-              {
-                type: 'if',
-                cond: {
-                  type: 'gk:isDead',
+            },
+            {
+              type: 'gk:overlapGroups',
+              aName: 't',
+              moldA: 'tiro',
+              bName: 'inv',
+              moldB: 'invasor',
+              body: [
+                {
+                  type: 'gk:recycle',
+                  charVar: 't',
+                },
+                {
+                  type: 'gk:hurt',
                   charVar: 'inv',
+                  amount: {
+                    type: 'num',
+                    value: 15,
+                  },
+                  iframes: {
+                    type: 'num',
+                    value: 0,
+                  },
                 },
-                then: [
-                  {
-                    type: 'gk:burst',
-                    effect: 'estouro',
-                    x: {
-                      type: 'gk:charX',
-                      charVar: 'inv',
-                    },
-                    y: {
-                      type: 'gk:charY',
-                      charVar: 'inv',
-                    },
-                  },
-                  {
-                    type: 'gk:tdAddCoins',
-                    n: {
-                      type: 'num',
-                      value: 10,
-                    },
-                  },
-                  {
-                    type: 'gk:floatText',
-                    text: {
-                      type: 'str',
-                      value: '+10',
-                    },
-                    x: {
-                      type: 'gk:charX',
-                      charVar: 'inv',
-                    },
-                    y: {
-                      type: 'gk:charY',
-                      charVar: 'inv',
-                    },
-                    color: '#ffd166',
-                    size: {
-                      type: 'num',
-                      value: 20,
-                    },
-                  },
-                  {
-                    type: 'gk:recycle',
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'gk:isDead',
                     charVar: 'inv',
                   },
-                ],
+                  then: [
+                    {
+                      type: 'gk:burst',
+                      effect: 'estouro',
+                      x: {
+                        type: 'gk:charX',
+                        charVar: 'inv',
+                      },
+                      y: {
+                        type: 'gk:charY',
+                        charVar: 'inv',
+                      },
+                    },
+                    {
+                      type: 'gk:tdAddCoins',
+                      n: {
+                        type: 'num',
+                        value: 10,
+                      },
+                    },
+                    {
+                      type: 'gk:floatText',
+                      text: {
+                        type: 'str',
+                        value: '+10',
+                      },
+                      x: {
+                        type: 'gk:charX',
+                        charVar: 'inv',
+                      },
+                      y: {
+                        type: 'gk:charY',
+                        charVar: 'inv',
+                      },
+                      color: '#ffd166',
+                      size: {
+                        type: 'num',
+                        value: 20,
+                      },
+                    },
+                    {
+                      type: 'gk:recycle',
+                      charVar: 'inv',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'gk:onDraw',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'gk:drawBackground',
+              color: '#26331f',
+              grid: true,
+            },
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: {
+                type: 'color',
+                value: '#4a4028',
               },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'gk:onDraw',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'gk:drawBackground',
-            color: '#26331f',
-            grid: true,
-          },
-          {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#4a4028',
             },
-          },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: {
-              type: 'num',
-              value: -40,
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: -40,
+              },
+              y: {
+                type: 'num',
+                value: 102,
+              },
+              w: {
+                type: 'num',
+                value: 340,
+              },
+              h: {
+                type: 'num',
+                value: 36,
+              },
             },
-            y: {
-              type: 'num',
-              value: 102,
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 282,
+              },
+              y: {
+                type: 'num',
+                value: 102,
+              },
+              w: {
+                type: 'num',
+                value: 36,
+              },
+              h: {
+                type: 'num',
+                value: 316,
+              },
             },
-            w: {
-              type: 'num',
-              value: 340,
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 282,
+              },
+              y: {
+                type: 'num',
+                value: 382,
+              },
+              w: {
+                type: 'num',
+                value: 396,
+              },
+              h: {
+                type: 'num',
+                value: 36,
+              },
             },
-            h: {
-              type: 'num',
-              value: 36,
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 642,
+              },
+              y: {
+                type: 'num',
+                value: 182,
+              },
+              w: {
+                type: 'num',
+                value: 36,
+              },
+              h: {
+                type: 'num',
+                value: 236,
+              },
             },
-          },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: {
-              type: 'num',
-              value: 282,
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 642,
+              },
+              y: {
+                type: 'num',
+                value: 182,
+              },
+              w: {
+                type: 'num',
+                value: 358,
+              },
+              h: {
+                type: 'num',
+                value: 36,
+              },
             },
-            y: {
-              type: 'num',
-              value: 102,
+            {
+              type: 'gk:tdDrawSlots',
             },
-            w: {
-              type: 'num',
-              value: 36,
+            {
+              type: 'gk:forEachActive',
+              mold: 'torre',
+              itemName: 'torre',
+              body: [
+                {
+                  type: 'gk:tdDrawRange',
+                  charVar: 'torre',
+                  radius: {
+                    type: 'num',
+                    value: 220,
+                  },
+                },
+              ],
             },
-            h: {
-              type: 'num',
-              value: 316,
+            {
+              type: 'gk:drawActive',
+              mold: 'torre',
             },
-          },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: {
-              type: 'num',
-              value: 282,
+            {
+              type: 'gk:drawActive',
+              mold: 'invasor',
             },
-            y: {
-              type: 'num',
-              value: 382,
+            {
+              type: 'gk:drawActive',
+              mold: 'tiro',
             },
-            w: {
-              type: 'num',
-              value: 396,
+            {
+              type: 'gk:forEachActive',
+              mold: 'invasor',
+              itemName: 'inv',
+              body: [
+                {
+                  type: 'gk:drawHealthBar',
+                  charVar: 'inv',
+                  max: {
+                    type: 'num',
+                    value: 0,
+                  },
+                },
+              ],
             },
-            h: {
-              type: 'num',
-              value: 36,
+            {
+              type: 'gk:drawCharacter',
+              charVar: 'castelo',
             },
-          },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: {
-              type: 'num',
-              value: 642,
+          ],
+        },
+        {
+          type: 'gk:onDrawHud',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'gk:drawHearts',
+              current: {
+                type: 'var',
+                name: 'vidas',
+              },
+              max: {
+                type: 'num',
+                value: 5,
+              },
+              x: {
+                type: 'num',
+                value: 20,
+              },
+              y: {
+                type: 'num',
+                value: 20,
+              },
             },
-            y: {
-              type: 'num',
-              value: 182,
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: {
+                type: 'color',
+                value: '#ffd166',
+              },
             },
-            w: {
-              type: 'num',
-              value: 36,
+            {
+              type: 'canvasFont',
+              ctxVar: 'ctx',
+              size: 24,
+              family: 'sans-serif',
             },
-            h: {
-              type: 'num',
-              value: 236,
-            },
-          },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: {
-              type: 'num',
-              value: 642,
-            },
-            y: {
-              type: 'num',
-              value: 182,
-            },
-            w: {
-              type: 'num',
-              value: 358,
-            },
-            h: {
-              type: 'num',
-              value: 36,
-            },
-          },
-          {
-            type: 'gk:tdDrawSlots',
-          },
-          {
-            type: 'gk:forEachActive',
-            mold: 'torre',
-            itemName: 'torre',
-            body: [
-              {
-                type: 'gk:tdDrawRange',
-                charVar: 'torre',
-                radius: {
-                  type: 'num',
-                  value: 220,
+            {
+              type: 'canvasFillText',
+              ctxVar: 'ctx',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'str',
+                  value: 'Moedas: ',
+                },
+                right: {
+                  type: 'gk:tdCoins',
                 },
               },
-            ],
-          },
-          {
-            type: 'gk:drawActive',
-            mold: 'torre',
-          },
-          {
-            type: 'gk:drawActive',
-            mold: 'invasor',
-          },
-          {
-            type: 'gk:drawActive',
-            mold: 'tiro',
-          },
-          {
-            type: 'gk:forEachActive',
-            mold: 'invasor',
-            itemName: 'inv',
-            body: [
-              {
-                type: 'gk:drawHealthBar',
-                charVar: 'inv',
-                max: {
-                  type: 'num',
-                  value: 0,
-                },
+              x: {
+                type: 'num',
+                value: 20,
               },
-            ],
-          },
-          {
-            type: 'gk:drawCharacter',
-            charVar: 'castelo',
-          },
-        ],
-      },
-      {
-        type: 'gk:onDrawHud',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'gk:drawHearts',
-            current: {
-              type: 'var',
-              name: 'vidas',
-            },
-            max: {
-              type: 'num',
-              value: 5,
-            },
-            x: {
-              type: 'num',
-              value: 20,
-            },
-            y: {
-              type: 'num',
-              value: 20,
-            },
-          },
-          {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#ffd166',
-            },
-          },
-          {
-            type: 'canvasFont',
-            ctxVar: 'ctx',
-            size: 24,
-            family: 'sans-serif',
-          },
-          {
-            type: 'canvasFillText',
-            ctxVar: 'ctx',
-            text: {
-              type: 'binop',
-              op: '+',
-              left: {
-                type: 'str',
-                value: 'Moedas: ',
-              },
-              right: {
-                type: 'gk:tdCoins',
+              y: {
+                type: 'num',
+                value: 70,
               },
             },
-            x: {
-              type: 'num',
-              value: 20,
-            },
-            y: {
-              type: 'num',
-              value: 70,
-            },
-          },
-        ],
-      },
-      {
-        type: 'gk:start',
-      },
-    ],
+          ],
+        },
+      ],
+    },
   },
 }
 
@@ -6425,202 +6451,226 @@ export const reinoAbertoExample: ExtensionExample = {
         extensionId: 'game-2d-advanced',
       },
     ],
-    js: [
-      {
-        type: 'gk:setup',
-        w: { type: 'num', value: 960 },
-        h: { type: 'num', value: 640 },
-        bg: '#1c2b1c',
-        accent: '#ffd166',
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'menu',
-        title: { type: 'str', value: 'Reino Aberto' },
-        text: {
-          type: 'str',
-          value: 'Setas ou WASD andam - espaço conversa - explore os 4 cantos do reino!',
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'gk:setup',
+          w: { type: 'num', value: 960 },
+          h: { type: 'num', value: 640 },
+          bg: '#1c2b1c',
+          accent: '#ffd166',
         },
-        button: { type: 'str', value: 'Explorar' },
-      },
-      {
-        type: 'gk:createCharacter',
-        varName: 'heroi',
-        image: '',
-        w: { type: 'num', value: 48 },
-        h: { type: 'num', value: 48 },
-        speed: { type: 'num', value: 320 },
-        color: '#4a9eff',
-      },
-      { type: 'gk:rpgSetStartMap', map: 'campo' },
-      {
-        type: 'gk:rpgCreateMap',
-        map: 'campo',
-        cols: { type: 'num', value: 15 },
-        rows: { type: 'num', value: 10 },
-        ctxName: 'ctx',
-        body: [{ type: 'gk:drawBackground', color: '#2d5a2d', grid: true }],
-      },
-      {
-        type: 'gk:rpgCreateMap',
-        map: 'praia',
-        cols: { type: 'num', value: 15 },
-        rows: { type: 'num', value: 10 },
-        ctxName: 'ctx',
-        body: [{ type: 'gk:drawBackground', color: '#2b4a63', grid: true }],
-      },
-      {
-        type: 'gk:rpgCreateMap',
-        map: 'bosque',
-        cols: { type: 'num', value: 15 },
-        rows: { type: 'num', value: 10 },
-        ctxName: 'ctx',
-        body: [{ type: 'gk:drawBackground', color: '#173317', grid: true }],
-      },
-      {
-        type: 'gk:rpgCreateMap',
-        map: 'vila',
-        cols: { type: 'num', value: 30 },
-        rows: { type: 'num', value: 20 },
-        ctxName: 'ctx',
-        body: [{ type: 'gk:drawBackground', color: '#4a3c2b', grid: true }],
-      },
-      {
-        type: 'gk:rpgOnEnterMap',
-        map: 'campo',
-        body: [
-          { type: 'gk:rpgConnectEdge', side: 'leste', map: 'praia' },
-          { type: 'gk:rpgConnectEdge', side: 'sul', map: 'bosque' },
-          { type: 'gk:rpgBlockCell', cx: { type: 'num', value: 5 }, cy: { type: 'num', value: 4 } },
-          { type: 'gk:rpgBlockCell', cx: { type: 'num', value: 6 }, cy: { type: 'num', value: 4 } },
-          { type: 'gk:rpgBlockCell', cx: { type: 'num', value: 9 }, cy: { type: 'num', value: 6 } },
-          {
-            type: 'gk:placeCharacter',
-            charVar: 'heroi',
-            x: { type: 'gk:rpgCell', n: { type: 'num', value: 2 } },
-            y: { type: 'gk:rpgCell', n: { type: 'num', value: 2 } },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: { type: 'str', value: 'Reino Aberto' },
+          text: {
+            type: 'str',
+            value: 'Setas ou WASD andam - espaço conversa - explore os 4 cantos do reino!',
           },
-        ],
-      },
-      {
-        type: 'gk:rpgOnEnterMap',
-        map: 'praia',
-        body: [
-          { type: 'gk:rpgConnectEdge', side: 'oeste', map: 'campo' },
-          { type: 'gk:rpgConnectEdge', side: 'sul', map: 'vila' },
-          {
-            type: 'gk:rpgCreateNpc',
-            name: 'pescador',
-            cx: { type: 'num', value: 7 },
-            cy: { type: 'num', value: 3 },
-            image: '',
-            look: '',
-          },
-        ],
-      },
-      {
-        type: 'gk:rpgOnEnterMap',
-        map: 'bosque',
-        body: [
-          { type: 'gk:rpgConnectEdge', side: 'norte', map: 'campo' },
-          { type: 'gk:rpgConnectEdge', side: 'leste', map: 'vila' },
-          { type: 'gk:rpgBlockCell', cx: { type: 'num', value: 4 }, cy: { type: 'num', value: 4 } },
-          { type: 'gk:rpgBlockCell', cx: { type: 'num', value: 4 }, cy: { type: 'num', value: 5 } },
-          {
-            type: 'gk:rpgBlockCell',
-            cx: { type: 'num', value: 10 },
-            cy: { type: 'num', value: 3 },
-          },
-        ],
-      },
-      {
-        type: 'gk:rpgOnEnterMap',
-        map: 'vila',
-        body: [
-          { type: 'gk:rpgConnectEdge', side: 'norte', map: 'praia' },
-          { type: 'gk:rpgConnectEdge', side: 'oeste', map: 'bosque' },
-          {
-            type: 'gk:rpgCreateNpc',
-            name: 'prefeita',
-            cx: { type: 'num', value: 20 },
-            cy: { type: 'num', value: 12 },
-            image: '',
-            look: '',
-          },
-        ],
-      },
-      {
-        type: 'gk:rpgOnTalk',
-        npc: 'pescador',
-        body: [
-          {
-            type: 'gk:rpgSay',
-            text: { type: 'str', value: 'O mar termina aqui, mas o reino continua pro sul!' },
-            speaker: { type: 'str', value: 'Pescador' },
-          },
-        ],
-      },
-      {
-        type: 'gk:rpgOnTalk',
-        npc: 'prefeita',
-        body: [
-          {
-            type: 'gk:rpgSay',
-            text: { type: 'str', value: 'Bem-vindo à vila GRANDE — repare a câmera te seguindo!' },
-            speaker: { type: 'str', value: 'Prefeita' },
-          },
-        ],
-      },
-      {
-        type: 'gk:onUpdate',
-        dtName: 'dt',
-        body: [
-          {
-            type: 'gk:rpgMoveGrid',
-            charVar: 'heroi',
-            cell: { type: 'num', value: 64 },
-            dtVar: 'dt',
-          },
-        ],
-      },
-      {
-        type: 'gk:onGameStart',
-        body: [
-          {
-            type: 'gk:cameraFollow',
-            charVar: 'heroi',
-            w: { type: 'num', value: 960 },
-            h: { type: 'num', value: 640 },
-          },
-        ],
-      },
-      {
-        type: 'gk:onDraw',
-        ctxName: 'ctx',
-        body: [{ type: 'gk:rpgDrawNpcs' }, { type: 'gk:drawCharacter', charVar: 'heroi' }],
-      },
-      {
-        type: 'gk:onDrawHud',
-        ctxName: 'ctx',
-        body: [
-          { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#ffffff' } },
-          { type: 'canvasFont', ctxVar: 'ctx', size: 22, family: 'sans-serif' },
-          {
-            type: 'canvasFillText',
-            ctxVar: 'ctx',
-            text: {
-              type: 'binop',
-              op: '+',
-              left: { type: 'str', value: 'Mapa: ' },
-              right: { type: 'gk:rpgCurrentMap' },
+          button: { type: 'str', value: 'Explorar' },
+        },
+        {
+          type: 'gk:createCharacter',
+          varName: 'heroi',
+          image: '',
+          w: { type: 'num', value: 48 },
+          h: { type: 'num', value: 48 },
+          speed: { type: 'num', value: 320 },
+          color: '#4a9eff',
+        },
+        { type: 'gk:rpgSetStartMap', map: 'campo' },
+        {
+          type: 'gk:rpgCreateMap',
+          map: 'campo',
+          cols: { type: 'num', value: 15 },
+          rows: { type: 'num', value: 10 },
+          ctxName: 'ctx',
+          body: [{ type: 'gk:drawBackground', color: '#2d5a2d', grid: true }],
+        },
+        {
+          type: 'gk:rpgCreateMap',
+          map: 'praia',
+          cols: { type: 'num', value: 15 },
+          rows: { type: 'num', value: 10 },
+          ctxName: 'ctx',
+          body: [{ type: 'gk:drawBackground', color: '#2b4a63', grid: true }],
+        },
+        {
+          type: 'gk:rpgCreateMap',
+          map: 'bosque',
+          cols: { type: 'num', value: 15 },
+          rows: { type: 'num', value: 10 },
+          ctxName: 'ctx',
+          body: [{ type: 'gk:drawBackground', color: '#173317', grid: true }],
+        },
+        {
+          type: 'gk:rpgCreateMap',
+          map: 'vila',
+          cols: { type: 'num', value: 30 },
+          rows: { type: 'num', value: 20 },
+          ctxName: 'ctx',
+          body: [{ type: 'gk:drawBackground', color: '#4a3c2b', grid: true }],
+        },
+        {
+          type: 'gk:cameraFollow',
+          charVar: 'heroi',
+          w: { type: 'num', value: 960 },
+          h: { type: 'num', value: 640 },
+        },
+      ],
+      events: [
+        {
+          type: 'gk:rpgOnEnterMap',
+          map: 'campo',
+          body: [
+            { type: 'gk:rpgConnectEdge', side: 'leste', map: 'praia' },
+            { type: 'gk:rpgConnectEdge', side: 'sul', map: 'bosque' },
+            {
+              type: 'gk:rpgBlockCell',
+              cx: { type: 'num', value: 5 },
+              cy: { type: 'num', value: 4 },
             },
-            x: { type: 'num', value: 20 },
-            y: { type: 'num', value: 36 },
-          },
-        ],
-      },
-      { type: 'gk:start' },
-    ],
+            {
+              type: 'gk:rpgBlockCell',
+              cx: { type: 'num', value: 6 },
+              cy: { type: 'num', value: 4 },
+            },
+            {
+              type: 'gk:rpgBlockCell',
+              cx: { type: 'num', value: 9 },
+              cy: { type: 'num', value: 6 },
+            },
+            {
+              type: 'gk:placeCharacter',
+              charVar: 'heroi',
+              x: { type: 'gk:rpgCell', n: { type: 'num', value: 2 } },
+              y: { type: 'gk:rpgCell', n: { type: 'num', value: 2 } },
+            },
+          ],
+        },
+        {
+          type: 'gk:rpgOnEnterMap',
+          map: 'praia',
+          body: [
+            { type: 'gk:rpgConnectEdge', side: 'oeste', map: 'campo' },
+            { type: 'gk:rpgConnectEdge', side: 'sul', map: 'vila' },
+            {
+              type: 'gk:rpgCreateNpc',
+              name: 'pescador',
+              cx: { type: 'num', value: 7 },
+              cy: { type: 'num', value: 3 },
+              image: '',
+              look: '',
+            },
+          ],
+        },
+        {
+          type: 'gk:rpgOnEnterMap',
+          map: 'bosque',
+          body: [
+            { type: 'gk:rpgConnectEdge', side: 'norte', map: 'campo' },
+            { type: 'gk:rpgConnectEdge', side: 'leste', map: 'vila' },
+            {
+              type: 'gk:rpgBlockCell',
+              cx: { type: 'num', value: 4 },
+              cy: { type: 'num', value: 4 },
+            },
+            {
+              type: 'gk:rpgBlockCell',
+              cx: { type: 'num', value: 4 },
+              cy: { type: 'num', value: 5 },
+            },
+            {
+              type: 'gk:rpgBlockCell',
+              cx: { type: 'num', value: 10 },
+              cy: { type: 'num', value: 3 },
+            },
+          ],
+        },
+        {
+          type: 'gk:rpgOnEnterMap',
+          map: 'vila',
+          body: [
+            { type: 'gk:rpgConnectEdge', side: 'norte', map: 'praia' },
+            { type: 'gk:rpgConnectEdge', side: 'oeste', map: 'bosque' },
+            {
+              type: 'gk:rpgCreateNpc',
+              name: 'prefeita',
+              cx: { type: 'num', value: 20 },
+              cy: { type: 'num', value: 12 },
+              image: '',
+              look: '',
+            },
+          ],
+        },
+        {
+          type: 'gk:rpgOnTalk',
+          npc: 'pescador',
+          body: [
+            {
+              type: 'gk:rpgSay',
+              text: { type: 'str', value: 'O mar termina aqui, mas o reino continua pro sul!' },
+              speaker: { type: 'str', value: 'Pescador' },
+            },
+          ],
+        },
+        {
+          type: 'gk:rpgOnTalk',
+          npc: 'prefeita',
+          body: [
+            {
+              type: 'gk:rpgSay',
+              text: {
+                type: 'str',
+                value: 'Bem-vindo à vila GRANDE — repare a câmera te seguindo!',
+              },
+              speaker: { type: 'str', value: 'Prefeita' },
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'gk:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'gk:rpgMoveGrid',
+              charVar: 'heroi',
+              cell: { type: 'num', value: 64 },
+              dtVar: 'dt',
+            },
+          ],
+        },
+        {
+          type: 'gk:onDraw',
+          ctxName: 'ctx',
+          body: [{ type: 'gk:rpgDrawNpcs' }, { type: 'gk:drawCharacter', charVar: 'heroi' }],
+        },
+        {
+          type: 'gk:onDrawHud',
+          ctxName: 'ctx',
+          body: [
+            { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#ffffff' } },
+            { type: 'canvasFont', ctxVar: 'ctx', size: 22, family: 'sans-serif' },
+            {
+              type: 'canvasFillText',
+              ctxVar: 'ctx',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: { type: 'str', value: 'Mapa: ' },
+                right: { type: 'gk:rpgCurrentMap' },
+              },
+              x: { type: 'num', value: 20 },
+              y: { type: 'num', value: 36 },
+            },
+          ],
+        },
+      ],
+    },
   },
 }
 
@@ -6643,164 +6693,170 @@ export const batalhaEmEquipeExample: ExtensionExample = {
         extensionId: 'game-2d-advanced',
       },
     ],
-    js: [
-      {
-        type: 'gk:setup',
-        w: { type: 'num', value: 960 },
-        h: { type: 'num', value: 640 },
-        bg: '#20263f',
-        accent: '#ffd166',
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'menu',
-        title: { type: 'str', value: 'Batalha em Equipe' },
-        text: {
-          type: 'str',
-          value:
-            'Fale com o Capitao (espaco) e enfrente os bandidos com o seu time! Clique nos personagens para ver a ficha de cada um.',
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'gk:setup',
+          w: { type: 'num', value: 960 },
+          h: { type: 'num', value: 640 },
+          bg: '#20263f',
+          accent: '#ffd166',
         },
-        button: { type: 'str', value: 'Comecar' },
-      },
-      {
-        type: 'gk:createCharacter',
-        varName: 'heroi',
-        image: '',
-        w: { type: 'num', value: 48 },
-        h: { type: 'num', value: 48 },
-        speed: { type: 'num', value: 320 },
-        color: '#4a9eff',
-      },
-      {
-        type: 'gk:rpgBattleStats',
-        hp: { type: 'num', value: 60 },
-        str: { type: 'num', value: 12 },
-        def: { type: 'num', value: 4 },
-      },
-      {
-        type: 'gk:rpgSetSpecial',
-        name: 'Golpe Giratorio',
-        dmg: { type: 'num', value: 22 },
-        cost: { type: 'num', value: 5 },
-      },
-      {
-        type: 'gk:rpgAddAlly',
-        name: 'Curandeira',
-        hp: { type: 'num', value: 40 },
-        str: { type: 'num', value: 8 },
-        def: { type: 'num', value: 2 },
-        color: '#22c55e',
-      },
-      {
-        type: 'gk:rpgTeachMove',
-        who: 'Voce',
-        move: 'Espadada Dupla',
-        dmg: { type: 'num', value: 16 },
-        cost: { type: 'num', value: 3 },
-      },
-      {
-        type: 'gk:rpgTeachMove',
-        who: 'Curandeira',
-        move: 'Flechada',
-        dmg: { type: 'num', value: 14 },
-        cost: { type: 'num', value: 2 },
-      },
-      {
-        type: 'gk:rpgTeachHeal',
-        who: 'Curandeira',
-        move: 'Curar',
-        amount: { type: 'num', value: 18 },
-        cost: { type: 'num', value: 3 },
-      },
-      { type: 'gk:rpgGivePotion', name: 'Pocao', heal: { type: 'num', value: 25 } },
-      { type: 'gk:rpgSetStartMap', map: 'praca' },
-      {
-        type: 'gk:rpgCreateMap',
-        map: 'praca',
-        cols: { type: 'num', value: 15 },
-        rows: { type: 'num', value: 10 },
-        ctxName: 'ctx',
-        body: [{ type: 'gk:drawBackground', color: '#2d3a2d', grid: true }],
-      },
-      {
-        type: 'gk:rpgOnEnterMap',
-        map: 'praca',
-        body: [
-          {
-            type: 'gk:rpgCreateNpc',
-            name: 'Capitao',
-            cx: { type: 'num', value: 4 },
-            cy: { type: 'num', value: 3 },
-            image: '',
-            look: '',
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: { type: 'str', value: 'Batalha em Equipe' },
+          text: {
+            type: 'str',
+            value:
+              'Fale com o Capitao (espaco) e enfrente os bandidos com o seu time! Clique nos personagens para ver a ficha de cada um.',
           },
-          {
-            type: 'gk:placeCharacter',
-            charVar: 'heroi',
-            x: { type: 'gk:rpgCell', n: { type: 'num', value: 2 } },
-            y: { type: 'gk:rpgCell', n: { type: 'num', value: 3 } },
-          },
-        ],
-      },
-      {
-        type: 'gk:rpgOnTalk',
-        npc: 'Capitao',
-        body: [
-          {
-            type: 'gk:rpgSay',
-            text: { type: 'str', value: 'Os bandidos chegaram! Vamos juntos!' },
-            speaker: { type: 'str', value: 'Capitao' },
-          },
-          {
-            type: 'gk:rpgAddFoe',
-            name: 'Bandido',
-            hp: { type: 'num', value: 26 },
-            str: { type: 'num', value: 7 },
-            def: { type: 'num', value: 1 },
-            color: '#ef4444',
-          },
-          {
-            type: 'gk:rpgBattleStart',
-            name: 'Chefe Bandido',
-            hp: { type: 'num', value: 40 },
-            str: { type: 'num', value: 9 },
-            def: { type: 'num', value: 2 },
-          },
-        ],
-      },
-      {
-        type: 'gk:rpgOnBattleEnd',
-        body: [
-          {
-            type: 'if',
-            cond: { type: 'gk:rpgBattleWon' },
-            then: [
-              { type: 'gk:rpgBattleReward', xp: { type: 'num', value: 25 } },
-              { type: 'gk:setState', name: 'vitoria' },
-            ],
-            else: [{ type: 'gk:endGame' }],
-          },
-        ],
-      },
-      {
-        type: 'gk:onUpdate',
-        dtName: 'dt',
-        body: [
-          {
-            type: 'gk:rpgMoveGrid',
-            charVar: 'heroi',
-            cell: { type: 'num', value: 64 },
-            dtVar: 'dt',
-          },
-        ],
-      },
-      {
-        type: 'gk:onDraw',
-        ctxName: 'ctx',
-        body: [{ type: 'gk:rpgDrawNpcs' }, { type: 'gk:drawCharacter', charVar: 'heroi' }],
-      },
-      { type: 'gk:start' },
-    ],
+          button: { type: 'str', value: 'Comecar' },
+        },
+        {
+          type: 'gk:createCharacter',
+          varName: 'heroi',
+          image: '',
+          w: { type: 'num', value: 48 },
+          h: { type: 'num', value: 48 },
+          speed: { type: 'num', value: 320 },
+          color: '#4a9eff',
+        },
+        {
+          type: 'gk:rpgBattleStats',
+          hp: { type: 'num', value: 60 },
+          str: { type: 'num', value: 12 },
+          def: { type: 'num', value: 4 },
+        },
+        {
+          type: 'gk:rpgSetSpecial',
+          name: 'Golpe Giratorio',
+          dmg: { type: 'num', value: 22 },
+          cost: { type: 'num', value: 5 },
+        },
+        {
+          type: 'gk:rpgAddAlly',
+          name: 'Curandeira',
+          hp: { type: 'num', value: 40 },
+          str: { type: 'num', value: 8 },
+          def: { type: 'num', value: 2 },
+          color: '#22c55e',
+        },
+        {
+          type: 'gk:rpgTeachMove',
+          who: 'Voce',
+          move: 'Espadada Dupla',
+          dmg: { type: 'num', value: 16 },
+          cost: { type: 'num', value: 3 },
+        },
+        {
+          type: 'gk:rpgTeachMove',
+          who: 'Curandeira',
+          move: 'Flechada',
+          dmg: { type: 'num', value: 14 },
+          cost: { type: 'num', value: 2 },
+        },
+        {
+          type: 'gk:rpgTeachHeal',
+          who: 'Curandeira',
+          move: 'Curar',
+          amount: { type: 'num', value: 18 },
+          cost: { type: 'num', value: 3 },
+        },
+        { type: 'gk:rpgGivePotion', name: 'Pocao', heal: { type: 'num', value: 25 } },
+        { type: 'gk:rpgSetStartMap', map: 'praca' },
+        {
+          type: 'gk:rpgCreateMap',
+          map: 'praca',
+          cols: { type: 'num', value: 15 },
+          rows: { type: 'num', value: 10 },
+          ctxName: 'ctx',
+          body: [{ type: 'gk:drawBackground', color: '#2d3a2d', grid: true }],
+        },
+      ],
+      events: [
+        {
+          type: 'gk:rpgOnEnterMap',
+          map: 'praca',
+          body: [
+            {
+              type: 'gk:rpgCreateNpc',
+              name: 'Capitao',
+              cx: { type: 'num', value: 4 },
+              cy: { type: 'num', value: 3 },
+              image: '',
+              look: '',
+            },
+            {
+              type: 'gk:placeCharacter',
+              charVar: 'heroi',
+              x: { type: 'gk:rpgCell', n: { type: 'num', value: 2 } },
+              y: { type: 'gk:rpgCell', n: { type: 'num', value: 3 } },
+            },
+          ],
+        },
+        {
+          type: 'gk:rpgOnTalk',
+          npc: 'Capitao',
+          body: [
+            {
+              type: 'gk:rpgSay',
+              text: { type: 'str', value: 'Os bandidos chegaram! Vamos juntos!' },
+              speaker: { type: 'str', value: 'Capitao' },
+            },
+            {
+              type: 'gk:rpgAddFoe',
+              name: 'Bandido',
+              hp: { type: 'num', value: 26 },
+              str: { type: 'num', value: 7 },
+              def: { type: 'num', value: 1 },
+              color: '#ef4444',
+            },
+            {
+              type: 'gk:rpgBattleStart',
+              name: 'Chefe Bandido',
+              hp: { type: 'num', value: 40 },
+              str: { type: 'num', value: 9 },
+              def: { type: 'num', value: 2 },
+            },
+          ],
+        },
+        {
+          type: 'gk:rpgOnBattleEnd',
+          body: [
+            {
+              type: 'if',
+              cond: { type: 'gk:rpgBattleWon' },
+              then: [
+                { type: 'gk:rpgBattleReward', xp: { type: 'num', value: 25 } },
+                { type: 'gk:setState', name: 'vitoria' },
+              ],
+              else: [{ type: 'gk:endGame' }],
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'gk:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'gk:rpgMoveGrid',
+              charVar: 'heroi',
+              cell: { type: 'num', value: 64 },
+              dtVar: 'dt',
+            },
+          ],
+        },
+        {
+          type: 'gk:onDraw',
+          ctxName: 'ctx',
+          body: [{ type: 'gk:rpgDrawNpcs' }, { type: 'gk:drawCharacter', charVar: 'heroi' }],
+        },
+      ],
+    },
   },
 }
 
@@ -6823,48 +6879,53 @@ export const meuPrimeiroJogoExample: ExtensionExample = {
         extensionId: 'game-2d-advanced',
       },
     ],
-    js: [
-      {
-        type: 'gk:setup',
-        w: { type: 'num', value: 800 },
-        h: { type: 'num', value: 600 },
-        bg: '#1e2a3a',
-        accent: '#ffd166',
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'menu',
-        title: { type: 'str', value: 'Meu primeiro jogo' },
-        text: { type: 'str', value: 'Use as SETAS para andar. Clique em Jogar para comecar!' },
-        button: { type: 'str', value: 'Jogar' },
-      },
-      {
-        type: 'gk:createCharacter',
-        varName: 'heroi',
-        image: '',
-        w: { type: 'num', value: 48 },
-        h: { type: 'num', value: 48 },
-        speed: { type: 'num', value: 260 },
-        color: '#4ade80',
-      },
-      {
-        type: 'gk:onUpdate',
-        dtName: 'dt',
-        body: [
-          { type: 'gk:moveWithKeys', charVar: 'heroi', dtVar: 'dt' },
-          { type: 'gk:keepOnScreen', charVar: 'heroi' },
-        ],
-      },
-      {
-        type: 'gk:onDraw',
-        ctxName: 'ctx',
-        body: [
-          { type: 'gk:drawBackground', color: '#1e2a3a', grid: true },
-          { type: 'gk:drawCharacter', charVar: 'heroi' },
-        ],
-      },
-      { type: 'gk:start' },
-    ],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'gk:setup',
+          w: { type: 'num', value: 800 },
+          h: { type: 'num', value: 600 },
+          bg: '#1e2a3a',
+          accent: '#ffd166',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: { type: 'str', value: 'Meu primeiro jogo' },
+          text: { type: 'str', value: 'Use as SETAS para andar. Clique em Jogar para comecar!' },
+          button: { type: 'str', value: 'Jogar' },
+        },
+        {
+          type: 'gk:createCharacter',
+          varName: 'heroi',
+          image: '',
+          w: { type: 'num', value: 48 },
+          h: { type: 'num', value: 48 },
+          speed: { type: 'num', value: 260 },
+          color: '#4ade80',
+        },
+      ],
+      events: [],
+      loops: [
+        {
+          type: 'gk:onUpdate',
+          dtName: 'dt',
+          body: [
+            { type: 'gk:moveWithKeys', charVar: 'heroi', dtVar: 'dt' },
+            { type: 'gk:keepOnScreen', charVar: 'heroi' },
+          ],
+        },
+        {
+          type: 'gk:onDraw',
+          ctxName: 'ctx',
+          body: [
+            { type: 'gk:drawBackground', color: '#1e2a3a', grid: true },
+            { type: 'gk:drawCharacter', charVar: 'heroi' },
+          ],
+        },
+      ],
+    },
   },
 }
 
@@ -6874,7 +6935,7 @@ export const meuPrimeiroJogoExample: ExtensionExample = {
  * decai 1/passo, 0 = vazio) — Snake SEM lista, so com boardGet/boardSet + os lacos
  * do nucleo. Comer a maca aumenta `tamanho`. IR do parser (one-off), asset-free.
  */
-export const cobrinhaExample: ExtensionExample = {
+export const cobrinhaExample: ExtensionExample = withIndependentPeriodicLoops({
   name: 'Cobrinha',
   experience: 'game',
   description:
@@ -6887,591 +6948,365 @@ export const cobrinhaExample: ExtensionExample = {
         extensionId: 'game-2d-advanced',
       },
     ],
-    js: [
-      {
-        type: 'gk:setup',
-        w: {
-          type: 'num',
-          value: 640,
-        },
-        h: {
-          type: 'num',
-          value: 640,
-        },
-        bg: '#0b160b',
-        accent: '#4ade80',
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'menu',
-        title: {
-          type: 'str',
-          value: 'Cobrinha',
-        },
-        text: {
-          type: 'str',
-          value: 'Use as SETAS para virar. Coma as macas e cresca!',
-        },
-        button: {
-          type: 'str',
-          value: 'Jogar',
-        },
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'fim',
-        title: {
-          type: 'str',
-          value: 'Perdeu!',
-        },
-        text: {
-          type: 'str',
-          value: 'A cobra bateu. Tente de novo!',
-        },
-        button: {
-          type: 'str',
-          value: 'Jogar de novo',
-        },
-      },
-      {
-        type: 'var',
-        name: 'cabecaCol',
-        value: {
-          type: 'num',
-          value: 8,
-        },
-      },
-      {
-        type: 'var',
-        name: 'cabecaLin',
-        value: {
-          type: 'num',
-          value: 8,
-        },
-      },
-      {
-        type: 'var',
-        name: 'dirCol',
-        value: {
-          type: 'num',
-          value: 1,
-        },
-      },
-      {
-        type: 'var',
-        name: 'dirLin',
-        value: {
-          type: 'num',
-          value: 0,
-        },
-      },
-      {
-        type: 'var',
-        name: 'tamanho',
-        value: {
-          type: 'num',
-          value: 4,
-        },
-      },
-      {
-        type: 'var',
-        name: 'macaCol',
-        value: {
-          type: 'num',
-          value: 12,
-        },
-      },
-      {
-        type: 'var',
-        name: 'macaLin',
-        value: {
-          type: 'num',
-          value: 8,
-        },
-      },
-      {
-        type: 'gk:onGameStart',
-        body: [
-          {
-            type: 'gk:boardCreate',
-            name: 'cobra',
-            cols: {
-              type: 'num',
-              value: 16,
-            },
-            rows: {
-              type: 'num',
-              value: 16,
-            },
-            empty: {
-              type: 'num',
-              value: 0,
-            },
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 640,
           },
-          {
-            type: 'assign',
-            name: 'cabecaCol',
-            value: {
-              type: 'num',
-              value: 8,
-            },
+          h: {
+            type: 'num',
+            value: 640,
           },
-          {
-            type: 'assign',
-            name: 'cabecaLin',
-            value: {
-              type: 'num',
-              value: 8,
-            },
+          bg: '#0b160b',
+          accent: '#4ade80',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Cobrinha',
           },
-          {
-            type: 'assign',
-            name: 'dirCol',
-            value: {
-              type: 'num',
-              value: 1,
-            },
+          text: {
+            type: 'str',
+            value: 'Use as SETAS para virar. Coma as macas e cresca!',
           },
-          {
-            type: 'assign',
-            name: 'dirLin',
-            value: {
-              type: 'num',
-              value: 0,
-            },
+          button: {
+            type: 'str',
+            value: 'Jogar',
           },
-          {
-            type: 'assign',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'Perdeu!',
+          },
+          text: {
+            type: 'str',
+            value: 'A cobra bateu. Tente de novo!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
+          },
+        },
+        {
+          type: 'var',
+          name: 'cabecaCol',
+          value: {
+            type: 'num',
+            value: 8,
+          },
+        },
+        {
+          type: 'var',
+          name: 'cabecaLin',
+          value: {
+            type: 'num',
+            value: 8,
+          },
+        },
+        {
+          type: 'var',
+          name: 'dirCol',
+          value: {
+            type: 'num',
+            value: 1,
+          },
+        },
+        {
+          type: 'var',
+          name: 'dirLin',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'tamanho',
+          value: {
+            type: 'num',
+            value: 4,
+          },
+        },
+        {
+          type: 'var',
+          name: 'macaCol',
+          value: {
+            type: 'num',
+            value: 12,
+          },
+        },
+        {
+          type: 'var',
+          name: 'macaLin',
+          value: {
+            type: 'num',
+            value: 8,
+          },
+        },
+        {
+          type: 'gk:boardCreate',
+          name: 'cobra',
+          cols: {
+            type: 'num',
+            value: 16,
+          },
+          rows: {
+            type: 'num',
+            value: 16,
+          },
+          empty: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'assign',
+          name: 'cabecaCol',
+          value: {
+            type: 'num',
+            value: 8,
+          },
+        },
+        {
+          type: 'assign',
+          name: 'cabecaLin',
+          value: {
+            type: 'num',
+            value: 8,
+          },
+        },
+        {
+          type: 'assign',
+          name: 'dirCol',
+          value: {
+            type: 'num',
+            value: 1,
+          },
+        },
+        {
+          type: 'assign',
+          name: 'dirLin',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'assign',
+          name: 'tamanho',
+          value: {
+            type: 'num',
+            value: 4,
+          },
+        },
+        {
+          type: 'assign',
+          name: 'macaCol',
+          value: {
+            type: 'num',
+            value: 12,
+          },
+        },
+        {
+          type: 'assign',
+          name: 'macaLin',
+          value: {
+            type: 'num',
+            value: 8,
+          },
+        },
+        {
+          type: 'gk:boardSet',
+          name: 'cobra',
+          value: {
+            type: 'var',
             name: 'tamanho',
-            value: {
-              type: 'num',
-              value: 4,
-            },
           },
-          {
-            type: 'assign',
-            name: 'macaCol',
-            value: {
-              type: 'num',
-              value: 12,
-            },
+          col: {
+            type: 'var',
+            name: 'cabecaCol',
           },
-          {
-            type: 'assign',
-            name: 'macaLin',
-            value: {
-              type: 'num',
-              value: 8,
-            },
+          row: {
+            type: 'var',
+            name: 'cabecaLin',
           },
-          {
-            type: 'gk:boardSet',
-            name: 'cobra',
-            value: {
-              type: 'var',
-              name: 'tamanho',
-            },
-            col: {
-              type: 'var',
-              name: 'cabecaCol',
-            },
-            row: {
-              type: 'var',
-              name: 'cabecaLin',
-            },
-          },
-        ],
-      },
-      {
-        type: 'gk:onUpdate',
-        dtName: 'dt',
-        body: [
-          {
-            type: 'if',
-            cond: {
-              type: 'gk:keyPressed',
-              key: 'arrowleft',
-            },
-            then: [
-              {
-                type: 'assign',
-                name: 'dirCol',
-                value: {
-                  type: 'binop',
-                  op: '-',
-                  left: {
-                    type: 'num',
-                    value: 0,
-                  },
-                  right: {
-                    type: 'num',
-                    value: 1,
-                  },
-                },
+        },
+      ],
+      events: [],
+      loops: [
+        {
+          type: 'gk:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'gk:keyPressed',
+                key: 'arrowleft',
               },
-              {
-                type: 'assign',
-                name: 'dirLin',
-                value: {
-                  type: 'num',
-                  value: 0,
-                },
-              },
-            ],
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'gk:keyPressed',
-              key: 'arrowright',
-            },
-            then: [
-              {
-                type: 'assign',
-                name: 'dirCol',
-                value: {
-                  type: 'num',
-                  value: 1,
-                },
-              },
-              {
-                type: 'assign',
-                name: 'dirLin',
-                value: {
-                  type: 'num',
-                  value: 0,
-                },
-              },
-            ],
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'gk:keyPressed',
-              key: 'arrowup',
-            },
-            then: [
-              {
-                type: 'assign',
-                name: 'dirCol',
-                value: {
-                  type: 'num',
-                  value: 0,
-                },
-              },
-              {
-                type: 'assign',
-                name: 'dirLin',
-                value: {
-                  type: 'binop',
-                  op: '-',
-                  left: {
-                    type: 'num',
-                    value: 0,
-                  },
-                  right: {
-                    type: 'num',
-                    value: 1,
-                  },
-                },
-              },
-            ],
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'gk:keyPressed',
-              key: 'arrowdown',
-            },
-            then: [
-              {
-                type: 'assign',
-                name: 'dirCol',
-                value: {
-                  type: 'num',
-                  value: 0,
-                },
-              },
-              {
-                type: 'assign',
-                name: 'dirLin',
-                value: {
-                  type: 'num',
-                  value: 1,
-                },
-              },
-            ],
-          },
-          {
-            type: 'gk:everySeconds',
-            seconds: {
-              type: 'num',
-              value: 0.16,
-            },
-            body: [
-              {
-                type: 'assign',
-                name: 'cabecaCol',
-                value: {
-                  type: 'binop',
-                  op: '+',
-                  left: {
-                    type: 'var',
-                    name: 'cabecaCol',
-                  },
-                  right: {
-                    type: 'var',
-                    name: 'dirCol',
-                  },
-                },
-              },
-              {
-                type: 'assign',
-                name: 'cabecaLin',
-                value: {
-                  type: 'binop',
-                  op: '+',
-                  left: {
-                    type: 'var',
-                    name: 'cabecaLin',
-                  },
-                  right: {
-                    type: 'var',
-                    name: 'dirLin',
-                  },
-                },
-              },
-              {
-                type: 'if',
-                cond: {
-                  type: 'gk:boardIn',
-                  name: 'cobra',
-                  col: {
-                    type: 'var',
-                    name: 'cabecaCol',
-                  },
-                  row: {
-                    type: 'var',
-                    name: 'cabecaLin',
-                  },
-                },
-                then: [
-                  {
-                    type: 'if',
-                    cond: {
-                      type: 'binop',
-                      op: '>',
-                      left: {
-                        type: 'gk:boardGet',
-                        name: 'cobra',
-                        col: {
-                          type: 'var',
-                          name: 'cabecaCol',
-                        },
-                        row: {
-                          type: 'var',
-                          name: 'cabecaLin',
-                        },
-                      },
-                      right: {
-                        type: 'num',
-                        value: 0,
-                      },
-                    },
-                    then: [
-                      {
-                        type: 'gk:endGame',
-                      },
-                    ],
-                  },
-                  {
-                    type: 'if',
-                    cond: {
-                      type: 'binop',
-                      op: '===',
-                      left: {
-                        type: 'var',
-                        name: 'cabecaCol',
-                      },
-                      right: {
-                        type: 'var',
-                        name: 'macaCol',
-                      },
-                    },
-                    then: [
-                      {
-                        type: 'if',
-                        cond: {
-                          type: 'binop',
-                          op: '===',
-                          left: {
-                            type: 'var',
-                            name: 'cabecaLin',
-                          },
-                          right: {
-                            type: 'var',
-                            name: 'macaLin',
-                          },
-                        },
-                        then: [
-                          {
-                            type: 'assign',
-                            name: 'tamanho',
-                            value: {
-                              type: 'binop',
-                              op: '+',
-                              left: {
-                                type: 'var',
-                                name: 'tamanho',
-                              },
-                              right: {
-                                type: 'num',
-                                value: 1,
-                              },
-                            },
-                          },
-                          {
-                            type: 'assign',
-                            name: 'macaCol',
-                            value: {
-                              type: 'mathUnary',
-                              fn: 'floor',
-                              arg: {
-                                type: 'binop',
-                                op: '*',
-                                left: {
-                                  type: 'randomFloat',
-                                },
-                                right: {
-                                  type: 'num',
-                                  value: 16,
-                                },
-                              },
-                            },
-                          },
-                          {
-                            type: 'assign',
-                            name: 'macaLin',
-                            value: {
-                              type: 'mathUnary',
-                              fn: 'floor',
-                              arg: {
-                                type: 'binop',
-                                op: '*',
-                                left: {
-                                  type: 'randomFloat',
-                                },
-                                right: {
-                                  type: 'num',
-                                  value: 16,
-                                },
-                              },
-                            },
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                  {
-                    type: 'forRange',
-                    varName: 'coluna',
-                    from: {
+              then: [
+                {
+                  type: 'assign',
+                  name: 'dirCol',
+                  value: {
+                    type: 'binop',
+                    op: '-',
+                    left: {
                       type: 'num',
                       value: 0,
                     },
-                    to: {
-                      type: 'num',
-                      value: 16,
-                    },
-                    step: {
+                    right: {
                       type: 'num',
                       value: 1,
                     },
-                    body: [
-                      {
-                        type: 'forRange',
-                        varName: 'linha',
-                        from: {
-                          type: 'num',
-                          value: 0,
-                        },
-                        to: {
-                          type: 'num',
-                          value: 16,
-                        },
-                        step: {
-                          type: 'num',
-                          value: 1,
-                        },
-                        body: [
-                          {
-                            type: 'if',
-                            cond: {
-                              type: 'binop',
-                              op: '>',
-                              left: {
-                                type: 'gk:boardGet',
-                                name: 'cobra',
-                                col: {
-                                  type: 'var',
-                                  name: 'coluna',
-                                },
-                                row: {
-                                  type: 'var',
-                                  name: 'linha',
-                                },
-                              },
-                              right: {
-                                type: 'num',
-                                value: 0,
-                              },
-                            },
-                            then: [
-                              {
-                                type: 'gk:boardSet',
-                                name: 'cobra',
-                                value: {
-                                  type: 'binop',
-                                  op: '-',
-                                  left: {
-                                    type: 'gk:boardGet',
-                                    name: 'cobra',
-                                    col: {
-                                      type: 'var',
-                                      name: 'coluna',
-                                    },
-                                    row: {
-                                      type: 'var',
-                                      name: 'linha',
-                                    },
-                                  },
-                                  right: {
-                                    type: 'num',
-                                    value: 1,
-                                  },
-                                },
-                                col: {
-                                  type: 'var',
-                                  name: 'coluna',
-                                },
-                                row: {
-                                  type: 'var',
-                                  name: 'linha',
-                                },
-                              },
-                            ],
-                          },
-                        ],
-                      },
-                    ],
                   },
-                  {
-                    type: 'gk:boardSet',
-                    name: 'cobra',
-                    value: {
-                      type: 'var',
-                      name: 'tamanho',
+                },
+                {
+                  type: 'assign',
+                  name: 'dirLin',
+                  value: {
+                    type: 'num',
+                    value: 0,
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'gk:keyPressed',
+                key: 'arrowright',
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'dirCol',
+                  value: {
+                    type: 'num',
+                    value: 1,
+                  },
+                },
+                {
+                  type: 'assign',
+                  name: 'dirLin',
+                  value: {
+                    type: 'num',
+                    value: 0,
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'gk:keyPressed',
+                key: 'arrowup',
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'dirCol',
+                  value: {
+                    type: 'num',
+                    value: 0,
+                  },
+                },
+                {
+                  type: 'assign',
+                  name: 'dirLin',
+                  value: {
+                    type: 'binop',
+                    op: '-',
+                    left: {
+                      type: 'num',
+                      value: 0,
                     },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'gk:keyPressed',
+                key: 'arrowdown',
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'dirCol',
+                  value: {
+                    type: 'num',
+                    value: 0,
+                  },
+                },
+                {
+                  type: 'assign',
+                  name: 'dirLin',
+                  value: {
+                    type: 'num',
+                    value: 1,
+                  },
+                },
+              ],
+            },
+            {
+              type: 'gk:everySeconds',
+              seconds: {
+                type: 'num',
+                value: 0.16,
+              },
+              body: [
+                {
+                  type: 'assign',
+                  name: 'cabecaCol',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'var',
+                      name: 'cabecaCol',
+                    },
+                    right: {
+                      type: 'var',
+                      name: 'dirCol',
+                    },
+                  },
+                },
+                {
+                  type: 'assign',
+                  name: 'cabecaLin',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'var',
+                      name: 'cabecaLin',
+                    },
+                    right: {
+                      type: 'var',
+                      name: 'dirLin',
+                    },
+                  },
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'gk:boardIn',
+                    name: 'cobra',
                     col: {
                       type: 'var',
                       name: 'cabecaCol',
@@ -7481,215 +7316,439 @@ export const cobrinhaExample: ExtensionExample = {
                       name: 'cabecaLin',
                     },
                   },
-                ],
-                else: [
-                  {
-                    type: 'gk:endGame',
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'gk:onDraw',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'gk:drawBackground',
-            color: '#0b160b',
-            grid: true,
-          },
-          {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#ef4444',
-            },
-          },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
-            x: {
-              type: 'binop',
-              op: '+',
-              left: {
-                type: 'binop',
-                op: '*',
-                left: {
-                  type: 'var',
-                  name: 'macaCol',
-                },
-                right: {
-                  type: 'num',
-                  value: 40,
-                },
-              },
-              right: {
-                type: 'num',
-                value: 4,
-              },
-            },
-            y: {
-              type: 'binop',
-              op: '+',
-              left: {
-                type: 'binop',
-                op: '*',
-                left: {
-                  type: 'var',
-                  name: 'macaLin',
-                },
-                right: {
-                  type: 'num',
-                  value: 40,
-                },
-              },
-              right: {
-                type: 'num',
-                value: 4,
-              },
-            },
-            w: {
-              type: 'num',
-              value: 32,
-            },
-            h: {
-              type: 'num',
-              value: 32,
-            },
-          },
-          {
-            type: 'forRange',
-            varName: 'coluna',
-            from: {
-              type: 'num',
-              value: 0,
-            },
-            to: {
-              type: 'num',
-              value: 16,
-            },
-            step: {
-              type: 'num',
-              value: 1,
-            },
-            body: [
-              {
-                type: 'forRange',
-                varName: 'linha',
-                from: {
-                  type: 'num',
-                  value: 0,
-                },
-                to: {
-                  type: 'num',
-                  value: 16,
-                },
-                step: {
-                  type: 'num',
-                  value: 1,
-                },
-                body: [
-                  {
-                    type: 'if',
-                    cond: {
-                      type: 'binop',
-                      op: '>',
-                      left: {
-                        type: 'gk:boardGet',
-                        name: 'cobra',
-                        col: {
-                          type: 'var',
-                          name: 'coluna',
+                  then: [
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'binop',
+                        op: '>',
+                        left: {
+                          type: 'gk:boardGet',
+                          name: 'cobra',
+                          col: {
+                            type: 'var',
+                            name: 'cabecaCol',
+                          },
+                          row: {
+                            type: 'var',
+                            name: 'cabecaLin',
+                          },
                         },
-                        row: {
-                          type: 'var',
-                          name: 'linha',
+                        right: {
+                          type: 'num',
+                          value: 0,
                         },
                       },
-                      right: {
+                      then: [
+                        {
+                          type: 'gk:endGame',
+                        },
+                      ],
+                    },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'binop',
+                        op: '===',
+                        left: {
+                          type: 'var',
+                          name: 'cabecaCol',
+                        },
+                        right: {
+                          type: 'var',
+                          name: 'macaCol',
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'if',
+                          cond: {
+                            type: 'binop',
+                            op: '===',
+                            left: {
+                              type: 'var',
+                              name: 'cabecaLin',
+                            },
+                            right: {
+                              type: 'var',
+                              name: 'macaLin',
+                            },
+                          },
+                          then: [
+                            {
+                              type: 'assign',
+                              name: 'tamanho',
+                              value: {
+                                type: 'binop',
+                                op: '+',
+                                left: {
+                                  type: 'var',
+                                  name: 'tamanho',
+                                },
+                                right: {
+                                  type: 'num',
+                                  value: 1,
+                                },
+                              },
+                            },
+                            {
+                              type: 'assign',
+                              name: 'macaCol',
+                              value: {
+                                type: 'mathUnary',
+                                fn: 'floor',
+                                arg: {
+                                  type: 'binop',
+                                  op: '*',
+                                  left: {
+                                    type: 'randomFloat',
+                                  },
+                                  right: {
+                                    type: 'num',
+                                    value: 16,
+                                  },
+                                },
+                              },
+                            },
+                            {
+                              type: 'assign',
+                              name: 'macaLin',
+                              value: {
+                                type: 'mathUnary',
+                                fn: 'floor',
+                                arg: {
+                                  type: 'binop',
+                                  op: '*',
+                                  left: {
+                                    type: 'randomFloat',
+                                  },
+                                  right: {
+                                    type: 'num',
+                                    value: 16,
+                                  },
+                                },
+                              },
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                    {
+                      type: 'forRange',
+                      varName: 'coluna',
+                      from: {
                         type: 'num',
                         value: 0,
                       },
+                      to: {
+                        type: 'num',
+                        value: 16,
+                      },
+                      step: {
+                        type: 'num',
+                        value: 1,
+                      },
+                      body: [
+                        {
+                          type: 'forRange',
+                          varName: 'linha',
+                          from: {
+                            type: 'num',
+                            value: 0,
+                          },
+                          to: {
+                            type: 'num',
+                            value: 16,
+                          },
+                          step: {
+                            type: 'num',
+                            value: 1,
+                          },
+                          body: [
+                            {
+                              type: 'if',
+                              cond: {
+                                type: 'binop',
+                                op: '>',
+                                left: {
+                                  type: 'gk:boardGet',
+                                  name: 'cobra',
+                                  col: {
+                                    type: 'var',
+                                    name: 'coluna',
+                                  },
+                                  row: {
+                                    type: 'var',
+                                    name: 'linha',
+                                  },
+                                },
+                                right: {
+                                  type: 'num',
+                                  value: 0,
+                                },
+                              },
+                              then: [
+                                {
+                                  type: 'gk:boardSet',
+                                  name: 'cobra',
+                                  value: {
+                                    type: 'binop',
+                                    op: '-',
+                                    left: {
+                                      type: 'gk:boardGet',
+                                      name: 'cobra',
+                                      col: {
+                                        type: 'var',
+                                        name: 'coluna',
+                                      },
+                                      row: {
+                                        type: 'var',
+                                        name: 'linha',
+                                      },
+                                    },
+                                    right: {
+                                      type: 'num',
+                                      value: 1,
+                                    },
+                                  },
+                                  col: {
+                                    type: 'var',
+                                    name: 'coluna',
+                                  },
+                                  row: {
+                                    type: 'var',
+                                    name: 'linha',
+                                  },
+                                },
+                              ],
+                            },
+                          ],
+                        },
+                      ],
                     },
-                    then: [
-                      {
-                        type: 'canvasFillStyle',
-                        ctxVar: 'ctx',
-                        color: {
-                          type: 'color',
-                          value: '#4ade80',
-                        },
+                    {
+                      type: 'gk:boardSet',
+                      name: 'cobra',
+                      value: {
+                        type: 'var',
+                        name: 'tamanho',
                       },
-                      {
-                        type: 'canvasFillRect',
-                        ctxVar: 'ctx',
-                        x: {
-                          type: 'binop',
-                          op: '+',
-                          left: {
-                            type: 'binop',
-                            op: '*',
-                            left: {
-                              type: 'var',
-                              name: 'coluna',
-                            },
-                            right: {
-                              type: 'num',
-                              value: 40,
-                            },
-                          },
-                          right: {
-                            type: 'num',
-                            value: 2,
-                          },
-                        },
-                        y: {
-                          type: 'binop',
-                          op: '+',
-                          left: {
-                            type: 'binop',
-                            op: '*',
-                            left: {
-                              type: 'var',
-                              name: 'linha',
-                            },
-                            right: {
-                              type: 'num',
-                              value: 40,
-                            },
-                          },
-                          right: {
-                            type: 'num',
-                            value: 2,
-                          },
-                        },
-                        w: {
-                          type: 'num',
-                          value: 36,
-                        },
-                        h: {
-                          type: 'num',
-                          value: 36,
-                        },
+                      col: {
+                        type: 'var',
+                        name: 'cabecaCol',
                       },
-                    ],
-                  },
-                ],
+                      row: {
+                        type: 'var',
+                        name: 'cabecaLin',
+                      },
+                    },
+                  ],
+                  else: [
+                    {
+                      type: 'gk:endGame',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'gk:onDraw',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'gk:drawBackground',
+              color: '#0b160b',
+              grid: true,
+            },
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: {
+                type: 'color',
+                value: '#ef4444',
               },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'gk:start',
-      },
-    ],
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '*',
+                  left: {
+                    type: 'var',
+                    name: 'macaCol',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 40,
+                  },
+                },
+                right: {
+                  type: 'num',
+                  value: 4,
+                },
+              },
+              y: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '*',
+                  left: {
+                    type: 'var',
+                    name: 'macaLin',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 40,
+                  },
+                },
+                right: {
+                  type: 'num',
+                  value: 4,
+                },
+              },
+              w: {
+                type: 'num',
+                value: 32,
+              },
+              h: {
+                type: 'num',
+                value: 32,
+              },
+            },
+            {
+              type: 'forRange',
+              varName: 'coluna',
+              from: {
+                type: 'num',
+                value: 0,
+              },
+              to: {
+                type: 'num',
+                value: 16,
+              },
+              step: {
+                type: 'num',
+                value: 1,
+              },
+              body: [
+                {
+                  type: 'forRange',
+                  varName: 'linha',
+                  from: {
+                    type: 'num',
+                    value: 0,
+                  },
+                  to: {
+                    type: 'num',
+                    value: 16,
+                  },
+                  step: {
+                    type: 'num',
+                    value: 1,
+                  },
+                  body: [
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'binop',
+                        op: '>',
+                        left: {
+                          type: 'gk:boardGet',
+                          name: 'cobra',
+                          col: {
+                            type: 'var',
+                            name: 'coluna',
+                          },
+                          row: {
+                            type: 'var',
+                            name: 'linha',
+                          },
+                        },
+                        right: {
+                          type: 'num',
+                          value: 0,
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'canvasFillStyle',
+                          ctxVar: 'ctx',
+                          color: {
+                            type: 'color',
+                            value: '#4ade80',
+                          },
+                        },
+                        {
+                          type: 'canvasFillRect',
+                          ctxVar: 'ctx',
+                          x: {
+                            type: 'binop',
+                            op: '+',
+                            left: {
+                              type: 'binop',
+                              op: '*',
+                              left: {
+                                type: 'var',
+                                name: 'coluna',
+                              },
+                              right: {
+                                type: 'num',
+                                value: 40,
+                              },
+                            },
+                            right: {
+                              type: 'num',
+                              value: 2,
+                            },
+                          },
+                          y: {
+                            type: 'binop',
+                            op: '+',
+                            left: {
+                              type: 'binop',
+                              op: '*',
+                              left: {
+                                type: 'var',
+                                name: 'linha',
+                              },
+                              right: {
+                                type: 'num',
+                                value: 40,
+                              },
+                            },
+                            right: {
+                              type: 'num',
+                              value: 2,
+                            },
+                          },
+                          w: {
+                            type: 'num',
+                            value: 36,
+                          },
+                          h: {
+                            type: 'num',
+                            value: 36,
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
   },
-}
+})
 
 /**
  * Exemplo "Quebra-blocos" 🧱 (R29): a vitrine da raquete (paddleBounce). A bola
@@ -7710,441 +7769,439 @@ export const quebraBlocosExample: ExtensionExample = {
         extensionId: 'game-2d-advanced',
       },
     ],
-    js: [
-      {
-        type: 'gk:setup',
-        w: {
-          type: 'num',
-          value: 800,
-        },
-        h: {
-          type: 'num',
-          value: 600,
-        },
-        bg: '#0b1020',
-        accent: '#22d3ee',
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'menu',
-        title: {
-          type: 'str',
-          value: 'Quebra-blocos',
-        },
-        text: {
-          type: 'str',
-          value: 'Mova a raquete com as SETAS. Nao deixe a bola cair!',
-        },
-        button: {
-          type: 'str',
-          value: 'Jogar',
-        },
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'fim',
-        title: {
-          type: 'str',
-          value: 'A bola caiu!',
-        },
-        text: {
-          type: 'str',
-          value: 'Tente de novo!',
-        },
-        button: {
-          type: 'str',
-          value: 'Jogar de novo',
-        },
-      },
-      {
-        type: 'gk:createCharacter',
-        varName: 'raquete',
-        image: '',
-        w: {
-          type: 'num',
-          value: 120,
-        },
-        h: {
-          type: 'num',
-          value: 18,
-        },
-        speed: {
-          type: 'num',
-          value: 520,
-        },
-        color: '#22d3ee',
-      },
-      {
-        type: 'gk:createCharacter',
-        varName: 'bola',
-        image: '',
-        w: {
-          type: 'num',
-          value: 16,
-        },
-        h: {
-          type: 'num',
-          value: 16,
-        },
-        speed: {
-          type: 'num',
-          value: 0,
-        },
-        color: '#fde047',
-      },
-      {
-        type: 'gk:defineMold',
-        name: 'bloco',
-        w: {
-          type: 'num',
-          value: 72,
-        },
-        h: {
-          type: 'num',
-          value: 24,
-        },
-        health: {
-          type: 'num',
-          value: 1,
-        },
-        speed: {
-          type: 'num',
-          value: 0,
-        },
-        damage: {
-          type: 'num',
-          value: 0,
-        },
-        color: '#f472b6',
-        image: '',
-        look: '',
-      },
-      {
-        type: 'gk:onGameStart',
-        body: [
-          {
-            type: 'gk:placeCharacter',
-            charVar: 'raquete',
-            x: {
-              type: 'num',
-              value: 340,
-            },
-            y: {
-              type: 'num',
-              value: 540,
-            },
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 800,
           },
-          {
-            type: 'gk:placeCharacter',
-            charVar: 'bola',
-            x: {
-              type: 'num',
-              value: 392,
-            },
-            y: {
-              type: 'num',
-              value: 300,
-            },
+          h: {
+            type: 'num',
+            value: 600,
           },
-          {
-            type: 'gk:setVelocity',
-            charVar: 'bola',
-            vx: {
-              type: 'num',
-              value: 220,
-            },
-            vy: {
-              type: 'num',
-              value: 260,
-            },
+          bg: '#0b1020',
+          accent: '#22d3ee',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Quebra-blocos',
           },
-          {
-            type: 'forRange',
-            varName: 'linha',
-            from: {
-              type: 'num',
-              value: 0,
-            },
-            to: {
-              type: 'num',
-              value: 3,
-            },
-            step: {
-              type: 'num',
-              value: 1,
-            },
-            body: [
-              {
-                type: 'forRange',
-                varName: 'coluna',
-                from: {
-                  type: 'num',
-                  value: 0,
-                },
-                to: {
-                  type: 'num',
-                  value: 9,
-                },
-                step: {
-                  type: 'num',
-                  value: 1,
-                },
-                body: [
-                  {
-                    type: 'gk:spawnFromMold',
-                    mold: 'bloco',
-                    x: {
-                      type: 'binop',
-                      op: '+',
-                      left: {
-                        type: 'num',
-                        value: 40,
-                      },
-                      right: {
-                        type: 'binop',
-                        op: '*',
-                        left: {
-                          type: 'var',
-                          name: 'coluna',
-                        },
-                        right: {
-                          type: 'num',
-                          value: 84,
-                        },
-                      },
-                    },
-                    y: {
-                      type: 'binop',
-                      op: '+',
-                      left: {
-                        type: 'num',
-                        value: 80,
-                      },
-                      right: {
-                        type: 'binop',
-                        op: '*',
-                        left: {
-                          type: 'var',
-                          name: 'linha',
-                        },
-                        right: {
-                          type: 'num',
-                          value: 36,
-                        },
-                      },
-                    },
-                  },
-                ],
-              },
-            ],
+          text: {
+            type: 'str',
+            value: 'Mova a raquete com as SETAS. Nao deixe a bola cair!',
           },
-        ],
-      },
-      {
-        type: 'gk:onUpdate',
-        dtName: 'dt',
-        body: [
-          {
-            type: 'if',
-            cond: {
-              type: 'gk:keyDown',
-              key: 'arrowleft',
-            },
-            then: [
-              {
-                type: 'gk:setProperty',
-                charVar: 'raquete',
-                prop: 'x',
-                value: {
-                  type: 'binop',
-                  op: '-',
-                  left: {
-                    type: 'gk:propertyOf',
-                    charVar: 'raquete',
-                    prop: 'x',
-                  },
-                  right: {
-                    type: 'binop',
-                    op: '*',
-                    left: {
-                      type: 'num',
-                      value: 520,
-                    },
-                    right: {
-                      type: 'var',
-                      name: 'dt',
-                    },
-                  },
-                },
-              },
-            ],
+          button: {
+            type: 'str',
+            value: 'Jogar',
           },
-          {
-            type: 'if',
-            cond: {
-              type: 'gk:keyDown',
-              key: 'arrowright',
-            },
-            then: [
-              {
-                type: 'gk:setProperty',
-                charVar: 'raquete',
-                prop: 'x',
-                value: {
-                  type: 'binop',
-                  op: '+',
-                  left: {
-                    type: 'gk:propertyOf',
-                    charVar: 'raquete',
-                    prop: 'x',
-                  },
-                  right: {
-                    type: 'binop',
-                    op: '*',
-                    left: {
-                      type: 'num',
-                      value: 520,
-                    },
-                    right: {
-                      type: 'var',
-                      name: 'dt',
-                    },
-                  },
-                },
-              },
-            ],
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'A bola caiu!',
           },
-          {
-            type: 'gk:keepOnScreen',
-            charVar: 'raquete',
+          text: {
+            type: 'str',
+            value: 'Tente de novo!',
           },
-          {
-            type: 'gk:moveByVelocity',
-            charVar: 'bola',
-            dtVar: 'dt',
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
           },
-          {
-            type: 'gk:bounceOnEdges',
-            charVar: 'bola',
+        },
+        {
+          type: 'gk:createCharacter',
+          varName: 'raquete',
+          image: '',
+          w: {
+            type: 'num',
+            value: 120,
           },
-          {
-            type: 'gk:paddleBounce',
-            ballVar: 'bola',
-            paddleVar: 'raquete',
+          h: {
+            type: 'num',
+            value: 18,
           },
-          {
-            type: 'gk:forEachActive',
-            mold: 'bloco',
-            itemName: 'item',
-            body: [
-              {
-                type: 'if',
-                cond: {
-                  type: 'gk:charactersTouch',
-                  aVar: 'bola',
-                  bVar: 'item',
-                },
-                then: [
-                  {
-                    type: 'gk:recycle',
-                    charVar: 'item',
-                  },
-                  {
-                    type: 'gk:setVelocity',
-                    charVar: 'bola',
-                    vx: {
-                      type: 'gk:velocityOf',
-                      charVar: 'bola',
-                      axis: 'x',
-                    },
-                    vy: {
-                      type: 'binop',
-                      op: '-',
-                      left: {
-                        type: 'num',
-                        value: 0,
-                      },
-                      right: {
-                        type: 'gk:velocityOf',
-                        charVar: 'bola',
-                        axis: 'y',
-                      },
-                    },
-                  },
-                ],
-              },
-            ],
+          speed: {
+            type: 'num',
+            value: 520,
           },
-          {
-            type: 'if',
-            cond: {
-              type: 'binop',
-              op: '>',
-              left: {
-                type: 'gk:propertyOf',
-                charVar: 'bola',
-                prop: 'y',
-              },
-              right: {
-                type: 'gk:gameHeight',
-              },
-            },
-            then: [
-              {
-                type: 'gk:endGame',
-              },
-            ],
+          color: '#22d3ee',
+        },
+        {
+          type: 'gk:createCharacter',
+          varName: 'bola',
+          image: '',
+          w: {
+            type: 'num',
+            value: 16,
           },
-          {
-            type: 'if',
-            cond: {
-              type: 'binop',
-              op: '<=',
-              left: {
-                type: 'gk:countActive',
-                mold: 'bloco',
-              },
-              right: {
+          h: {
+            type: 'num',
+            value: 16,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          color: '#fde047',
+        },
+        {
+          type: 'gk:defineMold',
+          name: 'bloco',
+          w: {
+            type: 'num',
+            value: 72,
+          },
+          h: {
+            type: 'num',
+            value: 24,
+          },
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          damage: {
+            type: 'num',
+            value: 0,
+          },
+          color: '#f472b6',
+          image: '',
+          look: '',
+        },
+        {
+          type: 'gk:placeCharacter',
+          charVar: 'raquete',
+          x: {
+            type: 'num',
+            value: 340,
+          },
+          y: {
+            type: 'num',
+            value: 540,
+          },
+        },
+        {
+          type: 'gk:placeCharacter',
+          charVar: 'bola',
+          x: {
+            type: 'num',
+            value: 392,
+          },
+          y: {
+            type: 'num',
+            value: 300,
+          },
+        },
+        {
+          type: 'gk:setVelocity',
+          charVar: 'bola',
+          vx: {
+            type: 'num',
+            value: 220,
+          },
+          vy: {
+            type: 'num',
+            value: 260,
+          },
+        },
+        {
+          type: 'forRange',
+          varName: 'linha',
+          from: {
+            type: 'num',
+            value: 0,
+          },
+          to: {
+            type: 'num',
+            value: 3,
+          },
+          step: {
+            type: 'num',
+            value: 1,
+          },
+          body: [
+            {
+              type: 'forRange',
+              varName: 'coluna',
+              from: {
                 type: 'num',
                 value: 0,
               },
-            },
-            then: [
-              {
-                type: 'gk:setState',
-                name: 'vitoria',
+              to: {
+                type: 'num',
+                value: 9,
               },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'gk:onDraw',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'gk:drawBackground',
-            color: '#0b1020',
-            grid: false,
-          },
-          {
-            type: 'gk:drawActive',
-            mold: 'bloco',
-          },
-          {
-            type: 'gk:drawCharacter',
-            charVar: 'raquete',
-          },
-          {
-            type: 'gk:drawCharacter',
-            charVar: 'bola',
-          },
-        ],
-      },
-      {
-        type: 'gk:start',
-      },
-    ],
+              step: {
+                type: 'num',
+                value: 1,
+              },
+              body: [
+                {
+                  type: 'gk:spawnFromMold',
+                  mold: 'bloco',
+                  x: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'num',
+                      value: 40,
+                    },
+                    right: {
+                      type: 'binop',
+                      op: '*',
+                      left: {
+                        type: 'var',
+                        name: 'coluna',
+                      },
+                      right: {
+                        type: 'num',
+                        value: 84,
+                      },
+                    },
+                  },
+                  y: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'num',
+                      value: 80,
+                    },
+                    right: {
+                      type: 'binop',
+                      op: '*',
+                      left: {
+                        type: 'var',
+                        name: 'linha',
+                      },
+                      right: {
+                        type: 'num',
+                        value: 36,
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      events: [],
+      loops: [
+        {
+          type: 'gk:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'gk:keyDown',
+                key: 'arrowleft',
+              },
+              then: [
+                {
+                  type: 'gk:setProperty',
+                  charVar: 'raquete',
+                  prop: 'x',
+                  value: {
+                    type: 'binop',
+                    op: '-',
+                    left: {
+                      type: 'gk:propertyOf',
+                      charVar: 'raquete',
+                      prop: 'x',
+                    },
+                    right: {
+                      type: 'binop',
+                      op: '*',
+                      left: {
+                        type: 'num',
+                        value: 520,
+                      },
+                      right: {
+                        type: 'var',
+                        name: 'dt',
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'gk:keyDown',
+                key: 'arrowright',
+              },
+              then: [
+                {
+                  type: 'gk:setProperty',
+                  charVar: 'raquete',
+                  prop: 'x',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'gk:propertyOf',
+                      charVar: 'raquete',
+                      prop: 'x',
+                    },
+                    right: {
+                      type: 'binop',
+                      op: '*',
+                      left: {
+                        type: 'num',
+                        value: 520,
+                      },
+                      right: {
+                        type: 'var',
+                        name: 'dt',
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'gk:keepOnScreen',
+              charVar: 'raquete',
+            },
+            {
+              type: 'gk:moveByVelocity',
+              charVar: 'bola',
+              dtVar: 'dt',
+            },
+            {
+              type: 'gk:bounceOnEdges',
+              charVar: 'bola',
+            },
+            {
+              type: 'gk:paddleBounce',
+              ballVar: 'bola',
+              paddleVar: 'raquete',
+            },
+            {
+              type: 'gk:forEachActive',
+              mold: 'bloco',
+              itemName: 'item',
+              body: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'gk:charactersTouch',
+                    aVar: 'bola',
+                    bVar: 'item',
+                  },
+                  then: [
+                    {
+                      type: 'gk:recycle',
+                      charVar: 'item',
+                    },
+                    {
+                      type: 'gk:setVelocity',
+                      charVar: 'bola',
+                      vx: {
+                        type: 'gk:velocityOf',
+                        charVar: 'bola',
+                        axis: 'x',
+                      },
+                      vy: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'num',
+                          value: 0,
+                        },
+                        right: {
+                          type: 'gk:velocityOf',
+                          charVar: 'bola',
+                          axis: 'y',
+                        },
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '>',
+                left: {
+                  type: 'gk:propertyOf',
+                  charVar: 'bola',
+                  prop: 'y',
+                },
+                right: {
+                  type: 'gk:gameHeight',
+                },
+              },
+              then: [
+                {
+                  type: 'gk:endGame',
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '<=',
+                left: {
+                  type: 'gk:countActive',
+                  mold: 'bloco',
+                },
+                right: {
+                  type: 'num',
+                  value: 0,
+                },
+              },
+              then: [
+                {
+                  type: 'gk:setState',
+                  name: 'vitoria',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'gk:onDraw',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'gk:drawBackground',
+              color: '#0b1020',
+              grid: false,
+            },
+            {
+              type: 'gk:drawActive',
+              mold: 'bloco',
+            },
+            {
+              type: 'gk:drawCharacter',
+              charVar: 'raquete',
+            },
+            {
+              type: 'gk:drawCharacter',
+              charVar: 'bola',
+            },
+          ],
+        },
+      ],
+    },
   },
 }
 
@@ -8167,341 +8224,345 @@ export const oChefaoExample: ExtensionExample = {
         extensionId: 'game-2d-advanced',
       },
     ],
-    js: [
-      {
-        type: 'gk:setup',
-        w: {
-          type: 'num',
-          value: 960,
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 960,
+          },
+          h: {
+            type: 'num',
+            value: 640,
+          },
+          bg: '#1a1420',
+          accent: '#ff8c42',
         },
-        h: {
-          type: 'num',
-          value: 640,
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'O Chefao',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Fale com o Guardiao (espaco) e enfrente o Dragao! Quando ele fica com metade da vida, vira fera.',
+          },
+          button: {
+            type: 'str',
+            value: 'Comecar',
+          },
         },
-        bg: '#1a1420',
-        accent: '#ff8c42',
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'menu',
-        title: {
-          type: 'str',
-          value: 'O Chefao',
+        {
+          type: 'gk:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Voce venceu o Dragao!',
+          },
+          text: {
+            type: 'str',
+            value: 'O reino esta salvo.',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
+          },
         },
-        text: {
-          type: 'str',
-          value:
-            'Fale com o Guardiao (espaco) e enfrente o Dragao! Quando ele fica com metade da vida, vira fera.',
+        {
+          type: 'gk:createCharacter',
+          varName: 'heroi',
+          image: '',
+          w: {
+            type: 'num',
+            value: 48,
+          },
+          h: {
+            type: 'num',
+            value: 48,
+          },
+          speed: {
+            type: 'num',
+            value: 320,
+          },
+          color: '#4a9eff',
         },
-        button: {
-          type: 'str',
-          value: 'Comecar',
+        {
+          type: 'gk:rpgBattleStats',
+          hp: {
+            type: 'num',
+            value: 80,
+          },
+          str: {
+            type: 'num',
+            value: 14,
+          },
+          def: {
+            type: 'num',
+            value: 4,
+          },
         },
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'vitoria',
-        title: {
-          type: 'str',
-          value: 'Voce venceu o Dragao!',
+        {
+          type: 'gk:rpgTeachMove',
+          who: 'Voce',
+          move: 'Investida',
+          dmg: {
+            type: 'num',
+            value: 20,
+          },
+          cost: {
+            type: 'num',
+            value: 3,
+          },
         },
-        text: {
-          type: 'str',
-          value: 'O reino esta salvo.',
+        {
+          type: 'gk:rpgTeachHeal',
+          who: 'Voce',
+          move: 'Curar',
+          amount: {
+            type: 'num',
+            value: 22,
+          },
+          cost: {
+            type: 'num',
+            value: 4,
+          },
         },
-        button: {
-          type: 'str',
-          value: 'Jogar de novo',
+        {
+          type: 'gk:rpgTeachMove',
+          who: 'Dragao',
+          move: 'Garra',
+          dmg: {
+            type: 'num',
+            value: 16,
+          },
+          cost: {
+            type: 'num',
+            value: 0,
+          },
         },
-      },
-      {
-        type: 'gk:createCharacter',
-        varName: 'heroi',
-        image: '',
-        w: {
-          type: 'num',
-          value: 48,
+        {
+          type: 'gk:rpgTeachMove',
+          who: 'Dragao',
+          move: 'Baforada',
+          dmg: {
+            type: 'num',
+            value: 30,
+          },
+          cost: {
+            type: 'num',
+            value: 0,
+          },
         },
-        h: {
-          type: 'num',
-          value: 48,
+        { type: 'gk:rpgSetStartMap', map: 'caverna' },
+        {
+          type: 'gk:rpgCreateMap',
+          map: 'caverna',
+          cols: { type: 'num', value: 15 },
+          rows: { type: 'num', value: 10 },
+          ctxName: 'ctx',
+          body: [{ type: 'gk:drawBackground', color: '#241a2e', grid: true }],
         },
-        speed: {
-          type: 'num',
-          value: 320,
-        },
-        color: '#4a9eff',
-      },
-      {
-        type: 'gk:rpgBattleStats',
-        hp: {
-          type: 'num',
-          value: 80,
-        },
-        str: {
-          type: 'num',
-          value: 14,
-        },
-        def: {
-          type: 'num',
-          value: 4,
-        },
-      },
-      {
-        type: 'gk:rpgTeachMove',
-        who: 'Voce',
-        move: 'Investida',
-        dmg: {
-          type: 'num',
-          value: 20,
-        },
-        cost: {
-          type: 'num',
-          value: 3,
-        },
-      },
-      {
-        type: 'gk:rpgTeachHeal',
-        who: 'Voce',
-        move: 'Curar',
-        amount: {
-          type: 'num',
-          value: 22,
-        },
-        cost: {
-          type: 'num',
-          value: 4,
-        },
-      },
-      {
-        type: 'gk:rpgTeachMove',
-        who: 'Dragao',
-        move: 'Garra',
-        dmg: {
-          type: 'num',
-          value: 16,
-        },
-        cost: {
-          type: 'num',
-          value: 0,
-        },
-      },
-      {
-        type: 'gk:rpgTeachMove',
-        who: 'Dragao',
-        move: 'Baforada',
-        dmg: {
-          type: 'num',
-          value: 30,
-        },
-        cost: {
-          type: 'num',
-          value: 0,
-        },
-      },
-      {
-        type: 'gk:rpgOnFoeTurn',
-        name: 'Dragao',
-        body: [
-          {
-            type: 'if',
-            cond: {
-              type: 'binop',
-              op: '<',
-              left: {
-                type: 'gk:battlerLife',
-                name: 'Dragao',
-              },
-              right: {
+      ],
+      events: [
+        {
+          type: 'gk:rpgOnFoeTurn',
+          name: 'Dragao',
+          body: [
+            {
+              type: 'if',
+              cond: {
                 type: 'binop',
-                op: '/',
+                op: '<',
                 left: {
-                  type: 'gk:battlerMaxLife',
+                  type: 'gk:battlerLife',
                   name: 'Dragao',
                 },
                 right: {
+                  type: 'binop',
+                  op: '/',
+                  left: {
+                    type: 'gk:battlerMaxLife',
+                    name: 'Dragao',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 2,
+                  },
+                },
+              },
+              then: [
+                {
+                  type: 'gk:rpgFoeHitAll',
+                  name: 'Dragao',
+                  dmg: {
+                    type: 'num',
+                    value: 22,
+                  },
+                },
+              ],
+              else: [
+                {
+                  type: 'gk:rpgFoeUse',
+                  name: 'Dragao',
+                  move: 'Garra',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'gk:rpgOnEnterMap',
+          map: 'caverna',
+          body: [
+            {
+              type: 'gk:rpgCreateNpc',
+              name: 'Guardiao',
+              cx: {
+                type: 'num',
+                value: 4,
+              },
+              cy: {
+                type: 'num',
+                value: 3,
+              },
+              image: '',
+              look: '',
+            },
+            {
+              type: 'gk:placeCharacter',
+              charVar: 'heroi',
+              x: {
+                type: 'gk:rpgCell',
+                n: {
                   type: 'num',
                   value: 2,
                 },
               },
-            },
-            then: [
-              {
-                type: 'gk:rpgFoeHitAll',
-                name: 'Dragao',
-                dmg: {
+              y: {
+                type: 'gk:rpgCell',
+                n: {
                   type: 'num',
-                  value: 22,
+                  value: 3,
                 },
               },
-            ],
-            else: [
-              {
-                type: 'gk:rpgFoeUse',
-                name: 'Dragao',
-                move: 'Garra',
+            },
+          ],
+        },
+        {
+          type: 'gk:rpgOnTalk',
+          npc: 'Guardiao',
+          body: [
+            {
+              type: 'gk:rpgSay',
+              text: {
+                type: 'str',
+                value: 'O Dragao acordou! Enfrente-o, heroi!',
               },
-            ],
-          },
-        ],
-      },
-      { type: 'gk:rpgSetStartMap', map: 'caverna' },
-      {
-        type: 'gk:rpgCreateMap',
-        map: 'caverna',
-        cols: { type: 'num', value: 15 },
-        rows: { type: 'num', value: 10 },
-        ctxName: 'ctx',
-        body: [{ type: 'gk:drawBackground', color: '#241a2e', grid: true }],
-      },
-      {
-        type: 'gk:rpgOnEnterMap',
-        map: 'caverna',
-        body: [
-          {
-            type: 'gk:rpgCreateNpc',
-            name: 'Guardiao',
-            cx: {
-              type: 'num',
-              value: 4,
+              speaker: {
+                type: 'str',
+                value: 'Guardiao',
+              },
             },
-            cy: {
-              type: 'num',
-              value: 3,
-            },
-            image: '',
-            look: '',
-          },
-          {
-            type: 'gk:placeCharacter',
-            charVar: 'heroi',
-            x: {
-              type: 'gk:rpgCell',
-              n: {
+            {
+              type: 'gk:rpgAddBoss',
+              name: 'Dragao',
+              hp: {
                 type: 'num',
-                value: 2,
+                value: 160,
               },
-            },
-            y: {
-              type: 'gk:rpgCell',
-              n: {
+              str: {
+                type: 'num',
+                value: 9,
+              },
+              def: {
                 type: 'num',
                 value: 3,
               },
             },
-          },
-        ],
-      },
-      {
-        type: 'gk:rpgOnTalk',
-        npc: 'Guardiao',
-        body: [
-          {
-            type: 'gk:rpgSay',
-            text: {
-              type: 'str',
-              value: 'O Dragao acordou! Enfrente-o, heroi!',
+            {
+              type: 'gk:rpgBattleStart',
+              name: 'Lacaio',
+              hp: {
+                type: 'num',
+                value: 24,
+              },
+              str: {
+                type: 'num',
+                value: 5,
+              },
+              def: {
+                type: 'num',
+                value: 0,
+              },
             },
-            speaker: {
-              type: 'str',
-              value: 'Guardiao',
-            },
-          },
-          {
-            type: 'gk:rpgAddBoss',
-            name: 'Dragao',
-            hp: {
-              type: 'num',
-              value: 160,
-            },
-            str: {
-              type: 'num',
-              value: 9,
-            },
-            def: {
-              type: 'num',
-              value: 3,
-            },
-          },
-          {
-            type: 'gk:rpgBattleStart',
-            name: 'Lacaio',
-            hp: {
-              type: 'num',
-              value: 24,
-            },
-            str: {
-              type: 'num',
-              value: 5,
-            },
-            def: {
-              type: 'num',
-              value: 0,
-            },
-          },
-        ],
-      },
-      {
-        type: 'gk:rpgOnBattleEnd',
-        body: [
-          {
-            type: 'if',
-            cond: {
-              type: 'gk:rpgBattleWon',
-            },
-            then: [
-              {
-                type: 'gk:rpgBattleReward',
-                xp: {
-                  type: 'num',
-                  value: 40,
+          ],
+        },
+        {
+          type: 'gk:rpgOnBattleEnd',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'gk:rpgBattleWon',
+              },
+              then: [
+                {
+                  type: 'gk:rpgBattleReward',
+                  xp: {
+                    type: 'num',
+                    value: 40,
+                  },
                 },
-              },
-              {
-                type: 'gk:setState',
-                name: 'vitoria',
-              },
-            ],
-            else: [
-              {
-                type: 'gk:endGame',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'gk:onUpdate',
-        dtName: 'dt',
-        body: [
-          {
-            type: 'gk:rpgMoveGrid',
-            charVar: 'heroi',
-            cell: {
-              type: 'num',
-              value: 64,
+                {
+                  type: 'gk:setState',
+                  name: 'vitoria',
+                },
+              ],
+              else: [
+                {
+                  type: 'gk:endGame',
+                },
+              ],
             },
-            dtVar: 'dt',
-          },
-        ],
-      },
-      {
-        type: 'gk:onDraw',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'gk:rpgDrawNpcs',
-          },
-          {
-            type: 'gk:drawCharacter',
-            charVar: 'heroi',
-          },
-        ],
-      },
-      {
-        type: 'gk:start',
-      },
-    ],
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'gk:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'gk:rpgMoveGrid',
+              charVar: 'heroi',
+              cell: {
+                type: 'num',
+                value: 64,
+              },
+              dtVar: 'dt',
+            },
+          ],
+        },
+        {
+          type: 'gk:onDraw',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'gk:rpgDrawNpcs',
+            },
+            {
+              type: 'gk:drawCharacter',
+              charVar: 'heroi',
+            },
+          ],
+        },
+      ],
+    },
   },
 }
 
@@ -8524,414 +8585,413 @@ export const corridaTabuleiroExample: ExtensionExample = {
         extensionId: 'game-2d-advanced',
       },
     ],
-    js: [
-      {
-        type: 'gk:setup',
-        w: {
-          type: 'num',
-          value: 900,
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 900,
+          },
+          h: {
+            type: 'num',
+            value: 600,
+          },
+          bg: '#1b3a2a',
+          accent: '#ffd166',
         },
-        h: {
-          type: 'num',
-          value: 600,
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Corrida de Tabuleiro',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Clique para rolar o dado e andar as casas. Dois peoes: chegue ao fim e pegue os pontos da casa premiada!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar',
+          },
         },
-        bg: '#1b3a2a',
-        accent: '#ffd166',
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'menu',
-        title: {
-          type: 'str',
-          value: 'Corrida de Tabuleiro',
+        {
+          type: 'gk:createCharacter',
+          varName: 'azul',
+          image: '',
+          w: {
+            type: 'num',
+            value: 36,
+          },
+          h: {
+            type: 'num',
+            value: 36,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          color: '#4a9eff',
         },
-        text: {
-          type: 'str',
-          value:
-            'Clique para rolar o dado e andar as casas. Dois peoes: chegue ao fim e pegue os pontos da casa premiada!',
+        {
+          type: 'gk:createCharacter',
+          varName: 'vermelho',
+          image: '',
+          w: {
+            type: 'num',
+            value: 36,
+          },
+          h: {
+            type: 'num',
+            value: 36,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          color: '#ef4444',
         },
-        button: {
-          type: 'str',
-          value: 'Jogar',
+        {
+          type: 'var',
+          name: 'pontosAzul',
+          value: {
+            type: 'num',
+            value: 0,
+          },
         },
-      },
-      {
-        type: 'gk:createCharacter',
-        varName: 'azul',
-        image: '',
-        w: {
-          type: 'num',
-          value: 36,
+        {
+          type: 'var',
+          name: 'pontosVermelho',
+          value: {
+            type: 'num',
+            value: 0,
+          },
         },
-        h: {
-          type: 'num',
-          value: 36,
-        },
-        speed: {
-          type: 'num',
-          value: 0,
-        },
-        color: '#4a9eff',
-      },
-      {
-        type: 'gk:createCharacter',
-        varName: 'vermelho',
-        image: '',
-        w: {
-          type: 'num',
-          value: 36,
-        },
-        h: {
-          type: 'num',
-          value: 36,
-        },
-        speed: {
-          type: 'num',
-          value: 0,
-        },
-        color: '#ef4444',
-      },
-      {
-        type: 'var',
-        name: 'pontosAzul',
-        value: {
-          type: 'num',
-          value: 0,
-        },
-      },
-      {
-        type: 'var',
-        name: 'pontosVermelho',
-        value: {
-          type: 'num',
-          value: 0,
-        },
-      },
-      {
-        type: 'gk:definePath',
-        name: 'trilha',
-        body: [
-          {
-            type: 'gk:pathPoint',
-            x: {
-              type: 'num',
-              value: 120,
-            },
-            y: {
-              type: 'num',
-              value: 480,
-            },
-          },
-          {
-            type: 'gk:pathPoint',
-            x: {
-              type: 'num',
-              value: 260,
-            },
-            y: {
-              type: 'num',
-              value: 480,
-            },
-          },
-          {
-            type: 'gk:pathPoint',
-            x: {
-              type: 'num',
-              value: 400,
-            },
-            y: {
-              type: 'num',
-              value: 480,
-            },
-          },
-          {
-            type: 'gk:pathPoint',
-            x: {
-              type: 'num',
-              value: 540,
-            },
-            y: {
-              type: 'num',
-              value: 420,
-            },
-          },
-          {
-            type: 'gk:pathPoint',
-            x: {
-              type: 'num',
-              value: 680,
-            },
-            y: {
-              type: 'num',
-              value: 340,
-            },
-          },
-          {
-            type: 'gk:pathPoint',
-            x: {
-              type: 'num',
-              value: 680,
-            },
-            y: {
-              type: 'num',
-              value: 200,
-            },
-          },
-          {
-            type: 'gk:pathPoint',
-            x: {
-              type: 'num',
-              value: 520,
-            },
-            y: {
-              type: 'num',
-              value: 150,
-            },
-          },
-          {
-            type: 'gk:pathPoint',
-            x: {
-              type: 'num',
-              value: 380,
-            },
-            y: {
-              type: 'num',
-              value: 150,
-            },
-          },
-        ],
-      },
-      {
-        type: 'gk:onGameStart',
-        body: [
-          {
-            type: 'gk:playersSetup',
-            n: {
-              type: 'num',
-              value: 2,
-            },
-          },
-          {
-            type: 'assign',
-            name: 'pontosAzul',
-            value: {
-              type: 'num',
-              value: 0,
-            },
-          },
-          {
-            type: 'assign',
-            name: 'pontosVermelho',
-            value: {
-              type: 'num',
-              value: 0,
-            },
-          },
-          {
-            type: 'gk:placeCharacter',
-            charVar: 'azul',
-            x: {
-              type: 'num',
-              value: 120,
-            },
-            y: {
-              type: 'num',
-              value: 480,
-            },
-          },
-          {
-            type: 'gk:placeCharacter',
-            charVar: 'vermelho',
-            x: {
-              type: 'num',
-              value: 120,
-            },
-            y: {
-              type: 'num',
-              value: 480,
-            },
-          },
-        ],
-      },
-      {
-        type: 'gk:onTurnChange',
-        body: [
-          {
-            type: 'gk:emit',
-            event: 'vez:mudou',
-          },
-        ],
-      },
-      {
-        type: 'gk:onLandSpace',
-        body: [
-          {
-            type: 'if',
-            cond: {
-              type: 'binop',
-              op: '===',
-              left: {
-                type: 'gk:currentPlayer',
-              },
-              right: {
+        {
+          type: 'gk:definePath',
+          name: 'trilha',
+          body: [
+            {
+              type: 'gk:pathPoint',
+              x: {
                 type: 'num',
-                value: 1,
+                value: 120,
+              },
+              y: {
+                type: 'num',
+                value: 480,
               },
             },
-            then: [
-              {
-                type: 'if',
-                cond: {
-                  type: 'binop',
-                  op: '===',
-                  left: {
-                    type: 'gk:spaceOf',
-                    who: 'azul',
-                  },
-                  right: {
-                    type: 'num',
-                    value: 7,
-                  },
+            {
+              type: 'gk:pathPoint',
+              x: {
+                type: 'num',
+                value: 260,
+              },
+              y: {
+                type: 'num',
+                value: 480,
+              },
+            },
+            {
+              type: 'gk:pathPoint',
+              x: {
+                type: 'num',
+                value: 400,
+              },
+              y: {
+                type: 'num',
+                value: 480,
+              },
+            },
+            {
+              type: 'gk:pathPoint',
+              x: {
+                type: 'num',
+                value: 540,
+              },
+              y: {
+                type: 'num',
+                value: 420,
+              },
+            },
+            {
+              type: 'gk:pathPoint',
+              x: {
+                type: 'num',
+                value: 680,
+              },
+              y: {
+                type: 'num',
+                value: 340,
+              },
+            },
+            {
+              type: 'gk:pathPoint',
+              x: {
+                type: 'num',
+                value: 680,
+              },
+              y: {
+                type: 'num',
+                value: 200,
+              },
+            },
+            {
+              type: 'gk:pathPoint',
+              x: {
+                type: 'num',
+                value: 520,
+              },
+              y: {
+                type: 'num',
+                value: 150,
+              },
+            },
+            {
+              type: 'gk:pathPoint',
+              x: {
+                type: 'num',
+                value: 380,
+              },
+              y: {
+                type: 'num',
+                value: 150,
+              },
+            },
+          ],
+        },
+        {
+          type: 'gk:playersSetup',
+          n: {
+            type: 'num',
+            value: 2,
+          },
+        },
+        {
+          type: 'assign',
+          name: 'pontosAzul',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'assign',
+          name: 'pontosVermelho',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'gk:placeCharacter',
+          charVar: 'azul',
+          x: {
+            type: 'num',
+            value: 120,
+          },
+          y: {
+            type: 'num',
+            value: 480,
+          },
+        },
+        {
+          type: 'gk:placeCharacter',
+          charVar: 'vermelho',
+          x: {
+            type: 'num',
+            value: 120,
+          },
+          y: {
+            type: 'num',
+            value: 480,
+          },
+        },
+      ],
+      events: [
+        {
+          type: 'gk:onTurnChange',
+          body: [
+            {
+              type: 'gk:emit',
+              event: 'vez:mudou',
+            },
+          ],
+        },
+        {
+          type: 'gk:onLandSpace',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '===',
+                left: {
+                  type: 'gk:currentPlayer',
                 },
-                then: [
-                  {
-                    type: 'assign',
-                    name: 'pontosAzul',
-                    value: {
-                      type: 'binop',
-                      op: '+',
-                      left: {
-                        type: 'var',
-                        name: 'pontosAzul',
-                      },
-                      right: {
-                        type: 'num',
-                        value: 10,
-                      },
+                right: {
+                  type: 'num',
+                  value: 1,
+                },
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '===',
+                    left: {
+                      type: 'gk:spaceOf',
+                      who: 'azul',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 7,
                     },
                   },
-                ],
-              },
-            ],
-            else: [
-              {
-                type: 'if',
-                cond: {
-                  type: 'binop',
-                  op: '===',
-                  left: {
-                    type: 'gk:spaceOf',
-                    who: 'vermelho',
-                  },
-                  right: {
-                    type: 'num',
-                    value: 7,
-                  },
-                },
-                then: [
-                  {
-                    type: 'assign',
-                    name: 'pontosVermelho',
-                    value: {
-                      type: 'binop',
-                      op: '+',
-                      left: {
-                        type: 'var',
-                        name: 'pontosVermelho',
-                      },
-                      right: {
-                        type: 'num',
-                        value: 10,
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'pontosAzul',
+                      value: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'var',
+                          name: 'pontosAzul',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 10,
+                        },
                       },
                     },
+                  ],
+                },
+              ],
+              else: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '===',
+                    left: {
+                      type: 'gk:spaceOf',
+                      who: 'vermelho',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 7,
+                    },
                   },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'gk:onGameClick',
-        xName: 'px',
-        yName: 'py',
-        body: [
-          {
-            type: 'var',
-            name: 'passos',
-            value: {
-              type: 'gk:rollDice',
-              faces: {
-                type: 'num',
-                value: 6,
-              },
-            },
-            kind: 'const',
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'binop',
-              op: '===',
-              left: {
-                type: 'gk:currentPlayer',
-              },
-              right: {
-                type: 'num',
-                value: 1,
-              },
-            },
-            then: [
-              {
-                type: 'gk:moveAlongTrack',
-                who: 'azul',
-                spaces: {
-                  type: 'var',
-                  name: 'passos',
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'pontosVermelho',
+                      value: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'var',
+                          name: 'pontosVermelho',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 10,
+                        },
+                      },
+                    },
+                  ],
                 },
-                path: 'trilha',
-              },
-            ],
-            else: [
-              {
-                type: 'gk:moveAlongTrack',
-                who: 'vermelho',
-                spaces: {
-                  type: 'var',
-                  name: 'passos',
+              ],
+            },
+          ],
+        },
+        {
+          type: 'gk:onGameClick',
+          xName: 'px',
+          yName: 'py',
+          body: [
+            {
+              type: 'var',
+              name: 'passos',
+              value: {
+                type: 'gk:rollDice',
+                faces: {
+                  type: 'num',
+                  value: 6,
                 },
-                path: 'trilha',
               },
-            ],
-          },
-          {
-            type: 'gk:nextPlayer',
-          },
-        ],
-      },
-      {
-        type: 'gk:onDraw',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'gk:drawBackground',
-            color: '#1b3a2a',
-            grid: true,
-          },
-          {
-            type: 'gk:drawCharacter',
-            charVar: 'azul',
-          },
-          {
-            type: 'gk:drawCharacter',
-            charVar: 'vermelho',
-          },
-        ],
-      },
-      {
-        type: 'gk:start',
-      },
-    ],
+              kind: 'const',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '===',
+                left: {
+                  type: 'gk:currentPlayer',
+                },
+                right: {
+                  type: 'num',
+                  value: 1,
+                },
+              },
+              then: [
+                {
+                  type: 'gk:moveAlongTrack',
+                  who: 'azul',
+                  spaces: {
+                    type: 'var',
+                    name: 'passos',
+                  },
+                  path: 'trilha',
+                },
+              ],
+              else: [
+                {
+                  type: 'gk:moveAlongTrack',
+                  who: 'vermelho',
+                  spaces: {
+                    type: 'var',
+                    name: 'passos',
+                  },
+                  path: 'trilha',
+                },
+              ],
+            },
+            {
+              type: 'gk:nextPlayer',
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'gk:onDraw',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'gk:drawBackground',
+              color: '#1b3a2a',
+              grid: true,
+            },
+            {
+              type: 'gk:drawCharacter',
+              charVar: 'azul',
+            },
+            {
+              type: 'gk:drawCharacter',
+              charVar: 'vermelho',
+            },
+          ],
+        },
+      ],
+    },
   },
 }
 
@@ -8954,508 +9014,507 @@ export const jogoDaMemoriaExample: ExtensionExample = {
         extensionId: 'game-2d-advanced',
       },
     ],
-    js: [
-      {
-        type: 'gk:setup',
-        w: {
-          type: 'num',
-          value: 720,
-        },
-        h: {
-          type: 'num',
-          value: 560,
-        },
-        bg: '#2a1a3a',
-        accent: '#ffd166',
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'menu',
-        title: {
-          type: 'str',
-          value: 'Jogo da Memoria',
-        },
-        text: {
-          type: 'str',
-          value: 'Clique nas cartas para virar e ache todos os pares iguais!',
-        },
-        button: {
-          type: 'str',
-          value: 'Jogar',
-        },
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'vitoria',
-        title: {
-          type: 'str',
-          value: 'Voce achou todos os pares!',
-        },
-        text: {
-          type: 'str',
-          value: 'Muito bem!',
-        },
-        button: {
-          type: 'str',
-          value: 'Jogar de novo',
-        },
-      },
-      {
-        type: 'var',
-        name: 'cartas',
-        value: {
-          type: 'array',
-          items: [],
-        },
-      },
-      {
-        type: 'var',
-        name: 'primeira',
-        value: {
-          type: 'binop',
-          op: '-',
-          left: {
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
             type: 'num',
-            value: 0,
+            value: 720,
           },
-          right: {
+          h: {
             type: 'num',
-            value: 1,
+            value: 560,
+          },
+          bg: '#2a1a3a',
+          accent: '#ffd166',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Jogo da Memoria',
+          },
+          text: {
+            type: 'str',
+            value: 'Clique nas cartas para virar e ache todos os pares iguais!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar',
           },
         },
-      },
-      {
-        type: 'var',
-        name: 'segunda',
-        value: {
-          type: 'binop',
-          op: '-',
-          left: {
-            type: 'num',
-            value: 0,
+        {
+          type: 'gk:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Voce achou todos os pares!',
           },
-          right: {
-            type: 'num',
-            value: 1,
+          text: {
+            type: 'str',
+            value: 'Muito bem!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
           },
         },
-      },
-      {
-        type: 'var',
-        name: 'pares',
-        value: {
-          type: 'num',
-          value: 0,
+        {
+          type: 'var',
+          name: 'cartas',
+          value: {
+            type: 'array',
+            items: [],
+          },
         },
-      },
-      {
-        type: 'gk:onGameStart',
-        body: [
-          {
-            type: 'assign',
-            name: 'cartas',
-            value: {
-              type: 'array',
-              items: [
-                {
-                  type: 'gk:card',
-                  front: {
-                    type: 'str',
-                    value: '🍎',
-                  },
-                  back: {
-                    type: 'str',
-                    value: '?',
-                  },
-                },
-                {
-                  type: 'gk:card',
-                  front: {
-                    type: 'str',
-                    value: '🍎',
-                  },
-                  back: {
-                    type: 'str',
-                    value: '?',
-                  },
-                },
-                {
-                  type: 'gk:card',
-                  front: {
-                    type: 'str',
-                    value: '🍌',
-                  },
-                  back: {
-                    type: 'str',
-                    value: '?',
-                  },
-                },
-                {
-                  type: 'gk:card',
-                  front: {
-                    type: 'str',
-                    value: '🍌',
-                  },
-                  back: {
-                    type: 'str',
-                    value: '?',
-                  },
-                },
-                {
-                  type: 'gk:card',
-                  front: {
-                    type: 'str',
-                    value: '🍇',
-                  },
-                  back: {
-                    type: 'str',
-                    value: '?',
-                  },
-                },
-                {
-                  type: 'gk:card',
-                  front: {
-                    type: 'str',
-                    value: '🍇',
-                  },
-                  back: {
-                    type: 'str',
-                    value: '?',
-                  },
-                },
-              ],
-            },
-          },
-          {
-            type: 'assign',
-            name: 'cartas',
-            value: {
-              type: 'shuffle',
-              arrayVar: 'cartas',
-            },
-          },
-          {
-            type: 'assign',
-            name: 'primeira',
-            value: {
-              type: 'binop',
-              op: '-',
-              left: {
-                type: 'num',
-                value: 0,
-              },
-              right: {
-                type: 'num',
-                value: 1,
-              },
-            },
-          },
-          {
-            type: 'assign',
-            name: 'segunda',
-            value: {
-              type: 'binop',
-              op: '-',
-              left: {
-                type: 'num',
-                value: 0,
-              },
-              right: {
-                type: 'num',
-                value: 1,
-              },
-            },
-          },
-          {
-            type: 'assign',
-            name: 'pares',
-            value: {
+        {
+          type: 'var',
+          name: 'primeira',
+          value: {
+            type: 'binop',
+            op: '-',
+            left: {
               type: 'num',
               value: 0,
             },
-          },
-        ],
-      },
-      {
-        type: 'gk:onGameClick',
-        xName: 'px',
-        yName: 'py',
-        body: [
-          {
-            type: 'var',
-            name: 'i',
-            value: {
-              type: 'gk:cardAt',
-              x: {
-                type: 'var',
-                name: 'px',
-              },
-              y: {
-                type: 'var',
-                name: 'py',
-              },
-              pileVar: 'cartas',
+            right: {
+              type: 'num',
+              value: 1,
             },
-            kind: 'const',
           },
-          {
-            type: 'if',
-            cond: {
-              type: 'binop',
-              op: '>=',
-              left: {
-                type: 'var',
-                name: 'i',
-              },
-              right: {
-                type: 'num',
-                value: 0,
-              },
+        },
+        {
+          type: 'var',
+          name: 'segunda',
+          value: {
+            type: 'binop',
+            op: '-',
+            left: {
+              type: 'num',
+              value: 0,
             },
-            then: [
+            right: {
+              type: 'num',
+              value: 1,
+            },
+          },
+        },
+        {
+          type: 'var',
+          name: 'pares',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'assign',
+          name: 'cartas',
+          value: {
+            type: 'array',
+            items: [
               {
-                type: 'if',
-                cond: {
-                  type: 'binop',
-                  op: '===',
-                  left: {
-                    type: 'gk:cardIsUp',
-                    card: {
-                      type: 'index',
-                      arrayVar: 'cartas',
-                      index: {
-                        type: 'var',
-                        name: 'i',
-                      },
-                    },
-                  },
-                  right: {
-                    type: 'bool',
-                    value: false,
-                  },
+                type: 'gk:card',
+                front: {
+                  type: 'str',
+                  value: '🍎',
                 },
-                then: [
-                  {
-                    type: 'gk:cardFlip',
-                    card: {
-                      type: 'index',
-                      arrayVar: 'cartas',
-                      index: {
-                        type: 'var',
-                        name: 'i',
-                      },
-                    },
-                  },
-                  {
-                    type: 'if',
-                    cond: {
-                      type: 'binop',
-                      op: '===',
-                      left: {
-                        type: 'var',
-                        name: 'primeira',
-                      },
-                      right: {
-                        type: 'binop',
-                        op: '-',
-                        left: {
-                          type: 'num',
-                          value: 0,
-                        },
-                        right: {
-                          type: 'num',
-                          value: 1,
-                        },
-                      },
-                    },
-                    then: [
-                      {
-                        type: 'assign',
-                        name: 'primeira',
-                        value: {
-                          type: 'var',
-                          name: 'i',
-                        },
-                      },
-                    ],
-                    else: [
-                      {
-                        type: 'assign',
-                        name: 'segunda',
-                        value: {
-                          type: 'var',
-                          name: 'i',
-                        },
-                      },
-                      {
-                        type: 'if',
-                        cond: {
-                          type: 'binop',
-                          op: '===',
-                          left: {
-                            type: 'gk:cardFace',
-                            card: {
-                              type: 'index',
-                              arrayVar: 'cartas',
-                              index: {
-                                type: 'var',
-                                name: 'primeira',
-                              },
-                            },
-                          },
-                          right: {
-                            type: 'gk:cardFace',
-                            card: {
-                              type: 'index',
-                              arrayVar: 'cartas',
-                              index: {
-                                type: 'var',
-                                name: 'segunda',
-                              },
-                            },
-                          },
-                        },
-                        then: [
-                          {
-                            type: 'assign',
-                            name: 'pares',
-                            value: {
-                              type: 'binop',
-                              op: '+',
-                              left: {
-                                type: 'var',
-                                name: 'pares',
-                              },
-                              right: {
-                                type: 'num',
-                                value: 1,
-                              },
-                            },
-                          },
-                          {
-                            type: 'assign',
-                            name: 'primeira',
-                            value: {
-                              type: 'binop',
-                              op: '-',
-                              left: {
-                                type: 'num',
-                                value: 0,
-                              },
-                              right: {
-                                type: 'num',
-                                value: 1,
-                              },
-                            },
-                          },
-                          {
-                            type: 'if',
-                            cond: {
-                              type: 'binop',
-                              op: '===',
-                              left: {
-                                type: 'var',
-                                name: 'pares',
-                              },
-                              right: {
-                                type: 'num',
-                                value: 3,
-                              },
-                            },
-                            then: [
-                              {
-                                type: 'gk:setState',
-                                name: 'vitoria',
-                              },
-                            ],
-                          },
-                        ],
-                        else: [
-                          {
-                            type: 'gk:waitThen',
-                            seconds: {
-                              type: 'num',
-                              value: 0.7,
-                            },
-                            body: [
-                              {
-                                type: 'gk:cardFlip',
-                                card: {
-                                  type: 'index',
-                                  arrayVar: 'cartas',
-                                  index: {
-                                    type: 'var',
-                                    name: 'primeira',
-                                  },
-                                },
-                              },
-                              {
-                                type: 'gk:cardFlip',
-                                card: {
-                                  type: 'index',
-                                  arrayVar: 'cartas',
-                                  index: {
-                                    type: 'var',
-                                    name: 'segunda',
-                                  },
-                                },
-                              },
-                              {
-                                type: 'assign',
-                                name: 'primeira',
-                                value: {
-                                  type: 'binop',
-                                  op: '-',
-                                  left: {
-                                    type: 'num',
-                                    value: 0,
-                                  },
-                                  right: {
-                                    type: 'num',
-                                    value: 1,
-                                  },
-                                },
-                              },
-                            ],
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                ],
+                back: {
+                  type: 'str',
+                  value: '?',
+                },
+              },
+              {
+                type: 'gk:card',
+                front: {
+                  type: 'str',
+                  value: '🍎',
+                },
+                back: {
+                  type: 'str',
+                  value: '?',
+                },
+              },
+              {
+                type: 'gk:card',
+                front: {
+                  type: 'str',
+                  value: '🍌',
+                },
+                back: {
+                  type: 'str',
+                  value: '?',
+                },
+              },
+              {
+                type: 'gk:card',
+                front: {
+                  type: 'str',
+                  value: '🍌',
+                },
+                back: {
+                  type: 'str',
+                  value: '?',
+                },
+              },
+              {
+                type: 'gk:card',
+                front: {
+                  type: 'str',
+                  value: '🍇',
+                },
+                back: {
+                  type: 'str',
+                  value: '?',
+                },
+              },
+              {
+                type: 'gk:card',
+                front: {
+                  type: 'str',
+                  value: '🍇',
+                },
+                back: {
+                  type: 'str',
+                  value: '?',
+                },
               },
             ],
           },
-        ],
-      },
-      {
-        type: 'gk:onDraw',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'gk:drawBackground',
-            color: '#2a1a3a',
-            grid: true,
+        },
+        {
+          type: 'assign',
+          name: 'cartas',
+          value: {
+            type: 'shuffle',
+            arrayVar: 'cartas',
           },
-          {
-            type: 'gk:handDraw',
-            pileVar: 'cartas',
-            x: {
+        },
+        {
+          type: 'assign',
+          name: 'primeira',
+          value: {
+            type: 'binop',
+            op: '-',
+            left: {
               type: 'num',
-              value: 90,
+              value: 0,
             },
-            y: {
+            right: {
               type: 'num',
-              value: 220,
+              value: 1,
             },
-            fan: false,
           },
-        ],
-      },
-      {
-        type: 'gk:start',
-      },
-    ],
+        },
+        {
+          type: 'assign',
+          name: 'segunda',
+          value: {
+            type: 'binop',
+            op: '-',
+            left: {
+              type: 'num',
+              value: 0,
+            },
+            right: {
+              type: 'num',
+              value: 1,
+            },
+          },
+        },
+        {
+          type: 'assign',
+          name: 'pares',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+      ],
+      events: [
+        {
+          type: 'gk:onGameClick',
+          xName: 'px',
+          yName: 'py',
+          body: [
+            {
+              type: 'var',
+              name: 'i',
+              value: {
+                type: 'gk:cardAt',
+                x: {
+                  type: 'var',
+                  name: 'px',
+                },
+                y: {
+                  type: 'var',
+                  name: 'py',
+                },
+                pileVar: 'cartas',
+              },
+              kind: 'const',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '>=',
+                left: {
+                  type: 'var',
+                  name: 'i',
+                },
+                right: {
+                  type: 'num',
+                  value: 0,
+                },
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '===',
+                    left: {
+                      type: 'gk:cardIsUp',
+                      card: {
+                        type: 'index',
+                        arrayVar: 'cartas',
+                        index: {
+                          type: 'var',
+                          name: 'i',
+                        },
+                      },
+                    },
+                    right: {
+                      type: 'bool',
+                      value: false,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'gk:cardFlip',
+                      card: {
+                        type: 'index',
+                        arrayVar: 'cartas',
+                        index: {
+                          type: 'var',
+                          name: 'i',
+                        },
+                      },
+                    },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'binop',
+                        op: '===',
+                        left: {
+                          type: 'var',
+                          name: 'primeira',
+                        },
+                        right: {
+                          type: 'binop',
+                          op: '-',
+                          left: {
+                            type: 'num',
+                            value: 0,
+                          },
+                          right: {
+                            type: 'num',
+                            value: 1,
+                          },
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'assign',
+                          name: 'primeira',
+                          value: {
+                            type: 'var',
+                            name: 'i',
+                          },
+                        },
+                      ],
+                      else: [
+                        {
+                          type: 'assign',
+                          name: 'segunda',
+                          value: {
+                            type: 'var',
+                            name: 'i',
+                          },
+                        },
+                        {
+                          type: 'if',
+                          cond: {
+                            type: 'binop',
+                            op: '===',
+                            left: {
+                              type: 'gk:cardFace',
+                              card: {
+                                type: 'index',
+                                arrayVar: 'cartas',
+                                index: {
+                                  type: 'var',
+                                  name: 'primeira',
+                                },
+                              },
+                            },
+                            right: {
+                              type: 'gk:cardFace',
+                              card: {
+                                type: 'index',
+                                arrayVar: 'cartas',
+                                index: {
+                                  type: 'var',
+                                  name: 'segunda',
+                                },
+                              },
+                            },
+                          },
+                          then: [
+                            {
+                              type: 'assign',
+                              name: 'pares',
+                              value: {
+                                type: 'binop',
+                                op: '+',
+                                left: {
+                                  type: 'var',
+                                  name: 'pares',
+                                },
+                                right: {
+                                  type: 'num',
+                                  value: 1,
+                                },
+                              },
+                            },
+                            {
+                              type: 'assign',
+                              name: 'primeira',
+                              value: {
+                                type: 'binop',
+                                op: '-',
+                                left: {
+                                  type: 'num',
+                                  value: 0,
+                                },
+                                right: {
+                                  type: 'num',
+                                  value: 1,
+                                },
+                              },
+                            },
+                            {
+                              type: 'if',
+                              cond: {
+                                type: 'binop',
+                                op: '===',
+                                left: {
+                                  type: 'var',
+                                  name: 'pares',
+                                },
+                                right: {
+                                  type: 'num',
+                                  value: 3,
+                                },
+                              },
+                              then: [
+                                {
+                                  type: 'gk:setState',
+                                  name: 'vitoria',
+                                },
+                              ],
+                            },
+                          ],
+                          else: [
+                            {
+                              type: 'gk:waitThen',
+                              seconds: {
+                                type: 'num',
+                                value: 0.7,
+                              },
+                              body: [
+                                {
+                                  type: 'gk:cardFlip',
+                                  card: {
+                                    type: 'index',
+                                    arrayVar: 'cartas',
+                                    index: {
+                                      type: 'var',
+                                      name: 'primeira',
+                                    },
+                                  },
+                                },
+                                {
+                                  type: 'gk:cardFlip',
+                                  card: {
+                                    type: 'index',
+                                    arrayVar: 'cartas',
+                                    index: {
+                                      type: 'var',
+                                      name: 'segunda',
+                                    },
+                                  },
+                                },
+                                {
+                                  type: 'assign',
+                                  name: 'primeira',
+                                  value: {
+                                    type: 'binop',
+                                    op: '-',
+                                    left: {
+                                      type: 'num',
+                                      value: 0,
+                                    },
+                                    right: {
+                                      type: 'num',
+                                      value: 1,
+                                    },
+                                  },
+                                },
+                              ],
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'gk:onDraw',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'gk:drawBackground',
+              color: '#2a1a3a',
+              grid: true,
+            },
+            {
+              type: 'gk:handDraw',
+              pileVar: 'cartas',
+              x: {
+                type: 'num',
+                value: 90,
+              },
+              y: {
+                type: 'num',
+                value: 220,
+              },
+              fan: false,
+            },
+          ],
+        },
+      ],
+    },
   },
 }
 
@@ -9478,537 +9537,536 @@ export const dueloDeCartasExample: ExtensionExample = {
         extensionId: 'game-2d-advanced',
       },
     ],
-    js: [
-      {
-        type: 'gk:setup',
-        w: {
-          type: 'num',
-          value: 800,
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 800,
+          },
+          h: {
+            type: 'num',
+            value: 600,
+          },
+          bg: '#191426',
+          accent: '#c084fc',
         },
-        h: {
-          type: 'num',
-          value: 600,
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Duelo de Cartas',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Clique numa carta da mao para joga-la (custa 1 energia): 🗡️ ataca, 🛡️ defende. Aperte espaco para passar o turno!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar',
+          },
         },
-        bg: '#191426',
-        accent: '#c084fc',
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'menu',
-        title: {
-          type: 'str',
-          value: 'Duelo de Cartas',
+        {
+          type: 'gk:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Voce venceu o duelo!',
+          },
+          text: {
+            type: 'str',
+            value: 'Que estrategista!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
+          },
         },
-        text: {
-          type: 'str',
-          value:
-            'Clique numa carta da mao para joga-la (custa 1 energia): 🗡️ ataca, 🛡️ defende. Aperte espaco para passar o turno!',
+        {
+          type: 'gk:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'Voce perdeu...',
+          },
+          text: {
+            type: 'str',
+            value: 'Tente outra estrategia!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
+          },
         },
-        button: {
-          type: 'str',
-          value: 'Jogar',
+        {
+          type: 'var',
+          name: 'baralho',
+          value: {
+            type: 'array',
+            items: [],
+          },
         },
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'vitoria',
-        title: {
-          type: 'str',
-          value: 'Voce venceu o duelo!',
+        {
+          type: 'var',
+          name: 'mao',
+          value: {
+            type: 'array',
+            items: [],
+          },
         },
-        text: {
-          type: 'str',
-          value: 'Que estrategista!',
+        {
+          type: 'var',
+          name: 'descarte',
+          value: {
+            type: 'array',
+            items: [],
+          },
         },
-        button: {
-          type: 'str',
-          value: 'Jogar de novo',
+        {
+          type: 'assign',
+          name: 'baralho',
+          value: {
+            type: 'array',
+            items: [
+              {
+                type: 'gk:card',
+                front: {
+                  type: 'str',
+                  value: '🗡️',
+                },
+                back: {
+                  type: 'str',
+                  value: '🗡️',
+                },
+              },
+              {
+                type: 'gk:card',
+                front: {
+                  type: 'str',
+                  value: '🗡️',
+                },
+                back: {
+                  type: 'str',
+                  value: '🗡️',
+                },
+              },
+              {
+                type: 'gk:card',
+                front: {
+                  type: 'str',
+                  value: '🗡️',
+                },
+                back: {
+                  type: 'str',
+                  value: '🗡️',
+                },
+              },
+              {
+                type: 'gk:card',
+                front: {
+                  type: 'str',
+                  value: '🗡️',
+                },
+                back: {
+                  type: 'str',
+                  value: '🗡️',
+                },
+              },
+              {
+                type: 'gk:card',
+                front: {
+                  type: 'str',
+                  value: '🛡️',
+                },
+                back: {
+                  type: 'str',
+                  value: '🛡️',
+                },
+              },
+              {
+                type: 'gk:card',
+                front: {
+                  type: 'str',
+                  value: '🛡️',
+                },
+                back: {
+                  type: 'str',
+                  value: '🛡️',
+                },
+              },
+              {
+                type: 'gk:card',
+                front: {
+                  type: 'str',
+                  value: '🛡️',
+                },
+                back: {
+                  type: 'str',
+                  value: '🛡️',
+                },
+              },
+            ],
+          },
         },
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'fim',
-        title: {
-          type: 'str',
-          value: 'Voce perdeu...',
+        {
+          type: 'assign',
+          name: 'baralho',
+          value: {
+            type: 'shuffle',
+            arrayVar: 'baralho',
+          },
         },
-        text: {
-          type: 'str',
-          value: 'Tente outra estrategia!',
+        {
+          type: 'assign',
+          name: 'mao',
+          value: {
+            type: 'array',
+            items: [],
+          },
         },
-        button: {
-          type: 'str',
-          value: 'Jogar de novo',
+        {
+          type: 'assign',
+          name: 'descarte',
+          value: {
+            type: 'array',
+            items: [],
+          },
         },
-      },
-      {
-        type: 'var',
-        name: 'baralho',
-        value: {
-          type: 'array',
-          items: [],
+        {
+          type: 'gk:cardsStart',
+          heroHp: {
+            type: 'num',
+            value: 30,
+          },
+          enemyHp: {
+            type: 'num',
+            value: 40,
+          },
         },
-      },
-      {
-        type: 'var',
-        name: 'mao',
-        value: {
-          type: 'array',
-          items: [],
+        {
+          type: 'gk:cardsEnergyPerTurn',
+          n: {
+            type: 'num',
+            value: 3,
+          },
         },
-      },
-      {
-        type: 'var',
-        name: 'descarte',
-        value: {
-          type: 'array',
-          items: [],
+        {
+          type: 'gk:cardsEnemyIntent',
+          action: 'atacar',
+          value: {
+            type: 'num',
+            value: 7,
+          },
         },
-      },
-      {
-        type: 'gk:onGameStart',
-        body: [
-          {
-            type: 'assign',
-            name: 'baralho',
-            value: {
-              type: 'array',
-              items: [
+      ],
+      events: [
+        {
+          type: 'gk:cardsOnTurn',
+          body: [
+            {
+              type: 'repeat',
+              times: {
+                type: 'num',
+                value: 3,
+              },
+              body: [
                 {
-                  type: 'gk:card',
-                  front: {
-                    type: 'str',
-                    value: '🗡️',
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '===',
+                    left: {
+                      type: 'gk:pileSize',
+                      pileVar: 'baralho',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0,
+                    },
                   },
-                  back: {
-                    type: 'str',
-                    value: '🗡️',
-                  },
+                  then: [
+                    {
+                      type: 'gk:pileShuffleFrom',
+                      deckVar: 'baralho',
+                      discardVar: 'descarte',
+                    },
+                  ],
                 },
                 {
-                  type: 'gk:card',
-                  front: {
-                    type: 'str',
-                    value: '🗡️',
-                  },
-                  back: {
-                    type: 'str',
-                    value: '🗡️',
-                  },
+                  type: 'gk:pileMoveTop',
+                  fromVar: 'baralho',
+                  toVar: 'mao',
                 },
-                {
-                  type: 'gk:card',
-                  front: {
-                    type: 'str',
-                    value: '🗡️',
-                  },
-                  back: {
-                    type: 'str',
-                    value: '🗡️',
-                  },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'gk:cardsOnEnemyTurn',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '===',
+                left: {
+                  type: 'gk:cardsIntentAction',
                 },
-                {
-                  type: 'gk:card',
-                  front: {
-                    type: 'str',
-                    value: '🗡️',
-                  },
-                  back: {
-                    type: 'str',
-                    value: '🗡️',
-                  },
+                right: {
+                  type: 'str',
+                  value: 'atacar',
                 },
+              },
+              then: [
                 {
-                  type: 'gk:card',
-                  front: {
-                    type: 'str',
-                    value: '🛡️',
-                  },
-                  back: {
-                    type: 'str',
-                    value: '🛡️',
-                  },
-                },
-                {
-                  type: 'gk:card',
-                  front: {
-                    type: 'str',
-                    value: '🛡️',
-                  },
-                  back: {
-                    type: 'str',
-                    value: '🛡️',
-                  },
-                },
-                {
-                  type: 'gk:card',
-                  front: {
-                    type: 'str',
-                    value: '🛡️',
-                  },
-                  back: {
-                    type: 'str',
-                    value: '🛡️',
+                  type: 'gk:cardsHurtMe',
+                  n: {
+                    type: 'gk:cardsIntentValue',
                   },
                 },
               ],
             },
-          },
-          {
-            type: 'assign',
-            name: 'baralho',
-            value: {
-              type: 'shuffle',
-              arrayVar: 'baralho',
-            },
-          },
-          {
-            type: 'assign',
-            name: 'mao',
-            value: {
-              type: 'array',
-              items: [],
-            },
-          },
-          {
-            type: 'assign',
-            name: 'descarte',
-            value: {
-              type: 'array',
-              items: [],
-            },
-          },
-          {
-            type: 'gk:cardsStart',
-            heroHp: {
-              type: 'num',
-              value: 30,
-            },
-            enemyHp: {
-              type: 'num',
-              value: 40,
-            },
-          },
-          {
-            type: 'gk:cardsEnergyPerTurn',
-            n: {
-              type: 'num',
-              value: 3,
-            },
-          },
-          {
-            type: 'gk:cardsEnemyIntent',
-            action: 'atacar',
-            value: {
-              type: 'num',
-              value: 7,
-            },
-          },
-        ],
-      },
-      {
-        type: 'gk:cardsOnTurn',
-        body: [
-          {
-            type: 'repeat',
-            times: {
-              type: 'num',
-              value: 3,
-            },
-            body: [
-              {
-                type: 'if',
-                cond: {
-                  type: 'binop',
-                  op: '===',
-                  left: {
-                    type: 'gk:pileSize',
-                    pileVar: 'baralho',
-                  },
-                  right: {
-                    type: 'num',
-                    value: 0,
-                  },
-                },
-                then: [
-                  {
-                    type: 'gk:pileShuffleFrom',
-                    deckVar: 'baralho',
-                    discardVar: 'descarte',
-                  },
-                ],
-              },
-              {
-                type: 'gk:pileMoveTop',
-                fromVar: 'baralho',
-                toVar: 'mao',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'gk:cardsOnEnemyTurn',
-        body: [
-          {
-            type: 'if',
-            cond: {
-              type: 'binop',
-              op: '===',
-              left: {
-                type: 'gk:cardsIntentAction',
-              },
-              right: {
-                type: 'str',
-                value: 'atacar',
-              },
-            },
-            then: [
-              {
-                type: 'gk:cardsHurtMe',
-                n: {
-                  type: 'gk:cardsIntentValue',
-                },
-              },
-            ],
-          },
-          {
-            type: 'gk:cardsEnemyIntent',
-            action: 'atacar',
-            value: {
-              type: 'binop',
-              op: '+',
-              left: {
-                type: 'num',
-                value: 5,
-              },
-              right: {
-                type: 'gk:rollDice',
-                faces: {
+            {
+              type: 'gk:cardsEnemyIntent',
+              action: 'atacar',
+              value: {
+                type: 'binop',
+                op: '+',
+                left: {
                   type: 'num',
-                  value: 4,
+                  value: 5,
                 },
-              },
-            },
-          },
-        ],
-      },
-      {
-        type: 'gk:onGameClick',
-        xName: 'px',
-        yName: 'py',
-        body: [
-          {
-            type: 'var',
-            name: 'i',
-            value: {
-              type: 'gk:cardAt',
-              x: {
-                type: 'var',
-                name: 'px',
-              },
-              y: {
-                type: 'var',
-                name: 'py',
-              },
-              pileVar: 'mao',
-            },
-            kind: 'const',
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'binop',
-              op: '>=',
-              left: {
-                type: 'var',
-                name: 'i',
-              },
-              right: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            then: [
-              {
-                type: 'if',
-                cond: {
-                  type: 'binop',
-                  op: '>=',
-                  left: {
-                    type: 'gk:cardsEnergy',
-                  },
-                  right: {
+                right: {
+                  type: 'gk:rollDice',
+                  faces: {
                     type: 'num',
-                    value: 1,
+                    value: 4,
                   },
                 },
-                then: [
-                  {
-                    type: 'gk:cardsSpend',
-                    n: {
+              },
+            },
+          ],
+        },
+        {
+          type: 'gk:onGameClick',
+          xName: 'px',
+          yName: 'py',
+          body: [
+            {
+              type: 'var',
+              name: 'i',
+              value: {
+                type: 'gk:cardAt',
+                x: {
+                  type: 'var',
+                  name: 'px',
+                },
+                y: {
+                  type: 'var',
+                  name: 'py',
+                },
+                pileVar: 'mao',
+              },
+              kind: 'const',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '>=',
+                left: {
+                  type: 'var',
+                  name: 'i',
+                },
+                right: {
+                  type: 'num',
+                  value: 0,
+                },
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>=',
+                    left: {
+                      type: 'gk:cardsEnergy',
+                    },
+                    right: {
                       type: 'num',
                       value: 1,
                     },
                   },
-                  {
-                    type: 'if',
-                    cond: {
-                      type: 'binop',
-                      op: '===',
-                      left: {
-                        type: 'gk:cardFace',
-                        card: {
-                          type: 'index',
-                          arrayVar: 'mao',
-                          index: {
-                            type: 'var',
-                            name: 'i',
-                          },
-                        },
-                      },
-                      right: {
-                        type: 'str',
-                        value: '🗡️',
+                  then: [
+                    {
+                      type: 'gk:cardsSpend',
+                      n: {
+                        type: 'num',
+                        value: 1,
                       },
                     },
-                    then: [
-                      {
-                        type: 'gk:cardsHurtEnemy',
-                        n: {
-                          type: 'num',
-                          value: 6,
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'binop',
+                        op: '===',
+                        left: {
+                          type: 'gk:cardFace',
+                          card: {
+                            type: 'index',
+                            arrayVar: 'mao',
+                            index: {
+                              type: 'var',
+                              name: 'i',
+                            },
+                          },
+                        },
+                        right: {
+                          type: 'str',
+                          value: '🗡️',
                         },
                       },
-                    ],
-                    else: [
-                      {
-                        type: 'gk:cardsGainBlock',
-                        n: {
-                          type: 'num',
-                          value: 5,
+                      then: [
+                        {
+                          type: 'gk:cardsHurtEnemy',
+                          n: {
+                            type: 'num',
+                            value: 6,
+                          },
+                        },
+                      ],
+                      else: [
+                        {
+                          type: 'gk:cardsGainBlock',
+                          n: {
+                            type: 'num',
+                            value: 5,
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      type: 'arrayPush',
+                      arrayVar: 'descarte',
+                      value: {
+                        type: 'index',
+                        arrayVar: 'mao',
+                        index: {
+                          type: 'var',
+                          name: 'i',
                         },
                       },
-                    ],
-                  },
-                  {
-                    type: 'arrayPush',
-                    arrayVar: 'descarte',
-                    value: {
-                      type: 'index',
+                    },
+                    {
+                      type: 'arraySplice',
                       arrayVar: 'mao',
-                      index: {
+                      start: {
                         type: 'var',
                         name: 'i',
                       },
-                    },
-                  },
-                  {
-                    type: 'arraySplice',
-                    arrayVar: 'mao',
-                    start: {
-                      type: 'var',
-                      name: 'i',
-                    },
-                    count: {
-                      type: 'num',
-                      value: 1,
-                    },
-                  },
-                  {
-                    type: 'if',
-                    cond: {
-                      type: 'binop',
-                      op: '<=',
-                      left: {
-                        type: 'gk:cardsEnemyLife',
-                      },
-                      right: {
+                      count: {
                         type: 'num',
-                        value: 0,
+                        value: 1,
                       },
                     },
-                    then: [
-                      {
-                        type: 'gk:setState',
-                        name: 'vitoria',
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'binop',
+                        op: '<=',
+                        left: {
+                          type: 'gk:cardsEnemyLife',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 0,
+                        },
                       },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'gk:onUpdate',
-        dtName: 'dt',
-        body: [
-          {
-            type: 'if',
-            cond: {
-              type: 'gk:keyPressed',
-              key: ' ',
-            },
-            then: [
-              {
-                type: 'gk:cardsEndTurn',
-              },
-              {
-                type: 'if',
-                cond: {
-                  type: 'binop',
-                  op: '<=',
-                  left: {
-                    type: 'gk:cardsHeroLife',
-                  },
-                  right: {
-                    type: 'num',
-                    value: 0,
-                  },
+                      then: [
+                        {
+                          type: 'gk:setState',
+                          name: 'vitoria',
+                        },
+                      ],
+                    },
+                  ],
                 },
-                then: [
-                  {
-                    type: 'gk:endGame',
-                  },
-                ],
+              ],
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'gk:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'gk:keyPressed',
+                key: ' ',
               },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'gk:onDraw',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'gk:drawBackground',
-            color: '#191426',
-            grid: true,
-          },
-          {
-            type: 'gk:cardsDrawHud',
-          },
-          {
-            type: 'gk:handDraw',
-            pileVar: 'mao',
-            x: {
-              type: 'num',
-              value: 120,
+              then: [
+                {
+                  type: 'gk:cardsEndTurn',
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<=',
+                    left: {
+                      type: 'gk:cardsHeroLife',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'gk:endGame',
+                    },
+                  ],
+                },
+              ],
             },
-            y: {
-              type: 'num',
-              value: 440,
+          ],
+        },
+        {
+          type: 'gk:onDraw',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'gk:drawBackground',
+              color: '#191426',
+              grid: true,
             },
-            fan: false,
-          },
-        ],
-      },
-      {
-        type: 'gk:start',
-      },
-    ],
+            {
+              type: 'gk:cardsDrawHud',
+            },
+            {
+              type: 'gk:handDraw',
+              pileVar: 'mao',
+              x: {
+                type: 'num',
+                value: 120,
+              },
+              y: {
+                type: 'num',
+                value: 440,
+              },
+              fan: false,
+            },
+          ],
+        },
+      ],
+    },
   },
 }
 
@@ -10028,343 +10086,347 @@ export const oChefaoFichaExample: ExtensionExample = {
     html: [],
     css: [],
     extensions: [{ extensionId: 'game-2d-advanced' }],
-    js: [
-      {
-        type: 'gk:setup',
-        w: {
-          type: 'num',
-          value: 480,
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'gk:setup',
+          w: {
+            type: 'num',
+            value: 480,
+          },
+          h: {
+            type: 'num',
+            value: 320,
+          },
+          bg: '#0f1020',
+          accent: '#ffcc44',
         },
-        h: {
-          type: 'num',
-          value: 320,
+        {
+          type: 'gk:setScreenBg',
+          screen: 'menu',
+          color: '#241033',
+          image: '',
         },
-        bg: '#0f1020',
-        accent: '#ffcc44',
-      },
-      {
-        type: 'gk:setScreenBg',
-        screen: 'menu',
-        color: '#241033',
-        image: '',
-      },
-      {
-        type: 'gk:setScreenBg',
-        screen: 'vitoria',
-        color: '#0a2a14',
-        image: '',
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'menu',
-        title: {
-          type: 'str',
-          value: 'O Chefão da Ficha',
+        {
+          type: 'gk:setScreenBg',
+          screen: 'vitoria',
+          color: '#0a2a14',
+          image: '',
         },
-        text: {
-          type: 'str',
-          value: 'Fale com o Guardião (espaço) e enfrente o Dragão!',
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'O Chefão da Ficha',
+          },
+          text: {
+            type: 'str',
+            value: 'Fale com o Guardião (espaço) e enfrente o Dragão!',
+          },
+          button: {
+            type: 'str',
+            value: 'Começar',
+          },
         },
-        button: {
-          type: 'str',
-          value: 'Começar',
+        {
+          type: 'gk:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Você venceu o Dragão!',
+          },
+          text: {
+            type: 'str',
+            value: 'O reino está salvo.',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
+          },
         },
-      },
-      {
-        type: 'gk:setScreenText',
-        screen: 'vitoria',
-        title: {
-          type: 'str',
-          value: 'Você venceu o Dragão!',
+        {
+          type: 'gk:createCharacter',
+          varName: 'heroi',
+          image: '',
+          w: {
+            type: 'num',
+            value: 40,
+          },
+          h: {
+            type: 'num',
+            value: 40,
+          },
+          speed: {
+            type: 'num',
+            value: 300,
+          },
+          color: '#4a9eff',
         },
-        text: {
-          type: 'str',
-          value: 'O reino está salvo.',
+        {
+          type: 'gk:rpgBattleStats',
+          hp: {
+            type: 'num',
+            value: 60,
+          },
+          str: {
+            type: 'num',
+            value: 12,
+          },
+          def: {
+            type: 'num',
+            value: 3,
+          },
         },
-        button: {
-          type: 'str',
-          value: 'Jogar de novo',
+        {
+          type: 'gk:rpgSetSpecial',
+          name: 'Investida',
+          dmg: {
+            type: 'num',
+            value: 20,
+          },
+          cost: {
+            type: 'num',
+            value: 4,
+          },
         },
-      },
-      {
-        type: 'gk:createCharacter',
-        varName: 'heroi',
-        image: '',
-        w: {
-          type: 'num',
-          value: 40,
+        {
+          type: 'gk:rpgGivePotion',
+          name: 'Poção',
+          heal: {
+            type: 'num',
+            value: 25,
+          },
         },
-        h: {
-          type: 'num',
-          value: 40,
+        {
+          type: 'gk:rpgDefineBattler',
+          name: 'Dragão',
+          hp: {
+            type: 'num',
+            value: 120,
+          },
+          str: {
+            type: 'num',
+            value: 9,
+          },
+          def: {
+            type: 'num',
+            value: 2,
+          },
+          image: 'dragao',
+          color: '#b23b6e',
+          boss: true,
         },
-        speed: {
-          type: 'num',
-          value: 300,
+        {
+          type: 'gk:rpgDefineBattler',
+          name: 'Capanga',
+          hp: {
+            type: 'num',
+            value: 24,
+          },
+          str: {
+            type: 'num',
+            value: 5,
+          },
+          def: {
+            type: 'num',
+            value: 0,
+          },
+          image: '',
+          color: '#e05a5a',
+          boss: false,
         },
-        color: '#4a9eff',
-      },
-      {
-        type: 'gk:rpgBattleStats',
-        hp: {
-          type: 'num',
-          value: 60,
+        {
+          type: 'gk:rpgTeachMove',
+          who: 'Dragão',
+          move: 'Baforada',
+          dmg: {
+            type: 'num',
+            value: 26,
+          },
+          cost: {
+            type: 'num',
+            value: 0,
+          },
         },
-        str: {
-          type: 'num',
-          value: 12,
+        { type: 'gk:rpgSetStartMap', map: 'caverna' },
+        {
+          type: 'gk:rpgCreateMap',
+          map: 'caverna',
+          cols: { type: 'num', value: 15 },
+          rows: { type: 'num', value: 10 },
+          ctxName: 'ctx',
+          body: [{ type: 'gk:drawBackground', color: '#241a2e', grid: true }],
         },
-        def: {
-          type: 'num',
-          value: 3,
-        },
-      },
-      {
-        type: 'gk:rpgSetSpecial',
-        name: 'Investida',
-        dmg: {
-          type: 'num',
-          value: 20,
-        },
-        cost: {
-          type: 'num',
-          value: 4,
-        },
-      },
-      {
-        type: 'gk:rpgGivePotion',
-        name: 'Poção',
-        heal: {
-          type: 'num',
-          value: 25,
-        },
-      },
-      {
-        type: 'gk:rpgDefineBattler',
-        name: 'Dragão',
-        hp: {
-          type: 'num',
-          value: 120,
-        },
-        str: {
-          type: 'num',
-          value: 9,
-        },
-        def: {
-          type: 'num',
-          value: 2,
-        },
-        image: 'dragao',
-        color: '#b23b6e',
-        boss: true,
-      },
-      {
-        type: 'gk:rpgDefineBattler',
-        name: 'Capanga',
-        hp: {
-          type: 'num',
-          value: 24,
-        },
-        str: {
-          type: 'num',
-          value: 5,
-        },
-        def: {
-          type: 'num',
-          value: 0,
-        },
-        image: '',
-        color: '#e05a5a',
-        boss: false,
-      },
-      {
-        type: 'gk:rpgTeachMove',
-        who: 'Dragão',
-        move: 'Baforada',
-        dmg: {
-          type: 'num',
-          value: 26,
-        },
-        cost: {
-          type: 'num',
-          value: 0,
-        },
-      },
-      {
-        type: 'gk:rpgOnFoeTurn',
-        name: 'Dragão',
-        body: [
-          {
-            type: 'if',
-            cond: {
-              type: 'binop',
-              op: '<',
-              left: {
-                type: 'gk:battlerLife',
-                name: 'Dragão',
-              },
-              right: {
+      ],
+      events: [
+        {
+          type: 'gk:rpgOnFoeTurn',
+          name: 'Dragão',
+          body: [
+            {
+              type: 'if',
+              cond: {
                 type: 'binop',
-                op: '/',
+                op: '<',
                 left: {
-                  type: 'gk:battlerMaxLife',
+                  type: 'gk:battlerLife',
                   name: 'Dragão',
                 },
                 right: {
+                  type: 'binop',
+                  op: '/',
+                  left: {
+                    type: 'gk:battlerMaxLife',
+                    name: 'Dragão',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 2,
+                  },
+                },
+              },
+              then: [
+                {
+                  type: 'gk:rpgFoeHitAll',
+                  name: 'Dragão',
+                  dmg: {
+                    type: 'num',
+                    value: 16,
+                  },
+                },
+              ],
+              else: [
+                {
+                  type: 'gk:rpgFoeUse',
+                  name: 'Dragão',
+                  move: 'Baforada',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'gk:rpgOnEnterMap',
+          map: 'caverna',
+          body: [
+            {
+              type: 'gk:rpgCreateNpc',
+              name: 'Guardião',
+              cx: {
+                type: 'num',
+                value: 4,
+              },
+              cy: {
+                type: 'num',
+                value: 3,
+              },
+              image: '',
+              look: '',
+            },
+            {
+              type: 'gk:placeCharacter',
+              charVar: 'heroi',
+              x: {
+                type: 'gk:rpgCell',
+                n: {
                   type: 'num',
                   value: 2,
                 },
               },
-            },
-            then: [
-              {
-                type: 'gk:rpgFoeHitAll',
-                name: 'Dragão',
-                dmg: {
+              y: {
+                type: 'gk:rpgCell',
+                n: {
                   type: 'num',
-                  value: 16,
+                  value: 3,
                 },
               },
-            ],
-            else: [
-              {
-                type: 'gk:rpgFoeUse',
-                name: 'Dragão',
-                move: 'Baforada',
+            },
+          ],
+        },
+        {
+          type: 'gk:rpgOnTalk',
+          npc: 'Guardião',
+          body: [
+            {
+              type: 'gk:rpgSay',
+              text: {
+                type: 'str',
+                value: 'O Dragão acordou! Enfrente-o!',
               },
-            ],
-          },
-        ],
-      },
-      { type: 'gk:rpgSetStartMap', map: 'caverna' },
-      {
-        type: 'gk:rpgCreateMap',
-        map: 'caverna',
-        cols: { type: 'num', value: 15 },
-        rows: { type: 'num', value: 10 },
-        ctxName: 'ctx',
-        body: [{ type: 'gk:drawBackground', color: '#241a2e', grid: true }],
-      },
-      {
-        type: 'gk:rpgOnEnterMap',
-        map: 'caverna',
-        body: [
-          {
-            type: 'gk:rpgCreateNpc',
-            name: 'Guardião',
-            cx: {
-              type: 'num',
-              value: 4,
+              speaker: {
+                type: 'str',
+                value: 'Guardião',
+              },
             },
-            cy: {
-              type: 'num',
-              value: 3,
+            {
+              type: 'gk:rpgAddFoeNamed',
+              name: 'Capanga',
             },
-            image: '',
-            look: '',
-          },
-          {
-            type: 'gk:placeCharacter',
-            charVar: 'heroi',
-            x: {
-              type: 'gk:rpgCell',
-              n: {
+            {
+              type: 'gk:rpgHealHero',
+            },
+            {
+              type: 'gk:rpgBattleNamed',
+              name: 'Dragão',
+            },
+          ],
+        },
+        {
+          type: 'gk:rpgOnBattleEnd',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'gk:rpgBattleWon',
+              },
+              then: [
+                {
+                  type: 'gk:setState',
+                  name: 'vitoria',
+                },
+              ],
+              else: [
+                {
+                  type: 'gk:endGame',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'gk:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'gk:rpgMoveGrid',
+              charVar: 'heroi',
+              cell: {
                 type: 'num',
-                value: 2,
+                value: 64,
               },
+              dtVar: 'dt',
             },
-            y: {
-              type: 'gk:rpgCell',
-              n: {
-                type: 'num',
-                value: 3,
-              },
+          ],
+        },
+        {
+          type: 'gk:onDraw',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'gk:rpgDrawNpcs',
             },
-          },
-        ],
-      },
-      {
-        type: 'gk:rpgOnTalk',
-        npc: 'Guardião',
-        body: [
-          {
-            type: 'gk:rpgSay',
-            text: {
-              type: 'str',
-              value: 'O Dragão acordou! Enfrente-o!',
+            {
+              type: 'gk:drawCharacter',
+              charVar: 'heroi',
             },
-            speaker: {
-              type: 'str',
-              value: 'Guardião',
-            },
-          },
-          {
-            type: 'gk:rpgAddFoeNamed',
-            name: 'Capanga',
-          },
-          {
-            type: 'gk:rpgHealHero',
-          },
-          {
-            type: 'gk:rpgBattleNamed',
-            name: 'Dragão',
-          },
-        ],
-      },
-      {
-        type: 'gk:rpgOnBattleEnd',
-        body: [
-          {
-            type: 'if',
-            cond: {
-              type: 'gk:rpgBattleWon',
-            },
-            then: [
-              {
-                type: 'gk:setState',
-                name: 'vitoria',
-              },
-            ],
-            else: [
-              {
-                type: 'gk:endGame',
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'gk:onUpdate',
-        dtName: 'dt',
-        body: [
-          {
-            type: 'gk:rpgMoveGrid',
-            charVar: 'heroi',
-            cell: {
-              type: 'num',
-              value: 64,
-            },
-            dtVar: 'dt',
-          },
-        ],
-      },
-      {
-        type: 'gk:onDraw',
-        ctxName: 'ctx',
-        body: [
-          {
-            type: 'gk:rpgDrawNpcs',
-          },
-          {
-            type: 'gk:drawCharacter',
-            charVar: 'heroi',
-          },
-        ],
-      },
-      {
-        type: 'gk:start',
-      },
-    ],
+          ],
+        },
+      ],
+    },
   },
   assets: [
     {

@@ -9,6 +9,9 @@ import { ensureBlocklyInitialized } from '../../setup'
 import {
   collectCanvasIds,
   collectClassNames,
+  collectCSSAnimations,
+  collectCSSFonts,
+  collectCSSSelectors,
   collectFunctionNames,
   collectGroups3d,
   collectGroupsAndLists,
@@ -303,6 +306,44 @@ describe('FieldNamePicker', () => {
     it('um bloco de desenho consome o ctx via seletor de variável', () => {
       const b = new Blockly.Workspace().newBlock('sz_canvas_clear')
       expect(kindOf(b, 'CTX')).toBe('variable')
+    })
+  })
+
+  describe('CSS (partes da página, fontes e animações)', () => {
+    const kindOf = (block: Blockly.Block, field: string): string | undefined => {
+      const value = block.getField(field)
+      return value instanceof FieldNamePicker ? value.kind : undefined
+    }
+
+    it('lista body, ids e classes do HTML já criado sem repetir', () => {
+      const ws = new Blockly.Workspace()
+      const box = ws.newBlock('sz_html_div')
+      box.setFieldValue('caixa', 'ID')
+      box.setFieldValue('cartao destaque', 'CLASS')
+      const title = ws.newBlock('sz_html_h1')
+      title.setFieldValue('cartao', 'CLASS')
+
+      expect(collectCSSSelectors(ws)).toEqual(['body', '#caixa', '.cartao', '.destaque'])
+      expect(collectCSSSelectors(null)).toEqual(['body'])
+    })
+
+    it('lista fontes e animações declaradas para os blocos consumidores', () => {
+      const ws = new Blockly.Workspace()
+      ws.newBlock('sz_css_google_font').setFieldValue('Press Start 2P', 'FONT')
+      ws.newBlock('sz_css_keyframes').setFieldValue('pulsar', 'NAME')
+      ws.newBlock('sz_css_keyframes_steps').setFieldValue('girar', 'NAME')
+
+      expect(collectCSSFonts(ws)).toEqual(['Press Start 2P'])
+      expect(collectCSSAnimations(ws)).toEqual(['pulsar', 'girar'])
+    })
+
+    it('liga cada consumidor ao kind correto e mantém declarações como texto', () => {
+      const ws = new Blockly.Workspace()
+      expect(kindOf(ws.newBlock('sz_css_background_color'), 'SELECTOR')).toBe('selector')
+      expect(kindOf(ws.newBlock('sz_css_use_font'), 'FONT')).toBe('font')
+      expect(kindOf(ws.newBlock('sz_css_apply_animation'), 'NAME')).toBe('animation')
+      expect(ws.newBlock('sz_css_google_font').getField('FONT')).not.toBeInstanceOf(FieldNamePicker)
+      expect(ws.newBlock('sz_css_keyframes').getField('NAME')).not.toBeInstanceOf(FieldNamePicker)
     })
   })
 

@@ -1,0 +1,100 @@
+import { describe, expect, it } from 'bun:test'
+import { parse } from '@babel/parser'
+import type { JSStatement } from '#ir'
+import { generateJS, generateJSWithMap } from '../../generators/js'
+import { parseJS } from '../../parsers/js'
+
+const n = (value: number) => ({ type: 'num' as const, value })
+const color = (value: string) => ({ type: 'color' as const, value })
+
+const particles: JSStatement = {
+  type: 'particlesSetup',
+  particles: 'particulas',
+  scene: 'cena',
+  count: n(500),
+  size: n(0.1),
+  spread: n(20),
+  color: color('#ffffff'),
+}
+
+describe('Canvas 3D — codec semântico dos macros', () => {
+  it('restaura o macro íntegro e mantém a geração determinística sem IDs efêmeros', () => {
+    const first = generateJS({ statements: [particles] })
+    const parsed = parseJS(first)
+    const second = generateJS({ statements: parsed })
+
+    expect(parsed.map((statement) => statement.type)).toEqual(['particlesSetup'])
+    expect(second).toBe(first)
+    expect(first).not.toContain('%22__id%22')
+  })
+
+  it('não confia no metadado quando o JavaScript expandido foi editado', () => {
+    const generated = generateJS({ statements: [particles] })
+    const edited = generated.replace('Math.min(20000', 'Math.min(19999')
+    const parsed = parseJS(edited)
+
+    expect(parsed.some((statement) => statement.type === 'particlesSetup')).toBe(false)
+    expect(parsed.length).toBeGreaterThan(3)
+  })
+
+  it('reserva auxiliares contra nomes do aluno e o JavaScript real continua parseável', () => {
+    const collisions: JSStatement[] = [
+      { type: 'var', name: 'particulasQuantidade', value: n(1), kind: 'const' },
+      { type: 'var', name: 'particulasGeometria', value: n(1), kind: 'const' },
+      { type: 'var', name: 'particulasIndice', value: n(1), kind: 'const' },
+      particles,
+    ]
+    const code = generateJS({ statements: collisions })
+
+    expect(() => parse(code, { sourceType: 'module' })).not.toThrow()
+    expect(code).toContain('particulasQuantidade_2')
+    expect(code).toContain('particulasGeometria_2')
+    expect(code).toContain('particulasIndice_2')
+  })
+
+  it('remove o kernel gerado do código→blocos sem perder o bloco de física', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'physicsLiteSetup',
+          world: 'fisica',
+          heightFunction: 'alturaChao',
+          gravity: n(-22),
+          maxSubSteps: n(3),
+        },
+      ],
+    })
+    const parsed = parseJS(code)
+
+    expect(parsed.map((statement) => statement.type)).toEqual(['physicsLiteSetup'])
+    expect(JSON.stringify(parsed)).not.toContain('createSZPhysicsLite')
+  })
+
+  it('mantém o source map alinhado depois dos cabeçalhos semânticos', () => {
+    const { code, map } = generateJSWithMap({
+      statements: [
+        {
+          type: 'physicsLiteCollisionEvent',
+          world: 'fisica',
+          bodyParam: 'corpo',
+          colliderParam: 'outro',
+          __id: 'evento',
+          body: [
+            {
+              type: 'consoleLog',
+              value: { type: 'var', name: 'outro' },
+              __id: 'mensagem',
+            },
+          ],
+        },
+      ],
+    })
+    const consoleLine =
+      code.split('\n').findIndex((line) => line.includes('console.log(outro)')) + 1
+
+    const entries = map.build()
+    expect(entries.mensagem?.startLine).toBe(consoleLine)
+    expect(entries.evento?.startLine).toBe(1)
+    expect(entries.evento?.endLine).toBeGreaterThanOrEqual(consoleLine)
+  })
+})

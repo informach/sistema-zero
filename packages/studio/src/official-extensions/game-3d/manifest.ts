@@ -13,16 +13,15 @@ import {
 export const gameThreeDManifest: ExtensionManifest = {
   id: 'game-3d',
   name: 'Jogo 3D',
-  version: '0.11.0',
+  version: '0.12.0',
   description:
     'Blocos e comandos para criar jogos 3D com Three.js: cena/câmera/luz (e cena em tela cheia responsiva), cubos/esferas/caixas, posição/rotação/escala, física (velocidade, gravidade, pulo, colisão), teclado, câmera que segue, genéricos de grade isométrica e de movimento (círculo, distância, cair girando, deslizar, girar) e Kits prontos: "Desvie", "Travessia", "Corrida" e "Empilhar". Three.js carrega de um CDN fixado.',
   category: 'games',
   official: true,
   enabledByDefault: false,
-  // Só canvas/WebGL. NÃO declara 'network' de propósito: o Three.js é carregado
-  // via importmap (script-src da CSP), não por fetch — e declarar 'network'
-  // liberaria o fetch do aluno (o permissionGuard trata 'network' como rede livre).
-  permissions: ['canvas'],
+  // `network` continua fechado: o Three.js pinado entra pelo importmap/CSP e não
+  // deve liberar `fetch` arbitrário no código do aluno.
+  permissions: ['canvas', 'keyboard', 'mouse', 'audio'],
   docs: `## Jogo 3D (Three.js)
 
 Adiciona \`window.SZGame3D\`, um wrapper didático sobre **Three.js**, para montar
@@ -38,11 +37,20 @@ cenas e **jogos** 3D sobre WebGL. O Three.js é carregado de um CDN **fixado**
 - **Posição** / **Rotação** (radianos) / **Tamanho (escala)** do objeto.
 - **A cada frame 3D** — loop de animação (\`setAnimationLoop\`) que redesenha a cena.
 
+### Formas, modelos & aparência
+
+- Cilindro, cone, plano e anel completam as primitivas; os exemplos não dependem de assets externos.
+- **Criar modelo** agrupa peças: cor, opacidade, material e visibilidade funcionam no grupo inteiro.
+- Texturas são opcionais e usam um asset escolhido no projeto; remover um objeto também libera seus recursos de GPU.
+- Luz ambiente, sol, luz pontual, neblina, céu em degradê e sombras montam a atmosfera.
+
 ### Física & controles (dentro de "A cada frame 3D")
 
 - **Mover com o teclado (WASD/setas)** — anda no plano.
 - **Definir velocidade** / **Fazer pular** (só no chão) / **Mover com gravidade (chão)**.
 - **A câmera segue o objeto** — acompanha mantendo o enquadramento.
+- Movimento relativo, olhar/mira e câmeras em primeira pessoa, terceira pessoa e orbital.
+- **Corpo + sólido + atualizar corpo** — física AABB leve da própria plataforma, sem biblioteca externa pesada.
 
 ### Perguntas (booleanos — caem num "se")
 
@@ -55,6 +63,11 @@ cenas e **jogos** 3D sobre WebGL. O Three.js é carregado de um CDN **fixado**
 - **Criar grupo de objetos** — lista p/ guardar os inimigos.
 - **Soltar inimigos** — cria/movimenta inimigos que vêm de longe acelerando (limpa os que passam).
 - **Fim de jogo: parar a cena**.
+
+### Enxames & som
+
+- Crie um enxame, solte cópias de uma primitiva, percorra, conte e remova as que saíram da área.
+- Toque notas e efeitos curtos depois da primeira interação do jogador.
 
 ### Câmera & grade 3D (genéricos — para jogos de grade/isométrico)
 
@@ -88,19 +101,21 @@ cenas e **jogos** 3D sobre WebGL. O Three.js é carregado de um CDN **fixado**
 ### Observações
 
 - Para começar rápido, use **Criar cena 3D em tela cheia** (cria o canvas sozinho). Para mais controle (HUD próprio, layout), crie o \`<canvas>\` no HTML primeiro e use **Criar cena 3D no canvas** (mesmo padrão do Jogo 2D).
-- Crie os objetos UMA vez (fora do "A cada frame 3D"); dentro do loop só mova/anime.
-- Eixos: x = direita, y = cima, z = em direção à câmera. Rotação em radianos.
-- É um nível **avançado**: aparece na paleta a partir do nível avançado.
-- Comece pelos exemplos **"Torre maluca"**, **"Corrida maluca"**, **"Atravesse a rua"** ou **"Desvie dos blocos"**.
+- Crie cena, objetos, modelos, luzes e enxames UMA vez (fora do "A cada frame 3D"); dentro do loop só mova, anime, aplique física e teste colisões. O projeto é validado antes de executar para impedir criação acidental no loop.
+- Eixos genéricos: x = direita, y = cima, z = profundidade; distância, círculo e grade usam o chão X-Z. Os kits Travessia/Corrida mantêm sua convenção interna sem mudar os blocos genéricos. Rotação em radianos.
+- Movimento e física usam o tempo real do quadro, mantendo a velocidade em telas de 60/120/144 Hz.
+- Há limites didáticos de segurança para objetos, luzes, enxames, linhas e andares; remova ou faça a poda de itens temporários.
+- Todos os blocos desta categoria são **iniciante-3d**. A aula usa \`allowBlocks\` para revelar somente os necessários, sem retirar capacidade da extensão.
+- Comece por **"Cubo girando"**; depois avance para **"Desvie dos blocos"**, **"Atravesse a rua"**, **"Corrida maluca"** e **"Torre maluca"**.
 `,
   examples: [
+    rotatingCubeExample,
     shapesExample,
     nightExample,
     swarmExample,
-    stackExample,
-    raceExample,
-    crossingExample,
     dodgeExample,
-    rotatingCubeExample,
+    crossingExample,
+    raceExample,
+    stackExample,
   ],
 }

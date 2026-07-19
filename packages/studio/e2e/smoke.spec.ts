@@ -152,6 +152,24 @@ test.describe('Sistema Zero Studio — smoke', () => {
     await expect(page.getByText('Sistema Zero: pronto para programar!')).not.toBeVisible()
   })
 
+  test('Projeto novo começa sem áreas e oferece as cinco áreas separadas', async ({ page }) => {
+    await createProject(page)
+    await expect(page.locator('.blocklyWorkspace .blocklyDraggable')).toHaveCount(0)
+
+    await page
+      .locator('.blocklyToolboxCategory')
+      .filter({ hasText: 'Áreas do projeto' })
+      .first()
+      .click()
+
+    const flyout = page.locator('.blocklyToolboxFlyout')
+    await expect(flyout).toContainText('Estrutura: HTML')
+    await expect(flyout).toContainText('Aparência: CSS')
+    await expect(flyout).toContainText('Ao iniciar')
+    await expect(flyout).toContainText('Quando acontecer — Eventos')
+    await expect(flyout).toContainText('Enquanto estiver rodando — Loops')
+  })
+
   test('AIPanel (projeto PRO) mostra badge MOCK por padrão', async ({ page }) => {
     // A aba IA só existe no modo Código (D2) → projeto profissional.
     await createProProject(page)

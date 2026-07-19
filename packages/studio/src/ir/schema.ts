@@ -1,4 +1,8 @@
 import { z } from 'zod'
+import { HTML_TAGS, isHTMLElementChildAllowed } from '../html/catalog'
+import { CANVAS3D_RESOURCE_CREATOR_TYPES } from '../three/canvas3dContract'
+import { GAME3D_RESOURCE_CREATOR_TYPES } from '../three/game3dContract'
+import { isLifecycleRootAllowed, type LifecycleArea } from './lifecycle'
 
 export const MAX_IR_TEXT_CHARS = 2_000_000
 
@@ -160,6 +164,7 @@ export type JSExpr =
   | (JSExprCommon & { type: 'g3d:touchesBox'; objVar: string; groupVar: string })
   // Game 3D — Corrida/genérico: distância, proximidade, bateu num rival?, voltas.
   | (JSExprCommon & { type: 'g3d:distanceTo'; aVar: string; bVar: string })
+  | (JSExprCommon & { type: 'g3d:countSwarm'; swarmVar: string })
   | (JSExprCommon & { type: 'g3d:isNear'; aVar: string; bVar: string; dist: number | JSExpr })
   | (JSExprCommon & { type: 'g3d:raceHit'; objVar: string; worldVar: string })
   | (JSExprCommon & { type: 'g3d:raceLaps'; objVar: string })
@@ -653,6 +658,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('g3d:distanceTo'), aVar: irText(), bVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:countSwarm'), swarmVar: irText(), ...idField }),
     z.object({
       type: z.literal('g3d:isNear'),
       aVar: irText(),
@@ -1175,44 +1181,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
 
 // ---------- HTML ----------
 
-export const HTMLTagSchema = z.enum([
-  'h1',
-  'h2',
-  'h3',
-  'p',
-  'span',
-  'strong',
-  'em',
-  'button',
-  'div',
-  'header',
-  'nav',
-  'section',
-  'footer',
-  'main',
-  'ul',
-  'li',
-  'a',
-  'img',
-  'form',
-  'input',
-  'textarea',
-  'label',
-  // SVG (gráficos vetoriais): o gerador HTML é genérico, então estas tags
-  // viram <tag attrs> normalmente; os atributos (d/transform/cx/cy/r/href/…) são
-  // preservados por collectAllAttrs no parse e por FIELD_ATTRS/data no round-trip.
-  'svg',
-  'g',
-  'path',
-  'circle',
-  'ellipse',
-  'line',
-  'rect',
-  'polyline',
-  'polygon',
-  'text',
-  'use',
-])
+export const HTMLTagSchema = z.enum(HTML_TAGS)
 export type HTMLTag = z.infer<typeof HTMLTagSchema>
 
 interface HTMLNodeCommon {
@@ -1243,42 +1212,68 @@ export type HTMLNode =
   | (HTMLNodeCommon & { type: 'comment'; text: string })
   | (HTMLNodeCommon & { type: 'rawHTML'; html: string; advanced: true })
 
+function containsHTMLElement(node: HTMLNode, tag: HTMLTag): boolean {
+  if (node.type !== 'element') return false
+  if (node.tag === tag) return true
+  return node.children?.some((child) => containsHTMLElement(child, tag)) ?? false
+}
+
 export const HTMLNodeSchema: z.ZodType<HTMLNode> = z.lazy(() =>
-  z.discriminatedUnion('type', [
-    z.object({
-      type: z.literal('element'),
-      tag: HTMLTagSchema,
-      id: irText().optional(),
-      text: irText().optional(),
-      attrs: z.record(z.string(), irText()).optional(),
-      children: z.array(HTMLNodeSchema).optional(),
-      ...idField,
+  z
+    .discriminatedUnion('type', [
+      z.object({
+        type: z.literal('element'),
+        tag: HTMLTagSchema,
+        id: irText().optional(),
+        text: irText().optional(),
+        attrs: z.record(z.string(), irText()).optional(),
+        children: z.array(HTMLNodeSchema).optional(),
+        ...idField,
+      }),
+      z.object({
+        type: z.literal('canvas'),
+        id: irText(),
+        class: irText().optional(),
+        width: z.number().int().positive().optional(),
+        height: z.number().int().positive().optional(),
+        ...idField,
+      }),
+      z.object({
+        type: z.literal('text'),
+        text: irText(),
+        ...idField,
+      }),
+      z.object({
+        type: z.literal('comment'),
+        text: irText(),
+        ...idField,
+      }),
+      z.object({
+        type: z.literal('rawHTML'),
+        html: irText(),
+        advanced: z.literal(true),
+        ...idField,
+      }),
+    ])
+    .superRefine((node, ctx) => {
+      if (node.type !== 'element' || !node.children) return
+      node.children.forEach((child, index) => {
+        if (!isHTMLElementChildAllowed(node.tag, child)) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['children', index],
+            message: 'Este bloco não cabe dentro deste conteúdo HTML.',
+          })
+        }
+        if (node.tag === 'form' && containsHTMLElement(child, 'form')) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['children', index],
+            message: 'Um formulário não pode ficar dentro de outro formulário.',
+          })
+        }
+      })
     }),
-    z.object({
-      type: z.literal('canvas'),
-      id: irText(),
-      class: irText().optional(),
-      width: z.number().int().positive().optional(),
-      height: z.number().int().positive().optional(),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('text'),
-      text: irText(),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('comment'),
-      text: irText(),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('rawHTML'),
-      html: irText(),
-      advanced: z.literal(true),
-      ...idField,
-    }),
-  ]),
 )
 
 // ---------- CSS ----------
@@ -1881,6 +1876,9 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g2d:gameOver'; ctxVar: string; text: ScreenText })
   // Palco implícito: limpa a tela do runtime (sem o aluno carregar o "pincel").
   | (JSStatementCommon & { type: 'g2d:clear' })
+  // Ciclo de vida didático. O início é o contêiner raiz de uma partida; os
+  // demais eventos compartilham o escopo criado dentro dele.
+  | (JSStatementCommon & { type: 'g2d:onStart'; body: JSStatement[] })
   // Eventos "Quando…" (hats): tecla apertada e sobreposição de sprites.
   | (JSStatementCommon & { type: 'g2d:onKey'; key: string; body: JSStatement[] })
   | (JSStatementCommon & {
@@ -4564,6 +4562,8 @@ export type JSStatement =
       url: JSExpr
       param: string
       body: JSStatement[]
+      errorParam?: string
+      errorBody?: JSStatement[]
     })
   // Canvas 3D: percorrer cada parte de um objeto/modelo (`obj.traverse((parte) => { … })`).
   // `object` = o objeto (var ou propriedade, ex.: modelo.scene); `param` = o nome da parte.
@@ -4584,6 +4584,28 @@ export type JSStatement =
       shadows: 'soft' | 'hard' | 'off'
       colorSpace: 'srgb' | 'off'
       toneMapping: 'aces' | 'off'
+    })
+  | (JSStatementCommon & {
+      type: 'rendererResponsive'
+      renderer: string
+      camera: string
+      composer?: string
+      cleanup: string
+    })
+  | (JSStatementCommon & {
+      type: 'environmentLoad'
+      scene: string
+      url: string
+      texture: string
+      background: boolean
+    })
+  | (JSStatementCommon & { type: 'disposeObject'; object: string })
+  | (JSStatementCommon & {
+      type: 'lerpPosition'
+      object: string
+      target: JSExpr
+      alpha: JSExpr
+      dt: JSExpr
     })
   // Canvas 3D: macro de efeito BRILHO (bloom) — 1 bloco que arma o EffectComposer +
   // RenderPass + UnrealBloomPass + OutputPass (grafia atual, forward-only). `composer`
@@ -4621,7 +4643,7 @@ export type JSStatement =
     })
   // Canvas 3D: fazer a água ondular (atualiza o uniform `time` no laço) — companheiro
   // do waterSetup.
-  | (JSStatementCommon & { type: 'waterTime'; water: string })
+  | (JSStatementCommon & { type: 'waterTime'; water: string; dt?: JSExpr })
   // Canvas 3D: macro de EFEITO grama — 1 bloco que cria um campo de grama INSTANCIADA
   // com shader de vento (GLSL escondido), forward-only. `grass` = a var; count/size/
   // spread/color = os botões.
@@ -4636,7 +4658,7 @@ export type JSStatement =
     })
   // Canvas 3D: fazer a grama balançar (avança o uniform `time` no laço) — companheiro
   // do grassSetup.
-  | (JSStatementCommon & { type: 'grassTime'; grass: string })
+  | (JSStatementCommon & { type: 'grassTime'; grass: string; dt?: JSExpr })
   // Canvas 3D: macro LETREIRO 3D — 1 bloco que desenha um texto num canvas oculto,
   // vira CanvasTexture num plano transparente da cena (o jeito FOLIO de texto no
   // mundo: canvas 2D → textura, nunca TextGeometry), forward-only. `sign` = a var
@@ -4682,6 +4704,8 @@ export type JSStatement =
       z2: JSExpr
       width: JSExpr
       color: JSExpr
+      heightFunction?: string
+      segments?: JSExpr
     })
   | (JSStatementCommon & {
       type: 'buildingSetup'
@@ -4692,6 +4716,22 @@ export type JSStatement =
       width: JSExpr
       height: JSExpr
       depth: JSExpr
+      color: JSExpr
+      roofColor: JSExpr
+      heightFunction?: string
+    })
+  | (JSStatementCommon & {
+      type: 'citySetup'
+      city: string
+      scene: string
+      heightFunction: string
+      blocksX: JSExpr
+      blocksZ: JSExpr
+      spacing: JSExpr
+      roadWidth: JSExpr
+      minHeight: JSExpr
+      maxHeight: JSExpr
+      seed: JSExpr
       color: JSExpr
       roofColor: JSExpr
     })
@@ -4714,6 +4754,27 @@ export type JSStatement =
       width: JSExpr
       height: JSExpr
       depth: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'physicsLiteStaticSphere'
+      world: string
+      id: string
+      x: JSExpr
+      y: JSExpr
+      z: JSExpr
+      radius: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'physicsLiteStaticObject'
+      world: string
+      id: string
+      object: string
+    })
+  | (JSStatementCommon & {
+      type: 'physicsLiteStaticCity'
+      world: string
+      city: string
+      prefix: string
     })
   | (JSStatementCommon & {
       type: 'physicsLiteBody'
@@ -4753,6 +4814,50 @@ export type JSStatement =
       depth: JSExpr
     })
   | (JSStatementCommon & { type: 'physicsLiteStep'; world: string; dt: JSExpr })
+  | (JSStatementCommon & {
+      type: 'physicsLiteVelocity' | 'physicsLiteImpulse' | 'physicsLiteTeleport'
+      world: string
+      id: string
+      x: JSExpr
+      y: JSExpr
+      z: JSExpr
+    })
+  | (JSStatementCommon & { type: 'physicsLiteRemove'; world: string; id: string })
+  | (JSStatementCommon & { type: 'physicsLiteClear'; world: string })
+  | (JSStatementCommon & {
+      type: 'physicsLiteCollisionEvent'
+      world: string
+      bodyParam: string
+      colliderParam: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & {
+      type: 'physicsLiteTriggerEvent'
+      world: string
+      bodyParam: string
+      triggerParam: string
+      enteringParam: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & {
+      type: 'physicsLiteRaycast'
+      world: string
+      result: string
+      ox: JSExpr
+      oy: JSExpr
+      oz: JSExpr
+      dx: JSExpr
+      dy: JSExpr
+      dz: JSExpr
+      maxDistance: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'physicsLiteBodyState'
+      world: string
+      result: string
+      id: string
+    })
+  | (JSStatementCommon & { type: 'physicsLiteStats'; world: string; result: string })
   // Chamada de método como comando sobre qualquer objeto (object.metodo(args);).
   | (JSStatementCommon & { type: 'memberCall'; object: JSExpr; method: string; args: JSExpr[] })
   // Chamada do construtor da classe-mãe dentro do construtor filho (`super(args);`).
@@ -9189,6 +9294,11 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('g2d:onStart'),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('g2d:updateEachFrame'),
       body: z.array(JSStatementSchema),
       ...idField,
@@ -9302,6 +9412,8 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       url: JSExprSchema,
       param: irText(),
       body: z.array(JSStatementSchema),
+      errorParam: irText().optional(),
+      errorBody: z.array(JSStatementSchema).optional(),
       ...idField,
     }),
     z.object({
@@ -9318,6 +9430,35 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       shadows: z.enum(['soft', 'hard', 'off']),
       colorSpace: z.enum(['srgb', 'off']),
       toneMapping: z.enum(['aces', 'off']),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('rendererResponsive'),
+      renderer: irText(),
+      camera: irText(),
+      composer: irText().optional(),
+      cleanup: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('environmentLoad'),
+      scene: irText(),
+      url: irText(),
+      texture: irText(),
+      background: z.boolean(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('disposeObject'),
+      object: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('lerpPosition'),
+      object: irText(),
+      target: JSExprSchema,
+      alpha: JSExprSchema,
+      dt: JSExprSchema,
       ...idField,
     }),
     z.object({
@@ -9352,6 +9493,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('waterTime'),
       water: irText(),
+      dt: JSExprSchema.optional(),
       ...idField,
     }),
     z.object({
@@ -9367,6 +9509,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('grassTime'),
       grass: irText(),
+      dt: JSExprSchema.optional(),
       ...idField,
     }),
     z.object({
@@ -9411,6 +9554,8 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       z2: JSExprSchema,
       width: JSExprSchema,
       color: JSExprSchema,
+      heightFunction: irText().optional(),
+      segments: JSExprSchema.optional(),
       ...idField,
     }),
     z.object({
@@ -9422,6 +9567,23 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       width: JSExprSchema,
       height: JSExprSchema,
       depth: JSExprSchema,
+      color: JSExprSchema,
+      roofColor: JSExprSchema,
+      heightFunction: irText().optional(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('citySetup'),
+      city: irText(),
+      scene: irText(),
+      heightFunction: irText(),
+      blocksX: JSExprSchema,
+      blocksZ: JSExprSchema,
+      spacing: JSExprSchema,
+      roadWidth: JSExprSchema,
+      minHeight: JSExprSchema,
+      maxHeight: JSExprSchema,
+      seed: JSExprSchema,
       color: JSExprSchema,
       roofColor: JSExprSchema,
       ...idField,
@@ -9444,6 +9606,30 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       width: JSExprSchema,
       height: JSExprSchema,
       depth: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('physicsLiteStaticSphere'),
+      world: irText(),
+      id: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      z: JSExprSchema,
+      radius: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('physicsLiteStaticObject'),
+      world: irText(),
+      id: irText(),
+      object: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('physicsLiteStaticCity'),
+      world: irText(),
+      city: irText(),
+      prefix: irText(),
       ...idField,
     }),
     z.object({
@@ -9491,6 +9677,71 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('physicsLiteStep'),
       world: irText(),
       dt: JSExprSchema,
+      ...idField,
+    }),
+    ...(['physicsLiteVelocity', 'physicsLiteImpulse', 'physicsLiteTeleport'] as const).map((type) =>
+      z.object({
+        type: z.literal(type),
+        world: irText(),
+        id: irText(),
+        x: JSExprSchema,
+        y: JSExprSchema,
+        z: JSExprSchema,
+        ...idField,
+      }),
+    ),
+    z.object({
+      type: z.literal('physicsLiteRemove'),
+      world: irText(),
+      id: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('physicsLiteClear'),
+      world: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('physicsLiteCollisionEvent'),
+      world: irText(),
+      bodyParam: irText(),
+      colliderParam: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('physicsLiteTriggerEvent'),
+      world: irText(),
+      bodyParam: irText(),
+      triggerParam: irText(),
+      enteringParam: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('physicsLiteRaycast'),
+      world: irText(),
+      result: irText(),
+      ox: JSExprSchema,
+      oy: JSExprSchema,
+      oz: JSExprSchema,
+      dx: JSExprSchema,
+      dy: JSExprSchema,
+      dz: JSExprSchema,
+      maxDistance: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('physicsLiteBodyState'),
+      world: irText(),
+      result: irText(),
+      id: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('physicsLiteStats'),
+      world: irText(),
+      result: irText(),
       ...idField,
     }),
     z.object({
@@ -9604,15 +9855,21 @@ export const ExtensionUsageSchema = z.object({ extensionId: irText() })
 /**
  * Onde o CSS/JS canônico vive no documento gerado:
  * - `external` (padrão): arquivo `style.css`/`script.js` + `<link>`/`<script src>`.
+ * - `external-head`: `script.js` externo referenciado dentro do `<head>`.
  * - `inline-head`: `<style>`/`<script>` no fim do `<head>`.
  * - `inline-body-end`: `<style>`/`<script>` antes de `</body>`.
  *
  * Preserva o caso "tudo num único index.html": o conteúdo inline é extraído
  * para blocos (em `css`/`js`) e a geração o devolve ao mesmo lugar.
  */
-export type AssetPlacement = 'external' | 'inline-head' | 'inline-body-end'
+export type AssetPlacement = 'external' | 'external-head' | 'inline-head' | 'inline-body-end'
 
-export const AssetPlacementSchema = z.enum(['external', 'inline-head', 'inline-body-end'])
+export const AssetPlacementSchema = z.enum([
+  'external',
+  'external-head',
+  'inline-head',
+  'inline-body-end',
+])
 
 /**
  * "Casca" do documento HTML que os blocos não representam (doctype, atributos
@@ -9658,7 +9915,73 @@ export interface SZIR {
   htmlShell?: HTMLShell
 }
 
+/** Estrutura canônica do comportamento após a migração para áreas tipadas. */
+export interface BehaviorIR {
+  start: JSStatement[]
+  events: JSStatement[]
+  loops: JSStatement[]
+}
+
+/**
+ * IR versão 2. `js` não coexiste com `behavior`: projetos antigos entram por
+ * `SZIR` e são normalizados na fronteira; projetos novos usam somente esta forma.
+ */
+export interface SZIRV2 {
+  version: 2
+  html: HTMLNode[]
+  css: CSSEntry[]
+  behavior: BehaviorIR
+  extensions: ExtensionUsage[]
+  htmlShell?: HTMLShell
+}
+
+export type SZIRInput = SZIR | SZIRV2
+
 const GK_MAP_VISUAL_STATEMENTS = new Set(['gk:drawBackground', 'gk:drawTilemap'])
+
+const G2D_REGISTERED_EVENT_TYPES = new Set(['g2d:onPointer', 'g2d:onKey', 'g2d:onOverlap'])
+
+const G2D_DECLARATION_FIELDS: Readonly<Record<string, string>> = {
+  var: 'name',
+  'g2d:createSprite': 'varName',
+  'g2d:createImageSprite': 'varName',
+  'g2d:createShapeSprite': 'varName',
+  'g2d:score': 'varName',
+  'g2d:collides': 'varName',
+  'g2d:circleCollides': 'varName',
+  'g2d:createGroup': 'varName',
+  'g2d:loadSpritesheet': 'varName',
+  'g2d:defineEnemyType': 'varName',
+  'g2d:createTileMap': 'varName',
+  'g2d:createTileMapFromAsset': 'varName',
+  'g2d:createShip': 'varName',
+  'g2d:createDino': 'varName',
+  'g2d:createCity': 'varName',
+  'g2d:placeThrower': 'varName',
+  'g2d:createStickHero': 'varName',
+  'g2d:createBalloon': 'varName',
+}
+
+const G2D_REFERENCE_FIELDS = new Set([
+  'spriteVar',
+  'targetVar',
+  'aVar',
+  'bVar',
+  'mapVar',
+  'groupVar',
+  'aGroup',
+  'bGroup',
+  'typeVar',
+  'sheetVar',
+  'gameVar',
+  'cityVar',
+  'throwerVar',
+  'enemyVar',
+  'otherVar',
+  'shapeName',
+])
+
+const G2D_IMPLICIT_NAMES = new Set(['ctx', 'event', 'window', 'document', 'Math'])
 
 function findNestedType(value: unknown, forbidden: (type: string) => boolean): string | undefined {
   if (Array.isArray(value)) {
@@ -9677,6 +10000,215 @@ function findNestedType(value: unknown, forbidden: (type: string) => boolean): s
   return undefined
 }
 
+interface ChildStatementEntry {
+  path: (string | number)[]
+  body: JSStatement[]
+}
+
+function childStatementEntries(statement: JSStatement): ChildStatementEntry[] {
+  const bodies: ChildStatementEntry[] = []
+  for (const [key, value] of Object.entries(statement)) {
+    if (key === 'elseif' && Array.isArray(value)) {
+      for (let index = 0; index < value.length; index += 1) {
+        const branch = value[index]
+        if (branch && typeof branch === 'object' && Array.isArray(branch.then)) {
+          bodies.push({ path: ['elseif', index, 'then'], body: branch.then })
+        }
+      }
+      continue
+    }
+    if (
+      (key === 'body' ||
+        key === 'then' ||
+        key === 'else' ||
+        key === 'handler' ||
+        key === 'finalizer' ||
+        key === 'catchBody' ||
+        key === 'ctorBody') &&
+      Array.isArray(value)
+    ) {
+      bodies.push({ path: [key], body: value as JSStatement[] })
+    }
+    if (key === 'methods' && Array.isArray(value)) {
+      for (let index = 0; index < value.length; index += 1) {
+        const method = value[index]
+        if (method && typeof method === 'object' && Array.isArray(method.body)) {
+          bodies.push({ path: ['methods', index, 'body'], body: method.body })
+        }
+      }
+    }
+  }
+  return bodies
+}
+
+function childStatementArrays(statement: JSStatement): JSStatement[][] {
+  return childStatementEntries(statement).map((entry) => entry.body)
+}
+
+function validateG2DDeclarations(
+  statements: JSStatement[],
+  ctx: z.RefinementCtx,
+  path: (string | number)[],
+): void {
+  const declared = new Map<string, number>()
+  for (let index = 0; index < statements.length; index += 1) {
+    const statement = statements[index]
+    if (!statement) continue
+    const field = G2D_DECLARATION_FIELDS[statement.type]
+    if (field) {
+      const name = (statement as unknown as Record<string, unknown>)[field]
+      if (typeof name === 'string' && name.trim()) {
+        const normalized = name.trim()
+        const previous = declared.get(normalized)
+        if (previous !== undefined) {
+          ctx.addIssue({
+            code: 'custom',
+            path: [...path, index, field],
+            message: `O nome “${normalized}” já foi criado neste trecho; escolha um nome diferente`,
+          })
+        } else {
+          declared.set(normalized, index)
+        }
+      }
+    }
+    for (const child of childStatementEntries(statement)) {
+      validateG2DDeclarations(child.body, ctx, [...path, index, ...child.path])
+    }
+  }
+}
+
+function validateCanvas3DLifecycle(
+  statements: JSStatement[],
+  ctx: z.RefinementCtx,
+  path: (string | number)[],
+  insideFrame = false,
+): void {
+  for (let index = 0; index < statements.length; index += 1) {
+    const statement = statements[index]
+    if (!statement) continue
+    if (
+      insideFrame &&
+      (CANVAS3D_RESOURCE_CREATOR_TYPES.has(statement.type) ||
+        GAME3D_RESOURCE_CREATOR_TYPES.has(statement.type))
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: [...path, index],
+        message: `Mova ${statement.type} para fora do laço de animação; recursos 3D devem ser criados uma vez`,
+      })
+    }
+    const childInsideFrame =
+      insideFrame || statement.type === 'animationLoop' || statement.type === 'g3d:animate'
+    for (const body of childStatementArrays(statement)) {
+      validateCanvas3DLifecycle(body, ctx, [...path, index, 'body'], childInsideFrame)
+    }
+  }
+}
+
+function g2dLocalNames(statement: JSStatement): string[] {
+  const record = statement as unknown as Record<string, unknown>
+  switch (statement.type) {
+    case 'g2d:onPointer':
+      return [record.xName, record.yName].filter((name): name is string => typeof name === 'string')
+    case 'g2d:onGroupOverlap':
+      return [record.aName, record.bName].filter((name): name is string => typeof name === 'string')
+    case 'g2d:forEachInGroup':
+    case 'g2d:pruneOffscreen':
+    case 'g2d:onSpriteGroupOverlap':
+    case 'g2d:onEnemyDefeated':
+    case 'g2d:onEnemyShotHit':
+      return typeof record.itemName === 'string' ? [record.itemName] : []
+    default:
+      return []
+  }
+}
+
+function validateG2DReferenceValue(
+  value: unknown,
+  symbols: ReadonlySet<string>,
+  ctx: z.RefinementCtx,
+  path: (string | number)[],
+): void {
+  if (Array.isArray(value) || typeof value !== 'object' || value === null) return
+  const record = value as Record<string, unknown>
+  const type = typeof record.type === 'string' ? record.type : ''
+
+  if (type === 'var' && !Object.hasOwn(record, 'value') && typeof record.name === 'string') {
+    const name = record.name.trim()
+    if (name && !symbols.has(name) && !G2D_IMPLICIT_NAMES.has(name)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: [...path, 'name'],
+        message: `O nome “${name}” ainda não foi criado neste jogo`,
+      })
+    }
+  }
+
+  for (const [key, child] of Object.entries(record)) {
+    if (key === '__id' || key === 'body' || key === 'then' || key === 'else' || key === 'elseif')
+      continue
+    if (
+      G2D_REFERENCE_FIELDS.has(key) &&
+      typeof child === 'string' &&
+      G2D_DECLARATION_FIELDS[type] !== key &&
+      !(type === 'g2d:defineShape' && key === 'shapeName')
+    ) {
+      const name = child.trim()
+      if (name && !symbols.has(name) && !G2D_IMPLICIT_NAMES.has(name)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...path, key],
+          message: `O nome “${name}” ainda não foi criado neste jogo`,
+        })
+      }
+      continue
+    }
+    validateG2DReferenceValue(child, symbols, ctx, [...path, key])
+  }
+}
+
+function validateG2DReferences(
+  statements: JSStatement[],
+  ctx: z.RefinementCtx,
+  path: (string | number)[],
+  inherited: ReadonlySet<string> = G2D_IMPLICIT_NAMES,
+): void {
+  const symbols = new Set(inherited)
+  for (const statement of statements) {
+    const field = G2D_DECLARATION_FIELDS[statement.type]
+    const name = field ? (statement as unknown as Record<string, unknown>)[field] : undefined
+    if (typeof name === 'string' && name.trim()) symbols.add(name.trim())
+    if (statement.type === 'g2d:defineShape' && statement.shapeName.trim()) {
+      symbols.add(statement.shapeName.trim())
+    }
+  }
+
+  for (let index = 0; index < statements.length; index += 1) {
+    const statement = statements[index]
+    if (!statement) continue
+    validateG2DReferenceValue(statement, symbols, ctx, [...path, index])
+
+    if (statement.type === 'assign') {
+      const name = statement.name.trim()
+      if (name && !symbols.has(name) && !G2D_IMPLICIT_NAMES.has(name)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...path, index, 'name'],
+          message: `A variável “${name}” ainda não foi criada neste jogo`,
+        })
+      }
+    }
+
+    const childSymbols = new Set(symbols)
+    for (const local of g2dLocalNames(statement)) {
+      if (local.trim()) childSymbols.add(local.trim())
+    }
+    for (const child of childStatementEntries(statement)) {
+      validateG2DReferences(child.body, ctx, [...path, index, ...child.path], childSymbols)
+    }
+  }
+}
+
 export const SZIRSchema = z
   .object({
     html: z.array(HTMLNodeSchema),
@@ -9685,7 +10217,68 @@ export const SZIRSchema = z
     extensions: z.array(ExtensionUsageSchema),
     htmlShell: HTMLShellSchema.optional(),
   })
+
   .superRefine((ir, ctx) => {
+    validateCanvas3DLifecycle(ir.js, ctx, ['js'])
+    const starts = ir.js
+      .map((statement, index) => ({ statement, index }))
+      .filter(({ statement }) => statement.type === 'g2d:onStart')
+    if (starts.length > 1) {
+      for (const duplicate of starts.slice(1)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['js', duplicate.index],
+          message: 'Use somente um bloco “Quando o jogo começar”',
+        })
+      }
+    }
+
+    for (let index = 0; index < ir.js.length; index += 1) {
+      const statement = ir.js[index]
+      if (statement?.type === 'g2d:updateEachFrame') {
+        const nestedEvent = findNestedType(statement.body, (type) =>
+          G2D_REGISTERED_EVENT_TYPES.has(type),
+        )
+        if (nestedEvent) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['js', index, 'body'],
+            message: `Mova ${nestedEvent} para fora de “A cada quadro”; eventos são registrados uma vez no início`,
+          })
+        }
+      }
+      if (statement?.type === 'g2d:onStart') {
+        for (let childIndex = 0; childIndex < statement.body.length; childIndex += 1) {
+          const child = statement.body[childIndex]
+          if (!child) continue
+          if (child.type === 'g2d:onStart') {
+            ctx.addIssue({
+              code: 'custom',
+              path: ['js', index, 'body', childIndex],
+              message:
+                '“Quando o jogo começar” deve ser o bloco raiz, não ficar dentro de outro bloco',
+            })
+          }
+          if (child.type === 'g2d:updateEachFrame') {
+            const nestedEvent = findNestedType(child.body, (type) =>
+              G2D_REGISTERED_EVENT_TYPES.has(type),
+            )
+            if (nestedEvent) {
+              ctx.addIssue({
+                code: 'custom',
+                path: ['js', index, 'body', childIndex, 'body'],
+                message: `Mova ${nestedEvent} para fora de “A cada quadro”; eventos são registrados uma vez no início`,
+              })
+            }
+          }
+        }
+      }
+    }
+    validateG2DDeclarations(ir.js, ctx, ['js'])
+    if (ir.extensions.some((extension) => extension.extensionId === 'game-2d')) {
+      validateG2DReferences(ir.js, ctx, ['js'])
+    }
+
     for (let index = 0; index < ir.js.length; index += 1) {
       const statement = ir.js[index]
       if (statement?.type === 'gk:rpgCreateMap') {
@@ -9717,6 +10310,68 @@ export const SZIRSchema = z
     }
   })
 
+export const BehaviorIRSchema = z.object({
+  start: z.array(JSStatementSchema),
+  events: z.array(JSStatementSchema),
+  loops: z.array(JSStatementSchema),
+})
+
+function v2PathFromLegacy(
+  path: PropertyKey[],
+  startLength: number,
+  eventsLength: number,
+): PropertyKey[] {
+  if (path[0] !== 'js' || typeof path[1] !== 'number') return path
+  const index = path[1]
+  if (index < startLength) return ['behavior', 'start', index, ...path.slice(2)]
+  if (index < startLength + eventsLength) {
+    return ['behavior', 'events', index - startLength, ...path.slice(2)]
+  }
+  return ['behavior', 'loops', index - startLength - eventsLength, ...path.slice(2)]
+}
+
+export const SZIRV2Schema = z
+  .object({
+    version: z.literal(2),
+    html: z.array(HTMLNodeSchema),
+    css: z.array(CSSEntrySchema),
+    behavior: BehaviorIRSchema,
+    extensions: z.array(ExtensionUsageSchema),
+    htmlShell: HTMLShellSchema.optional(),
+  })
+  .superRefine((ir, ctx) => {
+    const legacy = SZIRSchema.safeParse({
+      html: ir.html,
+      css: ir.css,
+      js: [...ir.behavior.start, ...ir.behavior.events, ...ir.behavior.loops],
+      extensions: ir.extensions,
+      ...(ir.htmlShell ? { htmlShell: ir.htmlShell } : {}),
+    })
+    if (!legacy.success) {
+      for (const issue of legacy.error.issues) {
+        ctx.addIssue({
+          code: 'custom',
+          path: v2PathFromLegacy(issue.path, ir.behavior.start.length, ir.behavior.events.length),
+          message: issue.message,
+        })
+      }
+    }
+
+    for (const area of ['start', 'events', 'loops'] as const satisfies readonly LifecycleArea[]) {
+      for (let index = 0; index < ir.behavior[area].length; index += 1) {
+        const statement = ir.behavior[area][index]
+        if (!statement || isLifecycleRootAllowed(statement, area)) continue
+        ctx.addIssue({
+          code: 'custom',
+          path: ['behavior', area, index],
+          message: `O bloco “${statement.type}” não pode ficar na área “${area}”`,
+        })
+      }
+    }
+  })
+
+export const SZIRInputSchema = z.union([SZIRV2Schema, SZIRSchema])
+
 export function isAdvancedHTML(node: HTMLNode): node is Extract<HTMLNode, { type: 'rawHTML' }> {
   return node.type === 'rawHTML'
 }
@@ -9730,6 +10385,7 @@ export function isAdvancedJS(stmt: JSStatement): stmt is Extract<JSStatement, { 
 }
 
 export const G2D_STATEMENT_TYPES = new Set([
+  'g2d:onStart',
   'g2d:createSprite',
   'g2d:drawSprite',
   'g2d:setPosition',

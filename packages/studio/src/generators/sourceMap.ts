@@ -59,6 +59,21 @@ export class SourceMapBuilder {
     this.map[id] = { file, startLine, endLine, startColumn, endColumn }
   }
 
+  /** Desloca entradas já registradas dentro de uma faixa (ex.: cabeçalho de macro). */
+  shiftEntriesInRange(
+    file: SourceMappedFile,
+    startLine: number,
+    endLine: number,
+    deltaLines: number,
+  ): void {
+    if (deltaLines === 0) return
+    for (const entry of Object.values(this.map)) {
+      if (entry.file !== file || entry.startLine < startLine || entry.endLine > endLine) continue
+      entry.startLine += deltaLines
+      entry.endLine += deltaLines
+    }
+  }
+
   build(): SourceMap {
     return { ...this.map }
   }

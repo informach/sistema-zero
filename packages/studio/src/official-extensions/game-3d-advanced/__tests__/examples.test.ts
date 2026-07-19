@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import { compileStatements } from '#generators'
-import type { JSStatement } from '#ir'
+import { behaviorStatements, type JSStatement } from '#ir'
 import 'blockly/blocks'
 import { registerExtensionBlocks } from '../../../blockly/blocks'
 import { buildIRFromWorkspace } from '../../../blockly/buildIR'
@@ -11,6 +11,7 @@ import { parseJS } from '../../../parsers/js'
 import { gameKit3DBlocks } from '../blocks'
 import { defesaDaTorreExample } from '../examples'
 import { gameKit3DManifest } from '../manifest'
+import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 
 /**
  * Drift do exemplo "Defesa da Torre": a IR embutida em examples.ts foi gerada
@@ -151,15 +152,18 @@ describe('Exemplo Defesa da Torre — drift contra o parser real', () => {
   })
 
   it('parseJS(SOURCE) ≡ IR embutida (zero rawJS/memberCall)', () => {
-    const parsed = stripIds(parseJS(SOURCE)) as JSStatement[]
+    const parsed = stripIds(parseExampleLifecycleSource(SOURCE)) as JSStatement[]
     const types = collectTypes(parsed)
     expect(types.has('rawJS')).toBe(false)
     expect(types.has('memberCall')).toBe(false)
-    expect(parsed).toEqual(stripIds(defesaDaTorreExample.ir.js) as JSStatement[])
+    expect(parsed).toEqual(stripIds(behaviorStatements(defesaDaTorreExample.ir)) as JSStatement[])
   })
 
   it('fixpoint textual: gerar → parsear → gerar é byte-estável', () => {
-    const code1 = compileStatements(stripIds(defesaDaTorreExample.ir.js) as JSStatement[], 0)
+    const code1 = compileStatements(
+      stripIds(behaviorStatements(defesaDaTorreExample.ir)) as JSStatement[],
+      0,
+    )
     const reparsed = stripIds(parseJS(code1)) as JSStatement[]
     const code2 = compileStatements(reparsed, 0)
     expect(code2).toBe(code1)
@@ -172,8 +176,8 @@ describe('Exemplo Defesa da Torre — drift contra o parser real', () => {
     const ws = new Blockly.Workspace()
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-      const rebuilt = stripIds(buildIRFromWorkspace(ws).js)
-      expect(rebuilt).toEqual(stripIds(defesaDaTorreExample.ir.js))
+      const rebuilt = stripIds(behaviorStatements(buildIRFromWorkspace(ws)))
+      expect(rebuilt).toEqual(stripIds(behaviorStatements(defesaDaTorreExample.ir)))
     } finally {
       ws.dispose()
     }

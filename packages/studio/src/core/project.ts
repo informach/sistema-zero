@@ -1,4 +1,4 @@
-import type { SZIR } from '#ir'
+import type { SZIRInput } from '#ir'
 import type { IDEMode } from './modes'
 import type { ProjectKind, ProjectTree, ProProjectMeta } from './proProject'
 
@@ -599,7 +599,7 @@ export interface Project {
   extraFiles?: ExtraFile[]
   /** Assets embutidos (imagens/sprites) — opcional/retrocompatível. */
   assets?: ProjectAsset[]
-  ir: SZIR | null
+  ir: SZIRInput | null
   blocksState: unknown | null
   installedExtensions: InstalledExtension[]
   /** Discriminante do modo. Ausente/undefined = 'classic'. */

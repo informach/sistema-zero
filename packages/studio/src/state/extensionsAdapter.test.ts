@@ -2,7 +2,7 @@ import { afterAll, describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import { buildWorkspaceStateFromIR, unregisterBlocks } from '#blockly'
 import { createEmptyProject } from '#core'
-import type { SZIR } from '#ir'
+import { behaviorStatements, type SZIR } from '#ir'
 import { findExtension } from '#official-extensions'
 import {
   countExtensionBlocksInProject,
@@ -75,7 +75,7 @@ describe('extensionsAdapter', () => {
 
     const cleaned = removeExtensionArtifacts(project, 'game-2d')
     expect(cleaned.ir?.extensions).toEqual([])
-    expect(cleaned.ir?.js).toEqual([
+    expect(cleaned.ir ? behaviorStatements(cleaned.ir) : []).toEqual([
       { type: 'consoleLog', value: { type: 'str', value: 'mantém' } },
     ])
     expect(
@@ -136,7 +136,7 @@ describe('extensionsAdapter', () => {
         for (const x of Object.values(o)) walk(x)
       }
     }
-    walk(cleaned.ir?.js)
+    walk(cleaned.ir ? behaviorStatements(cleaned.ir) : [])
     expect([...types].some((t) => t.startsWith('g2d:'))).toBe(false)
     // E os statements não-extensão (consoleLog) sobrevivem.
     expect(types.has('consoleLog')).toBe(true)

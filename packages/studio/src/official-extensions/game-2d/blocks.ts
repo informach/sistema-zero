@@ -95,6 +95,17 @@ export const gameTwoDBlocks = [
     tooltip: 'Escreve um texto grande na tela (ex.: ao perder ou vencer).',
   },
   {
+    type: 'sz_g2d_on_start',
+    message0: 'Quando o jogo começar',
+    message1: 'preparar %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: EVENT_C,
+    tooltip:
+      'Tudo que prepara uma partida fica aqui: tela, personagens, pontos, eventos e o bloco “A cada quadro”. Ao recomeçar, este conteúdo roda novamente com tudo limpo.',
+  },
+  {
     type: 'sz_g2d_update_each_frame',
     message0: 'A cada quadro do jogo',
     message1: 'fazer %1',
@@ -615,7 +626,8 @@ export const gameTwoDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Marca o jogo como pausado. Embrulhe o movimento num "se o jogo não está pausado".',
+    tooltip:
+      'Congela os blocos “A cada quadro” e os contatos. Eventos de tecla e clique continuam funcionando para você poder mandar continuar.',
   },
   {
     type: 'sz_g2d_resume',
@@ -1671,7 +1683,7 @@ export const gameTwoDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Começa o jogo do zero (recarrega tudo).',
+    tooltip: 'Limpa a partida e executa novamente tudo que está em “Quando o jogo começar”.',
   },
 
   // ---- Cenário: fundo de estrelas + arrastar com o dedo (v0.6.0) ----
@@ -2648,6 +2660,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     name: '⏱️ Quando…',
     colour: '#ffbf00',
     types: [
+      'sz_g2d_on_start',
       'sz_g2d_update_each_frame',
       'sz_g2d_on_key',
       'sz_g2d_on_overlap',

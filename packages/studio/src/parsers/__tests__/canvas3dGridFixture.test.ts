@@ -5,6 +5,7 @@ import { buildIRFromWorkspace } from '../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../blockly/workspaceState'
 import { generateJS } from '../../generators/js'
+import { behaviorStatements } from '../../ir/behavior'
 import type { SZIR } from '../../ir/schema'
 import { parseJS } from '../js'
 
@@ -154,7 +155,9 @@ describe('Canvas 3D — fixture 04-05 (grade espacial) round-trip 0-raw', () => 
     const ws = new Blockly.Workspace()
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-      const rebuiltCode = generateJS({ statements: buildIRFromWorkspace(ws).js })
+      const rebuiltCode = generateJS({
+        statements: behaviorStatements(buildIRFromWorkspace(ws)),
+      })
       expect(rebuiltCode).toBe(code)
     } finally {
       ws.dispose()

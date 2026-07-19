@@ -1,5 +1,6 @@
 import * as Blockly from 'blockly/core'
 import { compileStatements } from '#generators'
+import { behaviorStatements } from '#ir'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
 import { parseJS } from '../../parsers/js'
@@ -16,7 +17,7 @@ function jsBlockCycle(jsIR: unknown[]): any[] {
   const state = buildWorkspaceStateFromIR(ir as Parameters<typeof buildWorkspaceStateFromIR>[0])
   const ws = new Blockly.Workspace()
   Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-  return buildIRFromWorkspace(ws).js as any[]
+  return behaviorStatements(buildIRFromWorkspace(ws)) as any[]
 }
 
 describe('Fase 4 — throw / Object.assign / cssText / sign / map / switch', () => {

@@ -1,5 +1,5 @@
 import { afterAll, afterEach, describe, expect, it } from 'bun:test'
-import { compileStatements } from '#generators'
+import { generateJS } from '#generators'
 import { vilaDoDragaoExample } from '../examples'
 import { gameKitRuntime } from '../runtime'
 
@@ -1249,7 +1249,10 @@ describe('gk — JOGAR uma aventura inteira do 🧙 Kit RPG', () => {
 
   it('⭐ Vila do Dragão EXATA: vila → ferreiro → chave → porta → caverna → vitória → novo jogo', async () => {
     const h = loadRuntime()
-    const code = compileStatements(vilaDoDragaoExample.ir.js, 0)
+    const code = generateJS({
+      behavior: vilaDoDragaoExample.ir.behavior,
+      lifecycle: 'game-2d-advanced',
+    })
     new Function('SZGameKit', code)(h.api)
     await Promise.resolve()
     await Promise.resolve()

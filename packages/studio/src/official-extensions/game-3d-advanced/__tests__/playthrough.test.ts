@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'bun:test'
 import * as THREE from 'three'
-import { compileStatements } from '#generators'
-import type { JSStatement } from '#ir'
+import { generateJS } from '#generators'
+import type { BehaviorIR } from '#ir'
 import {
   defesaDaTorreExample,
   guardiaoDoPortalExample,
@@ -52,8 +52,11 @@ function stripIds<T>(value: T): T {
 }
 
 /** O MESMO JS que o preview roda: gerado da IR embutida pelo gerador real. */
-function jsDoExemplo(example: { ir: { js: unknown } }): string {
-  return compileStatements(stripIds(example.ir.js) as JSStatement[], 0)
+function jsDoExemplo(example: { ir: { behavior: BehaviorIR } }): string {
+  return generateJS({
+    behavior: stripIds(example.ir.behavior),
+    lifecycle: 'game-3d-advanced',
+  })
 }
 
 /** Clica o botão principal de uma tela pronta (o caminho da criança). */

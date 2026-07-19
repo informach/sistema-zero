@@ -146,8 +146,8 @@ describe('IR→blocos emite SOMBRA em soquete com preset (fim do no-op pós-Pont
     const state = buildWorkspaceStateFromIR(ir) as {
       blocks: { blocks: SerializedBlocklyBlock[] }
     }
-    const behavior = state.blocks.blocks.find((b) => b.type === 'sz_frame_behavior')
-    const loader = behavior?.inputs?.CHILDREN?.block
+    const start = state.blocks.blocks.find((b) => b.type === 'sz_frame_start')
+    const loader = start?.inputs?.CHILDREN?.block
     expect(loader?.type).toBe('sz_g2d_load_spritesheet')
     expect(loader?.inputs?.FW?.shadow).toMatchObject({ type: 'sz_val_number' })
     expect(loader?.inputs?.FH?.shadow).toMatchObject({ type: 'sz_val_number' })
@@ -174,8 +174,8 @@ describe('IR→blocos emite SOMBRA em soquete com preset (fim do no-op pós-Pont
     const state = buildWorkspaceStateFromIR(ir) as {
       blocks: { blocks: SerializedBlocklyBlock[] }
     }
-    const behavior = state.blocks.blocks.find((b) => b.type === 'sz_frame_behavior')
-    const assign = behavior?.inputs?.CHILDREN?.block
+    const start = state.blocks.blocks.find((b) => b.type === 'sz_frame_start')
+    const assign = start?.inputs?.CHILDREN?.block
     expect(assign?.inputs?.VALUE?.block).toMatchObject({ type: 'sz_val_number' })
     expect(assign?.inputs?.VALUE?.shadow).toBeUndefined()
   })

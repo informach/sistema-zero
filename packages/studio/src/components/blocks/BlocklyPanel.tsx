@@ -4,9 +4,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import 'blockly/blocks'
 import { useShallow } from 'zustand/react/shallow'
 import {
+  applyDraftDiagnostics,
+  applySemanticDiagnostics,
+  attachProjectAreaGuard,
   buildCoreToolbox,
   buildIRFromWorkspace,
   ensureBlocklyInitialized,
+  HTMLConnectionChecker,
   normalizeBlocksStateToFrames,
   type PasteTargetHandlers,
   registerClassesFlyout,
@@ -60,6 +64,7 @@ function blocklyWorkspaceConfiguration(theme: 'dark' | 'light'): Blockly.Blockly
     trashcan: true,
     // Habilita "Recolher/Expandir blocos" no menu de contexto nativo.
     collapse: true,
+    plugins: { connectionChecker: HTMLConnectionChecker },
     // `sounds:false` DESLIGA o preload automático do Blockly, que — sem `media`
     // configurado — baixaria click/disconnect/delete .mp3 do servidor demo
     // (blockly-demo.appspot.com) → bloqueado pela CSP do host, sujando o console.
@@ -314,6 +319,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   const onWorkspaceReadyRef = useRef(onWorkspaceReady)
   onWorkspaceReadyRef.current = onWorkspaceReady
   const [workspace, setWorkspace] = useState<Blockly.WorkspaceSvg | null>(null)
+  const [draftBlockIds, setDraftBlockIds] = useState<string[]>([])
   const lastSerializedRef = useRef<string>('')
   const isApplyingStateRef = useRef(false)
   const isSelectingFromEditorRef = useRef(false)
@@ -425,6 +431,12 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       // casca do documento (head/doctype) que os blocos não representam.
       const current = projectStoreApi.getState().project
       const ir = current?.ir?.htmlShell ? { ...built, htmlShell: current.ir.htmlShell } : built
+      if (!applySemanticDiagnostics(workspace, ir)) {
+        // O desenho inválido continua salvo para a criança poder corrigi-lo, mas
+        // o preview fica no último estado válido em vez de virar uma tela vazia.
+        applyProjectState({ blocksState: state })
+        return
+      }
       const projectNameForGen = current?.name ?? 'Projeto'
       const { files, sourceMap } = generateProjectFilesWithMap({
         ir,
@@ -513,6 +525,58 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     registerFunctionsFlyout(workspace as Blockly.WorkspaceSvg)
     registerClassesFlyout(workspace as Blockly.WorkspaceSvg)
   }, [workspace])
+
+  // Pilhas executáveis fora das Áreas do projeto são preservadas como rascunho,
+  // mas precisam ficar inequivocamente diferentes do código que entra no preview.
+  useEffect(() => {
+    if (!workspace) {
+      setDraftBlockIds([])
+      return
+    }
+    let disposed = false
+    let refreshQueued = false
+    const refresh = () => {
+      refreshQueued = false
+      if (disposed) return
+      const next = applyDraftDiagnostics(workspace)
+      setDraftBlockIds((current) =>
+        current.length === next.length && current.every((id, index) => id === next[index])
+          ? current
+          : next,
+      )
+    }
+    const scheduleRefresh = () => {
+      if (refreshQueued) return
+      refreshQueued = true
+      queueMicrotask(refresh)
+    }
+    const listener = (event: Blockly.Events.Abstract) => {
+      if (
+        event.type === Blockly.Events.FINISHED_LOADING ||
+        event.type === Blockly.Events.BLOCK_CREATE ||
+        event.type === Blockly.Events.BLOCK_DELETE ||
+        event.type === Blockly.Events.BLOCK_MOVE ||
+        event.type === Blockly.Events.BLOCK_CHANGE
+      ) {
+        scheduleRefresh()
+      }
+    }
+    refresh()
+    workspace.addChangeListener(listener)
+    return () => {
+      disposed = true
+      workspace.removeChangeListener(listener)
+    }
+  }, [workspace])
+
+  const focusFirstDraft = useCallback(() => {
+    const id = draftBlockIds[0]
+    if (!workspace || !id) return
+    const block = workspace.getBlockById(id) as Blockly.BlockSvg | null
+    if (!block) return
+    block.select()
+    workspace.centerOnBlock(id, false)
+  }, [draftBlockIds, workspace])
 
   // Regeneração código a partir dos blocos. Filtra eventos para reagir apenas a
   // edições reais (criar/apagar/mover/alterar bloco). Eventos disparados durante
@@ -833,6 +897,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     // serializado — re-derivado de FROM/TO/FPS + metadado do asset a cada
     // carga/reconstrução (senão a seleção "some" ao reabrir ou voltar da Ponte).
     const detachAnimNames = attachAnimationNameWatcher(injected)
+    const detachProjectAreaGuard = attachProjectAreaGuard(injected)
     let prevAssets = projectStoreApi.getState().project?.assets
     const unsubscribeAssetsWatch = projectStoreApi.subscribe((state) => {
       const assets = state.project?.assets
@@ -907,6 +972,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         pendingRegenerationWorkspaceRef.current = null
       }
       unsubscribeAssetsWatch()
+      detachProjectAreaGuard()
       detachAnimNames()
       detachSpriteThumbs()
       unregisterPasteTarget(injected)
@@ -942,6 +1008,28 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
           ].join(' ')}
         >
           <Spinner />
+        </div>
+      )}
+      {draftBlockIds.length > 0 && (
+        <div className="pointer-events-none absolute inset-x-0 top-3 z-20 flex justify-center px-3">
+          <aside
+            aria-live="polite"
+            className="pointer-events-auto flex max-w-xl items-center gap-3 rounded-2xl border-2 border-amber-500 bg-sz-panel px-4 py-2.5 text-sm text-sz-fg shadow-lg"
+          >
+            <span aria-hidden="true">⚠️</span>
+            <span>
+              {draftBlockIds.length === 1
+                ? '1 pilha está salva como rascunho e não aparece no preview.'
+                : `${draftBlockIds.length} pilhas estão salvas como rascunho e não aparecem no preview.`}
+            </span>
+            <button
+              className="shrink-0 rounded-lg bg-amber-500 px-3 py-1.5 font-bold text-black hover:bg-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sz-accent"
+              onClick={focusFirstDraft}
+              type="button"
+            >
+              Ver rascunho
+            </button>
+          </aside>
         </div>
       )}
       {pasteNotice && (

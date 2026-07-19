@@ -54,6 +54,16 @@ describe('generateHTML', () => {
     expect(html).toContain('&lt;img onerror=alert(1)&gt;')
   })
 
+  it('impede que o texto de um comentário encerre o comentário e injete HTML', () => {
+    const html = generateHTML({
+      title: 'Test',
+      body: [{ type: 'comment', text: 'fim--><h1>visível</h1><!--' }],
+    })
+    const parsed = new DOMParser().parseFromString(html, 'text/html')
+    expect(parsed.querySelector('h1')).toBeNull()
+    expect(parsed.body.textContent).not.toContain('visível')
+  })
+
   it('renderiza canvas com largura/altura', () => {
     const html = generateHTML({
       title: 'Jogo',
@@ -94,6 +104,16 @@ describe('generateHTML', () => {
     expect(html).toContain('<script src="script.js"></script>')
     // Não duplica o link nem usa o título-padrão quando há shell.
     expect(html).not.toContain('Ignorado quando há shell')
+  })
+
+  it('não duplica o script canônico quando a casca já o mantém no cabeçalho', () => {
+    const html = generateHTML({
+      title: 'Test',
+      body: [{ type: 'element', tag: 'h1', text: 'Oi' }],
+      shell: { head: '\n    <script src="script.js"></script>\n  ' },
+    })
+    expect(html.match(/<script src="script\.js"><\/script>/g)).toHaveLength(1)
+    expect(html.indexOf('<script src="script.js"></script>')).toBeLessThan(html.indexOf('<body>'))
   })
 
   it('renderiza elementos aninhados (container com filhos)', () => {

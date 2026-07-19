@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
-import { SZIRSchema } from '#ir'
+import { behaviorStatements, SZIRInputSchema, SZIRV2Schema } from '#ir'
 import { OFFICIAL_CATALOG } from '#official-extensions'
 import 'blockly/blocks'
 import { registerExtensionBlocks } from '../blockly/blocks'
@@ -90,21 +90,23 @@ describe('contrato transversal dos 67 exemplos da KitGallery', () => {
       expect(contract.scenario.trim().length).toBeGreaterThan(0)
       expect(contract.interactions.length).toBeGreaterThan(0)
 
-      expect(SZIRSchema.safeParse(entry.ir).success).toBe(true)
+      expect(SZIRInputSchema.safeParse(entry.ir).success).toBe(true)
+      expect(SZIRV2Schema.safeParse(entry.ir).success).toBe(true)
       const types = collectTypes(entry.ir)
       expect(types.has('rawJS')).toBe(false)
       expect(types.has('rawHTML')).toBe(false)
       expect(types.has('rawCSS')).toBe(false)
 
-      const firstRpgMap = entry.ir.js.findIndex((statement) => statement.type === 'gk:rpgCreateMap')
+      const statements = behaviorStatements(entry.ir)
+      const firstRpgMap = statements.findIndex((statement) => statement.type === 'gk:rpgCreateMap')
       if (firstRpgMap >= 0) {
-        const explicitStart = entry.ir.js.findIndex(
+        const explicitStart = statements.findIndex(
           (statement) => statement.type === 'gk:rpgSetStartMap',
         )
         expect(explicitStart).toBeGreaterThanOrEqual(0)
         expect(explicitStart).toBeLessThan(firstRpgMap)
 
-        const maps = collectRpgMaps(entry.ir.js)
+        const maps = collectRpgMaps(statements)
         for (const referenced of maps.referenced) expect(maps.created.has(referenced)).toBe(true)
       }
 
@@ -138,9 +140,9 @@ describe('contrato transversal dos 67 exemplos da KitGallery', () => {
         const saved = Blockly.serialization.workspaces.save(workspace)
         const roundTripped = buildIRFromWorkspace(workspace)
         expect(saved).toBeDefined()
-        expect(SZIRSchema.safeParse(roundTripped).success).toBe(true)
+        expect(SZIRV2Schema.safeParse(roundTripped).success).toBe(true)
         expect(roundTripped.html).toHaveLength(entry.ir.html.length)
-        expect(roundTripped.js).toHaveLength(entry.ir.js.length)
+        expect(behaviorStatements(roundTripped)).toHaveLength(behaviorStatements(entry.ir).length)
         const roundTripTypes = collectTypes(roundTripped)
         expect(roundTripTypes.has('rawJS')).toBe(false)
         expect(roundTripTypes.has('rawHTML')).toBe(false)

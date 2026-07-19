@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { compileStatements } from '#generators'
+import { behaviorStatements } from '#ir'
 import {
   animatedHeroExample,
   asteroidsClassicExample,
@@ -541,7 +542,7 @@ describe('roundtrip de um mini-shooter (grupos + spawner + colisão de grupo)', 
 
 describe('roundtrip do pongExample (gerar → parsear)', () => {
   it('o código gerado volta a virar blocos (sem rawJS)', () => {
-    const code = compileStatements(pongExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(pongExample.ir), 0)
     const ir = parseJS(code)
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
@@ -550,17 +551,20 @@ describe('roundtrip do pongExample (gerar → parsear)', () => {
       'g2d:createSprite',
       'g2d:setVelocity',
       'g2d:applyVelocity',
-      'g2d:bounceOnEdges',
       'g2d:collides',
+      'g2d:onKey',
+      'g2d:setScene',
     ]) {
       expect(types.has(expected)).toBe(true)
     }
+    // O boot agora pertence ao ciclo de vida do projeto, não a um bloco aninhado.
+    expect(types.has('g2d:onStart')).toBe(false)
   })
 })
 
 describe('roundtrip do animatedHeroExample (imagem + animação)', () => {
   it('o código gerado volta a virar blocos (sem rawJS), preservando os blocos de imagem', () => {
-    const code = compileStatements(animatedHeroExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(animatedHeroExample.ir), 0)
     const ir = parseJS(code)
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
@@ -579,7 +583,7 @@ describe('roundtrip do animatedHeroExample (imagem + animação)', () => {
 
 describe('roundtrip do platformerExample (movimento)', () => {
   it('o código gerado volta a virar blocos (sem rawJS), com platformer + clamp', () => {
-    const code = compileStatements(platformerExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(platformerExample.ir), 0)
     const ir = parseJS(code)
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
@@ -597,7 +601,7 @@ describe('roundtrip do platformerExample (movimento)', () => {
 
 describe('roundtrip do tilemapExample (tiles)', () => {
   it('o código gerado volta a virar blocos (sem rawJS), com tilemap + colisão', () => {
-    const code = compileStatements(tilemapExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(tilemapExample.ir), 0)
     const ir = parseJS(code)
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
@@ -778,7 +782,7 @@ describe('roundtrip de HUD + cenas (gerar → parsear)', () => {
 
 describe('roundtrip do asteroidsExample (jogo de tiro completo)', () => {
   it('o código gerado volta a virar blocos (sem rawJS), com grupos + colisão + HUD + cenas', () => {
-    const code = compileStatements(asteroidsExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(asteroidsExample.ir), 0)
     const ir = parseJS(code)
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
@@ -1033,7 +1037,7 @@ describe('parseJS — Kit gorilas (v0.11.0)', () => {
 
 describe('roundtrip do gorilasExample (batalha de bananas completa)', () => {
   it('o código gerado volta a virar blocos (sem rawJS), com o Kit gorilas', () => {
-    const code = compileStatements(gorilasExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(gorilasExample.ir), 0)
     const ir = parseJS(code)
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
@@ -1051,7 +1055,7 @@ describe('roundtrip do gorilasExample (batalha de bananas completa)', () => {
       'g2d:bananaHitThrower',
       'g2d:bananaHitCity',
       'g2d:playWhistle',
-      'g2d:playBoom',
+      'g2d:playExplosion',
       'g2d:updateEachFrame',
       'g2d:onKey',
       'g2d:setScene',
@@ -1075,7 +1079,7 @@ describe('parseJS — Kit gorilas robô (v0.12.0)', () => {
   })
 
   it('roundtrip do gorilasVsRobotExample sem rawJS, com o robô', () => {
-    const code = compileStatements(gorilasVsRobotExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(gorilasVsRobotExample.ir), 0)
     const types = collectTypes(parseJS(code))
     expect(types.has('rawJS')).toBe(false)
     expect(types.has('g2d:computerTurn')).toBe(true)
@@ -1085,7 +1089,7 @@ describe('parseJS — Kit gorilas robô (v0.12.0)', () => {
 
 describe('roundtrip do dinoRunExample (jogo de corrida completo)', () => {
   it('o código gerado volta a virar blocos (sem rawJS), com Kit dino + grupos + HUD + cenas + recorde', () => {
-    const code = compileStatements(dinoRunExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(dinoRunExample.ir), 0)
     const ir = parseJS(code)
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
@@ -1294,7 +1298,7 @@ describe('roundtrip da nave clássica (gerar → parsear, sem rawJS)', () => {
 
 describe('roundtrip do asteroidsClassicExample (girar + impulsionar completo)', () => {
   it('o código gerado volta a virar blocos (sem rawJS), com a nave clássica', () => {
-    const code = compileStatements(asteroidsClassicExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(asteroidsClassicExample.ir), 0)
     const types = collectTypes(parseJS(code))
     expect(types.has('rawJS')).toBe(false)
     for (const expected of [

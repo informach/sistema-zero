@@ -5,6 +5,7 @@ import { buildIRFromWorkspace } from '../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../blockly/workspaceState'
 import { generateJS } from '../../generators/js'
+import { behaviorStatements } from '../../ir/behavior'
 import type { SZIR } from '../../ir/schema'
 import { parseJS } from '../js'
 
@@ -89,7 +90,7 @@ describe('Canvas 3D — facilitadores (round-trip completo)', () => {
     const ws = new Blockly.Workspace()
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-      const rebuilt = buildIRFromWorkspace(ws).js
+      const rebuilt = behaviorStatements(buildIRFromWorkspace(ws))
       // fidelidade = o CÓDIGO gerado dos blocos amigáveis é idêntico ao real
       expect(generateJS({ statements: rebuilt })).toBe(code)
     } finally {
@@ -109,7 +110,7 @@ describe('Canvas 3D — facilitadores (round-trip completo)', () => {
     const ws = new Blockly.Workspace()
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-      const out = generateJS({ statements: buildIRFromWorkspace(ws).js })
+      const out = generateJS({ statements: behaviorStatements(buildIRFromWorkspace(ws)) })
       // Formas CANÔNICAS do gerador (o += vira a forma completa; cor com aspas duplas).
       expect(out).toContain('camera.position.set(0, 1, 5);')
       expect(out).toContain('cube.rotation.y = cube.rotation.y + 0.01;')
@@ -136,15 +137,16 @@ describe('Canvas 3D — facilitadores (round-trip completo)', () => {
     const ws = new Blockly.Workspace()
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-      expect(generateJS({ statements: buildIRFromWorkspace(ws).js })).toBe(code)
+      expect(generateJS({ statements: behaviorStatements(buildIRFromWorkspace(ws)) })).toBe(code)
     } finally {
       ws.dispose()
     }
   })
 
-  it('folio: névoa + câmera que segue + floresta instanciada (round-trip amigável)', () => {
+  it('folio: névoa + câmera que segue + floresta instanciada preservam a semântica', () => {
     ensureBlocklyInitialized()
-    // As 4 técnicas do folio que ganharam facilitador na etapa E.
+    // O lerp legado sem delta continua genérico para não ganhar uma semântica
+    // dependente de tempo apenas por ter atravessado a Ponte.
     const src = [
       "import * as THREE from 'three';",
       'const scene = new THREE.Scene();',
@@ -169,19 +171,16 @@ describe('Canvas 3D — facilitadores (round-trip completo)', () => {
 
     const state = buildWorkspaceStateFromIR({ html: [], css: [], js: ir, extensions: [] })
     const json = JSON.stringify(state)
-    for (const type of [
-      'sz_t3d_set_fog',
-      'sz_t3d_lerp_position',
-      'sz_t3d_set_matrix_at',
-      'sz_t3d_instances_dirty',
-    ]) {
+    for (const type of ['sz_t3d_set_fog', 'sz_t3d_set_matrix_at', 'sz_t3d_instances_dirty']) {
       expect(json).toContain(`"${type}"`)
     }
+    expect(json).toContain('"sz_js_method_on"')
+    expect(json).not.toContain('"sz_t3d_lerp_position"')
 
     const ws = new Blockly.Workspace()
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-      expect(generateJS({ statements: buildIRFromWorkspace(ws).js })).toBe(code)
+      expect(generateJS({ statements: behaviorStatements(buildIRFromWorkspace(ws)) })).toBe(code)
     } finally {
       ws.dispose()
     }

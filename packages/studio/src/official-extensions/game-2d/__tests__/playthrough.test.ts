@@ -91,11 +91,11 @@ describe('g2d — JOGAR de verdade (teclado + quadros)', () => {
     const heroi = h.api.createSprite({ x: 0, y: 0, w: 20, h: 20 })
     h.api.gameLoop(() => h.api.topDown(heroi, 5))
     h.fire('keydown', { key: 'ArrowRight' })
-    for (let t = 1; t <= 3; t++) h.nextFrame(t * 16)
+    for (let t = 1; t <= 3; t++) h.nextFrame(t * 17)
     expect(heroi.x).toBe(15) // 3 quadros × 5
     h.fire('keyup', { key: 'ArrowRight' })
     const parou = heroi.x
-    for (let t = 4; t <= 6; t++) h.nextFrame(t * 16)
+    for (let t = 4; t <= 6; t++) h.nextFrame(t * 17)
     expect(heroi.x).toBe(parou) // sem tecla, não anda mais
   })
 
@@ -115,11 +115,11 @@ describe('g2d — JOGAR de verdade (teclado + quadros)', () => {
     expect(pulos).toBe(2)
   })
 
-  it('A1: "quando apertar" DENTRO do "a cada quadro" converge para UM registro', () => {
+  it('A1: "quando apertar" dentro de "a cada quadro" é recusado pelo runtime manual', () => {
     const h = loadRuntime()
     let disparos = 0
-    // O corpo cria um arrow NOVO a cada quadro (como o gerador faz), mas de TEXTO
-    // idêntico → dedup por assinatura → um só handler depois de N quadros.
+    // A IR/Blockly já barra esta montagem. O runtime também protege código manual
+    // e não registra silenciosamente um evento no contexto errado.
     h.api.gameLoop(() => {
       h.api.onKey('Space', () => {
         disparos += 1
@@ -127,7 +127,7 @@ describe('g2d — JOGAR de verdade (teclado + quadros)', () => {
     })
     for (let t = 1; t <= 60; t++) h.nextFrame(t * 16)
     h.fire('keydown', { key: 'Space', repeat: false })
-    expect(disparos).toBe(1) // um toque → um disparo (não 60)
+    expect(disparos).toBe(0)
   })
 
   it('A5: perder o foco (blur) solta as teclas seguradas', () => {

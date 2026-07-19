@@ -10,7 +10,7 @@ import { withMutation } from './mutatorEvents'
  *    para poder ser parado depois com o bloco "parar animação".
  *  - **Tempo do quadro** (`+` rotulado "tempo do quadro"): revela duas variáveis
  *    — o tempo do quadro (ms desde o carregamento, vindo do requestAnimationFrame)
- *    e o tempo desde o quadro anterior (delta, ms) — para movimento independente
+ *    e o tempo desde o quadro anterior (delta, segundos) — para movimento independente
  *    de FPS (mova por velocidade × delta).
  *
  * Os nomes (`handle_`, `timeVar_`, `deltaVar_`) são serializados por
@@ -133,7 +133,7 @@ const ANIM_LOOP_MUTATOR_MIXIN = {
         }),
         'TIME_VAR',
       )
-      input.appendField('· desde o último em')
+      input.appendField('· delta em segundos em')
       input.appendField(
         new Blockly.FieldTextInput(this.deltaVar_ || DEFAULT_DELTA, (value: string) => {
           const clean = sanitizeName(value) || DEFAULT_DELTA

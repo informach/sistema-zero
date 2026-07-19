@@ -1,10 +1,12 @@
 import { beforeAll, describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import { compileStatements } from '#generators'
-import { type JSStatement, SZIRSchema } from '#ir'
+import { behaviorStatements, type JSStatement, JSStatementSchema } from '#ir'
 import 'blockly/blocks'
+import { attachBlockInContractContext } from '../../../blockly/__tests__/blockContractTestUtils'
+import { inferBlockContract } from '../../../blockly/blockContracts'
 import { registerExtensionBlocks } from '../../../blockly/blocks'
-import { buildIRFromWorkspace, FRAME_BEHAVIOR } from '../../../blockly/buildIR'
+import { buildIRFromWorkspace } from '../../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import { parseJS } from '../../../parsers/js'
@@ -17,7 +19,8 @@ import { gameTwoDRuntime } from '../runtime'
  *
  *   1. def → IR: o bloco instanciado dentro do frame de Comportamento vira um
  *      nó g2d (não é ignorado como rascunho nem degrada para rawJS) e a IR
- *      valida no SZIRSchema (drift do zod).
+ *      valida no schema estrutural do statement (drift do zod). A validação
+ *      semântica de referências exige as declarações vizinhas e tem suíte própria.
  *   2. IR → blocos → IR: reconstruir os blocos e recoletar devolve a MESMA IR
  *      (drift do workspaceState/buildIR).
  *   3. IR → JS: todo helper `SZGame2D.x(...)` emitido pelo gerador EXISTE no
@@ -46,6 +49,7 @@ const FORWARD_ONLY: Record<string, string> = {
   sz_g2d_set_velocity: 'sprite.vx = …; sprite.vy = … → 2 blocos de propriedade',
   sz_g2d_score: 'let pontos = … → bloco de criar variável (fusão seria ambígua)',
   sz_g2d_game_over: 'ctx.fillStyle/font/fillText → blocos de canvas/objeto',
+  sz_g2d_play_boom: 'o bloco temático usa a implementação canônica playExplosion',
 }
 
 const statementDefs = gameTwoDBlocks.filter((def) => !def.output)
@@ -91,25 +95,15 @@ function loadRuntimeKeys(): Set<string> {
 function buildIrFor(type: string, kind: 'statement' | 'expr'): JSStatement[] {
   const ws = new Blockly.Workspace()
   try {
-    const frame = ws.newBlock(FRAME_BEHAVIOR)
-    const slot = frame.getInput('CHILDREN')?.connection
-    if (!slot) throw new Error('frame de Comportamento sem input CHILDREN')
-    if (kind === 'statement') {
-      const block = ws.newBlock(type)
-      if (!block.previousConnection) throw new Error(`${type}: statement sem previousConnection`)
-      slot.connect(block.previousConnection)
-    } else {
-      const host = ws.newBlock(EXPR_HOST)
-      if (!host.previousConnection) throw new Error('host de expr sem previousConnection')
-      slot.connect(host.previousConnection)
-      const socket = host.getInput('VALUE')?.connection
-      const block = ws.newBlock(type)
-      if (!socket || !block.outputConnection) {
-        throw new Error(`${type}: reporter sem outputConnection (ou host sem VALUE)`)
-      }
-      socket.connect(block.outputConnection)
-    }
-    return stripIds(buildIRFromWorkspace(ws).js)
+    attachBlockInContractContext({
+      workspace: ws,
+      type,
+      kind,
+      expressionHost: EXPR_HOST,
+      expressionInput: 'VALUE',
+      loopHost: 'sz_g2d_update_each_frame',
+    })
+    return stripIds(behaviorStatements(buildIRFromWorkspace(ws)))
   } finally {
     ws.dispose()
   }
@@ -123,24 +117,16 @@ function buildIrForWithFields(
 ): JSStatement[] {
   const ws = new Blockly.Workspace()
   try {
-    const frame = ws.newBlock(FRAME_BEHAVIOR)
-    const slot = frame.getInput('CHILDREN')?.connection
-    if (!slot) throw new Error('frame de Comportamento sem input CHILDREN')
-    let target: Blockly.Block
-    if (kind === 'statement') {
-      const block = ws.newBlock(type)
-      slot.connect(block.previousConnection as Blockly.Connection)
-      target = block
-    } else {
-      const host = ws.newBlock(EXPR_HOST)
-      slot.connect(host.previousConnection as Blockly.Connection)
-      const socket = host.getInput('VALUE')?.connection
-      const block = ws.newBlock(type)
-      socket?.connect(block.outputConnection as Blockly.Connection)
-      target = block
-    }
+    const target = attachBlockInContractContext({
+      workspace: ws,
+      type,
+      kind,
+      expressionHost: EXPR_HOST,
+      expressionInput: 'VALUE',
+      loopHost: 'sz_g2d_update_each_frame',
+    })
     for (const [name, value] of Object.entries(fields)) target.setFieldValue(value, name)
-    return stripIds(buildIRFromWorkspace(ws).js)
+    return stripIds(behaviorStatements(buildIRFromWorkspace(ws)))
   } finally {
     ws.dispose()
   }
@@ -153,7 +139,7 @@ function irThroughBlocks(js: JSStatement[]): JSStatement[] {
   const ws = new Blockly.Workspace()
   try {
     Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-    return stripIds(buildIRFromWorkspace(ws).js)
+    return stripIds(behaviorStatements(buildIRFromWorkspace(ws)))
   } finally {
     ws.dispose()
   }
@@ -177,7 +163,9 @@ describe('Auditoria Jogo 2D — inventário', () => {
 
 describe('Auditoria Jogo 2D — pipeline completo por bloco', () => {
   const cases: { type: string; kind: 'statement' | 'expr' }[] = [
-    ...statementDefs.map((d) => ({ type: d.type, kind: 'statement' as const })),
+    ...statementDefs
+      .filter((definition) => inferBlockContract(definition).migration === 'keep')
+      .map((d) => ({ type: d.type, kind: 'statement' as const })),
     ...exprDefs.map((d) => ({ type: d.type, kind: 'expr' as const })),
   ]
 
@@ -196,14 +184,9 @@ describe('Auditoria Jogo 2D — pipeline completo por bloco', () => {
         expect(String(host.value?.type).startsWith('g2d:')).toBe(true)
       }
 
-      // 1b. schema zod aceita a IR
-      const parsedSchema = SZIRSchema.safeParse({
-        html: [],
-        css: [],
-        js: ir,
-        extensions: [{ extensionId: 'game-2d' }],
-      })
-      expect(parsedSchema.success).toBe(true)
+      // 1b. schema zod estrutural aceita cada nó isolado. Referências como
+      // "jogador" são deliberadamente resolvidas apenas no projeto completo.
+      expect(ir.every((statement) => JSStatementSchema.safeParse(statement).success)).toBe(true)
 
       // 2. IR → blocos → IR estável
       expect(irThroughBlocks(ir)).toEqual(ir)

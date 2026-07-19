@@ -1,5 +1,6 @@
 import * as Blockly from 'blockly/core'
 import { compileStatements } from '#generators'
+import { behaviorStatements } from '#ir'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
 import { gameTwoDBlocks } from '../../official-extensions/game-2d/blocks'
@@ -20,7 +21,7 @@ function bridgeCycleJS(js: string): string {
   const ws = new Blockly.Workspace()
   Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
   const ir2 = buildIRFromWorkspace(ws)
-  return compileStatements(ir2.js, 0)
+  return compileStatements(behaviorStatements(ir2), 0)
 }
 
 describe('Ponte — palco implícito (ctx escondido) + "Limpar a tela"', () => {

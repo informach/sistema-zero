@@ -26,6 +26,31 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   // o contexto WebGL (cena preta). Acima do teto, addMesh devolve null em SILÊNCIO
   // (nunca lança — setPosition/setRotation já ignoram null) e avisa UMA vez.
   var MAX_OBJECTS = 300;
+  var MAX_LIGHTS = 16;
+  var MAX_SWARMS = 8;
+  var MAX_ROWS = 60;
+  var MAX_ROWS_PER_CALL = 30;
+  var MAX_STACK_LAYERS = 100;
+
+  function warn(msg) {
+    try { console.warn('SZGame3D: ' + msg); } catch (e) {}
+  }
+  var _warned = Object.create(null);
+  function warnOnce(key, msg) {
+    if (_warned[key]) return;
+    _warned[key] = true;
+    warn(msg);
+  }
+  function finite(value, fallback) {
+    return typeof value === 'number' && isFinite(value) ? value : fallback;
+  }
+  function clamp(value, min, max, fallback) {
+    var n = finite(value, fallback);
+    return Math.max(min, Math.min(max, n));
+  }
+  function positive(value, fallback, max) {
+    return clamp(value, 0.001, max || 10000, fallback);
+  }
 
   // Texturas de imagem (Fase 6): o editor injeta os assets embutidos (data: URL)
   // em window.__SZGAME_ASSETS (nome -> dataURL). setTexture resolve o nome por aqui.
@@ -43,7 +68,53 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     }
   }
   function onKeyUp(e) { keys[e.code] = false; }
+  function clearKeys() { keys = {}; }
   function keyDown(code) { return !!keys[code]; }
+
+  function listen(world, target, name, handler, options) {
+    if (!target || !target.addEventListener) return;
+    target.addEventListener(name, handler, options);
+    if (!world) return;
+    if (!world._listeners) world._listeners = [];
+    world._listeners.push({ target: target, name: name, handler: handler, options: options });
+  }
+  function removeWorldListeners(world) {
+    var entries = world && world._listeners ? world._listeners : [];
+    for (var i = entries.length - 1; i >= 0; i--) {
+      var entry = entries[i];
+      if (entry.target && entry.target.removeEventListener) {
+        try { entry.target.removeEventListener(entry.name, entry.handler, entry.options); } catch (e) {}
+      }
+    }
+    if (world) world._listeners = [];
+  }
+
+  function requireCanvas(canvasId) {
+    var canvas = document && document.getElementById ? document.getElementById(canvasId) : null;
+    if (!canvas) {
+      throw new Error('SZGame3D: o canvas "' + canvasId + '" não existe. Crie a tela no HTML ou use “Criar cena 3D em tela cheia”.');
+    }
+    return canvas;
+  }
+
+  function worldOf(value) {
+    if (!value) return null;
+    if (value.renderer && value.scene) return value;
+    return value._szWorld || (value.userData && value.userData.sz && value.userData.sz.world) || null;
+  }
+  // Mantém a velocidade histórica dos blocos (valor por quadro a 60 Hz), mas
+  // normaliza o deslocamento pelo tempo real. Assim aulas existentes não mudam
+  // de escala e 60/120 Hz produzem a mesma simulação.
+  function frameScale(value) {
+    var world = worldOf(value);
+    var d = world && typeof world._dt === 'number' ? world._dt : 0;
+    return d > 0 ? clamp(d * 60, 0, 6, 1) : 1;
+  }
+  function attachWorld(obj, world) {
+    if (!obj) return obj;
+    obj._szWorld = world || null;
+    return obj;
+  }
 
   // Metadados de física por malha (meia-extensão p/ AABB + velocidade + flags).
   // A escala (obj.scale) é aplicada na hora de medir, então setScale já reflete
@@ -64,8 +135,9 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   // Monta renderer + cena + câmera + luzes a partir de um canvas e tamanho.
   // Compartilhado por createScene (canvas do HTML) e createFullscreenScene
   // (canvas criado em tela cheia). NÃO muda o comportamento do createScene.
-  function _setupWorld(canvas, w, h) {
-    var renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvas || undefined });
+  function _setupWorld(canvas, w, h, options) {
+    options = options || {};
+    var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: !!options.alpha, canvas: canvas });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setSize(w, h, false);
     // Sombras suaves dão profundidade ao 3D (o chão recebe a sombra do jogador).
@@ -74,44 +146,66 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       if (THREE.PCFSoftShadowMap) renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     }
     var scene = new THREE.Scene();
-    scene.background = new THREE.Color('#0b1020');
-    var camera = new THREE.PerspectiveCamera(60, w / h, 0.1, 1000);
-    camera.position.set(0, 0, 5);
+    scene.background = new THREE.Color(options.background || '#0b1020');
+    var camera = options.camera || new THREE.PerspectiveCamera(60, w / h, 0.1, 1000);
+    if (!options.camera) camera.position.set(0, 0, 5);
     // Luz para o MeshStandardMaterial ser visível sem passo extra.
-    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-    var dir = new THREE.DirectionalLight(0xffffff, 0.9);
-    dir.position.set(3, 5, 4);
-    dir.castShadow = true;
-    if (dir.shadow && dir.shadow.camera) {
-      dir.shadow.camera.near = 0.5;
-      dir.shadow.camera.far = 60;
-      dir.shadow.camera.left = -20;
-      dir.shadow.camera.right = 20;
-      dir.shadow.camera.top = 20;
-      dir.shadow.camera.bottom = -20;
-      if (dir.shadow.mapSize && dir.shadow.mapSize.set) dir.shadow.mapSize.set(1024, 1024);
+    if (!options.skipLights) {
+      scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+      var dir = new THREE.DirectionalLight(0xffffff, 0.9);
+      dir.position.set(3, 5, 4);
+      dir.castShadow = true;
+      if (dir.shadow && dir.shadow.camera) {
+        dir.shadow.camera.near = 0.5;
+        dir.shadow.camera.far = 60;
+        dir.shadow.camera.left = -20;
+        dir.shadow.camera.right = 20;
+        dir.shadow.camera.top = 20;
+        dir.shadow.camera.bottom = -20;
+        if (dir.shadow.mapSize && dir.shadow.mapSize.set) dir.shadow.mapSize.set(1024, 1024);
+      }
+      scene.add(dir);
     }
-    scene.add(dir);
-    var world = { scene: scene, camera: camera, renderer: renderer, _objects: [], _canvas: canvas || null, _camFollow: null };
+    var world = {
+      scene: scene, camera: camera, renderer: renderer, _objects: [], _canvas: canvas,
+      _camFollow: null, _listeners: [], _solids: [], _dt: 0,
+      _lightCount: options.skipLights ? 0 : 2,
+      _swarmItemCount: 0, _disposed: false
+    };
+    world._resize = function () {
+      var nw = canvas.clientWidth || canvas.width || w;
+      var nh = canvas.clientHeight || canvas.height || h;
+      if (!(nw > 0) || !(nh > 0)) return;
+      renderer.setSize(nw, nh, false);
+      var activeCamera = world.camera;
+      if (typeof options.resizeCamera === 'function') options.resizeCamera(activeCamera, nw, nh);
+      else if (typeof activeCamera.aspect === 'number') {
+        activeCamera.aspect = nw / nh;
+        if (activeCamera.updateProjectionMatrix) activeCamera.updateProjectionMatrix();
+      }
+    };
+    listen(world, window, 'resize', world._resize);
+    if (typeof ResizeObserver !== 'undefined') {
+      world._resizeObserver = new ResizeObserver(world._resize);
+      if (world._resizeObserver.observe) world._resizeObserver.observe(canvas);
+    }
     worlds.push(world);
     return world;
   }
 
   function createScene(canvasId) {
-    var canvas = document.getElementById(canvasId);
+    var canvas = requireCanvas(canvasId);
     // Mesmo canvas, novo "Atualizar"/recriar: descarta o mundo anterior ANTES
     // de instanciar outro WebGLRenderer sobre o MESMO canvas, senão o contexto
     // antigo fica vivo no registro e o navegador acaba forçando perda de
     // contexto (cena preta) ao estourar o limite de ~16 contextos WebGL.
-    if (canvas) {
-      for (var k = worlds.length - 1; k >= 0; k--) {
-        if (worlds[k] && worlds[k]._canvas === canvas) {
-          try { dispose(worlds[k]); } catch (e) {}
-        }
+    for (var k = worlds.length - 1; k >= 0; k--) {
+      if (worlds[k] && worlds[k]._canvas === canvas) {
+        try { dispose(worlds[k]); } catch (e) {}
       }
     }
-    var w = canvas && canvas.width ? canvas.width : 400;
-    var h = canvas && canvas.height ? canvas.height : 300;
+    var w = canvas.clientWidth || canvas.width || 400;
+    var h = canvas.clientHeight || canvas.height || 300;
     return _setupWorld(canvas, w, h);
   }
 
@@ -119,6 +213,11 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   // sem precisar de <canvas> no HTML. É o bloco "criar cena 3D em tela cheia".
   function createFullscreenScene(bg) {
     var color = (typeof bg === 'string' && bg) ? bg : '#0b1020';
+    for (var wi = worlds.length - 1; wi >= 0; wi--) {
+      if (worlds[wi] && worlds[wi]._ownsCanvas) {
+        try { dispose(worlds[wi]); } catch (e) {}
+      }
+    }
     var canvas = document.createElement('canvas');
     // Convenção do studio: a tela tem id "tela" (achável por getElementById).
     canvas.id = 'tela';
@@ -130,6 +229,12 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     canvas.style.display = 'block';
     canvas.style.zIndex = '0';
     if (document.body) {
+      var previousStyles = {
+        margin: document.body.style.margin,
+        background: document.body.style.background,
+        overflow: document.documentElement && document.documentElement.style
+          ? document.documentElement.style.overflow : ''
+      };
       document.body.style.margin = '0';
       // Mesma cor no fundo da janela (defesa contra flash branco antes do render).
       document.body.style.background = color;
@@ -144,17 +249,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     // Cor de fundo da CENA 3D (o que aparece atrás dos objetos), escolhida no bloco.
     if (world.scene && THREE.Color) world.scene.background = new THREE.Color(color);
     world._ownsCanvas = true;
-    // Redimensiona renderer + câmera sempre que a janela muda de tamanho.
-    world._resizeHandler = function () {
-      var nw = window.innerWidth || 800;
-      var nh = window.innerHeight || 600;
-      if (world.renderer) world.renderer.setSize(nw, nh, false);
-      if (world.camera) {
-        world.camera.aspect = nw / nh;
-        if (world.camera.updateProjectionMatrix) world.camera.updateProjectionMatrix();
-      }
-    };
-    if (window.addEventListener) window.addEventListener('resize', world._resizeHandler);
+    world._styleRestore = previousStyles;
     return world;
   }
 
@@ -192,23 +287,23 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       grounded: false, zAccel: false, gravity: -0.002 };
     world.scene.add(mesh);
     world._objects.push(mesh);
-    return mesh;
+    return attachWorld(mesh, world);
   }
   function createBox(world, opts) {
     opts = opts || {};
-    var s = typeof opts.size === 'number' ? opts.size : 1;
+    var s = positive(opts.size, 1, 1000);
     return addMesh(world, new THREE.BoxGeometry(s, s, s), opts.color, { hw: s / 2, hh: s / 2, hd: s / 2 });
   }
   function createSphere(world, opts) {
     opts = opts || {};
-    var r = typeof opts.radius === 'number' ? opts.radius : 0.5;
+    var r = positive(opts.radius, 0.5, 1000);
     return addMesh(world, new THREE.SphereGeometry(r, 32, 16), opts.color, { hw: r, hh: r, hd: r });
   }
   function createBlock(world, opts) {
     opts = opts || {};
-    var w = typeof opts.width === 'number' ? opts.width : 1;
-    var h = typeof opts.height === 'number' ? opts.height : 1;
-    var d = typeof opts.depth === 'number' ? opts.depth : 1;
+    var w = positive(opts.width, 1, 1000);
+    var h = positive(opts.height, 1, 1000);
+    var d = positive(opts.depth, 1, 1000);
     return addMesh(world, new THREE.BoxGeometry(w, h, d), opts.color, { hw: w / 2, hh: h / 2, hd: d / 2 });
   }
 
@@ -217,20 +312,20 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   // ====================================================================
   function createCylinder(world, opts) {
     opts = opts || {};
-    var r = typeof opts.radius === 'number' ? opts.radius : 0.5;
-    var h = typeof opts.height === 'number' ? opts.height : 1;
+    var r = positive(opts.radius, 0.5, 1000);
+    var h = positive(opts.height, 1, 1000);
     return addMesh(world, new THREE.CylinderGeometry(r, r, h, 24), opts.color, { hw: r, hh: h / 2, hd: r });
   }
   function createCone(world, opts) {
     opts = opts || {};
-    var r = typeof opts.radius === 'number' ? opts.radius : 0.5;
-    var h = typeof opts.height === 'number' ? opts.height : 1;
+    var r = positive(opts.radius, 0.5, 1000);
+    var h = positive(opts.height, 1, 1000);
     return addMesh(world, new THREE.ConeGeometry(r, h, 24), opts.color, { hw: r, hh: h / 2, hd: r });
   }
   function createPlane(world, opts) {
     opts = opts || {};
-    var w = typeof opts.width === 'number' ? opts.width : 10;
-    var d = typeof opts.depth === 'number' ? opts.depth : 10;
+    var w = positive(opts.width, 10, 2000);
+    var d = positive(opts.depth, 10, 2000);
     var mesh = addMesh(world, new THREE.PlaneGeometry(w, d), opts.color, { hw: w / 2, hh: 0.05, hd: d / 2 });
     // PlaneGeometry nasce em pé (no XY); deita no chão para virar piso.
     if (mesh && mesh.rotation) mesh.rotation.x = -Math.PI / 2;
@@ -239,61 +334,83 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   }
   function createTorus(world, opts) {
     opts = opts || {};
-    var r = typeof opts.radius === 'number' ? opts.radius : 0.5;
-    var t = typeof opts.tube === 'number' ? opts.tube : 0.2;
+    var r = positive(opts.radius, 0.5, 1000);
+    var t = positive(opts.tube, 0.2, 1000);
     return addMesh(world, new THREE.TorusGeometry(r, t, 16, 32), opts.color, { hw: r + t, hh: r + t, hd: t });
   }
   function createModel(world) {
     if (!world || !world.scene) return null;
+    if (!world._models) world._models = [];
+    if (world._models.length >= MAX_OBJECTS) {
+      warnOnce('model-limit', 'há modelos demais nesta cena; remova alguns antes de criar novos.');
+      return null;
+    }
     var g = new THREE.Group();
     world.scene.add(g);
-    if (!world._models) world._models = [];
     world._models.push(g);
-    return g;
+    return attachWorld(g, world);
   }
   function addToModel(model, part) {
     if (model && model.add && part) model.add(part);
   }
+  function eachMaterial(obj, fn) {
+    if (!obj || typeof fn !== 'function') return;
+    function visit(node) {
+      if (!node || !node.material) return;
+      var materials = node.material.length ? node.material : [node.material];
+      for (var i = 0; i < materials.length; i++) if (materials[i]) fn(materials[i]);
+    }
+    if (obj.traverse) obj.traverse(visit); else visit(obj);
+  }
   function setColor(obj, color) {
-    if (obj && obj.material && obj.material.color && obj.material.color.set) obj.material.color.set(color);
+    eachMaterial(obj, function (material) {
+      if (material.color && material.color.set) material.color.set(color);
+    });
   }
   function setOpacity(obj, a) {
-    if (!obj || !obj.material) return;
-    var v = typeof a === 'number' ? a : 1;
-    obj.material.transparent = v < 1;
-    obj.material.opacity = v;
+    var v = clamp(a, 0, 1, 1);
+    eachMaterial(obj, function (material) {
+      material.transparent = v < 1;
+      material.opacity = v;
+      material.needsUpdate = true;
+    });
   }
   function setMaterial(obj, kind) {
-    if (!obj || !obj.material) return;
-    var m = obj.material;
-    m.wireframe = false;
-    if ('metalness' in m) m.metalness = 0;
-    if ('roughness' in m) m.roughness = 1;
-    m.transparent = false;
-    m.opacity = 1;
-    if (m.emissive && m.emissive.set) m.emissive.set('#000000');
-    if (kind === 'metal') {
-      if ('metalness' in m) m.metalness = 1;
-      if ('roughness' in m) m.roughness = 0.25;
-    } else if (kind === 'glass') {
-      m.transparent = true;
-      m.opacity = 0.35;
-      if ('roughness' in m) m.roughness = 0;
-    } else if (kind === 'glow') {
-      if (m.emissive && m.color && m.emissive.copy) m.emissive.copy(m.color);
-    } else if (kind === 'wireframe') {
-      m.wireframe = true;
-    }
-    m.needsUpdate = true;
+    eachMaterial(obj, function (m) {
+      m.wireframe = false;
+      if ('metalness' in m) m.metalness = 0;
+      if ('roughness' in m) m.roughness = 1;
+      m.transparent = false;
+      m.opacity = 1;
+      if (m.emissive && m.emissive.set) m.emissive.set('#000000');
+      if (kind === 'metal') {
+        if ('metalness' in m) m.metalness = 1;
+        if ('roughness' in m) m.roughness = 0.25;
+      } else if (kind === 'glass') {
+        m.transparent = true;
+        m.opacity = 0.35;
+        if ('roughness' in m) m.roughness = 0;
+      } else if (kind === 'glow') {
+        if (m.emissive && m.color && m.emissive.copy) m.emissive.copy(m.color);
+      } else if (kind === 'wireframe') {
+        m.wireframe = true;
+      }
+      m.needsUpdate = true;
+    });
   }
   function setTexture(obj, asset) {
-    if (!obj || !obj.material || !THREE.TextureLoader) return;
+    if (!obj || !THREE.TextureLoader) return;
     var url = ASSETS[asset] || asset;
-    if (!url) return;
+    if (!url) {
+      warnOnce('texture-empty', 'escolha uma imagem válida antes de aplicar a textura.');
+      return;
+    }
     if (!_texCache) _texCache = {};
     var tex = _texCache[url];
     if (!tex) {
-      tex = new THREE.TextureLoader().load(url);
+      tex = new THREE.TextureLoader().load(url, undefined, undefined, function () {
+        warnOnce('texture:' + url, 'não foi possível carregar a textura "' + asset + '".');
+      });
       // Pixel art do Pinta nítida de perto: só o magFilter (upscale) vira
       // nearest; minFilter/mipmaps ficam default para não serrilhar de longe.
       if (THREE.NearestFilter) {
@@ -302,52 +419,67 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       }
       _texCache[url] = tex;
     }
-    obj.material.map = tex;
-    obj.material.needsUpdate = true;
+    eachMaterial(obj, function (material) {
+      material.map = tex;
+      material.needsUpdate = true;
+    });
   }
   function setVisible(obj, mode) {
     if (obj) obj.visible = mode !== 'hide';
   }
 
-  function setPosition(obj, x, y, z) { if (obj && obj.position) obj.position.set(x, y, z); }
-  function setRotation(obj, x, y, z) { if (obj && obj.rotation) obj.rotation.set(x, y, z); }
+  function setPosition(obj, x, y, z) {
+    if (obj && obj.position) obj.position.set(finite(x, 0), finite(y, 0), finite(z, 0));
+  }
+  function setRotation(obj, x, y, z) {
+    if (obj && obj.rotation) obj.rotation.set(finite(x, 0), finite(y, 0), finite(z, 0));
+  }
   function setScale(obj, factor) {
     if (!obj || !obj.scale) return;
-    var f = typeof factor === 'number' ? factor : 1;
+    var f = positive(factor, 1, 1000);
     obj.scale.set(f, f, f);
   }
 
   function setVelocity(obj, x, y, z) {
     if (!obj) return;
     var s = szData(obj);
-    s.vx = x || 0; s.vy = y || 0; s.vz = z || 0;
+    s.vx = finite(x, 0); s.vy = finite(y, 0); s.vz = finite(z, 0);
   }
 
-  /** AABB entre dois objetos (com olhar-à-frente no eixo y, como na referência). */
+  /** AABB estável entre dois objetos, compartilhada pelas duas camadas de física. */
   function collides(a, b) {
     if (!a || !b || !a.position || !b.position) return false;
     var sa = szData(a), sb = szData(b);
     var axh = halfX(a, sa), ayh = halfY(a, sa), azh = halfZ(a, sa);
     var bxh = halfX(b, sb), byh = halfY(b, sb), bzh = halfZ(b, sb);
     var xC = (a.position.x + axh) >= (b.position.x - bxh) && (a.position.x - axh) <= (b.position.x + bxh);
-    var yC = (a.position.y - ayh + sa.vy) <= (b.position.y + byh) && (a.position.y + ayh) >= (b.position.y - byh);
+    var yC = (a.position.y - ayh) <= (b.position.y + byh) && (a.position.y + ayh) >= (b.position.y - byh);
     var zC = (a.position.z + azh) >= (b.position.z - bzh) && (a.position.z - azh) <= (b.position.z + bzh);
     return xC && yC && zC;
   }
 
-  /** Anda pela velocidade e aplica gravidade; quica/para no chão e marca grounded. */
+  /** Anda pela velocidade e pousa de forma estável sobre o chão. */
   function applyGravity(obj, ground) {
     if (!obj || !obj.position) return;
     var s = szData(obj);
-    s.vy += s.gravity;
-    obj.position.x += s.vx;
-    obj.position.z += s.vz;
-    if (ground && collides(obj, ground)) {
+    var scale = frameScale(obj);
+    var previousY = obj.position.y;
+    s.vy += s.gravity * scale;
+    obj.position.x += s.vx * scale;
+    obj.position.y += s.vy * scale;
+    obj.position.z += s.vz * scale;
+    s.grounded = false;
+    if (ground && collides(obj, ground) && s.vy <= 0) {
+      var gs = szData(ground);
+      var top = ground.position.y + halfY(ground, gs);
+      var bottomBefore = previousY - halfY(obj, s);
+      if (bottomBefore >= top - Math.max(0.1, Math.abs(s.vy * scale))) {
+        obj.position.y = top + halfY(obj, s);
+      } else {
+        resolveAABB(obj, ground);
+      }
       s.grounded = true;
-      s.vy = -s.vy * 0.5;
-    } else {
-      s.grounded = false;
-      obj.position.y += s.vy;
+      s.vy = 0;
     }
   }
 
@@ -355,7 +487,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   function jump(obj, force) {
     if (!obj) return;
     var s = szData(obj);
-    var f = typeof force === 'number' ? force : 0.08;
+    var f = finite(force, 0.08);
     if (s.grounded) { s.vy = f; s.grounded = false; }
   }
 
@@ -363,7 +495,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   function controlWithKeys(obj, speed) {
     if (!obj) return;
     var s = szData(obj);
-    var sp = typeof speed === 'number' ? speed : 0.05;
+    var sp = finite(speed, 0.05);
     s.vx = 0; s.vz = 0;
     if (keys.KeyA || keys.ArrowLeft) s.vx = -sp;
     else if (keys.KeyD || keys.ArrowRight) s.vx = sp;
@@ -394,29 +526,42 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     // Tira do pai (a cena, ou o modelo onde foi montado).
     if (mesh.parent && mesh.parent.remove) mesh.parent.remove(mesh);
     else if (world.scene) world.scene.remove(mesh);
-    if (mesh.geometry && mesh.geometry.dispose) try { mesh.geometry.dispose(); } catch (e) {}
-    if (mesh.material && mesh.material.dispose) try { mesh.material.dispose(); } catch (e) {}
+    disposeGroup(mesh, false);
     var i = world._objects.indexOf(mesh);
     if (i !== -1) world._objects.splice(i, 1);
+    if (world._models) {
+      var modelIndex = world._models.indexOf(mesh);
+      if (modelIndex !== -1) world._models.splice(modelIndex, 1);
+    }
+    if (world._solids) {
+      var solidIndex = world._solids.indexOf(mesh);
+      if (solidIndex !== -1) world._solids.splice(solidIndex, 1);
+    }
   }
 
   // ====================================================================
   // GENÉRICOS Fase 7: luz & céu (atmosfera). Criar UMA vez, fora do animate.
   // ====================================================================
   function _trackLight(world, light) {
+    if (!world || world._lightCount >= MAX_LIGHTS) {
+      warnOnce('light-limit', 'há luzes demais nesta cena; o limite é ' + MAX_LIGHTS + '.');
+      if (light && light.dispose) try { light.dispose(); } catch (e) {}
+      return null;
+    }
     if (!world._lights) world._lights = [];
     world._lights.push(light);
+    world._lightCount += 1;
     world.scene.add(light);
     return light;
   }
   function addAmbientLight(world, color, intensity) {
     if (!world || !world.scene || !THREE.AmbientLight) return null;
-    var i = typeof intensity === 'number' ? intensity : 0.6;
+    var i = clamp(intensity, 0, 100, 0.6);
     return _trackLight(world, new THREE.AmbientLight(color || '#ffffff', i));
   }
   function addSunLight(world, color, intensity) {
     if (!world || !world.scene || !THREE.DirectionalLight) return null;
-    var d = new THREE.DirectionalLight(color || '#ffffff', typeof intensity === 'number' ? intensity : 0.9);
+    var d = new THREE.DirectionalLight(color || '#ffffff', clamp(intensity, 0, 100, 0.9));
     d.position.set(5, 10, 7);
     d.castShadow = true;
     if (d.shadow && d.shadow.camera) {
@@ -428,15 +573,15 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   }
   function addPointLight(world, color, intensity, x, y, z) {
     if (!world || !world.scene || !THREE.PointLight) return null;
-    var p = new THREE.PointLight(color || '#ffffff', typeof intensity === 'number' ? intensity : 1, 0);
-    p.position.set(x || 0, y || 0, z || 0);
+    var p = new THREE.PointLight(color || '#ffffff', clamp(intensity, 0, 100, 1), 0);
+    p.position.set(finite(x, 0), finite(y, 0), finite(z, 0));
     p.castShadow = true;
     return _trackLight(world, p);
   }
   function setFog(world, color, near, far) {
     if (!world || !world.scene || !THREE.Fog) return;
-    var n = typeof near === 'number' ? near : 1;
-    var f = typeof far === 'number' ? far : 30;
+    var n = Math.max(0, finite(near, 1));
+    var f = Math.max(n + 0.01, finite(far, 30));
     world.scene.fog = new THREE.Fog(color || '#9ca3af', n, f);
   }
   function setSky(world, top, bottom) {
@@ -472,16 +617,22 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   // GENÉRICOS Fase 8: enxames (grupos genéricos de cópias) + som.
   // ====================================================================
   function createSwarm(world) {
-    var s = { items: [], world: world };
-    if (world) {
-      if (!world._swarms) world._swarms = [];
-      world._swarms.push(s);
+    if (!world || !world.scene) return null;
+    if (!world._swarms) world._swarms = [];
+    if (world._swarms.length >= MAX_SWARMS) {
+      warnOnce('swarm-limit', 'há enxames demais nesta cena; reutilize um enxame existente.');
+      return null;
     }
+    var s = { items: [], world: world };
+    world._swarms.push(s);
     return s;
   }
   function spawnInSwarm(swarm, original, x, y, z) {
     if (!swarm || !swarm.items || !original || !original.clone) return null;
-    if (swarm.items.length >= MAX_OBJECTS) return null;
+    if (swarm.items.length >= MAX_OBJECTS || (swarm.world._swarmItemCount || 0) >= MAX_OBJECTS) {
+      warnOnce('swarm-item-limit', 'há cópias demais nos enxames desta cena; remova as que saíram da tela.');
+      return null;
+    }
     var copy = original.clone();
     // Material PRÓPRIO por cópia: deixa recolorir/sumir uma sem mexer nas outras,
     // e o dispose de uma cópia não mata o material do original. Geometria é
@@ -497,7 +648,9 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
         grounded: false, zAccel: false, gravity: d.gravity };
     }
     if (swarm.world && swarm.world.scene) swarm.world.scene.add(copy);
+    attachWorld(copy, swarm.world);
     swarm.items.push(copy);
+    swarm.world._swarmItemCount = (swarm.world._swarmItemCount || 0) + 1;
     return copy;
   }
   function countSwarm(swarm) {
@@ -513,6 +666,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     var i = swarm.items.indexOf(item);
     if (i === -1) return;
     swarm.items.splice(i, 1);
+    if (swarm.world) swarm.world._swarmItemCount = Math.max(0, (swarm.world._swarmItemCount || 0) - 1);
     if (item.parent && item.parent.remove) item.parent.remove(item);
     if (item.material && item.material.dispose) try { item.material.dispose(); } catch (e) {}
   }
@@ -561,8 +715,8 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     osc.stop(t0 + dur);
   }
   function playNote(freq, ms) {
-    var f = typeof freq === 'number' && freq > 0 ? freq : 440;
-    var dur = (typeof ms === 'number' && ms > 0 ? ms : 200) / 1000;
+    var f = clamp(freq, 20, 20000, 440);
+    var dur = clamp(ms, 10, 10000, 200) / 1000;
     _beep('square', f, f, dur, 'none');
   }
   function playEffect(kind) {
@@ -580,23 +734,24 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
    */
   function runEnemies(world, group, ground, every, speed) {
     if (!world || !group) return;
-    if (typeof group.__frames !== 'number') {
-      group.__frames = 0;
-      group.__rate = (typeof every === 'number' && every > 0) ? Math.round(every) : 200;
+    if (typeof group.__elapsed !== 'number') {
+      group.__elapsed = 0;
+      group.__rate = positive(every, 200, 36000) / 60;
     }
-    var baseSpeed = typeof speed === 'number' ? speed : 0.02;
+    var baseSpeed = finite(speed, 0.02);
     for (var i = group.length - 1; i >= 0; i--) {
       var e = group[i];
       if (!e) { group.splice(i, 1); continue; }
       var es = szData(e);
-      if (es.zAccel) es.vz += 0.0003;
+      if (es.zAccel) es.vz += 0.0003 * frameScale(world);
       applyGravity(e, ground);
       // Passou da câmera (player fica perto de z=0): descarta para não vazar GPU.
       if (e.position.z > 12) { removeObject(world, e); group.splice(i, 1); }
     }
-    group.__frames += 1;
-    if (group.__frames % group.__rate === 0) {
-      if (group.__rate > 20) group.__rate -= 20;
+    group.__elapsed += (world._dt > 0 ? world._dt : 1 / 60);
+    if (group.__elapsed + 1e-9 >= group.__rate) {
+      group.__elapsed -= group.__rate;
+      if (group.__rate > 1 / 3) group.__rate -= 1 / 3;
       var enemy = createBlock(world, { width: 1, height: 1, depth: 1, color: '#ff4444' });
       if (enemy) {
         enemy.position.set((Math.random() - 0.5) * 10, 0, -20);
@@ -659,20 +814,22 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   }
   function moveBy(obj, dx, dy, dz) {
     if (!obj || !obj.position) return;
-    obj.position.x += typeof dx === 'number' ? dx : 0;
-    obj.position.y += typeof dy === 'number' ? dy : 0;
-    obj.position.z += typeof dz === 'number' ? dz : 0;
+    var scale = frameScale(obj);
+    obj.position.x += finite(dx, 0) * scale;
+    obj.position.y += finite(dy, 0) * scale;
+    obj.position.z += finite(dz, 0) * scale;
   }
   function rotateBy(obj, axis, amount) {
     if (!obj || !obj.rotation) return;
     var a = axis === 'x' ? 'x' : axis === 'z' ? 'z' : 'y';
-    obj.rotation[a] += typeof amount === 'number' ? amount : 0;
+    obj.rotation[a] += finite(amount, 0) * frameScale(obj);
   }
   function moveTowards(obj, x, y, z, t) {
     if (!obj || !obj.position) return;
-    var f = typeof t === 'number' ? t : 0.1;
+    var f = finite(t, 0.1);
     if (f < 0) f = 0;
     if (f > 1) f = 1;
+    f = 1 - Math.pow(1 - f, frameScale(obj));
     if (typeof x === 'number') obj.position.x += (x - obj.position.x) * f;
     if (typeof y === 'number') obj.position.y += (y - obj.position.y) * f;
     if (typeof z === 'number') obj.position.z += (z - obj.position.z) * f;
@@ -691,7 +848,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   }
   function moveForward(obj, dist) {
     if (!obj || !obj.position || !obj.getWorldDirection) return;
-    var d = typeof dist === 'number' ? dist : 0;
+    var d = finite(dist, 0) * frameScale(obj);
     var v = new THREE.Vector3();
     obj.getWorldDirection(v);
     obj.position.x += v.x * d;
@@ -735,8 +892,8 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       world._mouse.x = ((cx - rect.left) / (rect.width || 1)) * 2 - 1;
       world._mouse.y = -((cy - rect.top) / (rect.height || 1)) * 2 + 1;
     }
-    window.addEventListener('pointermove', upd);
-    window.addEventListener('pointerdown', upd);
+    listen(world, window, 'pointermove', upd);
+    listen(world, window, 'pointerdown', upd);
   }
   function pickList(world) {
     return world && world._objects ? world._objects : [];
@@ -810,12 +967,17 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   // ---- GENÉRICOS: física (corpo, sólidos, presets plataforma/FPS) ----
   function body(obj, gravity) {
     var s = szData(obj);
-    if (s) s.gravity = typeof gravity === 'number' ? gravity : -0.01;
+    if (s) s.gravity = clamp(gravity, -10, 10, -0.01);
   }
   function setSolid(obj) {
     if (!obj) return;
     if (!obj.userData) obj.userData = {};
     obj.userData._solid = true;
+    var world = worldOf(obj);
+    if (world) {
+      if (!world._solids) world._solids = [];
+      if (world._solids.indexOf(obj) === -1) world._solids.push(obj);
+    }
   }
   function resolveAABB(obj, solid) {
     if (!obj || !solid || !obj.position || !solid.position) return;
@@ -845,22 +1007,28 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   function stepBody(obj, world) {
     if (!obj || !obj.position || !world) return;
     var s = szData(obj);
-    s.vy += s.gravity;
+    var scale = frameScale(world);
+    s.vy += s.gravity * scale;
     s.grounded = false;
-    obj.position.x += s.vx;
-    obj.position.y += s.vy;
-    obj.position.z += s.vz;
-    var list = world._objects || [];
-    for (var i = 0; i < list.length; i++) {
-      var o = list[i];
-      if (o !== obj && o.userData && o.userData._solid) resolveAABB(obj, o);
+    var maxMove = Math.max(Math.abs(s.vx * scale), Math.abs(s.vy * scale), Math.abs(s.vz * scale));
+    var minHalf = Math.max(0.05, Math.min(halfX(obj, s), halfY(obj, s), halfZ(obj, s)));
+    var steps = Math.min(8, Math.max(1, Math.ceil(maxMove / minHalf)));
+    var solids = world._solids || [];
+    for (var step = 0; step < steps; step++) {
+      obj.position.x += s.vx * scale / steps;
+      obj.position.y += s.vy * scale / steps;
+      obj.position.z += s.vz * scale / steps;
+      for (var i = 0; i < solids.length; i++) {
+        var o = solids[i];
+        if (o !== obj) resolveAABB(obj, o);
+      }
     }
   }
   function platformerControls(obj, world, speed, jump) {
     if (!obj) return;
     var s = szData(obj);
-    var sp = typeof speed === 'number' ? speed : 0.08;
-    var jp = typeof jump === 'number' ? jump : 0.18;
+    var sp = finite(speed, 0.08);
+    var jp = finite(jump, 0.18);
     var mx = 0, mz = 0;
     if (keys.ArrowLeft || keys.KeyA) mx -= 1;
     if (keys.ArrowRight || keys.KeyD) mx += 1;
@@ -874,7 +1042,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   function fpsControls(obj, world, speed) {
     if (!obj || !world) return;
     var s = szData(obj);
-    var sp = typeof speed === 'number' ? speed : 0.08;
+    var sp = finite(speed, 0.08);
     var yaw = obj.rotation ? obj.rotation.y : 0;
     var fx = -Math.sin(yaw), fz = -Math.cos(yaw);
     var rx = Math.cos(yaw), rz = -Math.sin(yaw);
@@ -902,11 +1070,11 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     world._pitch = 0;
     var canvas = world._canvas;
     if (canvas && canvas.addEventListener) {
-      canvas.addEventListener('click', function () {
+      listen(world, canvas, 'click', function () {
         if (canvas.requestPointerLock) canvas.requestPointerLock();
       });
     }
-    window.addEventListener('mousemove', function (e) {
+    listen(world, window, 'mousemove', function (e) {
       if (!document.pointerLockElement) return;
       var mx = e.movementX || 0, my = e.movementY || 0;
       if (world._fpsObj && world._fpsObj.rotation) world._fpsObj.rotation.y -= mx * 0.0025;
@@ -924,16 +1092,16 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       world._orbit = st;
       var canvas = world._canvas;
       if (canvas && canvas.addEventListener) {
-        canvas.addEventListener('pointerdown', function (e) {
+        listen(world, canvas, 'pointerdown', function (e) {
           st.dragging = true; st.px = e.clientX || 0; st.py = e.clientY || 0;
         });
-        canvas.addEventListener('wheel', function (e) {
+        listen(world, canvas, 'wheel', function (e) {
           st.dist += e.deltaY > 0 ? 1 : -1;
           if (st.dist < 2) st.dist = 2;
           if (st.dist > 80) st.dist = 80;
         });
       }
-      window.addEventListener('pointermove', function (e) {
+      listen(world, window, 'pointermove', function (e) {
         if (!st.dragging) return;
         var cx = e.clientX || 0, cy = e.clientY || 0;
         st.az -= (cx - st.px) * 0.01;
@@ -942,7 +1110,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
         if (st.el < -1.4) st.el = -1.4;
         st.px = cx; st.py = cy;
       });
-      window.addEventListener('pointerup', function () { st.dragging = false; });
+      listen(world, window, 'pointerup', function () { st.dragging = false; });
     }
     updateOrbit(world);
   }
@@ -990,7 +1158,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   function setFOV(world, deg) {
     if (!world || !world.camera) return;
     if (typeof world.camera.fov === 'number') {
-      world.camera.fov = typeof deg === 'number' ? deg : 60;
+      world.camera.fov = clamp(deg, 10, 120, 60);
       if (world.camera.updateProjectionMatrix) world.camera.updateProjectionMatrix();
     }
   }
@@ -1015,7 +1183,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
         _updateCameras(world);
         world.renderer.render(world.scene, world.camera);
       } catch (e) {
-        console.error(e && e.message ? e.message : e);
+        console.error('SZGame3D: erro durante a animação:', e);
         world.renderer.setAnimationLoop(null);
       }
     });
@@ -1023,17 +1191,40 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
 
   /** Libera GPU: para o loop e descarta geometrias/materiais/renderer. */
   function dispose(world) {
-    if (!world) return;
+    if (!world || world._disposed) return;
+    world._disposed = true;
     // Tira o mundo do registro mesmo que o descarte abaixo falhe.
     var idx = worlds.indexOf(world);
     if (idx !== -1) worlds.splice(idx, 1);
-    // Tela cheia: solta o listener de resize e remove o canvas que criamos.
-    if (world._resizeHandler && window.removeEventListener) {
-      try { window.removeEventListener('resize', world._resizeHandler); } catch (e) {}
-      world._resizeHandler = null;
+    removeWorldListeners(world);
+    if (world._resizeObserver && world._resizeObserver.disconnect) {
+      try { world._resizeObserver.disconnect(); } catch (e) {}
+      world._resizeObserver = null;
+    }
+    if (document && document.pointerLockElement === world._canvas && document.exitPointerLock) {
+      try { document.exitPointerLock(); } catch (e) {}
     }
     if (world._ownsCanvas && world._canvas && world._canvas.parentNode) {
       try { world._canvas.parentNode.removeChild(world._canvas); } catch (e) {}
+    }
+    if (world._ownsCanvas && world._styleRestore && document.body) {
+      document.body.style.margin = world._styleRestore.margin;
+      document.body.style.background = world._styleRestore.background;
+      if (document.documentElement && document.documentElement.style) {
+        document.documentElement.style.overflow = world._styleRestore.overflow;
+      }
+    }
+    // Uma única travessia cobre primitivas, modelos e objetos internos dos kits.
+    // Sets impedem descarte duplicado quando uma peça também aparece em _objects.
+    var seen = { geometries: new Set(), materials: new Set() };
+    if (world.scene) disposeGroup(world.scene, false, seen);
+    if (
+      world.scene &&
+      world.scene.background &&
+      world.scene.background.isTexture &&
+      world.scene.background.dispose
+    ) {
+      try { world.scene.background.dispose(); } catch (e) {}
     }
     if (world.renderer) {
       world.renderer.setAnimationLoop(null);
@@ -1043,51 +1234,10 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       // depois de vários "Atualizar".
       try { world.renderer.forceContextLoss(); } catch (e) {}
     }
-    for (var i = 0; i < (world._objects || []).length; i++) {
-      var o = world._objects[i];
-      if (o && o.geometry && o.geometry.dispose) o.geometry.dispose();
-      if (o && o.material && o.material.dispose) o.material.dispose();
-    }
-    // Travessia/Corrida: mapas/pistas são Groups (fora de _objects) — descarta também.
-    if (world._crossing && world._crossing.map) {
-      try { disposeGroup(world._crossing.map); } catch (e) {}
-    }
-    if (world._race && world._race.group) {
-      try { disposeGroup(world._race.group); } catch (e) {}
-    }
-    if (world._stack && world._stack.group) {
-      try { disposeGroup(world._stack.group); } catch (e) {}
-    }
-    // Fase 6: modelos montados (Groups fora de _objects).
-    if (world._models) {
-      for (var mi = 0; mi < world._models.length; mi++) {
-        try { disposeGroup(world._models[mi]); } catch (e) {}
-      }
-    }
-    // Fase 7: luzes adicionadas + céu (textura de fundo).
-    if (world._lights) {
-      for (var lgi = 0; lgi < world._lights.length; lgi++) {
-        var lg = world._lights[lgi];
-        if (lg && lg.dispose) try { lg.dispose(); } catch (e) {}
-      }
-    }
-    if (
-      world.scene &&
-      world.scene.background &&
-      world.scene.background.isTexture &&
-      world.scene.background.dispose
-    ) {
-      try { world.scene.background.dispose(); } catch (e) {}
-    }
-    // Fase 8: cópias dos enxames (material PRÓPRIO por cópia; geometria é do original).
     if (world._swarms) {
       for (var swi = 0; swi < world._swarms.length; swi++) {
         var sw = world._swarms[swi];
         if (sw && sw.items) {
-          for (var ii = 0; ii < sw.items.length; ii++) {
-            var it = sw.items[ii];
-            if (it && it.material && it.material.dispose) try { it.material.dispose(); } catch (e) {}
-          }
           sw.items.length = 0;
         }
       }
@@ -1120,22 +1270,38 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   var TILES_PER_ROW = MAX_TILE - MIN_TILE + 1; // 17
 
   /** Descarta recursivamente as geometrias/materiais de um grupo (higiene de GPU). */
-  function disposeGroup(group) {
-    if (!group || !group.traverse) return;
-    group.traverse(function (o) {
-      if (o.geometry && o.geometry.dispose) try { o.geometry.dispose(); } catch (e) {}
-      if (o.material) {
-        var m = o.material;
-        if (m.length) { for (var i = 0; i < m.length; i++) if (m[i] && m[i].dispose) m[i].dispose(); }
-        else if (m.dispose) try { m.dispose(); } catch (e2) {}
+  function disposeGroup(group, disposeTextures, seen) {
+    if (!group) return;
+    var visited = seen || { geometries: new Set(), materials: new Set() };
+    function visit(o) {
+      if (!o) return;
+      if (o.geometry && o.geometry.dispose && !visited.geometries.has(o.geometry)) {
+        visited.geometries.add(o.geometry);
+        try { o.geometry.dispose(); } catch (e) {}
       }
-    });
+      if (o.material) {
+        var materials = o.material.length ? o.material : [o.material];
+        for (var i = 0; i < materials.length; i++) {
+          var m = materials[i];
+          if (!m || visited.materials.has(m)) continue;
+          visited.materials.add(m);
+          if (disposeTextures && m.map && m.map.dispose) try { m.map.dispose(); } catch (e2) {}
+          if (m.dispose) try { m.dispose(); } catch (e3) {}
+        }
+      }
+    }
+    if (group.traverse) group.traverse(visit);
+    else {
+      visit(group);
+      var children = group.children || [];
+      for (var ci = 0; ci < children.length; ci++) disposeGroup(children[ci], disposeTextures, visited);
+    }
   }
 
   /** Câmera ortográfica isométrica (z-up), enquadrada pelo aspecto do canvas. */
   function makeIsoCamera(canvas) {
-    var w = canvas && canvas.width ? canvas.width : 480;
-    var h = canvas && canvas.height ? canvas.height : 360;
+    var w = canvas && (canvas.clientWidth || canvas.width) ? (canvas.clientWidth || canvas.width) : 480;
+    var h = canvas && (canvas.clientHeight || canvas.height) ? (canvas.clientHeight || canvas.height) : 360;
     var vs = 14; // unidades visíveis na vertical
     var ratio = w / h;
     var cam = new THREE.OrthographicCamera(
@@ -1146,6 +1312,20 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     cam.lookAt(0, 0, 0);
     return cam;
   }
+  /** Câmera isométrica genérica no padrão Three.js (y = altura). */
+  function makeYUpIsoCamera(canvas) {
+    var cam = makeIsoCamera(canvas);
+    cam.up.set(0, 1, 0);
+    cam.position.set(12, 12, 12);
+    cam.lookAt(0, 0, 0);
+    return cam;
+  }
+  function resizeIsoCamera(cam, w, h) {
+    var vs = 14, ratio = w / h;
+    cam.left = (-vs * ratio) / 2; cam.right = (vs * ratio) / 2;
+    cam.top = vs / 2; cam.bottom = -vs / 2;
+    if (cam.updateProjectionMatrix) cam.updateProjectionMatrix();
+  }
 
   /** Estado de grade por objeto (linha/coluna + fila de passos + animação). */
   function gridData(obj) {
@@ -1154,7 +1334,8 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     if (!obj.userData.grid) {
       obj.userData.grid = {
         row: 0, col: 0, queue: [], moving: false, t: 0, tile: TS,
-        sx: 0, sy: 0, ex: 0, ey: 0, targetRot: 0, inner: null, wired: false
+        sx: 0, sy: 0, ex: 0, ey: 0, targetRot: 0, inner: null, wired: false,
+        yUp: true
       };
     }
     return obj.userData.grid;
@@ -1200,7 +1381,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     if (!g || g.wired) return;
     g.wired = true;
     if (typeof window === 'undefined' || !window.addEventListener) return;
-    window.addEventListener('keydown', function (e) {
+    listen(world, window, 'keydown', function (e) {
       var dir =
         e.code === 'ArrowUp' ? 'forward'
         : e.code === 'ArrowDown' ? 'backward'
@@ -1229,12 +1410,19 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       g.targetRot =
         dir === 'forward' ? 0 : dir === 'left' ? Math.PI / 2 : dir === 'right' ? -Math.PI / 2 : Math.PI;
     }
-    g.t = Math.min(1, g.t + 0.12);
+    g.t = Math.min(1, g.t + 0.12 * frameScale(obj));
     obj.position.x = g.sx + (g.ex - g.sx) * g.t;
-    obj.position.y = g.sy + (g.ey - g.sy) * g.t;
     var lift = Math.sin(g.t * Math.PI) * (g.tile * 0.35);
-    if (inner) inner.position.z = lift; else obj.position.z = lift;
-    if (inner) inner.rotation.z = inner.rotation.z + (g.targetRot - inner.rotation.z) * g.t;
+    if (g.yUp) {
+      obj.position.z = g.sy + (g.ey - g.sy) * g.t;
+      obj.position.y = lift;
+      if (inner) inner.rotation.y = inner.rotation.y + (g.targetRot - inner.rotation.y) * g.t;
+      else if (obj.rotation) obj.rotation.y = obj.rotation.y + (g.targetRot - obj.rotation.y) * g.t;
+    } else {
+      obj.position.y = g.sy + (g.ey - g.sy) * g.t;
+      if (inner) inner.position.z = lift; else obj.position.z = lift;
+      if (inner) inner.rotation.z = inner.rotation.z + (g.targetRot - inner.rotation.z) * g.t;
+    }
     if (g.t >= 1) {
       g.moving = false;
       var done = g.queue.shift();
@@ -1242,7 +1430,9 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       else if (done === 'backward') g.row -= 1;
       else if (done === 'left') g.col -= 1;
       else if (done === 'right') g.col += 1;
-      if (inner) inner.position.z = 0; else obj.position.z = 0;
+      if (g.yUp) obj.position.y = 0;
+      else if (inner) inner.position.z = 0;
+      else obj.position.z = 0;
       return true;
     }
     return false;
@@ -1251,7 +1441,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   // ---- Genéricos expostos ----
   function isometricCamera(world, followObj) {
     if (!world || !world.scene) return;
-    var cam = makeIsoCamera(world._canvas);
+    var cam = makeYUpIsoCamera(world._canvas);
     world.camera = cam;
     if (followObj && followObj.add) followObj.add(cam);
     else world.scene.add(cam);
@@ -1259,14 +1449,15 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   function gridPosition(obj, row, col) {
     if (!obj || !obj.position) return;
     var g = gridData(obj);
+    g.yUp = true;
     g.row = row || 0; g.col = col || 0;
     obj.position.x = g.col * g.tile;
-    obj.position.y = g.row * g.tile;
+    obj.position.z = g.row * g.tile;
   }
   function gridMove(obj, dir) { enqueueMove(obj, dir, null); }
   function gridStep(obj) {
     if (!obj) return;
-    wireGridKeys(obj, null);
+    wireGridKeys(obj, worldOf(obj));
     animateStep(obj);
   }
   function moveAcross(group, speed, min, max) {
@@ -1277,7 +1468,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     for (var i = 0; i < group.length; i++) {
       var o = group[i];
       if (!o || !o.position) continue;
-      o.position.x += sp;
+      o.position.x += sp * frameScale(o);
       if (sp >= 0 && o.position.x > hi) o.position.x = lo;
       else if (sp < 0 && o.position.x < lo) o.position.x = hi;
     }
@@ -1387,34 +1578,26 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       if (dir.shadow.mapSize && dir.shadow.mapSize.set) dir.shadow.mapSize.set(1024, 1024);
     }
     world.scene.add(dir);
+    world._lightCount = Math.min(MAX_LIGHTS, (world._lightCount || 0) + 2);
   }
 
   // ---- Kit Travessia exposto ----
   function createCrossingScene(canvasId) {
-    var canvas = document.getElementById(canvasId);
-    if (canvas) {
-      for (var k = worlds.length - 1; k >= 0; k--) {
-        if (worlds[k] && worlds[k]._canvas === canvas) { try { dispose(worlds[k]); } catch (e) {} }
-      }
+    var canvas = requireCanvas(canvasId);
+    for (var k = worlds.length - 1; k >= 0; k--) {
+      if (worlds[k] && worlds[k]._canvas === canvas) { try { dispose(worlds[k]); } catch (e) {} }
     }
-    var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, canvas: canvas || undefined });
-    var w = canvas && canvas.width ? canvas.width : 480;
-    var h = canvas && canvas.height ? canvas.height : 360;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.setSize(w, h, false);
-    if (renderer.shadowMap) {
-      renderer.shadowMap.enabled = true;
-      if (THREE.PCFSoftShadowMap) renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    }
-    var scene = new THREE.Scene();
-    scene.background = new THREE.Color('#87ceeb');
+    var w = canvas.clientWidth || canvas.width || 480;
+    var h = canvas.clientHeight || canvas.height || 360;
     var camera = makeIsoCamera(canvas);
-    var world = { scene: scene, camera: camera, renderer: renderer, _objects: [], _canvas: canvas || null };
+    var world = _setupWorld(canvas, w, h, {
+      alpha: true, background: '#87ceeb', camera: camera,
+      skipLights: true, resizeCamera: resizeIsoCamera
+    });
     setupCrossingLights(world);
     crossingState(world);
     // linha de início (grama segura) na linha 0 + algumas atrás.
     for (var r = 0; r > -6; r--) world._crossing.map.add(makeRowGround(r, 'grass'));
-    worlds.push(world);
     return world;
   }
 
@@ -1422,10 +1605,17 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     if (!world || !world.scene) return null;
     opts = opts || {};
     var cs = crossingState(world);
+    if (cs.player) {
+      if (cs.player.parent && cs.player.parent.remove) cs.player.parent.remove(cs.player);
+      disposeGroup(cs.player, false);
+      cs.player = null;
+    }
     var built = makeCrosser(opts.color);
     world.scene.add(built.outer);
+    attachWorld(built.outer, world);
+    attachWorld(built.inner, world);
     var g = gridData(built.outer);
-    g.row = 0; g.col = 0; g.tile = TS; g.inner = built.inner;
+    g.row = 0; g.col = 0; g.tile = TS; g.inner = built.inner; g.yUp = false;
     built.outer.position.set(0, 0, 0);
     cs.player = built.outer;
     // câmera segue o personagem (parenteada — translada junto, sem girar).
@@ -1474,6 +1664,14 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
 
   function buildRow(world, rowIndex, kind, direction, speed) {
     var cs = crossingState(world);
+    var previous = cs.rowByIndex[rowIndex];
+    if (previous && previous.group) {
+      cs.map.remove(previous.group);
+      disposeGroup(previous.group);
+    } else if (Object.keys(cs.rowByIndex).length >= MAX_ROWS) {
+      warnOnce('row-limit', 'o mapa já tem linhas suficientes; remova as antigas antes de criar outras.');
+      return false;
+    }
     var row = makeRowGround(rowIndex, kind);
     var meta = { type: kind, group: row, direction: direction, speed: speed, vehicles: [], trees: [] };
     if (kind === 'forest') {
@@ -1504,11 +1702,13 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     cs.rowByIndex[rowIndex] = meta;
     cs.map.add(row);
     if (rowIndex >= cs.nextRow) cs.nextRow = rowIndex + 1;
+    return true;
   }
 
   function addRow(world, rowIndex, kind, direction, speed) {
     if (!world) return;
-    buildRow(world, rowIndex, kind, direction, typeof speed === 'number' ? speed : 150);
+    var row = Math.floor(finite(rowIndex, 0));
+    buildRow(world, row, kind, direction, positive(speed, 150, 10000));
   }
 
   function generateRows(world, count) {
@@ -1516,7 +1716,10 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     var cs = crossingState(world);
     var kinds = ['car', 'truck', 'forest'];
     var speeds = [125, 156, 188];
-    var n = typeof count === 'number' ? count : 20;
+    var existing = Object.keys(cs.rowByIndex).length;
+    var room = Math.max(0, MAX_ROWS - existing);
+    var n = Math.min(room, Math.floor(clamp(count, 0, MAX_ROWS_PER_CALL, 20)));
+    if (room === 0) warnOnce('row-limit', 'o mapa já tem linhas suficientes; as antigas serão removidas conforme o personagem avança.');
     for (var i = 0; i < n; i++) {
       var kind = kinds[Math.floor(Math.random() * kinds.length)];
       var direction = Math.random() < 0.5 ? 'right' : 'left';
@@ -1550,7 +1753,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       if (!cs.rowByIndex.hasOwnProperty(key)) continue;
       var meta = cs.rowByIndex[key];
       if (!meta || (meta.type !== 'car' && meta.type !== 'truck')) continue;
-      var step = (meta.speed || 150) / 42 / 60; // px-ish → unidades por quadro (~60fps)
+      var step = (meta.speed || 150) / 42 / 60 * frameScale(world);
       for (var i = 0; i < meta.vehicles.length; i++) {
         var ref = meta.vehicles[i] && meta.vehicles[i].ref;
         if (!ref) continue;
@@ -1586,8 +1789,8 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   // GENÉRICOS: câmera aérea + movimento circular + distância. E Kit Corrida.
   // ======================================================================
   function makeAerialCamera(canvas) {
-    var w = canvas && canvas.width ? canvas.width : 480;
-    var h = canvas && canvas.height ? canvas.height : 360;
+    var w = canvas && (canvas.clientWidth || canvas.width) ? (canvas.clientWidth || canvas.width) : 480;
+    var h = canvas && (canvas.clientHeight || canvas.height) ? (canvas.clientHeight || canvas.height) : 360;
     var vs = 30; // unidades visíveis na vertical (vê a pista inteira)
     var ratio = w / h;
     var cam = new THREE.OrthographicCamera(
@@ -1598,9 +1801,23 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     cam.lookAt(0, 0, 0);
     return cam;
   }
+  /** Câmera aérea genérica no chão X-Z (y = altura). */
+  function makeYUpAerialCamera(canvas) {
+    var cam = makeAerialCamera(canvas);
+    cam.up.set(0, 0, -1);
+    cam.position.set(0, 26, 0);
+    cam.lookAt(0, 0, 0);
+    return cam;
+  }
+  function resizeAerialCamera(cam, w, h) {
+    var vs = 30, ratio = w / h;
+    cam.left = (-vs * ratio) / 2; cam.right = (vs * ratio) / 2;
+    cam.top = vs / 2; cam.bottom = -vs / 2;
+    if (cam.updateProjectionMatrix) cam.updateProjectionMatrix();
+  }
   function topCamera(world, followObj) {
     if (!world || !world.scene) return;
-    var cam = makeAerialCamera(world._canvas);
+    var cam = makeYUpAerialCamera(world._canvas);
     world.camera = cam;
     if (followObj && followObj.add) followObj.add(cam);
     else world.scene.add(cam);
@@ -1613,19 +1830,23 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   function moveInCircle(obj, radius, speed) {
     if (!obj || !obj.position) return;
     var c = circleData(obj);
-    var r = typeof radius === 'number' ? radius : 7;
-    var sp = typeof speed === 'number' ? speed : 0.02;
-    c.angle += sp;
+    var r = positive(radius, 7, 10000);
+    var sp = finite(speed, 0.02);
+    c.angle += sp * frameScale(obj);
     obj.position.x = Math.cos(c.angle) * r;
-    obj.position.y = Math.sin(c.angle) * r;
-    if (obj.rotation) obj.rotation.z = c.angle + Math.PI / 2;
+    obj.position.z = Math.sin(c.angle) * r;
+    if (obj.rotation) obj.rotation.y = -c.angle;
   }
   function distanceTo(a, b) {
     if (!a || !b || !a.position || !b.position) return 0;
     return Math.sqrt(
       (b.position.x - a.position.x) * (b.position.x - a.position.x) +
-        (b.position.y - a.position.y) * (b.position.y - a.position.y)
+        (b.position.z - a.position.z) * (b.position.z - a.position.z)
     );
+  }
+  function distanceXY(a, b) {
+    if (!a || !b || !a.position || !b.position) return Infinity;
+    return Math.hypot(b.position.x - a.position.x, b.position.y - a.position.y);
   }
   function isNear(a, b, dist) {
     return distanceTo(a, b) < (typeof dist === 'number' ? dist : 1);
@@ -1638,7 +1859,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     if (!world._race) {
       world._race = {
         group: new THREE.Group(), player: null, rivals: [],
-        laps: 0, gameOver: false, totalAngle: 0, frames: 0,
+        laps: 0, gameOver: false, totalAngle: 0, spawnElapsed: 0,
         midRx: RACE_MID * RACE_XS, midRy: RACE_MID
       };
       world.scene.add(world._race.group);
@@ -1659,33 +1880,26 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   }
 
   function createRaceScene(canvasId) {
-    var canvas = document.getElementById(canvasId);
-    if (canvas) {
-      for (var k = worlds.length - 1; k >= 0; k--) {
-        if (worlds[k] && worlds[k]._canvas === canvas) { try { dispose(worlds[k]); } catch (e) {} }
-      }
+    var canvas = requireCanvas(canvasId);
+    for (var k = worlds.length - 1; k >= 0; k--) {
+      if (worlds[k] && worlds[k]._canvas === canvas) { try { dispose(worlds[k]); } catch (e) {} }
     }
-    var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, canvas: canvas || undefined });
-    var w = canvas && canvas.width ? canvas.width : 480;
-    var h = canvas && canvas.height ? canvas.height : 360;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.setSize(w, h, false);
-    if (renderer.shadowMap) {
-      renderer.shadowMap.enabled = true;
-      if (THREE.PCFSoftShadowMap) renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    }
-    var scene = new THREE.Scene();
-    scene.background = new THREE.Color('#bfe3ff');
+    var w = canvas.clientWidth || canvas.width || 480;
+    var h = canvas.clientHeight || canvas.height || 360;
     var camera = makeAerialCamera(canvas);
-    var world = { scene: scene, camera: camera, renderer: renderer, _objects: [], _canvas: canvas || null };
+    var world = _setupWorld(canvas, w, h, {
+      alpha: true, background: '#bfe3ff', camera: camera,
+      skipLights: true, resizeCamera: resizeAerialCamera
+    });
     setupCrossingLights(world);
-    worlds.push(world);
     return world;
   }
 
   function createRaceTrack(world) {
     if (!world) return;
     var rs = raceState(world);
+    if (rs.trackBuilt) return;
+    rs.trackBuilt = true;
     var field = new THREE.Mesh(new THREE.PlaneGeometry(48, 34), lambert('#67C240', false));
     field.receiveShadow = true;
     rs.group.add(field);
@@ -1706,8 +1920,14 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     if (!world || !world.scene) return null;
     opts = opts || {};
     var rs = raceState(world);
+    if (rs.player) {
+      rs.group.remove(rs.player);
+      disposeGroup(rs.player, false);
+      rs.player = null;
+    }
     var car = makeCar('right', opts.color || '#ef2d56');
     rs.group.add(car);
+    attachWorld(car, world);
     rs.player = car;
     rs.totalAngle = 0; rs.laps = 0;
     if (!car.userData) car.userData = {};
@@ -1725,7 +1945,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     var accel = keys.ArrowUp || car.userData.throttle === 'accelerate';
     var brake = keys.ArrowDown || car.userData.throttle === 'decelerate';
     var sp = accel ? base * 2 : brake ? base * 0.4 : base;
-    rs.totalAngle += sp;
+    rs.totalAngle += sp * frameScale(world);
     placeOnTrack(rs, car, Math.PI + rs.totalAngle, false);
     var laps = Math.floor(rs.totalAngle / (Math.PI * 2));
     rs.laps = laps;
@@ -1741,13 +1961,15 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   function runRivals(world) {
     if (!world) return;
     var rs = raceState(world);
-    rs.frames = (rs.frames || 0) + 1;
+    rs.spawnElapsed = (rs.spawnElapsed || 0) + (world._dt > 0 ? world._dt : 1 / 60);
     var MAX_RIVALS = 6;
-    if (rs.rivals.length < MAX_RIVALS && rs.frames % 150 === 0) {
+    if (rs.rivals.length < MAX_RIVALS && rs.spawnElapsed >= 2.5) {
+      rs.spawnElapsed -= 2.5;
       var isTruck = Math.random() < 0.4;
       var colors = ['#a52523', '#ef2d56', '#0ad3ff', '#ff9f1c'];
       var col = colors[Math.floor(Math.random() * colors.length)];
       var mesh = isTruck ? makeTruck('right', col) : makeCar('right', col);
+      attachWorld(mesh, world);
       rs.group.add(mesh);
       rs.rivals.push({
         mesh: mesh,
@@ -1758,7 +1980,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     }
     for (var i = 0; i < rs.rivals.length; i++) {
       var rv = rs.rivals[i];
-      rv.angle += rv.cw ? -rv.speed : rv.speed;
+      rv.angle += (rv.cw ? -rv.speed : rv.speed) * frameScale(world);
       placeOnTrack(rs, rv.mesh, rv.angle, rv.cw);
     }
   }
@@ -1767,7 +1989,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     if (!car || !world) return false;
     var rs = raceState(world);
     for (var i = 0; i < rs.rivals.length; i++) {
-      if (rs.rivals[i] && isNear(car, rs.rivals[i].mesh, 1.4)) {
+      if (rs.rivals[i] && distanceXY(car, rs.rivals[i].mesh) < 1.4) {
         rs.gameOver = true;
         return true;
       }
@@ -1786,7 +2008,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       var m = rs.rivals[i] && rs.rivals[i].mesh;
       if (m) { rs.group.remove(m); disposeGroup(m); }
     }
-    rs.rivals = []; rs.gameOver = false; rs.totalAngle = 0; rs.laps = 0; rs.frames = 0;
+    rs.rivals = []; rs.gameOver = false; rs.totalAngle = 0; rs.laps = 0; rs.spawnElapsed = 0;
     if (car) {
       placeOnTrack(rs, car, Math.PI, false);
       if (!car.userData) car.userData = {};
@@ -1815,9 +2037,10 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   function integrateFall(obj) {
     if (!obj || !obj.position) return true;
     var f = fallData(obj);
-    f.vy += FALL_G;
-    obj.position.x += f.vx; obj.position.y += f.vy; obj.position.z += f.vz;
-    if (obj.rotation) { obj.rotation.x += f.rx; obj.rotation.z += f.rz; }
+    var scale = frameScale(obj);
+    f.vy += FALL_G * scale;
+    obj.position.x += f.vx * scale; obj.position.y += f.vy * scale; obj.position.z += f.vz * scale;
+    if (obj.rotation) { obj.rotation.x += f.rx * scale; obj.rotation.z += f.rz * scale; }
     return obj.position.y < -24;
   }
   /** GENÉRICO: solta o objeto em queda livre, girando, até sumir (gravidade). */
@@ -1840,7 +2063,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     var lo = typeof min === 'number' ? min : -5;
     var hi = typeof max === 'number' ? max : 5;
     if (lo > hi) { var t = lo; lo = hi; hi = t; }
-    var sp = typeof speed === 'number' ? speed : 0.05;
+    var sp = finite(speed, 0.05) * frameScale(obj);
     var s = slideData(obj);
     obj.position[ax] += sp * s.dir;
     if (obj.position[ax] >= hi) { obj.position[ax] = hi; s.dir = -1; }
@@ -1850,7 +2073,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   function spin(obj, axis, speed) {
     if (!obj || !obj.rotation) return;
     var ax = axis === 'x' ? 'x' : axis === 'z' ? 'z' : 'y';
-    obj.rotation[ax] += typeof speed === 'number' ? speed : 0.03;
+    obj.rotation[ax] += finite(speed, 0.03) * frameScale(obj);
   }
 
   // ---- Kit Empilhar (torre de blocos; câmera iso que sobe) ----
@@ -1862,8 +2085,8 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
 
   /** Câmera ortográfica isométrica y-up (igual à referência: olha p/ 0,0,0). */
   function makeStackCamera(canvas) {
-    var w = canvas && canvas.width ? canvas.width : 480;
-    var h = canvas && canvas.height ? canvas.height : 360;
+    var w = canvas && (canvas.clientWidth || canvas.width) ? (canvas.clientWidth || canvas.width) : 480;
+    var h = canvas && (canvas.clientHeight || canvas.height) ? (canvas.clientHeight || canvas.height) : 360;
     var width = 10;
     var height = width / (w / h);
     var cam = new THREE.OrthographicCamera(
@@ -1873,10 +2096,16 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     cam.lookAt(0, 0, 0);
     return cam;
   }
+  function resizeStackCamera(cam, w, h) {
+    var width = 10, height = width / (w / h);
+    cam.left = width / -2; cam.right = width / 2;
+    cam.top = height / 2; cam.bottom = height / -2;
+    if (cam.updateProjectionMatrix) cam.updateProjectionMatrix();
+  }
   function stackState(world) {
     if (!world._stack) {
       world._stack = {
-        group: new THREE.Group(), layers: [], overhangs: [],
+        world: world, group: new THREE.Group(), layers: [], overhangs: [],
         moving: null, score: 0, gameOver: false
       };
       world.scene.add(world._stack.group);
@@ -1890,10 +2119,15 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     var mesh = new THREE.Mesh(new THREE.BoxGeometry(width, STACK_H, depth), lambert(color, false));
     mesh.position.set(x, y, z);
     st.group.add(mesh);
-    return mesh;
+    return attachWorld(mesh, st.world);
   }
   /** Adiciona um andar; direction 'x'/'z' = bloco que desliza, null = base/fixo. */
   function addStackLayer(st, x, z, width, depth, direction) {
+    if (st.layers.length >= MAX_STACK_LAYERS) {
+      st.gameOver = true;
+      warnOnce('stack-limit', 'a torre atingiu o limite seguro de ' + MAX_STACK_LAYERS + ' andares.');
+      return null;
+    }
     var y = STACK_H * st.layers.length;
     var mesh = stackBox(st, x, y, z, width, depth, layerColor(st.layers.length));
     var layer = { mesh: mesh, width: width, depth: depth, direction: direction || null };
@@ -1902,32 +2136,33 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     return layer;
   }
   function createStackScene(canvasId) {
-    var canvas = document.getElementById(canvasId);
-    if (canvas) {
-      for (var k = worlds.length - 1; k >= 0; k--) {
-        if (worlds[k] && worlds[k]._canvas === canvas) { try { dispose(worlds[k]); } catch (e) {} }
-      }
+    var canvas = requireCanvas(canvasId);
+    for (var k = worlds.length - 1; k >= 0; k--) {
+      if (worlds[k] && worlds[k]._canvas === canvas) { try { dispose(worlds[k]); } catch (e) {} }
     }
-    var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, canvas: canvas || undefined });
-    var w = canvas && canvas.width ? canvas.width : 480;
-    var h = canvas && canvas.height ? canvas.height : 360;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.setSize(w, h, false);
-    var scene = new THREE.Scene();
-    scene.background = new THREE.Color('#fbe7c6');
+    var w = canvas.clientWidth || canvas.width || 480;
+    var h = canvas.clientHeight || canvas.height || 360;
     var camera = makeStackCamera(canvas);
-    var world = { scene: scene, camera: camera, renderer: renderer, _objects: [], _canvas: canvas || null };
+    var world = _setupWorld(canvas, w, h, {
+      alpha: true, background: '#fbe7c6', camera: camera,
+      skipLights: true, resizeCamera: resizeStackCamera
+    });
+    var scene = world.scene;
     // Luzes y-up (a setupCrossingLights é z-up): ambiente + direcional como a referência.
     scene.add(new THREE.AmbientLight(0xffffff, 0.6));
     var dir = new THREE.DirectionalLight(0xffffff, 0.6);
     dir.position.set(10, 20, 0);
     scene.add(dir);
-    worlds.push(world);
+    world._lightCount = Math.min(MAX_LIGHTS, (world._lightCount || 0) + 2);
     return world;
   }
   function createStackTower(world) {
     if (!world) return;
     var st = stackState(world);
+    if (st.layers.length > 0) {
+      warnOnce('stack-already-built', 'a torre já foi montada; use recomeçar para reconstruí-la.');
+      return;
+    }
     addStackLayer(st, 0, 0, STACK_W0, STACK_W0, null);          // fundação (fixa)
     addStackLayer(st, -STACK_START, 0, STACK_W0, STACK_W0, 'x'); // 1º bloco deslizante
     st.score = 0; st.gameOver = false;
@@ -1943,13 +2178,13 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     var st = stackState(world);
     if (!st.gameOver && st.moving) {
       var ax = st.moving.direction;
-      st.moving.mesh.position[ax] += STACK_SPEED;
+      st.moving.mesh.position[ax] += STACK_SPEED * frameScale(world);
       if (st.moving.mesh.position[ax] > STACK_LIMIT) stackMiss(st);
     }
     // Câmera sobe junto com a torre (sem re-olhar: a referência só translada em Y).
     var targetY = 4 + STACK_H * Math.max(0, st.layers.length - 2);
     if (world.camera && world.camera.position.y < targetY) {
-      world.camera.position.y = Math.min(targetY, world.camera.position.y + STACK_SPEED);
+      world.camera.position.y = Math.min(targetY, world.camera.position.y + STACK_SPEED * frameScale(world));
     }
     // Sobras caindo (física manual).
     for (var i = st.overhangs.length - 1; i >= 0; i--) {
@@ -2019,11 +2254,26 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   if (typeof window !== 'undefined' && window.addEventListener) {
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('blur', clearKeys);
     window.addEventListener('pagehide', disposeAll);
     window.addEventListener('beforeunload', disposeAll);
   }
+  if (typeof document !== 'undefined' && document.addEventListener) {
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) clearKeys();
+    });
+  }
+
+  function runProject(fn) {
+    if (typeof fn !== 'function') {
+      warn('o projeto precisa de uma função de início');
+      return;
+    }
+    try { fn(); } catch (e) { warn('erro em "Ao iniciar": ' + e); }
+  }
 
   window.SZGame3D = {
+    runProject: runProject,
     createScene: createScene,
     createFullscreenScene: createFullscreenScene,
     setBackground: setBackground,

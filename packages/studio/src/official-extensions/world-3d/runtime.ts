@@ -100,6 +100,11 @@ export const world3DRuntime = `import * as THREE from 'three';
   var boostCfg = null;          // { force }
   var boostActive = false;
   var engineOn = false;
+  // O Chromium bloqueia WebAudio criado/iniciado antes do primeiro gesto. Além
+  // do aviso no console, isso deixava o motor mudo mesmo depois de a criança
+  // começar a dirigir. A intenção sonora fica configurada e o grafo nasce no
+  // primeiro teclado/toque real.
+  var audioUnlocked = false;
   var _audioCtx = null;
   var engineOsc = null;
   var engineGain = null;
@@ -1969,6 +1974,7 @@ export const world3DRuntime = `import * as THREE from 'three';
 
   function ensureAudioCtx() {
     if (_audioCtx) return _audioCtx;
+    if (!audioUnlocked) return null;
     try {
       var AC = window.AudioContext || window.webkitAudioContext;
       if (AC) _audioCtx = new AC();
@@ -1977,9 +1983,12 @@ export const world3DRuntime = `import * as THREE from 'three';
   }
 
   function resumeAudio() {
+    audioUnlocked = true;
     try {
       if (_audioCtx && _audioCtx.state === 'suspended') _audioCtx.resume();
     } catch (e) {}
+    if (engineOn && !engineOsc) startEngine();
+    if (ambienceKind === 'mar' && !_ambNoise) startSeaNoise();
   }
 
   /** Liga o oscilador do motor (grave, com lowpass) — o pitch segue a velocidade. */
@@ -7835,6 +7844,14 @@ export const world3DRuntime = `import * as THREE from 'three';
     };
   }
 
+  function runProject(fn) {
+    if (typeof fn !== 'function') {
+      warn('o projeto precisa de uma função de início');
+      return;
+    }
+    try { fn(); } catch (e) { warn('erro em "Ao iniciar": ' + e); }
+  }
+
   var api = {
     // 🌍 Mundo
     setup: guard('setup', function (opts) {
@@ -8964,6 +8981,9 @@ export const world3DRuntime = `import * as THREE from 'three';
     })
   };
 
+  Object.defineProperty(api, 'runProject', {
+    value: guard('runProject', runProject), enumerable: false
+  });
   if (typeof window !== 'undefined') {
     window.SZWorld3D = api;
   } else if (typeof globalThis !== 'undefined') {

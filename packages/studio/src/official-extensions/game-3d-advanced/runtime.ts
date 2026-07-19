@@ -63,6 +63,8 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   var updateHooks = [];
   var enterStateHooks = Object.create(null); // estado do JOGO -> [fn]
   var listeners = Object.create(null);   // aviso -> [fn]  (event bus)
+  var projectFactory = null;
+  var runningProjectFactory = false;
   var screens = Object.create(null);     // nome -> { el, title, text, mainBtn }
   var hudEls = Object.create(null);      // canto -> div
   var sounds = Object.create(null);      // nome -> HTMLAudioElement
@@ -451,6 +453,10 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       _timer.on = false;
       _timer.left = 0;
       _shakeT = 0;
+      if (projectFactory) {
+        resetProjectRuntime();
+        executeProjectFactory();
+      }
     }
     var hooks = enterStateHooks[n];
     if (hooks) {
@@ -458,6 +464,48 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
         try { hooks[i](); } catch (e) { warn('erro no "quando o jogo entrar no estado ' + n + '": ' + e); }
       }
     }
+  }
+
+  function resetProjectRuntime() {
+    updateHooks.length = 0;
+    enterStateHooks = Object.create(null);
+    listeners = Object.create(null);
+    fsmHooks = Object.create(null);
+    deathHooks = Object.create(null);
+    overlapHooks = Object.create(null);
+    timerHooks.length = 0;
+    stateTimers.length = 0;
+    spawners.length = 0;
+    for (var di = 0; di < decor.length; di++) {
+      if (scene && decor[di]) scene.remove(decor[di]);
+    }
+    decor.length = 0;
+    for (var li = 0; li < extraLights.length; li++) {
+      if (scene && extraLights[li]) scene.remove(extraLights[li]);
+    }
+    extraLights.length = 0;
+    molds = Object.create(null);
+    pools = Object.create(null);
+    totalAlive = 0;
+    effects = Object.create(null);
+    jets.length = 0;
+  }
+
+  function executeProjectFactory() {
+    if (typeof projectFactory !== 'function' || runningProjectFactory) return;
+    runningProjectFactory = true;
+    try { projectFactory(); }
+    catch (e) { warn('erro em "Ao iniciar": ' + e); }
+    runningProjectFactory = false;
+  }
+
+  function runProject(fn) {
+    if (typeof fn !== 'function') {
+      warn('o projeto precisa de uma função de início');
+      return;
+    }
+    projectFactory = fn;
+    executeProjectFactory();
   }
 
   // ---- Entrada (mapa de teclas com limpeza em blur/contextmenu) ----
@@ -4359,7 +4407,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     setup: guard('setup', function (opts) {
       var o = (opts && typeof opts === 'object') ? opts : {};
       if (started) {
-        warn('"Preparar o jogo 3D" depois de começar não muda o mundo — deixe-o no comecinho');
+        if (!runningProjectFactory) warn('"Preparar o jogo 3D" depois de começar não muda o mundo — deixe-o no comecinho');
         return;
       }
       config.w = Math.max(64, Math.min(4096, num(o.width, config.w)));
@@ -4647,6 +4695,9 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     playTone: guard('playTone', playTone)
   };
 
+  Object.defineProperty(api, 'runProject', {
+    value: guard('runProject', runProject), enumerable: false
+  });
   window.SZGameKit3D = api;
 })();
 `

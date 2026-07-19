@@ -22,30 +22,23 @@ function chainLen(block: SerializedBlocklyBlock | undefined): number {
   return n
 }
 
-// Modelo CONTAINER (estilo MakeCode): buildWorkspaceStateFromIR sempre emite os 3
-// frames (🧱 Estrutura / 🎨 Aparência / ⚙️ Comportamento), com os blocos da categoria
-// DENTRO de cada um. (A antiga preservação de layout multi-pilha foi removida — com
-// um frame por categoria não há várias pilhas do mesmo tipo para reposicionar.)
-describe('buildWorkspaceStateFromIR — modelo CONTAINER (3 frames)', () => {
-  it('emite SEMPRE os 3 frames, na ordem Estrutura → Aparência → Comportamento', () => {
+// Cada área é opcional: a Ponte só materializa os frames que realmente possuem
+// conteúdo. Projetos novos, portanto, começam vazios e a criança escolhe as áreas.
+describe('buildWorkspaceStateFromIR — áreas opcionais do projeto', () => {
+  it('migra statements JS legados para a área Ao iniciar', () => {
     const state = buildWorkspaceStateFromIR(irWithJs('a();', 'b();'))
-    expect(state.blocks.blocks.map((t) => t.type)).toEqual([
-      'sz_frame_structure',
-      'sz_frame_appearance',
-      'sz_frame_behavior',
-    ])
+    expect(state.blocks.blocks.map((t) => t.type)).toEqual(['sz_frame_start'])
   })
 
-  it('os statements JS entram DENTRO do Comportamento, encadeados na ordem', () => {
+  it('os statements JS entram DENTRO de Ao iniciar, encadeados na ordem', () => {
     const state = buildWorkspaceStateFromIR(irWithJs('a();', 'b();', 'c();', 'd();'))
-    const behavior = state.blocks.blocks.find((t) => t.type === 'sz_frame_behavior')
-    expect(chainLen(behavior?.inputs?.CHILDREN?.block)).toBe(4)
+    const start = state.blocks.blocks.find((t) => t.type === 'sz_frame_start')
+    expect(chainLen(start?.inputs?.CHILDREN?.block)).toBe(4)
   })
 
-  it('IR vazio → 3 frames VAZIOS (semente do projeto novo, sem CHILDREN)', () => {
+  it('IR vazio → nenhum frame (a criança escolhe quais áreas usar)', () => {
     const state = buildWorkspaceStateFromIR({ html: [], css: [], js: [], extensions: [] })
-    expect(state.blocks.blocks).toHaveLength(3)
-    for (const frame of state.blocks.blocks) expect(frame.inputs?.CHILDREN).toBeUndefined()
+    expect(state.blocks.blocks).toEqual([])
   })
 })
 
@@ -61,7 +54,7 @@ describe('isBlocksStateEmpty', () => {
     expect(isBlocksStateEmpty({ blocks: { languageVersion: 0, blocks: [] } })).toBe(true)
   })
 
-  it('os 3 frames → não-vazio', () => {
+  it('um frame com conteúdo → não-vazio', () => {
     const state = buildWorkspaceStateFromIR(irWithJs('a();'))
     expect(isBlocksStateEmpty(state)).toBe(false)
   })

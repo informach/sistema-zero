@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import type { ProjectAsset } from '#core'
-import { SZIRSchema } from '#ir'
+import { SZIRV2Schema } from '#ir'
 import type { ExtensionManifest } from './types'
 
 export const ExtensionPermissionSchema = z.enum([
@@ -107,7 +107,7 @@ const BoundedExampleIRSchema = z
   .custom<unknown>((value) => isIrExampleWithinLimits(value), {
     error: 'IR de exemplo excede o tamanho ou a profundidade máxima permitida.',
   })
-  .pipe(SZIRSchema)
+  .pipe(SZIRV2Schema)
 
 // Tetos defensivos: um manifest é só metadados + docs, então strings imensas
 // indicam dados malformados/maliciosos. Limites generosos para não atrapalhar

@@ -1,5 +1,12 @@
-import type { JSExpr, JSStatement } from '#ir'
-import { screenTextToExpr, valueToExpr } from '#ir'
+import type { BehaviorIR, JSExpr, JSStatement } from '#ir'
+import {
+  BEHAVIOR_SECTION_MARKERS,
+  type ProjectLifecycleTarget,
+  screenTextToExpr,
+  valueToExpr,
+} from '#ir'
+import { CANVAS3D_SEMANTIC_STATEMENT_TYPES } from '../three/canvas3dContract'
+import { wrapCanvas3DMacro, wrapCanvas3DRuntime } from '../three/canvas3dMacroCodec'
 import { physicsLiteRuntimeSource } from '../three/physicsLiteRuntime'
 import {
   _setExprStatementCompiler,
@@ -66,6 +73,9 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'forRange':
     case 'event':
     case 'animationLoop':
+    case 'physicsLiteCollisionEvent':
+    case 'physicsLiteTriggerEvent':
+    case 'g2d:onStart':
     case 'g2d:updateEachFrame':
     case 'g2d:onPointer':
     case 'g2d:onKey':
@@ -134,13 +144,14 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'imageOnError':
     case 'onClickAssign':
     case 'requestFrameDo':
-    case 'loaderLoad':
     case 'traverseEach':
     case 'setTimeout':
     case 'setInterval':
     case 'setTimeoutSeconds':
     case 'setIntervalSeconds':
       return [stmt.body]
+    case 'loaderLoad':
+      return [stmt.body, stmt.errorBody ?? []]
     case 'tryCatch':
       return [stmt.body, stmt.handler, stmt.finalizer ?? []]
     case 'w3d:npcAsk':
@@ -170,7 +181,13 @@ const MACRO_ADDON_IMPORTS: Partial<
     { name: 'OutputPass', module: 'three/addons/postprocessing/OutputPass.js' },
   ],
   waterSetup: [{ name: 'Water', module: 'three/addons/objects/Water.js' }],
+  environmentLoad: [{ name: 'RGBELoader', module: 'three/addons/loaders/RGBELoader.js' }],
 }
+
+/** Nós cuja expansão deve voltar ao mesmo bloco semântico após editar a Ponte. */
+const CANVAS3D_SEMANTIC_STATEMENTS: ReadonlySet<JSStatement['type']> = new Set(
+  CANVAS3D_SEMANTIC_STATEMENT_TYPES,
+)
 
 /**
  * Shaders GLSL do macro Grama (`grassSetup`) — o vento vive AQUI, escondido da
@@ -226,11 +243,12 @@ function assertJSDepth(statements: JSStatement[]): void {
   }
 }
 
-export interface GenerateJSOptions {
-  statements: JSStatement[]
+export type GenerateJSOptions = {
   /** Header injected at top (e.g., comment header). */
   header?: string
-}
+  /** Adaptador interno que cria o escopo de uma execução e liga o boot automático. */
+  lifecycle?: ProjectLifecycleTarget
+} & ({ statements: JSStatement[]; behavior?: never } | { statements?: never; behavior: BehaviorIR })
 
 export interface GenerateJSWithMapResult {
   code: string
@@ -253,6 +271,7 @@ export function generateJS(opts: GenerateJSOptions): string {
  * "Quando clicar..." → linha do `addEventListener`).
  */
 export function generateJSWithMap(opts: GenerateJSOptions): GenerateJSWithMapResult {
+  if (opts.behavior) return generateBehaviorJSWithMap(opts.behavior, opts.header, opts.lifecycle)
   const map = new SourceMapBuilder()
   // Aborta cedo (erro tipado e capturável) numa IR aninhada demais — antes que
   // as recursões abaixo (hoist/escopo/compilação) estourem a pilha do motor.
@@ -293,8 +312,9 @@ export function generateJSWithMap(opts: GenerateJSOptions): GenerateJSWithMapRes
   let physicsLiteInserted = false
   for (const stmt of statements) {
     if (needsPhysicsLite && !physicsLiteInserted && !isImport(stmt)) {
-      pieces.push(physicsLiteRuntimeSource)
-      currentLine += countLines(physicsLiteRuntimeSource)
+      const runtime = wrapCanvas3DRuntime(physicsLiteRuntimeSource)
+      pieces.push(runtime)
+      currentLine += countLines(runtime)
       physicsLiteInserted = true
     }
     const piece = compileStatement(stmt, 0, identifiers, { map, startLine: currentLine })
@@ -304,10 +324,164 @@ export function generateJSWithMap(opts: GenerateJSOptions): GenerateJSWithMapRes
     // piece começa exatamente em currentLine + lines.
     currentLine += lines
   }
-  if (needsPhysicsLite && !physicsLiteInserted) pieces.push(physicsLiteRuntimeSource)
+  if (needsPhysicsLite && !physicsLiteInserted) {
+    pieces.push(wrapCanvas3DRuntime(physicsLiteRuntimeSource))
+  }
   const body = pieces.join('\n')
   const code = headerText + (body ? `${body}\n` : '')
   return { code, map }
+}
+
+function generateBehaviorJSWithMap(
+  behavior: BehaviorIR,
+  header: string | undefined,
+  lifecycle: ProjectLifecycleTarget | undefined,
+): GenerateJSWithMapResult {
+  const map = new SourceMapBuilder()
+  const ordered = [...behavior.start, ...behavior.events, ...behavior.loops]
+  assertJSDepth(ordered)
+
+  const isImport = (statement: JSStatement): boolean =>
+    statement.type === 'importStar' || statement.type === 'importNamed'
+  const existingModules = new Set(
+    ordered
+      .filter((statement) => statement.type === 'importNamed')
+      .map((statement) => statement.module),
+  )
+  const injectedImports: JSStatement[] = []
+  const seenInjected = new Set<string>()
+  for (const [macroType, needed] of Object.entries(MACRO_ADDON_IMPORTS)) {
+    if (!needed || !treeHasStatementType(ordered, macroType as JSStatement['type'])) continue
+    for (const entry of needed) {
+      if (existingModules.has(entry.module) || seenInjected.has(entry.module)) continue
+      seenInjected.add(entry.module)
+      injectedImports.push({ type: 'importNamed', names: [entry.name], module: entry.module })
+    }
+  }
+
+  const imports = [...ordered.filter(isImport), ...injectedImports]
+  const sections: Array<{ marker: string; statements: JSStatement[] }> = [
+    {
+      marker: BEHAVIOR_SECTION_MARKERS.start,
+      statements: behavior.start.filter((statement) => !isImport(statement)),
+    },
+    { marker: BEHAVIOR_SECTION_MARKERS.events, statements: behavior.events },
+    { marker: BEHAVIOR_SECTION_MARKERS.loops, statements: behavior.loops },
+  ]
+  const identifiers = createPreparedIdentifierScope([
+    ...imports,
+    ...ordered.filter((s) => !isImport(s)),
+  ])
+  const headerText = header ? `${header.trim()}\n\n` : ''
+  let currentLine = headerText ? countLines(headerText) + 1 : 1
+  const pieces: string[] = []
+
+  for (const statement of imports) {
+    const piece = compileStatement(statement, 0, identifiers, { map, startLine: currentLine })
+    pieces.push(piece)
+    currentLine += countLines(piece)
+  }
+
+  const needsPhysicsLite = treeHasStatementType(ordered, 'physicsLiteSetup')
+  if (needsPhysicsLite) {
+    const runtime = wrapCanvas3DRuntime(physicsLiteRuntimeSource)
+    pieces.push(runtime)
+    currentLine += countLines(runtime)
+  }
+
+  const envelope = lifecycle ? lifecycleEnvelope(lifecycle) : undefined
+  const indent = envelope ? 1 : 0
+  const markerIndent = '  '.repeat(indent)
+  if (envelope) {
+    pieces.push(envelope.open)
+    currentLine += 1
+  }
+
+  for (const section of sections) {
+    pieces.push(`${markerIndent}${section.marker}`)
+    currentLine += 1
+    for (const statement of section.statements) {
+      const context = { map, startLine: currentLine }
+      const piece =
+        section.marker === BEHAVIOR_SECTION_MARKERS.loops
+          ? compileBehaviorLoopRoot(statement, indent, identifiers, context)
+          : compileStatement(statement, indent, identifiers, context)
+      pieces.push(piece)
+      currentLine += countLines(piece)
+    }
+  }
+  if (envelope) {
+    pieces.push(envelope.close)
+    if (envelope.boot) pieces.push(envelope.boot)
+  }
+
+  const body = pieces.join('\n')
+  return { code: headerText + (body ? `${body}\n` : ''), map }
+}
+
+/**
+ * “A cada N” é uma raiz de loop independente no projeto. O nó interno continua
+ * representando somente a cadência; este adaptador o liga ao tick do motor sem
+ * obrigar a criança a encaixá-lo dentro de “A cada quadro”.
+ */
+function compileBehaviorLoopRoot(
+  statement: JSStatement,
+  indent: number,
+  identifiers: IdentifierScope,
+  mapContext: CompileMapContext,
+): string {
+  const pad = '  '.repeat(indent)
+  const childContext = childMapContext(mapContext, mapContext.startLine + 1)
+  if (statement.type === 'g2d:everyFrames' || statement.type === 'g2d:everySeconds') {
+    const body = compileStatement(statement, indent + 1, identifiers, childContext)
+    return `${pad}SZGame2D.gameLoop(function __szPeriodicLoop() {\n${body}\n${pad}});`
+  }
+  if (statement.type === 'gk:everySeconds') {
+    const body = compileStatement(statement, indent + 1, identifiers, childContext)
+    return `${pad}SZGameKit.onUpdate(function __szPeriodicLoop(dt) {\n${body}\n${pad}});`
+  }
+  return compileStatement(statement, indent, identifiers, mapContext)
+}
+
+interface LifecycleEnvelope {
+  open: string
+  close: string
+  boot?: string
+}
+
+function lifecycleEnvelope(target: ProjectLifecycleTarget): LifecycleEnvelope {
+  switch (target) {
+    case 'game-2d':
+      return {
+        open: 'SZGame2D.onStart(function __szProjectRun() {',
+        close: '}, "__sz-project");',
+      }
+    case 'game-2d-advanced':
+      return {
+        open: 'SZGameKit.runProject(function __szProjectRun() {',
+        close: '});',
+        boot: 'SZGameKit.start();',
+      }
+    case 'game-3d':
+      return {
+        open: 'SZGame3D.runProject(function __szProjectRun() {',
+        close: '});',
+      }
+    case 'game-3d-advanced':
+      return {
+        open: 'SZGameKit3D.runProject(function __szProjectRun() {',
+        close: '});',
+        boot: 'SZGameKit3D.start();',
+      }
+    case 'world-3d':
+      return {
+        open: 'SZWorld3D.runProject(function __szProjectRun() {',
+        close: '});',
+        boot: 'SZWorld3D.start();',
+      }
+    case 'core':
+      return { open: '(function __szProjectRun() {', close: '})();' }
+  }
 }
 
 /**
@@ -456,7 +630,17 @@ function compileStatement(
   identifiers: IdentifierScope,
   mapContext?: CompileMapContext,
 ): string {
-  const code = compileStatementCode(stmt, indent, identifiers, mapContext)
+  const expanded = compileStatementCode(stmt, indent, identifiers, mapContext)
+  const semantic = CANVAS3D_SEMANTIC_STATEMENTS.has(stmt.type)
+  if (semantic && mapContext && expanded) {
+    mapContext.map.shiftEntriesInRange(
+      'script.js',
+      mapContext.startLine,
+      mapContext.startLine + countLines(expanded) - 1,
+      1,
+    )
+  }
+  const code = semantic ? wrapCanvas3DMacro(stmt, expanded) : expanded
   if (mapContext && stmt.__id) {
     const endLine = mapContext.startLine + countLines(code) - 1
     mapContext.map.record(
@@ -844,8 +1028,8 @@ function compileStatementCode(
     case 'animationLoop': {
       const frame = identifiers.reserveInternal('frame')
       const startLine = mapContext?.startLine ?? 1
-      // Forma com TEMPO: expõe o tempo do quadro (ms, do requestAnimationFrame) e
-      // o tempo desde o quadro anterior (delta) em variáveis do aluno, para
+      // Forma com TEMPO: expõe o relógio do requestAnimationFrame (ms) e o tempo
+      // desde o quadro anterior em SEGUNDOS, para APIs de movimento/física
       // movimento independente de FPS. O loop é iniciado com requestAnimationFrame
       // (não com frame()) para que o 1º quadro já receba um tempo real.
       if (stmt.timeVar || stmt.deltaVar) {
@@ -862,7 +1046,9 @@ function compileStatementCode(
           pre.push(`${pad}  ${identifiers.get(stmt.handle)} = requestAnimationFrame(${frame});`)
         }
         if (dVar && lastT) {
-          pre.push(`${pad}  const ${dVar} = ${lastT} === undefined ? 0 : ${tVar} - ${lastT};`)
+          pre.push(
+            `${pad}  const ${dVar} = ${lastT} === undefined ? 0 : (${tVar} - ${lastT}) / 1000;`,
+          )
           pre.push(`${pad}  ${lastT} = ${tVar};`)
         }
         const body = compileStatements(
@@ -1004,6 +1190,17 @@ function compileStatementCode(
     case 'arraySplice':
       return `${pad}${identifiers.get(stmt.arrayVar)}.splice(${compileExpr(stmt.start, 0, identifiers, recAt(base))}, ${compileExpr(stmt.count, 0, identifiers, recAt(base))});`
     // ----- game-2d -----
+    case 'g2d:onStart': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const start = identifiers.reserveInternal('iniciarJogo')
+      const id = stmt.__id ?? identifiers.reserveInternal('inicioDoJogo')
+      return `${pad}SZGame2D.onStart(function ${start}() {\n${body}\n${pad}}, ${JSON.stringify(id)});`
+    }
     case 'g2d:createSprite': {
       const v = identifiers.get(stmt.varName)
       return `${pad}const ${v} = SZGame2D.createSprite({ x: ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, y: ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, color: ${JSON.stringify(stmt.color)} });`
@@ -1091,7 +1288,8 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGame2D.onPointer((${identifiers.get(stmt.xName)}, ${identifiers.get(stmt.yName)}) => {\n${body}\n${pad}});`
+      const id = stmt.__id ?? identifiers.reserveInternal('eventoDeClique')
+      return `${pad}SZGame2D.onPointer((${identifiers.get(stmt.xName)}, ${identifiers.get(stmt.yName)}) => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
     }
     case 'g2d:onKey': {
       const body = compileStatements(
@@ -1100,7 +1298,8 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGame2D.onKey(${JSON.stringify(stmt.key)}, function () {\n${body}\n${pad}});`
+      const id = stmt.__id ?? identifiers.reserveInternal('eventoDeTecla')
+      return `${pad}SZGame2D.onKey(${JSON.stringify(stmt.key)}, function () {\n${body}\n${pad}}, ${JSON.stringify(id)});`
     }
     case 'g2d:onOverlap': {
       const body = compileStatements(
@@ -1111,7 +1310,8 @@ function compileStatementCode(
       )
       // Sprites passados como thunks (() => sprite) para resolver no DISPARO, não no
       // registro — assim a ordem dos blocos no topo não causa TDZ (const léxico).
-      return `${pad}SZGame2D.onOverlap(() => ${identifiers.get(stmt.aVar)}, () => ${identifiers.get(stmt.bVar)}, function () {\n${body}\n${pad}});`
+      const id = stmt.__id ?? identifiers.reserveInternal('eventoDeContato')
+      return `${pad}SZGame2D.onOverlap(() => ${identifiers.get(stmt.aVar)}, () => ${identifiers.get(stmt.bVar)}, function () {\n${body}\n${pad}}, ${JSON.stringify(id)});`
     }
     case 'g2d:createImageSprite': {
       const v = identifiers.get(stmt.varName)
@@ -1409,7 +1609,7 @@ function compileStatementCode(
     case 'g2d:playWhistle':
       return `${pad}SZGame2D.playWhistle();`
     case 'g2d:playBoom':
-      return `${pad}SZGame2D.playBoom();`
+      return `${pad}SZGame2D.playExplosion();`
     case 'g2d:computerTurn':
       return `${pad}SZGame2D.computerTurn(${identifiers.get(stmt.throwerVar)}, ${identifiers.get(stmt.cityVar)}, ${identifiers.get(stmt.enemyVar)});`
     case 'g2d:drawAimReadout':
@@ -1422,7 +1622,12 @@ function compileStatementCode(
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
       const update = identifiers.reserveInternal('update')
-      return [`${pad}SZGame2D.gameLoop(function ${update}() {`, body, `${pad}});`].join('\n')
+      const id = stmt.__id ?? identifiers.reserveInternal('quadroDoJogo')
+      return [
+        `${pad}SZGame2D.gameLoop(function ${update}() {`,
+        body,
+        `${pad}}, ${JSON.stringify(id)});`,
+      ].join('\n')
     }
     case 'g3d:createScene':
       return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createScene(${JSON.stringify(stmt.canvasId)});`
@@ -3194,8 +3399,16 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
+      const errorBody = compileStatements(
+        stmt.errorBody ?? [],
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + countLines(body) + 3),
+      )
       const url = compileExpr(stmt.url, 0, identifiers, recAt(base))
-      return `${pad}${identifiers.get(stmt.loaderVar)}.load(${url}, (${identifiers.get(stmt.param)}) => {\n${body}\n${pad}});`
+      const errorParam = identifiers.get(stmt.errorParam ?? 'erro')
+      const onError = errorBody || `${'  '.repeat(indent + 1)}console.log(${errorParam});`
+      return `${pad}${identifiers.get(stmt.loaderVar)}.load(${url}, (${identifiers.get(stmt.param)}) => {\n${body}\n${pad}}, undefined, (${errorParam}) => {\n${onError}\n${pad}});`
     }
     case 'traverseEach': {
       const body = compileStatements(
@@ -3212,7 +3425,9 @@ ${pad}});`
       // grafia ATUAL do three.js. 'off' = a linha não é emitida.
       const r = identifiers.get(stmt.renderer)
       const lines: string[] = []
-      if (stmt.pixels === 'device') lines.push(`${r}.setPixelRatio(window.devicePixelRatio);`)
+      if (stmt.pixels === 'device') {
+        lines.push(`${r}.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));`)
+      }
       if (stmt.shadows !== 'off') {
         lines.push(`${r}.shadowMap.enabled = true;`)
         lines.push(
@@ -3223,6 +3438,82 @@ ${pad}});`
       if (stmt.toneMapping === 'aces') lines.push(`${r}.toneMapping = THREE.ACESFilmicToneMapping;`)
       // Nada selecionado → statement vazio (raro; a criança removeria o bloco).
       return lines.map((l) => `${pad}${l}`).join('\n')
+    }
+    case 'rendererResponsive': {
+      const renderer = identifiers.get(stmt.renderer)
+      const camera = identifiers.get(stmt.camera)
+      const cleanup = identifiers.get(stmt.cleanup)
+      const resize = identifiers.reserveInternal(`${stmt.renderer}Redimensionar`)
+      const observer = identifiers.reserveInternal(`${stmt.renderer}Observador`)
+      const composer = stmt.composer ? identifiers.get(stmt.composer) : null
+      const lines = [
+        `const ${cleanup} = (() => {`,
+        `  const ${resize} = () => {`,
+        `    const host = ${renderer}.domElement.parentElement;`,
+        `    const width = Math.max(1, host?.clientWidth || window.innerWidth);`,
+        `    const height = Math.max(1, host?.clientHeight || window.innerHeight);`,
+        `    ${renderer}.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));`,
+        `    ${renderer}.setSize(width, height, false);`,
+        `    ${camera}.aspect = width / height;`,
+        `    ${camera}.updateProjectionMatrix();`,
+        ...(composer ? [`    ${composer}.setSize(width, height);`] : []),
+        `  };`,
+        `  ${resize}();`,
+        `  const host = ${renderer}.domElement.parentElement;`,
+        `  if (host && typeof ResizeObserver !== "undefined") {`,
+        `    const ${observer} = new ResizeObserver(${resize});`,
+        `    ${observer}.observe(host);`,
+        `    return () => ${observer}.disconnect();`,
+        `  }`,
+        `  window.addEventListener("resize", ${resize});`,
+        `  return () => window.removeEventListener("resize", ${resize});`,
+        `})();`,
+      ]
+      return lines.map((line) => `${pad}${line}`).join('\n')
+    }
+    case 'environmentLoad': {
+      const scene = identifiers.get(stmt.scene)
+      const texture = identifiers.get(stmt.texture)
+      const loader = identifiers.reserveInternal(`${stmt.texture}Carregador`)
+      const loaded = identifiers.reserveInternal(`${stmt.texture}Pronto`)
+      const error = identifiers.reserveInternal(`${stmt.texture}Erro`)
+      const lines = [
+        `let ${texture};`,
+        `const ${loader} = new RGBELoader();`,
+        `${loader}.load(${JSON.stringify(stmt.url)}, (${loaded}) => {`,
+        `  ${loaded}.mapping = THREE.EquirectangularReflectionMapping;`,
+        `  ${texture} = ${loaded};`,
+        `  ${scene}.environment = ${loaded};`,
+        ...(stmt.background ? [`  ${scene}.background = ${loaded};`] : []),
+        `}, undefined, (${error}) => {`,
+        `  console.error("Falha ao carregar céu HDR", ${error});`,
+        `});`,
+      ]
+      return lines.map((line) => `${pad}${line}`).join('\n')
+    }
+    case 'disposeObject': {
+      const object = identifiers.get(stmt.object)
+      const lines = [
+        `${object}.parent?.remove(${object});`,
+        `${object}.traverse((parte) => {`,
+        `  parte.geometry?.dispose?.();`,
+        `  const materiais = Array.isArray(parte.material) ? parte.material : parte.material ? [parte.material] : [];`,
+        `  for (const material of materiais) {`,
+        `    for (const valor of Object.values(material)) {`,
+        `      if (valor?.isTexture) valor.dispose();`,
+        `    }`,
+        `    material.dispose?.();`,
+        `  }`,
+        `});`,
+      ]
+      return lines.map((line) => `${pad}${line}`).join('\n')
+    }
+    case 'lerpPosition': {
+      const target = compileExpr(stmt.target, 0, identifiers, recAt(base))
+      const alpha = compileExpr(stmt.alpha, 0, identifiers, recAt(base))
+      const dt = compileExpr(stmt.dt, 0, identifiers, recAt(base))
+      const smoothing = `1 - Math.pow(1 - Math.max(0, Math.min(1, Number(${alpha}) || 0)), Math.max(0, Math.min(0.1, Number(${dt}) || 0)) * 60)`
+      return `${pad}${identifiers.get(stmt.object)}.position.lerp(${target}, ${smoothing});`
     }
     case 'bloomSetup': {
       // Macro Brilho: expande a esteira de pós-processamento (grafia atual 0.180).
@@ -3248,15 +3539,22 @@ ${pad}});`
       // (grafia atual: BufferGeometry + Float32BufferAttribute + PointsMaterial).
       const p = identifiers.get(stmt.particles)
       const sc = identifiers.get(stmt.scene)
-      const count = compileExpr(stmt.count, 0, identifiers, recAt(base))
-      const size = compileExpr(stmt.size, 0, identifiers, recAt(base))
-      const spread = compileExpr(stmt.spread, 0, identifiers, recAt(base))
+      const countExpr = compileExpr(stmt.count, 0, identifiers, recAt(base))
+      const sizeExpr = compileExpr(stmt.size, 0, identifiers, recAt(base))
+      const spreadExpr = compileExpr(stmt.spread, 0, identifiers, recAt(base))
       const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
-      const geo = `${p}Geo`
-      const pos = `${p}Pos`
+      const count = identifiers.reserveInternal(`${stmt.particles}Quantidade`)
+      const size = identifiers.reserveInternal(`${stmt.particles}Tamanho`)
+      const spread = identifiers.reserveInternal(`${stmt.particles}Area`)
+      const geo = identifiers.reserveInternal(`${stmt.particles}Geometria`)
+      const pos = identifiers.reserveInternal(`${stmt.particles}Posicoes`)
+      const index = identifiers.reserveInternal(`${stmt.particles}Indice`)
       const lines = [
+        `const ${count} = Math.max(0, Math.min(20000, Math.round(Number(${countExpr}) || 0)));`,
+        `const ${size} = Math.max(0.001, Math.min(100, Number(${sizeExpr}) || 0.1));`,
+        `const ${spread} = Math.max(0, Math.min(10000, Number(${spreadExpr}) || 0));`,
         `const ${pos} = [];`,
-        `for (let i = 0; i < ${count}; i++) {`,
+        `for (let ${index} = 0; ${index} < ${count}; ${index}++) {`,
         `  ${pos}.push((Math.random() - 0.5) * ${spread});`,
         `  ${pos}.push((Math.random() - 0.5) * ${spread});`,
         `  ${pos}.push((Math.random() - 0.5) * ${spread});`,
@@ -3273,17 +3571,20 @@ ${pad}});`
       // o addon Water (grafia atual). O import de Water entra sozinho (hoist).
       const w = identifiers.get(stmt.water)
       const sc = identifiers.get(stmt.scene)
-      const size = compileExpr(stmt.size, 0, identifiers, recAt(base))
+      const sizeExpr = compileExpr(stmt.size, 0, identifiers, recAt(base))
       const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
-      const data = `${w}Data`
-      const nrm = `${w}Normals`
+      const size = identifiers.reserveInternal(`${stmt.water}Tamanho`)
+      const data = identifiers.reserveInternal(`${stmt.water}Dados`)
+      const nrm = identifiers.reserveInternal(`${stmt.water}Normais`)
+      const index = identifiers.reserveInternal(`${stmt.water}Indice`)
       const lines = [
+        `const ${size} = Math.max(0.01, Math.min(10000, Number(${sizeExpr}) || 1));`,
         `const ${data} = new Uint8Array(1024);`,
-        `for (let i = 0; i < 256; i++) {`,
-        `  ${data}[i * 4] = 128 + Math.sin(i * 0.7) * 40;`,
-        `  ${data}[i * 4 + 1] = 128 + Math.cos(i * 1.3) * 40;`,
-        `  ${data}[i * 4 + 2] = 255;`,
-        `  ${data}[i * 4 + 3] = 255;`,
+        `for (let ${index} = 0; ${index} < 256; ${index}++) {`,
+        `  ${data}[${index} * 4] = 128 + Math.sin(${index} * 0.7) * 40;`,
+        `  ${data}[${index} * 4 + 1] = 128 + Math.cos(${index} * 1.3) * 40;`,
+        `  ${data}[${index} * 4 + 2] = 255;`,
+        `  ${data}[${index} * 4 + 3] = 255;`,
         `}`,
         `const ${nrm} = new THREE.DataTexture(${data}, 16, 16);`,
         `${nrm}.wrapS = THREE.RepeatWrapping;`,
@@ -3295,23 +3596,31 @@ ${pad}});`
       ]
       return lines.map((l) => `${pad}${l}`).join('\n')
     }
-    case 'waterTime':
-      // Animar as ondas: avança o relógio interno do shader da água a cada quadro.
-      return `${pad}${identifiers.get(stmt.water)}.material.uniforms.time.value += 1 / 60;`
+    case 'waterTime': {
+      const dt = compileExpr(stmt.dt ?? { type: 'num', value: 1 / 60 }, 0, identifiers, recAt(base))
+      return `${pad}${identifiers.get(stmt.water)}.material.uniforms.time.value += Math.max(0, Math.min(0.1, Number(${dt}) || 0));`
+    }
     case 'grassSetup': {
       // Macro Grama: folhas INSTANCIADAS (1 draw call) + ShaderMaterial com o vento
       // (GLSL nas constantes acima). Posições/giro/escala aleatórios por folha.
       const g = identifiers.get(stmt.grass)
       const sc = identifiers.get(stmt.scene)
-      const count = compileExpr(stmt.count, 0, identifiers, recAt(base))
-      const size = compileExpr(stmt.size, 0, identifiers, recAt(base))
-      const spread = compileExpr(stmt.spread, 0, identifiers, recAt(base))
+      const countExpr = compileExpr(stmt.count, 0, identifiers, recAt(base))
+      const sizeExpr = compileExpr(stmt.size, 0, identifiers, recAt(base))
+      const spreadExpr = compileExpr(stmt.spread, 0, identifiers, recAt(base))
       const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
-      const blade = `${g}Blade`
-      const mat = `${g}Mat`
-      const dummy = `${g}Dummy`
+      const count = identifiers.reserveInternal(`${stmt.grass}Quantidade`)
+      const size = identifiers.reserveInternal(`${stmt.grass}Tamanho`)
+      const spread = identifiers.reserveInternal(`${stmt.grass}Area`)
+      const blade = identifiers.reserveInternal(`${stmt.grass}Folha`)
+      const mat = identifiers.reserveInternal(`${stmt.grass}Material`)
+      const dummy = identifiers.reserveInternal(`${stmt.grass}Matriz`)
+      const index = identifiers.reserveInternal(`${stmt.grass}Indice`)
       const bt = '`'
       const lines = [
+        `const ${count} = Math.max(0, Math.min(50000, Math.round(Number(${countExpr}) || 0)));`,
+        `const ${size} = Math.max(0.01, Math.min(100, Number(${sizeExpr}) || 1));`,
+        `const ${spread} = Math.max(0, Math.min(10000, Number(${spreadExpr}) || 0));`,
         `const ${blade} = new THREE.PlaneGeometry(0.08, ${size}, 1, 4);`,
         `${blade}.translate(0, ${size} / 2, 0);`,
         `const ${mat} = new THREE.ShaderMaterial({`,
@@ -3322,21 +3631,22 @@ ${pad}});`
         `});`,
         `const ${g} = new THREE.InstancedMesh(${blade}, ${mat}, ${count});`,
         `const ${dummy} = new THREE.Object3D();`,
-        `for (let i = 0; i < ${count}; i++) {`,
+        `for (let ${index} = 0; ${index} < ${count}; ${index}++) {`,
         `  ${dummy}.position.set((Math.random() - 0.5) * ${spread}, 0, (Math.random() - 0.5) * ${spread});`,
         `  ${dummy}.rotation.y = Math.random() * 3.141592653589793;`,
         `  ${dummy}.scale.setScalar(0.7 + Math.random() * 0.6);`,
         `  ${dummy}.updateMatrix();`,
-        `  ${g}.setMatrixAt(i, ${dummy}.matrix);`,
+        `  ${g}.setMatrixAt(${index}, ${dummy}.matrix);`,
         `}`,
         `${g}.instanceMatrix.needsUpdate = true;`,
         `${sc}.add(${g});`,
       ]
       return lines.map((l) => `${pad}${l}`).join('\n')
     }
-    case 'grassTime':
-      // Animar o vento: avança o relógio do shader da grama a cada quadro.
-      return `${pad}${identifiers.get(stmt.grass)}.material.uniforms.time.value += 0.02;`
+    case 'grassTime': {
+      const dt = compileExpr(stmt.dt ?? { type: 'num', value: 1 / 60 }, 0, identifiers, recAt(base))
+      return `${pad}${identifiers.get(stmt.grass)}.material.uniforms.time.value += Math.max(0, Math.min(0.1, Number(${dt}) || 0));`
+    }
     case 'signSetup': {
       // Macro Letreiro 3D: o jeito FOLIO de texto no mundo — desenha num canvas
       // oculto, vira CanvasTexture num plano transparente (só as letras têm alfa,
@@ -3345,12 +3655,14 @@ ${pad}});`
       // ficam memberCall/memberSet genéricos).
       const s = identifiers.get(stmt.sign)
       const sc = identifiers.get(stmt.scene)
-      const size = compileExpr(stmt.size, 0, identifiers, recAt(base))
+      const sizeExpr = compileExpr(stmt.size, 0, identifiers, recAt(base))
       const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
-      const tela = `${s}Tela`
-      const tinta = `${s}Tinta`
-      const tex = `${s}Tex`
+      const size = identifiers.reserveInternal(`${stmt.sign}Tamanho`)
+      const tela = identifiers.reserveInternal(`${stmt.sign}Tela`)
+      const tinta = identifiers.reserveInternal(`${stmt.sign}Tinta`)
+      const tex = identifiers.reserveInternal(`${stmt.sign}Textura`)
       const lines = [
+        `const ${size} = Math.max(0.01, Math.min(1000, Number(${sizeExpr}) || 1));`,
         `const ${tela} = document.createElement("canvas");`,
         `${tela}.width = 512;`,
         `${tela}.height = 256;`,
@@ -3369,52 +3681,91 @@ ${pad}});`
     case 'primitiveSetup': {
       const mesh = identifiers.get(stmt.mesh)
       const scene = identifiers.get(stmt.scene)
-      const width = compileExpr(stmt.width, 0, identifiers, recAt(base))
-      const height = compileExpr(stmt.height, 0, identifiers, recAt(base))
-      const depth = compileExpr(stmt.depth, 0, identifiers, recAt(base))
+      const widthExpr = compileExpr(stmt.width, 0, identifiers, recAt(base))
+      const heightExpr = compileExpr(stmt.height, 0, identifiers, recAt(base))
+      const depthExpr = compileExpr(stmt.depth, 0, identifiers, recAt(base))
       const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
-      const geometry = `${mesh}Geometry`
-      const material = `${mesh}Material`
+      const width = identifiers.reserveInternal(`${stmt.mesh}Largura`)
+      const height = identifiers.reserveInternal(`${stmt.mesh}Altura`)
+      const depth = identifiers.reserveInternal(`${stmt.mesh}Profundidade`)
+      const geometry = identifiers.reserveInternal(`${stmt.mesh}Geometria`)
+      const material = identifiers.reserveInternal(`${stmt.mesh}Material`)
       const geometryCode =
-        stmt.shape === 'sphere' || stmt.shape === 'capsule'
+        stmt.shape === 'sphere'
           ? 'new THREE.SphereGeometry(0.5, 20, 14)'
           : stmt.shape === 'cylinder'
             ? 'new THREE.CylinderGeometry(0.5, 0.5, 1, 16)'
             : stmt.shape === 'cone'
               ? 'new THREE.ConeGeometry(0.5, 1, 16)'
               : 'new THREE.BoxGeometry(1, 1, 1)'
-      const scaleY = stmt.shape === 'capsule' ? `Math.max(${height}, ${width})` : height
-      const lines = [
-        `const ${geometry} = ${geometryCode};`,
-        `const ${material} = new THREE.MeshStandardMaterial({ color: ${color} });`,
-        `const ${mesh} = new THREE.Mesh(${geometry}, ${material});`,
-        `${mesh}.scale.set(${width}, ${scaleY}, ${depth});`,
-        `${mesh}.castShadow = true;`,
-        `${mesh}.receiveShadow = true;`,
-        `${scene}.add(${mesh});`,
+      const lines: string[] = [
+        `const ${width} = Math.max(0.01, Math.min(10000, Number(${widthExpr}) || 1));`,
+        `const ${height} = Math.max(0.01, Math.min(10000, Number(${heightExpr}) || 1));`,
+        `const ${depth} = Math.max(0.01, Math.min(10000, Number(${depthExpr}) || 1));`,
       ]
+      if (stmt.shape === 'capsule') {
+        const radius = identifiers.reserveInternal(`${stmt.mesh}Raio`)
+        const middle = identifiers.reserveInternal(`${stmt.mesh}Meio`)
+        const cylinder = identifiers.reserveInternal(`${stmt.mesh}Cilindro`)
+        const top = identifiers.reserveInternal(`${stmt.mesh}Topo`)
+        const bottom = identifiers.reserveInternal(`${stmt.mesh}Base`)
+        lines.push(
+          `const ${radius} = Math.min(${width}, ${depth}, ${height}) / 2;`,
+          `const ${middle} = Math.max(0, ${height} - ${radius} * 2);`,
+          `const ${material} = new THREE.MeshStandardMaterial({ color: ${color} });`,
+          `const ${mesh} = new THREE.Group();`,
+          `const ${cylinder} = new THREE.Mesh(new THREE.CylinderGeometry(${radius}, ${radius}, ${middle}, 16), ${material});`,
+          `const ${geometry} = new THREE.SphereGeometry(${radius}, 20, 14);`,
+          `const ${top} = new THREE.Mesh(${geometry}, ${material});`,
+          `const ${bottom} = new THREE.Mesh(${geometry}, ${material});`,
+          `${top}.position.y = ${middle} / 2;`,
+          `${bottom}.position.y = -${middle} / 2;`,
+          `${mesh}.add(${cylinder}, ${top}, ${bottom});`,
+        )
+      } else {
+        lines.push(
+          `const ${geometry} = ${geometryCode};`,
+          `const ${material} = new THREE.MeshStandardMaterial({ color: ${color} });`,
+          `const ${mesh} = new THREE.Mesh(${geometry}, ${material});`,
+          `${mesh}.scale.set(${width}, ${height}, ${depth});`,
+        )
+      }
+      lines.push(
+        `${mesh}.traverse((parte) => { parte.castShadow = true; parte.receiveShadow = true; });`,
+        `${mesh}.userData.szCollider = { shape: "box", width: ${width}, height: ${height}, depth: ${depth} };`,
+        `${scene}.add(${mesh});`,
+      )
       return lines.map((line) => `${pad}${line}`).join('\n')
     }
     case 'terrainSetup': {
       const terrain = identifiers.get(stmt.terrain)
       const scene = identifiers.get(stmt.scene)
       const heightFunction = identifiers.get(stmt.heightFunction)
-      const size = compileExpr(stmt.size, 0, identifiers, recAt(base))
-      const segments = compileExpr(stmt.segments, 0, identifiers, recAt(base))
-      const hills = compileExpr(stmt.hills, 0, identifiers, recAt(base))
-      const smooth = compileExpr(stmt.smooth, 0, identifiers, recAt(base))
+      const sizeExpr = compileExpr(stmt.size, 0, identifiers, recAt(base))
+      const segmentsExpr = compileExpr(stmt.segments, 0, identifiers, recAt(base))
+      const hillsExpr = compileExpr(stmt.hills, 0, identifiers, recAt(base))
+      const smoothExpr = compileExpr(stmt.smooth, 0, identifiers, recAt(base))
       const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
-      const geometry = `${terrain}Geometry`
-      const positions = `${terrain}Positions`
+      const size = identifiers.reserveInternal(`${stmt.terrain}Tamanho`)
+      const segments = identifiers.reserveInternal(`${stmt.terrain}Divisoes`)
+      const hills = identifiers.reserveInternal(`${stmt.terrain}Morros`)
+      const smooth = identifiers.reserveInternal(`${stmt.terrain}Suavidade`)
+      const geometry = identifiers.reserveInternal(`${stmt.terrain}Geometria`)
+      const positions = identifiers.reserveInternal(`${stmt.terrain}Posicoes`)
+      const index = identifiers.reserveInternal(`${stmt.terrain}Indice`)
       const lines = [
+        `const ${size} = Math.max(1, Math.min(10000, Number(${sizeExpr}) || 1));`,
+        `const ${segments} = Math.max(1, Math.min(256, Math.round(Number(${segmentsExpr}) || 1)));`,
+        `const ${hills} = Math.max(-1000, Math.min(1000, Number(${hillsExpr}) || 0));`,
+        `const ${smooth} = Math.max(0.01, Math.min(10000, Number(${smoothExpr}) || 1));`,
         `function ${heightFunction}(x, z) {`,
         `  return (Math.sin(x / ${smooth}) * 0.58 + Math.cos(z / (${smooth} * 0.83)) * 0.42) * ${hills};`,
         `}`,
         `const ${geometry} = new THREE.PlaneGeometry(${size}, ${size}, ${segments}, ${segments});`,
         `${geometry}.rotateX(-Math.PI / 2);`,
         `const ${positions} = ${geometry}.attributes.position;`,
-        `for (let i = 0; i < ${positions}.count; i++) {`,
-        `  ${positions}.setY(i, ${heightFunction}(${positions}.getX(i), ${positions}.getZ(i)));`,
+        `for (let ${index} = 0; ${index} < ${positions}.count; ${index}++) {`,
+        `  ${positions}.setY(${index}, ${heightFunction}(${positions}.getX(${index}), ${positions}.getZ(${index})));`,
         `}`,
         `${positions}.needsUpdate = true;`,
         `${geometry}.computeVertexNormals();`,
@@ -3427,29 +3778,82 @@ ${pad}});`
     case 'roadSetup': {
       const road = identifiers.get(stmt.road)
       const scene = identifiers.get(stmt.scene)
-      const x1 = compileExpr(stmt.x1, 0, identifiers, recAt(base))
-      const z1 = compileExpr(stmt.z1, 0, identifiers, recAt(base))
-      const x2 = compileExpr(stmt.x2, 0, identifiers, recAt(base))
-      const z2 = compileExpr(stmt.z2, 0, identifiers, recAt(base))
-      const width = compileExpr(stmt.width, 0, identifiers, recAt(base))
+      const x1Expr = compileExpr(stmt.x1, 0, identifiers, recAt(base))
+      const z1Expr = compileExpr(stmt.z1, 0, identifiers, recAt(base))
+      const x2Expr = compileExpr(stmt.x2, 0, identifiers, recAt(base))
+      const z2Expr = compileExpr(stmt.z2, 0, identifiers, recAt(base))
+      const widthExpr = compileExpr(stmt.width, 0, identifiers, recAt(base))
+      const segmentsExpr = compileExpr(
+        stmt.segments ?? { type: 'num', value: 24 },
+        0,
+        identifiers,
+        recAt(base),
+      )
       const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
-      const dx = `${road}Dx`
-      const dz = `${road}Dz`
-      const length = `${road}Length`
-      const asphalt = `${road}Asphalt`
-      const stripe = `${road}Stripe`
+      const heightFunction = stmt.heightFunction
+        ? identifiers.get(stmt.heightFunction)
+        : identifiers.reserveInternal(`${stmt.road}AlturaPlana`)
+      const x1 = identifiers.reserveInternal(`${stmt.road}XInicial`)
+      const z1 = identifiers.reserveInternal(`${stmt.road}ZInicial`)
+      const x2 = identifiers.reserveInternal(`${stmt.road}XFinal`)
+      const z2 = identifiers.reserveInternal(`${stmt.road}ZFinal`)
+      const width = identifiers.reserveInternal(`${stmt.road}Largura`)
+      const segments = identifiers.reserveInternal(`${stmt.road}Divisoes`)
+      const dx = identifiers.reserveInternal(`${stmt.road}Dx`)
+      const dz = identifiers.reserveInternal(`${stmt.road}Dz`)
+      const length = identifiers.reserveInternal(`${stmt.road}Comprimento`)
+      const makeRibbon = identifiers.reserveInternal(`${stmt.road}CriarFaixa`)
+      const positions = identifiers.reserveInternal(`${stmt.road}Posicoes`)
+      const indices = identifiers.reserveInternal(`${stmt.road}Indices`)
+      const index = identifiers.reserveInternal(`${stmt.road}Indice`)
+      const side = identifiers.reserveInternal(`${stmt.road}Lado`)
+      const t = identifiers.reserveInternal(`${stmt.road}Progresso`)
+      const centerX = identifiers.reserveInternal(`${stmt.road}CentroX`)
+      const centerZ = identifiers.reserveInternal(`${stmt.road}CentroZ`)
+      const px = identifiers.reserveInternal(`${stmt.road}PontoX`)
+      const pz = identifiers.reserveInternal(`${stmt.road}PontoZ`)
+      const geometry = identifiers.reserveInternal(`${stmt.road}Geometria`)
+      const asphalt = identifiers.reserveInternal(`${stmt.road}Asfalto`)
+      const stripe = identifiers.reserveInternal(`${stmt.road}Faixa`)
       const lines = [
+        `const ${x1} = Math.max(-10000, Math.min(10000, Number(${x1Expr}) || 0));`,
+        `const ${z1} = Math.max(-10000, Math.min(10000, Number(${z1Expr}) || 0));`,
+        `const ${x2} = Math.max(-10000, Math.min(10000, Number(${x2Expr}) || 0));`,
+        `const ${z2} = Math.max(-10000, Math.min(10000, Number(${z2Expr}) || 0));`,
+        `const ${width} = Math.max(0.05, Math.min(1000, Number(${widthExpr}) || 1));`,
+        `const ${segments} = Math.max(1, Math.min(256, Math.round(Number(${segmentsExpr}) || 1)));`,
+        ...(stmt.heightFunction ? [] : [`function ${heightFunction}() { return 0; }`]),
         `const ${dx} = ${x2} - ${x1};`,
         `const ${dz} = ${z2} - ${z1};`,
         `const ${length} = Math.hypot(${dx}, ${dz});`,
+        `function ${makeRibbon}(largura, alturaExtra) {`,
+        `  const ${positions} = [];`,
+        `  const ${indices} = [];`,
+        `  for (let ${index} = 0; ${index} <= ${segments}; ${index}++) {`,
+        `    const ${t} = ${index} / ${segments};`,
+        `    const ${centerX} = ${x1} + ${dx} * ${t};`,
+        `    const ${centerZ} = ${z1} + ${dz} * ${t};`,
+        `    for (let ${side} = -1; ${side} <= 1; ${side} += 2) {`,
+        `      const ${px} = ${centerX} - (${dz} / Math.max(${length}, 0.0001)) * largura * 0.5 * ${side};`,
+        `      const ${pz} = ${centerZ} + (${dx} / Math.max(${length}, 0.0001)) * largura * 0.5 * ${side};`,
+        `      ${positions}.push(${px}, ${heightFunction}(${px}, ${pz}) + alturaExtra, ${pz});`,
+        `    }`,
+        `    if (${index} < ${segments}) {`,
+        `      const a = ${index} * 2;`,
+        `      ${indices}.push(a, a + 2, a + 1, a + 1, a + 2, a + 3);`,
+        `    }`,
+        `  }`,
+        `  const ${geometry} = new THREE.BufferGeometry();`,
+        `  ${geometry}.setAttribute("position", new THREE.Float32BufferAttribute(${positions}, 3));`,
+        `  ${geometry}.setIndex(${indices});`,
+        `  ${geometry}.computeVertexNormals();`,
+        `  return ${geometry};`,
+        `}`,
         `const ${road} = new THREE.Group();`,
-        `const ${asphalt} = new THREE.Mesh(new THREE.BoxGeometry(${width}, 0.12, ${length}), new THREE.MeshStandardMaterial({ color: ${color}, roughness: 0.95 }));`,
-        `const ${stripe} = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.02, ${length} * 0.82), new THREE.MeshBasicMaterial({ color: 16771942 }));`,
-        `${stripe}.position.y = 0.07;`,
+        `const ${asphalt} = new THREE.Mesh(${makeRibbon}(${width}, 0.05), new THREE.MeshStandardMaterial({ color: ${color}, roughness: 0.95 }));`,
+        `const ${stripe} = new THREE.Mesh(${makeRibbon}(Math.min(0.12, ${width} * 0.08), 0.075), new THREE.MeshBasicMaterial({ color: 16771942 }));`,
         `${road}.add(${asphalt});`,
         `${road}.add(${stripe});`,
-        `${road}.position.set((${x1} + ${x2}) / 2, 0.06, (${z1} + ${z2}) / 2);`,
-        `${road}.rotation.y = Math.atan2(${dx}, ${dz});`,
         `${road}.traverse((part) => { part.receiveShadow = true; });`,
         `${scene}.add(${road});`,
       ]
@@ -3458,19 +3862,34 @@ ${pad}});`
     case 'buildingSetup': {
       const building = identifiers.get(stmt.building)
       const scene = identifiers.get(stmt.scene)
-      const x = compileExpr(stmt.x, 0, identifiers, recAt(base))
-      const z = compileExpr(stmt.z, 0, identifiers, recAt(base))
-      const width = compileExpr(stmt.width, 0, identifiers, recAt(base))
-      const height = compileExpr(stmt.height, 0, identifiers, recAt(base))
-      const depth = compileExpr(stmt.depth, 0, identifiers, recAt(base))
+      const xExpr = compileExpr(stmt.x, 0, identifiers, recAt(base))
+      const zExpr = compileExpr(stmt.z, 0, identifiers, recAt(base))
+      const widthExpr = compileExpr(stmt.width, 0, identifiers, recAt(base))
+      const heightExpr = compileExpr(stmt.height, 0, identifiers, recAt(base))
+      const depthExpr = compileExpr(stmt.depth, 0, identifiers, recAt(base))
       const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
       const roofColor = compileExpr(stmt.roofColor, 0, identifiers, recAt(base))
-      const body = `${building}Body`
-      const roof = `${building}Roof`
-      const door = `${building}Door`
-      const windows = `${building}Windows`
-      const windowDummy = `${building}WindowDummy`
+      const heightFunction = stmt.heightFunction
+        ? identifiers.get(stmt.heightFunction)
+        : identifiers.reserveInternal(`${stmt.building}AlturaPlana`)
+      const x = identifiers.reserveInternal(`${stmt.building}X`)
+      const z = identifiers.reserveInternal(`${stmt.building}Z`)
+      const width = identifiers.reserveInternal(`${stmt.building}Largura`)
+      const height = identifiers.reserveInternal(`${stmt.building}Altura`)
+      const depth = identifiers.reserveInternal(`${stmt.building}Profundidade`)
+      const body = identifiers.reserveInternal(`${stmt.building}Corpo`)
+      const roof = identifiers.reserveInternal(`${stmt.building}Telhado`)
+      const door = identifiers.reserveInternal(`${stmt.building}Porta`)
+      const windows = identifiers.reserveInternal(`${stmt.building}Janelas`)
+      const windowDummy = identifiers.reserveInternal(`${stmt.building}MatrizJanela`)
+      const index = identifiers.reserveInternal(`${stmt.building}IndiceJanela`)
       const lines = [
+        `const ${x} = Math.max(-10000, Math.min(10000, Number(${xExpr}) || 0));`,
+        `const ${z} = Math.max(-10000, Math.min(10000, Number(${zExpr}) || 0));`,
+        `const ${width} = Math.max(0.1, Math.min(1000, Number(${widthExpr}) || 1));`,
+        `const ${height} = Math.max(0.1, Math.min(1000, Number(${heightExpr}) || 1));`,
+        `const ${depth} = Math.max(0.1, Math.min(1000, Number(${depthExpr}) || 1));`,
+        ...(stmt.heightFunction ? [] : [`function ${heightFunction}() { return 0; }`]),
         `const ${building} = new THREE.Group();`,
         `const ${body} = new THREE.Mesh(new THREE.BoxGeometry(${width}, ${height}, ${depth}), new THREE.MeshStandardMaterial({ color: ${color}, roughness: 0.82 }));`,
         `${body}.position.y = ${height} / 2;`,
@@ -3481,19 +3900,139 @@ ${pad}});`
         `${door}.position.set(0, Math.max(0.9, ${height} * 0.12), ${depth} / 2 + 0.07);`,
         `const ${windows} = new THREE.InstancedMesh(new THREE.BoxGeometry(0.9, 0.9, 0.08), new THREE.MeshBasicMaterial({ color: 11259375 }), 4);`,
         `const ${windowDummy} = new THREE.Object3D();`,
-        `for (let i = 0; i < 4; i++) {`,
-        `  ${windowDummy}.position.set((i % 2 === 0 ? -1 : 1) * ${width} * 0.25, ${height} * (i < 2 ? 0.42 : 0.72), ${depth} / 2 + 0.08);`,
+        `for (let ${index} = 0; ${index} < 4; ${index}++) {`,
+        `  ${windowDummy}.position.set((${index} % 2 === 0 ? -1 : 1) * ${width} * 0.25, ${height} * (${index} < 2 ? 0.42 : 0.72), ${depth} / 2 + 0.08);`,
         `  ${windowDummy}.updateMatrix();`,
-        `  ${windows}.setMatrixAt(i, ${windowDummy}.matrix);`,
+        `  ${windows}.setMatrixAt(${index}, ${windowDummy}.matrix);`,
         `}`,
         `${windows}.instanceMatrix.needsUpdate = true;`,
         `${building}.add(${body});`,
         `${building}.add(${roof});`,
         `${building}.add(${door});`,
         `${building}.add(${windows});`,
-        `${building}.position.set(${x}, 0, ${z});`,
+        `${building}.position.set(${x}, ${heightFunction}(${x}, ${z}), ${z});`,
+        `${building}.userData.szCollider = { shape: "box", width: ${width}, height: ${height}, depth: ${depth}, offsetY: ${height} / 2 };`,
         `${building}.traverse((part) => { part.castShadow = true; part.receiveShadow = true; });`,
         `${scene}.add(${building});`,
+      ]
+      return lines.map((line) => `${pad}${line}`).join('\n')
+    }
+    case 'citySetup': {
+      const city = identifiers.get(stmt.city)
+      const scene = identifiers.get(stmt.scene)
+      const heightFunction = identifiers.get(stmt.heightFunction)
+      const blocksXExpr = compileExpr(stmt.blocksX, 0, identifiers, recAt(base))
+      const blocksZExpr = compileExpr(stmt.blocksZ, 0, identifiers, recAt(base))
+      const spacingExpr = compileExpr(stmt.spacing, 0, identifiers, recAt(base))
+      const roadWidthExpr = compileExpr(stmt.roadWidth, 0, identifiers, recAt(base))
+      const minHeightExpr = compileExpr(stmt.minHeight, 0, identifiers, recAt(base))
+      const maxHeightExpr = compileExpr(stmt.maxHeight, 0, identifiers, recAt(base))
+      const seedExpr = compileExpr(stmt.seed, 0, identifiers, recAt(base))
+      const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
+      const roofColor = compileExpr(stmt.roofColor, 0, identifiers, recAt(base))
+      const blocksX = identifiers.reserveInternal(`${stmt.city}QuarteiroesX`)
+      const blocksZ = identifiers.reserveInternal(`${stmt.city}QuarteiroesZ`)
+      const spacing = identifiers.reserveInternal(`${stmt.city}Espacamento`)
+      const roadWidth = identifiers.reserveInternal(`${stmt.city}LarguraRua`)
+      const minHeight = identifiers.reserveInternal(`${stmt.city}AlturaMinima`)
+      const maxHeight = identifiers.reserveInternal(`${stmt.city}AlturaMaxima`)
+      const seed = identifiers.reserveInternal(`${stmt.city}Semente`)
+      const random = identifiers.reserveInternal(`${stmt.city}Aleatorio`)
+      const count = identifiers.reserveInternal(`${stmt.city}Quantidade`)
+      const buildings = identifiers.reserveInternal(`${stmt.city}Predios`)
+      const roofs = identifiers.reserveInternal(`${stmt.city}Telhados`)
+      const roads = identifiers.reserveInternal(`${stmt.city}Ruas`)
+      const dummy = identifiers.reserveInternal(`${stmt.city}Matriz`)
+      const colliders = identifiers.reserveInternal(`${stmt.city}Colisores`)
+      const ix = identifiers.reserveInternal(`${stmt.city}IndiceX`)
+      const iz = identifiers.reserveInternal(`${stmt.city}IndiceZ`)
+      const index = identifiers.reserveInternal(`${stmt.city}Indice`)
+      const x = identifiers.reserveInternal(`${stmt.city}X`)
+      const z = identifiers.reserveInternal(`${stmt.city}Z`)
+      const ground = identifiers.reserveInternal(`${stmt.city}Chao`)
+      const height = identifiers.reserveInternal(`${stmt.city}AlturaPredio`)
+      const footprint = identifiers.reserveInternal(`${stmt.city}BasePredio`)
+      const roadIndex = identifiers.reserveInternal(`${stmt.city}IndiceRua`)
+      const roadStart = identifiers.reserveInternal(`${stmt.city}InicioRua`)
+      const roadEnd = identifiers.reserveInternal(`${stmt.city}FimRua`)
+      const roadLength = identifiers.reserveInternal(`${stmt.city}ComprimentoRua`)
+      const lines = [
+        `const ${blocksX} = Math.max(1, Math.min(40, Math.round(Number(${blocksXExpr}) || 1)));`,
+        `const ${blocksZ} = Math.max(1, Math.min(40, Math.round(Number(${blocksZExpr}) || 1)));`,
+        `const ${spacing} = Math.max(2, Math.min(200, Number(${spacingExpr}) || 14));`,
+        `const ${roadWidth} = Math.max(0.5, Math.min(${spacing} * 0.8, Number(${roadWidthExpr}) || 5));`,
+        `const ${minHeight} = Math.max(1, Math.min(500, Number(${minHeightExpr}) || 5));`,
+        `const ${maxHeight} = Math.max(${minHeight}, Math.min(500, Number(${maxHeightExpr}) || ${minHeight}));`,
+        `let ${seed} = (Math.round(Number(${seedExpr}) || 1) >>> 0) || 1;`,
+        `function ${random}() { ${seed} = (Math.imul(${seed}, 1664525) + 1013904223) >>> 0; return ${seed} / 4294967296; }`,
+        `const ${count} = ${blocksX} * ${blocksZ};`,
+        `const ${city} = new THREE.Group();`,
+        `const ${buildings} = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: ${color}, roughness: 0.82 }), ${count});`,
+        `const ${roofs} = new THREE.InstancedMesh(new THREE.ConeGeometry(0.72, 1, 4), new THREE.MeshStandardMaterial({ color: ${roofColor}, roughness: 0.9 }), ${count});`,
+        `const ${roads} = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 0.06, 1), new THREE.MeshStandardMaterial({ color: 3359829, roughness: 0.96 }), (${blocksZ} + 1) * ${blocksX} + (${blocksX} + 1) * ${blocksZ});`,
+        `const ${dummy} = new THREE.Object3D();`,
+        `const ${colliders} = [];`,
+        `let ${index} = 0;`,
+        `for (let ${ix} = 0; ${ix} < ${blocksX}; ${ix}++) {`,
+        `  for (let ${iz} = 0; ${iz} < ${blocksZ}; ${iz}++) {`,
+        `    const ${x} = (${ix} - (${blocksX} - 1) / 2) * ${spacing};`,
+        `    const ${z} = (${iz} - (${blocksZ} - 1) / 2) * ${spacing};`,
+        `    const ${ground} = ${heightFunction}(${x}, ${z});`,
+        `    const ${height} = ${minHeight} + (${maxHeight} - ${minHeight}) * ${random}();`,
+        `    const ${footprint} = (${spacing} - ${roadWidth}) * (0.72 + ${random}() * 0.2);`,
+        `    ${dummy}.position.set(${x}, ${ground} + ${height} / 2, ${z});`,
+        `    ${dummy}.rotation.set(0, 0, 0);`,
+        `    ${dummy}.scale.set(${footprint}, ${height}, ${footprint});`,
+        `    ${dummy}.updateMatrix();`,
+        `    ${buildings}.setMatrixAt(${index}, ${dummy}.matrix);`,
+        `    const roofHeight = Math.max(1, ${height} * 0.08);`,
+        `    ${dummy}.position.y = ${ground} + ${height} + roofHeight / 2;`,
+        `    ${dummy}.rotation.y = Math.PI / 4;`,
+        `    ${dummy}.scale.set(${footprint}, roofHeight, ${footprint});`,
+        `    ${dummy}.updateMatrix();`,
+        `    ${roofs}.setMatrixAt(${index}, ${dummy}.matrix);`,
+        `    ${colliders}.push({ x: ${x}, y: ${ground} + ${height} / 2, z: ${z}, width: ${footprint}, height: ${height}, depth: ${footprint} });`,
+        `    ${index} += 1;`,
+        `  }`,
+        `}`,
+        `let ${roadIndex} = 0;`,
+        `for (let ${iz} = 0; ${iz} <= ${blocksZ}; ${iz}++) {`,
+        `  const ${z} = (${iz} - ${blocksZ} / 2) * ${spacing};`,
+        `  for (let ${ix} = 0; ${ix} < ${blocksX}; ${ix}++) {`,
+        `    const ${x} = (${ix} - (${blocksX} - 1) / 2) * ${spacing};`,
+        `    const ${roadStart} = ${heightFunction}(${x} - ${spacing} / 2, ${z});`,
+        `    const ${roadEnd} = ${heightFunction}(${x} + ${spacing} / 2, ${z});`,
+        `    const ${roadLength} = Math.hypot(${spacing}, ${roadEnd} - ${roadStart});`,
+        `    ${dummy}.position.set(${x}, (${roadStart} + ${roadEnd}) / 2 + 0.03, ${z});`,
+        `    ${dummy}.rotation.set(0, 0, Math.atan2(${roadEnd} - ${roadStart}, ${spacing}));`,
+        `    ${dummy}.scale.set(${roadLength} + ${roadWidth}, 1, ${roadWidth});`,
+        `    ${dummy}.updateMatrix();`,
+        `    ${roads}.setMatrixAt(${roadIndex}++, ${dummy}.matrix);`,
+        `  }`,
+        `}`,
+        `for (let ${ix} = 0; ${ix} <= ${blocksX}; ${ix}++) {`,
+        `  const ${x} = (${ix} - ${blocksX} / 2) * ${spacing};`,
+        `  for (let ${iz} = 0; ${iz} < ${blocksZ}; ${iz}++) {`,
+        `    const ${z} = (${iz} - (${blocksZ} - 1) / 2) * ${spacing};`,
+        `    const ${roadStart} = ${heightFunction}(${x}, ${z} - ${spacing} / 2);`,
+        `    const ${roadEnd} = ${heightFunction}(${x}, ${z} + ${spacing} / 2);`,
+        `    const ${roadLength} = Math.hypot(${spacing}, ${roadEnd} - ${roadStart});`,
+        `    ${dummy}.position.set(${x}, (${roadStart} + ${roadEnd}) / 2 + 0.03, ${z});`,
+        `    ${dummy}.rotation.set(-Math.atan2(${roadEnd} - ${roadStart}, ${spacing}), 0, 0);`,
+        `    ${dummy}.scale.set(${roadWidth}, 1, ${roadLength} + ${roadWidth});`,
+        `    ${dummy}.updateMatrix();`,
+        `    ${roads}.setMatrixAt(${roadIndex}++, ${dummy}.matrix);`,
+        `  }`,
+        `}`,
+        `${buildings}.instanceMatrix.needsUpdate = true;`,
+        `${roofs}.instanceMatrix.needsUpdate = true;`,
+        `${roads}.instanceMatrix.needsUpdate = true;`,
+        `${buildings}.castShadow = true; ${buildings}.receiveShadow = true;`,
+        `${roofs}.castShadow = true; ${roofs}.receiveShadow = true;`,
+        `${roads}.receiveShadow = true;`,
+        `${city}.add(${roads}, ${buildings}, ${roofs});`,
+        `${city}.userData.szCityColliders = ${colliders};`,
+        `${scene}.add(${city});`,
       ]
       return lines.map((line) => `${pad}${line}`).join('\n')
     }
@@ -3511,6 +4050,17 @@ ${pad}});`
         .join(', ')
       return `${pad}${world}.addStaticBox(${JSON.stringify(stmt.id)}, ${args});`
     }
+    case 'physicsLiteStaticSphere': {
+      const world = identifiers.get(stmt.world)
+      const args = [stmt.x, stmt.y, stmt.z, stmt.radius]
+        .map((value) => compileExpr(value, 0, identifiers, recAt(base)))
+        .join(', ')
+      return `${pad}${world}.addStaticSphere(${JSON.stringify(stmt.id)}, ${args});`
+    }
+    case 'physicsLiteStaticObject':
+      return `${pad}${identifiers.get(stmt.world)}.addStaticObject(${JSON.stringify(stmt.id)}, ${identifiers.get(stmt.object)});`
+    case 'physicsLiteStaticCity':
+      return `${pad}${identifiers.get(stmt.world)}.addStaticCity(${JSON.stringify(stmt.prefix)}, ${identifiers.get(stmt.city)});`
     case 'physicsLiteBody': {
       const world = identifiers.get(stmt.world)
       const object = identifiers.get(stmt.object)
@@ -3545,6 +4095,52 @@ ${pad}});`
       const dt = compileExpr(stmt.dt, 0, identifiers, recAt(base))
       return `${pad}${world}.step(${dt});`
     }
+    case 'physicsLiteVelocity':
+    case 'physicsLiteImpulse':
+    case 'physicsLiteTeleport': {
+      const method =
+        stmt.type === 'physicsLiteVelocity'
+          ? 'setVelocity'
+          : stmt.type === 'physicsLiteImpulse'
+            ? 'impulse'
+            : 'teleport'
+      const args = [stmt.x, stmt.y, stmt.z]
+        .map((value) => compileExpr(value, 0, identifiers, recAt(base)))
+        .join(', ')
+      return `${pad}${identifiers.get(stmt.world)}.${method}(${JSON.stringify(stmt.id)}, ${args});`
+    }
+    case 'physicsLiteRemove':
+      return `${pad}${identifiers.get(stmt.world)}.remove(${JSON.stringify(stmt.id)});`
+    case 'physicsLiteClear':
+      return `${pad}${identifiers.get(stmt.world)}.clear();`
+    case 'physicsLiteCollisionEvent': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}${identifiers.get(stmt.world)}.onCollision((${identifiers.get(stmt.bodyParam)}, ${identifiers.get(stmt.colliderParam)}) => {\n${body}\n${pad}});`
+    }
+    case 'physicsLiteTriggerEvent': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}${identifiers.get(stmt.world)}.onTrigger((${identifiers.get(stmt.bodyParam)}, ${identifiers.get(stmt.triggerParam)}, ${identifiers.get(stmt.enteringParam)}) => {\n${body}\n${pad}});`
+    }
+    case 'physicsLiteRaycast': {
+      const args = [stmt.ox, stmt.oy, stmt.oz, stmt.dx, stmt.dy, stmt.dz, stmt.maxDistance]
+        .map((value) => compileExpr(value, 0, identifiers, recAt(base)))
+        .join(', ')
+      return `${pad}const ${identifiers.get(stmt.result)} = ${identifiers.get(stmt.world)}.raycast(${args});`
+    }
+    case 'physicsLiteBodyState':
+      return `${pad}const ${identifiers.get(stmt.result)} = ${identifiers.get(stmt.world)}.body(${JSON.stringify(stmt.id)});`
+    case 'physicsLiteStats':
+      return `${pad}const ${identifiers.get(stmt.result)} = ${identifiers.get(stmt.world)}.stats();`
     case 'return':
       return stmt.value === undefined
         ? `${pad}return;`
@@ -3725,6 +4321,9 @@ function reserveClassNames(statements: JSStatement[], scope: IdentifierScope): v
       case 'setTimeoutSeconds':
       case 'setIntervalSeconds':
       case 'animationLoop':
+      case 'physicsLiteCollisionEvent':
+      case 'physicsLiteTriggerEvent':
+      case 'g2d:onStart':
       case 'g2d:updateEachFrame':
       case 'g2d:onPointer':
       case 'g2d:onKey':
@@ -3780,6 +4379,9 @@ function reserveCanvasElements(statements: JSStatement[], scope: IdentifierScope
       case 'setTimeoutSeconds':
       case 'setIntervalSeconds':
       case 'animationLoop':
+      case 'physicsLiteCollisionEvent':
+      case 'physicsLiteTriggerEvent':
+      case 'g2d:onStart':
       case 'g2d:updateEachFrame':
       case 'g2d:onPointer':
       case 'g2d:onKey':
@@ -3889,6 +4491,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'event':
     case 'animationLoop':
+    case 'g2d:onStart':
     case 'g2d:updateEachFrame':
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
@@ -6631,8 +7234,10 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'loaderLoad':
       names.add(stmt.loaderVar)
       names.add(stmt.param)
+      names.add(stmt.errorParam ?? 'erro')
       collectExprIdentifiers(stmt.url, names)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      for (const child of stmt.errorBody ?? []) collectStatementIdentifiers(child, names)
       return
     case 'traverseEach':
       collectExprIdentifiers(stmt.object, names)
@@ -6641,6 +7246,25 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'rendererConfig':
       names.add(stmt.renderer)
+      return
+    case 'rendererResponsive':
+      names.add(stmt.renderer)
+      names.add(stmt.camera)
+      names.add(stmt.cleanup)
+      if (stmt.composer) names.add(stmt.composer)
+      return
+    case 'environmentLoad':
+      names.add(stmt.scene)
+      names.add(stmt.texture)
+      return
+    case 'disposeObject':
+      names.add(stmt.object)
+      return
+    case 'lerpPosition':
+      names.add(stmt.object)
+      collectExprIdentifiers(stmt.target, names)
+      collectExprIdentifiers(stmt.alpha, names)
+      collectExprIdentifiers(stmt.dt, names)
       return
     case 'bloomSetup':
       names.add(stmt.composer)
@@ -6667,6 +7291,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'waterTime':
       names.add(stmt.water)
+      if (stmt.dt) collectExprIdentifiers(stmt.dt, names)
       return
     case 'grassSetup':
       names.add(stmt.grass)
@@ -6678,6 +7303,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'grassTime':
       names.add(stmt.grass)
+      if (stmt.dt) collectExprIdentifiers(stmt.dt, names)
       return
     case 'signSetup':
       names.add(stmt.sign)
@@ -6712,6 +7338,8 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(stmt.z2, names)
       collectExprIdentifiers(stmt.width, names)
       collectExprIdentifiers(stmt.color, names)
+      if (stmt.heightFunction) names.add(stmt.heightFunction)
+      if (stmt.segments) collectExprIdentifiers(stmt.segments, names)
       return
     case 'buildingSetup':
       names.add(stmt.building)
@@ -6721,6 +7349,21 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(stmt.width, names)
       collectExprIdentifiers(stmt.height, names)
       collectExprIdentifiers(stmt.depth, names)
+      collectExprIdentifiers(stmt.color, names)
+      collectExprIdentifiers(stmt.roofColor, names)
+      if (stmt.heightFunction) names.add(stmt.heightFunction)
+      return
+    case 'citySetup':
+      names.add(stmt.city)
+      names.add(stmt.scene)
+      names.add(stmt.heightFunction)
+      collectExprIdentifiers(stmt.blocksX, names)
+      collectExprIdentifiers(stmt.blocksZ, names)
+      collectExprIdentifiers(stmt.spacing, names)
+      collectExprIdentifiers(stmt.roadWidth, names)
+      collectExprIdentifiers(stmt.minHeight, names)
+      collectExprIdentifiers(stmt.maxHeight, names)
+      collectExprIdentifiers(stmt.seed, names)
       collectExprIdentifiers(stmt.color, names)
       collectExprIdentifiers(stmt.roofColor, names)
       return
@@ -6738,6 +7381,21 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(stmt.width, names)
       collectExprIdentifiers(stmt.height, names)
       collectExprIdentifiers(stmt.depth, names)
+      return
+    case 'physicsLiteStaticSphere':
+      names.add(stmt.world)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.y, names)
+      collectExprIdentifiers(stmt.z, names)
+      collectExprIdentifiers(stmt.radius, names)
+      return
+    case 'physicsLiteStaticObject':
+      names.add(stmt.world)
+      names.add(stmt.object)
+      return
+    case 'physicsLiteStaticCity':
+      names.add(stmt.world)
+      names.add(stmt.city)
       return
     case 'physicsLiteBody':
       names.add(stmt.world)
@@ -6770,6 +7428,47 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'physicsLiteStep':
       names.add(stmt.world)
       collectExprIdentifiers(stmt.dt, names)
+      return
+    case 'physicsLiteVelocity':
+    case 'physicsLiteImpulse':
+    case 'physicsLiteTeleport':
+      names.add(stmt.world)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.y, names)
+      collectExprIdentifiers(stmt.z, names)
+      return
+    case 'physicsLiteRemove':
+    case 'physicsLiteClear':
+      names.add(stmt.world)
+      return
+    case 'physicsLiteCollisionEvent':
+      names.add(stmt.world)
+      names.add(stmt.bodyParam)
+      names.add(stmt.colliderParam)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'physicsLiteTriggerEvent':
+      names.add(stmt.world)
+      names.add(stmt.bodyParam)
+      names.add(stmt.triggerParam)
+      names.add(stmt.enteringParam)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'physicsLiteRaycast':
+      names.add(stmt.world)
+      names.add(stmt.result)
+      collectExprIdentifiers(stmt.ox, names)
+      collectExprIdentifiers(stmt.oy, names)
+      collectExprIdentifiers(stmt.oz, names)
+      collectExprIdentifiers(stmt.dx, names)
+      collectExprIdentifiers(stmt.dy, names)
+      collectExprIdentifiers(stmt.dz, names)
+      collectExprIdentifiers(stmt.maxDistance, names)
+      return
+    case 'physicsLiteBodyState':
+    case 'physicsLiteStats':
+      names.add(stmt.world)
+      names.add(stmt.result)
       return
     case 'return':
       if (stmt.value !== undefined) collectExprIdentifiers(stmt.value, names)

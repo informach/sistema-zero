@@ -33,8 +33,9 @@ import {
   type HTMLNode,
   type JSExpr,
   type JSStatement,
-  type SZIR,
-  SZIRSchema,
+  normalizeSZIR,
+  type SZIRInput,
+  SZIRInputSchema,
 } from '#ir'
 import { findExtension } from '#official-extensions'
 import { createProProject as createProProjectFromTemplate } from '../components/code/pro-templates'
@@ -120,7 +121,7 @@ interface ProjectStore {
   convertToPro: () => Promise<void>
   setFiles: (files: Partial<ProjectFiles>) => void
   setFile: (name: FileName, value: string) => void
-  setIR: (ir: SZIR | null) => void
+  setIR: (ir: SZIRInput | null) => void
   setBlocksState: (state: unknown | null) => void
   applyProjectState: (patch: ProjectStatePatch) => void
   installExtension: (id: string, version: string) => void
@@ -158,7 +159,7 @@ interface ProjectStore {
 
 interface ProjectStatePatch {
   files?: Partial<ProjectFiles>
-  ir?: SZIR | null
+  ir?: SZIRInput | null
   blocksState?: unknown | null
   installedExtensions?: InstalledExtension[]
 }
@@ -311,13 +312,30 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_t3d_terrain',
   'sz_t3d_road',
   'sz_t3d_building',
+  'sz_t3d_city',
   'sz_t3d_physics_setup',
   'sz_t3d_physics_static_box',
+  'sz_t3d_physics_static_sphere',
+  'sz_t3d_physics_static_object',
+  'sz_t3d_physics_static_city',
   'sz_t3d_physics_body',
   'sz_t3d_physics_move',
   'sz_t3d_physics_jump',
   'sz_t3d_physics_trigger',
   'sz_t3d_physics_step',
+  'sz_t3d_physics_velocity',
+  'sz_t3d_physics_impulse',
+  'sz_t3d_physics_teleport',
+  'sz_t3d_physics_remove',
+  'sz_t3d_physics_clear',
+  'sz_t3d_physics_on_collision',
+  'sz_t3d_physics_on_trigger',
+  'sz_t3d_physics_raycast',
+  'sz_t3d_physics_body_state',
+  'sz_t3d_physics_stats',
+  'sz_t3d_renderer_responsive',
+  'sz_t3d_load_environment',
+  'sz_t3d_dispose_object',
   'sz_input_key_pressed',
   'sz_input_pointer_x',
   'sz_input_pointer_y',
@@ -334,15 +352,18 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_css_font_weight',
   'sz_css_gap',
   'sz_css_google_font',
+  'sz_css_use_font',
   'sz_css_grid',
   'sz_css_keyframes',
   'sz_css_keyframes_steps',
   'sz_css_keyframe_step',
+  'sz_css_apply_animation',
   'sz_css_var',
   'sz_css_transform',
   'sz_css_perspective',
   'sz_css_grid_template',
   'sz_css_transition',
+  'sz_css_hover',
   'sz_css_gradient',
   'sz_css_height',
   'sz_css_fill',
@@ -380,7 +401,13 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   // Blocos-CONTAINER (frames): 🧱 Estrutura / 🎨 Aparência / ⚙️ Comportamento.
   'sz_frame_appearance',
   'sz_frame_behavior',
+  'sz_frame_events',
+  'sz_frame_loops',
+  'sz_frame_start',
   'sz_frame_structure',
+  'sz_legacy_nested_event',
+  'sz_legacy_nested_loop',
+  'sz_legacy_nested_start',
   'sz_html_button',
   'sz_html_canvas',
   'sz_html_div',
@@ -627,6 +654,7 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_g2d_score',
     'sz_g2d_set_position',
     'sz_g2d_set_velocity',
+    'sz_g2d_on_start',
     'sz_g2d_update_each_frame',
     'sz_g2d_set_gravity',
     'sz_g2d_apply_velocity',
@@ -921,6 +949,7 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_g3d_set_sky',
     'sz_g3d_set_shadows',
     'sz_g3d_create_swarm',
+    'sz_g3d_count_swarm',
     'sz_g3d_spawn_in_swarm',
     'sz_g3d_for_each_swarm',
     'sz_g3d_remove_from_swarm',
@@ -1816,7 +1845,7 @@ function describeJsonShapeLimitFailure(value: unknown, limits: JsonShapeLimits):
   return null
 }
 
-function sanitizeImportedIR(raw: unknown): SZIR | null {
+function sanitizeImportedIR(raw: unknown): SZIRInput | null {
   if (raw == null) return null
   const isSmallEnough = isJsonShapeWithinLimits(raw, {
     maxChars: MAX_IR_CHARS,
@@ -1829,7 +1858,7 @@ function sanitizeImportedIR(raw: unknown): SZIR | null {
   if (!isSmallEnough) {
     throw new Error('Arquivo inválido: IR excede o tamanho ou a complexidade máxima permitida.')
   }
-  const parsed = SZIRSchema.safeParse(raw)
+  const parsed = SZIRInputSchema.safeParse(raw)
   if (!parsed.success) return null
   if (countIRNodes(parsed.data) > MAX_IR_NODES) {
     throw new Error('Arquivo inválido: IR excede a complexidade máxima permitida.')
@@ -1870,7 +1899,7 @@ function sanitizeBlocksState(
   return isSupportedBlocklyWorkspaceState(raw, allowedTypes, limits) ? raw : null
 }
 
-function sanitizeStoredIR(raw: unknown): SZIR | null {
+function sanitizeStoredIR(raw: unknown): SZIRInput | null {
   try {
     return sanitizeImportedIR(raw)
   } catch {
@@ -2570,8 +2599,14 @@ function isSupportedExtendsExtraState(raw: unknown): boolean {
  */
 function isSupportedHandleExtraState(raw: unknown): boolean {
   if (!isPlainUnknownRecord(raw)) return false
-  if (!objectHasOnlyKeys(raw, ['handle'])) return false
-  return typeof raw.handle === 'string' && raw.handle.length <= MAX_MUTATOR_NAME_CHARS
+  if (!objectHasOnlyKeys(raw, ['handle', 'timeVar', 'deltaVar'])) return false
+  const values = [raw.handle, raw.timeVar, raw.deltaVar]
+  if (values.every((value) => value == null)) return false
+  return values.every(
+    (value) =>
+      value == null ||
+      (typeof value === 'string' && value.length > 0 && value.length <= MAX_MUTATOR_NAME_CHARS),
+  )
 }
 
 function isOptionalCoordinate(raw: unknown): boolean {
@@ -2617,12 +2652,16 @@ function isSupportedBlocklyIcons(raw: unknown): boolean {
   })
 }
 
-function countIRNodes(ir: SZIR): number {
+function countIRNodes(input: SZIRInput): number {
+  const ir = normalizeSZIR(input)
   return (
     1 +
     ir.html.reduce((total, node) => total + countHTMLNode(node), 0) +
     ir.css.reduce((total, entry) => total + countCSSEntry(entry), 0) +
-    ir.js.reduce((total, statement) => total + countJSStatement(statement), 0) +
+    [...ir.behavior.start, ...ir.behavior.events, ...ir.behavior.loops].reduce(
+      (total, statement) => total + countJSStatement(statement),
+      0,
+    ) +
     ir.extensions.length +
     (ir.htmlShell ? 1 : 0)
   )
@@ -2698,6 +2737,7 @@ function countJSStatement(statement: JSStatement): number {
       )
     case 'event':
     case 'animationLoop':
+    case 'g2d:onStart':
     case 'g2d:updateEachFrame':
     case 'g2d:onPointer':
     case 'g2d:onKey':

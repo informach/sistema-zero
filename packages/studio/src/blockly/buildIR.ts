@@ -1,12 +1,27 @@
 import type * as Blockly from 'blockly/core'
-import type { CSSEntry, HTMLNode, HTMLTag, JSExpr, JSStatement, SZIR } from '#ir'
+import type { CSSEntry, HTMLNode, HTMLTag, JSExpr, JSStatement, SZIR, SZIRV2 } from '#ir'
+import { splitLegacyBehavior } from '#ir'
+import { htmlElementForBlock, isSupportedHTMLInputType } from '../html/catalog'
+import {
+  FRAME_APPEARANCE,
+  FRAME_BEHAVIOR_LEGACY,
+  FRAME_EVENTS,
+  FRAME_LOOPS,
+  FRAME_START,
+  FRAME_STRUCTURE,
+} from './blockContracts'
 import { getSuperName } from './blocks/extendsMutator'
 import { getParamNames } from './blocks/paramsMutator'
 
 /** Tipos dos 3 blocos-frame (containers estilo MakeCode). */
-export const FRAME_STRUCTURE = 'sz_frame_structure'
-export const FRAME_APPEARANCE = 'sz_frame_appearance'
-export const FRAME_BEHAVIOR = 'sz_frame_behavior'
+export {
+  FRAME_APPEARANCE,
+  FRAME_BEHAVIOR_LEGACY as FRAME_BEHAVIOR,
+  FRAME_EVENTS,
+  FRAME_LOOPS,
+  FRAME_START,
+  FRAME_STRUCTURE,
+}
 
 /**
  * Percorre o workspace e devolve a SZ-IR — modelo CONTAINER (estilo MakeCode `on
@@ -20,8 +35,14 @@ export const FRAME_BEHAVIOR = 'sz_frame_behavior'
  *
  * Blocos não-reconhecidos DENTRO de um frame viram "modo avançado" (nada se perde).
  */
-export function buildIRFromWorkspace(workspace: Blockly.Workspace): SZIR {
-  const ir: SZIR = { html: [], css: [], js: [], extensions: [] }
+export function buildIRFromWorkspace(workspace: Blockly.Workspace): SZIRV2 {
+  const ir: SZIRV2 = {
+    version: 2,
+    html: [],
+    css: [],
+    behavior: { start: [], events: [], loops: [] },
+    extensions: [],
+  }
   const seen = new Set<string>()
   const tops = workspace.getTopBlocks(true).filter((b) => !b.isInsertionMarker())
   const firstOf = (type: string): Blockly.Block | null => tops.find((b) => b.type === type) ?? null
@@ -30,8 +51,19 @@ export function buildIRFromWorkspace(workspace: Blockly.Workspace): SZIR {
   if (structure) ir.html.push(...getHtmlChildren(structure, 'CHILDREN', seen))
   const appearance = firstOf(FRAME_APPEARANCE)
   if (appearance) ir.css.push(...getCssEntryChildren(appearance, 'CHILDREN', seen))
-  const behavior = firstOf(FRAME_BEHAVIOR)
-  if (behavior) ir.js.push(...getStatementChildren(behavior, 'CHILDREN', seen))
+  const legacyBehavior = firstOf(FRAME_BEHAVIOR_LEGACY)
+  if (legacyBehavior) {
+    const migrated = splitLegacyBehavior(getStatementChildren(legacyBehavior, 'CHILDREN', seen))
+    ir.behavior.start.push(...migrated.start)
+    ir.behavior.events.push(...migrated.events)
+    ir.behavior.loops.push(...migrated.loops)
+  }
+  const start = firstOf(FRAME_START)
+  if (start) ir.behavior.start.push(...getStatementChildren(start, 'CHILDREN', seen))
+  const events = firstOf(FRAME_EVENTS)
+  if (events) ir.behavior.events.push(...getStatementChildren(events, 'CHILDREN', seen))
+  const loops = firstOf(FRAME_LOOPS)
+  if (loops) ir.behavior.loops.push(...getStatementChildren(loops, 'CHILDREN', seen))
 
   ir.extensions = Array.from(seen).map((id) => ({ extensionId: id }))
   return ir
@@ -192,7 +224,8 @@ function mergeClassField(block: Blockly.Block, node: HTMLNode): void {
  */
 function attachBlockId(node: RoutedNode, blockId: string): void {
   // `__id` é opcional em todas as variants — atribuição direta é segura.
-  ;(node.value as { __id?: string }).__id = blockId
+  const value = node.value as { __id?: string }
+  value.__id ??= blockId
 }
 
 type RoutedNode =
@@ -453,6 +486,8 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g3d:touchesBox', objVar: f(block, 'OBJ'), groupVar: f(block, 'GROUP') }
     case 'sz_g3d_distance_to':
       return { type: 'g3d:distanceTo', aVar: f(block, 'A'), bVar: f(block, 'B') }
+    case 'sz_g3d_count_swarm':
+      return { type: 'g3d:countSwarm', swarmVar: f(block, 'SWARM') }
     case 'sz_g3d_is_near':
       return {
         type: 'g3d:isNear',
@@ -1341,6 +1376,20 @@ function htmlText(tag: HTMLTag, block: Blockly.Block, seen: Set<string>): Routed
   }
 }
 
+function catalogHTMLBlockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
+  const descriptor = htmlElementForBlock(block.type)
+  if (!descriptor?.blockType.startsWith('sz_html_')) return null
+  if (descriptor.parserShape === 'inline-text') return htmlText(descriptor.tag, block, seen)
+  if (
+    descriptor.parserShape === 'container' &&
+    descriptor.tag !== 'svg' &&
+    descriptor.tag !== 'g'
+  ) {
+    return htmlContainer(descriptor.tag, block, seen)
+  }
+  return null
+}
+
 /** Presets de `box-shadow` por intensidade. Compartilhado com o round-trip. */
 export const SHADOW_PRESETS = {
   sm: '0 1px 3px rgba(0,0,0,0.2)',
@@ -1349,49 +1398,30 @@ export const SHADOW_PRESETS = {
 } as const
 
 function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
+  const catalogHTML = catalogHTMLBlockToIR(block, seen)
+  if (catalogHTML) return catalogHTML
   switch (block.type) {
+    case 'sz_legacy_nested_start':
+    case 'sz_legacy_nested_event':
+    case 'sz_legacy_nested_loop': {
+      const [statement] = getStatementChildren(block, 'CHILD', seen)
+      return statement ? { kind: 'js', value: statement } : null
+    }
     // ---- HTML ----
-    case 'sz_html_h1':
-      return htmlText('h1', block, seen)
-    case 'sz_html_p':
-      return htmlText('p', block, seen)
     case 'sz_html_button': {
       const id = f(block, 'ID')
+      const buttonType = f(block, 'TYPE')
       return {
         kind: 'html',
-        value: { type: 'element', tag: 'button', ...(id ? { id } : {}), text: f(block, 'TEXT') },
+        value: {
+          type: 'element',
+          tag: 'button',
+          ...(id ? { id } : {}),
+          text: f(block, 'TEXT'),
+          ...(buttonType ? { attrs: { type: buttonType } } : {}),
+        },
       }
     }
-    case 'sz_html_div':
-      return htmlContainer('div', block, seen)
-    case 'sz_html_header':
-      return htmlContainer('header', block, seen)
-    case 'sz_html_nav':
-      return htmlContainer('nav', block, seen)
-    case 'sz_html_section':
-      return htmlContainer('section', block, seen)
-    case 'sz_html_main':
-      return htmlContainer('main', block, seen)
-    case 'sz_html_footer':
-      return htmlContainer('footer', block, seen)
-    case 'sz_html_ul':
-      return htmlContainer('ul', block, seen)
-    case 'sz_html_form':
-      return htmlContainer('form', block, seen)
-    case 'sz_html_h2':
-      return htmlText('h2', block, seen)
-    case 'sz_html_h3':
-      return htmlText('h3', block, seen)
-    case 'sz_html_span':
-      return htmlText('span', block, seen)
-    case 'sz_html_strong':
-      return htmlText('strong', block, seen)
-    case 'sz_html_em':
-      return htmlText('em', block, seen)
-    case 'sz_html_li':
-      return htmlText('li', block, seen)
-    case 'sz_html_label':
-      return htmlText('label', block, seen)
     case 'sz_html_link':
       return {
         kind: 'html',
@@ -1419,25 +1449,32 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     }
     case 'sz_html_input': {
       const id = f(block, 'ID')
+      const inputType = f(block, 'TYPE')
+      const placeholder = f(block, 'PLACEHOLDER')
+      const attrs: Record<string, string> = {}
+      if (inputType && isSupportedHTMLInputType(inputType)) attrs.type = inputType
+      if (placeholder) attrs.placeholder = placeholder
       return {
         kind: 'html',
         value: {
           type: 'element',
           tag: 'input',
           ...(id ? { id } : {}),
-          attrs: { type: f(block, 'TYPE'), placeholder: f(block, 'PLACEHOLDER') },
+          ...(Object.keys(attrs).length > 0 ? { attrs } : {}),
         },
       }
     }
     case 'sz_html_textarea': {
       const id = f(block, 'ID')
+      const placeholder = f(block, 'PLACEHOLDER')
       return {
         kind: 'html',
         value: {
           type: 'element',
           tag: 'textarea',
           ...(id ? { id } : {}),
-          attrs: { placeholder: f(block, 'PLACEHOLDER') },
+          text: f(block, 'TEXT'),
+          ...(placeholder ? { attrs: { placeholder } } : {}),
         },
       }
     }
@@ -1886,6 +1923,16 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     }
     case 'sz_css_google_font':
       return { kind: 'css', value: { type: 'googleFont', family: f(block, 'FONT') || 'Roboto' } }
+    case 'sz_css_use_font': {
+      const family = f(block, 'FONT').trim() || 'Roboto'
+      return {
+        kind: 'css',
+        value: {
+          selector: f(block, 'SELECTOR'),
+          declarations: { 'font-family': `${JSON.stringify(family)}, sans-serif` },
+        },
+      }
+    }
     case 'sz_css_media_query':
       return {
         kind: 'css',
@@ -1909,6 +1956,17 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           declarations: { transition: `all ${fn(block, 'MS', 300)}ms ease` },
         },
       }
+    case 'sz_css_hover': {
+      const { declarations, declIds } = getCssDeclarations(block, 'CHILDREN')
+      return {
+        kind: 'css',
+        value: {
+          selector: `${f(block, 'SELECTOR')}:hover`,
+          declarations,
+          ...(Object.keys(declIds).length > 0 ? { __declIds: declIds } : {}),
+        },
+      }
+    }
     case 'sz_css_grid':
       return {
         kind: 'css',
@@ -1941,6 +1999,19 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           steps: getKeyframeSteps(block, 'STEPS'),
         },
       }
+    case 'sz_css_apply_animation': {
+      const seconds = Math.max(0.1, fn(block, 'SECONDS', 1))
+      const repeat = f(block, 'REPEAT') === 'infinite' ? 'infinite' : '1'
+      return {
+        kind: 'css',
+        value: {
+          selector: f(block, 'SELECTOR'),
+          declarations: {
+            animation: `${f(block, 'NAME').trim() || 'pulsar'} ${seconds}s ease-in-out ${repeat}`,
+          },
+        },
+      }
+    }
     case 'sz_css_keyframe_step':
       // Só faz sentido dentro de "animação (vários passos)" (coletado por getKeyframeSteps).
       return null
@@ -3316,21 +3387,14 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         },
       }
     case 'sz_t3d_lerp_position':
-      // `obj.position.lerp(alvo, velocidade)`
       return {
         kind: 'js',
         value: {
-          type: 'memberCall',
-          object: {
-            type: 'memberGet',
-            object: { type: 'var', name: f(block, 'OBJ') },
-            name: 'position',
-          },
-          method: 'lerp',
-          args: [
-            exprInput(block, 'TARGET', { type: 'var', name: 'alvo' }),
-            exprInput(block, 'ALPHA', { type: 'num', value: 0.1 }),
-          ],
+          type: 'lerpPosition',
+          object: f(block, 'OBJ'),
+          target: exprInput(block, 'TARGET', { type: 'var', name: 'alvo' }),
+          alpha: exprInput(block, 'ALPHA', { type: 'num', value: 0.1 }),
+          dt: exprInput(block, 'DT', { type: 'num', value: 1 / 60 }),
         },
       }
     case 'sz_t3d_set_matrix_at':
@@ -3446,6 +3510,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           url: { type: 'str', value: f(block, 'URL') },
           param: f(block, 'PARAM') || 'modelo',
           body: getStatementChildren(block, 'DO', seen),
+          errorParam: f(block, 'ERROR_PARAM') || 'erro',
+          errorBody: getStatementChildren(block, 'DO_ERROR', seen),
         },
       }
     case 'sz_t3d_load_sound':
@@ -3459,6 +3525,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           url: { type: 'str', value: f(block, 'URL') },
           param: f(block, 'PARAM') || 'buffer',
           body: getStatementChildren(block, 'DO', seen),
+          errorParam: f(block, 'ERROR_PARAM') || 'erro',
+          errorBody: getStatementChildren(block, 'DO_ERROR', seen),
         },
       }
     case 'sz_t3d_traverse':
@@ -3486,6 +3554,33 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         },
       }
     }
+    case 'sz_t3d_renderer_responsive':
+      return {
+        kind: 'js',
+        value: {
+          type: 'rendererResponsive',
+          renderer: f(block, 'R'),
+          camera: f(block, 'CAMERA'),
+          ...(f(block, 'COMPOSER').trim() ? { composer: f(block, 'COMPOSER').trim() } : {}),
+          cleanup: f(block, 'CLEANUP') || 'pararResponsivo',
+        },
+      }
+    case 'sz_t3d_load_environment':
+      return {
+        kind: 'js',
+        value: {
+          type: 'environmentLoad',
+          scene: f(block, 'SCENE'),
+          url: f(block, 'URL'),
+          texture: f(block, 'TEXTURE') || 'ceuHDR',
+          background: f(block, 'BACKGROUND') !== 'false',
+        },
+      }
+    case 'sz_t3d_dispose_object':
+      return {
+        kind: 'js',
+        value: { type: 'disposeObject', object: f(block, 'OBJECT') },
+      }
     case 'sz_t3d_bloom_setup':
       // Macro do Brilho (bloom): 1 bloco → esteira EffectComposer/RenderPass/
       // UnrealBloomPass/OutputPass (o gerador expande + traz os imports).
@@ -3541,8 +3636,14 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         },
       }
     case 'sz_t3d_water_wave':
-      // `agua.material.uniforms.time.value += 1 / 60` — animar as ondas no laço.
-      return { kind: 'js', value: { type: 'waterTime', water: f(block, 'WATER') } }
+      return {
+        kind: 'js',
+        value: {
+          type: 'waterTime',
+          water: f(block, 'WATER'),
+          dt: exprInput(block, 'DT', { type: 'num', value: 1 / 60 }),
+        },
+      }
     case 'sz_t3d_grass':
       // Macro Grama: 1 bloco → campo instanciado + shader de vento (gerador expande).
       return {
@@ -3558,8 +3659,14 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         },
       }
     case 'sz_t3d_grass_wave':
-      // `grama.material.uniforms.time.value += 0.02` — animar o vento no laço.
-      return { kind: 'js', value: { type: 'grassTime', grass: f(block, 'GRASS') } }
+      return {
+        kind: 'js',
+        value: {
+          type: 'grassTime',
+          grass: f(block, 'GRASS'),
+          dt: exprInput(block, 'DT', { type: 'num', value: 1 / 60 }),
+        },
+      }
     case 'sz_t3d_sign':
       // Macro Letreiro 3D: 1 bloco → canvas oculto + CanvasTexture + plano
       // transparente (gerador expande; TEXT é campo — letreiro é estático).
@@ -3619,7 +3726,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           x2: exprInput(block, 'X2', { type: 'num', value: 20 }),
           z2: exprInput(block, 'Z2', { type: 'num', value: 0 }),
           width: exprInput(block, 'WIDTH', { type: 'num', value: 6 }),
+          segments: exprInput(block, 'SEGMENTS', { type: 'num', value: 24 }),
           color: exprInput(block, 'COLOR', { type: 'color', value: '#334155' }),
+          heightFunction: f(block, 'HEIGHT_FN') || 'alturaChao',
         },
       }
     case 'sz_t3d_building':
@@ -3636,6 +3745,26 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           depth: exprInput(block, 'D', { type: 'num', value: 8 }),
           color: exprInput(block, 'COLOR', { type: 'color', value: '#f59e0b' }),
           roofColor: exprInput(block, 'ROOF', { type: 'color', value: '#b91c1c' }),
+          heightFunction: f(block, 'HEIGHT_FN') || 'alturaChao',
+        },
+      }
+    case 'sz_t3d_city':
+      return {
+        kind: 'js',
+        value: {
+          type: 'citySetup',
+          city: f(block, 'CITY') || 'cidade',
+          scene: f(block, 'SCENE'),
+          heightFunction: f(block, 'HEIGHT_FN') || 'alturaChao',
+          blocksX: exprInput(block, 'BLOCKS_X', { type: 'num', value: 8 }),
+          blocksZ: exprInput(block, 'BLOCKS_Z', { type: 'num', value: 8 }),
+          spacing: exprInput(block, 'SPACING', { type: 'num', value: 14 }),
+          roadWidth: exprInput(block, 'ROAD_WIDTH', { type: 'num', value: 5 }),
+          minHeight: exprInput(block, 'MIN_HEIGHT', { type: 'num', value: 5 }),
+          maxHeight: exprInput(block, 'MAX_HEIGHT', { type: 'num', value: 24 }),
+          seed: exprInput(block, 'SEED', { type: 'num', value: 42 }),
+          color: exprInput(block, 'COLOR', { type: 'color', value: '#94a3b8' }),
+          roofColor: exprInput(block, 'ROOF', { type: 'color', value: '#334155' }),
         },
       }
     case 'sz_t3d_physics_setup':
@@ -3662,6 +3791,39 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           width: exprInput(block, 'W', { type: 'num', value: 2 }),
           height: exprInput(block, 'H', { type: 'num', value: 2 }),
           depth: exprInput(block, 'D', { type: 'num', value: 2 }),
+        },
+      }
+    case 'sz_t3d_physics_static_sphere':
+      return {
+        kind: 'js',
+        value: {
+          type: 'physicsLiteStaticSphere',
+          world: f(block, 'WORLD'),
+          id: f(block, 'ID') || 'rocha',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 1 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+          radius: exprInput(block, 'RADIUS', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_t3d_physics_static_object':
+      return {
+        kind: 'js',
+        value: {
+          type: 'physicsLiteStaticObject',
+          world: f(block, 'WORLD'),
+          object: f(block, 'OBJECT'),
+          id: f(block, 'ID') || 'objetoSolido',
+        },
+      }
+    case 'sz_t3d_physics_static_city':
+      return {
+        kind: 'js',
+        value: {
+          type: 'physicsLiteStaticCity',
+          world: f(block, 'WORLD'),
+          city: f(block, 'CITY'),
+          prefix: f(block, 'PREFIX') || 'cidade',
         },
       }
     case 'sz_t3d_physics_body':
@@ -3724,6 +3886,96 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'physicsLiteStep',
           world: f(block, 'WORLD'),
           dt: exprInput(block, 'DT', { type: 'num', value: 1 / 60 }),
+        },
+      }
+    case 'sz_t3d_physics_velocity':
+    case 'sz_t3d_physics_impulse':
+    case 'sz_t3d_physics_teleport': {
+      const type =
+        block.type === 'sz_t3d_physics_velocity'
+          ? 'physicsLiteVelocity'
+          : block.type === 'sz_t3d_physics_impulse'
+            ? 'physicsLiteImpulse'
+            : 'physicsLiteTeleport'
+      return {
+        kind: 'js',
+        value: {
+          type,
+          world: f(block, 'WORLD'),
+          id: f(block, 'ID') || 'corpo',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+        },
+      }
+    }
+    case 'sz_t3d_physics_remove':
+      return {
+        kind: 'js',
+        value: {
+          type: 'physicsLiteRemove',
+          world: f(block, 'WORLD'),
+          id: f(block, 'ID') || 'objeto',
+        },
+      }
+    case 'sz_t3d_physics_clear':
+      return { kind: 'js', value: { type: 'physicsLiteClear', world: f(block, 'WORLD') } }
+    case 'sz_t3d_physics_on_collision':
+      return {
+        kind: 'js',
+        value: {
+          type: 'physicsLiteCollisionEvent',
+          world: f(block, 'WORLD'),
+          bodyParam: f(block, 'BODY_PARAM') || 'corpoId',
+          colliderParam: f(block, 'COLLIDER_PARAM') || 'obstaculoId',
+          body: getStatementChildren(block, 'DO', seen),
+        },
+      }
+    case 'sz_t3d_physics_on_trigger':
+      return {
+        kind: 'js',
+        value: {
+          type: 'physicsLiteTriggerEvent',
+          world: f(block, 'WORLD'),
+          bodyParam: f(block, 'BODY_PARAM') || 'corpoId',
+          triggerParam: f(block, 'TRIGGER_PARAM') || 'areaId',
+          enteringParam: f(block, 'ENTERING_PARAM') || 'entrou',
+          body: getStatementChildren(block, 'DO', seen),
+        },
+      }
+    case 'sz_t3d_physics_raycast':
+      return {
+        kind: 'js',
+        value: {
+          type: 'physicsLiteRaycast',
+          world: f(block, 'WORLD'),
+          result: f(block, 'RESULT') || 'acerto',
+          ox: exprInput(block, 'OX', { type: 'num', value: 0 }),
+          oy: exprInput(block, 'OY', { type: 'num', value: 2 }),
+          oz: exprInput(block, 'OZ', { type: 'num', value: 0 }),
+          dx: exprInput(block, 'DX', { type: 'num', value: 0 }),
+          dy: exprInput(block, 'DY', { type: 'num', value: -1 }),
+          dz: exprInput(block, 'DZ', { type: 'num', value: 0 }),
+          maxDistance: exprInput(block, 'MAX', { type: 'num', value: 100 }),
+        },
+      }
+    case 'sz_t3d_physics_body_state':
+      return {
+        kind: 'js',
+        value: {
+          type: 'physicsLiteBodyState',
+          world: f(block, 'WORLD'),
+          id: f(block, 'ID') || 'jogador',
+          result: f(block, 'RESULT') || 'estadoCorpo',
+        },
+      }
+    case 'sz_t3d_physics_stats':
+      return {
+        kind: 'js',
+        value: {
+          type: 'physicsLiteStats',
+          world: f(block, 'WORLD'),
+          result: f(block, 'RESULT') || 'estadoFisica',
         },
       }
     case 'sz_js_call_method':
@@ -3967,6 +4219,15 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     case 'sz_g2d_clear':
       seen.add('game-2d')
       return { kind: 'js', value: { type: 'g2d:clear' } }
+    case 'sz_g2d_on_start':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:onStart',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
     case 'sz_g2d_update_each_frame':
       seen.add('game-2d')
       return {

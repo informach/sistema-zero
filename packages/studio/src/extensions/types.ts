@@ -1,5 +1,6 @@
 import type { BlockLevel, ExampleExperience, ProjectAsset } from '#core'
-import type { SZIR } from '#ir'
+import type { SZIRV2 } from '#ir'
+import type { BlockDefinition } from '../blockly/blocks/types'
 
 export type ExtensionPermission = 'canvas' | 'keyboard' | 'mouse' | 'audio' | 'storage' | 'network'
 
@@ -40,7 +41,7 @@ export interface ExtensionExample {
   name: string
   experience: ExampleExperience
   description?: string
-  ir: SZIR
+  ir: SZIRV2
   /**
    * Assets embutidos que o exemplo precisa (ex.: um sprite pequeno do inimigo). Como
    * os assets de jogos reais são pesados, use SÓ imagens minúsculas geradas (ver o
@@ -83,8 +84,7 @@ export interface ExtensionDefinition {
   minLevel?: BlockLevel
   blockly: {
     /** Block JSON definitions (compatíveis com defineBlocksWithJsonArray). */
-    // biome-ignore lint/suspicious/noExplicitAny: o formato Blockly é livre por design
-    blocks: any[]
+    blocks: BlockDefinition[]
     toolboxCategory: ExtensionToolboxCategory
   }
   runtime: {

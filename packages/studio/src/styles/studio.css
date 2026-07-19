@@ -279,6 +279,13 @@
   background: color-mix(in srgb, var(--color-sz-accent) 15%, transparent);
 }
 
+/* Pilhas salvas fora de uma Área do projeto: permanecem editáveis, mas não rodam. */
+.sz-draft-block > .blocklyPath {
+  stroke: #f59e0b;
+  stroke-width: 3px;
+  stroke-dasharray: 8 5;
+}
+
 /*
  * Micro-celebração da ATIVIDADE (ActivityPanel): pop finito quando todas as
  * checagens passam. `prefers-reduced-motion` desliga a animação (o banner

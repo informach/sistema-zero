@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import { compileStatements } from '#generators'
-import { SZIRSchema } from '#ir'
+import { behaviorStatements, SZIRV2Schema } from '#ir'
 import 'blockly/blocks'
 import { registerExtensionBlocks } from '../../../blockly/blocks'
 import { buildIRFromWorkspace } from '../../../blockly/buildIR'
@@ -64,14 +64,12 @@ const REQUIRED_TYPES = {
     'gk:onUpdate',
     'gk:moveWithKeys',
     'gk:onDraw',
-    'gk:start',
   ],
   'Caça-moedas profissional': [
     'gk:setScreenText',
     'gk:createScreen',
     'gk:addButton',
     'gk:restartGame',
-    'gk:onGameStart',
     'gk:charactersTouch',
     'gk:gameWidth',
     'canvasFillText',
@@ -280,17 +278,21 @@ describe('game-2d-advanced — catálogo dos exemplos', () => {
       oChefaoExample,
       oChefaoFichaExample,
     ]) {
-      const maps = example.ir.js.filter((statement) => statement.type === 'gk:rpgCreateMap')
+      const maps = behaviorStatements(example.ir).filter(
+        (statement) => statement.type === 'gk:rpgCreateMap',
+      )
       expect(maps.length).toBeGreaterThan(0)
       for (const map of maps) expect(collectTypes(map.body).has('gk:drawBackground')).toBe(true)
-      for (const draw of example.ir.js.filter((statement) => statement.type === 'gk:onDraw')) {
+      for (const draw of behaviorStatements(example.ir).filter(
+        (statement) => statement.type === 'gk:onDraw',
+      )) {
         expect(collectTypes(draw.body).has('gk:drawBackground')).toBe(false)
       }
     }
   })
 
   it('Vila do Dragão expõe mapa e objetivo sem coordenadas secretas', () => {
-    const code = compileStatements(vilaDoDragaoExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(vilaDoDragaoExample.ir), 0)
     for (const label of [
       'VILA DO DRAGÃO',
       'CAVERNA DO DRAGÃO',
@@ -312,7 +314,7 @@ describe('game-2d-advanced — catálogo dos exemplos', () => {
 for (const example of EXAMPLES) {
   describe(`game-2d-advanced — ${example.name}`, () => {
     it('schema e promessa estrutural', () => {
-      expect(SZIRSchema.safeParse(example.ir).success).toBe(true)
+      expect(SZIRV2Schema.safeParse(example.ir).success).toBe(true)
       const types = collectTypes(example.ir)
       expect(types.has('rawJS')).toBe(false)
       expect(types.has('rawHTML')).toBe(false)
@@ -333,9 +335,9 @@ for (const example of EXAMPLES) {
     })
 
     it('IR → JavaScript → IR e fixpoint textual', () => {
-      const code = compileStatements(example.ir.js, 0)
+      const code = compileStatements(behaviorStatements(example.ir), 0)
       const reparsed = stripIds(parseJS(code))
-      expect(reparsed).toEqual(example.ir.js)
+      expect(reparsed).toEqual(behaviorStatements(example.ir))
       expect(compileStatements(reparsed, 0)).toBe(code)
     })
 
@@ -349,7 +351,9 @@ for (const example of EXAMPLES) {
           state as unknown as Record<string, unknown>,
           workspace,
         )
-        expect(stripIds(buildIRFromWorkspace(workspace).js)).toEqual(example.ir.js)
+        expect(stripIds(behaviorStatements(buildIRFromWorkspace(workspace)))).toEqual(
+          behaviorStatements(example.ir),
+        )
       } finally {
         workspace.dispose()
       }

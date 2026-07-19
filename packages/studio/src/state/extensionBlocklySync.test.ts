@@ -116,7 +116,13 @@ describe('validateManifest — pré-guarda de profundidade do IR de exemplo', ()
         {
           name: 'exemplo',
           experience: 'game' as const,
-          ir: { html: [], css: [], js: [], extensions: [] },
+          ir: {
+            version: 2 as const,
+            html: [],
+            css: [],
+            behavior: { start: [], events: [], loops: [] },
+            extensions: [],
+          },
         },
       ],
     }

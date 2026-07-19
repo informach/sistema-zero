@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { compileStatements } from '#generators'
+import { behaviorStatements } from '#ir'
 import {
   crossingExample,
   dodgeExample,
@@ -118,11 +119,16 @@ describe('parseJS — helpers SZGame3D.* (game-3d)', () => {
 
 describe('roundtrip do rotatingCubeExample (gerar → parsear)', () => {
   it('o código gerado volta a virar blocos g3d (sem degradar para rawJS)', () => {
-    const code = compileStatements(rotatingCubeExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(rotatingCubeExample.ir), 0)
     const ir = parseJS(code)
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
-    for (const expected of ['g3d:createScene', 'g3d:createBox', 'g3d:animate', 'g3d:setRotation']) {
+    for (const expected of [
+      'g3d:createFullscreenScene',
+      'g3d:createBox',
+      'g3d:animate',
+      'g3d:rotateBy',
+    ]) {
       expect(types.has(expected)).toBe(true)
     }
   })
@@ -205,7 +211,7 @@ describe('parseJS — física, Kit Desvie e câmera (game-3d)', () => {
 
 describe('roundtrip do dodgeExample (gerar → parsear)', () => {
   it('o jogo "Desvie dos blocos" volta a virar blocos g3d (sem degradar para rawJS)', () => {
-    const code = compileStatements(dodgeExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(dodgeExample.ir), 0)
     const ir = parseJS(code)
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
@@ -234,7 +240,7 @@ describe('roundtrip do dodgeExample (gerar → parsear)', () => {
 
 describe('roundtrip do shapesExample (gerar → parsear)', () => {
   it('o "Boneco de formas" volta a virar blocos g3d (sem degradar para rawJS)', () => {
-    const code = compileStatements(shapesExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(shapesExample.ir), 0)
     const ir = parseJS(code)
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
@@ -254,7 +260,7 @@ describe('roundtrip do shapesExample (gerar → parsear)', () => {
 
 describe('roundtrip do nightExample (gerar → parsear)', () => {
   it('a "Noite enevoada" volta a virar blocos g3d (sem degradar para rawJS)', () => {
-    const code = compileStatements(nightExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(nightExample.ir), 0)
     const ir = parseJS(code)
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
@@ -272,7 +278,7 @@ describe('roundtrip do nightExample (gerar → parsear)', () => {
 
 describe('roundtrip do swarmExample (gerar → parsear)', () => {
   it('o "Enxame que gira" volta a virar blocos g3d (incl. o "para cada" com corpo)', () => {
-    const code = compileStatements(swarmExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(swarmExample.ir), 0)
     const ir = parseJS(code)
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
@@ -374,7 +380,7 @@ describe('parseJS — Travessia + grade genérica (game-3d)', () => {
 
 describe('roundtrip do crossingExample (gerar → parsear)', () => {
   it('o jogo "Atravesse a rua" volta a virar blocos g3d (sem degradar para rawJS)', () => {
-    const code = compileStatements(crossingExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(crossingExample.ir), 0)
     const ir = parseJS(code)
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
@@ -462,7 +468,7 @@ describe('parseJS — Corrida + genéricos top-down (game-3d)', () => {
 
 describe('roundtrip do raceExample (gerar → parsear)', () => {
   it('o jogo "Corrida maluca" volta a virar blocos g3d (sem degradar para rawJS)', () => {
-    const code = compileStatements(raceExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(raceExample.ir), 0)
     const ir = parseJS(code)
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)
@@ -531,7 +537,7 @@ describe('parseJS — Empilhar + genéricos de movimento (game-3d)', () => {
 
 describe('roundtrip do stackExample (gerar → parsear)', () => {
   it('o jogo "Torre maluca" volta a virar blocos g3d (sem degradar para rawJS)', () => {
-    const code = compileStatements(stackExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(stackExample.ir), 0)
     const ir = parseJS(code)
     const types = collectTypes(ir)
     expect(types.has('rawJS')).toBe(false)

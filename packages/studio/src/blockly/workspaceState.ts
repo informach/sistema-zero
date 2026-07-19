@@ -1,34 +1,18 @@
-import { compileStatements } from '#generators'
-import type { CSSEntry, JSExpr, JSStatement, KeyframesCSS, SZIR } from '#ir'
-import { screenTextToExpr, valueToExpr } from '#ir'
-import { FRAME_APPEARANCE, FRAME_BEHAVIOR, FRAME_STRUCTURE, SHADOW_PRESETS } from './buildIR'
+import { compileStatements, renderNodes } from '#generators'
+import type { CSSEntry, JSExpr, JSStatement, KeyframesCSS, SZIR, SZIRInput } from '#ir'
+import { normalizeSZIR, screenTextToExpr, valueToExpr } from '#ir'
+import { htmlElementForTag, isSupportedHTMLInputType } from '../html/catalog'
+import {
+  FRAME_APPEARANCE,
+  FRAME_EVENTS,
+  FRAME_LOOPS,
+  FRAME_START,
+  FRAME_STRUCTURE,
+  getBlockContract,
+} from './blockContracts'
+import { SHADOW_PRESETS } from './buildIR'
 import { ADDON_CLASSES } from './fields/FieldClassPicker'
 import { LEGACY_VALUE_FIELDS } from './migrateValueFields'
-
-/** Tags container (têm input CHILDREN) → tipo de bloco. */
-const CONTAINER_BLOCK: Partial<Record<string, string>> = {
-  div: 'sz_html_div',
-  section: 'sz_html_section',
-  header: 'sz_html_header',
-  nav: 'sz_html_nav',
-  footer: 'sz_html_footer',
-  main: 'sz_html_main',
-  ul: 'sz_html_ul',
-  form: 'sz_html_form',
-}
-
-/** Tags de folha com apenas texto → tipo de bloco. */
-const TEXT_BLOCK: Partial<Record<string, string>> = {
-  h1: 'sz_html_h1',
-  h2: 'sz_html_h2',
-  h3: 'sz_html_h3',
-  p: 'sz_html_p',
-  span: 'sz_html_span',
-  strong: 'sz_html_strong',
-  em: 'sz_html_em',
-  li: 'sz_html_li',
-  label: 'sz_html_label',
-}
 
 export interface SerializedBlocklyBlock {
   type: string
@@ -70,25 +54,6 @@ const ID_FIELD_TAGS = new Set([
   'text',
 ])
 
-/** Atributos representados por um campo do bloco (logo, não vão para `data`). */
-const FIELD_ATTRS: Record<string, readonly string[]> = {
-  a: ['href'],
-  img: ['src', 'alt'],
-  input: ['type', 'placeholder'],
-  textarea: ['placeholder'],
-  svg: ['width', 'height', 'viewBox'],
-  g: ['transform'],
-  path: ['d', 'fill', 'stroke', 'transform'],
-  circle: ['cx', 'cy', 'r', 'fill'],
-  ellipse: ['cx', 'cy', 'rx', 'ry', 'fill'],
-  rect: ['x', 'y', 'width', 'height', 'fill'],
-  line: ['x1', 'y1', 'x2', 'y2', 'stroke'],
-  polyline: ['points', 'fill', 'stroke'],
-  polygon: ['points', 'fill', 'stroke'],
-  text: ['x', 'y', 'fill'],
-  use: ['href', 'transform'],
-}
-
 /**
  * Serializa, como JSON, os atributos do elemento que nenhum campo do bloco
  * representa (ex.: `class`, `role`, `data-*`), além do `id` quando o bloco não
@@ -98,7 +63,7 @@ const FIELD_ATTRS: Record<string, readonly string[]> = {
 function extraData(node: Extract<SZIR['html'][number], { type: 'element' }>): string | undefined {
   const extra: Record<string, string> = {}
   if (node.id && !ID_FIELD_TAGS.has(node.tag)) extra.id = node.id
-  const fieldKeys = FIELD_ATTRS[node.tag] ?? []
+  const fieldKeys = htmlElementForTag(node.tag)?.modeledAttributes ?? []
   for (const [k, v] of Object.entries(node.attrs ?? {})) {
     // `class` é representado pelo campo CLASS do bloco — não vai para `data`.
     if (k === 'class') continue
@@ -130,9 +95,10 @@ export interface BuildWorkspaceStateOptions {
 }
 
 export function buildWorkspaceStateFromIR(
-  ir: SZIR,
+  ir: SZIRInput,
   options: BuildWorkspaceStateOptions = {},
 ): SerializedBlocklyWorkspace {
+  const normalized = normalizeSZIR(ir)
   const startX = options.startX ?? 32
   const startY = options.startY ?? 32
   // Modelo CONTAINER (estilo MakeCode): cada categoria vira UM frame — 🧱 Estrutura
@@ -141,40 +107,51 @@ export function buildWorkspaceStateFromIR(
   // frame), então blocos→IR→blocos é estável. Uma coluna por frame.
   const colGap = options.colGap ?? 420
 
-  const htmlChildren = ir.html.map(htmlNodeToBlock).filter(isBlock)
-  const cssChildren = ir.css.flatMap(cssEntryToBlocks)
+  const htmlChildren = normalized.html.map(htmlNodeToBlock).filter(isBlock)
+  const cssChildren = normalized.css.flatMap(cssEntryToBlocks)
+  const allStatements = [
+    ...normalized.behavior.start,
+    ...normalized.behavior.events,
+    ...normalized.behavior.loops,
+  ]
   // Gate dos facilitadores do Canvas 3D: só reconhece as formas canônicas do
   // three.js (scene.add, obj.position.set, obj.visible=…) como bloco amigável
   // quando o projeto REALMENTE usa three — senão `Set.add`/`Map.set`/`x.visible`
   // de um projeto 2D viraria bloco 3D (teal, categoria errada). O sinal é o
   // import da lib (o bloco-raiz) ou um `new THREE.…` de topo.
-  recognizeThree = ir.js.some(
+  recognizeThree = allStatements.some(
     (s) =>
       (s.type === 'importStar' && s.module === 'three') ||
       (s.type === 'newInstance' && s.namespace === 'THREE'),
   )
-  audioLoaderVars = collectAudioLoaderVars(ir.js)
-  const jsChildren = statementsToBlocks(ir.js)
+  audioLoaderVars = collectAudioLoaderVars(allStatements)
+  const startChildren = statementsToBlocks(normalized.behavior.start, true)
+  const eventChildren = statementsToBlocks(normalized.behavior.events, true)
+  const loopChildren = statementsToBlocks(normalized.behavior.loops, true)
   recognizeThree = false
   audioLoaderVars = new Set()
 
   // Um frame por categoria. Com `omitEmptyAuxFrames`, Estrutura/Aparência VAZIAS
   // são puladas (o Comportamento fica sempre), e as colunas presentes se compactam
   // à esquerda — sem buraco onde um frame omitido estaria.
-  const omitEmptyAux = options.omitEmptyAuxFrames === true
-  const frameSpecs: Array<[string, SerializedBlocklyBlock[]]> = [
-    [FRAME_STRUCTURE, htmlChildren],
-    [FRAME_APPEARANCE, cssChildren],
-    [FRAME_BEHAVIOR, jsChildren],
+  const frameSpecs: Array<[string, SerializedBlocklyBlock[], number, number]> = [
+    [FRAME_STRUCTURE, htmlChildren, 0, 0],
+    [FRAME_APPEARANCE, cssChildren, 1, 0],
+    [FRAME_START, startChildren, 0, 1],
+    [FRAME_EVENTS, eventChildren, 1, 1],
+    [FRAME_LOOPS, loopChildren, 2, 1],
   ]
   const blocks: SerializedBlocklyBlock[] = []
-  let col = 0
-  for (const [frameType, children] of frameSpecs) {
-    if (omitEmptyAux && frameType !== FRAME_BEHAVIOR && children.length === 0) continue
+  const rowGap = 360
+  for (const [frameType, children, col, row] of frameSpecs) {
+    if (children.length === 0) continue
     blocks.push(
-      position(block(frameType, {}, { CHILDREN: children }), startX + colGap * col, startY),
+      position(
+        block(frameType, {}, { CHILDREN: children }),
+        startX + colGap * col,
+        startY + rowGap * row,
+      ),
     )
-    col += 1
   }
 
   return { blocks: { languageVersion: 0, blocks } }
@@ -187,7 +164,7 @@ export function buildWorkspaceStateFromIR(
  * projeto novo precisa do `blocksState`, não só do IR.)
  */
 export function emptyFramesBlocksState(): SerializedBlocklyWorkspace {
-  return buildWorkspaceStateFromIR({ html: [], css: [], js: [], extensions: [] })
+  return { blocks: { languageVersion: 0, blocks: [] } }
 }
 
 // Implementação num módulo PURO (sem imports) para o PersistenceService poder
@@ -197,7 +174,7 @@ export { isBlocksStateEmpty } from './blocksStateShape'
 
 function htmlNodeToBlock(node: SZIR['html'][number]): SerializedBlocklyBlock {
   const built = htmlNodeToBlockInner(node)
-  if (node.type === 'element') {
+  if (node.type === 'element' && built.type !== 'sz_adv_raw_html') {
     // `class` agora é um campo visível em todos os blocos HTML.
     if (node.attrs?.class) {
       built.fields = { ...(built.fields ?? {}), CLASS: node.attrs.class }
@@ -233,20 +210,23 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
     return built
   }
 
-  const containerType = CONTAINER_BLOCK[node.tag]
-  if (containerType) {
+  const descriptor = htmlElementForTag(node.tag)
+  if (
+    descriptor?.parserShape === 'container' &&
+    descriptor.tag !== 'svg' &&
+    descriptor.tag !== 'g'
+  ) {
     return block(
-      containerType,
+      descriptor.blockType,
       { ID: node.id ?? '' },
       { CHILDREN: (node.children ?? []).map(htmlNodeToBlock) },
       node.__id,
     )
   }
 
-  const textType = TEXT_BLOCK[node.tag]
-  if (textType) {
+  if (descriptor?.parserShape === 'inline-text') {
     return block(
-      textType,
+      descriptor.blockType,
       { TEXT: node.text ?? '' },
       { CHILDREN: (node.children ?? []).map(htmlNodeToBlock) },
       node.__id,
@@ -256,7 +236,7 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
   if (node.tag === 'button') {
     return block(
       'sz_html_button',
-      { ID: node.id ?? 'meuBotao', TEXT: node.text ?? '' },
+      { ID: node.id ?? '', TEXT: node.text ?? '', TYPE: node.attrs?.type ?? '' },
       {},
       node.__id,
     )
@@ -278,11 +258,15 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
     )
   }
   if (node.tag === 'input') {
+    const inputType = node.attrs?.type ?? ''
+    if (!isSupportedHTMLInputType(inputType)) {
+      return block('sz_adv_raw_html', { CODE: renderNodes([node]) }, {}, node.__id)
+    }
     return block(
       'sz_html_input',
       {
         ID: node.id ?? '',
-        TYPE: node.attrs?.type ?? 'text',
+        TYPE: inputType,
         PLACEHOLDER: node.attrs?.placeholder ?? '',
       },
       {},
@@ -292,7 +276,11 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
   if (node.tag === 'textarea') {
     return block(
       'sz_html_textarea',
-      { ID: node.id ?? '', PLACEHOLDER: node.attrs?.placeholder ?? '' },
+      {
+        ID: node.id ?? '',
+        TEXT: node.text ?? '',
+        PLACEHOLDER: node.attrs?.placeholder ?? '',
+      },
       {},
       node.__id,
     )
@@ -841,8 +829,28 @@ function cssEntryToBlocks(entry: CSSEntry): SerializedBlocklyBlock[] {
   return blocks
 }
 
-function statementsToBlocks(statements: JSStatement[]): SerializedBlocklyBlock[] {
-  return statements.map(statementToBlock).filter(isBlock)
+function statementsToBlocks(
+  statements: JSStatement[],
+  lifecycleRootsAllowed = false,
+): SerializedBlocklyBlock[] {
+  return statements
+    .map(statementToBlock)
+    .filter(isBlock)
+    .map((serialized) => {
+      if (lifecycleRootsAllowed) return serialized
+      const placement = getBlockContract(serialized.type)?.placement
+      if (!placement || placement.root.length === 0 || placement.nested.length > 0) {
+        return serialized
+      }
+      const area = placement.root[0]
+      const wrapperType =
+        area === 'events'
+          ? 'sz_legacy_nested_event'
+          : area === 'loops'
+            ? 'sz_legacy_nested_loop'
+            : 'sz_legacy_nested_start'
+      return block(wrapperType, {}, { CHILD: [serialized] })
+    })
 }
 
 // Propriedades de estilo com opção no dropdown do bloco `sz_js_set_style`; uma
@@ -974,14 +982,6 @@ function recognizeT3dCall(
     }
   }
   const objVar = asVar(object)
-  // obj.position.lerp(alvo, velocidade)
-  if (method === 'lerp' && args.length === 2 && setProp && setProp.name === 'position' && setBase) {
-    const vs = valueSocketsOf([
-      ['TARGET', args[0] as JSExpr],
-      ['ALPHA', args[1] as JSExpr],
-    ])
-    if (vs) return block('sz_t3d_lerp_position', { OBJ: setBase.name }, {}, stmt.__id, vs)
-  }
   // copias.setMatrixAt(i, molde.matrix)
   if (method === 'setMatrixAt' && args.length === 2) {
     const mesh = asVar(object)
@@ -1872,6 +1872,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     }
     case 'g2d:clear':
       return block('sz_g2d_clear', {}, {}, stmt.__id)
+    case 'g2d:onStart':
+      return block('sz_g2d_on_start', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
     case 'g2d:updateEachFrame':
       return block(
         'sz_g2d_update_each_frame',
@@ -6764,8 +6766,16 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       const url = stmt.url.type === 'str' ? stmt.url.value : ''
       return block(
         audioLoaderVars.has(stmt.loaderVar) ? 'sz_t3d_load_sound' : 'sz_t3d_load_model',
-        { LOADER: stmt.loaderVar, PARAM: stmt.param, URL: url },
-        { DO: statementsToBlocks(stmt.body) },
+        {
+          LOADER: stmt.loaderVar,
+          PARAM: stmt.param,
+          URL: url,
+          ERROR_PARAM: stmt.errorParam ?? 'erro',
+        },
+        {
+          DO: statementsToBlocks(stmt.body),
+          DO_ERROR: statementsToBlocks(stmt.errorBody ?? []),
+        },
         stmt.__id,
       )
     }
@@ -6796,6 +6806,42 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         {},
         stmt.__id,
       )
+    case 'rendererResponsive':
+      return block(
+        'sz_t3d_renderer_responsive',
+        {
+          R: stmt.renderer,
+          CAMERA: stmt.camera,
+          COMPOSER: stmt.composer ?? '',
+          CLEANUP: stmt.cleanup,
+        },
+        {},
+        stmt.__id,
+      )
+    case 'environmentLoad':
+      return block(
+        'sz_t3d_load_environment',
+        {
+          SCENE: stmt.scene,
+          URL: stmt.url,
+          TEXTURE: stmt.texture,
+          BACKGROUND: stmt.background ? 'true' : 'false',
+        },
+        {},
+        stmt.__id,
+      )
+    case 'disposeObject':
+      return block('sz_t3d_dispose_object', { OBJECT: stmt.object }, {}, stmt.__id)
+    case 'lerpPosition': {
+      const vs = valueSocketsOf([
+        ['TARGET', stmt.target],
+        ['ALPHA', stmt.alpha],
+        ['DT', stmt.dt],
+      ])
+      return vs
+        ? block('sz_t3d_lerp_position', { OBJ: stmt.object }, {}, stmt.__id, vs)
+        : rawJSBlock(stmt)
+    }
     case 'bloomSetup': {
       // Macro Brilho (forward-only): só chega aqui via block→IR→block. Do CÓDIGO, a
       // esteira volta como blocos primitivos (new EffectComposer/addPass/…).
@@ -6840,8 +6886,12 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       if (!vs) return rawJSBlock(stmt)
       return block('sz_t3d_water', { SCENE: stmt.scene, WATER: stmt.water }, {}, stmt.__id, vs)
     }
-    case 'waterTime':
-      return block('sz_t3d_water_wave', { WATER: stmt.water }, {}, stmt.__id)
+    case 'waterTime': {
+      const dt = exprToValueBlock(stmt.dt ?? { type: 'num', value: 1 / 60 })
+      return dt
+        ? block('sz_t3d_water_wave', { WATER: stmt.water }, {}, stmt.__id, { DT: dt })
+        : rawJSBlock(stmt)
+    }
     case 'grassSetup': {
       // Macro Grama (forward-only): só chega aqui via block→IR→block.
       const vs = valueSocketsOf([
@@ -6853,8 +6903,12 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       if (!vs) return rawJSBlock(stmt)
       return block('sz_t3d_grass', { SCENE: stmt.scene, GRASS: stmt.grass }, {}, stmt.__id, vs)
     }
-    case 'grassTime':
-      return block('sz_t3d_grass_wave', { GRASS: stmt.grass }, {}, stmt.__id)
+    case 'grassTime': {
+      const dt = exprToValueBlock(stmt.dt ?? { type: 'num', value: 1 / 60 })
+      return dt
+        ? block('sz_t3d_grass_wave', { GRASS: stmt.grass }, {}, stmt.__id, { DT: dt })
+        : rawJSBlock(stmt)
+    }
     case 'signSetup': {
       // Macro Letreiro (forward-only): só chega aqui via block→IR→block.
       const vs = valueSocketsOf([
@@ -6910,10 +6964,17 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ['X2', stmt.x2],
         ['Z2', stmt.z2],
         ['WIDTH', stmt.width],
+        ['SEGMENTS', stmt.segments ?? { type: 'num', value: 24 }],
         ['COLOR', stmt.color],
       ])
       if (!vs) return rawJSBlock(stmt)
-      return block('sz_t3d_road', { SCENE: stmt.scene, ROAD: stmt.road }, {}, stmt.__id, vs)
+      return block(
+        'sz_t3d_road',
+        { SCENE: stmt.scene, ROAD: stmt.road, HEIGHT_FN: stmt.heightFunction ?? 'alturaChao' },
+        {},
+        stmt.__id,
+        vs,
+      )
     }
     case 'buildingSetup': {
       const vs = valueSocketsOf([
@@ -6928,11 +6989,37 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       if (!vs) return rawJSBlock(stmt)
       return block(
         'sz_t3d_building',
-        { SCENE: stmt.scene, BUILDING: stmt.building },
+        {
+          SCENE: stmt.scene,
+          BUILDING: stmt.building,
+          HEIGHT_FN: stmt.heightFunction ?? 'alturaChao',
+        },
         {},
         stmt.__id,
         vs,
       )
+    }
+    case 'citySetup': {
+      const vs = valueSocketsOf([
+        ['BLOCKS_X', stmt.blocksX],
+        ['BLOCKS_Z', stmt.blocksZ],
+        ['SPACING', stmt.spacing],
+        ['ROAD_WIDTH', stmt.roadWidth],
+        ['MIN_HEIGHT', stmt.minHeight],
+        ['MAX_HEIGHT', stmt.maxHeight],
+        ['SEED', stmt.seed],
+        ['COLOR', stmt.color],
+        ['ROOF', stmt.roofColor],
+      ])
+      return vs
+        ? block(
+            'sz_t3d_city',
+            { SCENE: stmt.scene, HEIGHT_FN: stmt.heightFunction, CITY: stmt.city },
+            {},
+            stmt.__id,
+            vs,
+          )
+        : rawJSBlock(stmt)
     }
     case 'physicsLiteSetup': {
       const vs = valueSocketsOf([
@@ -6966,6 +7053,37 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         vs,
       )
     }
+    case 'physicsLiteStaticSphere': {
+      const vs = valueSocketsOf([
+        ['X', stmt.x],
+        ['Y', stmt.y],
+        ['Z', stmt.z],
+        ['RADIUS', stmt.radius],
+      ])
+      return vs
+        ? block(
+            'sz_t3d_physics_static_sphere',
+            { WORLD: stmt.world, ID: stmt.id },
+            {},
+            stmt.__id,
+            vs,
+          )
+        : rawJSBlock(stmt)
+    }
+    case 'physicsLiteStaticObject':
+      return block(
+        'sz_t3d_physics_static_object',
+        { WORLD: stmt.world, OBJECT: stmt.object, ID: stmt.id },
+        {},
+        stmt.__id,
+      )
+    case 'physicsLiteStaticCity':
+      return block(
+        'sz_t3d_physics_static_city',
+        { WORLD: stmt.world, CITY: stmt.city, PREFIX: stmt.prefix },
+        {},
+        stmt.__id,
+      )
     case 'physicsLiteBody': {
       const vs = valueSocketsOf([
         ['W', stmt.width],
@@ -7014,6 +7132,84 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       if (!vs) return rawJSBlock(stmt)
       return block('sz_t3d_physics_step', { WORLD: stmt.world }, {}, stmt.__id, vs)
     }
+    case 'physicsLiteVelocity':
+    case 'physicsLiteImpulse':
+    case 'physicsLiteTeleport': {
+      const vs = valueSocketsOf([
+        ['X', stmt.x],
+        ['Y', stmt.y],
+        ['Z', stmt.z],
+      ])
+      if (!vs) return rawJSBlock(stmt)
+      const type =
+        stmt.type === 'physicsLiteVelocity'
+          ? 'sz_t3d_physics_velocity'
+          : stmt.type === 'physicsLiteImpulse'
+            ? 'sz_t3d_physics_impulse'
+            : 'sz_t3d_physics_teleport'
+      return block(type, { WORLD: stmt.world, ID: stmt.id }, {}, stmt.__id, vs)
+    }
+    case 'physicsLiteRemove':
+      return block('sz_t3d_physics_remove', { WORLD: stmt.world, ID: stmt.id }, {}, stmt.__id)
+    case 'physicsLiteClear':
+      return block('sz_t3d_physics_clear', { WORLD: stmt.world }, {}, stmt.__id)
+    case 'physicsLiteCollisionEvent':
+      return block(
+        'sz_t3d_physics_on_collision',
+        {
+          WORLD: stmt.world,
+          BODY_PARAM: stmt.bodyParam,
+          COLLIDER_PARAM: stmt.colliderParam,
+        },
+        { DO: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'physicsLiteTriggerEvent':
+      return block(
+        'sz_t3d_physics_on_trigger',
+        {
+          WORLD: stmt.world,
+          BODY_PARAM: stmt.bodyParam,
+          TRIGGER_PARAM: stmt.triggerParam,
+          ENTERING_PARAM: stmt.enteringParam,
+        },
+        { DO: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'physicsLiteRaycast': {
+      const vs = valueSocketsOf([
+        ['OX', stmt.ox],
+        ['OY', stmt.oy],
+        ['OZ', stmt.oz],
+        ['DX', stmt.dx],
+        ['DY', stmt.dy],
+        ['DZ', stmt.dz],
+        ['MAX', stmt.maxDistance],
+      ])
+      return vs
+        ? block(
+            'sz_t3d_physics_raycast',
+            { WORLD: stmt.world, RESULT: stmt.result },
+            {},
+            stmt.__id,
+            vs,
+          )
+        : rawJSBlock(stmt)
+    }
+    case 'physicsLiteBodyState':
+      return block(
+        'sz_t3d_physics_body_state',
+        { WORLD: stmt.world, ID: stmt.id, RESULT: stmt.result },
+        {},
+        stmt.__id,
+      )
+    case 'physicsLiteStats':
+      return block(
+        'sz_t3d_physics_stats',
+        { WORLD: stmt.world, RESULT: stmt.result },
+        {},
+        stmt.__id,
+      )
     case 'exprStatement': {
       const value = exprToValueBlock(stmt.value)
       if (!value) return rawJSBlock(stmt)
@@ -7313,6 +7509,8 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g3d_touches_box', { OBJ: expr.objVar, GROUP: expr.groupVar })
     case 'g3d:distanceTo':
       return block('sz_g3d_distance_to', { A: expr.aVar, B: expr.bVar })
+    case 'g3d:countSwarm':
+      return block('sz_g3d_count_swarm', { SWARM: expr.swarmVar })
     case 'g3d:isNear': {
       const dist = exprToValueBlock(valueToExpr(expr.dist))
       return dist === null

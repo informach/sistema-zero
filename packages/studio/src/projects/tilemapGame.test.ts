@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import type { SZIR } from '#ir'
+import { behaviorStatements, type JSStatement, type SZIRInput } from '#ir'
 import { assembleTilemapGameProject, type TilemapGamePayload } from './tilemapGame'
 
 const DATA = 'data:image/png;base64,AAAA'
@@ -24,15 +24,15 @@ function payload(over: Partial<TilemapGamePayload> = {}): TilemapGamePayload {
 }
 
 /** Monta o projeto e devolve o IR já garantido não-nulo (`Project.ir` é `SZIR | null`). */
-function irOf(over: Partial<TilemapGamePayload> = {}): SZIR {
+function irOf(over: Partial<TilemapGamePayload> = {}): SZIRInput {
   const project = assembleTilemapGameProject(payload(over))
   if (!project?.ir) throw new Error('esperava projeto com IR')
   return project.ir
 }
 
 /** Corpo do loop `updateEachFrame` (statements desenhados por quadro). */
-function loopBody(ir: SZIR): SZIR['js'] {
-  const loop = ir.js.find((s) => s.type === 'g2d:updateEachFrame')
+function loopBody(ir: SZIRInput): JSStatement[] {
+  const loop = behaviorStatements(ir).find((s) => s.type === 'g2d:updateEachFrame')
   return loop && 'body' in loop ? loop.body : []
 }
 
@@ -46,7 +46,9 @@ describe('assembleTilemapGameProject', () => {
     // a extensão game-2d entra instalada
     expect(project.installedExtensions.some((e) => e.id === 'game-2d')).toBe(true)
     // IR usa createTileMapFromAsset com o nome do asset
-    const create = project.ir.js.find((s) => s.type === 'g2d:createTileMapFromAsset')
+    const create = behaviorStatements(project.ir).find(
+      (s) => s.type === 'g2d:createTileMapFromAsset',
+    )
     expect(create && 'image' in create && create.image).toBe('minha-fase')
     // arquivos gerados de verdade (o jogo roda)
     expect(project.files['script.js']?.length ?? 0).toBeGreaterThan(0)

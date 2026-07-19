@@ -1,6 +1,6 @@
 import * as Blockly from 'blockly/core'
 import { compileStatements } from '#generators'
-import type { JSStatement } from '#ir'
+import { behaviorStatements, type JSStatement } from '#ir'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
 import { parseJS } from '../../parsers/js'
@@ -20,7 +20,7 @@ function bridgeCycleJS(js: string): string {
   const ws = new Blockly.Workspace()
   Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
   const ir2 = buildIRFromWorkspace(ws)
-  return compileStatements(ir2.js, 0)
+  return compileStatements(behaviorStatements(ir2), 0)
 }
 
 /** Remove os `__id` (ids de bloco) que o round-trip injeta, para comparar IR puro. */
@@ -43,7 +43,7 @@ function irThroughBlocks(js: JSStatement[]): JSStatement[] {
   const state = buildWorkspaceStateFromIR(ir as Parameters<typeof buildWorkspaceStateFromIR>[0])
   const ws = new Blockly.Workspace()
   Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-  return stripIds(buildIRFromWorkspace(ws).js)
+  return stripIds(behaviorStatements(buildIRFromWorkspace(ws)))
 }
 
 describe('tempo do quadro: performance.now + a cada frame com tempo/delta', () => {
@@ -66,7 +66,9 @@ describe('tempo do quadro: performance.now + a cada frame com tempo/delta', () =
       0,
     )
     expect(out).toContain('function frame(tempo) {')
-    expect(out).toContain('const dt = lastFrameTime === undefined ? 0 : tempo - lastFrameTime;')
+    expect(out).toContain(
+      'const dt = lastFrameTime === undefined ? 0 : (tempo - lastFrameTime) / 1000;',
+    )
     expect(out).toContain('lastFrameTime = tempo;')
     // O loop é iniciado com requestAnimationFrame (não frame()) p/ o 1º tempo ser real.
     expect(out).toContain('requestAnimationFrame(frame);')

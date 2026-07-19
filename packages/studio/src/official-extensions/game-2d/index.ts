@@ -1,6 +1,6 @@
 import type { ExtensionDefinition } from '#extensions'
 import { validateManifest } from '#extensions'
-import { gameTwoDPromptContext } from './ai'
+import { gameTwoDPromptSummary } from './aiSummary'
 import { gameTwoDBlocks, gameTwoDToolboxCategory } from './blocks'
 import { gameTwoDManifest } from './manifest'
 import { gameTwoDRuntime } from './runtime'
@@ -13,7 +13,8 @@ export const gameTwoDExtension: ExtensionDefinition = {
   manifest: gameTwoDManifest,
   conflictsWith: ['game-2d-advanced'],
   // Os Kits de Jogo são FACILITADORES p/ quem começa → 2D já no INICIANTE 2D (o
-  // 3D entra no iniciante-3d; o "na unha"/manual fica avançado). Divulgação progressiva.
+  // 3D entra no iniciante-3d; o "na unha"/manual fica avançado). A extensão
+  // continua oferecendo a paleta completa; a aula escolhe quais blocos apresentar.
   minLevel: 'iniciante-2d',
   blockly: {
     blocks: gameTwoDBlocks,
@@ -23,8 +24,10 @@ export const gameTwoDExtension: ExtensionDefinition = {
     bootstrapScript: gameTwoDRuntime,
   },
   ai: {
-    promptContext: gameTwoDPromptContext,
+    promptSummary: gameTwoDPromptSummary,
+    loadPromptContext: async () => (await import('./ai')).gameTwoDPromptContext,
   },
 }
 
+export type { GameTwoDLifecycleApi } from './runtimeContract'
 export { gameTwoDBlocks, gameTwoDManifest, gameTwoDRuntime, gameTwoDToolboxCategory }

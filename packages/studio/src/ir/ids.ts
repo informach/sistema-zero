@@ -1,6 +1,8 @@
-import type { CSSEntry, HTMLNode, SZIR } from './schema'
+import { normalizeSZIR } from './behavior'
+import type { CSSEntry, HTMLNode, SZIRInput, SZIRV2 } from './schema'
 
-export function assignStableIdsToIR(ir: SZIR, prefix = 'ir'): SZIR {
+export function assignStableIdsToIR(input: SZIRInput, prefix = 'ir'): SZIRV2 {
+  const ir = normalizeSZIR(input)
   // JS: clona e atribui `__id` a TODOS os nós (statements e expressões) em
   // QUALQUER profundidade — inclusive corpos de função/classe/forEach/timers e
   // expressões compostas (vetores, hsl, lógicos…). O assignment antigo só
@@ -8,14 +10,17 @@ export function assignStableIdsToIR(ir: SZIR, prefix = 'ir'): SZIR {
   // blocos ficavam sem `__id` e não realçavam no source map cruzado (bloco↔código).
   // O id é baseado no caminho (chave + índice): determinístico e estável para a
   // mesma estrutura, e idêntico ao esquema antigo nos casos que ele já cobria.
-  const js = structuredClone(ir.js)
-  js.forEach((statement, index) => {
-    assignNodeIds(statement, `${prefix}_js_${index}`)
-  })
+  const behavior = structuredClone(ir.behavior)
+  for (const area of ['start', 'events', 'loops'] as const) {
+    behavior[area].forEach((statement, index) => {
+      assignNodeIds(statement, `${prefix}_${area}_${index}`)
+    })
+  }
   return {
+    version: 2,
     html: ir.html.map((node, index) => assignHTMLId(node, `${prefix}_html_${index}`)),
     css: ir.css.map((entry, index) => assignCSSId(entry, `${prefix}_css_${index}`)),
-    js,
+    behavior,
     extensions: [...ir.extensions],
     ...(ir.htmlShell ? { htmlShell: ir.htmlShell } : {}),
   }

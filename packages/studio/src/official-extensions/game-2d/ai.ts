@@ -17,7 +17,8 @@ API global injetada como window.SZGame2D:
 - everyFrames agora aceita NÚMERO ou VARIÁVEL no intervalo (ex.: a cada [intervalo] quadros) — dá para acelerar o spawn por fase.
 - spawnAsteroid varia o tamanho de cada asteroide sozinho; showScreen escurece de leve (o jogo aparece atrás) e quebra o subtítulo em linhas.
 - isColliding(a, b): AABB.
-- gameLoop(fn): chama fn a cada requestAnimationFrame.
+- onStart(fn): raiz da partida; prepara tela, objetos, eventos e loops. Roda de novo após restart().
+- gameLoop(fn): adiciona fn ao agendador do jogo, com passo fixo de 60 Hz. Vários loops coexistem.
 - keys: estado das setas { left, right, up, down }.
 - setGravity(g) / applyVelocity(sprite): física simples (vy += gravidade).
 - bounceOnEdges(sprite, ctx): quica nas bordas do canvas.
@@ -49,7 +50,7 @@ Tier 1 — mira/contas, vida/tempo, aparência, mundo e pausa (v0.15.0):
 - pruneOld(grupo, segundos): tira do grupo quem viveu mais que o tempo (tiros somem sozinhos).
 - flipSprite(s, 'left'|'right') / setOpacity(s, percent) / setSize(s, w, h) / scaleSprite(s, fator): espelhar/transparência/tamanho.
 - wrapEdges(s): dá a volta na tela (sai de um lado, reaparece no outro).
-- pauseGame()/resumeGame()/isPaused(): estado de pausa (embrulhe o movimento em "se não estiver pausado").
+- pauseGame()/resumeGame()/isPaused(): pausa congela os loops e contatos; teclas/cliques continuam ativos para permitir retomar.
 
 Tier 2 — câmera, mapa destrutível, ordem de desenho e depuração (v0.16.0):
 - cameraFollow(s, worldW, worldH): centraliza a câmera no sprite (mundo maior que a tela), preso às bordas.
@@ -156,8 +157,8 @@ HUD no canvas (v0.6.0) — desenhe DENTRO do gameLoop, depois de limpar a tela:
 Estado/telas (cenas) — início → jogando → ganhou → perdeu, ou qualquer nome livre
 inventado pela criança (ex.: ganhou1), com UM só gameLoop:
 - setScene("jogando") / sceneIs("jogando") (booleano, use no if) / showScreen(ctx, titulo, subtitulo, dica, fundo) / restart(). O titulo/subtitulo/dica aceitam texto fixo OU expressão (variável, "juntar texto", resultado de função) — ex.: "Destrua " + alvo + " asteroides" mostra a meta vinda de uma variável.
-- IMPORTANTE: as variáveis e grupos (createGroup, createSprite, pontos, vidas) ficam no TOPO do programa (fora do gameLoop), para o loop conseguir enxergá-las. NÃO existe um bloco "quando o jogo começar" que embrulhe isso — o setup é só os blocos do topo.
-- Padrão: setup no topo + setScene("inicio"); um único "a cada quadro" que limpa a tela e usa "se a tela atual é X" para decidir o que desenhar; um "quando apertar Enter" que troca início→jogando e, no perdeu/ganhou, chama reiniciar.
+- IMPORTANTE: variáveis, grupos, sprites e registros de evento ficam dentro de “Quando o jogo começar”, mas fora de gameLoop, para o loop enxergá-los sem recriá-los.
+- Padrão: onStart contendo setup + setScene("inicio") + eventos + um "a cada quadro" que limpa a tela e usa "se a tela atual é X" para decidir o que desenhar. Enter troca início→jogando e, no perdeu/ganhou, chama restart().
 
 Cenário (v0.6.0): drawStarfield(ctx, velocidade) desenha um céu de estrelas rolando (fundo espacial; chame logo após clear); dragX(sprite) faz o sprite seguir o dedo/mouse só na horizontal (nave no celular). Existe o exemplo pronto "Nave contra Asteroides" mostrando tudo junto.
 
@@ -175,7 +176,7 @@ Quando ajudar o aluno com jogos 2D:
 - Para imagens, lembre que o aluno precisa ADICIONAR o asset na aba Assets e usar o nome dele.
 - Enquanto a imagem carrega (ou se faltar), o sprite cai num retângulo (placeholder) — nunca quebra.
 - Prefira pequenas iterações didáticas — não despeje o jogo pronto.
-- DESEMPENHO: crie sprites/grupos/objetos UMA vez no TOPO do programa, fora do "a cada quadro". Criar dentro do loop enche a memória (no Jogo 3D pode até apagar a tela). Dentro do loop, use spawn/createSprite só de propósito (ex.: um tiro a cada N quadros) e SEMPRE remova da tela os objetos que já saíram, com pruneOffscreen, para o grupo não crescer sem fim e a colisão (overlapGroups) não ficar lenta.
+- DESEMPENHO: crie sprites/grupos/objetos UMA vez dentro de onStart e fora de gameLoop. Criar dentro do loop enche a memória. Dentro do loop, use spawn/createSprite só de propósito (ex.: um tiro a cada N quadros) e SEMPRE remova da tela os objetos que já saíram, com pruneOffscreen, para o grupo não crescer sem fim e a colisão (overlapGroups) não ficar lenta.
 
 KIT ESPAÇO (v0.7.0) — categoria "🚀 Kit espaço" com atalhos PRONTOS (não genéricos) para jogos de nave espacial; os blocos genéricos seguem nas categorias normais:
 - createShip({ x, y, w, h, body, wings }): nave desenhada (cabine + foguinho que pulsa sozinho); body = cor do corpo, wings = cor das asas. É um sprite normal (drawSprite desenha a nave).
@@ -210,7 +211,7 @@ KIT GORILAS (v0.11.0) — categoria "🦍 Kit gorilas" com atalhos PRONTOS para 
 - aimReleased(thrower): valor (booleano) — verdadeiro no instante em que solta a mira. Use num "se" para então throwBanana.
 - throwBanana(thrower, city): lança a banana com a mira atual. updateBanana(city): move a banana (gravidade + vento). drawBanana(ctx, city): desenha a banana voando com rastro. Só existe UMA banana por vez.
 - bananaHitThrower(city, thrower): valor — a banana acertou o gorila? (passe o INIMIGO; acerto = vitória; some com a banana). bananaHitCity(city): valor — a banana bateu num prédio (abre cratera) ou saiu da tela? (some com a banana; é a hora de trocar a vez: vez = 1 - vez e newWind).
-- playWhistle()/playBoom(): assobio de banana caindo e explosão (sintetizados). Existe o exemplo pronto "Guerra de Gorilas" mostrando tudo junto.
+- playWhistle()/playExplosion(): assobio de banana caindo e explosão (sintetizados). O bloco temático “Tocar explosão” usa a mesma implementação de playExplosion. Existe o exemplo pronto "Guerra de Gorilas" mostrando tudo junto.
 - computerTurn(thrower, city, enemy): vez do ROBÔ (IA). Use no gameLoop, na vez dele. Simula vários arremessos (mesma física da banana, sem ctx), escolhe o melhor mira no inimigo, "pensa" ~0,8s e joga sozinho. Respeita _banana (um tiro por vez). Para 1-jogador-vs-computador troque o ramo de um gorila por este bloco; para autoplay, os dois. Veja "Guerra de Gorilas vs Robô".
 - drawAimReadout(ctx): desenha "angulo X / forca Y" no canto (lê _aim) — útil para ver a escolha do robô.
 

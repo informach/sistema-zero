@@ -26,10 +26,8 @@ describe('blockLevels — conformidade dos conjuntos', () => {
     expect(unknown).toEqual([])
   })
 
-  it('o AVANCADO_3D só tem blocos 3D e o AVANCADO_2D nenhum (o split que protege o eixo)', () => {
-    // Sem o split, o degrau "Avançado 2D" veria física/getters 3D — quebraria a
-    // promessa do eixo. Trava a fronteira dos dois sets.
-    expect([..._LEVEL_SETS.AVANCADO_3D].filter((t) => !t.startsWith('sz_g3d_'))).toEqual([])
+  it('nenhum conjunto superior captura blocos da categoria Jogo 3D', () => {
+    expect([..._LEVEL_SETS.AVANCADO_3D].filter((t) => t.startsWith('sz_g3d_'))).toEqual([])
     expect([..._LEVEL_SETS.AVANCADO_2D].filter((t) => t.startsWith('sz_g3d_'))).toEqual([])
     expect([..._LEVEL_SETS.INTERMEDIARIO_2D].filter((t) => t.startsWith('sz_g3d_'))).toEqual([])
   })
@@ -65,9 +63,10 @@ describe('resolveBlockLevel — amostras representativas', () => {
     }
   })
 
-  it('Jogo 3D facilitado = iniciante-3d (a porta de entrada do 3D, piso por prefixo)', () => {
-    expect(resolveBlockLevel('sz_g3d_create_scene')).toBe('iniciante-3d')
-    expect(resolveBlockLevel('sz_g3d_control_keys')).toBe('iniciante-3d')
+  it('todos os blocos do Jogo 3D são iniciante-3d e podem ser filtrados pela aula', () => {
+    const game3dTypes = [...KNOWN].filter((type) => type.startsWith('sz_g3d_'))
+    expect(game3dTypes.length).toBeGreaterThan(100)
+    for (const type of game3dTypes) expect(resolveBlockLevel(type)).toBe('iniciante-3d')
   })
 
   it('programação real guiada + kits prontos do Jogo 2D Avançado = intermediario-2d', () => {
@@ -78,7 +77,7 @@ describe('resolveBlockLevel — amostras representativas', () => {
       'sz_js_function',
       'sz_g2d_sprite_vx', // getter de velocidade
       'sz_g2d_set_opacity',
-      'sz_css_border',
+      'sz_css_display_flex',
       'sz_gk_setup',
       'sz_gk_restart_game',
       'sz_gk_rpg_create_map',
@@ -92,6 +91,18 @@ describe('resolveBlockLevel — amostras representativas', () => {
   it('Mundo 3D = intermediario-3d (prefixo inteiro)', () => {
     expect(resolveBlockLevel('sz_w3d_spawn_car')).toBe('intermediario-3d')
     expect(resolveBlockLevel('sz_w3d_qualquer')).toBe('intermediario-3d')
+  })
+
+  it('macros intuitivos do Canvas 3D = intermediario-3d', () => {
+    for (const type of [
+      'sz_t3d_primitive',
+      'sz_t3d_terrain',
+      'sz_t3d_city',
+      'sz_t3d_renderer_responsive',
+      'sz_t3d_physics_body',
+    ]) {
+      expect(resolveBlockLevel(type)).toBe('intermediario-3d')
+    }
   })
 
   it('baixo nível / expert 2D = avancado-2d', () => {
@@ -114,8 +125,8 @@ describe('resolveBlockLevel — amostras representativas', () => {
     }
   })
 
-  it('engine 3D (getters/física g3d + g3k + three.js cru) = avancado-3d', () => {
-    for (const t of ['sz_g3d_get_pos', 'sz_g3d_body', 'sz_g3k_fsm_state', 'sz_t3d_new_scene']) {
+  it('engine 3D avançada fora de Jogo 3D (g3k + three.js cru) = avancado-3d', () => {
+    for (const t of ['sz_g3k_fsm_state', 'sz_t3d_new_scene']) {
       expect(resolveBlockLevel(t)).toBe('avancado-3d')
     }
   })

@@ -828,7 +828,7 @@ describe('gameTwoDRuntime.gameLoop', () => {
     expect(count).toBe(2)
   })
 
-  it('isola erros da fn sem interromper o loop', () => {
+  it('isola erros e desativa somente o loop defeituoso', () => {
     const { api, flushFrame } = loadWithFrameControl()
     let count = 0
     api.gameLoop(() => {
@@ -839,10 +839,10 @@ describe('gameTwoDRuntime.gameLoop', () => {
       flushFrame()
       flushFrame()
     }).not.toThrow()
-    expect(count).toBe(2)
+    expect(count).toBe(1)
   })
 
-  it('mantém apenas UM loop ativo: chamar gameLoop de novo para o anterior', () => {
+  it('compõe múltiplos loops num único scheduler', () => {
     // requestAnimationFrame com fila controlada que carrega o ID de cada frame,
     // para sabermos qual `tick` está agendado e respeitar cancelAnimationFrame.
     const frames: Array<{ id: number; cb: () => void }> = []
@@ -877,15 +877,13 @@ describe('gameTwoDRuntime.gameLoop', () => {
     api.gameLoop(() => {
       countA += 1
     })
-    // Segundo loop: deve PARAR o primeiro automaticamente (sem empilhar RAFs).
     api.gameLoop(() => {
       countB += 1
     })
 
     flushRound()
     flushRound()
-    // Só o segundo loop continua vivo; o primeiro foi cancelado na 2ª chamada.
-    expect(countA).toBe(0)
+    expect(countA).toBe(2)
     expect(countB).toBe(2)
   })
 })
@@ -952,42 +950,38 @@ describe('gameTwoDRuntime.onPointer', () => {
     }).not.toThrow()
   })
 
-  it('registrar arrows NOVOS a cada frame não cresce a lista sem limite', () => {
-    // Cenário real do bug: o gerador emite um arrow LITERAL a cada execução do
-    // bloco "quando clicar/tocar". Se o aluno colocar esse bloco dentro do "a
-    // cada frame", onPointer recebe uma referência inédita por frame e a lista
-    // cresceria sem limite. Simulamos 1000 "frames" registrando funções
-    // distintas e verificamos que UM clique não dispara 1000 vezes.
+  it('o id estável do bloco substitui arrows novos sem multiplicar o clique', () => {
     const { api, firePointerDown } = loadWithPointer()
     let totalCalls = 0
     for (let frame = 0; frame < 1000; frame++) {
-      // arrow novo a cada iteração — referência sempre diferente
-      api.onPointer(() => {
+      ;(api.onPointer as unknown as (fn: () => void, id: string) => void)(() => {
         totalCalls += 1
-      })
+      }, 'bloco-clique')
     }
     firePointerDown(5, 5)
-    // Com o teto de 32 handlers, um clique dispara no máximo 32 vezes — não 1000.
-    expect(totalCalls).toBeLessThanOrEqual(32)
-    expect(totalCalls).toBeGreaterThan(0)
+    expect(totalCalls).toBe(1)
   })
 
-  it('avisa no console (uma vez) ao atingir o teto', () => {
-    const { api } = loadWithPointer()
+  it('não impõe teto artificial a eventos legítimos de blocos diferentes', () => {
+    const { api, firePointerDown } = loadWithPointer()
     const original = console.warn
     let warnCount = 0
+    let calls = 0
     console.warn = () => {
       warnCount += 1
     }
     try {
-      // Bem acima do teto de 32 → deve avisar, mas só UMA vez.
       for (let i = 0; i < 100; i++) {
-        api.onPointer(() => {})
+        ;(api.onPointer as unknown as (fn: () => void, id: string) => void)(() => {
+          calls += 1
+        }, `bloco-${i}`)
       }
+      firePointerDown(0, 0)
     } finally {
       console.warn = original
     }
-    expect(warnCount).toBe(1)
+    expect(warnCount).toBe(0)
+    expect(calls).toBe(100)
   })
 
   it('poucos handlers distintos continuam todos disparando', () => {
@@ -1566,7 +1560,6 @@ describe('gameTwoDRuntime — Kit gorilas (v0.11.0)', () => {
       'bananaHitThrower',
       'bananaHitCity',
       'playWhistle',
-      'playBoom',
       'computerTurn',
       'drawAimReadout',
     ]) {

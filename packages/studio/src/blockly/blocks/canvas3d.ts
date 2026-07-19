@@ -268,18 +268,19 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
   {
     // `obj.position.lerp(alvo, velocidade)` — o idioma nº 1 de câmera que segue.
     type: 'sz_t3d_lerp_position',
-    message0: 'mover %1 devagar até %2 na velocidade %3',
+    message0: 'mover %1 devagar até %2 na suavidade %3 por dt %4',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'camera', kind: 'variable' },
       { type: 'input_value', name: 'TARGET', check: 'JSValue' },
       { type: 'input_value', name: 'ALPHA', check: 'JSValue' },
+      { type: 'input_value', name: 'DT', check: 'JSValue' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Desliza a posição do objeto um pedacinho em direção a um alvo (um Vector3) a cada quadro — a suavidade profissional da câmera que segue. Velocidade 0.1 = 10% do caminho por quadro. Vira "camera.position.lerp(alvo, 0.1)".',
+      'Desliza a posição até um Vector3 com suavidade independente de FPS. Conecte o delta em segundos do laço de animação.',
   },
 
   // ───────────────────────── 💡 Luz e sombra ──────────────────────────────────
@@ -421,12 +422,23 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     message0: 'com o carregador %1 carregar o modelo %2',
     args0: [
       { type: 'field_name_picker', name: 'LOADER', text: 'carregador', kind: 'variable' },
-      { type: 'field_asset_picker', name: 'URL', text: 'modelo', kind: '3d' },
+      {
+        type: 'field_asset_picker',
+        name: 'URL',
+        text: 'modelo',
+        kind: '3d',
+        filter: 'model3d',
+      },
     ],
     message1: 'quando pronto, com o modelo em %1, fazer %2',
     args1: [
       { type: 'field_input', name: 'PARAM', text: 'modelo' },
       { type: 'input_statement', name: 'DO' },
+    ],
+    message2: 'se falhar, com o erro em %1, fazer %2',
+    args2: [
+      { type: 'field_input', name: 'ERROR_PARAM', text: 'erro' },
+      { type: 'input_statement', name: 'DO_ERROR' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -450,6 +462,11 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     args1: [
       { type: 'field_input', name: 'PARAM', text: 'buffer' },
       { type: 'input_statement', name: 'DO' },
+    ],
+    message2: 'se falhar, com o erro em %1, fazer %2',
+    args2: [
+      { type: 'field_input', name: 'ERROR_PARAM', text: 'erro' },
+      { type: 'input_statement', name: 'DO_ERROR' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -526,6 +543,65 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     colour: C,
     tooltip:
       'Liga de uma vez os ajustes que deixam o 3D bonito e MODERNO — a criança só escolhe, o bloco escreve a grafia certa do three.js de hoje: nitidez na retina (setPixelRatio), sombras macias (shadowMap.type), cores vivas (outputColorSpace = SRGBColorSpace) e brilho de cinema (toneMapping = ACESFilmicToneMapping). Ponha "não mexer" no que não quiser.',
+  },
+  {
+    type: 'sz_t3d_renderer_responsive',
+    message0: 'deixar renderizador %1 responsivo com câmera %2',
+    args0: [
+      { type: 'field_name_picker', name: 'R', text: 'renderizador', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CAMERA', text: 'camera', kind: 'variable' },
+    ],
+    message1: 'efeitos opcionais %1 · guardar limpeza em %2',
+    args1: [
+      { type: 'field_input', name: 'COMPOSER', text: '' },
+      { type: 'field_input', name: 'CLEANUP', text: 'pararResponsivo' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Ajusta tamanho, proporção da câmera, efeitos e nitidez ao contêiner. Observa resize sem trabalho por quadro e devolve uma função de limpeza.',
+  },
+  {
+    type: 'sz_t3d_load_environment',
+    message0: 'carregar céu HDR %1 na cena %2',
+    args0: [
+      {
+        type: 'field_asset_picker',
+        name: 'URL',
+        text: 'ceu',
+        kind: '3d',
+        filter: 'environment3d',
+      },
+      { type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' },
+    ],
+    message1: 'usar também como fundo %1 · guardar textura em %2',
+    args1: [
+      {
+        type: 'field_dropdown',
+        name: 'BACKGROUND',
+        options: [
+          ['sim', 'true'],
+          ['não', 'false'],
+        ],
+      },
+      { type: 'field_input', name: 'TEXTURE', text: 'ceuHDR' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Carrega exclusivamente um .hdr, aplica reflexos PBR e mostra erro no console se o arquivo falhar.',
+  },
+  {
+    type: 'sz_t3d_dispose_object',
+    message0: 'remover e liberar objeto 3D %1',
+    args0: [{ type: 'field_name_picker', name: 'OBJECT', text: 'objeto', kind: 'variable' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Remove o objeto da cena e libera geometrias, materiais e texturas próprias para evitar vazamento de GPU.',
   },
 
   // ───────────────────────── ✨ Efeitos ───────────────────────────────────────
@@ -611,16 +687,18 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
       'Um plano d\'água que REFLETE a cena, como um lago ou oceano. Um bloco só monta o efeito Water do three.js (com as ondinhas de normal geradas na hora, sem precisar de imagem). Tamanho = o quão grande é a água; cor = a cor da água. Depois use "fazer a água ondular" no laço pra ela se mexer.',
   },
   {
-    // `water.material.uniforms.time.value += 1 / 60` — animar as ondas no laço.
     type: 'sz_t3d_water_wave',
-    message0: 'fazer a água %1 ondular',
-    args0: [{ type: 'field_name_picker', name: 'WATER', text: 'agua', kind: 'variable' }],
+    message0: 'fazer a água %1 ondular por dt %2',
+    args0: [
+      { type: 'field_name_picker', name: 'WATER', text: 'agua', kind: 'variable' },
+      { type: 'input_value', name: 'DT', check: 'JSValue' },
+    ],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Use DENTRO do laço de animação pra a água se mexer (as ondas andarem). Vira "agua.material.uniforms.time.value += 1 / 60".',
+      'Use dentro do laço de animação e conecte o delta em segundos. Assim as ondas mantêm a mesma velocidade em qualquer FPS.',
   },
   {
     // Macro "Grama": campo de grama INSTANCIADA (milhares de folhas num desenho) com
@@ -671,16 +749,18 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
       'Um letreiro flutuante com o texto que você quiser — o jeito que os sites 3D profissionais fazem: desenha o texto numa telinha escondida (canvas), transforma em textura (CanvasTexture) e cola num plano transparente. Depois posicione com "mudar a posição de placa". Largura em metros; a altura é metade.',
   },
   {
-    // `grama.material.uniforms.time.value += 0.02` — animar o vento no laço.
     type: 'sz_t3d_grass_wave',
-    message0: 'fazer a grama %1 balançar',
-    args0: [{ type: 'field_name_picker', name: 'GRASS', text: 'grama', kind: 'variable' }],
+    message0: 'fazer a grama %1 balançar por dt %2',
+    args0: [
+      { type: 'field_name_picker', name: 'GRASS', text: 'grama', kind: 'variable' },
+      { type: 'input_value', name: 'DT', check: 'JSValue' },
+    ],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Use DENTRO do laço de animação pra o vento soprar (a grama balançar). Vira "grama.material.uniforms.time.value += 0.02".',
+      'Use dentro do laço de animação e conecte o delta em segundos. O vento fica independente da taxa de quadros.',
   },
 
   // ───────────────────────── 🧱 Mundo procedural ─────────────────────────────
@@ -750,9 +830,14 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
       { type: 'input_value', name: 'X2', check: 'JSValue' },
       { type: 'input_value', name: 'Z2', check: 'JSValue' },
     ],
-    message1: 'largura %1 · cor %2 · guardar em %3',
+    message1: 'largura %1 · divisões %2 · seguir altura %3',
     args1: [
       { type: 'input_value', name: 'WIDTH', check: 'JSValue' },
+      { type: 'input_value', name: 'SEGMENTS', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'HEIGHT_FN', text: 'alturaChao', kind: 'function' },
+    ],
+    message2: 'cor %1 · guardar em %2',
+    args2: [
       { type: 'input_value', name: 'COLOR', check: 'JSValue' },
       { type: 'field_input', name: 'ROAD', text: 'estrada' },
     ],
@@ -761,7 +846,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria uma estrada reta com asfalto e faixa central, orientada automaticamente entre dois pontos. Combine vários blocos para formar quarteirões ou trajetos orgânicos.',
+      'Cria uma estrada segmentada que acompanha a função de altura do terreno. Combine várias para formar quarteirões e trajetos.',
   },
   {
     type: 'sz_t3d_building',
@@ -777,10 +862,11 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
       { type: 'input_value', name: 'H', check: 'JSValue' },
       { type: 'input_value', name: 'D', check: 'JSValue' },
     ],
-    message2: 'parede %1 · telhado %2 · guardar em %3',
+    message2: 'parede %1 · telhado %2 · seguir altura %3 · guardar em %4',
     args2: [
       { type: 'input_value', name: 'COLOR', check: 'JSValue' },
       { type: 'input_value', name: 'ROOF', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'HEIGHT_FN', text: 'alturaChao', kind: 'function' },
       { type: 'field_input', name: 'BUILDING', text: 'predio' },
     ],
     inputsInline: false,
@@ -789,6 +875,35 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     colour: C,
     tooltip:
       'Monta um prédio low-poly completo com corpo, telhado, porta e janelas usando apenas primitivas. As dimensões também servem diretamente para o colisor.',
+  },
+  {
+    type: 'sz_t3d_city',
+    message0: 'criar cidade procedural na cena %1 seguindo altura %2',
+    args0: [
+      { type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' },
+      { type: 'field_name_picker', name: 'HEIGHT_FN', text: 'alturaChao', kind: 'function' },
+    ],
+    message1: 'quarteirões x %1 z %2 · espaçamento %3 · rua %4',
+    args1: [
+      { type: 'input_value', name: 'BLOCKS_X', check: 'JSValue' },
+      { type: 'input_value', name: 'BLOCKS_Z', check: 'JSValue' },
+      { type: 'input_value', name: 'SPACING', check: 'JSValue' },
+      { type: 'input_value', name: 'ROAD_WIDTH', check: 'JSValue' },
+    ],
+    message2: 'altura mínima %1 máxima %2 · semente %3 · paredes %4 · telhados %5 · guardar em %6',
+    args2: [
+      { type: 'input_value', name: 'MIN_HEIGHT', check: 'JSValue' },
+      { type: 'input_value', name: 'MAX_HEIGHT', check: 'JSValue' },
+      { type: 'input_value', name: 'SEED', check: 'JSValue' },
+      { type: 'input_value', name: 'COLOR', check: 'JSValue' },
+      { type: 'input_value', name: 'ROOF', check: 'JSValue' },
+      { type: 'field_input', name: 'CITY', text: 'cidade' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Gera ruas e prédios variados apenas com primitivas. Usa instâncias, semente repetível e limites seguros para milhares de peças em poucos draw calls.',
   },
 
   // ───────────────────────── 🧲 Física leve ──────────────────────────────────
@@ -868,6 +983,52 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
       'Conecta uma primitiva visual a um corpo físico simples. Personagem recebe movimento e salto; objeto empurrável recebe gravidade, impulso e rotação visual.',
   },
   {
+    type: 'sz_t3d_physics_static_sphere',
+    message0: 'na física %1 adicionar esfera sólida %2 em x %3 y %4 z %5 raio %6',
+    args0: [
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'field_input', name: 'ID', text: 'rocha' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'input_value', name: 'RADIUS', check: 'JSValue' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Cria um colisor esférico parado para rochas, copas e obstáculos arredondados.',
+  },
+  {
+    type: 'sz_t3d_physics_static_object',
+    message0: 'na física %1 usar o colisor de %2 com nome %3',
+    args0: [
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'field_name_picker', name: 'OBJECT', text: 'predio', kind: 'variable' },
+      { type: 'field_input', name: 'ID', text: 'predioSolido' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Reaproveita automaticamente as dimensões da primitiva ou prédio, sem duplicar medidas.',
+  },
+  {
+    type: 'sz_t3d_physics_static_city',
+    message0: 'na física %1 tornar cidade %2 sólida com prefixo %3',
+    args0: [
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CITY', text: 'cidade', kind: 'variable' },
+      { type: 'field_input', name: 'PREFIX', text: 'cidade' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria colisores a partir dos mesmos prédios instanciados, sem repetir posições ou medidas.',
+  },
+  {
     type: 'sz_t3d_physics_move',
     message0: 'mover personagem %1 na física %2 direção x %3 z %4 velocidade %5',
     args0: [
@@ -933,6 +1094,150 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     colour: C,
     tooltip: 'Avança a física com passo fixo. Use uma vez dentro do laço de animação.',
   },
+  {
+    type: 'sz_t3d_physics_velocity',
+    message0: 'definir velocidade de %1 na física %2 para x %3 y %4 z %5',
+    args0: [
+      { type: 'field_input', name: 'ID', text: 'caixa' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Troca diretamente a velocidade linear de um corpo.',
+  },
+  {
+    type: 'sz_t3d_physics_impulse',
+    message0: 'dar impulso em %1 na física %2 x %3 y %4 z %5',
+    args0: [
+      { type: 'field_input', name: 'ID', text: 'caixa' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Soma um impulso à velocidade atual para empurrões, explosões e arremessos.',
+  },
+  {
+    type: 'sz_t3d_physics_teleport',
+    message0: 'teleportar %1 na física %2 para x %3 y %4 z %5',
+    args0: [
+      { type: 'field_input', name: 'ID', text: 'jogador' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Move corpo e objeto juntos e zera sua velocidade.',
+  },
+  {
+    type: 'sz_t3d_physics_remove',
+    message0: 'remover %1 da física %2',
+    args0: [
+      { type: 'field_input', name: 'ID', text: 'objeto' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Remove corpo, parede, esfera ou área e atualiza a grade espacial.',
+  },
+  {
+    type: 'sz_t3d_physics_clear',
+    message0: 'limpar física %1',
+    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Libera corpos, colisores, áreas e eventos registrados nesse mundo.',
+  },
+  {
+    type: 'sz_t3d_physics_on_collision',
+    message0: 'quando houver colisão na física %1 corpo em %2 obstáculo em %3',
+    args0: [
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'field_input', name: 'BODY_PARAM', text: 'corpoId' },
+      { type: 'field_input', name: 'COLLIDER_PARAM', text: 'obstaculoId' },
+    ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'DO', check: 'JSStmt' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Executa uma vez por contato detectado, incluindo colisões entre corpos empurráveis.',
+  },
+  {
+    type: 'sz_t3d_physics_on_trigger',
+    message0: 'quando área mudar na física %1 corpo %2 área %3 entrando? %4',
+    args0: [
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'field_input', name: 'BODY_PARAM', text: 'corpoId' },
+      { type: 'field_input', name: 'TRIGGER_PARAM', text: 'areaId' },
+      { type: 'field_input', name: 'ENTERING_PARAM', text: 'entrou' },
+    ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'DO', check: 'JSStmt' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Informa entrada e saída de áreas para missões, checkpoints e portais.',
+  },
+  {
+    type: 'sz_t3d_physics_raycast',
+    message0: 'lançar raio na física %1 de x %2 y %3 z %4 direção x %5 y %6 z %7',
+    args0: [
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'input_value', name: 'OX', check: 'JSValue' },
+      { type: 'input_value', name: 'OY', check: 'JSValue' },
+      { type: 'input_value', name: 'OZ', check: 'JSValue' },
+      { type: 'input_value', name: 'DX', check: 'JSValue' },
+      { type: 'input_value', name: 'DY', check: 'JSValue' },
+      { type: 'input_value', name: 'DZ', check: 'JSValue' },
+    ],
+    message1: 'distância máxima %1 · guardar resultado em %2',
+    args1: [
+      { type: 'input_value', name: 'MAX', check: 'JSValue' },
+      { type: 'field_input', name: 'RESULT', text: 'acerto' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Consulta o primeiro colisor atingido; o resultado traz id e distância, ou nulo.',
+  },
+  {
+    type: 'sz_t3d_physics_body_state',
+    message0: 'ler corpo %1 da física %2 e guardar em %3',
+    args0: [
+      { type: 'field_input', name: 'ID', text: 'jogador' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'field_input', name: 'RESULT', text: 'estadoCorpo' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Obtém posição, velocidade e se o corpo está no chão.',
+  },
+  {
+    type: 'sz_t3d_physics_stats',
+    message0: 'ler estatísticas da física %1 e guardar em %2',
+    args0: [
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'field_input', name: 'RESULT', text: 'estadoFisica' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Obtém contagens e limites do mundo para diagnóstico de desempenho.',
+  },
 ]
 
 export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[] = [
@@ -970,6 +1275,7 @@ export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[
     types: [
       'sz_t3d_renderer_size',
       'sz_t3d_renderer_config',
+      'sz_t3d_renderer_responsive',
       'sz_t3d_enable_shadows',
       'sz_t3d_mount_renderer',
       'sz_t3d_render',
@@ -983,7 +1289,13 @@ export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[
   {
     name: '📦 Modelos e sons',
     colour: C,
-    types: ['sz_t3d_load_model', 'sz_t3d_load_sound', 'sz_t3d_traverse'],
+    types: [
+      'sz_t3d_load_model',
+      'sz_t3d_load_environment',
+      'sz_t3d_load_sound',
+      'sz_t3d_traverse',
+      'sz_t3d_dispose_object',
+    ],
   },
   {
     name: '✨ Efeitos',
@@ -1002,7 +1314,7 @@ export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[
   {
     name: '🧱 Mundo procedural',
     colour: C,
-    types: ['sz_t3d_primitive', 'sz_t3d_terrain', 'sz_t3d_road', 'sz_t3d_building'],
+    types: ['sz_t3d_primitive', 'sz_t3d_terrain', 'sz_t3d_road', 'sz_t3d_building', 'sz_t3d_city'],
   },
   {
     name: '🧲 Física leve',
@@ -1010,11 +1322,24 @@ export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[
     types: [
       'sz_t3d_physics_setup',
       'sz_t3d_physics_static_box',
+      'sz_t3d_physics_static_sphere',
+      'sz_t3d_physics_static_object',
+      'sz_t3d_physics_static_city',
       'sz_t3d_physics_body',
       'sz_t3d_physics_move',
       'sz_t3d_physics_jump',
       'sz_t3d_physics_trigger',
       'sz_t3d_physics_step',
+      'sz_t3d_physics_velocity',
+      'sz_t3d_physics_impulse',
+      'sz_t3d_physics_teleport',
+      'sz_t3d_physics_remove',
+      'sz_t3d_physics_clear',
+      'sz_t3d_physics_on_collision',
+      'sz_t3d_physics_on_trigger',
+      'sz_t3d_physics_raycast',
+      'sz_t3d_physics_body_state',
+      'sz_t3d_physics_stats',
     ],
   },
 ]

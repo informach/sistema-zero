@@ -4,7 +4,7 @@ import { ulid } from 'ulid'
 import { buildWorkspaceStateFromIR } from '#blockly'
 import { type ExampleExperience, t } from '#core'
 import { generateProjectFiles } from '#generators'
-import type { SZIR } from '#ir'
+import type { SZIRV2 } from '#ir'
 import { OFFICIAL_CATALOG } from '#official-extensions'
 import { createEmptyProject, type Project, type ProjectAsset } from '../core/project'
 import { CORE_EXAMPLES } from '../examples/core'
@@ -23,7 +23,7 @@ export interface KitEntry {
   key: string
   name: string
   description: string
-  ir: SZIR
+  ir: SZIRV2
   emoji: string
   experience: ExampleExperience
   /** Assets que o exemplo embute (ex.: imagem de fundo por CSS). */
@@ -104,7 +104,7 @@ function toEntry(
   name: string,
   description: string,
   experience: ExampleExperience,
-  ir: SZIR,
+  ir: SZIRV2,
   assets?: readonly ProjectAsset[],
 ): KitEntry {
   return {

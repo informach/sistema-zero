@@ -124,6 +124,22 @@ describe('SZGameKit3D — motor (fake THREE + happy-dom)', () => {
     expect(api.countAlive('inimigo')).toBe(0)
   })
 
+  it('runProject recria o escopo e substitui os ganchos no Jogar de novo', async () => {
+    const { api } = await loadStartedKit()
+    const seen: number[] = []
+    const runProject = (api as unknown as { runProject(fn: () => void): void }).runProject
+
+    runProject(() => {
+      let entradas = 0
+      api.onEnterState('jogando', () => seen.push(++entradas))
+    })
+    api.setState('jogando')
+    api.setState('fim')
+    api.setState('jogando')
+
+    expect(seen).toEqual([1, 1])
+  })
+
   it('teclado: keyDown lê o mapa; blur solta as teclas', async () => {
     const { api } = await loadStartedKit()
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'w' }))

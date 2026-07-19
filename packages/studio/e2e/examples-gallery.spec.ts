@@ -116,12 +116,30 @@ async function focusPreview(page: Page, preview: FrameLocator): Promise<void> {
 
   // O iframe é sandboxed (origem opaca) e pode estar parcialmente coberto no
   // layout estreito. Foco programático entrega teclado sem mascarar hit-testing.
-  await page.locator('iframe').first().focus()
-  await preview.locator('body').evaluate((body) => {
-    window.focus()
-    body.tabIndex = -1
-    body.focus()
-  })
+  // A Ponte ainda pode substituir o srcDoc uma última vez depois do primeiro
+  // frame; nesse intervalo o contexto antigo é destruído. Resolva o FrameLocator
+  // novamente, em vez de transformar uma estabilização normal em falha do jogo.
+  for (let attempt = 0; attempt < 4; attempt++) {
+    try {
+      await page.locator('iframe').first().focus()
+      await preview.locator('body').evaluate((body) => {
+        window.focus()
+        body.tabIndex = -1
+        body.focus()
+      })
+      return
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        /Execution context was destroyed|Frame was detached/.test(error.message)
+      ) {
+        await page.waitForTimeout(100)
+        continue
+      }
+      throw error
+    }
+  }
+  throw new Error('O preview continuou recarregando e não pôde receber foco')
 }
 
 async function applyInteraction(
@@ -288,6 +306,7 @@ test.describe('KitGallery — os 67 cartões no Chromium', () => {
 })
 
 interface RpgBrowserSnapshot {
+  apiPresent: boolean
   state: string
   map: string
   hasKey: boolean
@@ -320,6 +339,7 @@ async function rpgSnapshot(preview: FrameLocator): Promise<RpgBrowserSnapshot> {
         | null
         | undefined) ?? null
     return {
+      apiPresent: api != null,
       state: api?.state() ?? '',
       map: api?.rpgCurrentMap() ?? '',
       hasKey: api?.rpgHasItem('chave') ?? false,
@@ -392,7 +412,9 @@ test('Vila do Dragão — fluxo visual completo no Chromium', async ({ page }) =
   }
   for (let i = 0; i < 4; i++) await moveCell('ArrowDown')
   for (let i = 0; i < 7; i++) await moveCell('ArrowRight')
-  await expect.poll(async () => (await rpgSnapshot(preview)).map).toBe('caverna')
+  await expect
+    .poll(async () => rpgSnapshot(preview))
+    .toMatchObject({ apiPresent: true, state: 'jogando', map: 'caverna' })
   await page.waitForTimeout(1_100)
   const caveFrame = await canvas.evaluate((element) => (element as HTMLCanvasElement).toDataURL())
   expect(caveFrame).not.toBe(villageFrame)

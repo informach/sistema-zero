@@ -1122,6 +1122,32 @@ describe('SZGameKit — máquina de estados', () => {
     expect(partidas).toBe(2)
   })
 
+  it('runProject cria escopo novo e não duplica eventos a cada nova partida', () => {
+    const { api } = loadRuntime()
+    const seen: number[] = []
+    const warnings: string[] = []
+    const realWarn = console.warn
+    const runProject = (api as unknown as { runProject(fn: () => void): void }).runProject
+
+    console.warn = (...args: unknown[]) => warnings.push(args.map(String).join(' '))
+    try {
+      runProject(() => {
+        let entradas = 0
+        api.rpgCreateMap('vila', 10, 8, () => {})
+        api.rpgSetStartMap('vila')
+        api.onEnterState('jogando', () => seen.push(++entradas))
+      })
+
+      api.restartGame()
+      api.restartGame()
+    } finally {
+      console.warn = realWarn
+    }
+    expect(seen).toEqual([1, 1])
+    expect(api.rpgCurrentMap()).toBe('vila')
+    expect(warnings).toEqual([])
+  })
+
   it('pause só pausa jogando; resume só continua pausado; endGame vai ao fim', () => {
     const { api } = loadRuntime()
     api.pause() // no menu: não faz nada

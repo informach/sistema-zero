@@ -1,5 +1,6 @@
 import * as Blockly from 'blockly/core'
 import { compileStatements } from '#generators'
+import { behaviorStatements } from '#ir'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
 import { gameTwoDBlocks } from '../../official-extensions/game-2d/blocks'
@@ -31,7 +32,7 @@ function roundtripExpr(
   )
   const ws = new Blockly.Workspace()
   Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-  return buildIRFromWorkspace(ws).js as unknown as Record<string, unknown>[]
+  return behaviorStatements(buildIRFromWorkspace(ws)) as unknown as Record<string, unknown>[]
 }
 
 describe('Blocos de velocidade/movimento — Jogo 2D', () => {

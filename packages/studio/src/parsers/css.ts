@@ -53,7 +53,7 @@ function parseCSSAtDepth(source: string, depth: number): CSSEntry[] {
 
     if (source[index] === '@') {
       const end = readAtRuleEnd(source, index)
-      // Tenta reconhecer `@media (max-width|min-width: Npx) { ... }` como bloco
+      // Tenta reconhecer `@media (max|min)-(width|height: Npx) { ... }` como bloco
       // estruturado; qualquer outra @-rule (ou condição fora desse formato)
       // continua como rawCSS avançado, preservada verbatim.
       const media = tryParseMediaQuery(source, index, end, depth)
@@ -107,10 +107,10 @@ function parseCSSAtDepth(source: string, depth: number): CSSEntry[] {
 }
 
 /**
- * Reconhece `@media (max-width: Npx) { ... }` / `(min-width: Npx)` como
+ * Reconhece consultas simples de largura OU altura em px como
  * {@link MediaQueryCSS}. As regras internas são parseadas reaproveitando
  * {@link parseCSS}. Devolve `null` se a condição não casar o formato simples
- * (uma única feature de largura em px inteiros) — aí o chamador mantém o
+ * (uma única feature em px inteiros) — aí o chamador mantém o
  * `@media` original como rawCSS avançado.
  */
 function tryParseMediaQuery(
@@ -123,7 +123,9 @@ function tryParseMediaQuery(
   const open = slice.indexOf('{')
   if (open < 0) return null
   const condition = slice.slice('@media'.length, open).trim()
-  const match = /^\(\s*(max-width|min-width)\s*:\s*(\d+)px\s*\)$/.exec(condition)
+  const match = /^\(\s*(max-width|min-width|max-height|min-height)\s*:\s*(\d+)px\s*\)$/.exec(
+    condition,
+  )
   if (!match) return null
   // Só estrutura se o bloco @media estiver bem-formado (chaves balanceadas);
   // caso contrário o chamador o mantém verbatim como rawCSS avançado.
@@ -132,7 +134,7 @@ function tryParseMediaQuery(
   const rules = parseCSSAtDepth(slice.slice(open + 1, close), depth + 1)
   return {
     type: 'mediaQuery',
-    feature: match[1] as 'max-width' | 'min-width',
+    feature: match[1] as 'max-width' | 'min-width' | 'max-height' | 'min-height',
     px: Number(match[2]),
     rules,
   }

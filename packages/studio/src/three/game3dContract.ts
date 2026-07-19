@@ -1,0 +1,35 @@
+/**
+ * Operações de Jogo 3D que alocam recursos persistentes. Elas pertencem à fase
+ * de montagem do jogo e não podem ficar dentro do laço de renderização.
+ */
+export const GAME3D_RESOURCE_CREATOR_TYPES: ReadonlySet<string> = new Set([
+  'g3d:createScene',
+  'g3d:createFullscreenScene',
+  'g3d:createBox',
+  'g3d:createSphere',
+  'g3d:createBlock',
+  'g3d:createCylinder',
+  'g3d:createCone',
+  'g3d:createPlane',
+  'g3d:createTorus',
+  'g3d:createModel',
+  'g3d:setMaterial',
+  'g3d:setTexture',
+  'g3d:addAmbientLight',
+  'g3d:addSunLight',
+  'g3d:addPointLight',
+  'g3d:setSky',
+  'g3d:createSwarm',
+  'g3d:spawnInSwarm',
+  'g3d:playNote',
+  'g3d:playEffect',
+  'g3d:createCrossingScene',
+  'g3d:createCrosser',
+  'g3d:addRow',
+  'g3d:generateRows',
+  'g3d:createRaceScene',
+  'g3d:createRaceTrack',
+  'g3d:createRaceCar',
+  'g3d:createStackScene',
+  'g3d:createStackTower',
+])

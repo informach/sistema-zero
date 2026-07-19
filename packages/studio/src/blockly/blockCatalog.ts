@@ -39,6 +39,12 @@ interface BlockLike {
  * não muda — é só o que o admin LÊ na lista). Cobre os 4 pares achados na auditoria de rótulos.
  */
 const LABEL_OVERRIDES: Record<string, string> = {
+  // CSS — mensagens visuais perdem os campos no catálogo; o professor precisa
+  // enxergar a intenção completa, não fragmentos como apenas “:”.
+  sz_css_rule: 'Regra de estilo para uma parte da página',
+  sz_css_decl: 'Propriedade e valor de CSS',
+  sz_css_var: 'Criar variável de estilo',
+  sz_css_media_query: 'Adaptar o estilo ao tamanho da tela',
   // Matemática — o `%1` é um dropdown de função; o `message0` é só "%1 de %2".
   sz_math_function: 'Função matemática (arredondar, raiz, absoluto…)',
   sz_math_trig: 'Trigonometria (seno, cosseno, tangente…)',

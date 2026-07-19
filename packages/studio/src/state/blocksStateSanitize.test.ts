@@ -110,6 +110,28 @@ describe('sanitizeImportedBlocksState — aceita estado gerado pela Ponte', () =
     expect(sanitizeImportedBlocksState(state, [])).not.toBeNull()
   })
 
+  it('preserva tempo e delta opcionais do loop de animação', () => {
+    const state = buildWorkspaceStateFromIR({
+      version: 2,
+      html: [],
+      css: [],
+      behavior: {
+        start: [],
+        events: [],
+        loops: [
+          {
+            type: 'animationLoop',
+            timeVar: 'tempo',
+            deltaVar: 'dt',
+            body: [],
+          },
+        ],
+      },
+      extensions: [],
+    })
+    expect(sanitizeImportedBlocksState(state, [])).not.toBeNull()
+  })
+
   it('preserva pilhas longas serializadas por next.block', () => {
     const head = {
       type: 'sz_js_console_log_text',

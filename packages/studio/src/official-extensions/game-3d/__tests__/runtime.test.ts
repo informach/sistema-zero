@@ -11,6 +11,7 @@ interface FakeRenderer {
   disposeCalls: number
   forceContextLossCalls: number
   animationLoopArgs: unknown[]
+  setSizeArgs: Array<[number, number, boolean]>
   setPixelRatio: (n: number) => void
   setSize: (w: number, h: number, updateStyle: boolean) => void
   setAnimationLoop: (fn: unknown) => void
@@ -29,6 +30,7 @@ interface FakeGeometry {
 }
 
 interface SZGame3DSurface {
+  runProject: (fn: unknown) => void
   createScene: (canvasId: string) => World
   dispose: (world: World) => void
   disposeAll: () => void
@@ -59,8 +61,11 @@ function loadRuntime(getElementById?: (id: string) => unknown): LoadedRuntime {
       disposeCalls: 0,
       forceContextLossCalls: 0,
       animationLoopArgs: [],
+      setSizeArgs: [],
       setPixelRatio: () => {},
-      setSize: () => {},
+      setSize: (w, h, updateStyle) => {
+        r.setSizeArgs.push([w, h, updateStyle])
+      },
       setAnimationLoop: (fn: unknown) => {
         r.animationLoopArgs.push(fn)
       },
@@ -155,6 +160,25 @@ function loadRuntime(getElementById?: (id: string) => unknown): LoadedRuntime {
 }
 
 describe('gameThreeDRuntime — higiene de GPU', () => {
+  it('runProject relata a causa original sem trocar por ReferenceError interno', () => {
+    const { api } = loadRuntime()
+    const originalWarn = console.warn
+    const messages: string[] = []
+    console.warn = (...args: unknown[]) => messages.push(args.map(String).join(' '))
+    try {
+      expect(() =>
+        api.runProject(() => {
+          throw new Error('causa original')
+        }),
+      ).not.toThrow()
+    } finally {
+      console.warn = originalWarn
+    }
+    expect(messages).toHaveLength(1)
+    expect(messages[0]).toContain('SZGame3D')
+    expect(messages[0]).toContain('causa original')
+  })
+
   it('dispose() chama forceContextLoss() além de dispose() do renderer', () => {
     const { api } = loadRuntime()
     const world = api.createScene('tela')
@@ -240,16 +264,22 @@ describe('gameThreeDRuntime — higiene de GPU', () => {
     expect(b.renderer.forceContextLossCalls).toBe(0)
   })
 
-  it('canvas inexistente (getElementById null) não colide entre cenas', () => {
+  it('acompanha o tamanho visual responsivo do canvas', () => {
+    const canvas = { width: 480, height: 360, clientWidth: 640, clientHeight: 360 }
+    const { api, fireEvent } = loadRuntime(() => canvas)
+    const world = api.createScene('tela')
+    expect(world.renderer.setSizeArgs.at(-1)).toEqual([640, 360, false])
+
+    canvas.clientWidth = 960
+    canvas.clientHeight = 540
+    fireEvent('resize')
+    expect(world.renderer.setSizeArgs.at(-1)).toEqual([960, 540, false])
+  })
+
+  it('canvas inexistente produz um erro didático em vez de uma cena invisível', () => {
     const { api } = loadRuntime(() => null)
-    const a = api.createScene('some')
-    const b = api.createScene('other')
-    // Sem canvas resolvido, cada cena tem seu próprio contexto interno do
-    // Three.js — não devem descartar uma à outra.
-    expect(a.renderer.disposeCalls).toBe(0)
-    expect(a.renderer.forceContextLossCalls).toBe(0)
-    expect(b.renderer.disposeCalls).toBe(0)
-    expect(b.renderer.forceContextLossCalls).toBe(0)
+    expect(() => api.createScene('some')).toThrow('canvas')
+    expect(() => api.createScene('some')).toThrow('some')
   })
 
   it('dispose() manual remove o mundo do registro (pagehide não o redescarta)', () => {

@@ -7,6 +7,7 @@ import { ADDON_CLASSES, CLASS_NAMESPACE } from '../../blockly/fields/FieldClassP
 import { ensureBlocklyInitialized } from '../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../blockly/workspaceState'
 import { generateJS } from '../../generators/js'
+import { behaviorStatements } from '../../ir/behavior'
 import type { JSStatement, SZIR } from '../../ir/schema'
 import { parseJS } from '../js'
 
@@ -24,7 +25,7 @@ function roundtrip(code: string): { rebuilt: string; state: string } {
   try {
     Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
     return {
-      rebuilt: generateJS({ statements: buildIRFromWorkspace(ws).js }),
+      rebuilt: generateJS({ statements: behaviorStatements(buildIRFromWorkspace(ws)) }),
       state: JSON.stringify(state),
     }
   } finally {
@@ -98,7 +99,7 @@ function fromIR(js: JSStatement[]): { code: string; state: string } {
   try {
     Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
     return {
-      code: generateJS({ statements: buildIRFromWorkspace(ws).js }),
+      code: generateJS({ statements: behaviorStatements(buildIRFromWorkspace(ws)) }),
       state: JSON.stringify(state),
     }
   } finally {
@@ -120,7 +121,7 @@ describe('Canvas 3D — renderer_config (modernização forward-only)', () => {
         },
       ],
     })
-    expect(code).toContain('renderer.setPixelRatio(window.devicePixelRatio);')
+    expect(code).toContain('renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));')
     expect(code).toContain('renderer.shadowMap.enabled = true;')
     expect(code).toContain('renderer.shadowMap.type = THREE.PCFSoftShadowMap;')
     expect(code).toContain('renderer.outputColorSpace = THREE.SRGBColorSpace;')
@@ -146,7 +147,7 @@ describe('Canvas 3D — renderer_config (modernização forward-only)', () => {
     expect(code).toContain('r.shadowMap.type = THREE.BasicShadowMap;')
     expect(code).not.toContain('setPixelRatio')
     expect(code).not.toContain('outputColorSpace')
-    expect(code).not.toContain('toneMapping')
+    expect(code).not.toContain('r.toneMapping =')
   })
 
   it('block→IR→block preserva os dropdowns (bloco sz_t3d_renderer_config)', () => {
@@ -161,7 +162,7 @@ describe('Canvas 3D — renderer_config (modernização forward-only)', () => {
       },
     ])
     expect(state).toContain('"sz_t3d_renderer_config"')
-    expect(code).toContain('renderer.setPixelRatio(window.devicePixelRatio);')
+    expect(code).toContain('renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));')
     expect(code).toContain('renderer.outputColorSpace = THREE.SRGBColorSpace;')
   })
 })

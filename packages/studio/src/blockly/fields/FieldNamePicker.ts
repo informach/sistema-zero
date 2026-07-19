@@ -22,6 +22,9 @@ import {
  *                 global de propriedades quando não dá para resolver a classe;
  *  - `method`   → métodos de classe, mesma lógica de escopo do `property`;
  *  - `canvas`   → id de uma tela de desenho (`sz_html_canvas`);
+ *  - `selector` → partes da página já criadas (`body`, `#id` e `.classe`);
+ *  - `font`     → fontes importadas por um bloco do Google Fonts;
+ *  - `animation` → animações CSS declaradas por blocos de keyframes;
  *  - `spritesheet` → folha de quadros do Jogo 2D (`sz_g2d_load_spritesheet`);
  *  - `tilemap`  → mapa de tiles do Jogo 2D (`sz_g2d_create_tilemap`);
  *  - `scene3d`  → cena/mundo do Jogo 3D (blocos `criar cena…`);
@@ -46,6 +49,9 @@ export type NameKind =
   | 'property'
   | 'method'
   | 'canvas'
+  | 'selector'
+  | 'font'
+  | 'animation'
   | 'spritesheet'
   | 'tilemap'
   | 'enemytype'
@@ -96,6 +102,9 @@ const NAME_KINDS: readonly NameKind[] = [
   'property',
   'method',
   'canvas',
+  'selector',
+  'font',
+  'animation',
   'spritesheet',
   'tilemap',
   'enemytype',
@@ -191,6 +200,52 @@ const CLASS_DECL_BLOCKS: Record<string, string[]> = { sz_js_class: ['NAME'] }
 const FUNCTION_DECL_BLOCKS: Record<string, string[]> = { sz_js_function: ['NAME'] }
 /** Telas de desenho declaradas (`sz_html_canvas` id) — fonte do seletor de canvas. */
 const CANVAS_DECL_BLOCKS: Record<string, string[]> = { sz_html_canvas: ['ID'] }
+
+/** Fontes e animações CSS que outros blocos podem consumir sem redigitar. */
+const CSS_FONT_DECL_BLOCKS: Record<string, string[]> = { sz_css_google_font: ['FONT'] }
+const CSS_ANIMATION_DECL_BLOCKS: Record<string, string[]> = {
+  sz_css_keyframes: ['NAME'],
+  sz_css_keyframes_steps: ['NAME'],
+}
+
+/**
+ * Partes da página disponíveis para o CSS. `body` sempre existe; ids viram
+ * `#id` e cada classe vira `.classe`. O texto livre continua disponível para
+ * seletores avançados e para elementos que serão criados depois por JavaScript.
+ */
+export function collectCSSSelectors(workspace: Blockly.Workspace | null | undefined): string[] {
+  const seen = new Set<string>(['body'])
+  const ordered = ['body']
+  if (!workspace) return ordered
+
+  const add = (selector: string): void => {
+    const normalized = selector.trim()
+    if (!normalized || seen.has(normalized)) return
+    seen.add(normalized)
+    ordered.push(normalized)
+  }
+
+  for (const block of workspace.getAllBlocks(false)) {
+    if (!block.type.startsWith('sz_html_') && !block.type.startsWith('sz_svg_')) continue
+    const id = block.getField('ID') ? `${block.getFieldValue('ID') ?? ''}`.trim() : ''
+    if (id) add(`#${id}`)
+    const classes = block.getField('CLASS')
+      ? `${block.getFieldValue('CLASS') ?? ''}`.trim().split(/\s+/)
+      : []
+    for (const className of classes) {
+      if (className) add(`.${className}`)
+    }
+  }
+  return ordered
+}
+
+export function collectCSSFonts(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, CSS_FONT_DECL_BLOCKS)
+}
+
+export function collectCSSAnimations(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, CSS_ANIMATION_DECL_BLOCKS)
+}
 /** Folhas de quadros / mapas de tiles do Jogo 2D (fonte dos seletores SHEET/MAP). */
 const SPRITESHEET_DECL_BLOCKS: Record<string, string[]> = { sz_g2d_load_spritesheet: ['NAME'] }
 const TILEMAP_DECL_BLOCKS: Record<string, string[]> = {
@@ -642,6 +697,22 @@ const KIND_UI: Record<NameKind, KindUI> = {
     empty:
       'Nenhuma tela de desenho ainda — crie uma ("Criar tela de desenho") ou digite o id abaixo.',
   },
+  selector: {
+    icon: '🎯',
+    placeholder: 'body, #caixa ou .cartao',
+    empty:
+      'Ainda não achei uma parte da página. Crie uma caixa no HTML ou escreva body para estilizar a página toda.',
+  },
+  font: {
+    icon: '🔤',
+    placeholder: 'nome da fonte',
+    empty: 'Nenhuma fonte importada ainda. Use o bloco “Buscar fonte do Google” primeiro.',
+  },
+  animation: {
+    icon: '✨',
+    placeholder: 'nome da animação',
+    empty: 'Nenhuma animação ainda. Crie uma com o bloco “Criar animação” primeiro.',
+  },
   spritesheet: {
     icon: '🎞️',
     placeholder: 'nome da folha de quadros',
@@ -1049,6 +1120,12 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectFunctionNames(ws)
       case 'canvas':
         return collectCanvasIds(ws)
+      case 'selector':
+        return collectCSSSelectors(ws)
+      case 'font':
+        return collectCSSFonts(ws)
+      case 'animation':
+        return collectCSSAnimations(ws)
       case 'spritesheet':
         return collectSpritesheets(ws)
       case 'tilemap':

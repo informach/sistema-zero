@@ -13,7 +13,14 @@ import { registerExtendsMutator } from './blocks/extendsMutator'
 import { registerIfElseMutator } from './blocks/ifElseMutator'
 import { registerObjectMutator } from './blocks/objectMutator'
 import { registerParamsMutator } from './blocks/paramsMutator'
-import { FRAME_APPEARANCE, FRAME_BEHAVIOR, FRAME_STRUCTURE } from './buildIR'
+import {
+  FRAME_APPEARANCE,
+  FRAME_BEHAVIOR,
+  FRAME_EVENTS,
+  FRAME_LOOPS,
+  FRAME_START,
+  FRAME_STRUCTURE,
+} from './buildIR'
 import { registerFieldAddonPicker } from './fields/FieldAddonPicker'
 import { registerFieldAnimationPicker } from './fields/FieldAnimationPicker'
 import { registerFieldAssetPicker } from './fields/FieldAssetPicker'
@@ -203,8 +210,15 @@ function registerScreenshotContextMenu(): void {
   })
 }
 
-/** Os 3 frames-container (Estrutura/Aparência/Comportamento) não são copiáveis. */
-const FRAME_TYPES = new Set<string>([FRAME_STRUCTURE, FRAME_APPEARANCE, FRAME_BEHAVIOR])
+/** As áreas do projeto, inclusive a moldura legada, não são copiáveis. */
+const FRAME_TYPES = new Set<string>([
+  FRAME_STRUCTURE,
+  FRAME_APPEARANCE,
+  FRAME_BEHAVIOR,
+  FRAME_START,
+  FRAME_EVENTS,
+  FRAME_LOOPS,
+])
 
 /**
  * "Copiar blocos" no menu de contexto de um BLOCO: guarda o bloco + tudo dentro

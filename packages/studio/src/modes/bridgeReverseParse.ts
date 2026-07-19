@@ -1,6 +1,6 @@
 import type { GeneratedFiles, SourceMap } from '#generators'
 import { generateProjectFilesWithMap } from '#generators'
-import type { HTMLNode, HTMLShell, SZIR } from '#ir'
+import type { HTMLNode, HTMLShell, SZIRInput } from '#ir'
 import { assignStableIdsToIR } from '#ir'
 import type { ParseProjectDiagnostic } from '#parsers'
 import { parseProjectFilesFromParts } from '#parsers'
@@ -20,7 +20,7 @@ export interface BridgeReverseParseInput {
   htmlShell?: HTMLShell
   cssSource: string
   jsSource: string
-  ir: SZIR | null
+  ir: SZIRInput | null
   projectName: string
   installedExtensionIds: string[]
 }
@@ -34,7 +34,7 @@ export type BridgeReverseParseResult =
   | {
       kind: 'parsed'
       diagnostics: ParseProjectDiagnostic[]
-      ir: SZIR | null
+      ir: SZIRInput | null
       sourceMap: SourceMap | null
     }
 

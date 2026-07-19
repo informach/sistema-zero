@@ -1,5 +1,6 @@
 import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
+import { materializeBlockDefinition, registerBlockContracts } from '../blockContracts'
 import { ADVANCED_BLOCKS } from './advanced'
 import { CANVAS_BLOCKS, CANVAS_GROUPS } from './canvas'
 import { CANVAS3D_BLOCKS, CANVAS3D_GROUPS } from './canvas3d'
@@ -57,15 +58,47 @@ export const CORE_BLOCKS: BlockDefinition[] = [
   ...ADVANCED_BLOCKS,
 ]
 
-let coreRegistered = false
+const REGISTERED_DEFINITION_SIGNATURE = Symbol('sz-registered-block-definition')
+
+type RegisteredBlockDefinition = {
+  [REGISTERED_DEFINITION_SIGNATURE]?: string
+}
+
+function definitionSignature(definition: BlockDefinition): string {
+  return JSON.stringify(definition)
+}
+
+/**
+ * O catálogo Blockly é global e alguns integradores podem registrar a definição
+ * JSON oficial diretamente. Nesse caso ela existe, mas ainda não contém os
+ * checks físicos derivados do contrato. A assinatura distingue "já correto" de
+ * "existe em formato cru" sem redefinir desnecessariamente os blocos válidos.
+ */
+function registerMaterializedDefinitions(definitions: readonly BlockDefinition[]): void {
+  const materialized = definitions.map(materializeBlockDefinition)
+  const stale = materialized.filter((definition) => {
+    const registered = Blockly.Blocks[definition.type] as RegisteredBlockDefinition | undefined
+    return registered?.[REGISTERED_DEFINITION_SIGNATURE] !== definitionSignature(definition)
+  })
+  if (stale.length === 0) return
+
+  // A API do Blockly avisa no console ao sobrescrever. Remover somente as
+  // definições comprovadamente desatualizadas evita um warning falso; blocos já
+  // instanciados continuam com sua classe e os próximos usam o contrato novo.
+  for (const definition of stale) delete Blockly.Blocks[definition.type]
+  Blockly.defineBlocksWithJsonArray(stale as object[])
+  for (const definition of stale) {
+    const registered = Blockly.Blocks[definition.type] as RegisteredBlockDefinition
+    registered[REGISTERED_DEFINITION_SIGNATURE] = definitionSignature(definition)
+  }
+}
 
 /**
  * Registra todos os blocos core no Blockly. Idempotente — chamar mais de uma vez é seguro.
  */
 export function registerCoreBlocks(): void {
-  if (coreRegistered) return
-  Blockly.defineBlocksWithJsonArray(CORE_BLOCKS as object[])
-  coreRegistered = true
+  registerBlockContracts(CORE_BLOCKS)
+  registerMaterializedDefinitions(CORE_BLOCKS)
 }
 
 /**
@@ -73,8 +106,8 @@ export function registerCoreBlocks(): void {
  * Idempotente por tipo: se já existir um bloco com mesmo `type`, ignora.
  */
 export function registerExtensionBlocks(blocks: BlockDefinition[]): void {
-  const novos = blocks.filter((b) => !Blockly.Blocks[b.type])
-  if (novos.length > 0) Blockly.defineBlocksWithJsonArray(novos as object[])
+  registerBlockContracts(blocks)
+  registerMaterializedDefinitions(blocks)
 }
 
 /**

@@ -1,10 +1,10 @@
 import type { IDEMode } from '#core'
-import type { SZIR } from '#ir'
+import type { SZIR, SZIRInput } from '#ir'
 
 export interface ProjectContext {
   projectName: string
   mode: IDEMode
-  ir: SZIR | null
+  ir: SZIRInput | null
   installedExtensions: string[]
 }
 

@@ -195,7 +195,7 @@ export const gameTwoDRuntime = `(function () {
     var name = sprite.skin ? sprite.skin.shape : null;
     var fn = name ? _shapes[name] : null;
     if (typeof fn !== 'function') {
-      if (name) warnOnce('shape:' + name, 'a figura "' + name + '" não existe. Crie-a com "Guardar a figura" (o nome tem que ser igualzinho: maiúsculas e espaços contam).');
+      if (name) warnOnce('shape:' + name, 'a figura "' + name + '" não existe. Crie-a com “Desenhar a figura … assim” (o nome tem que ser igualzinho: maiúsculas e espaços contam).');
       ctx.fillStyle = sprite.color;
       ctx.fillRect(sprite.x, sprite.y, sprite.w, sprite.h);
       return;
@@ -314,7 +314,7 @@ export const gameTwoDRuntime = `(function () {
    */
   function autoAnimate(s) {
     if (!s) return;
-    if ((s.hurtFrames || 0) > 0 && (activeLoopStop === null || s._hurtStamp !== _frameStamp)) {
+    if ((s.hurtFrames || 0) > 0 && (_loopOrder.length === 0 || s._hurtStamp !== _frameStamp)) {
       s.hurtFrames--;
       s._hurtStamp = _frameStamp;
     }
@@ -376,7 +376,7 @@ export const gameTwoDRuntime = `(function () {
     if (sprite.blinkFrames > 0) {
       // Decai 1× por quadro do jogo (carimbo) — não por desenho. Sem "a cada quadro
       // do jogo" ativo (aluno desenhando no rAF do núcleo), cai no modo antigo.
-      if (activeLoopStop === null || sprite._blinkStamp !== _frameStamp) {
+      if (_loopOrder.length === 0 || sprite._blinkStamp !== _frameStamp) {
         sprite.blinkFrames--;
         sprite._blinkStamp = _frameStamp;
       }
@@ -462,53 +462,146 @@ export const gameTwoDRuntime = `(function () {
     return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
   }
 
-  /**
-   * Loop de jogo. Recebe uma função que vai rodar a cada frame e devolve uma
-   * função para PARAR o loop (chame-a quando o jogo acabar ou ao reiniciar,
-   * para não empilhar vários loops rodando ao mesmo tempo).
-   *
-   * Só pode existir UM loop ativo: ao chamar gameLoop de novo (ex.: o gerador
-   * emite a chamada num caminho que roda mais de uma vez), o loop anterior é
-   * parado automaticamente antes de iniciar o novo. Assim a velocidade do jogo
-   * não acelera por empilhamento de RAFs.
-   */
-  var activeLoopStop = null;
+  // ---- Ciclo de vida da partida ----
+  // Há UM scheduler físico, mas ele compõe todos os blocos "A cada quadro".
+  // Cada bloco gerado fornece o próprio id estável: executar de novo o MESMO
+  // bloco substitui seu callback; blocos diferentes continuam coexistindo.
+  var _loopHandlers = Object.create(null);
+  var _loopOrder = [];
+  var _startHandlers = Object.create(null);
+  var _startOrder = [];
+  var _restarting = false;
+  var _handlerIds = new WeakMap();
+  var _nextHandlerId = 1;
+  var _driverFrame = 0;
+  var _lastDriverTime = null;
+  var _frameAccumulator = 0;
+  var _runningLoopId = null;
+  var FIXED_FRAME_MS = 1000 / 60;
+  var MAX_CATCH_UP_STEPS = 5;
+
+  function _stableHandlerId(prefix, explicitId, fn) {
+    if (typeof explicitId === 'string' && explicitId) return prefix + ':' + explicitId;
+    var known = _handlerIds.get(fn);
+    if (!known) {
+      known = prefix + ':funcao-' + _nextHandlerId++;
+      _handlerIds.set(fn, known);
+    }
+    return known;
+  }
+
+  function _removeOrdered(registry, order, id) {
+    if (!registry[id]) return;
+    delete registry[id];
+    var index = order.indexOf(id);
+    if (index !== -1) order.splice(index, 1);
+  }
+
+  function _reportHandlerError(kind, id, error) {
+    var message = error && error.message ? error.message : String(error);
+    var key = 'erro:' + kind + ':' + id + ':' + message;
+    if (_warnedOnce[key]) return;
+    _warnedOnce[key] = true;
+    try {
+      console.error('SZGame2D: parei o bloco ' + kind + ' porque aconteceu um erro: ' + message);
+    } catch (ignored) {}
+  }
+
+  function _driverHasWork() {
+    return _loopOrder.length > 0 || (typeof _overlapOrder !== 'undefined' && _overlapOrder.length > 0);
+  }
+
+  function _runSimulationFrame() {
+    if (_paused) return;
+    _frameStamp++;
+    _particlesDrawnThisFrame = false;
+    var loops = _loopOrder.slice();
+    for (var i = 0; i < loops.length; i++) {
+      var id = loops[i];
+      var fn = _loopHandlers[id];
+      if (typeof fn !== 'function') continue;
+      _runningLoopId = id;
+      try { fn(); }
+      catch (error) {
+        _reportHandlerError('“A cada quadro”', id, error);
+        _removeOrdered(_loopHandlers, _loopOrder, id);
+      }
+      _runningLoopId = null;
+    }
+    _runOverlapHandlers();
+    // Partículas são desenhadas uma vez depois de TODOS os blocos de quadro.
+    if (!_particlesDrawnThisFrame && particles.length) {
+      try { _camWrap(drawParticles)(ensureStage()); }
+      catch (error) { _reportHandlerError('de partículas', 'interno', error); }
+    }
+  }
+
+  function _driverTick(timestamp) {
+    _driverFrame = 0;
+    if (!_driverHasWork()) {
+      _lastDriverTime = null;
+      _frameAccumulator = 0;
+      return;
+    }
+    if (typeof timestamp !== 'number') {
+      _runSimulationFrame();
+    } else {
+      if (_lastDriverTime === null) {
+        _lastDriverTime = timestamp;
+        _frameAccumulator += FIXED_FRAME_MS;
+      } else {
+        var elapsed = Math.max(0, Math.min(250, timestamp - _lastDriverTime));
+        _lastDriverTime = timestamp;
+        _frameAccumulator += elapsed;
+      }
+      var steps = 0;
+      while (_frameAccumulator + 0.0001 >= FIXED_FRAME_MS && steps < MAX_CATCH_UP_STEPS) {
+        _frameAccumulator -= FIXED_FRAME_MS;
+        _runSimulationFrame();
+        steps++;
+      }
+      if (steps === MAX_CATCH_UP_STEPS && _frameAccumulator >= FIXED_FRAME_MS) {
+        _frameAccumulator = _frameAccumulator % FIXED_FRAME_MS;
+        warnOnce('quadros-atrasados', 'o jogo ficou muito tempo sem desenhar; descartei quadros atrasados para ele continuar responsivo.');
+      }
+    }
+    if (_driverHasWork()) _driverFrame = requestAnimationFrame(_driverTick);
+  }
+
+  function _ensureDriver() {
+    if (!_driverFrame && _driverHasWork()) _driverFrame = requestAnimationFrame(_driverTick);
+  }
+
+  /** Registra um comportamento de quadro. Blocos diferentes rodam juntos. */
   // Carimbo do quadro atual: avança 1× por passada do "a cada quadro do jogo"
   // (nunca em pausa). O piscar de invencibilidade decai por ESTE carimbo, não por
   // desenho — desenhar o mesmo sprite 2× não devora a invencibilidade pela metade,
   // e a pausa não a consome. Sem loop ativo, o decaimento cai no modo antigo.
   var _frameStamp = 0;
-  function gameLoop(fn) {
-    if (activeLoopStop) activeLoopStop();
-    var canceled = false;
-    var rafId = 0;
-    function tick() {
-      if (canceled) return;
-      // "Pausar o jogo" CONGELA o jogo: não roda o quadro do aluno (movimento,
-      // spawn, física, desenho). A última tela fica parada. Para mostrar "Você
-      // ganhou/perdeu", desenhe a tela ANTES de "Pausar o jogo" — ela fica
-      // congelada por cima. "Continuar o jogo" descongela.
-      if (!_paused) {
-        _frameStamp++;
-        _particlesDrawnThisFrame = false;
-        try { fn(); } catch (e) { console.error(e && e.message ? e.message : e); }
-        // As partículas (explosões) se desenham sozinhas no FIM do quadro do aluno,
-        // com a câmera — a menos que ele já tenha usado "atualizar e desenhar as
-        // partículas". Sem isto, "soltar explosão" emite mas nada aparece na tela.
-        if (!_particlesDrawnThisFrame && particles.length) {
-          try { _camWrap(drawParticles)(ensureStage()); } catch (e) {}
-        }
-      }
-      rafId = requestAnimationFrame(tick);
-    }
-    rafId = requestAnimationFrame(tick);
+  function gameLoop(fn, explicitId) {
+    if (typeof fn !== 'function') return function () {};
+    var id = _stableHandlerId('quadro', explicitId, fn);
+    if (!_loopHandlers[id]) _loopOrder.push(id);
+    _loopHandlers[id] = fn;
+    _ensureDriver();
     function stop() {
-      canceled = true;
-      if (rafId) cancelAnimationFrame(rafId);
-      if (activeLoopStop === stop) activeLoopStop = null;
+      _removeOrdered(_loopHandlers, _loopOrder, id);
+      if (!_driverHasWork() && _driverFrame) {
+        cancelAnimationFrame(_driverFrame);
+        _driverFrame = 0;
+      }
     }
-    activeLoopStop = stop;
     return stop;
+  }
+
+  /** Registra e executa a preparação de uma partida; restart() repete este corpo. */
+  function onStart(fn, explicitId) {
+    if (typeof fn !== 'function') return;
+    var id = _stableHandlerId('inicio', explicitId, fn);
+    if (!_startHandlers[id]) _startOrder.push(id);
+    _startHandlers[id] = fn;
+    try { fn(); }
+    catch (error) { _reportHandlerError('“Quando o jogo começar”', id, error); }
   }
 
   // ---- Física ----
@@ -712,15 +805,8 @@ export const gameTwoDRuntime = `(function () {
 
   // ---- Ponteiro (mouse/toque, Pointer Events) ----
   var pointer = { x: 0, y: 0, down: false };
-  var pointerHandlers = [];
-  // Teto de segurança de handlers de clique/toque. O gerador emite um arrow
-  // NOVO a cada vez que o bloco "quando clicar/tocar" roda; se o aluno colocar
-  // esse bloco DENTRO do "a cada frame" (é um input_statement, então é legal),
-  // onPointer seria chamado com uma referência inédita por frame e a lista
-  // cresceria sem limite — vazamento de memória + N disparos por clique. O cap
-  // é folgado o bastante para vários handlers distintos de propósito.
-  var MAX_POINTER_HANDLERS = 32;
-  var pointerLimitWarned = false;
+  var pointerHandlers = Object.create(null);
+  var pointerHandlerOrder = [];
   function pointerXY(e) {
     var c = document.querySelector('canvas');
     if (!c) return { x: e.clientX || 0, y: e.clientY || 0 };
@@ -734,48 +820,53 @@ export const gameTwoDRuntime = `(function () {
   }
   window.addEventListener('pointermove', function (e) {
     var p = pointerXY(e); pointer.x = p.x; pointer.y = p.y;
+    if (pointer.down && e && typeof e.preventDefault === 'function') e.preventDefault();
   });
-  window.addEventListener('pointerup', function () { pointer.down = false; });
+  function _releasePointer(e) {
+    pointer.down = false;
+    if (e && e.target && typeof e.target.releasePointerCapture === 'function' && e.pointerId !== undefined) {
+      try { e.target.releasePointerCapture(e.pointerId); } catch (ignored) {}
+    }
+  }
+  window.addEventListener('pointerup', _releasePointer);
+  window.addEventListener('pointercancel', _releasePointer);
   window.addEventListener('pointerdown', function (e) {
     var p = pointerXY(e); pointer.x = p.x; pointer.y = p.y; pointer.down = true;
-    for (var i = 0; i < pointerHandlers.length; i++) {
-      try { pointerHandlers[i](p.x, p.y); }
-      catch (err) { console.error(err && err.message ? err.message : err); }
+    var target = e && e.target;
+    var isCanvas = target && (target === _stageCanvas || String(target.tagName || '').toLowerCase() === 'canvas');
+    if (isCanvas) {
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+      if (typeof target.focus === 'function') { try { target.focus({ preventScroll: true }); } catch (ignored) {} }
+      if (typeof target.setPointerCapture === 'function' && e.pointerId !== undefined) {
+        try { target.setPointerCapture(e.pointerId); } catch (ignored) {}
+      }
+    }
+    var handlers = pointerHandlerOrder.slice();
+    for (var i = 0; i < handlers.length; i++) {
+      var id = handlers[i];
+      var handler = pointerHandlers[id];
+      if (typeof handler !== 'function') continue;
+      try { handler(p.x, p.y); }
+      catch (error) {
+        _reportHandlerError('“Quando clicar/tocar”', id, error);
+        _removeOrdered(pointerHandlers, pointerHandlerOrder, id);
+      }
     }
   });
   /**
-   * Registra uma função chamada a cada clique/toque com a posição (x, y) no
-   * canvas. Dois guardas, nessa ordem:
-   *
-   *  1. Dedup por REFERÊNCIA: registrar a mesma função duas vezes mantém um só
-   *     handler. Só ajuda quando a referência se repete de fato (ex.: aluno
-   *     chama onPointer com a mesma variável duas vezes).
-   *  2. Teto rígido (MAX_POINTER_HANDLERS): o gerador emite um arrow LITERAL
-   *     novo a cada execução do bloco, então o dedup por referência NUNCA casa
-   *     nesse caso. Se o bloco "quando clicar/tocar" estiver dentro do "a cada
-   *     frame", a lista cresceria sem limite. Acima do teto, ignoramos novos
-   *     registros (avisando uma única vez no console) — o jogo segue rodando
-   *     com os handlers que já tem, sem vazar memória nem multiplicar disparos.
-   *
-   * O cap NÃO muda o comportamento legítimo de poucos handlers distintos: 32 é
-   * folgado para qualquer jogo didático com alguns cliques registrados de
-   * propósito.
+   * Registra uma função chamada a cada clique/toque. O id vem do bloco Blockly:
+   * reexecutar o mesmo bloco substitui o callback, sem teto artificial e sem
+   * multiplicar disparos. Código manual sem id é deduplicado por referência.
    */
-  function onPointer(fn) {
+  function onPointer(fn, explicitId) {
     if (typeof fn !== 'function') return;
-    if (pointerHandlers.indexOf(fn) !== -1) return;
-    if (pointerHandlers.length >= MAX_POINTER_HANDLERS) {
-      if (!pointerLimitWarned) {
-        pointerLimitWarned = true;
-        console.warn(
-          'SZGame2D: muitos handlers de clique/toque registrados (limite ' +
-            MAX_POINTER_HANDLERS +
-            '). Registros extras serão ignorados. Dica: registre "quando clicar/tocar" FORA do "a cada frame".'
-        );
-      }
+    if (_runningLoopId && !explicitId) {
+      warnOnce('evento-clique-no-quadro', '“Quando clicar/tocar” deve ficar no início, fora de “A cada quadro”.');
       return;
     }
-    pointerHandlers.push(fn);
+    var id = _stableHandlerId('clique', explicitId, fn);
+    if (!pointerHandlers[id]) pointerHandlerOrder.push(id);
+    pointerHandlers[id] = fn;
   }
 
   // ---- Movimento (v0.4.0) ----
@@ -1329,88 +1420,81 @@ export const gameTwoDRuntime = `(function () {
   }
 
   // ---- Eventos "Quando…" ----
-  // "Quando apertar a tecla" é um statement — pode cair DENTRO do "a cada quadro".
-  // Se registrássemos um addEventListener a CADA chamada (como antes), seriam
-  // dezenas de listeners por segundo: vazamento de memória + N disparos por toque.
-  // Em vez disso há UM listener real que percorre uma lista, com dedup por
-  // ASSINATURA (tecla + o corpo da função em texto): o gerador emite um arrow novo
-  // a cada execução, mas o TEXTO do mesmo bloco é estável → o bloco no "a cada
-  // quadro" converge para um só registro. Teto rígido como o do onPointer.
-  var keyHandlers = [];
-  var keyHandlerSigs = Object.create(null);
-  var MAX_KEY_HANDLERS = 32;
-  var keyLimitWarned = false;
+  // Um listener real despacha para callbacks identificados pelo id do bloco.
+  // A identidade não depende do texto da função: closures iguais continuam
+  // sendo eventos diferentes quando vieram de blocos diferentes.
+  var keyHandlers = Object.create(null);
+  var keyHandlerOrder = [];
   window.addEventListener('keydown', function (e) {
     // O sistema REPETE keydown enquanto a tecla fica segurada; "quando apertar" só
     // dispara no toque, então ignoramos as repetições (senão vira metralhadora).
     if (e.repeat) return;
-    for (var i = 0; i < keyHandlers.length; i++) {
-      var h = keyHandlers[i];
+    var handlers = keyHandlerOrder.slice();
+    for (var i = 0; i < handlers.length; i++) {
+      var id = handlers[i];
+      var h = keyHandlers[id];
+      if (!h) continue;
       var hit = e.key === h.key || e.code === h.key ||
         (h.key === 'Space' && (e.key === ' ' || e.code === 'Space'));
       if (!hit) continue;
-      try { h.fn(); } catch (err) { console.error(err && err.message ? err.message : err); }
+      try { h.fn(); }
+      catch (error) {
+        _reportHandlerError('“Quando apertar a tecla”', id, error);
+        _removeOrdered(keyHandlers, keyHandlerOrder, id);
+      }
     }
   });
   /** Roda fn toda vez que a tecla é apertada (compara e.key e e.code). */
-  function onKey(key, fn) {
+  function onKey(key, fn, explicitId) {
     if (typeof fn !== 'function' || !key) return;
-    var sig = key + '|@|' + String(fn); // teclas nunca têm "|@|" → split sem ambiguidade
-    if (keyHandlerSigs[sig]) return;
-    if (keyHandlers.length >= MAX_KEY_HANDLERS) {
-      if (!keyLimitWarned) {
-        keyLimitWarned = true;
-        console.warn(
-          'SZGame2D: muitos "quando apertar a tecla" registrados (limite ' +
-            MAX_KEY_HANDLERS +
-            '). Registros extras serão ignorados. Dica: registre "quando apertar" FORA do "a cada quadro".'
-        );
-      }
+    if (_runningLoopId && !explicitId) {
+      warnOnce('evento-tecla-no-quadro', '“Quando apertar a tecla” deve ficar no início, fora de “A cada quadro”.');
       return;
     }
-    keyHandlerSigs[sig] = true;
-    keyHandlers.push({ key: key, fn: fn });
+    var id = _stableHandlerId('tecla', explicitId, fn);
+    if (!keyHandlers[id]) keyHandlerOrder.push(id);
+    keyHandlers[id] = { key: key, fn: fn };
   }
   // Sobreposição: registra pares (getA, getB, fn) e checa num rAF interno (começa
   // sob demanda). Edge-triggered: dispara UMA vez quando começam a encostar. Os
   // sprites entram como thunks (() => sprite) — resolvidos no disparo, então a
   // ordem dos blocos no topo não causa erro de "antes de declarar".
-  var overlapHandlers = [];
-  var MAX_OVERLAP_HANDLERS = 32;
-  var overlapLimitWarned = false;
-  var overlapLoopStarted = false;
-  function overlapTick() {
+  var overlapHandlers = Object.create(null);
+  var _overlapOrder = [];
+  function _runOverlapHandlers() {
     // "Pausar o jogo" congela também a checagem de sobreposição: sem isto, dois
     // sprites parados encostados seguiriam disparando o "quando encostar", e ao
     // despausar viria uma borda FALSA. Congelar o wasOverlapping preserva o estado.
     if (!_paused) {
-      for (var i = 0; i < overlapHandlers.length; i++) {
-        var h = overlapHandlers[i];
+      var handlers = _overlapOrder.slice();
+      for (var i = 0; i < handlers.length; i++) {
+        var id = handlers[i];
+        var h = overlapHandlers[id];
+        if (!h) continue;
         var a = null, b = null;
         try { a = h.getA(); b = h.getB(); } catch (e) { h.wasOverlapping = false; continue; }
         var over = isColliding(a, b);
         if (over && !h.wasOverlapping) {
-          try { h.fn(); } catch (err) { console.error(err && err.message ? err.message : err); }
+          try { h.fn(); }
+          catch (error) {
+            _reportHandlerError('“Quando encostar”', id, error);
+            _removeOrdered(overlapHandlers, _overlapOrder, id);
+          }
         }
         h.wasOverlapping = over;
       }
     }
-    requestAnimationFrame(overlapTick);
   }
-  function onOverlap(getA, getB, fn) {
+  function onOverlap(getA, getB, fn, explicitId) {
     if (typeof getA !== 'function' || typeof getB !== 'function' || typeof fn !== 'function') return;
-    if (overlapHandlers.length >= MAX_OVERLAP_HANDLERS) {
-      if (!overlapLimitWarned) {
-        overlapLimitWarned = true;
-        console.warn(
-          'SZGame2D: muitos "quando encostar" registrados (limite ' + MAX_OVERLAP_HANDLERS +
-            '). Registros extras serão ignorados. Dica: registre "quando encostar" FORA do "a cada quadro".'
-        );
-      }
+    if (_runningLoopId && !explicitId) {
+      warnOnce('evento-contato-no-quadro', '“Quando encostar” deve ficar no início, fora de “A cada quadro”.');
       return;
     }
-    overlapHandlers.push({ getA: getA, getB: getB, fn: fn, wasOverlapping: false });
-    if (!overlapLoopStarted) { overlapLoopStarted = true; requestAnimationFrame(overlapTick); }
+    var id = _stableHandlerId('contato', explicitId, fn);
+    if (!overlapHandlers[id]) _overlapOrder.push(id);
+    overlapHandlers[id] = { getA: getA, getB: getB, fn: fn, wasOverlapping: false };
+    _ensureDriver();
   }
 
   // ---- Perguntas (booleanos): "tecla apertada?" e "sprites se tocando?" ----
@@ -2221,9 +2305,73 @@ export const gameTwoDRuntime = `(function () {
     }
     ctx.restore();
   }
-  /** Reinicia o jogo do zero (recarrega a página do preview). */
+  /**
+   * Reinicia uma partida em memória. O canvas e os assets carregados são
+   * reaproveitados; estado, eventos e quadros da partida anterior são limpos e
+   * cada bloco “Quando o jogo começar” roda novamente.
+   */
   function restart() {
-    try { location.reload(); } catch (e) {}
+    if (_restarting) return;
+    // Projeto legado, criado antes do bloco de início: não há callback que possa
+    // reconstruir suas variáveis léxicas. Mantém a compatibilidade por recarga,
+    // mas todo projeto novo e todos os exemplos usam o reinício em memória.
+    if (!_startOrder.length) {
+      warnOnce('reinicio-legado', 'este projeto antigo ainda não usa “Quando o jogo começar”; vou recarregar o preview para recomeçar.');
+      try { location.reload(); } catch (error) { _reportHandlerError('de reinício', 'legado', error); }
+      return;
+    }
+    _restarting = true;
+    try {
+      if (_driverFrame && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(_driverFrame);
+      _driverFrame = 0;
+      _lastDriverTime = null;
+      _frameAccumulator = 0;
+      _loopHandlers = Object.create(null);
+      _loopOrder = [];
+      pointerHandlers = Object.create(null);
+      pointerHandlerOrder = [];
+      keyHandlers = Object.create(null);
+      keyHandlerOrder = [];
+      overlapHandlers = Object.create(null);
+      _overlapOrder = [];
+      frameCounters = Object.create(null);
+      secondTimers = Object.create(null);
+      _warnedOnce = Object.create(null);
+      _shapes = Object.create(null);
+      _shapeW = 0; _shapeH = 0;
+      particles = [];
+      _particlesDrawnThisFrame = false;
+      _tileMapCreates = 0;
+      _enemyTypeCreates = 0;
+      _frameStamp = 0;
+      world.gravity = 0;
+      _scene = 'inicio';
+      _paused = false;
+      camera.x = 0; camera.y = 0;
+      shakeAmount = 0; shakeActive = false;
+      _stars = null;
+      _forest = null;
+      _banana = null;
+      _aim = { dragging: false, power: 0, angle: 0, vx: 0, vy: 0, released: false };
+      _ai = null;
+      _jumpTapPrev = false;
+      _dinoTapPrev = false;
+      _fpsLast = 0; _fpsFrames = 0; _fpsValue = 0;
+      stopMusic();
+      _releaseAllInputs();
+      try { clear(); } catch (error) { _reportHandlerError('de reinício', 'limpar-tela', error); }
+
+      var starts = _startOrder.slice();
+      for (var i = 0; i < starts.length; i++) {
+        var id = starts[i];
+        var start = _startHandlers[id];
+        if (typeof start !== 'function') continue;
+        try { start(); }
+        catch (error) { _reportHandlerError('“Quando o jogo começar”', id, error); }
+      }
+    } finally {
+      _restarting = false;
+    }
   }
 
   // ---- Cenário: fundo de estrelas rolando + arrastar nave com o dedo ----
@@ -3158,7 +3306,6 @@ export const gameTwoDRuntime = `(function () {
     } catch (e) {}
   }
   /** Som de explosão da banana (reusa a explosão do kit nave). */
-  function playBoom() { playExplosion(); }
 
   // ---- Palco implícito: o runtime é DONO de um canvas + contexto 2D ----
   // Assim os blocos de jogo não precisam mais mostrar "o pincel (ctx)": o código
@@ -3183,6 +3330,12 @@ export const gameTwoDRuntime = `(function () {
     // facilitador (setupStage) seja achável por getElementById("tela") — senão o
     // bloco "pegar tela de desenho" devolve null.
     if (c && !c.id) c.id = 'tela';
+    // Jogos de toque não podem disputar o gesto com scroll/zoom do navegador.
+    // O tabindex permite foco de teclado sem inserir controles visuais extras.
+    if (c) {
+      c.style.touchAction = 'none';
+      if (!c.hasAttribute || !c.hasAttribute('tabindex')) c.tabIndex = 0;
+    }
     _stageCanvas = c;
     try { _stageCtx = c.getContext('2d'); } catch (e) {}
     return _stageCtx;
@@ -3263,6 +3416,7 @@ export const gameTwoDRuntime = `(function () {
     var c = _stageCanvas;
     if (!c) { try { c = document.querySelector('canvas'); } catch (e) {} }
     if (c && typeof w === 'number' && w > 0 && typeof h === 'number' && h > 0) {
+      _fillMode = false;
       c.width = Math.round(w);
       c.height = Math.round(h);
       // Recongela o tamanho lógico no novo tamanho quando o fitScreen rodar.
@@ -3271,7 +3425,13 @@ export const gameTwoDRuntime = `(function () {
     // Cor de fundo escolhida no bloco: vai no canvas E no fundo da janela (a sobra
     // ao redor do canvas centralizado), para a tela inteira combinar com o jogo.
     var color = (typeof bg === 'string' && bg) ? bg : '#0b1020';
-    if (c) c.style.background = color;
+    if (c) {
+      c.style.position = '';
+      c.style.left = '';
+      c.style.top = '';
+      c.style.background = color;
+      c.style.touchAction = 'none';
+    }
     if (document.body) {
       document.body.style.margin = '0';
       document.body.style.background = color;
@@ -3309,6 +3469,7 @@ export const gameTwoDRuntime = `(function () {
     c.style.boxSizing = 'border-box';
     c.style.display = 'block';
     c.style.background = color;
+    c.style.touchAction = 'none';
     if (document.body) {
       document.body.style.margin = '0';
       document.body.style.background = color;
@@ -4026,6 +4187,7 @@ export const gameTwoDRuntime = `(function () {
     arrowsX: arrowsX,
     blink: blink,
     isColliding: isColliding,
+    onStart: onStart,
     gameLoop: gameLoop,
     keys: keys,
     setGravity: setGravity,
@@ -4204,7 +4366,6 @@ export const gameTwoDRuntime = `(function () {
     bananaHitThrower: bananaHitThrower,
     bananaHitCity: bananaHitCity,
     playWhistle: playWhistle,
-    playBoom: playBoom,
     computerTurn: computerTurn,
     drawAimReadout: drawAimReadout,
     // Kit equilibrista (Stick Hero) (v0.13.0).

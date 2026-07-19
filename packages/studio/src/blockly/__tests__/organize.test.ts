@@ -28,27 +28,28 @@ function fakeWorkspace(blocks: ReturnType<typeof fakeBlock>[]) {
   }
 }
 
-describe('organizeBlocks — blocos-container lado a lado', () => {
-  it('põe Estrutura | Aparência | Comportamento em 3 colunas (mesmo y), nessa ordem', () => {
+describe('organizeBlocks — áreas em duas linhas', () => {
+  it('organiza HTML/CSS na primeira linha e início/eventos/loops na segunda', () => {
     // Começam EMPILHADOS na mesma coluna (o sintoma reportado).
     const structure = fakeBlock('sz_frame_structure', 0, 0, 300, 120)
     const appearance = fakeBlock('sz_frame_appearance', 0, 140, 300, 120)
-    const behavior = fakeBlock('sz_frame_behavior', 0, 280, 300, 120)
-    organizeBlocks(fakeWorkspace([structure, appearance, behavior]) as any)
+    const start = fakeBlock('sz_frame_start', 0, 280, 300, 120)
+    const events = fakeBlock('sz_frame_events', 0, 420, 300, 120)
+    const loops = fakeBlock('sz_frame_loops', 0, 560, 300, 120)
+    organizeBlocks(fakeWorkspace([structure, appearance, start, events, loops]) as any)
 
-    // Lado a lado: x estritamente crescente na ordem HTML → CSS → Comportamento.
     expect(structure.pos.x).toBeLessThan(appearance.pos.x)
-    expect(appearance.pos.x).toBeLessThan(behavior.pos.x)
-    // Alinhados no topo (mesma linha) — não um embaixo do outro.
     expect(structure.pos.y).toBe(appearance.pos.y)
-    expect(appearance.pos.y).toBe(behavior.pos.y)
-    // Sem sobreposição: a próxima coluna começa depois da borda direita da anterior.
     expect(appearance.pos.x).toBeGreaterThanOrEqual(structure.pos.x + 300)
-    expect(behavior.pos.x).toBeGreaterThanOrEqual(appearance.pos.x + 300)
+    expect(start.pos.x).toBeLessThan(events.pos.x)
+    expect(events.pos.x).toBeLessThan(loops.pos.x)
+    expect(start.pos.y).toBe(events.pos.y)
+    expect(events.pos.y).toBe(loops.pos.y)
+    expect(start.pos.y).toBeGreaterThan(structure.pos.y)
   })
 
   it('o container fica no topo da coluna; rascunho solto da mesma categoria desce', () => {
-    const behavior = fakeBlock('sz_frame_behavior', 500, 500, 300, 120)
+    const behavior = fakeBlock('sz_frame_start', 500, 500, 300, 120)
     const draft = fakeBlock('sz_js_console_log_text', 0, 0, 200, 40)
     organizeBlocks(fakeWorkspace([draft, behavior]) as any)
     // Ambos na coluna de JS; o frame em cima, o rascunho abaixo.

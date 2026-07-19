@@ -2,6 +2,11 @@ import { describe, expect, it } from 'bun:test'
 import { extractHTMLShell, parseHTML } from '../html'
 
 describe('parseHTML', () => {
+  it('mantém texto solto como texto escapável, nunca como HTML avançado', () => {
+    const ir = parseHTML('&lt;img src=x onerror="alert(1)"&gt;')
+    expect(ir).toEqual([{ type: 'text', text: '<img src=x onerror="alert(1)">' }])
+  })
+
   it('extrai h1 e p simples', () => {
     const ir = parseHTML('<html><body><h1>Oi</h1><p>texto</p></body></html>')
     expect(ir).toEqual([

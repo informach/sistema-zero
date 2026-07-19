@@ -7,27 +7,28 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   // ---- Regra genérica (qualquer seletor + qualquer propriedade) ----
   {
     type: 'sz_css_rule',
-    message0: 'Regra CSS para %1',
-    args0: [{ type: 'field_input', name: 'SELECTOR', text: '.minha-classe' }],
+    message0: 'Regra de estilo para %1',
+    args0: [{ type: 'field_input', name: 'SELECTOR', text: 'body' }],
     message1: 'estilos %1',
     args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'CSSDecl' }],
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
     tooltip:
-      'Regra CSS para qualquer seletor (.classe, #id, .nav a:hover…). Coloque blocos "propriedade: valor" dentro.',
+      'É como apontar para uma parte da página e escolher a roupa dela. No CSS, esse apontador se chama seletor. Coloque as mudanças de estilo dentro.',
   },
   {
     type: 'sz_css_decl',
     message0: '%1: %2',
     args0: [
-      { type: 'field_input', name: 'PROP', text: 'cor' },
-      { type: 'field_input', name: 'VALUE', text: 'valor' },
+      { type: 'field_input', name: 'PROP', text: 'background-color' },
+      { type: 'field_input', name: 'VALUE', text: '#7c3aed' },
     ],
     previousStatement: 'CSSDecl',
     nextStatement: 'CSSDecl',
     colour: C,
-    tooltip: 'Uma propriedade CSS. Vai dentro de uma "Regra CSS".',
+    tooltip:
+      'É uma mudança de roupa: primeiro vem o que muda, depois o novo valor. Vai dentro de uma regra de estilo.',
   },
   {
     type: 'sz_css_comment',
@@ -40,30 +41,34 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_body_background',
-    message0: 'Cor de fundo do body %1',
+    message0: 'Pintar o fundo da página de %1',
     args0: [{ type: 'field_colour_sz', name: 'COLOR', colour: '#0b1020' }],
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
+    tooltip: 'Pinta o papel de parede da página inteira. No CSS, a página inteira se chama body.',
   },
   {
     type: 'sz_css_body_text_color',
-    message0: 'Cor do texto do body %1',
+    message0: 'Pintar todo o texto da página de %1',
     args0: [{ type: 'field_colour_sz', name: 'COLOR', colour: '#e6e9f5' }],
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
+    tooltip: 'Troca de uma vez a cor dos textos da página inteira, chamada body no CSS.',
   },
   {
     type: 'sz_css_body_center',
-    message0: 'Centralizar conteúdo do body',
+    message0: 'Colocar o conteúdo no centro da página',
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
+    tooltip:
+      'Transforma a página numa bandeja e leva tudo para o meio dela. O nome técnico dessa bandeja é layout flex.',
   },
   {
     type: 'sz_css_width',
-    message0: 'Largura do seletor %1 como %2 px',
+    message0: 'Largura de %1 como %2 px',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'VALUE', value: 200, min: 0 },
@@ -71,10 +76,12 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
+    tooltip:
+      'Escolhe o tamanho de uma parte da página de um lado ao outro. px é um pontinho da tela.',
   },
   {
     type: 'sz_css_height',
-    message0: 'Altura do seletor %1 como %2 px',
+    message0: 'Altura de %1 como %2 px',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'VALUE', value: 200, min: 0 },
@@ -82,10 +89,12 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
+    tooltip:
+      'Escolhe o tamanho de uma parte da página de cima até embaixo. px é um pontinho da tela.',
   },
   {
     type: 'sz_css_border',
-    message0: 'Borda do seletor %1 com %2 px sólida na cor %3',
+    message0: 'Contorno de %1 com %2 px na cor %3',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'WIDTH', value: 2, min: 0 },
@@ -94,10 +103,11 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
+    tooltip: 'Desenha uma linha em volta da parte escolhida, como a moldura de um quadro.',
   },
   {
     type: 'sz_css_padding',
-    message0: 'Espaçamento interno do seletor %1 como %2 px',
+    message0: 'Almofada dentro de %1 com %2 px',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'VALUE', value: 8, min: 0 },
@@ -105,10 +115,12 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
+    tooltip:
+      'Afasta o conteúdo da borda por dentro, como uma almofada. O nome técnico dessa almofada é padding.',
   },
   {
     type: 'sz_css_margin',
-    message0: 'Espaçamento externo do seletor %1 como %2 px',
+    message0: 'Espaço ao redor de %1 com %2 px',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'VALUE', value: 8, min: 0 },
@@ -116,12 +128,14 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
+    tooltip:
+      'Abre espaço do lado de fora, separando uma coisa da outra. No CSS, esse espaço se chama margin.',
   },
 
   // ---- Layout flex ----
   {
     type: 'sz_css_display_flex',
-    message0: 'Usar flex no seletor %1 na direção %2',
+    message0: 'Organizar os itens de %1 em %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       {
@@ -136,11 +150,12 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
-    tooltip: 'Coloca os itens em linha ou coluna (modo flex).',
+    tooltip:
+      'Transforma a parte escolhida numa bandeja que organiza seus itens em linha ou coluna. Essa bandeja se chama flex.',
   },
   {
     type: 'sz_css_gap',
-    message0: 'Espaço entre itens do seletor %1 como %2 px',
+    message0: 'Espaço entre os itens de %1 como %2 px',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'VALUE', value: 16, min: 0 },
@@ -148,10 +163,12 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
+    tooltip:
+      'Separa igualmente os itens de uma bandeja flex ou de uma grade. No CSS, isso se chama gap.',
   },
   {
     type: 'sz_css_justify',
-    message0: 'Alinhar na horizontal do seletor %1 como %2',
+    message0: 'Arrumar no eixo principal de %1 como %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       {
@@ -169,10 +186,12 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
+    tooltip:
+      'Move os itens no caminho em que a bandeja flex aponta. Esse caminho se chama eixo principal: horizontal em linha e vertical em coluna.',
   },
   {
     type: 'sz_css_align',
-    message0: 'Alinhar na vertical do seletor %1 como %2',
+    message0: 'Arrumar no eixo transversal de %1 como %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       {
@@ -189,12 +208,14 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
+    tooltip:
+      'Move os itens atravessando o caminho da bandeja flex. Esse caminho se chama eixo transversal: vertical em linha e horizontal em coluna.',
   },
 
   // ---- Tipografia ----
   {
     type: 'sz_css_font_size',
-    message0: 'Tamanho da fonte do seletor %1 como %2 px',
+    message0: 'Tamanho das letras de %1 como %2 px',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'VALUE', value: 16, min: 1 },
@@ -202,10 +223,11 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
+    tooltip: 'Aumenta ou diminui as letras da parte escolhida. px é um pontinho da tela.',
   },
   {
     type: 'sz_css_font_weight',
-    message0: 'Peso da fonte do seletor %1 como %2',
+    message0: 'Traço das letras de %1 como %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       {
@@ -220,10 +242,11 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
+    tooltip: 'Escolhe se as letras ficam normais ou mais grossas, como uma canetinha marcadora.',
   },
   {
     type: 'sz_css_text_align',
-    message0: 'Alinhar texto do seletor %1 como %2',
+    message0: 'Encostar o texto de %1 em %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       {
@@ -239,10 +262,11 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
+    tooltip: 'Leva as linhas de texto para a esquerda, para o centro ou para a direita.',
   },
   {
     type: 'sz_css_text_color',
-    message0: 'Cor do texto do seletor %1 como %2',
+    message0: 'Pintar o texto de %1 de %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#e6e9f5' },
@@ -250,10 +274,11 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
+    tooltip: 'Pinta somente as letras da parte da página que você escolheu.',
   },
   {
     type: 'sz_css_text_transform',
-    message0: 'Caixa do texto do seletor %1 como %2',
+    message0: 'Letras de %1 em %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#menu a' },
       {
@@ -270,11 +295,11 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
-    tooltip: 'Deixa o texto em MAIÚSCULAS, minúsculas, etc.',
+    tooltip: 'Troca as letras para MAIÚSCULAS, minúsculas ou só a primeira letra grande.',
   },
   {
     type: 'sz_css_text_decoration',
-    message0: 'Sublinhado do seletor %1 %2',
+    message0: 'Sublinhado de %1 %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#menu a' },
       {
@@ -293,7 +318,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_letter_spacing',
-    message0: 'Espaço entre letras do seletor %1 como %2 px',
+    message0: 'Espaço entre as letras de %1 como %2 px',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#menu a' },
       { type: 'field_number', name: 'VALUE', value: 1, min: 0 },
@@ -307,7 +332,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   // ---- Fundo e cor ----
   {
     type: 'sz_css_background_color',
-    message0: 'Cor de fundo do seletor %1 como %2',
+    message0: 'Pintar o fundo de %1 de %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#11162b' },
@@ -315,10 +340,11 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
+    tooltip: 'Pinta o fundo da parte escolhida, como preencher uma figura com tinta.',
   },
   {
     type: 'sz_css_gradient',
-    message0: 'Fundo gradiente do seletor %1 de %2 até %3',
+    message0: 'Fundo de %1 mudando de %2 até %3',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_colour_sz', name: 'C1', colour: '#22d3ee' },
@@ -327,13 +353,13 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
-    tooltip: 'Aplica um fundo com gradiente entre duas cores.',
+    tooltip: 'Mistura duas cores aos poucos no fundo. Essa passagem suave se chama gradiente.',
   },
 
   // ---- Caixa e espaço ----
   {
     type: 'sz_css_border_radius',
-    message0: 'Arredondar cantos do seletor %1 como %2 px',
+    message0: 'Arredondar os cantos de %1 em %2 px',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'VALUE', value: 12, min: 0 },
@@ -341,10 +367,11 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
+    tooltip: 'Lixa as pontas da caixa para deixá-las redondas.',
   },
   {
     type: 'sz_css_shadow',
-    message0: 'Sombra no seletor %1 com intensidade %2',
+    message0: 'Sombra de %1 com intensidade %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       {
@@ -360,10 +387,11 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
+    tooltip: 'Coloca uma sombra atrás da caixa para ela parecer levantada do papel.',
   },
   {
     type: 'sz_css_max_width',
-    message0: 'Largura máxima do seletor %1 como %2 px',
+    message0: 'Largura máxima de %1 como %2 px',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'VALUE', value: 1100, min: 0 },
@@ -371,10 +399,12 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
+    tooltip:
+      'Deixa a parte encolher em telas pequenas, mas impede que ela cresça além deste tamanho.',
   },
   {
     type: 'sz_css_width_percent',
-    message0: 'Largura em % do seletor %1 como %2 %',
+    message0: 'Largura de %1 como %2 % da caixa onde está',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'VALUE', value: 100, min: 0, max: 100 },
@@ -382,6 +412,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
+    tooltip: 'Usa uma fatia do espaço disponível. 100% ocupa tudo; 50% ocupa metade.',
   },
 
   // ---- Responsividade (media query) ----
@@ -407,25 +438,38 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'CSSEntry',
     colour: C,
     tooltip:
-      'Regras CSS que só valem quando a tela é menor (no máximo) ou maior (no mínimo) que o tamanho dado. Use para responsividade. Coloque blocos de CSS dentro.',
+      'É uma roupa que se adapta ao tamanho da tela. No CSS, essa regra condicional se chama media query. Coloque os estilos que mudam dentro.',
   },
 
   // ---- Fonte do Google ----
   {
     type: 'sz_css_google_font',
-    message0: 'usar a fonte do Google %1',
+    message0: 'Buscar a fonte do Google %1',
     args0: [{ type: 'field_input', name: 'FONT', text: 'Press Start 2P' }],
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
     tooltip:
-      'Importa uma fonte do Google Fonts (ex.: "Press Start 2P"). Depois aplique com uma regra de font-family no body.',
+      'Traz uma nova letra para o projeto, como pegar uma canetinha no estojo Google Fonts. Depois use o bloco “Usar a fonte”.',
+  },
+  {
+    type: 'sz_css_use_font',
+    message0: 'Usar a fonte %2 em %1',
+    args0: [
+      { type: 'field_input', name: 'SELECTOR', text: 'body' },
+      { type: 'field_name_picker', name: 'FONT', text: 'Press Start 2P', kind: 'font' },
+    ],
+    previousStatement: 'CSSEntry',
+    nextStatement: 'CSSEntry',
+    colour: C,
+    tooltip:
+      'Escolhe qual canetinha desenha as letras da parte selecionada. Primeiro busque a fonte com o bloco do Google.',
   },
 
   // ---- CSS moderno ----
   {
     type: 'sz_css_transition',
-    message0: 'transição suave do seletor %1 por %2 ms',
+    message0: 'Suavizar as mudanças de %1 por %2 ms',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'MS', value: 300, min: 0 },
@@ -433,25 +477,39 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
-    tooltip: 'Anima suavemente as mudanças de estilo do elemento.',
+    tooltip:
+      'Em vez de pular de um estilo para outro, faz a mudança escorregar suavemente. Combine com “Quando o ponteiro passar”.',
+  },
+  {
+    type: 'sz_css_hover',
+    message0: 'Quando o ponteiro passar por %1',
+    args0: [{ type: 'field_input', name: 'SELECTOR', text: '#caixa' }],
+    message1: 'mudar o estilo %1',
+    args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'CSSDecl' }],
+    previousStatement: 'CSSEntry',
+    nextStatement: 'CSSEntry',
+    colour: C,
+    tooltip:
+      'É uma reação ao mouse: enquanto a setinha estiver em cima, as mudanças encaixadas aqui aparecem. No CSS, esse estado se chama hover.',
   },
   {
     type: 'sz_css_grid',
-    message0: 'grade do seletor %1 com %2 colunas e espaço %3 px',
+    message0: 'Organizar %1 numa grade com %2 colunas e espaço %3 px',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
-      { type: 'field_number', name: 'COLS', value: 3, min: 1 },
+      { type: 'field_number', name: 'COLS', value: 3, min: 1, precision: 1 },
       { type: 'field_number', name: 'GAP', value: 16, min: 0 },
     ],
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
-    tooltip: 'Organiza o conteúdo em grade, com N colunas iguais e espaço entre elas.',
+    tooltip:
+      'Arruma os itens como quadrinhos de um tabuleiro. No CSS, esse tabuleiro se chama grid.',
   },
   {
     type: 'sz_css_keyframes',
-    message0: 'animação chamada %1',
-    args0: [{ type: 'field_input', name: 'NAME', text: 'aparecer' }],
+    message0: 'Criar animação chamada %1',
+    args0: [{ type: 'field_input', name: 'NAME', text: 'pulsar' }],
     message1: 'no início %1',
     args1: [{ type: 'input_statement', name: 'FROM', check: 'CSSDecl' }],
     message2: 'no fim %1',
@@ -460,11 +518,11 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'CSSEntry',
     colour: C,
     tooltip:
-      'Cria uma animação, do estado inicial ao final. Para usar, ligue essa animação a um elemento numa Regra CSS.',
+      'É como desenhar o primeiro e o último quadro de um livrinho animado. Depois ligue o nome com o bloco “Animar”.',
   },
   {
     type: 'sz_css_keyframes_steps',
-    message0: 'animação (vários passos) chamada %1',
+    message0: 'Criar animação com vários passos chamada %1',
     args0: [{ type: 'field_input', name: 'NAME', text: 'girar' }],
     message1: 'passos %1',
     args1: [{ type: 'input_statement', name: 'STEPS', check: 'KeyframeStep' }],
@@ -472,7 +530,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'CSSEntry',
     colour: C,
     tooltip:
-      'Animação com VÁRIOS passos (0%, 25%, 50%, 100%…). Arraste blocos "passo" dentro. Ligue a animação a um elemento numa Regra CSS.',
+      'Monta um livrinho animado com quantos quadros você quiser. Use passos como 0%, 50% e 100%, depois ligue o nome com o bloco “Animar”.',
   },
   {
     type: 'sz_css_keyframe_step',
@@ -486,11 +544,33 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     tooltip:
       'Um momento da animação (ex.: "0%", "50%", "100%"). Coloque "propriedade: valor" dentro.',
   },
+  {
+    type: 'sz_css_apply_animation',
+    message0: 'Animar %1 com %2 por %3 segundos e repetir %4',
+    args0: [
+      { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
+      { type: 'field_name_picker', name: 'NAME', text: 'pulsar', kind: 'animation' },
+      { type: 'field_number', name: 'SECONDS', value: 1, min: 0.1, precision: 0.1 },
+      {
+        type: 'field_dropdown',
+        name: 'REPEAT',
+        options: [
+          ['uma vez', '1'],
+          ['para sempre', 'infinite'],
+        ],
+      },
+    ],
+    previousStatement: 'CSSEntry',
+    nextStatement: 'CSSEntry',
+    colour: C,
+    tooltip:
+      'Liga um livrinho animado à parte escolhida. O nome precisa ser igual ao usado em “Criar animação”; o seletor mostra os nomes prontos.',
+  },
 
   // ---- Atalhos: variável CSS, transform, perspectiva e grade ----
   {
     type: 'sz_css_var',
-    message0: 'Variável CSS --%1 = %2 (no seletor %3)',
+    message0: 'Guardar o estilo --%1 = %2 em %3',
     args0: [
       { type: 'field_input', name: 'VARNAME', text: 'cor-principal' },
       { type: 'field_input', name: 'VALUE', text: '#e94560' },
@@ -500,11 +580,11 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'CSSEntry',
     colour: C,
     tooltip:
-      'Cria uma variável CSS reutilizável (ex.: --cor-principal). Use depois escrevendo var(--cor-principal) em qualquer valor.',
+      'É um potinho com nome para guardar uma cor ou medida e reutilizar depois. No CSS, esse potinho se chama variável e é lido com var(--nome).',
   },
   {
     type: 'sz_css_transform',
-    message0: 'Transformar seletor %1 com %2',
+    message0: 'Mover, girar ou esticar %1 com %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_input', name: 'VALUE', text: 'rotate(10deg)' },
@@ -513,11 +593,11 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'CSSEntry',
     colour: C,
     tooltip:
-      'Aplica uma transformação: rotate(45deg), scale(1.2), rotateX(60deg), translateZ(20px)… Combine várias separando por espaço.',
+      'Muda a pose sem empurrar as outras coisas da página. No CSS, isso se chama transform, como rotate(10deg) ou scale(1.2).',
   },
   {
     type: 'sz_css_perspective',
-    message0: 'Perspectiva 3D do seletor %1 como %2 px',
+    message0: 'Profundidade da cena de %1 como %2 px',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#cena' },
       { type: 'field_number', name: 'VALUE', value: 600, min: 0 },
@@ -526,11 +606,11 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'CSSEntry',
     colour: C,
     tooltip:
-      'Dá profundidade 3D aos elementos filhos (perspective). Quanto menor, mais exagerado o 3D.',
+      'É como aproximar a câmera de uma maquete. No CSS, essa sensação de profundidade se chama perspective.',
   },
   {
     type: 'sz_css_grid_template',
-    message0: 'Grade no seletor %1 colunas %2 linhas %3',
+    message0: 'Grade de %1 com colunas %2 e linhas %3',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_input', name: 'COLS', text: 'repeat(3, 1fr)' },
@@ -540,13 +620,13 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'CSSEntry',
     colour: C,
     tooltip:
-      'Monta uma grade (display: grid) com colunas e (opcional) linhas, ex.: "repeat(3, 1fr)" ou "100px auto".',
+      'Monta um tabuleiro com medidas livres para colunas e linhas, como repeat(3, 1fr). É a versão avançada do grid.',
   },
 
   // ---- 🎮 Posição & jogo (as propriedades que os jogos mais usam) ----
   {
     type: 'sz_css_position',
-    message0: 'Posicionamento do seletor %1 como %2',
+    message0: 'Posicionamento de %1 como %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#canvas1' },
       {
@@ -565,11 +645,11 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'CSSEntry',
     colour: C,
     tooltip:
-      'Como o elemento se posiciona. "absoluto" solta ele para você colocar com topo/esquerda — o jeito de centralizar o canvas do jogo.',
+      'Escolhe se a peça fica no caminho normal da página ou solta para você posicionar. O nome técnico dessa regra é position.',
   },
   {
     type: 'sz_css_offset',
-    message0: 'Distância do %1 no seletor %2 como %3',
+    message0: 'Distância do %1 até %2 como %3',
     args0: [
       {
         type: 'field_dropdown',
@@ -588,11 +668,11 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'CSSEntry',
     colour: C,
     tooltip:
-      'A distância de um lado (com "posicionamento absoluto"). Ex.: topo 50% + esquerda 50% centraliza o canvas.',
+      'Move uma peça solta a partir de um lado. Atenção: topo 50% + esquerda 50% leva o CANTO ao centro; para centralizar a peça inteira, use também transform: translate(-50%, -50%).',
   },
   {
     type: 'sz_css_display',
-    message0: 'Exibir o seletor %1 como %2',
+    message0: 'Exibir %1 como %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: 'canvas' },
       {
@@ -610,11 +690,11 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'CSSEntry',
     colour: C,
     tooltip:
-      'Como o elemento ocupa espaço. "bloco" é o normal do canvas (tira o espacinho embaixo); "escondido" some com ele.',
+      'Escolhe como a peça ocupa espaço. “bloco” pega uma linha; “escondido” some sem apagar. No CSS, isso se chama display.',
   },
   {
     type: 'sz_css_overflow',
-    message0: 'O que passa da borda do seletor %1: %2',
+    message0: 'O que passar da borda de %1 deve %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: 'body' },
       {
@@ -632,11 +712,11 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'CSSEntry',
     colour: C,
     tooltip:
-      'O que fazer com o que passa da borda. "esconder" tira as barras de rolagem — bom para o jogo ocupar a tela.',
+      'Decide o que acontece quando o conteúdo transborda da caixa. No CSS, essa torneira se chama overflow.',
   },
   {
     type: 'sz_css_cursor',
-    message0: 'Cursor do mouse no seletor %1 como %2',
+    message0: 'Ponteiro do mouse sobre %1 como %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: 'canvas' },
       {
@@ -656,11 +736,11 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'CSSEntry',
     colour: C,
     tooltip:
-      'O desenho do cursor em cima do elemento. "mãozinha" mostra que dá para clicar; "cruz" é a mira do jogo de tiro.',
+      'Troca o desenho da setinha quando ela passa por cima. A mãozinha avisa que dá para clicar; o nome técnico é cursor.',
   },
   {
     type: 'sz_css_image_rendering',
-    message0: 'Suavização da imagem do seletor %1 como %2',
+    message0: 'Desenho dos pixels de %1 como %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: 'canvas' },
       {
@@ -677,11 +757,11 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'CSSEntry',
     colour: C,
     tooltip:
-      'Como a imagem/canvas fica ao ser ampliado. "pixelada" mantém os quadradinhos nítidos — essencial em pixel art.',
+      'Escolhe se uma imagem aumentada fica lisinha ou mostra seus quadradinhos. Para pixel art, use “pixelada”.',
   },
   {
     type: 'sz_css_object_fit',
-    message0: 'Encaixe da imagem do seletor %1 como %2',
+    message0: 'Encaixar a imagem de %1 como %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: 'img' },
       {
@@ -698,23 +778,25 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
-    tooltip: 'Como a imagem se encaixa no espaço dela sem distorcer.',
+    tooltip:
+      'É como encaixar uma foto numa moldura: pode cobrir, caber inteira, esticar ou manter o tamanho.',
   },
   {
     type: 'sz_css_opacity',
-    message0: 'Opacidade do seletor %1 como %2',
+    message0: 'Transparência de %1 como %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
-      { type: 'field_input', name: 'VALUE', text: '0.5' },
+      { type: 'field_number', name: 'VALUE', value: 0.5, min: 0, max: 1, precision: 0.1 },
     ],
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
-    tooltip: 'De 0 (invisível) a 1 (opaco). Bom para fades e coisas semitransparentes.',
+    tooltip:
+      'Funciona como um vidro: 0 fica invisível e 1 fica totalmente pintado. O nome técnico é opacity.',
   },
   {
     type: 'sz_css_z_index',
-    message0: 'Camada (z-index) do seletor %1 como %2',
+    message0: 'Camada de %1 como %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'VALUE', value: 10, precision: 1 },
@@ -723,26 +805,26 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'CSSEntry',
     colour: C,
     tooltip:
-      'Quem fica na frente de quem. Número maior aparece por cima — bom para o placar ficar sobre o jogo.',
+      'É uma pilha de figurinhas: número maior fica por cima. No CSS, essa camada se chama z-index e precisa de posicionamento.',
   },
   {
     type: 'sz_css_background_image',
-    message0: 'Imagem de fundo do seletor %1: %2',
+    message0: 'Imagem de fundo de %1: %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: 'body' },
-      { type: 'field_input', name: 'URL', text: 'fundo.png' },
+      { type: 'field_asset_picker', name: 'URL', text: 'fundo.png' },
     ],
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
-    tooltip: 'Põe uma imagem do projeto como fundo (repetida como azulejo, se for pequena).',
+    tooltip: 'Escolhe uma imagem do projeto e coloca atrás do conteúdo, como papel de parede.',
   },
 ]
 
 /**
  * Sub-categorias da paleta de CSS (à la Scratch/MakeCode): cada grupo tem ÍCONE e
- * uma cor da FAMÍLIA do CSS (tons de roxo/violeta/rosa), preservando a identidade
- * "CSS é roxo" e ainda dando navegação por cor. Cada bloco herda a cor do grupo.
+ * uma cor da FAMÍLIA do CSS (tons do vermelho da categoria), preservando a identidade
+ * visual e dando navegação por cor. Cada bloco herda a cor do grupo.
  */
 export const CSS_GROUPS: { name: string; colour: string; types: string[] }[] = [
   {
@@ -771,6 +853,8 @@ export const CSS_GROUPS: { name: string; colour: string; types: string[] }[] = [
       'sz_css_text_transform',
       'sz_css_text_decoration',
       'sz_css_letter_spacing',
+      'sz_css_google_font',
+      'sz_css_use_font',
     ],
   },
   {
@@ -806,12 +890,13 @@ export const CSS_GROUPS: { name: string; colour: string; types: string[] }[] = [
     colour: '#b88cff',
     types: [
       'sz_css_transition',
+      'sz_css_hover',
       'sz_css_transform',
       'sz_css_perspective',
       'sz_css_keyframes',
       'sz_css_keyframes_steps',
       'sz_css_keyframe_step',
-      'sz_css_google_font',
+      'sz_css_apply_animation',
     ],
   },
   { name: '📱 Responsivo', colour: '#8b5cf6', types: ['sz_css_media_query'] },
@@ -842,7 +927,25 @@ CSS_GROUPS.forEach((g, i) => {
 const CSS_COLOUR_BY_TYPE = new Map<string, string>(
   CSS_GROUPS.flatMap((g) => g.types.map((t) => [t, g.colour] as const)),
 )
+
+function isFieldDefinition(
+  value: unknown,
+): value is { name?: unknown; type?: unknown; kind?: unknown } {
+  return typeof value === 'object' && value !== null
+}
+
 for (const b of CSS_BLOCKS) {
+  // Consumidores escolhem uma parte já criada no HTML, mas continuam aceitando
+  // texto livre para seletores avançados e round-trip fiel.
+  for (const args of [b.args0, b.args1, b.args2]) {
+    for (const arg of args ?? []) {
+      if (!isFieldDefinition(arg)) continue
+      if (arg.name === 'SELECTOR' && arg.type === 'field_input') {
+        arg.type = 'field_name_picker'
+        arg.kind = 'selector'
+      }
+    }
+  }
   const colour = CSS_COLOUR_BY_TYPE.get(b.type)
   if (colour) b.colour = colour
 }

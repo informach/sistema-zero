@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { compileStatements, generateJS } from '#generators'
-import { SZIRSchema } from '#ir'
+import { behaviorStatements, SZIRV2Schema } from '#ir'
 import {
   CORE_EXAMPLES,
   defesaDaTorreNaMaoExample,
@@ -17,7 +17,7 @@ describe('CORE_EXAMPLES — Folio 3D procedural (Canvas 3D sem extensão)', () =
     expect(CORE_EXAMPLES).toContain(folioCanvasProceduralExample)
     expect(folioCanvasProceduralExample.ir.extensions).toEqual([])
     expect(folioCanvasProceduralExample.assets ?? []).toEqual([])
-    expect(SZIRSchema.safeParse(folioCanvasProceduralExample.ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(folioCanvasProceduralExample.ir).success).toBe(true)
 
     const types = collectTypes(folioCanvasProceduralExample.ir)
     expect(types.has('rawJS')).toBe(false)
@@ -28,7 +28,7 @@ describe('CORE_EXAMPLES — Folio 3D procedural (Canvas 3D sem extensão)', () =
   })
 
   it('gera Three.js e o kernel próprio sem Rapier/WASM', () => {
-    const code = generateJS({ statements: folioCanvasProceduralExample.ir.js })
+    const code = generateJS({ statements: behaviorStatements(folioCanvasProceduralExample.ir) })
     expect(code).toContain("import * as THREE from 'three'")
     expect(code).toContain('function createSZPhysicsLite')
     expect(code).not.toContain('Rapier')
@@ -53,7 +53,7 @@ describe('CORE_EXAMPLES — gorilasNaMaoExample (na mão, sem extensão)', () =>
   })
 
   it('tem IR válido contra o SZIRSchema', () => {
-    expect(SZIRSchema.safeParse(gorilasNaMaoExample.ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(gorilasNaMaoExample.ir).success).toBe(true)
   })
 
   it('NÃO usa código avançado (rawJS/rawHTML) nem nenhum bloco g2d/g3d', () => {
@@ -77,7 +77,7 @@ describe('CORE_EXAMPLES — gorilasNaMaoExample (na mão, sem extensão)', () =>
       expect(types.has(expected)).toBe(true)
     }
     // o gerador produz o JS esperado (estilo do moinho, modo escuro)
-    const code = compileStatements(gorilasNaMaoExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(gorilasNaMaoExample.ir), 0)
     expect(code).toContain('.style.animationDuration')
     expect(code).toContain("matchMedia('(prefers-color-scheme: dark)').matches")
   })
@@ -87,7 +87,7 @@ describe('CORE_EXAMPLES — invadersNaMaoExample (classes 100% núcleo)', () => 
   it('está em CORE_EXAMPLES, sem extensões e com IR válido', () => {
     expect(CORE_EXAMPLES).toContain(invadersNaMaoExample)
     expect(invadersNaMaoExample.ir.extensions).toEqual([])
-    expect(SZIRSchema.safeParse(invadersNaMaoExample.ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(invadersNaMaoExample.ir).success).toBe(true)
   })
 
   it('NÃO usa código avançado nem blocos de extensão', () => {
@@ -125,7 +125,7 @@ describe('CORE_EXAMPLES — plataformaVerticalNaMaoExample (plataforma 100% núc
   it('está em CORE_EXAMPLES, sem extensões e com IR válido', () => {
     expect(CORE_EXAMPLES).toContain(plataformaVerticalNaMaoExample)
     expect(plataformaVerticalNaMaoExample.ir.extensions).toEqual([])
-    expect(SZIRSchema.safeParse(plataformaVerticalNaMaoExample.ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(plataformaVerticalNaMaoExample.ir).success).toBe(true)
   })
 
   it('NÃO usa código avançado nem blocos de extensão', () => {
@@ -151,7 +151,7 @@ describe('CORE_EXAMPLES — plataformaVerticalNaMaoExample (plataforma 100% núc
     // é 100% desenhado: não precisa de nenhum asset embutido
     expect(plataformaVerticalNaMaoExample.assets ?? []).toEqual([])
     // a câmera na mão (scale + translate) sobrevive no código gerado
-    const code = compileStatements(plataformaVerticalNaMaoExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(plataformaVerticalNaMaoExample.ir), 0)
     expect(code).toContain('ctx.scale(scale, scale)')
     expect(code).toContain('ctx.translate(0 - camera.x, 0 - camera.y)')
   })
@@ -161,7 +161,7 @@ describe('CORE_EXAMPLES — portasDoCasteloNaMaoExample (platformer + passagem d
   it('está em CORE_EXAMPLES, sem extensões e com IR válido', () => {
     expect(CORE_EXAMPLES).toContain(portasDoCasteloNaMaoExample)
     expect(portasDoCasteloNaMaoExample.ir.extensions).toEqual([])
-    expect(SZIRSchema.safeParse(portasDoCasteloNaMaoExample.ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(portasDoCasteloNaMaoExample.ir).success).toBe(true)
   })
 
   it('NÃO usa código avançado nem blocos de extensão', () => {
@@ -185,7 +185,7 @@ describe('CORE_EXAMPLES — portasDoCasteloNaMaoExample (platformer + passagem d
       expect(types.has(expected)).toBe(true)
     }
     expect(portasDoCasteloNaMaoExample.assets ?? []).toEqual([])
-    const code = compileStatements(portasDoCasteloNaMaoExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(portasDoCasteloNaMaoExample.ir), 0)
     expect(code).toContain('ctx.globalAlpha = fade')
     expect(code).toContain('loadLevel(nextLevel)')
   })
@@ -195,7 +195,7 @@ describe('CORE_EXAMPLES — defesaDaTorreNaMaoExample (tower defense na unha)', 
   it('está em CORE_EXAMPLES, sem extensões e com IR válido', () => {
     expect(CORE_EXAMPLES).toContain(defesaDaTorreNaMaoExample)
     expect(defesaDaTorreNaMaoExample.ir.extensions).toEqual([])
-    expect(SZIRSchema.safeParse(defesaDaTorreNaMaoExample.ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(defesaDaTorreNaMaoExample.ir).success).toBe(true)
   })
 
   it('NÃO usa código avançado nem blocos de extensão', () => {
@@ -219,7 +219,7 @@ describe('CORE_EXAMPLES — defesaDaTorreNaMaoExample (tower defense na unha)', 
       expect(types.has(expected)).toBe(true)
     }
     expect(defesaDaTorreNaMaoExample.assets ?? []).toEqual([])
-    const code = compileStatements(defesaDaTorreNaMaoExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(defesaDaTorreNaMaoExample.ir), 0)
     expect(code).toContain('Math.hypot(ax - bx, ay - by)')
     expect(code).toContain('Math.atan2(target.y - this.y, target.x - this.x)')
   })
@@ -229,7 +229,7 @@ describe('CORE_EXAMPLES — dueloNaMaoExample (luta 2 jogadores na unha)', () =>
   it('está em CORE_EXAMPLES, sem extensões e com IR válido', () => {
     expect(CORE_EXAMPLES).toContain(dueloNaMaoExample)
     expect(dueloNaMaoExample.ir.extensions).toEqual([])
-    expect(SZIRSchema.safeParse(dueloNaMaoExample.ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(dueloNaMaoExample.ir).success).toBe(true)
   })
 
   it('NÃO usa código avançado nem blocos de extensão', () => {
@@ -254,7 +254,7 @@ describe('CORE_EXAMPLES — dueloNaMaoExample (luta 2 jogadores na unha)', () =>
       expect(types.has(expected)).toBe(true)
     }
     expect(dueloNaMaoExample.assets ?? []).toEqual([])
-    const code = compileStatements(dueloNaMaoExample.ir.js, 0)
+    const code = compileStatements(behaviorStatements(dueloNaMaoExample.ir), 0)
     expect(code).toContain('p2.health = p2.health - 15')
   })
 })

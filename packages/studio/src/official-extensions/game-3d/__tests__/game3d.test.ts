@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { compileStatements, generateCSS, generateHTML } from '#generators'
-import { G3D_STATEMENT_TYPES, type JSStatement, SZIRSchema } from '#ir'
+import { G3D_STATEMENT_TYPES, type JSStatement, SZIRV2Schema } from '#ir'
 import {
   crossingExample,
   dodgeExample,
@@ -583,35 +583,35 @@ describe('game-3d — schema e exemplo', () => {
   })
 
   it('o exemplo "Cubo girando" tem IR válido', () => {
-    expect(SZIRSchema.safeParse(rotatingCubeExample.ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(rotatingCubeExample.ir).success).toBe(true)
   })
 
   it('o exemplo "Desvie dos blocos" tem IR válido', () => {
-    expect(SZIRSchema.safeParse(dodgeExample.ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(dodgeExample.ir).success).toBe(true)
   })
 
   it('o exemplo "Atravesse a rua" tem IR válido', () => {
-    expect(SZIRSchema.safeParse(crossingExample.ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(crossingExample.ir).success).toBe(true)
   })
 
   it('o exemplo "Corrida maluca" tem IR válido', () => {
-    expect(SZIRSchema.safeParse(raceExample.ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(raceExample.ir).success).toBe(true)
   })
 
   it('o exemplo "Torre maluca" tem IR válido', () => {
-    expect(SZIRSchema.safeParse(stackExample.ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(stackExample.ir).success).toBe(true)
   })
 
   it('o exemplo "Boneco de formas" tem IR válido', () => {
-    expect(SZIRSchema.safeParse(shapesExample.ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(shapesExample.ir).success).toBe(true)
   })
 
   it('o exemplo "Noite enevoada" tem IR válido', () => {
-    expect(SZIRSchema.safeParse(nightExample.ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(nightExample.ir).success).toBe(true)
   })
 
   it('o exemplo "Enxame que gira" tem IR válido', () => {
-    expect(SZIRSchema.safeParse(swarmExample.ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(swarmExample.ir).success).toBe(true)
   })
 })
 

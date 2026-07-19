@@ -42,6 +42,8 @@ export const gameKitRuntime = `(function () {
   var drawHooks = [];
   var gameStartHooks = [];
   var enterStateHooks = Object.create(null); // estado -> [fn]
+  var projectFactory = null;
+  var runningProjectFactory = false;
   var screens = Object.create(null);     // nome -> { el, title, text, mainBtn }
   var stageEl = null;
   var canvasEl = null;
@@ -434,8 +436,15 @@ export const gameKitRuntime = `(function () {
     state = 'jogando';
     applyStateScreens(state);
     lastTime = now();
-    for (var i = 0; i < gameStartHooks.length; i++) {
-      try { gameStartHooks[i](); } catch (e) { warn('erro no "quando começar uma partida": ' + e); }
+    if (projectFactory) {
+      resetProjectRegistrations();
+      executeProjectFactory();
+      var initialMap = rpg.startMap || rpgFirstValidMap();
+      if (initialMap) rpgGoMap(initialMap);
+    } else {
+      for (var i = 0; i < gameStartHooks.length; i++) {
+        try { gameStartHooks[i](); } catch (e) { warn('erro no "quando começar uma partida": ' + e); }
+      }
     }
     runEnterStateHooks(state, prev, true);
   }
@@ -5565,6 +5574,49 @@ export const gameKitRuntime = `(function () {
     // só ESCOLHE com quem batalhar. Registro PERSISTENTE (como os moldes/aparências).
     battlerDefs: nameMap()
   };
+
+  function resetProjectRegistrations() {
+    updateHooks.length = 0;
+    drawHooks.length = 0;
+    hudHooks.length = 0;
+    gameClickHooks.length = 0;
+    gameStartHooks.length = 0;
+    enterStateHooks = Object.create(null);
+    listeners = Object.create(null);
+    turnHooks.length = 0;
+    landHooks.length = 0;
+    cards.onTurn.length = 0;
+    cards.onEnemyTurn.length = 0;
+    rpg.npcTalk = nameMap();
+    rpg.maps = nameMap();
+    rpg.mapEnter = nameMap();
+    rpg.mapOrder = [];
+    rpg.startMap = '';
+    rpg.currentMap = '';
+    rpg.mapCols = 0;
+    rpg.mapRows = 0;
+    rpg.stepHandlers = {};
+    rpg.foeTurnHooks = nameMap();
+    rpg.onBattleEnd.length = 0;
+  }
+
+  function executeProjectFactory() {
+    if (typeof projectFactory !== 'function' || runningProjectFactory) return;
+    runningProjectFactory = true;
+    try { projectFactory(); }
+    catch (e) { warn('erro em "Ao iniciar": ' + e); }
+    runningProjectFactory = false;
+  }
+
+  function runProject(fn) {
+    if (typeof fn !== 'function') {
+      warn('o projeto precisa de uma função de início');
+      return;
+    }
+    projectFactory = fn;
+    resetProjectRegistrations();
+    executeProjectFactory();
+  }
   var SAVE_KEY = 'szgk-rpg-save'; // localStorage do preview (persiste por projeto)
   var DIALOG_CPS = 30; // velocidade do typewriter (chars/segundo)
   var DIR_ROW = { down: 0, up: 1, left: 2, right: 3 }; // linha da folha por direção
@@ -7094,7 +7146,7 @@ export const gameKitRuntime = `(function () {
     setup: guard('setup', function (opts) {
       var o = (opts && typeof opts === 'object') ? opts : {};
       if (started) {
-        warn('"Preparar o jogo" depois de começar não muda a tela — deixe-o no comecinho');
+        if (!runningProjectFactory) warn('"Preparar o jogo" depois de começar não muda a tela — deixe-o no comecinho');
         return;
       }
       config.fill = false; // "Preparar o jogo" normal = resolução fixa (letterbox)
@@ -7108,7 +7160,7 @@ export const gameKitRuntime = `(function () {
     setupFull: guard('setupFull', function (opts) {
       var o = (opts && typeof opts === 'object') ? opts : {};
       if (started) {
-        warn('"Preparar o jogo" depois de começar não muda a tela — deixe-o no comecinho');
+        if (!runningProjectFactory) warn('"Preparar o jogo" depois de começar não muda a tela — deixe-o no comecinho');
         return;
       }
       config.fill = true;
@@ -7645,6 +7697,9 @@ export const gameKitRuntime = `(function () {
     } catch (e) {}
   }
 
+  Object.defineProperty(api, 'runProject', {
+    value: guard('runProject', runProject), enumerable: false
+  });
   window.SZGameKit = api;
 })();
 `

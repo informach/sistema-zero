@@ -1,4 +1,5 @@
 import type { BlockLevel } from '#core'
+import { HTML_ADVANCED_BLOCK_TYPES, HTML_INTERMEDIATE_BLOCK_TYPES } from '../html/catalog'
 
 /**
  * Nível de dificuldade POR BLOCO (curadoria da paleta do Estúdio) — a fonte da
@@ -8,16 +9,16 @@ import type { BlockLevel } from '#core'
  * - **Iniciante 2D** = FACILITADORES (blocos "de um toque" com resultado visual) +
  *   um kit essencial de lógica (Se, variáveis, repetir, comparar, valores básicos).
  *   É o DEFAULT: todo bloco NÃO listado abaixo é iniciante-2d.
- * - **Iniciante 3D** = a PORTA DE ENTRADA do 3D: os facilitadores do Jogo 3D
- *   (`sz_g3d_*` não-avançados) — piso por prefixo.
+ * - **Iniciante 3D** = a PORTA DE ENTRADA do 3D: todos os blocos do Jogo 3D
+ *   (`sz_g3d_*`) — a aula continua escolhendo quais deles revelar.
  * - **Intermediário 2D** = programação "real" guiada (variáveis avulsas, laços,
  *   funções, getters/setters, desenho manual, matemática básica) + caminho feliz
  *   e kits de gênero do Jogo 2D Avançado.
  * - **Intermediário 3D** = Mundo 3D (mundo aberto dirigível, blocos "mágicos").
  * - **Avançado 2D** = baixo nível / expert em 2D (classes/OOP, objetos, código
  *   cru, física manual, trigonometria, vetores, dados e peças internas de motor).
- * - **Avançado 3D** = engine de verdade: getters/física do Jogo 3D, Jogo 3D
- *   Avançado (`sz_g3k_*`) e Canvas 3D three.js cru (`sz_t3d_*`).
+ * - **Avançado 3D** = Jogo 3D Avançado (`sz_g3k_*`) e Canvas 3D three.js cru
+ *   (`sz_t3d_*`).
  *
  * É CUMULATIVO na escada (cada degrau inclui os anteriores — o gate usa
  * `isLevelWithin`; note que os degraus "2D" a partir do int-2d INCLUEM o
@@ -27,28 +28,17 @@ import type { BlockLevel } from '#core'
  *
  * ⚠️ Os frames (🗂️ Áreas do projeto) NÃO entram aqui — são sempre visíveis.
  * ⚠️ Adicionou um bloco? Decida o degrau: core/g2d intermediário → `INTERMEDIARIO_2D`;
- * core/g2d avançado → `AVANCADO_2D`; g3d avançado → `AVANCADO_3D`; senão os
+ * core/g2d avançado → `AVANCADO_2D`; senão os
  * defaults por prefixo decidem (g3d→ini-3d, gk→int-2d, w3d→int-3d, g3k/t3d→av-3d,
  * resto→ini-2d) — o teste de conformidade cobra.
  */
 
 const INTERMEDIARIO_2D: ReadonlySet<string> = new Set<string>([
   // ── CORE ──────────────────────────────────────────────────────────────────
-  // HTML — containers estruturais (só "aparecem" com CSS) + fragmento solto
-  'sz_html_div',
-  'sz_html_header',
-  'sz_html_nav',
-  'sz_html_section',
-  'sz_html_main',
-  'sz_html_footer',
-  'sz_html_ul',
-  'sz_html_form',
-  'sz_html_text',
-  'sz_html_comment',
-  // SVG — container + reuso + a 🎨 Aparência (setters por seletor)
-  'sz_html_svg',
-  'sz_svg_group',
-  'sz_svg_use',
+  // HTML — containers estruturais (só "aparecem" com CSS) + fragmento solto.
+  // Lista/formulário ficam inteiros no iniciante; o catálogo é a fonte única.
+  ...HTML_INTERMEDIATE_BLOCK_TYPES,
+  // SVG — a 🎨 Aparência (setters por seletor); os elementos vêm do catálogo.
   'sz_css_fill',
   'sz_css_stroke',
   'sz_css_stroke_width',
@@ -59,29 +49,32 @@ const INTERMEDIARIO_2D: ReadonlySet<string> = new Set<string>([
   'sz_css_rule',
   'sz_css_decl',
   'sz_css_comment',
-  'sz_css_text_color',
-  'sz_css_background_color',
   'sz_css_gradient',
-  'sz_css_font_size',
   'sz_css_font_weight',
   'sz_css_text_align',
   'sz_css_text_transform',
   'sz_css_text_decoration',
   'sz_css_letter_spacing',
-  'sz_css_width',
-  'sz_css_height',
   'sz_css_max_width',
   'sz_css_width_percent',
-  'sz_css_padding',
-  'sz_css_margin',
-  'sz_css_border',
-  'sz_css_border_radius',
   'sz_css_shadow',
   'sz_css_display_flex',
   'sz_css_gap',
   'sz_css_justify',
   'sz_css_align',
   'sz_css_google_font',
+  'sz_css_use_font',
+  // CSS para jogos/posicionamento — útil, mas vem depois de cor, letra e caixa.
+  'sz_css_position',
+  'sz_css_offset',
+  'sz_css_display',
+  'sz_css_overflow',
+  'sz_css_cursor',
+  'sz_css_image_rendering',
+  'sz_css_object_fit',
+  'sz_css_opacity',
+  'sz_css_z_index',
+  'sz_css_background_image',
   // DOM — evento por nome + busca/leitura/escrita de elementos (getters/setters)
   'sz_js_on_event_named',
   'sz_val_is_fullscreen',
@@ -204,23 +197,24 @@ const INTERMEDIARIO_2D: ReadonlySet<string> = new Set<string>([
 
 const AVANCADO_2D: ReadonlySet<string> = new Set<string>([
   // ── CORE ──────────────────────────────────────────────────────────────────
+  ...HTML_ADVANCED_BLOCK_TYPES,
   // ⏳ Assíncrono — promessas/await (concorrência de verdade)
   'sz_js_await',
   'sz_val_new_promise',
   'sz_val_promise_all',
   'sz_js_set_timeout_call',
-  // SVG — caminho (sintaxe "d")
-  'sz_svg_path',
   // CSS — recursos avançados (variável, grid, transição, transform, 3D, animação, responsivo)
   'sz_css_var',
   'sz_css_grid',
   'sz_css_grid_template',
   'sz_css_transition',
+  'sz_css_hover',
   'sz_css_transform',
   'sz_css_perspective',
   'sz_css_keyframes',
   'sz_css_keyframes_steps',
   'sz_css_keyframe_step',
+  'sz_css_apply_animation',
   'sz_css_media_query',
   // DOM — baixo nível
   'sz_js_event_method',
@@ -413,44 +407,69 @@ const AVANCADO_2D: ReadonlySet<string> = new Set<string>([
   'sz_gk_tween_property',
 ])
 
-// ── EXTENSÃO Jogo 3D — getters/manual/física: o lado ENGINE do kit 3D. Os
-// facilitadores 3D ficam no piso iniciante-3d (prefixo); estes sobem ao topo.
-// ⚠️ Separado do AVANCADO_2D de propósito: no set único antigo, o degrau
-// "Avançado 2D" veria física 3D — quebraria a promessa do eixo.
-const AVANCADO_3D: ReadonlySet<string> = new Set<string>([
-  'sz_g3d_set_camera',
-  'sz_g3d_set_position',
-  'sz_g3d_set_rotation',
-  'sz_g3d_set_scale',
-  'sz_g3d_set_velocity',
-  'sz_g3d_get_pos',
-  'sz_g3d_get_rot',
-  'sz_g3d_get_scale',
-  'sz_g3d_get_vel',
-  'sz_g3d_get_speed',
-  'sz_g3d_is_moving',
-  'sz_g3d_dt',
-  'sz_g3d_move_by',
-  'sz_g3d_rotate_by',
-  'sz_g3d_move_towards',
-  'sz_g3d_angle_to',
-  'sz_g3d_distance_to',
-  'sz_g3d_ground_height',
-  'sz_g3d_set_fov',
-  'sz_g3d_set_opacity',
-  'sz_g3d_create_model',
-  'sz_g3d_add_to_model',
-  'sz_g3d_remove_object',
-  'sz_g3d_body',
-  'sz_g3d_step_body',
-  'sz_g3d_set_solid',
-  'sz_g3d_resolve_collision',
-  'sz_g3d_create_swarm',
-  'sz_g3d_for_each_swarm',
-  'sz_g3d_remove_from_swarm',
-  'sz_g3d_prune_swarm',
-  'sz_g3d_play_note',
-  'sz_g3d_create_group',
+// Jogo 3D é inteiramente iniciante-3d. A divulgação progressiva é feita pela
+// curadoria de cada aula (`allowBlocks`), portanto nenhum bloco `sz_g3d_*` sobe
+// de nível só por expor ajustes finos ou física.
+const AVANCADO_3D: ReadonlySet<string> = new Set<string>()
+
+// Canvas 3D de alto nível: receitas completas e verbos visuais podem aparecer
+// junto do Mundo 3D. Construtores/imports/matrizes continuam no avançado-3d.
+const INTERMEDIARIO_3D: ReadonlySet<string> = new Set<string>([
+  'sz_t3d_set_position',
+  'sz_t3d_set_rotation',
+  'sz_t3d_rotate_axis',
+  'sz_t3d_set_scale',
+  'sz_t3d_look_at',
+  'sz_t3d_lerp_position',
+  'sz_t3d_set_visible',
+  'sz_t3d_add_to',
+  'sz_t3d_set_color',
+  'sz_t3d_set_background',
+  'sz_t3d_set_fog',
+  'sz_t3d_set_shadow',
+  'sz_t3d_set_intensity',
+  'sz_t3d_renderer_size',
+  'sz_t3d_renderer_config',
+  'sz_t3d_renderer_responsive',
+  'sz_t3d_enable_shadows',
+  'sz_t3d_mount_renderer',
+  'sz_t3d_render',
+  'sz_t3d_load_model',
+  'sz_t3d_load_environment',
+  'sz_t3d_load_sound',
+  'sz_t3d_traverse',
+  'sz_t3d_dispose_object',
+  'sz_t3d_particles',
+  'sz_t3d_water',
+  'sz_t3d_water_wave',
+  'sz_t3d_grass',
+  'sz_t3d_grass_wave',
+  'sz_t3d_sign',
+  'sz_t3d_primitive',
+  'sz_t3d_terrain',
+  'sz_t3d_road',
+  'sz_t3d_building',
+  'sz_t3d_city',
+  'sz_t3d_physics_setup',
+  'sz_t3d_physics_static_box',
+  'sz_t3d_physics_static_sphere',
+  'sz_t3d_physics_static_object',
+  'sz_t3d_physics_static_city',
+  'sz_t3d_physics_body',
+  'sz_t3d_physics_move',
+  'sz_t3d_physics_jump',
+  'sz_t3d_physics_trigger',
+  'sz_t3d_physics_step',
+  'sz_t3d_physics_velocity',
+  'sz_t3d_physics_impulse',
+  'sz_t3d_physics_teleport',
+  'sz_t3d_physics_remove',
+  'sz_t3d_physics_clear',
+  'sz_t3d_physics_on_collision',
+  'sz_t3d_physics_on_trigger',
+  'sz_t3d_physics_raycast',
+  'sz_t3d_physics_body_state',
+  'sz_t3d_physics_stats',
 ])
 
 // Posição dos kits 3D dirigíveis na escada (decisão da usuária 17/07) — parâmetros
@@ -464,12 +483,13 @@ const W3D_LEVEL: BlockLevel = 'intermediario-3d'
  * de lógica) é iniciante-2d.
  */
 export function resolveBlockLevel(type: string): BlockLevel {
+  if (type.startsWith('sz_g3d_')) return G3D_FLOOR
   if (AVANCADO_3D.has(type)) return 'avancado-3d'
   if (AVANCADO_2D.has(type)) return 'avancado-2d'
+  if (INTERMEDIARIO_3D.has(type)) return 'intermediario-3d'
   if (INTERMEDIARIO_2D.has(type)) return 'intermediario-2d'
   // Jogo 3D é a PORTA DE ENTRADA do 3D: piso iniciante-3d por prefixo — os
-  // facilitadores caem aqui (o lado engine já saiu no AVANCADO_3D acima).
-  if (type.startsWith('sz_g3d_')) return G3D_FLOOR
+  // extensão inteira cai aqui; a aula decide o subconjunto visível.
   // Jogo 2D Avançado: o caminho feliz e os kits são intermediário-2d; as peças
   // internas de motor já foram separadas no AVANCADO_2D acima.
   if (type.startsWith('sz_gk_')) return 'intermediario-2d'
@@ -486,4 +506,9 @@ export function resolveBlockLevel(type: string): BlockLevel {
 }
 
 /** Exportados só para o teste de conformidade (completude/sem sobreposição/sem typo). */
-export const _LEVEL_SETS = { INTERMEDIARIO_2D, AVANCADO_2D, AVANCADO_3D } as const
+export const _LEVEL_SETS = {
+  INTERMEDIARIO_2D,
+  INTERMEDIARIO_3D,
+  AVANCADO_2D,
+  AVANCADO_3D,
+} as const

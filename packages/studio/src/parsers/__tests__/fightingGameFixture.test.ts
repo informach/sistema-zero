@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import { generateProjectFiles } from '#generators'
-import { SZIRSchema } from '#ir'
+import { SZIRV2Schema } from '#ir'
 import 'blockly/blocks'
 import { buildIRFromWorkspace } from '../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../blockly/setup'
@@ -256,7 +256,7 @@ describe('parsers — duelo "na mão" (núcleo, sem extensão)', () => {
     expect(
       [...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:') || t.startsWith('gk:')),
     ).toBe(false)
-    expect(SZIRSchema.safeParse(ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(ir).success).toBe(true)
     for (const t of [
       'classDecl',
       'funcDecl',

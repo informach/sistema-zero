@@ -105,6 +105,7 @@ export interface KitApi {
   start(): void
   state(): string
   setState(name: string): void
+  onEnterState(name: string, fn: () => void): void
   defineMold(name: string, opts: Record<string, unknown>, fn: () => void): void
   part(opts: Record<string, unknown>): void
   spawn(mold: string, x: number, y: number, z: number): unknown

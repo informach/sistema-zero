@@ -1,4 +1,6 @@
 import type { HTMLNode, HTMLShell } from '#ir'
+import { HTML_ELEMENT_CATALOG } from '../html/catalog'
+import { headContainsCanonicalScript } from '../html/wiring'
 import { escapeScriptContent, escapeStyleContent } from './escape'
 import { assertGeneratorDepth } from './js'
 import { countLines, SourceMapBuilder } from './sourceMap'
@@ -97,6 +99,9 @@ export function generateHTMLWithMap(opts: GenerateHTMLOptions): GenerateHTMLWith
     jsInlineBlock = inlineScript(opts.jsCode, jsModule)
     headExtra.push(jsInlineBlock)
   }
+  if (jsPlacement === 'external-head' && !headContainsCanonicalScript(opts.shell?.head)) {
+    headExtra.push(`    <script src="${jsSrc}"></script>`)
+  }
   const headExtraText = headExtra.length > 0 ? `\n${headExtra.join('\n')}` : ''
 
   // Quando há uma casca preservada do código (head/doctype customizados pelo
@@ -124,7 +129,7 @@ export function generateHTMLWithMap(opts: GenerateHTMLOptions): GenerateHTMLWith
     cssInlineBlock = inlineStyle(opts.cssCode)
     bodyEnd.push(cssInlineBlock)
   }
-  if (jsPlacement === 'external') {
+  if (jsPlacement === 'external' && !headContainsCanonicalScript(opts.shell?.head)) {
     bodyEnd.push(`    <script src="${jsSrc}"></script>`)
   } else if (jsPlacement === 'inline-body-end' && opts.jsCode) {
     jsInlineBlock = inlineScript(opts.jsCode, jsModule)
@@ -173,7 +178,11 @@ function buildDefaultHead(
     `    <title>${title}</title>`,
   ]
   // Só linka style.css quando o CSS é externo; inline vai via headExtraText.
-  if (cssPlacement === 'external' || cssPlacement === undefined) {
+  if (
+    cssPlacement === 'external' ||
+    cssPlacement === 'external-head' ||
+    cssPlacement === undefined
+  ) {
     lines.push(`    <link rel="stylesheet" href="${cssHref}" />`)
   }
   return `${lines.join('\n')}${headExtraText}\n  </head>\n  <body>`
@@ -223,7 +232,9 @@ export function renderNodes(nodes: HTMLNode[], indentSpaces = 0): string {
 }
 
 /** Tags sem conteúdo/fechamento — renderizadas como `<tag ... />`. */
-const VOID_TAGS = new Set(['img', 'input', 'br', 'hr'])
+const VOID_TAGS = new Set(
+  HTML_ELEMENT_CATALOG.filter((entry) => entry.parserShape === 'void').map((entry) => entry.tag),
+)
 
 function canvasTag(node: Extract<HTMLNode, { type: 'canvas' }>): string {
   // Largura/altura são opcionais: quando ausentes, o tamanho é definido depois
@@ -266,7 +277,7 @@ function renderNode(
   } else if (node.type === 'text') {
     rendered = `${pad}${escapeHtml(node.text)}`
   } else if (node.type === 'comment') {
-    rendered = `${pad}<!--${node.text}-->`
+    rendered = `${pad}<!--${escapeCommentText(node.text)}-->`
   } else {
     rendered = renderElement(node, indentSpaces, map, startLine)
   }
@@ -297,7 +308,14 @@ function renderElement(
   const hasTextChild = (node.children ?? []).some((c) => c.type === 'text')
   if (hasTextChild) {
     const text = hasText ? escapeHtml(node.text ?? '') : ''
-    const inline = (node.children ?? []).map(renderInline).join('')
+    let column = pad.length + open.length + text.length + 1
+    const inline = (node.children ?? [])
+      .map((child) => {
+        const rendered = renderInline(child, map, startLine, column)
+        column += rendered.length
+        return rendered
+      })
+      .join('')
     return `${pad}${open}${text}${inline}${close}`
   }
   const inner = renderNodesWithMap(
@@ -331,18 +349,45 @@ function recordHTMLNode(
 }
 
 /** Renderiza um nó "inline" (sem quebras de linha nem indentação). */
-function renderInline(node: HTMLNode): string {
-  if (node.type === 'text') return escapeHtml(node.text)
-  if (node.type === 'comment') return `<!--${node.text}-->`
-  if (node.type === 'rawHTML') return node.html.trim()
-  if (node.type === 'canvas') {
-    return canvasTag(node)
+function renderInline(
+  node: HTMLNode,
+  map?: SourceMapBuilder,
+  line?: number,
+  startColumn?: number,
+): string {
+  let rendered: string
+  if (node.type === 'text') rendered = escapeHtml(node.text)
+  else if (node.type === 'comment') rendered = `<!--${escapeCommentText(node.text)}-->`
+  else if (node.type === 'rawHTML') rendered = node.html.trim()
+  else if (node.type === 'canvas') rendered = canvasTag(node)
+  else {
+    const attrs = renderAttrs(node)
+    if (VOID_TAGS.has(node.tag)) rendered = `<${node.tag}${attrs} />`
+    else {
+      const open = `<${node.tag}${attrs}>`
+      const text = node.text ? escapeHtml(node.text) : ''
+      let childColumn =
+        startColumn === undefined ? undefined : startColumn + open.length + text.length
+      const inner = (node.children ?? [])
+        .map((child) => {
+          const childRendered = renderInline(child, map, line, childColumn)
+          if (childColumn !== undefined) childColumn += childRendered.length
+          return childRendered
+        })
+        .join('')
+      rendered = `${open}${text}${inner}</${node.tag}>`
+    }
   }
-  const attrs = renderAttrs(node)
-  if (VOID_TAGS.has(node.tag)) return `<${node.tag}${attrs} />`
-  const text = node.text ? escapeHtml(node.text) : ''
-  const inner = (node.children ?? []).map(renderInline).join('')
-  return `<${node.tag}${attrs}>${text}${inner}</${node.tag}>`
+  if (map && node.__id && line !== undefined && startColumn !== undefined) {
+    map.record(node.__id, 'index.html', line, line, startColumn, startColumn + rendered.length)
+  }
+  return rendered
+}
+
+/** Mantém o conteúdo dentro de uma única fronteira de comentário válida. */
+function escapeCommentText(text: string): string {
+  const withoutTerminator = text.replace(/--/g, '- -')
+  return withoutTerminator.endsWith('-') ? `${withoutTerminator} ` : withoutTerminator
 }
 
 // Nome de atributo HTML válido: letra/underscore/dois-pontos inicial, depois

@@ -19,7 +19,7 @@ import {
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.28.0',
+  version: '0.29.0',
   description:
     'Blocos para criar jogos 2D no Canvas: sprites (cor, imagem, animação por estado com virada automática) ou desenhados por código, grupos de muitos sprites, inimigos com comportamento (patrulha, perseguidor, voador, saltador, atirador), movimento, física, colisão sólida, tiles PLATAFORMA (one-way: pisa por cima, passa por baixo), efeitos, tiles/tilemaps (do Pinta ou por upload), HUD, telas/cenas, som, e KITS por tema — espaço, dino, gorilas, equilibrista e balão.',
   category: 'games',
@@ -36,6 +36,9 @@ chamadas explícitas para \`SZGame2D.createSprite(...)\` e \`SZGame2D.gameLoop(.
 
 ### Blocos disponíveis
 
+- **Quando o jogo começar** — raiz da partida: coloque dentro dele o preparo da tela,
+  personagens, variáveis, eventos e os blocos de quadro. Ao reiniciar, tudo é limpo
+  e este conteúdo roda novamente.
 - **Preparar o jogo em tela cheia** — atalho para começar: prepara a tela (largura × altura) ocupando a janela, responsiva (mantém a proporção e redimensiona sozinha), **centralizada**, com uma **cor de fundo** que combina com o jogo (vai no canvas e na sobra ao redor). Não precisa criar o canvas no HTML. Os blocos individuais continuam disponíveis para montar na mão.
 - **Preparar o jogo para ocupar a tela toda** — como o de cima, mas **sem dimensões**: o canvas preenche a tela INTEIRA (sem barras nas laterais) e a área do jogo **acompanha** o tamanho da janela — a resolução do jogo passa a ser o tamanho da tela. Aqui "a largura/altura da tela" mudam com a janela, então centralize por eles (não por números fixos). Combine com "entrar em tela cheia" para o jogo tomar o monitor todo. Use UM dos dois "Preparar", no começo.
 - **Criar sprite** — define um objeto com \`x\`, \`y\`, \`largura\`, \`altura\`, \`cor\`.
@@ -45,7 +48,8 @@ chamadas explícitas para \`SZGame2D.createSprite(...)\` e \`SZGame2D.gameLoop(.
 - **Guardar em X se o sprite A colide com o sprite B** — devolve sim/não por interseção retangular.
 - **Criar pontuação** — declara a variável de pontos.
 - **Mostrar fim de jogo com o texto** — escreve a mensagem em vermelho no canvas.
-- **A cada quadro do jogo...** — abre um loop de \`requestAnimationFrame\`.
+- **A cada quadro do jogo...** — registra uma atualização no agendador do motor, em
+  passos fixos de 60 Hz. Vários blocos desse tipo coexistem sem cancelar um ao outro.
 
 ### Física, áudio e mouse (v0.2.0)
 
@@ -120,9 +124,10 @@ Para jogos com MUITOS sprites (tiros, inimigos, estrelas) e telas de início/vit
 - **HUD no canvas** — \`Mostrar placar\`, \`Escrever\`, \`Desenhar vidas (corações)\`, \`Barra de … / …\`.
 - **Telas/cenas** — \`Ir para a tela\` e \`a tela atual é … ?\` aceitam tanto os
   nomes prontos quanto nomes inventados (como \`ganhou1\`); \`Mostrar tela (título/subtítulo/dica)\`,
-  \`Reiniciar o jogo\`. O setup (grupos, sprites, variáveis) fica no TOPO do programa, fora do
-  "a cada quadro", para o loop conseguir enxergá-lo; um único "a cada quadro" decide o que
-  desenhar com "se a tela atual é X".
+  \`Reiniciar o jogo\`. O setup (grupos, sprites, variáveis) fica dentro de **Quando o jogo
+  começar** e fora do "a cada quadro", para o loop conseguir enxergá-lo; o "a cada quadro"
+  decide o que desenhar com "se a tela atual é X". Reiniciar limpa a partida sem recarregar
+  a página e executa novamente o bloco de começo.
 - **Cenário** — \`Desenhar fundo de estrelas\` e \`Mover o sprite com o dedo (só na horizontal)\`.
 
 ### Kit espaço (v0.7.0)

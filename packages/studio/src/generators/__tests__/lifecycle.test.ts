@@ -1,0 +1,97 @@
+import { describe, expect, it } from 'bun:test'
+import type { ProjectLifecycleTarget, SZIRV2 } from '#ir'
+import { parseProjectFiles } from '#parsers'
+import { generateProjectFiles } from '../project'
+
+const EXTENSION_BY_TARGET: Partial<Record<ProjectLifecycleTarget, string>> = {
+  'game-2d': 'game-2d',
+  'game-2d-advanced': 'game-2d-advanced',
+  'game-3d': 'game-3d',
+  'game-3d-advanced': 'game-3d-advanced',
+  'world-3d': 'world-3d',
+}
+
+const EXPECTED: Record<ProjectLifecycleTarget, readonly string[]> = {
+  core: ['(function __szProjectRun() {', '})();'],
+  'game-2d': ['SZGame2D.onStart(function __szProjectRun() {', '}, "__sz-project");'],
+  'game-2d-advanced': ['SZGameKit.runProject(function __szProjectRun() {', 'SZGameKit.start();'],
+  'game-3d': ['SZGame3D.runProject(function __szProjectRun() {'],
+  'game-3d-advanced': [
+    'SZGameKit3D.runProject(function __szProjectRun() {',
+    'SZGameKit3D.start();',
+  ],
+  'world-3d': ['SZWorld3D.runProject(function __szProjectRun() {', 'SZWorld3D.start();'],
+}
+
+describe('fábrica e boot do ciclo de vida', () => {
+  for (const target of Object.keys(EXPECTED) as ProjectLifecycleTarget[]) {
+    it(`${target}: preserva as três áreas e liga o adaptador correto`, () => {
+      const extensionId = EXTENSION_BY_TARGET[target]
+      const ir: SZIRV2 = {
+        version: 2,
+        html: [],
+        css: [],
+        behavior: {
+          start: [{ type: 'consoleLog', value: { type: 'str', value: 'início' } }],
+          events: [{ type: 'event', target: 'botao', event: 'click', body: [] }],
+          loops: [{ type: 'animationLoop', body: [] }],
+        },
+        extensions: extensionId ? [{ extensionId }] : [],
+      }
+
+      const files = generateProjectFiles({ ir, projectName: 'Lifecycle' })
+      for (const snippet of EXPECTED[target]) expect(files['script.js']).toContain(snippet)
+
+      const parsed = parseProjectFiles(files)
+      expect(parsed.behavior.start.map((statement) => statement.type)).toEqual(['consoleLog'])
+      expect(parsed.behavior.events.map((statement) => statement.type)).toEqual(['event'])
+      expect(parsed.behavior.loops.map((statement) => statement.type)).toEqual(['animationLoop'])
+    })
+  }
+
+  it('loops periódicos independentes registram seu próprio tick e preservam o round-trip', () => {
+    const game2d: SZIRV2 = {
+      version: 2,
+      html: [],
+      css: [],
+      behavior: {
+        start: [],
+        events: [],
+        loops: [
+          {
+            type: 'g2d:everyFrames',
+            n: { type: 'num', value: 30 },
+            body: [{ type: 'consoleLog', value: { type: 'str', value: 'quadro' } }],
+          },
+        ],
+      },
+      extensions: [{ extensionId: 'game-2d' }],
+    }
+    const game2dFiles = generateProjectFiles({ ir: game2d, projectName: 'Periódico 2D' })
+    expect(game2dFiles['script.js']).toContain('SZGame2D.gameLoop(function __szPeriodicLoop()')
+    expect(
+      parseProjectFiles(game2dFiles).behavior.loops.map((statement) => statement.type),
+    ).toEqual(['g2d:everyFrames'])
+
+    const advanced: SZIRV2 = {
+      ...game2d,
+      behavior: {
+        start: [],
+        events: [],
+        loops: [
+          {
+            type: 'gk:everySeconds',
+            seconds: { type: 'num', value: 1 },
+            body: [{ type: 'consoleLog', value: { type: 'str', value: 'segundo' } }],
+          },
+        ],
+      },
+      extensions: [{ extensionId: 'game-2d-advanced' }],
+    }
+    const advancedFiles = generateProjectFiles({ ir: advanced, projectName: 'Periódico avançado' })
+    expect(advancedFiles['script.js']).toContain('SZGameKit.onUpdate(function __szPeriodicLoop(dt)')
+    expect(
+      parseProjectFiles(advancedFiles).behavior.loops.map((statement) => statement.type),
+    ).toEqual(['gk:everySeconds'])
+  })
+})

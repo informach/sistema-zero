@@ -3,7 +3,7 @@ import 'blockly/blocks'
 import * as Blockly from 'blockly/core'
 import { buildIRFromWorkspace, buildWorkspaceStateFromIR } from '#blockly'
 import { generateProjectFiles } from '#generators'
-import { SZIRSchema } from '#ir'
+import { SZIRV2Schema } from '#ir'
 import { parseProjectFilesWithDiagnostics } from '#parsers'
 import { ensureBlocklyInitialized } from '../../blockly/setup'
 
@@ -459,7 +459,7 @@ describe('JS Game Starter Kit P9 (achatado) — 100% blocos do núcleo', () => {
     ]) {
       expect(types.has(t)).toBe(true)
     }
-    expect(SZIRSchema.safeParse(ir).success).toBe(true)
+    expect(SZIRV2Schema.safeParse(ir).success).toBe(true)
   })
 
   it('fixpoint TEXTUAL: gen(parse(src)) é estável e mantém os construtos', () => {

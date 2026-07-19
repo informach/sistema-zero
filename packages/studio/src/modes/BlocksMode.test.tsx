@@ -75,14 +75,14 @@ describe('BlocksMode', () => {
 
     await waitFor(() => {
       const state = useProjectStore.getState()
-      // Projeto só-JS: as áreas de HTML/CSS vazias são OMITIDAS (omitEmptyAuxFrames)
-      // — só o ⚙️ Comportamento, com o console.log dentro. Sem frames vazios.
+      // Projeto só-JS legado: as áreas vazias são omitidas e o código é migrado
+      // transparentemente para ⚙️ Ao iniciar.
       expect(state.project?.blocksState).toMatchObject({
         blocks: {
           languageVersion: 0,
           blocks: [
             {
-              type: 'sz_frame_behavior',
+              type: 'sz_frame_start',
               inputs: { CHILDREN: { block: { type: 'sz_js_console_log_text' } } },
             },
           ],
@@ -186,13 +186,13 @@ describe('BlocksMode', () => {
 
     await waitFor(() => {
       const state = useProjectStore.getState()
-      // Blocos derivados do código digitado (só-JS → só o ⚙️ Comportamento; as
-      // áreas de HTML/CSS vazias não ressuscitam).
+      // Blocos derivados do código digitado (só-JS legado → ⚙️ Ao iniciar; as
+      // demais áreas vazias não ressuscitam).
       expect(state.project?.blocksState).toMatchObject({
         blocks: {
           blocks: [
             {
-              type: 'sz_frame_behavior',
+              type: 'sz_frame_start',
               inputs: { CHILDREN: { block: { type: 'sz_js_console_log_text' } } },
             },
           ],
@@ -229,7 +229,7 @@ describe('BlocksMode', () => {
         blocks: {
           blocks: [
             {
-              type: 'sz_frame_behavior',
+              type: 'sz_frame_start',
               inputs: { CHILDREN: { block: { type: 'sz_js_console_log_text' } } },
             },
           ],

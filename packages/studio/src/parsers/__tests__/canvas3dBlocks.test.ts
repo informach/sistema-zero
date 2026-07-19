@@ -4,6 +4,7 @@ import 'blockly/blocks'
 import { buildIRFromWorkspace } from '../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../blockly/workspaceState'
+import { behaviorStatements } from '../../ir/behavior'
 import type { SZIR } from '../../ir/schema'
 import { parseJS } from '../js'
 
@@ -51,7 +52,7 @@ describe('Canvas 3D — round-trip de blocos', () => {
     const ws = new Blockly.Workspace()
     try {
       Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-      const rebuilt = buildIRFromWorkspace(ws).js
+      const rebuilt = behaviorStatements(buildIRFromWorkspace(ws))
       expect(stripIds(rebuilt)).toEqual(stripIds(ir))
     } finally {
       ws.dispose()

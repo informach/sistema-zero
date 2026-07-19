@@ -5,6 +5,26 @@
  * `blockly/blockLevels.ts` (`resolveBlockLevel`). O campo vestigial foi removido
  * na reforma 2D/3D (07/2026) — nada o lia e ele enganava como fonte dupla.
  */
+export type BehaviorArea = 'start' | 'events' | 'loops'
+
+export type StatementContext =
+  | 'statement'
+  | 'event-body'
+  | 'loop-body'
+  | 'function-body'
+  | 'class-member'
+  | 'draw-world'
+  | 'draw-hud'
+  | 'map-draw'
+  | 'map-enter'
+
+export interface BlockPlacement {
+  root: readonly BehaviorArea[]
+  nested: readonly StatementContext[]
+  role: 'declaration' | 'command' | 'event' | 'loop' | 'value'
+  phase?: 'update' | 'periodic' | 'draw-world' | 'draw-hud'
+}
+
 export interface BlockDefinition {
   type: string
   message0?: string
@@ -13,8 +33,8 @@ export interface BlockDefinition {
   args1?: unknown[]
   message2?: string
   args2?: unknown[]
-  previousStatement?: string | null
-  nextStatement?: string | null
+  previousStatement?: string | string[] | null
+  nextStatement?: string | string[] | null
   output?: string | null
   colour?: string | number
   tooltip?: string
@@ -30,4 +50,10 @@ export interface BlockDefinition {
    * Usado para blocos legados substituídos por versões mais novas.
    */
   hidden?: boolean
+  /**
+   * Exceção explícita ao contrato inferido pelo catálogo central. A maioria dos
+   * blocos usa a regra canônica do seu papel; somente contextos especializados
+   * precisam declarar uma substituição junto à definição.
+   */
+  placement?: BlockPlacement
 }

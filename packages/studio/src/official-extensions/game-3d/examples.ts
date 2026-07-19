@@ -2,55 +2,52 @@ import type { ExtensionExample } from '#extensions'
 
 /**
  * Exemplo bundlado: "Cubo girando". Cria uma cena 3D, um cubo e gira-o a cada
- * quadro usando uma variável que aumenta.
+ * quadro com movimento independente da taxa de atualização da tela.
  */
 export const rotatingCubeExample: ExtensionExample = {
   name: 'Cubo girando',
   experience: 'demo',
   description: 'Uma cena 3D com um cubo que gira continuamente (Three.js).',
   ir: {
-    html: [{ type: 'canvas', id: 'tela', width: 480, height: 360 }],
+    html: [],
     css: [
       {
         selector: 'body',
         declarations: {
           background: '#0b1020',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
           'min-height': '100vh',
           margin: '0',
         },
       },
     ],
-    js: [
-      { type: 'g3d:createScene', canvasId: 'tela', varName: 'cena' },
-      { type: 'g3d:createBox', varName: 'caixa', worldVar: 'cena', size: 1.5, color: '#22d3ee' },
-      { type: 'var', name: 'angulo', value: { type: 'num', value: 0 } },
-      {
-        type: 'g3d:animate',
-        worldVar: 'cena',
-        body: [
-          {
-            type: 'assign',
-            name: 'angulo',
-            value: {
-              type: 'binop',
-              op: '+',
-              left: { type: 'var', name: 'angulo' },
-              right: { type: 'num', value: 0.01 },
+    version: 2,
+    behavior: {
+      start: [
+        { type: 'g3d:createFullscreenScene', varName: 'cena', bg: '#0b1020' },
+        { type: 'g3d:createBox', varName: 'caixa', worldVar: 'cena', size: 1.5, color: '#22d3ee' },
+      ],
+      events: [],
+      loops: [
+        {
+          type: 'g3d:animate',
+          worldVar: 'cena',
+          body: [
+            {
+              type: 'g3d:rotateBy',
+              objVar: 'caixa',
+              axis: 'x',
+              amount: { type: 'num', value: 0.01 },
             },
-          },
-          {
-            type: 'g3d:setRotation',
-            objVar: 'caixa',
-            x: { type: 'var', name: 'angulo' },
-            y: { type: 'var', name: 'angulo' },
-            z: { type: 'num', value: 0 },
-          },
-        ],
-      },
-    ],
+            {
+              type: 'g3d:rotateBy',
+              objVar: 'caixa',
+              axis: 'y',
+              amount: { type: 'num', value: 0.01 },
+            },
+          ],
+        },
+      ],
+    },
     extensions: [{ extensionId: 'game-3d' }],
   },
 }
@@ -80,127 +77,121 @@ export const shapesExample: ExtensionExample = {
         },
       },
     ],
-    js: [
-      { type: 'g3d:createScene', canvasId: 'tela', varName: 'cena' },
-      { type: 'g3d:setBackground', worldVar: 'cena', color: '#1e293b' },
-      {
-        type: 'g3d:setCameraPosition',
-        worldVar: 'cena',
-        x: { type: 'num', value: 3 },
-        y: { type: 'num', value: 2.5 },
-        z: { type: 'num', value: 6 },
-      },
-      {
-        type: 'g3d:createPlane',
-        varName: 'chao',
-        worldVar: 'cena',
-        width: 14,
-        depth: 14,
-        color: '#334155',
-      },
-      {
-        type: 'g3d:setPosition',
-        objVar: 'chao',
-        x: { type: 'num', value: 0 },
-        y: { type: 'num', value: -0.2 },
-        z: { type: 'num', value: 0 },
-      },
-      { type: 'g3d:createModel', varName: 'boneco', worldVar: 'cena' },
-      {
-        type: 'g3d:createSphere',
-        varName: 'corpo',
-        worldVar: 'cena',
-        radius: 0.8,
-        color: '#e2e8f0',
-      },
-      {
-        type: 'g3d:setPosition',
-        objVar: 'corpo',
-        x: { type: 'num', value: 0 },
-        y: { type: 'num', value: 0.8 },
-        z: { type: 'num', value: 0 },
-      },
-      { type: 'g3d:addToModel', modelVar: 'boneco', partVar: 'corpo' },
-      {
-        type: 'g3d:createSphere',
-        varName: 'cabeca',
-        worldVar: 'cena',
-        radius: 0.5,
-        color: '#e2e8f0',
-      },
-      {
-        type: 'g3d:setPosition',
-        objVar: 'cabeca',
-        x: { type: 'num', value: 0 },
-        y: { type: 'num', value: 1.9 },
-        z: { type: 'num', value: 0 },
-      },
-      { type: 'g3d:addToModel', modelVar: 'boneco', partVar: 'cabeca' },
-      {
-        type: 'g3d:createCone',
-        varName: 'nariz',
-        worldVar: 'cena',
-        radius: 0.12,
-        height: 0.5,
-        color: '#f59e0b',
-      },
-      {
-        type: 'g3d:setPosition',
-        objVar: 'nariz',
-        x: { type: 'num', value: 0 },
-        y: { type: 'num', value: 1.9 },
-        z: { type: 'num', value: 0.5 },
-      },
-      {
-        type: 'g3d:setRotation',
-        objVar: 'nariz',
-        x: { type: 'num', value: 1.5708 },
-        y: { type: 'num', value: 0 },
-        z: { type: 'num', value: 0 },
-      },
-      { type: 'g3d:addToModel', modelVar: 'boneco', partVar: 'nariz' },
-      {
-        type: 'g3d:createCylinder',
-        varName: 'chapeu',
-        worldVar: 'cena',
-        radius: 0.45,
-        height: 0.5,
-        color: '#0ea5e9',
-      },
-      {
-        type: 'g3d:setPosition',
-        objVar: 'chapeu',
-        x: { type: 'num', value: 0 },
-        y: { type: 'num', value: 2.55 },
-        z: { type: 'num', value: 0 },
-      },
-      { type: 'g3d:setMaterial', objVar: 'chapeu', kind: 'metal' },
-      { type: 'g3d:addToModel', modelVar: 'boneco', partVar: 'chapeu' },
-      { type: 'var', name: 'angulo', value: { type: 'num', value: 0 } },
-      {
-        type: 'g3d:animate',
-        worldVar: 'cena',
-        body: [
-          {
-            type: 'assign',
-            name: 'angulo',
-            value: {
-              type: 'binop',
-              op: '+',
-              left: { type: 'var', name: 'angulo' },
-              right: { type: 'num', value: 0.01 },
+    version: 2,
+    behavior: {
+      start: [
+        { type: 'g3d:createScene', canvasId: 'tela', varName: 'cena' },
+        { type: 'g3d:setBackground', worldVar: 'cena', color: '#1e293b' },
+        {
+          type: 'g3d:setCameraPosition',
+          worldVar: 'cena',
+          x: { type: 'num', value: 3 },
+          y: { type: 'num', value: 2.5 },
+          z: { type: 'num', value: 6 },
+        },
+        {
+          type: 'g3d:createPlane',
+          varName: 'chao',
+          worldVar: 'cena',
+          width: 14,
+          depth: 14,
+          color: '#334155',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'chao',
+          x: { type: 'num', value: 0 },
+          y: { type: 'num', value: -0.2 },
+          z: { type: 'num', value: 0 },
+        },
+        { type: 'g3d:createModel', varName: 'boneco', worldVar: 'cena' },
+        {
+          type: 'g3d:createSphere',
+          varName: 'corpo',
+          worldVar: 'cena',
+          radius: 0.8,
+          color: '#e2e8f0',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'corpo',
+          x: { type: 'num', value: 0 },
+          y: { type: 'num', value: 0.8 },
+          z: { type: 'num', value: 0 },
+        },
+        { type: 'g3d:addToModel', modelVar: 'boneco', partVar: 'corpo' },
+        {
+          type: 'g3d:createSphere',
+          varName: 'cabeca',
+          worldVar: 'cena',
+          radius: 0.5,
+          color: '#e2e8f0',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'cabeca',
+          x: { type: 'num', value: 0 },
+          y: { type: 'num', value: 1.9 },
+          z: { type: 'num', value: 0 },
+        },
+        { type: 'g3d:addToModel', modelVar: 'boneco', partVar: 'cabeca' },
+        {
+          type: 'g3d:createCone',
+          varName: 'nariz',
+          worldVar: 'cena',
+          radius: 0.12,
+          height: 0.5,
+          color: '#f59e0b',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'nariz',
+          x: { type: 'num', value: 0 },
+          y: { type: 'num', value: 1.9 },
+          z: { type: 'num', value: 0.5 },
+        },
+        {
+          type: 'g3d:setRotation',
+          objVar: 'nariz',
+          x: { type: 'num', value: 1.5708 },
+          y: { type: 'num', value: 0 },
+          z: { type: 'num', value: 0 },
+        },
+        { type: 'g3d:addToModel', modelVar: 'boneco', partVar: 'nariz' },
+        {
+          type: 'g3d:createCylinder',
+          varName: 'chapeu',
+          worldVar: 'cena',
+          radius: 0.45,
+          height: 0.5,
+          color: '#0ea5e9',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'chapeu',
+          x: { type: 'num', value: 0 },
+          y: { type: 'num', value: 2.55 },
+          z: { type: 'num', value: 0 },
+        },
+        { type: 'g3d:setMaterial', objVar: 'chapeu', kind: 'metal' },
+        { type: 'g3d:addToModel', modelVar: 'boneco', partVar: 'chapeu' },
+      ],
+      events: [],
+      loops: [
+        {
+          type: 'g3d:animate',
+          worldVar: 'cena',
+          body: [
+            {
+              type: 'g3d:rotateBy',
+              objVar: 'boneco',
+              axis: 'y',
+              amount: { type: 'num', value: 0.01 },
             },
-          },
-          {
-            type: 'g3d:setRotation',
-            objVar: 'boneco',
-            x: { type: 'num', value: 0 },
-            y: { type: 'var', name: 'angulo' },
-            z: { type: 'num', value: 0 },
-          },
-        ],
-      },
-    ],
+          ],
+        },
+      ],
+    },
     extensions: [{ extensionId: 'game-3d' }],
   },
 }
@@ -230,69 +221,63 @@ export const nightExample: ExtensionExample = {
         },
       },
     ],
-    js: [
-      { type: 'g3d:createScene', canvasId: 'tela', varName: 'cena' },
-      { type: 'g3d:setSky', worldVar: 'cena', top: '#0b1026', bottom: '#1e3a5f' },
-      { type: 'g3d:setFog', worldVar: 'cena', color: '#1e3a5f', near: 4, far: 22 },
-      { type: 'g3d:setShadows', worldVar: 'cena', mode: 'on' },
-      { type: 'g3d:addSunLight', worldVar: 'cena', color: '#94a3b8', intensity: 0.35 },
-      {
-        type: 'g3d:addPointLight',
-        worldVar: 'cena',
-        color: '#ffd27f',
-        intensity: 2.5,
-        x: 0,
-        y: 3,
-        z: 0,
-      },
-      {
-        type: 'g3d:createPlane',
-        varName: 'chao',
-        worldVar: 'cena',
-        width: 30,
-        depth: 30,
-        color: '#1f2937',
-      },
-      {
-        type: 'g3d:setPosition',
-        objVar: 'chao',
-        x: { type: 'num', value: 0 },
-        y: { type: 'num', value: -0.5 },
-        z: { type: 'num', value: 0 },
-      },
-      { type: 'g3d:createBox', varName: 'cubo', worldVar: 'cena', size: 1, color: '#f59e0b' },
-      {
-        type: 'g3d:setPosition',
-        objVar: 'cubo',
-        x: { type: 'num', value: 0 },
-        y: { type: 'num', value: 0.5 },
-        z: { type: 'num', value: 0 },
-      },
-      { type: 'var', name: 'angulo', value: { type: 'num', value: 0 } },
-      {
-        type: 'g3d:animate',
-        worldVar: 'cena',
-        body: [
-          {
-            type: 'assign',
-            name: 'angulo',
-            value: {
-              type: 'binop',
-              op: '+',
-              left: { type: 'var', name: 'angulo' },
-              right: { type: 'num', value: 0.02 },
+    version: 2,
+    behavior: {
+      start: [
+        { type: 'g3d:createScene', canvasId: 'tela', varName: 'cena' },
+        { type: 'g3d:setSky', worldVar: 'cena', top: '#0b1026', bottom: '#1e3a5f' },
+        { type: 'g3d:setFog', worldVar: 'cena', color: '#1e3a5f', near: 4, far: 22 },
+        { type: 'g3d:setShadows', worldVar: 'cena', mode: 'on' },
+        { type: 'g3d:addSunLight', worldVar: 'cena', color: '#94a3b8', intensity: 0.35 },
+        {
+          type: 'g3d:addPointLight',
+          worldVar: 'cena',
+          color: '#ffd27f',
+          intensity: 2.5,
+          x: 0,
+          y: 3,
+          z: 0,
+        },
+        {
+          type: 'g3d:createPlane',
+          varName: 'chao',
+          worldVar: 'cena',
+          width: 30,
+          depth: 30,
+          color: '#1f2937',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'chao',
+          x: { type: 'num', value: 0 },
+          y: { type: 'num', value: -0.5 },
+          z: { type: 'num', value: 0 },
+        },
+        { type: 'g3d:createBox', varName: 'cubo', worldVar: 'cena', size: 1, color: '#f59e0b' },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'cubo',
+          x: { type: 'num', value: 0 },
+          y: { type: 'num', value: 0.5 },
+          z: { type: 'num', value: 0 },
+        },
+      ],
+      events: [],
+      loops: [
+        {
+          type: 'g3d:animate',
+          worldVar: 'cena',
+          body: [
+            {
+              type: 'g3d:rotateBy',
+              objVar: 'cubo',
+              axis: 'y',
+              amount: { type: 'num', value: 0.02 },
             },
-          },
-          {
-            type: 'g3d:setRotation',
-            objVar: 'cubo',
-            x: { type: 'num', value: 0 },
-            y: { type: 'var', name: 'angulo' },
-            z: { type: 'num', value: 0 },
-          },
-        ],
-      },
-    ],
+          ],
+        },
+      ],
+    },
     extensions: [{ extensionId: 'game-3d' }],
   },
 }
@@ -321,37 +306,57 @@ export const swarmExample: ExtensionExample = {
         },
       },
     ],
-    js: [
-      { type: 'g3d:createScene', canvasId: 'tela', varName: 'cena' },
-      { type: 'g3d:setBackground', worldVar: 'cena', color: '#0b1020' },
-      { type: 'g3d:createBox', varName: 'modelo', worldVar: 'cena', size: 0.6, color: '#22d3ee' },
-      { type: 'g3d:setVisible', objVar: 'modelo', mode: 'hide' },
-      { type: 'g3d:createSwarm', varName: 'enxame', worldVar: 'cena' },
-      { type: 'g3d:spawnInSwarm', swarmVar: 'enxame', originalVar: 'modelo', x: -2, y: 0, z: 0 },
-      { type: 'g3d:spawnInSwarm', swarmVar: 'enxame', originalVar: 'modelo', x: 0, y: 0.6, z: 0 },
-      { type: 'g3d:spawnInSwarm', swarmVar: 'enxame', originalVar: 'modelo', x: 2, y: 0, z: 0 },
-      { type: 'g3d:spawnInSwarm', swarmVar: 'enxame', originalVar: 'modelo', x: -1, y: -1.4, z: 0 },
-      { type: 'g3d:spawnInSwarm', swarmVar: 'enxame', originalVar: 'modelo', x: 1, y: -1.4, z: 0 },
-      {
-        type: 'g3d:animate',
-        worldVar: 'cena',
-        body: [
-          {
-            type: 'g3d:forEachInSwarm',
-            swarmVar: 'enxame',
-            itemName: 'item',
-            body: [
-              {
-                type: 'g3d:rotateBy',
-                objVar: 'item',
-                axis: 'y',
-                amount: { type: 'num', value: 0.04 },
-              },
-            ],
-          },
-        ],
-      },
-    ],
+    version: 2,
+    behavior: {
+      start: [
+        { type: 'g3d:createScene', canvasId: 'tela', varName: 'cena' },
+        { type: 'g3d:setBackground', worldVar: 'cena', color: '#0b1020' },
+        { type: 'g3d:createBox', varName: 'modelo', worldVar: 'cena', size: 0.6, color: '#22d3ee' },
+        { type: 'g3d:setVisible', objVar: 'modelo', mode: 'hide' },
+        { type: 'g3d:createSwarm', varName: 'enxame', worldVar: 'cena' },
+        { type: 'g3d:spawnInSwarm', swarmVar: 'enxame', originalVar: 'modelo', x: -2, y: 0, z: 0 },
+        { type: 'g3d:spawnInSwarm', swarmVar: 'enxame', originalVar: 'modelo', x: 0, y: 0.6, z: 0 },
+        { type: 'g3d:spawnInSwarm', swarmVar: 'enxame', originalVar: 'modelo', x: 2, y: 0, z: 0 },
+        {
+          type: 'g3d:spawnInSwarm',
+          swarmVar: 'enxame',
+          originalVar: 'modelo',
+          x: -1,
+          y: -1.4,
+          z: 0,
+        },
+        {
+          type: 'g3d:spawnInSwarm',
+          swarmVar: 'enxame',
+          originalVar: 'modelo',
+          x: 1,
+          y: -1.4,
+          z: 0,
+        },
+      ],
+      events: [],
+      loops: [
+        {
+          type: 'g3d:animate',
+          worldVar: 'cena',
+          body: [
+            {
+              type: 'g3d:forEachInSwarm',
+              swarmVar: 'enxame',
+              itemName: 'item',
+              body: [
+                {
+                  type: 'g3d:rotateBy',
+                  objVar: 'item',
+                  axis: 'y',
+                  amount: { type: 'num', value: 0.04 },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
     extensions: [{ extensionId: 'game-3d' }],
   },
 }
@@ -382,62 +387,68 @@ export const dodgeExample: ExtensionExample = {
         },
       },
     ],
-    js: [
-      { type: 'g3d:createScene', canvasId: 'tela', varName: 'cena' },
-      { type: 'g3d:setBackground', worldVar: 'cena', color: '#0c4a6e' },
-      {
-        type: 'g3d:setCameraPosition',
-        worldVar: 'cena',
-        x: { type: 'num', value: 4.6 },
-        y: { type: 'num', value: 2.7 },
-        z: { type: 'num', value: 8 },
-      },
-      { type: 'g3d:createBox', varName: 'jogador', worldVar: 'cena', size: 1, color: '#34d399' },
-      {
-        type: 'g3d:createBlock',
-        varName: 'chao',
-        worldVar: 'cena',
-        width: 10,
-        height: 0.5,
-        depth: 50,
-        color: '#0369a1',
-      },
-      {
-        type: 'g3d:setPosition',
-        objVar: 'chao',
-        x: { type: 'num', value: 0 },
-        y: { type: 'num', value: -2 },
-        z: { type: 'num', value: 0 },
-      },
-      { type: 'g3d:createGroup', varName: 'inimigos' },
-      {
-        type: 'g3d:animate',
-        worldVar: 'cena',
-        body: [
-          { type: 'g3d:controlWithKeys', objVar: 'jogador', speed: 0.05 },
-          {
-            type: 'if',
-            cond: { type: 'g3d:keyDown', key: 'Space' },
-            then: [{ type: 'g3d:jump', objVar: 'jogador', force: { type: 'num', value: 0.08 } }],
-          },
-          { type: 'g3d:applyGravity', objVar: 'jogador', groundVar: 'chao' },
-          { type: 'g3d:cameraFollow', worldVar: 'cena', objVar: 'jogador' },
-          {
-            type: 'g3d:runEnemies',
-            worldVar: 'cena',
-            groupVar: 'inimigos',
-            groundVar: 'chao',
-            every: 200,
-            speed: 0.02,
-          },
-          {
-            type: 'if',
-            cond: { type: 'g3d:hitAny', objVar: 'jogador', groupVar: 'inimigos' },
-            then: [{ type: 'g3d:stop', worldVar: 'cena' }],
-          },
-        ],
-      },
-    ],
+    version: 2,
+    behavior: {
+      start: [
+        { type: 'g3d:createScene', canvasId: 'tela', varName: 'cena' },
+        { type: 'g3d:setBackground', worldVar: 'cena', color: '#0c4a6e' },
+        {
+          type: 'g3d:setCameraPosition',
+          worldVar: 'cena',
+          x: { type: 'num', value: 4.6 },
+          y: { type: 'num', value: 2.7 },
+          z: { type: 'num', value: 8 },
+        },
+        { type: 'g3d:createBox', varName: 'jogador', worldVar: 'cena', size: 1, color: '#34d399' },
+        {
+          type: 'g3d:createBlock',
+          varName: 'chao',
+          worldVar: 'cena',
+          width: 10,
+          height: 0.5,
+          depth: 50,
+          color: '#0369a1',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'chao',
+          x: { type: 'num', value: 0 },
+          y: { type: 'num', value: -2 },
+          z: { type: 'num', value: 0 },
+        },
+        { type: 'g3d:createGroup', varName: 'inimigos' },
+      ],
+      events: [],
+      loops: [
+        {
+          type: 'g3d:animate',
+          worldVar: 'cena',
+          body: [
+            { type: 'g3d:controlWithKeys', objVar: 'jogador', speed: 0.05 },
+            {
+              type: 'if',
+              cond: { type: 'g3d:keyDown', key: 'Space' },
+              then: [{ type: 'g3d:jump', objVar: 'jogador', force: { type: 'num', value: 0.08 } }],
+            },
+            { type: 'g3d:applyGravity', objVar: 'jogador', groundVar: 'chao' },
+            { type: 'g3d:cameraFollow', worldVar: 'cena', objVar: 'jogador' },
+            {
+              type: 'g3d:runEnemies',
+              worldVar: 'cena',
+              groupVar: 'inimigos',
+              groundVar: 'chao',
+              every: 200,
+              speed: 0.02,
+            },
+            {
+              type: 'if',
+              cond: { type: 'g3d:hitAny', objVar: 'jogador', groupVar: 'inimigos' },
+              then: [{ type: 'g3d:stop', worldVar: 'cena' }],
+            },
+          ],
+        },
+      ],
+    },
     extensions: [{ extensionId: 'game-3d' }],
   },
 }
@@ -455,7 +466,7 @@ export const crossingExample: ExtensionExample = {
     'Pule de casa em casa numa grade isométrica e desvie dos carros e caminhões. Pontuação e fim de jogo no HUD.',
   ir: {
     html: [
-      { type: 'canvas', id: 'jogo' },
+      { type: 'canvas', id: 'jogo', width: 960, height: 540 },
       { type: 'element', tag: 'div', id: 'score', text: '0' },
       {
         type: 'element',
@@ -497,9 +508,16 @@ export const crossingExample: ExtensionExample = {
       { type: 'googleFont', family: 'Press Start 2P' },
       {
         selector: 'body',
-        declarations: { margin: '0', 'font-family': '"Press Start 2P", cursive' },
+        declarations: {
+          margin: '0',
+          overflow: 'hidden',
+          'font-family': '"Press Start 2P", cursive',
+        },
       },
-      { selector: 'canvas', declarations: { display: 'block' } },
+      {
+        selector: 'canvas',
+        declarations: { display: 'block', width: '100vw', height: '100vh' },
+      },
       {
         selector: '#score',
         declarations: {
@@ -569,76 +587,83 @@ export const crossingExample: ExtensionExample = {
         },
       },
     ],
-    js: [
-      { type: 'g3d:createCrossingScene', canvasId: 'jogo', varName: 'mundo' },
-      { type: 'g3d:createCrosser', varName: 'jogador', worldVar: 'mundo', color: '#ffffff' },
-      { type: 'g3d:generateRows', worldVar: 'mundo', count: 20 },
-      {
-        type: 'g3d:animate',
-        worldVar: 'mundo',
-        body: [
-          { type: 'g3d:crosserStep', objVar: 'jogador', worldVar: 'mundo' },
-          { type: 'g3d:moveTraffic', worldVar: 'mundo' },
-          {
-            type: 'setProperty',
-            targetId: 'score',
-            property: 'textContent',
-            value: { type: 'g3d:crosserRow', objVar: 'jogador' },
-          },
-          {
-            type: 'if',
-            cond: { type: 'g3d:crosserHit', objVar: 'jogador', worldVar: 'mundo' },
-            then: [
-              { type: 'classOp', targetId: 'result-container', op: 'add', className: 'visivel' },
-              {
-                type: 'setProperty',
-                targetId: 'final-score',
-                property: 'textContent',
-                value: { type: 'g3d:crosserRow', objVar: 'jogador' },
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'event',
-        target: 'forward',
-        targetKind: 'id',
-        event: 'click',
-        body: [{ type: 'g3d:crosserMove', objVar: 'jogador', direction: 'forward' }],
-      },
-      {
-        type: 'event',
-        target: 'backward',
-        targetKind: 'id',
-        event: 'click',
-        body: [{ type: 'g3d:crosserMove', objVar: 'jogador', direction: 'backward' }],
-      },
-      {
-        type: 'event',
-        target: 'left',
-        targetKind: 'id',
-        event: 'click',
-        body: [{ type: 'g3d:crosserMove', objVar: 'jogador', direction: 'left' }],
-      },
-      {
-        type: 'event',
-        target: 'right',
-        targetKind: 'id',
-        event: 'click',
-        body: [{ type: 'g3d:crosserMove', objVar: 'jogador', direction: 'right' }],
-      },
-      {
-        type: 'event',
-        target: 'retry',
-        targetKind: 'id',
-        event: 'click',
-        body: [
-          { type: 'g3d:crosserReset', objVar: 'jogador', worldVar: 'mundo' },
-          { type: 'classOp', targetId: 'result-container', op: 'remove', className: 'visivel' },
-        ],
-      },
-    ],
+    version: 2,
+    behavior: {
+      start: [
+        { type: 'g3d:createCrossingScene', canvasId: 'jogo', varName: 'mundo' },
+        { type: 'g3d:createCrosser', varName: 'jogador', worldVar: 'mundo', color: '#ffffff' },
+        { type: 'g3d:generateRows', worldVar: 'mundo', count: 20 },
+      ],
+      events: [
+        {
+          type: 'event',
+          target: 'forward',
+          targetKind: 'id',
+          event: 'click',
+          body: [{ type: 'g3d:crosserMove', objVar: 'jogador', direction: 'forward' }],
+        },
+        {
+          type: 'event',
+          target: 'backward',
+          targetKind: 'id',
+          event: 'click',
+          body: [{ type: 'g3d:crosserMove', objVar: 'jogador', direction: 'backward' }],
+        },
+        {
+          type: 'event',
+          target: 'left',
+          targetKind: 'id',
+          event: 'click',
+          body: [{ type: 'g3d:crosserMove', objVar: 'jogador', direction: 'left' }],
+        },
+        {
+          type: 'event',
+          target: 'right',
+          targetKind: 'id',
+          event: 'click',
+          body: [{ type: 'g3d:crosserMove', objVar: 'jogador', direction: 'right' }],
+        },
+        {
+          type: 'event',
+          target: 'retry',
+          targetKind: 'id',
+          event: 'click',
+          body: [
+            { type: 'g3d:crosserReset', objVar: 'jogador', worldVar: 'mundo' },
+            { type: 'classOp', targetId: 'result-container', op: 'remove', className: 'visivel' },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3d:animate',
+          worldVar: 'mundo',
+          body: [
+            { type: 'g3d:crosserStep', objVar: 'jogador', worldVar: 'mundo' },
+            { type: 'g3d:moveTraffic', worldVar: 'mundo' },
+            {
+              type: 'setProperty',
+              targetId: 'score',
+              property: 'textContent',
+              value: { type: 'g3d:crosserRow', objVar: 'jogador' },
+            },
+            {
+              type: 'if',
+              cond: { type: 'g3d:crosserHit', objVar: 'jogador', worldVar: 'mundo' },
+              then: [
+                { type: 'classOp', targetId: 'result-container', op: 'add', className: 'visivel' },
+                {
+                  type: 'setProperty',
+                  targetId: 'final-score',
+                  property: 'textContent',
+                  value: { type: 'g3d:crosserRow', objVar: 'jogador' },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
     extensions: [{ extensionId: 'game-3d' }],
   },
 }
@@ -656,7 +681,7 @@ export const raceExample: ExtensionExample = {
     'Dê voltas na pista (↑ acelera, ↓ freia) desviando dos rivais. A pontuação são as voltas completas.',
   ir: {
     html: [
-      { type: 'canvas', id: 'pista' },
+      { type: 'canvas', id: 'pista', width: 960, height: 540 },
       { type: 'element', tag: 'div', id: 'score', text: '0' },
       {
         type: 'element',
@@ -696,9 +721,16 @@ export const raceExample: ExtensionExample = {
       { type: 'googleFont', family: 'Press Start 2P' },
       {
         selector: 'body',
-        declarations: { margin: '0', 'font-family': '"Press Start 2P", cursive' },
+        declarations: {
+          margin: '0',
+          overflow: 'hidden',
+          'font-family': '"Press Start 2P", cursive',
+        },
       },
-      { selector: 'canvas', declarations: { display: 'block' } },
+      {
+        selector: 'canvas',
+        declarations: { display: 'block', width: '100vw', height: '100vh' },
+      },
       {
         selector: '#score',
         declarations: {
@@ -766,62 +798,69 @@ export const raceExample: ExtensionExample = {
         },
       },
     ],
-    js: [
-      { type: 'g3d:createRaceScene', canvasId: 'pista', varName: 'mundo' },
-      { type: 'g3d:createRaceTrack', worldVar: 'mundo' },
-      { type: 'g3d:createRaceCar', varName: 'carro', worldVar: 'mundo', color: '#ef2d56' },
-      {
-        type: 'g3d:animate',
-        worldVar: 'mundo',
-        body: [
-          { type: 'g3d:raceStep', objVar: 'carro', worldVar: 'mundo' },
-          { type: 'g3d:runRivals', worldVar: 'mundo' },
-          {
-            type: 'setProperty',
-            targetId: 'score',
-            property: 'textContent',
-            value: { type: 'g3d:raceLaps', objVar: 'carro' },
-          },
-          {
-            type: 'if',
-            cond: { type: 'g3d:raceHit', objVar: 'carro', worldVar: 'mundo' },
-            then: [
-              { type: 'classOp', targetId: 'results', op: 'add', className: 'visivel' },
-              {
-                type: 'setProperty',
-                targetId: 'final-laps',
-                property: 'textContent',
-                value: { type: 'g3d:raceLaps', objVar: 'carro' },
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'event',
-        target: 'accelerate',
-        targetKind: 'id',
-        event: 'click',
-        body: [{ type: 'g3d:raceControl', objVar: 'carro', mode: 'accelerate' }],
-      },
-      {
-        type: 'event',
-        target: 'brake',
-        targetKind: 'id',
-        event: 'click',
-        body: [{ type: 'g3d:raceControl', objVar: 'carro', mode: 'decelerate' }],
-      },
-      {
-        type: 'event',
-        target: 'retry',
-        targetKind: 'id',
-        event: 'click',
-        body: [
-          { type: 'g3d:raceReset', objVar: 'carro', worldVar: 'mundo' },
-          { type: 'classOp', targetId: 'results', op: 'remove', className: 'visivel' },
-        ],
-      },
-    ],
+    version: 2,
+    behavior: {
+      start: [
+        { type: 'g3d:createRaceScene', canvasId: 'pista', varName: 'mundo' },
+        { type: 'g3d:createRaceTrack', worldVar: 'mundo' },
+        { type: 'g3d:createRaceCar', varName: 'carro', worldVar: 'mundo', color: '#ef2d56' },
+      ],
+      events: [
+        {
+          type: 'event',
+          target: 'accelerate',
+          targetKind: 'id',
+          event: 'click',
+          body: [{ type: 'g3d:raceControl', objVar: 'carro', mode: 'accelerate' }],
+        },
+        {
+          type: 'event',
+          target: 'brake',
+          targetKind: 'id',
+          event: 'click',
+          body: [{ type: 'g3d:raceControl', objVar: 'carro', mode: 'decelerate' }],
+        },
+        {
+          type: 'event',
+          target: 'retry',
+          targetKind: 'id',
+          event: 'click',
+          body: [
+            { type: 'g3d:raceReset', objVar: 'carro', worldVar: 'mundo' },
+            { type: 'classOp', targetId: 'results', op: 'remove', className: 'visivel' },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3d:animate',
+          worldVar: 'mundo',
+          body: [
+            { type: 'g3d:raceStep', objVar: 'carro', worldVar: 'mundo' },
+            { type: 'g3d:runRivals', worldVar: 'mundo' },
+            {
+              type: 'setProperty',
+              targetId: 'score',
+              property: 'textContent',
+              value: { type: 'g3d:raceLaps', objVar: 'carro' },
+            },
+            {
+              type: 'if',
+              cond: { type: 'g3d:raceHit', objVar: 'carro', worldVar: 'mundo' },
+              then: [
+                { type: 'classOp', targetId: 'results', op: 'add', className: 'visivel' },
+                {
+                  type: 'setProperty',
+                  targetId: 'final-laps',
+                  property: 'textContent',
+                  value: { type: 'g3d:raceLaps', objVar: 'carro' },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
     extensions: [{ extensionId: 'game-3d' }],
   },
 }
@@ -833,7 +872,7 @@ export const stackExample: ExtensionExample = {
     'Empilhe os blocos! Clique em "Soltar" na hora certa: a parte que encaixa fica, a sobra cai. A pontuação são os andares.',
   ir: {
     html: [
-      { type: 'canvas', id: 'jogo' },
+      { type: 'canvas', id: 'jogo', width: 960, height: 540 },
       { type: 'element', tag: 'div', id: 'score', text: '0' },
       {
         type: 'element',
@@ -870,9 +909,16 @@ export const stackExample: ExtensionExample = {
       { type: 'googleFont', family: 'Press Start 2P' },
       {
         selector: 'body',
-        declarations: { margin: '0', 'font-family': '"Press Start 2P", cursive' },
+        declarations: {
+          margin: '0',
+          overflow: 'hidden',
+          'font-family': '"Press Start 2P", cursive',
+        },
       },
-      { selector: 'canvas', declarations: { display: 'block' } },
+      {
+        selector: 'canvas',
+        declarations: { display: 'block', width: '100vw', height: '100vh' },
+      },
       {
         selector: '#score',
         declarations: {
@@ -942,53 +988,60 @@ export const stackExample: ExtensionExample = {
         },
       },
     ],
-    js: [
-      { type: 'g3d:createStackScene', canvasId: 'jogo', varName: 'torre' },
-      { type: 'g3d:createStackTower', worldVar: 'torre' },
-      {
-        type: 'g3d:animate',
-        worldVar: 'torre',
-        body: [
-          { type: 'g3d:stackStep', worldVar: 'torre' },
-          {
-            type: 'setProperty',
-            targetId: 'score',
-            property: 'textContent',
-            value: { type: 'g3d:stackScore', worldVar: 'torre' },
-          },
-          {
-            type: 'if',
-            cond: { type: 'g3d:stackGameOver', worldVar: 'torre' },
-            then: [
-              { type: 'classOp', targetId: 'results', op: 'add', className: 'visivel' },
-              {
-                type: 'setProperty',
-                targetId: 'final-score',
-                property: 'textContent',
-                value: { type: 'g3d:stackScore', worldVar: 'torre' },
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'event',
-        target: 'drop',
-        targetKind: 'id',
-        event: 'click',
-        body: [{ type: 'g3d:stackDrop', worldVar: 'torre' }],
-      },
-      {
-        type: 'event',
-        target: 'retry',
-        targetKind: 'id',
-        event: 'click',
-        body: [
-          { type: 'g3d:stackReset', worldVar: 'torre' },
-          { type: 'classOp', targetId: 'results', op: 'remove', className: 'visivel' },
-        ],
-      },
-    ],
+    version: 2,
+    behavior: {
+      start: [
+        { type: 'g3d:createStackScene', canvasId: 'jogo', varName: 'torre' },
+        { type: 'g3d:createStackTower', worldVar: 'torre' },
+      ],
+      events: [
+        {
+          type: 'event',
+          target: 'drop',
+          targetKind: 'id',
+          event: 'click',
+          body: [{ type: 'g3d:stackDrop', worldVar: 'torre' }],
+        },
+        {
+          type: 'event',
+          target: 'retry',
+          targetKind: 'id',
+          event: 'click',
+          body: [
+            { type: 'g3d:stackReset', worldVar: 'torre' },
+            { type: 'classOp', targetId: 'results', op: 'remove', className: 'visivel' },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3d:animate',
+          worldVar: 'torre',
+          body: [
+            { type: 'g3d:stackStep', worldVar: 'torre' },
+            {
+              type: 'setProperty',
+              targetId: 'score',
+              property: 'textContent',
+              value: { type: 'g3d:stackScore', worldVar: 'torre' },
+            },
+            {
+              type: 'if',
+              cond: { type: 'g3d:stackGameOver', worldVar: 'torre' },
+              then: [
+                { type: 'classOp', targetId: 'results', op: 'add', className: 'visivel' },
+                {
+                  type: 'setProperty',
+                  targetId: 'final-score',
+                  property: 'textContent',
+                  value: { type: 'g3d:stackScore', worldVar: 'torre' },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
     extensions: [{ extensionId: 'game-3d' }],
   },
 }

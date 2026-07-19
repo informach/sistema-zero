@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import { compileStatements } from '#generators'
-import { G2D_STATEMENT_TYPES, type JSStatement, SZIRSchema } from '#ir'
+import { behaviorStatements, G2D_STATEMENT_TYPES, type JSStatement, SZIRSchema } from '#ir'
 import 'blockly/blocks'
 import { registerExtensionBlocks } from '../../../blockly/blocks'
 import { buildIRFromWorkspace } from '../../../blockly/buildIR'
@@ -96,7 +96,7 @@ function irThroughBlocks(js: JSStatement[]): JSStatement[] {
   const state = buildWorkspaceStateFromIR(ir as Parameters<typeof buildWorkspaceStateFromIR>[0])
   const ws = new Blockly.Workspace()
   Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, ws)
-  return stripIds(buildIRFromWorkspace(ws).js)
+  return stripIds(behaviorStatements(buildIRFromWorkspace(ws)))
 }
 
 describe('Kit equilibrista / Kit balão — geração', () => {

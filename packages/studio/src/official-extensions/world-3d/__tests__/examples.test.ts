@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { SZIRSchema } from '#ir'
+import { behaviorStatements, normalizeSZIR, SZIRV2Schema } from '#ir'
 import { parseJS } from '../../../parsers/js'
 import { BOLICHE_SOURCE } from '../__gen_boliche'
 import { COASTAL_PROCEDURAL_SOURCE } from '../__gen_coastal_procedural'
@@ -41,7 +41,7 @@ function stripIds<T>(value: T): T {
   if (value && typeof value === 'object') {
     const out: Record<string, unknown> = {}
     for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-      if (k === '__id') continue
+      if (k === '__id' || v === undefined) continue
       out[k] = stripIds(v)
     }
     return out as T
@@ -97,18 +97,27 @@ describe('Mundo 3D — exemplos da vitrine', () => {
       })
 
       it('a IR embutida NÃO desviou do parser (drift guard)', () => {
-        expect(stripIds(example.ir.js)).toEqual(stripIds(parseJS(source)))
+        const normalizedSource = normalizeSZIR({
+          html: [],
+          css: [],
+          js: parseJS(source),
+          extensions: [{ extensionId: 'world-3d' }],
+        })
+        expect(stripIds(behaviorStatements(example.ir))).toEqual(
+          stripIds(behaviorStatements(normalizedSource)),
+        )
       })
 
       it('a IR completa valida no SZIRSchema', () => {
-        const parsed = SZIRSchema.safeParse(example.ir)
+        const parsed = SZIRV2Schema.safeParse(example.ir)
         expect(parsed.success).toBe(true)
       })
 
-      it('usa a extensão world-3d e tem o w3d:start no fim', () => {
+      it('usa a extensão world-3d e deixa o boot automático fora do código da criança', () => {
         expect(example.ir.extensions?.[0]?.extensionId).toBe('world-3d')
-        const js = example.ir.js
-        expect(js[js.length - 1]?.type).toBe('w3d:start')
+        const js = behaviorStatements(example.ir)
+        expect(js.some((statement) => statement.type === 'w3d:start')).toBe(false)
+        expect(example.ir.behavior.start[0]?.type).toBe('w3d:setup')
       })
     })
   }

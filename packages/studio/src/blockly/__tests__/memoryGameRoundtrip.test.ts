@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { generateProjectFiles } from '#generators'
-import type { JSStatement } from '#ir'
+import { behaviorStatements, type JSStatement } from '#ir'
 import { parseProjectFiles } from '#parsers'
 import { buildWorkspaceStateFromIR, type SerializedBlocklyBlock } from '../workspaceState'
 
@@ -153,7 +153,7 @@ describe('Jogo da Memória — round-trip código↔blocos', () => {
 
   it('o ciclo bloco↔texto é estável (parse → gerar → parse não degrada)', () => {
     // A IR depois de um ciclo completo é idêntica — garante os dois sentidos.
-    expect(parsed2.js).toEqual(parsed1.js)
+    expect(parsed2.behavior).toEqual(parsed1.behavior)
   })
 
   it('reconhece os padrões novos como blocos de primeira classe', () => {
@@ -191,6 +191,6 @@ describe('Jogo da Memória — round-trip código↔blocos', () => {
   it('o jogo inteiro vira blocos — nada sobra como código avançado', () => {
     // Com if por soquete de condição + comparação/lógica/return como blocos,
     // todos os trechos do jogo são representáveis (rawCount == 0).
-    expect(rawCount(parsed1.js)).toBe(0)
+    expect(rawCount(behaviorStatements(parsed1))).toBe(0)
   })
 })
