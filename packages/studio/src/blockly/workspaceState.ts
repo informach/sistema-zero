@@ -3698,6 +3698,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     }
     case 'gk:rpgGoMap':
       return block('sz_gk_rpg_go_map', { MAP: stmt.map }, {}, stmt.__id)
+    case 'gk:rpgSetStartMap':
+      return block('sz_gk_rpg_set_start_map', { MAP: stmt.map }, {}, stmt.__id)
     case 'gk:rpgOnMap':
       return block(
         'sz_gk_rpg_on_map',

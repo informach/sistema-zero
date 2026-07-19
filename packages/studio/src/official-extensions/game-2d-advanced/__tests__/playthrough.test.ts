@@ -1,4 +1,6 @@
 import { afterAll, afterEach, describe, expect, it } from 'bun:test'
+import { compileStatements } from '#generators'
+import { vilaDoDragaoExample } from '../examples'
 import { gameKitRuntime } from '../runtime'
 
 /**
@@ -150,6 +152,8 @@ interface Api {
   rpgSay: Fn
   rpgAddFlag: Fn
   rpgHasFlag: (flag: string) => boolean
+  rpgHasItem: (item: string) => boolean
+  rpgSave: Fn
   rpgCreateDoor: Fn
   rpgCell: (n: number) => number
   rpgBattleStats: Fn
@@ -186,18 +190,28 @@ interface Api {
   hurt: Fn
   isDead: (c: unknown) => boolean
   drawActive: Fn
+  _battle?: () => {
+    phase: string
+    menuOpen: boolean
+    menuIndex: number
+    menuLabels: string[]
+    allies: Array<{ energy: number }>
+    foes: Array<{ hp: number }>
+  } | null
 }
 
 interface Harness {
   api: Api
   fire: (name: string, ev?: unknown) => void
   nextFrame: (ts: number) => void
+  storage: Map<string, string>
 }
 
 function loadRuntime(): Harness {
   const listeners: Record<string, Listener[]> = {}
   const rafQueue: Array<(ts: number) => void> = []
   const clock = { value: 0 }
+  const storage = new Map<string, string>()
   const win = {
     addEventListener(name: string, fn: Listener) {
       listeners[name] ??= []
@@ -206,7 +220,11 @@ function loadRuntime(): Harness {
     performance: { now: () => clock.value },
     innerWidth: 1200,
     innerHeight: 700,
-    localStorage: { getItem: () => null, setItem() {}, removeItem() {} },
+    localStorage: {
+      getItem: (key: string) => storage.get(key) ?? null,
+      setItem: (key: string, value: string) => storage.set(key, value),
+      removeItem: (key: string) => storage.delete(key),
+    },
     SZGameKit: undefined,
   } as unknown as Record<string, unknown>
   const raf = (cb: (ts: number) => void) => {
@@ -227,6 +245,7 @@ function loadRuntime(): Harness {
       if (!cb) throw new Error('nenhum quadro agendado')
       cb(ts)
     },
+    storage,
   }
 }
 
@@ -457,6 +476,34 @@ describe('gk — JOGAR uma luta inteira do Kit Luta (a lição do R17)', () => {
   function quadros(h: Harness, n: number, from = 1) {
     for (let i = from; i < from + n; i++) h.nextFrame(i * 50)
   }
+
+  it('⭐ golpes definidos ANTES de "Luta de" entram na partida sem warning', async () => {
+    const warnings: string[] = []
+    const originalWarn = console.warn
+    console.warn = (...args: unknown[]) => warnings.push(args.map(String).join(' '))
+    try {
+      const h = loadRuntime()
+      h.api.setup({ width: 960, height: 540 })
+      const p1 = h.api.createCharacter({ w: 50, h: 110, speed: 260 }) as Lutador
+      const p2 = h.api.createCharacter({ w: 50, h: 110, speed: 260 }) as Lutador
+      h.api.lutaMove('soco', p1, 'rápido', 40, 400, true, false)
+      await startGame(h)
+      h.api.setState('jogando')
+      h.api.placeCharacter(p1, 300, 380)
+      h.api.placeCharacter(p2, 340, 380)
+      h.api.lutaMatch(p1, p2, 1, 10)
+      h.api.onUpdate((dt: number) => {
+        h.api.lutaFighter(p1, 'a', 'd', 'w', 's', 'f', dt)
+        h.api.lutaFighter(p2, 'j', 'l', 'i', 'k', 'h', dt)
+        h.api.lutaAttack(p1, 'soco')
+      })
+      quadros(h, 100)
+      expect(p2.health).toBeLessThan(p2.maxHealth)
+      expect(warnings).toEqual([])
+    } finally {
+      console.warn = originalWarn
+    }
+  })
 
   it('⭐ o golpe NÃO machuca no quadro do aperto (o recuo existe)', async () => {
     const h = loadRuntime()
@@ -1194,6 +1241,107 @@ describe('gk — JOGAR uma aventura inteira do 🧙 Kit RPG', () => {
     expect(h.api.rpgLevel()).toBe(2)
     expect(h.api.rpgXp()).toBe(5)
     void heroi
+  })
+
+  it('⭐ Vila do Dragão EXATA: vila → ferreiro → chave → porta → caverna → vitória → novo jogo', async () => {
+    const h = loadRuntime()
+    const code = compileStatements(vilaDoDragaoExample.ir.js, 0)
+    new Function('SZGameKit', code)(h.api)
+    await Promise.resolve()
+    await Promise.resolve()
+
+    let tick = 1
+    const frame = () => h.nextFrame(tick++ * 100)
+    const advance = (count: number) => {
+      for (let i = 0; i < count; i++) frame()
+    }
+    const tap = (key: string) => {
+      h.fire('keydown', { key })
+      frame()
+      h.fire('keyup', { key })
+      frame()
+    }
+    const moveCell = (key: string) => {
+      tap(key)
+      advance(3)
+    }
+    const savedPosition = (): { map: string; hx: number; hy: number } => {
+      h.api.rpgSave()
+      const raw = h.storage.get('szgk-rpg-save')
+      if (!raw) throw new Error('Vila do Dragão não produziu save observável')
+      return JSON.parse(raw) as { map: string; hx: number; hy: number }
+    }
+
+    h.api.setState('jogando')
+    frame() // o primeiro onUpdate registra o personagem como herói do RPG
+    expect(h.api.rpgCurrentMap()).toBe('vila')
+    expect(savedPosition()).toMatchObject({ map: 'vila', hx: 2, hy: 2 })
+
+    // Termina a abertura, vira para o ferreiro e percorre a conversa da missão.
+    for (let i = 0; i < 32; i++) tap(' ')
+    moveCell('ArrowRight')
+    for (let i = 0; i < 16 && !h.api.rpgHasItem('chave'); i++) tap(' ')
+    expect(h.api.rpgHasFlag('aceitou-missao')).toBe(true)
+    expect(h.api.rpgHasItem('chave')).toBe(true)
+    // Duas falas: completar + avançar cada linha.
+    for (let i = 0; i < 4; i++) tap(' ')
+
+    // Caminho real até a porta criada em (9,6), sem chamar rpgGoMap no teste.
+    for (let i = 0; i < 4; i++) moveCell('ArrowDown')
+    expect(savedPosition()).toMatchObject({ map: 'vila', hx: 2, hy: 6 })
+    for (let i = 0; i < 7 && h.api.rpgCurrentMap() === 'vila'; i++) {
+      moveCell('ArrowRight')
+    }
+    expect(h.api.rpgCurrentMap()).toBe('caverna')
+    expect(savedPosition()).toMatchObject({ map: 'caverna', hx: 1, hy: 5 })
+
+    // Encosta no dragão em (8,2), conversa e abre a batalha do fixture exato.
+    for (let i = 0; i < 3; i++) moveCell('ArrowUp')
+    for (let i = 0; i < 6; i++) moveCell('ArrowRight')
+    moveCell('ArrowRight')
+    tap(' ')
+    advance(8)
+    expect(h.api.state()).toBe('batalha')
+
+    const battle = () => h.api._battle?.() ?? null
+    const waitForMenu = () => {
+      for (let i = 0; i < 30 && h.api.state() === 'batalha'; i++) {
+        if (battle()?.menuOpen) return
+        frame()
+      }
+    }
+    const choose = (label: string) => {
+      waitForMenu()
+      const snapshot = battle()
+      if (!snapshot?.menuOpen) throw new Error(`menu não abriu para escolher ${label}`)
+      const index = snapshot.menuLabels.findIndex((item) => item.includes(label))
+      if (index < 0) throw new Error(`ação ${label} não existe: ${snapshot.menuLabels.join(', ')}`)
+      for (let i = 0; i < index; i++) tap('ArrowDown')
+      tap(' ')
+      waitForMenu()
+    }
+
+    // Exercita defesa, especial e poção antes de fechar o combate.
+    choose('Defender')
+    choose('Espada flamejante')
+    choose('Item')
+    for (let turns = 0; turns < 10 && h.api.state() === 'batalha'; turns++) {
+      const snapshot = battle()
+      choose((snapshot?.allies[0]?.energy ?? 0) >= 4 ? 'Espada flamejante' : 'Atacar')
+    }
+
+    expect(h.api.state()).toBe('vitoria')
+    expect(h.api.rpgBattleWon()).toBe(true)
+    expect(h.api.rpgLevel()).toBe(2)
+
+    // O botão "Jogar de novo" realiza esta transição e deve zerar tudo.
+    h.api.setState('jogando')
+    expect(h.api.rpgCurrentMap()).toBe('vila')
+    expect(h.api.rpgHasItem('chave')).toBe(false)
+    expect(h.api.rpgHasFlag('aceitou-missao')).toBe(false)
+    expect(h.api.rpgLevel()).toBe(1)
+    expect(h.api.rpgXp()).toBe(0)
+    expect(h.api._battle?.()).toBeNull()
   })
 })
 

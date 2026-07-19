@@ -1,4 +1,4 @@
-import type { ProjectAsset } from '#core'
+import type { ExampleExperience, ProjectAsset } from '#core'
 import type { SZIR } from '#ir'
 
 /**
@@ -10,6 +10,7 @@ import type { SZIR } from '#ir'
  */
 export interface CoreExample {
   name: string
+  experience: ExampleExperience
   description: string
   ir: SZIR
   /** Assets embutidos que o exemplo precisa (ex.: imagem de fundo por CSS). */
@@ -29,6 +30,7 @@ const gorilasNaMaoIr = JSON.parse(
 
 export const gorilasNaMaoExample: CoreExample = {
   name: 'Cidade & Moinho (na mão)',
+  experience: 'game',
   description:
     'Mini-Gorillas montado SÓ com blocos genéricos (HTML + CSS + Canvas): arraste a bomba para mirar, o vento empurra e a gravidade puxa; acerte o alvo verde. Tem um moinho SVG que gira por CSS (e acelera com o vento), painel de HTML, cor do céu pelo modo do sistema e botão de tela cheia. Abra e edite à vontade.',
   ir: gorilasNaMaoIr,
@@ -53,6 +55,7 @@ const invadersNaMaoIr = JSON.parse(
 
 export const invadersNaMaoExample: CoreExample = {
   name: 'Invasores do Espaço (na mão)',
+  experience: 'game',
   description:
     'O Space Invaders clássico montado SÓ com blocos do núcleo (sem a extensão Jogo 2D): classes com construtor, pool de tiros, ondas de inimigos que descem, colisão e teclado (setas movem, 1 atira). Fundo estrelado por CSS com imagem do projeto. Abra, jogue e edite à vontade.',
   ir: invadersNaMaoIr,
@@ -84,6 +87,7 @@ const plataformaVerticalNaMaoIr = JSON.parse(
 
 export const plataformaVerticalNaMaoExample: CoreExample = {
   name: 'Plataforma Vertical (na mão)',
+  experience: 'game',
   description:
     'Uma plataforma vertical montada SÓ com blocos do núcleo (sem extensão): pule (W) e ande (A/D) subindo pelas plataformas; a gravidade puxa, os blocos sólidos seguram e as tábuas finas só pegam quando você cai em cima. A câmera acompanha o herói subindo. Abra e edite à vontade.',
   ir: plataformaVerticalNaMaoIr,
@@ -103,6 +107,7 @@ const portasDoCasteloNaMaoIr = JSON.parse(
 
 export const portasDoCasteloNaMaoExample: CoreExample = {
   name: 'Portas do Castelo (na mão)',
+  experience: 'game',
   description:
     'Um platformer montado SÓ com blocos do núcleo (sem extensão): ande (A/D) e pule (W) pelas plataformas até a PORTA — ela dispara um fade preto na mão e leva você para a próxima fase, depois o fade some. A gravidade puxa e os blocos sólidos seguram. Abra e edite à vontade.',
   ir: portasDoCasteloNaMaoIr,
@@ -123,6 +128,7 @@ const defesaDaTorreNaMaoIr = JSON.parse(
 
 export const defesaDaTorreNaMaoExample: CoreExample = {
   name: 'Defesa da Torre (na mão)',
+  experience: 'game',
   description:
     'Um tower defense montado SÓ com blocos do núcleo (sem extensão): os inimigos seguem o caminho, você clica nos lugares livres para comprar torres (50 moedas) que miram o inimigo mais perto e atiram sozinhas; cada inimigo derrotado dá moedas e cada um que passa tira uma vida. As ondas crescem. Abra e edite à vontade.',
   ir: defesaDaTorreNaMaoIr,
@@ -140,6 +146,7 @@ const dueloNaMaoIr = JSON.parse(
 
 export const dueloNaMaoExample: CoreExample = {
   name: 'Duelo (na mão)',
+  experience: 'game',
   description:
     'Um jogo de luta para DOIS no mesmo teclado, montado SÓ com blocos do núcleo (sem extensão): Azul anda com A/D, pula com W e golpeia com F; Vermelho anda com as setas, pula com ↑ e golpeia com Enter. Cada golpe que encosta tira vida (barras no topo), e ganha quem tiver mais vida quando o tempo acabar. Abra e edite à vontade.',
   ir: dueloNaMaoIr,
@@ -171,6 +178,7 @@ const passeioBuzinaWav =
 
 export const passeio3dNaMaoExample: CoreExample = {
   name: 'Passeio 3D (na mão)',
+  experience: 'exploration',
   description:
     'Um mundo 3D aberto para DIRIGIR, montado SÓ com blocos do núcleo Canvas 3D (three.js de verdade, sem extensão): um carrinho de caixas que você guia com WASD por uma floresta de árvores, com névoa de distância, câmera que segue por trás com suavidade e um ciclo de dia e noite que muda a cor do céu. Agora com SOM: o motor ronca junto do carrinho (áudio posicional que acelera com você) e H buzina. É o "jogo de carrinho" do Bruno Simon na sua versão mais simples. Abra a Ponte para ver o código three.js e edite à vontade.',
   ir: passeio3dNaMaoIr,

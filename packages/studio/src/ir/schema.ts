@@ -2871,6 +2871,7 @@ export type JSStatement =
       y: number | JSExpr
     })
   | (JSStatementCommon & { type: 'gk:rpgGoMap'; map: string })
+  | (JSStatementCommon & { type: 'gk:rpgSetStartMap'; map: string })
   | (JSStatementCommon & { type: 'gk:rpgOnMap'; map: string; body: JSStatement[] })
   | (JSStatementCommon & {
       type: 'gk:rpgCreateDoor'
@@ -6715,6 +6716,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('gk:rpgGoMap'), map: irText(), ...idField }),
+    z.object({ type: z.literal('gk:rpgSetStartMap'), map: irText(), ...idField }),
     z.object({
       type: z.literal('gk:rpgOnMap'),
       map: irText(),
@@ -9651,6 +9653,7 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:rpgRemoveItem',
   'gk:rpgDrawInventory',
   'gk:rpgGoMap',
+  'gk:rpgSetStartMap',
   'gk:rpgOnMap',
   'gk:rpgCreateDoor',
   'gk:rpgMapSize',

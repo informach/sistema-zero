@@ -320,6 +320,7 @@ SZGameKit.defineLook("dragao", function (ctx) {
 SZGameKit.rpgBattleStats(30, 8, 2);
 SZGameKit.rpgSetSpecial("Espada flamejante", 18, 4);
 const heroi = SZGameKit.createCharacter({ image: "", w: 64, h: 64, speed: 260, color: "#4a9eff" });
+SZGameKit.rpgSetStartMap("vila");
 SZGameKit.rpgOnMap("vila", function () {
   SZGameKit.placeCharacter(heroi, SZGameKit.rpgCell(2), SZGameKit.rpgCell(2));
   SZGameKit.rpgBlockCell(5, 1);
@@ -760,6 +761,7 @@ SZGameKit.pkmEvolve("Fogoso", "Fogozao", 8);
 SZGameKit.pkmCatchDifficulty("Gotinha", "difícil");
 SZGameKit.pkmEncounterRate(20);
 const heroi = SZGameKit.createCharacter({ image: "", w: 40, h: 48, speed: 200, color: "#2b6cb0" });
+SZGameKit.rpgSetStartMap("quintal");
 SZGameKit.rpgOnMap("quintal", function () {
   SZGameKit.rpgCreateNpc("Cora", 3, 3, "", "heroi");
   SZGameKit.rpgCreateNpc("Enfermeira", 12, 3, "", "heroi");
@@ -1309,6 +1311,7 @@ describe('game-2d-advanced — exemplo Defesa do Reino (🏰 Kit Defesa de Torre
 const SOURCE_REINO = `SZGameKit.setup({ width: 960, height: 640, background: "#1c2b1c", accent: "#ffd166" });
 SZGameKit.setScreenText("menu", "Reino Aberto", "Setas ou WASD andam - espaço conversa - explore os 4 cantos do reino!", "Explorar");
 const heroi = SZGameKit.createCharacter({ image: "", w: 48, h: 48, speed: 320, color: "#4a9eff" });
+SZGameKit.rpgSetStartMap("campo");
 SZGameKit.rpgOnMap("campo", function () {
   SZGameKit.rpgMapSize(15, 10);
   SZGameKit.rpgConnectEdge("leste", "praia");
@@ -1432,6 +1435,7 @@ SZGameKit.rpgTeachMove("Voce", "Espadada Dupla", 16, 3);
 SZGameKit.rpgTeachMove("Curandeira", "Flechada", 14, 2);
 SZGameKit.rpgTeachHeal("Curandeira", "Curar", 18, 3);
 SZGameKit.rpgGivePotion("Pocao", 25);
+SZGameKit.rpgSetStartMap("praca");
 SZGameKit.rpgOnMap("praca", function () {
   SZGameKit.rpgCreateNpc("Capitao", 4, 3, "", "");
   SZGameKit.placeCharacter(heroi, SZGameKit.rpgCell(2), SZGameKit.rpgCell(3));
@@ -1783,6 +1787,7 @@ SZGameKit.rpgOnFoeTurn("Dragao", function () {
     SZGameKit.rpgFoeUse("Dragao", "Garra");
   }
 });
+SZGameKit.rpgSetStartMap("caverna");
 SZGameKit.rpgOnMap("caverna", function () {
   SZGameKit.rpgCreateNpc("Guardiao", 4, 3, "", "");
   SZGameKit.placeCharacter(heroi, SZGameKit.rpgCell(2), SZGameKit.rpgCell(3));
@@ -2158,6 +2163,7 @@ SZGameKit.rpgOnFoeTurn("Dragão", function () {
     SZGameKit.rpgFoeUse("Dragão", "Baforada");
   }
 });
+SZGameKit.rpgSetStartMap("caverna");
 SZGameKit.rpgOnMap("caverna", function () {
   SZGameKit.rpgCreateNpc("Guardião", 4, 3, "", "");
   SZGameKit.placeCharacter(heroi, SZGameKit.rpgCell(2), SZGameKit.rpgCell(3));

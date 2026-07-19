@@ -144,6 +144,7 @@ const MAX_EXAMPLES = 50
 
 export const ExtensionExampleSchema = z.object({
   name: z.string().min(1).max(MAX_NAME_CHARS),
+  experience: z.enum(['game', 'demo', 'exploration']),
   description: z.string().max(MAX_DESCRIPTION_CHARS).optional(),
   // Pré-guarda de profundidade/tamanho ANTES do parse recursivo do SZIRSchema.
   ir: BoundedExampleIRSchema,

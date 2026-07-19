@@ -1,11 +1,19 @@
 import type { ExtensionExample } from '#extensions'
 
+const EXAMPLE_HERO_IMAGE =
+  'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSI3IiBmaWxsPSIjMjU2M2ViIi8+PGNpcmNsZSBjeD0iMTYiIGN5PSIxMCIgcj0iNiIgZmlsbD0iI2ZkZTY4YSIvPjxyZWN0IHg9IjEwIiB5PSIxNiIgd2lkdGg9IjEyIiBoZWlnaHQ9IjEyIiByeD0iNCIgZmlsbD0iIzYwYTVmYSIvPjxjaXJjbGUgY3g9IjE0IiBjeT0iOSIgcj0iMSIvPjxjaXJjbGUgY3g9IjE4IiBjeT0iOSIgcj0iMSIvPjwvc3ZnPg=='
+const EXAMPLE_HERO_WALK_SHEET =
+  'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjgiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAxMjggMzIiPjxyZWN0IHdpZHRoPSIxMjgiIGhlaWdodD0iMzIiIGZpbGw9Im5vbmUiLz48ZyBmaWxsPSIjMjU2M2ViIiBzdHJva2U9IiNmZGU2OGEiIHN0cm9rZS13aWR0aD0iMyI+PGNpcmNsZSBjeD0iMTYiIGN5PSI5IiByPSI2IiBmaWxsPSIjZmRlNjhhIi8+PHBhdGggZD0iTTE2IDE1djltMC01LTcgNW03LTUgNyA1bS03IDAtNSA3bTUtNyA1IDciLz48Y2lyY2xlIGN4PSI0OCIgY3k9IjkiIHI9IjYiIGZpbGw9IiNmZGU2OGEiLz48cGF0aCBkPSJNNDggMTV2OW0wLTUtOCAybTgtMiA4IDJtLTggMy04IDRtOC00IDcgNyIvPjxjaXJjbGUgY3g9IjgwIiBjeT0iOSIgcj0iNiIgZmlsbD0iI2ZkZTY4YSIvPjxwYXRoIGQ9Ik04MCAxNXY5bTAtNS03IDVtNy01IDcgNW0tNyA1LTUgMm01LTcgNSAzIi8+PGNpcmNsZSBjeD0iMTEyIiBjeT0iOSIgcj0iNiIgZmlsbD0iI2ZkZTY4YSIvPjxwYXRoIGQ9Ik0xMTIgMTV2OW0wLTUtOCAybTgtMiA4IDJtLTggNS03IDVtNy03IDggNCIvPjwvZz48L3N2Zz4='
+const EXAMPLE_TILESET_IMAGE =
+  'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDY0IDMyIj48cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIGZpbGw9IiMzMzQxNTUiLz48cGF0aCBkPSJNMCA4aDMyTTAgMTZoMzJNMCAyNGgzMiIgc3Ryb2tlPSIjNDc1NTY5Ii8+PHJlY3QgeD0iMzIiIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgZmlsbD0iIzdjM2FlZCIvPjxwYXRoIGQ9Ik0zMiA4aDMyTTMyIDE2aDMyTTMyIDI0aDMyTTQwIDB2OG0xNiAwdjhtLTE2IDB2OG0xNiAwdjgiIHN0cm9rZT0iI2M0YjVmZCIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+'
+
 /**
  * Exemplo bundlado: "Pong simples". Carregado pelo painel de extensões via
  * botão "Carregar exemplo". Substitui a IR atual do projeto.
  */
 export const pongExample: ExtensionExample = {
   name: 'Pong simples',
+  experience: 'game',
   description: 'Bola que rebate nas bordas + raquete controlada pelas setas.',
   ir: {
     html: [{ type: 'canvas', id: 'tela', width: 400, height: 300 }],
@@ -90,12 +98,34 @@ export const pongExample: ExtensionExample = {
 /**
  * Exemplo "Herói que anda": sprite com imagem da biblioteca + animação de
  * spritesheet, movido pelas setas. Os nomes de asset (`heroi`, `heroi-andando`)
- * casam com itens do starter pack — enquanto a imagem não é adicionada, o sprite
- * aparece como retângulo (placeholder) e segue jogável.
+ * casam com os dois assets mínimos embutidos no próprio cartão.
  */
 export const animatedHeroExample: ExtensionExample = {
   name: 'Herói que anda',
+  experience: 'demo',
   description: 'Sprite com imagem + animação de spritesheet, movido pelas setas.',
+  assets: [
+    {
+      id: 'example-hero',
+      name: 'heroi',
+      kind: 'image',
+      dataUrl: EXAMPLE_HERO_IMAGE,
+      width: 32,
+      height: 32,
+      source: 'library',
+      libId: 'example-hero',
+    },
+    {
+      id: 'example-hero-walk',
+      name: 'heroi-andando',
+      kind: 'image',
+      dataUrl: EXAMPLE_HERO_WALK_SHEET,
+      width: 128,
+      height: 32,
+      source: 'library',
+      libId: 'example-hero-walk',
+    },
+  ],
   ir: {
     html: [{ type: 'canvas', id: 'tela', width: 400, height: 300 }],
     css: [
@@ -160,6 +190,7 @@ export const animatedHeroExample: ExtensionExample = {
  */
 export const platformerExample: ExtensionExample = {
   name: 'Mini plataforma',
+  experience: 'demo',
   description: 'Herói que anda, pula com gravidade e fica preso na tela (setas).',
   ir: {
     html: [{ type: 'canvas', id: 'tela', width: 320, height: 200 }],
@@ -207,13 +238,34 @@ export const platformerExample: ExtensionExample = {
 /**
  * Exemplo "Sala com paredes" (v0.5.0): um mapa de tiles (chão + paredes) com um
  * herói que anda nas 4 direções pelas setas e NÃO atravessa as paredes (tiles
- * sólidos). Usa o `tileset` da biblioteca (chão = 0, parede = 1); enquanto o asset
- * não for adicionado, os tiles aparecem como retângulos (placeholder) e o mapa
- * segue jogável.
+ * sólidos). Embute uma folha mínima (chão = 0, parede = 1) e o herói.
  */
 export const tilemapExample: ExtensionExample = {
   name: 'Sala com paredes',
+  experience: 'demo',
   description: 'Mapa de tiles com paredes que o herói não atravessa (setas para andar).',
+  assets: [
+    {
+      id: 'example-room-tileset',
+      name: 'tileset',
+      kind: 'image',
+      dataUrl: EXAMPLE_TILESET_IMAGE,
+      width: 64,
+      height: 32,
+      source: 'library',
+      libId: 'example-room-tileset',
+    },
+    {
+      id: 'example-room-hero',
+      name: 'heroi',
+      kind: 'image',
+      dataUrl: EXAMPLE_HERO_IMAGE,
+      width: 32,
+      height: 32,
+      source: 'library',
+      libId: 'example-room-hero',
+    },
+  ],
   ir: {
     html: [{ type: 'canvas', id: 'tela', width: 320, height: 256 }],
     css: [
@@ -275,6 +327,7 @@ export const tilemapExample: ExtensionExample = {
  */
 export const asteroidsExample: ExtensionExample = {
   name: 'Nave contra Asteroides',
+  experience: 'game',
   description:
     'Jogo de tiro: atire nos asteroides, ganhe pontos e sobreviva. Tem telas de início, vitória e derrota. Setas/dedo movem; Espaço atira; Enter começa.',
   ir: {
@@ -561,6 +614,7 @@ export const asteroidsExample: ExtensionExample = {
  */
 export const dinoRunExample: ExtensionExample = {
   name: 'Dino Run',
+  experience: 'game',
   description:
     'Jogo de corrida: pule os obstáculos (cacto/pedra), abaixe do pássaro e pegue os ovos de bônus. Tem vidas, pontos e recorde que continua salvo. Pule com ↑/Espaço/toque; abaixe com ↓; Enter começa.',
   ir: {
@@ -853,6 +907,7 @@ export const dinoRunExample: ExtensionExample = {
  */
 export const gorilasExample: ExtensionExample = {
   name: 'Guerra de Gorilas',
+  experience: 'game',
   description:
     'Dois gorilas no alto dos prédios jogam bananas um no outro. Arraste a partir do gorila da vez para mirar (mais longe = mais forte) e solte para lançar; o vento e a gravidade entortam a parábola e a banana abre crateras nos prédios. Acertar o inimigo vence; errar passa a vez. 2 jogadores. Enter começa.',
   ir: {
@@ -1133,6 +1188,7 @@ export const gorilasExample: ExtensionExample = {
  */
 export const gorilasVsRobotExample: ExtensionExample = {
   name: 'Guerra de Gorilas vs Robô',
+  experience: 'game',
   description:
     'Jogue contra o COMPUTADOR: você arrasta para mirar e o robô mira e joga sozinho (simula lançamentos e escolhe o melhor). Vento e gravidade entortam a banana; acertar o inimigo vence. Enter começa.',
   ir: {
@@ -1398,6 +1454,7 @@ export const gorilasVsRobotExample: ExtensionExample = {
  */
 export const asteroidsClassicExample: ExtensionExample = {
   name: 'Asteroides clássico',
+  experience: 'game',
   description:
     'Pilote a nave girando e impulsionando como no Asteroids clássico: ← → giram, ↑ acelera na direção apontada, Espaço atira pra frente. Desvie e atire nos asteroides que vêm das bordas. Enter começa.',
   ir: {
@@ -1608,6 +1665,7 @@ export const asteroidsClassicExample: ExtensionExample = {
  */
 export const stickHeroExample: ExtensionExample = {
   name: 'Equilibrista',
+  experience: 'game',
   description:
     'Estica o bastão segurando o mouse/dedo e atravessa as plataformas (estilo Stick Hero).',
   ir: {
@@ -1647,6 +1705,7 @@ export const stickHeroExample: ExtensionExample = {
  */
 export const balloonExample: ExtensionExample = {
   name: 'Balão',
+  experience: 'game',
   description: 'Suba segurando o mouse/dedo, economize combustível e desvie das árvores.',
   ir: {
     html: [{ type: 'canvas', id: 'tela', width: 560, height: 360 }],
@@ -1687,6 +1746,7 @@ export const balloonExample: ExtensionExample = {
  */
 export const cameraAdventureExample: ExtensionExample = {
   name: 'Aventura com câmera',
+  experience: 'exploration',
   description: 'Mundo maior que a tela: a câmera segue o herói, que pega moedas com som e música.',
   ir: {
     html: [{ type: 'canvas', id: 'tela', width: 480, height: 320 }],
@@ -1810,6 +1870,7 @@ export const cameraAdventureExample: ExtensionExample = {
  */
 export const enemyPlatformerExample: ExtensionExample = {
   name: 'Plataforma com inimigos',
+  experience: 'game',
   description: 'Três tipos de inimigo (patrulha, saltador e atirador), tiro, vida e pontos.',
   ir: {
     html: [{ type: 'canvas', id: 'tela', width: 480, height: 320 }],
@@ -2037,6 +2098,7 @@ export const enemyPlatformerExample: ExtensionExample = {
  */
 export const codeDrawnExample: ExtensionExample = {
   name: 'Jogo desenhado por código',
+  experience: 'demo',
   description: 'Herói e moeda desenhados com formas (sem nenhuma imagem); pegue as moedas.',
   ir: {
     html: [{ type: 'canvas', id: 'tela', width: 400, height: 300 }],

@@ -1,3 +1,4 @@
+export * from './example'
 export * from './i18n'
 export * from './levels'
 export * from './modes'

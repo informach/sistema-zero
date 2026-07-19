@@ -6230,6 +6230,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     case 'sz_gk_rpg_go_map':
       seen.add('game-2d-advanced')
       return { kind: 'js', value: { type: 'gk:rpgGoMap', map: f(block, 'MAP') } }
+    case 'sz_gk_rpg_set_start_map':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:rpgSetStartMap', map: f(block, 'MAP') } }
     case 'sz_gk_rpg_on_map':
       seen.add('game-2d-advanced')
       return {

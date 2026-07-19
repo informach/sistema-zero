@@ -545,13 +545,29 @@ export const gameTwoDRuntime = `(function () {
 
   // ---- Áudio (Web Audio, sem assets) ----
   var audioCtx = null;
+  // O Chromium proíbe criar/iniciar AudioContext antes de um gesto. Exemplos
+  // podem declarar música no topo, então o motor espera o primeiro teclado/toque
+  // em vez de gerar warning e deixar o contexto suspenso.
+  var audioGestureSeen = false;
   function ensureAudio() {
     if (audioCtx) return audioCtx;
+    if (!audioGestureSeen) return null;
     try {
       var AC = window.AudioContext || window.webkitAudioContext;
       if (AC) audioCtx = new AC();
     } catch (e) {}
     return audioCtx;
+  }
+  function unlockAudio() {
+    audioGestureSeen = true;
+    var ctx = ensureAudio();
+    try {
+      if (ctx && ctx.state === 'suspended' && ctx.resume) ctx.resume();
+    } catch (e) {}
+  }
+  if (window.addEventListener) {
+    window.addEventListener('pointerdown', unlockAudio);
+    window.addEventListener('keydown', unlockAudio);
   }
   /** Toca um tom curto (freq em Hz, duração em ms). Sintetizado — não precisa de arquivo. */
   function playSound(freq, ms) {

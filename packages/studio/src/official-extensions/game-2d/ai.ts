@@ -153,7 +153,8 @@ HUD no canvas (v0.6.0) — desenhe DENTRO do gameLoop, depois de limpar a tela:
 - drawHearts(ctx, vidas, x, y, tamanho, "cor"): fileira de corações (vidas). Teto de 20.
 - drawBar(ctx, valor, max, x, y, w, h, "cor"): barra de progresso/vida (fração valor/max).
 
-Estado/telas (cenas) — início → jogando → ganhou → perdeu, com UM só gameLoop:
+Estado/telas (cenas) — início → jogando → ganhou → perdeu, ou qualquer nome livre
+inventado pela criança (ex.: ganhou1), com UM só gameLoop:
 - setScene("jogando") / sceneIs("jogando") (booleano, use no if) / showScreen(ctx, titulo, subtitulo, dica, fundo) / restart(). O titulo/subtitulo/dica aceitam texto fixo OU expressão (variável, "juntar texto", resultado de função) — ex.: "Destrua " + alvo + " asteroides" mostra a meta vinda de uma variável.
 - IMPORTANTE: as variáveis e grupos (createGroup, createSprite, pontos, vidas) ficam no TOPO do programa (fora do gameLoop), para o loop conseguir enxergá-las. NÃO existe um bloco "quando o jogo começar" que embrulhe isso — o setup é só os blocos do topo.
 - Padrão: setup no topo + setScene("inicio"); um único "a cada quadro" que limpa a tela e usa "se a tela atual é X" para decidir o que desenhar; um "quando apertar Enter" que troca início→jogando e, no perdeu/ganhou, chama reiniciar.

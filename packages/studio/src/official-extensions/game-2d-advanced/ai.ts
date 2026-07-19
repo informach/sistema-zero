@@ -157,8 +157,10 @@ API global injetada como window.SZGameKit:
   rpgOnTalk(nome, fn); rpgSay(texto, quem) caixa typewriter (fila; emite
   "fala:terminada"); rpgAddFlag/rpgHasFlag (story flags — conversa condicionada);
   rpgGiveItem(nome, img)/rpgHasItem/rpgRemoveItem/rpgDrawInventory(x, y);
-  rpgOnMap(nome, fn) monta o mapa (1º registrado = inicial; trocar limpa
-  paredes/NPCs/portas e REMONTA — reposicione o herói na montagem!) +
+  rpgSetStartMap(nome) escolhe explicitamente o mapa de início/recomeço;
+  rpgOnMap(nome, fn) monta o mapa (sem rpgSetStartMap, o 1º registrado segue
+  como fallback legado; trocar limpa paredes/NPCs/portas e REMONTA — reposicione
+  o herói na montagem; nome inexistente avisa e cai no 1º mapa válido) +
   rpgGoMap(nome) + rpgCreateDoor(cx, cy, mapa); MUNDO ABERTO estilo Zelda:
   DENTRO do rpgOnMap declare rpgMapSize(cols, rows) (trava da câmera + a borda
   vira fim do mundo) e rpgConnectEdge("leste"|"oeste"|"norte"|"sul", "mapa") —

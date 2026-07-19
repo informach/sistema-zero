@@ -1634,38 +1634,16 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_set_scene',
     message0: 'Ir para a tela %1',
-    args0: [
-      {
-        type: 'field_dropdown',
-        name: 'SCENE',
-        options: [
-          ['início', 'inicio'],
-          ['jogando', 'jogando'],
-          ['ganhou', 'ganhou'],
-          ['perdeu', 'perdeu'],
-        ],
-      },
-    ],
+    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'inicio', kind: 'gamestate' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Muda a tela atual do jogo (início, jogando, ganhou, perdeu).',
+    tooltip: 'Muda a tela atual do jogo. Escolha uma existente ou invente um nome (ex.: ganhou1).',
   },
   {
     type: 'sz_g2d_scene_is',
     message0: 'a tela atual é %1 ?',
-    args0: [
-      {
-        type: 'field_dropdown',
-        name: 'SCENE',
-        options: [
-          ['início', 'inicio'],
-          ['jogando', 'jogando'],
-          ['ganhou', 'ganhou'],
-          ['perdeu', 'perdeu'],
-        ],
-      },
-    ],
+    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'inicio', kind: 'gamestate' }],
     output: 'JSValue',
     colour: C,
     tooltip: 'Verdadeiro se o jogo está naquela tela. Use dentro de um "se".',

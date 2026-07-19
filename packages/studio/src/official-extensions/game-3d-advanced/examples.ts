@@ -13,6 +13,7 @@ import type { ExtensionExample } from '#extensions'
  */
 export const defesaDaTorreExample: ExtensionExample = {
   name: 'Defesa da Torre',
+  experience: 'game',
   description:
     'Torres com cérebro próprio (máquina de estados: parado → mirar → atirar → recarregar) caçam os invasores que avançam contra o cristal. Tudo montado de peças — nenhuma imagem.',
   ir: {
@@ -911,6 +912,7 @@ export const defesaDaTorreExample: ExtensionExample = {
  */
 export const saltoNasNuvensExample: ExtensionExample = {
   name: 'Salto nas Nuvens',
+  experience: 'game',
   description:
     'Um mini-plataforma 3D com física de verdade: pule entre as plataformas sólidas, junte as moedas girantes e siga o herói com a câmera. Mostra a gravidade, o pulo, o mundo sólido e um rastro de partículas.',
   ir: {
@@ -1599,6 +1601,7 @@ export const saltoNasNuvensExample: ExtensionExample = {
  */
 export const parkourDoVulcaoExample: ExtensionExample = {
   name: 'Parkour do Vulcão',
+  experience: 'game',
   description:
     'Um parkour 3D com física de verdade: suba a rampa, pegue carona no elevador, quique no trampolim e junte as 3 gemas. Mostra cápsula, rampa, plataforma móvel, quique, atrito e zonas.',
   ir: {
@@ -2580,6 +2583,7 @@ export const parkourDoVulcaoExample: ExtensionExample = {
  */
 export const quadraMalucaExample: ExtensionExample = {
   name: 'Quadra Maluca',
+  experience: 'game',
   description:
     'Arraste o mouse para girar a câmera — o WASD anda sempre para onde você olha. Cinco bolas malucas quicam pelo chão, o rinque de gelo escorrega e os caixotes não saem do lugar: cada coisa com a física dela.',
   ir: {
@@ -3381,6 +3385,7 @@ export const quadraMalucaExample: ExtensionExample = {
  */
 export const guardiaoDoPortalExample: ExtensionExample = {
   name: 'Guardião do Portal',
+  experience: 'game',
   description:
     'Segure os invasores por 30 segundos! O guardião fala, a câmera treme no impacto, as pedras quicam — e a semente faz a partida se repetir igualzinha.',
   ir: {
@@ -4269,6 +4274,7 @@ export const guardiaoDoPortalExample: ExtensionExample = {
  */
 export const tiroAoAlvoExample: ExtensionExample = {
   name: 'Tiro ao Alvo',
+  experience: 'game',
   description:
     'Point-and-click: alvos aparecem e fogem, e cada CLIQUE certeiro vale pontos (o dourado vale 3). Tela de dica própria, aviso de acerto e lente de mira — feche 12 pontos em 25 segundos.',
   ir: {

@@ -108,8 +108,9 @@ test.describe('Sistema Zero Studio — smoke', () => {
     // Extensões vive no menu ⋯ da Topbar (seção Exibição).
     await page.getByRole('button', { name: 'Mais opções' }).click()
     await page.getByRole('menuitem', { name: 'Extensões' }).click()
-    await expect(page.getByText('Jogo 2D', { exact: true }).first()).toBeVisible()
-    await expect(page.getByText('Disponível').or(page.getByText('Instalada')).first()).toBeVisible()
+    const game2dCard = page.getByRole('listitem').filter({ hasText: 'Jogo 2D' }).first()
+    await expect(game2dCard.getByText('Jogo 2D', { exact: true })).toBeVisible()
+    await expect(game2dCard.getByRole('button', { name: 'Instalar', exact: true })).toBeVisible()
   })
 
   test('Menu do projeto fica acima do card e exclusão usa modal própria', async ({ page }) => {

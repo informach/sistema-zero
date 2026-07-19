@@ -1183,6 +1183,16 @@ export const gameKitBlocks = [
 
   // ---- 🧙 Kit RPG: mapas ----
   {
+    type: 'sz_gk_rpg_set_start_map',
+    message0: 'Começar o jogo no mapa %1',
+    args0: [{ type: 'field_name_picker', name: 'MAP', text: 'vila', kind: 'map' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Escolhe explicitamente o mapa inicial. Se o nome não existir, o jogo avisa e usa o primeiro mapa criado.',
+  },
+  {
     type: 'sz_gk_rpg_on_map',
     message0: 'Quando chegar no mapa %1',
     args0: [{ type: 'field_input', name: 'MAP', text: 'vila' }],
@@ -1193,7 +1203,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Monta o cenário do mapa: paredes, NPCs, portas e a posição do herói. O PRIMEIRO mapa criado é onde o jogo começa. Trocar de mapa limpa o anterior e roda esta montagem.',
+      'Monta o cenário do mapa: paredes, NPCs, portas e a posição do herói. Use “Começar o jogo no mapa” para escolher o inicial; projetos antigos continuam começando no primeiro mapa criado.',
   },
   {
     type: 'sz_gk_rpg_go_map',
@@ -5052,6 +5062,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     kit: '🧙 Kit RPG',
     colour: C,
     types: [
+      'sz_gk_rpg_set_start_map',
       'sz_gk_rpg_on_map',
       'sz_gk_rpg_go_map',
       'sz_gk_rpg_create_door',

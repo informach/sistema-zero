@@ -13,6 +13,7 @@ import type { ExtensionExample } from '#extensions'
  */
 export const cacaMoedasExample: ExtensionExample = {
   name: 'Caça-moedas profissional',
+  experience: 'game',
   description:
     'A base de jogo profissional em ação: menu, pausa (Esc), estados, tela de vitória com botão, e a mecânica escrita com blocos — pegue 5 moedas!',
   ir: {
@@ -187,6 +188,7 @@ export const cacaMoedasExample: ExtensionExample = {
  */
 export const arenaGoblinsExample: ExtensionExample = {
   name: 'Arena dos Goblins',
+  experience: 'game',
   description:
     'Golpeie com J e derrote 10 goblins! Eles nascem sozinhos, te perseguem e empurram; você pisca invencível ao levar dano. Moldes, spawner, combate de verdade, faíscas e missão — tudo em blocos.',
   ir: {
@@ -638,6 +640,7 @@ export const arenaGoblinsExample: ExtensionExample = {
  */
 export const vilaDoDragaoExample: ExtensionExample = {
   name: 'Vila do Dragão',
+  experience: 'game',
   description:
     'Uma aventura de RPG com cena de abertura, batalha por turnos RICA (defesa, golpe especial, poção e XP que sobe de nível) e história: fale com o ferreiro, ganhe a chave e a poção, e derrote o dragão. Cenas, escolhas, combate de progressão — tudo em blocos.',
   ir: {
@@ -905,6 +908,7 @@ export const vilaDoDragaoExample: ExtensionExample = {
         },
         color: '#4a9eff',
       },
+      { type: 'gk:rpgSetStartMap', map: 'vila' },
       {
         type: 'gk:rpgOnMap',
         map: 'vila',
@@ -1308,6 +1312,7 @@ export const vilaDoDragaoExample: ExtensionExample = {
  */
 export const florestaNinjaExample: ExtensionExample = {
   name: 'Floresta Ninja',
+  experience: 'game',
   description:
     'Aventura de acao: ande com WASD e GOLPEIE na direcao (ESPACO). Os ninjas patrulham e somem ao apanhar. Derrote os dois!',
   ir: {
@@ -1784,6 +1789,7 @@ export const florestaNinjaExample: ExtensionExample = {
  */
 export const saltoNaFlorestaExample: ExtensionExample = {
   name: 'Salto na Floresta',
+  experience: 'game',
   description:
     'Um jogo de plataforma de verdade: pulo gostoso (dá para pular saindo da beirada!), tábuas que se atravessa por baixo, plataforma que anda e te leva junto, e bichos que você derrota pisando. Pegue as 5 frutas!',
   ir: {
@@ -2629,6 +2635,7 @@ export const saltoNaFlorestaExample: ExtensionExample = {
  */
 export const bichinhosDoQuintalExample: ExtensionExample = {
   name: 'Bichinhos do Quintal',
+  experience: 'game',
   description:
     'Pegue e treine bichinhos! Ande no mato, encontre criaturas selvagens, batalhe por turnos e jogue a bola para capturar. Você inventa os bichos, os golpes e a regra de quem vence quem — pegue 3 e ganhe!',
   ir: {
@@ -3406,6 +3413,7 @@ export const bichinhosDoQuintalExample: ExtensionExample = {
         },
         color: '#2b6cb0',
       },
+      { type: 'gk:rpgSetStartMap', map: 'quintal' },
       {
         type: 'gk:rpgOnMap',
         map: 'quintal',
@@ -3727,6 +3735,7 @@ export const bichinhosDoQuintalExample: ExtensionExample = {
  */
 export const invasaoDosOvnisExample: ExtensionExample = {
   name: 'Invasão dos Óvnis',
+  experience: 'game',
   description:
     'O clássico de nave com o Kit Nave: a formação marcha, desce e acelera; um óvni sorteado atira; power-up de metralhadora, bomba que explode em área e placar com vidas. Não deixe a invasão chegar embaixo!',
   ir: {
@@ -4739,6 +4748,7 @@ export const invasaoDosOvnisExample: ExtensionExample = {
  */
 export const dueloDosBonecosExample: ExtensionExample = {
   name: 'Duelo dos Bonecos',
+  experience: 'game',
   description:
     'Um contra um com o Kit Luta: você (A/D/W/S, F defende, G soco, H chute, J agarrão) contra o computador — melhor de 3 rounds. O chute pesado trava mais do que demora a recuperar: descubra o combo!',
   ir: {
@@ -5144,6 +5154,7 @@ export const dueloDosBonecosExample: ExtensionExample = {
  */
 export const defesaDoReinoExample: ExtensionExample = {
   name: 'Defesa do Reino',
+  experience: 'game',
   description:
     'Defenda o castelo com o Kit Defesa de Torre: clique nos lugares para comprar torres (elas miram sozinhas o invasor mais avançado no caminho), some moedas a cada inimigo derrotado e segure as ondas — cada uma vem maior. Deixou 5 passarem? O reino cai.',
   ir: {
@@ -6124,6 +6135,7 @@ export const defesaDoReinoExample: ExtensionExample = {
  */
 export const reinoAbertoExample: ExtensionExample = {
   name: 'Reino Aberto',
+  experience: 'exploration',
   description:
     'Um reino de 4 mapas ligados pelas BORDAS (estilo Zelda): ande até a pontinha do campo e entre na praia, no bosque e na vila — que é MAIOR que a tela, com a câmera te seguindo presa nas bordas do mapa. Converse com o pescador e a prefeita (espaço), e repare o nome do mapa no placar. Abra e edite à vontade.',
   ir: {
@@ -6161,6 +6173,7 @@ export const reinoAbertoExample: ExtensionExample = {
         speed: { type: 'num', value: 320 },
         color: '#4a9eff',
       },
+      { type: 'gk:rpgSetStartMap', map: 'campo' },
       {
         type: 'gk:rpgOnMap',
         map: 'campo',
@@ -6363,6 +6376,7 @@ export const reinoAbertoExample: ExtensionExample = {
  */
 export const batalhaEmEquipeExample: ExtensionExample = {
   name: 'Batalha em Equipe',
+  experience: 'game',
   description:
     'Uma batalha por turnos EM EQUIPE: fale com o Capitão (espaço) e enfrente dois bandidos com o seu time (herói + Curandeira, que tem um golpe de CURA). Clique em qualquer personagem para ver a ficha dele (vida, energia, força, defesa, golpes) e destacar quem está selecionado; no seu turno, escolha o golpe no painel de ação e clique no inimigo que quer acertar. Abra e edite à vontade.',
   ir: {
@@ -6443,6 +6457,7 @@ export const batalhaEmEquipeExample: ExtensionExample = {
         cost: { type: 'num', value: 3 },
       },
       { type: 'gk:rpgGivePotion', name: 'Pocao', heal: { type: 'num', value: 25 } },
+      { type: 'gk:rpgSetStartMap', map: 'praca' },
       {
         type: 'gk:rpgOnMap',
         map: 'praca',
@@ -6537,6 +6552,7 @@ export const batalhaEmEquipeExample: ExtensionExample = {
  */
 export const meuPrimeiroJogoExample: ExtensionExample = {
   name: 'Meu primeiro jogo',
+  experience: 'demo',
   description:
     'O comecinho de tudo: um personagem que anda com as SETAS, e só. Clique em Jogar no menu para começar. É a base de QUALQUER jogo — a partir daqui, adicione o que quiser (inimigos, pontos, telas). Abra e mexa à vontade.',
   ir: {
@@ -6600,6 +6616,7 @@ export const meuPrimeiroJogoExample: ExtensionExample = {
  */
 export const cobrinhaExample: ExtensionExample = {
   name: 'Cobrinha',
+  experience: 'game',
   description:
     'A cobrinha classica montada numa 🧩 Grade: cada celula guarda por quantos passos faz parte do corpo. Vire com as SETAS, coma as macas e cresca. Bateu na parede ou no proprio corpo, perdeu. Prova o primitivo de grade (sem lista, sem magica).',
   ir: {
@@ -7423,6 +7440,7 @@ export const cobrinhaExample: ExtensionExample = {
  */
 export const quebraBlocosExample: ExtensionExample = {
   name: 'Quebra-blocos',
+  experience: 'game',
   description:
     'Breakout na unha: a bola anda, quica nas paredes e REBATE na raquete (o angulo muda pelo ponto que bateu). Mova a raquete com as SETAS e derrube todos os blocos. Prova a peca Rebater na raquete + quicar nas bordas.',
   ir: {
@@ -7880,6 +7898,7 @@ export const quebraBlocosExample: ExtensionExample = {
  */
 export const oChefaoExample: ExtensionExample = {
   name: 'O Chefao',
+  experience: 'game',
   description:
     'Um RPG de exploracao com CHEFAO: fale com o Guardiao e enfrente o Dragao. O chefe usa os golpes ensinados a ele e, quando cai para metade da vida, VIRA FERA e acerta todo o seu time. Prova o inimigo usando golpes + as fases do chefe.',
   ir: {
@@ -8068,6 +8087,7 @@ export const oChefaoExample: ExtensionExample = {
           },
         ],
       },
+      { type: 'gk:rpgSetStartMap', map: 'caverna' },
       {
         type: 'gk:rpgOnMap',
         map: 'caverna',
@@ -8232,6 +8252,7 @@ export const oChefaoExample: ExtensionExample = {
  */
 export const corridaTabuleiroExample: ExtensionExample = {
   name: 'Corrida de Tabuleiro',
+  experience: 'game',
   description:
     'Um jogo de TABULEIRO para dois: clique para rolar o dado e andar as casas na trilha, e passe a vez. Cada peao para na casa e a casa premiada da pontos. Prova o dado + a ordem de turno + a trilha de casas.',
   ir: {
@@ -8662,6 +8683,7 @@ export const corridaTabuleiroExample: ExtensionExample = {
  */
 export const jogoDaMemoriaExample: ExtensionExample = {
   name: 'Jogo da Memoria',
+  experience: 'game',
   description:
     'O classico jogo da memoria montado com CARTAS: uma lista de cartas pareadas embaralhadas; clique para virar duas e, se forem iguais, o par fica. Ache os 3 pares! Prova a carta de 2 faces + a pilha (lista) + a mao clicavel.',
   ir: {
@@ -9186,6 +9208,7 @@ export const jogoDaMemoriaExample: ExtensionExample = {
  */
 export const dueloDeCartasExample: ExtensionExample = {
   name: 'Duelo de Cartas',
+  experience: 'game',
   description:
     'Um RPG DE CARTAS (deck-battler estilo Slay the Spire): compre a mao do baralho, clique numa carta para joga-la gastando energia (🗡️ ataca, 🛡️ defende), veja a INTENCAO do inimigo e passe o turno (espaco). Prova o Kit Cartas inteiro.',
   ir: {
@@ -9740,6 +9763,7 @@ export const dueloDeCartasExample: ExtensionExample = {
  */
 export const oChefaoFichaExample: ExtensionExample = {
   name: 'O Chefao da Ficha',
+  experience: 'game',
   description:
     'Um RPG curtinho com CHEFAO montado por FICHA: crie o Dragao uma vez (com sprite e atributos), escolha lutar contra ele, e de a SUA cara as telas com um fundo colorido. Fale com o Guardiao para a batalha comecar.',
   ir: {
@@ -9954,6 +9978,7 @@ export const oChefaoFichaExample: ExtensionExample = {
           },
         ],
       },
+      { type: 'gk:rpgSetStartMap', map: 'caverna' },
       {
         type: 'gk:rpgOnMap',
         map: 'caverna',

@@ -969,6 +969,7 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_gk_rpg_remove_item',
     'sz_gk_rpg_draw_inventory',
     'sz_gk_rpg_go_map',
+    'sz_gk_rpg_set_start_map',
     'sz_gk_rpg_on_map',
     'sz_gk_rpg_create_door',
     // 🌍 Mundo aberto

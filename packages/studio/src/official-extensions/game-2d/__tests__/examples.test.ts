@@ -10,6 +10,7 @@ import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import { parseJS } from '../../../parsers/js'
 import { gameTwoDBlocks } from '../blocks'
 import {
+  animatedHeroExample,
   asteroidsExample,
   cameraAdventureExample,
   codeDrawnExample,
@@ -18,6 +19,7 @@ import {
   gorilasExample,
   gorilasVsRobotExample,
   pongExample,
+  tilemapExample,
 } from '../examples'
 import { gameTwoDExtension } from '../index'
 import { gameTwoDManifest } from '../manifest'
@@ -89,6 +91,70 @@ describe('game-2d — todos os exemplos da vitrine (manifest.examples)', () => {
       })
     })
   }
+})
+
+describe('game-2d — cenas com nomes livres', () => {
+  beforeAll(() => {
+    ensureBlocklyInitialized()
+    registerExtensionBlocks(gameTwoDBlocks)
+  })
+
+  for (const [example, expectedScenes] of [
+    [gorilasExample, ['ganhou1', 'ganhou2']],
+    [gorilasVsRobotExample, ['ganhou1', 'ganhou2']],
+  ] as const) {
+    it(`${example.name} serializa cenas personalizadas sem warnings`, () => {
+      const warnings: string[] = []
+      const originalWarn = console.warn
+      console.warn = (...args: unknown[]) => warnings.push(args.map(String).join(' '))
+
+      const workspace = new Blockly.Workspace()
+      try {
+        const state = buildWorkspaceStateFromIR(
+          example.ir as Parameters<typeof buildWorkspaceStateFromIR>[0],
+        )
+        Blockly.serialization.workspaces.load(
+          state as unknown as Record<string, unknown>,
+          workspace,
+        )
+
+        const saved = Blockly.serialization.workspaces.save(workspace)
+        const roundTripped = buildIRFromWorkspace(workspace).js
+        const serialized = JSON.stringify(saved)
+
+        for (const scene of expectedScenes) {
+          expect(serialized).toContain(`"SCENE":"${scene}"`)
+        }
+        expect(roundTripped.length).toBe(example.ir.js.length)
+        expect(collectTypes(roundTripped).has('rawJS')).toBe(false)
+      } finally {
+        workspace.dispose()
+        console.warn = originalWarn
+      }
+
+      expect(warnings).toEqual([])
+    })
+  }
+})
+
+describe('game-2d — exemplos com imagem são autossuficientes', () => {
+  it('Herói que anda embute imagem e folha de quatro quadros', () => {
+    expect(animatedHeroExample.assets?.map((asset) => asset.name)).toEqual([
+      'heroi',
+      'heroi-andando',
+    ])
+    expect(animatedHeroExample.assets?.find((asset) => asset.name === 'heroi')?.width).toBe(32)
+    expect(animatedHeroExample.assets?.find((asset) => asset.name === 'heroi-andando')?.width).toBe(
+      128,
+    )
+  })
+
+  it('Sala com paredes embute tileset e herói', () => {
+    expect(tilemapExample.assets?.map((asset) => asset.name)).toEqual(['tileset', 'heroi'])
+    for (const asset of tilemapExample.assets ?? []) {
+      expect(asset.dataUrl.startsWith('data:image/')).toBe(true)
+    }
+  })
 })
 
 describe('pongExample (game-2d)', () => {
