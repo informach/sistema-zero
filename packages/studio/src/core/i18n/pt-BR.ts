@@ -122,6 +122,9 @@ export const ptBR: Record<string, string> = {
   'kits.group.game2d': 'Jogos 2D',
   'kits.group.game3d': 'Jogos 3D',
   'kits.group.classic': 'Clássicos (só com blocos básicos)',
+  'kits.experience.game': 'Jogo',
+  'kits.experience.demo': 'Demonstração',
+  'kits.experience.exploration': 'Exploração',
 
   'editor.fontSize.increase': 'Aumentar fonte do editor',
   'editor.fontSize.decrease': 'Diminuir fonte do editor',

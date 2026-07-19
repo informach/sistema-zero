@@ -4899,6 +4899,10 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
       if (args[0]?.type !== 'StringLiteral') return null
       return { type: 'gk:rpgGoMap', map: args[0].value as string }
     }
+    case 'rpgSetStartMap': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'gk:rpgSetStartMap', map: args[0].value as string }
+    }
     case 'rpgOnMap': {
       if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
       return {

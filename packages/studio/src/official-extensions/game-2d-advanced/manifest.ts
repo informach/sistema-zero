@@ -24,7 +24,7 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.39.0',
+  version: '0.40.0',
   description:
     'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som, faíscas e tabuleiro de grade — dá para inventar qualquer jogo 2D. E seis atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial), 🚀 nave (a invasão que marcha, desce e acelera) e 🏰 defesa de torre (caminho, ondas, torres que miram).',
   category: 'games',
@@ -805,6 +805,8 @@ entre", "sorte de %" e "o estado de" estão no geral.
 PALAVRA, e ela decide o ritmo inteiro do golpe: o **rápido** sai quase na hora
 mas empurra pouco; o **médio** fica no meio; o **pesado** demora para sair, mas
 derruba e trava o outro por muito tempo.
+Golpes são definições do personagem: podem ficar no topo, antes de **Luta de**;
+quando uma nova partida começa, ela reaproveita essas definições.
 
 ⭐ **É daqui que sai o combo:** o pesado trava o outro por mais tempo do que você
 leva para se recuperar — sobra uma frestinha e dá para emendar um rápido (chute →
@@ -853,10 +855,12 @@ tiles) continuam valendo e se combinam com o kit.
   flags): a conversa muda conforme o que você já fez.
 - **Ganhar/Perder o item / tenho o item…? / Desenhar o inventário** — a chave
   que abre a porta, a poção, o tesouro. O inventário fica ótimo no HUD.
+- **Começar o jogo no mapa…** — escolhe explicitamente onde a aventura começa e
+  recomeça. Projeto antigo sem esse bloco continua usando o primeiro mapa criado.
 - **Quando chegar no mapa… montar** — o cenário de CADA mapa (paredes, NPCs,
-  portas, posição do herói). O primeiro mapa criado é onde o jogo começa;
-  trocar de mapa limpa o anterior e monta o novo. **Ir para o mapa** troca na
-  hora; **Criar a porta** troca ao pisar.
+  portas, posição do herói). Trocar de mapa limpa o anterior e monta o novo.
+  **Ir para o mapa** troca na hora; **Criar a porta** troca ao pisar. Um nome de
+  mapa inexistente avisa e cai no primeiro mapa válido, sem abrir um mundo vazio.
 
 ### 🌍 Mundo aberto (em 🧙 mundo)
 

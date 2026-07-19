@@ -2,7 +2,7 @@ import type { JSX } from 'react'
 import { useMemo, useState } from 'react'
 import { ulid } from 'ulid'
 import { buildWorkspaceStateFromIR } from '#blockly'
-import { t } from '#core'
+import { type ExampleExperience, t } from '#core'
 import { generateProjectFiles } from '#generators'
 import type { SZIR } from '#ir'
 import { OFFICIAL_CATALOG } from '#official-extensions'
@@ -19,14 +19,21 @@ import { persistProject } from '../state/persistence'
  * espelhando o `handleLoadExample` do ExtensionsPanel sem tocar o projectStore;
  * o StudioCore re-registra os blocos da extensão no load.
  */
-interface KitEntry {
+export interface KitEntry {
   key: string
   name: string
   description: string
   ir: SZIR
   emoji: string
+  experience: ExampleExperience
   /** Assets que o exemplo embute (ex.: imagem de fundo por CSS). */
   assets?: readonly ProjectAsset[]
+}
+
+const EXPERIENCE_BADGE_CLASS: Record<ExampleExperience, string> = {
+  game: 'bg-sz-accent/15 text-sz-accent',
+  demo: 'bg-sz-warn/15 text-sz-warn',
+  exploration: 'bg-sz-cyan/15 text-sz-cyan',
 }
 
 /** Emoji decorativo por nome de exemplo (novo/renomeado cai no controle 🎮). */
@@ -96,13 +103,22 @@ function toEntry(
   prefix: string,
   name: string,
   description: string,
+  experience: ExampleExperience,
   ir: SZIR,
   assets?: readonly ProjectAsset[],
 ): KitEntry {
-  return { key: `${prefix}:${name}`, name, description, ir, emoji: KIT_EMOJI[name] ?? '🎮', assets }
+  return {
+    key: `${prefix}:${name}`,
+    name,
+    description,
+    experience,
+    ir,
+    emoji: KIT_EMOJI[name] ?? '🎮',
+    assets,
+  }
 }
 
-function buildGroups(): Array<{ label: string; entries: KitEntry[] }> {
+export function buildKitGroups(): Array<{ label: string; entries: KitEntry[] }> {
   const groups: Array<{ label: string; entries: KitEntry[] }> = []
   for (const ext of OFFICIAL_CATALOG) {
     const label =
@@ -118,6 +134,7 @@ function buildGroups(): Array<{ label: string; entries: KitEntry[] }> {
           ext.manifest.id,
           example.name,
           example.description ?? '',
+          example.experience,
           example.ir,
           example.assets,
         ),
@@ -128,7 +145,14 @@ function buildGroups(): Array<{ label: string; entries: KitEntry[] }> {
     groups.push({
       label: t('kits.group.classic'),
       entries: CORE_EXAMPLES.map((example) =>
-        toEntry('core', example.name, example.description, example.ir, example.assets),
+        toEntry(
+          'core',
+          example.name,
+          example.description,
+          example.experience,
+          example.ir,
+          example.assets,
+        ),
       ),
     })
   }
@@ -136,11 +160,12 @@ function buildGroups(): Array<{ label: string; entries: KitEntry[] }> {
 }
 
 /** Projeto novo persistido a partir da IR do exemplo (registro independente). */
-async function createProjectFromExample(
-  name: string,
-  ir: SZIR,
-  assets?: readonly ProjectAsset[],
-): Promise<Project> {
+/**
+ * Monta o projeto pelo mesmo caminho usado pelo clique da galeria. Exportado
+ * apenas deste módulo para a auditoria interna; não integra a API pública.
+ */
+export function buildProjectFromKitEntry(entry: KitEntry): Project {
+  const { name, ir, assets } = entry
   const project: Project = {
     ...createEmptyProject(ulid(), name),
     ir,
@@ -156,6 +181,12 @@ async function createProjectFromExample(
       installedAt: Date.now(),
     })),
   }
+  return project
+}
+
+/** Persiste um projeto montado pelo caminho único da galeria. */
+async function createProjectFromExample(entry: KitEntry): Promise<Project> {
+  const project = buildProjectFromKitEntry(entry)
   await persistProject(project)
   return project
 }
@@ -167,14 +198,14 @@ export function KitGallery({
 }): JSX.Element {
   const [creating, setCreating] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const groups = useMemo(buildGroups, [])
+  const groups = useMemo(buildKitGroups, [])
 
   async function handlePick(entry: KitEntry): Promise<void> {
     if (creating) return
     setCreating(entry.key)
     setError(null)
     try {
-      const project = await createProjectFromExample(entry.name, entry.ir, entry.assets)
+      const project = await createProjectFromExample(entry)
       onOpenProject(project.id)
     } catch {
       setError(t('kits.error'))
@@ -207,8 +238,15 @@ export function KitGallery({
                 onClick={() => void handlePick(entry)}
                 className="flex min-h-24 flex-col items-start gap-1 rounded-lg border border-sz-border bg-sz-panel p-3 text-left transition-colors hover:border-sz-accent disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <span aria-hidden className="text-2xl">
-                  {entry.emoji}
+                <span className="flex w-full items-start justify-between gap-2">
+                  <span aria-hidden className="text-2xl">
+                    {entry.emoji}
+                  </span>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${EXPERIENCE_BADGE_CLASS[entry.experience]}`}
+                  >
+                    {t(`kits.experience.${entry.experience}`)}
+                  </span>
                 </span>
                 <span className="text-sm font-semibold text-sz-fg">
                   {creating === entry.key ? t('kits.creating') : entry.name}

@@ -1742,6 +1742,8 @@ function compileStatementCode(
       return `${pad}SZGameKit.rpgDrawInventory(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))});`
     case 'gk:rpgGoMap':
       return `${pad}SZGameKit.rpgGoMap(${JSON.stringify(stmt.map)});`
+    case 'gk:rpgSetStartMap':
+      return `${pad}SZGameKit.rpgSetStartMap(${JSON.stringify(stmt.map)});`
     case 'gk:rpgOnMap': {
       const body = compileStatements(
         stmt.body,
@@ -4931,6 +4933,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'gk:rpgGiveItem':
     case 'gk:rpgRemoveItem':
     case 'gk:rpgGoMap':
+    case 'gk:rpgSetStartMap':
     case 'gk:rpgFace':
     case 'gk:rpgNpcWander':
       // Nomes de flag/item/mapa/NPC são STRING (JSON.stringify), não identifier.

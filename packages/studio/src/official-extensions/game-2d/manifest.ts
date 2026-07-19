@@ -19,7 +19,7 @@ import {
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.27.0',
+  version: '0.28.0',
   description:
     'Blocos para criar jogos 2D no Canvas: sprites (cor, imagem, animação por estado com virada automática) ou desenhados por código, grupos de muitos sprites, inimigos com comportamento (patrulha, perseguidor, voador, saltador, atirador), movimento, física, colisão sólida, tiles PLATAFORMA (one-way: pisa por cima, passa por baixo), efeitos, tiles/tilemaps (do Pinta ou por upload), HUD, telas/cenas, som, e KITS por tema — espaço, dino, gorilas, equilibrista e balão.',
   category: 'games',
@@ -118,7 +118,8 @@ Para jogos com MUITOS sprites (tiros, inimigos, estrelas) e telas de início/vit
   "fazer" com os dois sprites (use dentro do "a cada quadro").
 - **Temporizadores** — \`A cada N quadros/segundos fazer\` (ótimo para criar inimigos).
 - **HUD no canvas** — \`Mostrar placar\`, \`Escrever\`, \`Desenhar vidas (corações)\`, \`Barra de … / …\`.
-- **Telas/cenas** — \`Ir para a tela\`, \`a tela atual é … ?\`, \`Mostrar tela (título/subtítulo/dica)\`,
+- **Telas/cenas** — \`Ir para a tela\` e \`a tela atual é … ?\` aceitam tanto os
+  nomes prontos quanto nomes inventados (como \`ganhou1\`); \`Mostrar tela (título/subtítulo/dica)\`,
   \`Reiniciar o jogo\`. O setup (grupos, sprites, variáveis) fica no TOPO do programa, fora do
   "a cada quadro", para o loop conseguir enxergá-lo; um único "a cada quadro" decide o que
   desenhar com "se a tela atual é X".

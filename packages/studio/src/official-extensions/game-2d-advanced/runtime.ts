@@ -3933,10 +3933,20 @@ export const gameKitRuntime = `(function () {
     if (luta.p2.c === who) return luta.p2;
     return null;
   }
+  // Golpes são DEFINIÇÕES do personagem, portanto podem (e naturalmente vão)
+  // aparecer antes do bloco "Luta de", que inicia uma partida concreta.
+  function lutaStoredMoves(c, create) {
+    if (!c || typeof c !== 'object') return null;
+    if (!c._lutaMoves && create) c._lutaMoves = Object.create(null);
+    return c._lutaMoves || null;
+  }
   function lutaBlank(c) {
+    var moves = Object.create(null);
+    var stored = lutaStoredMoves(c, false);
+    if (stored) for (var k in stored) moves[k] = stored[k];
     return {
       c: c, guard: false, stun: 0, combo: 0, comboT: 0, special: 0, wins: 0,
-      homeX: num(c.x, 0), homeY: num(c.y, 0), moves: Object.create(null), ai: null, aiT: 0
+      homeX: num(c.x, 0), homeY: num(c.y, 0), moves: moves, ai: null, aiT: 0
     };
   }
   /**
@@ -3960,25 +3970,28 @@ export const gameKitRuntime = `(function () {
   function lutaOther(side) { return side === luta.p1 ? luta.p2 : luta.p1; }
   /** Golpe data-driven. O 3o argumento e a PALAVRA; os tempos sao do motor. */
   function lutaMove(name, who, speed, dmg, range, pierce, special) {
-    var side = lutaSide(who);
-    if (!side) { warnOnce('lutamove', 'use "Luta de" ANTES de criar os golpes'); return; }
     var k = text(name, '');
     if (!k) { warn('o golpe precisa de um nome'); return; }
+    var stored = lutaStoredMoves(who, true);
+    if (!stored) { warn('o golpe precisa de um personagem'); return; }
     var sp = LUTA_SPEEDS[text(speed, 'médio')];
     if (!sp) { warnOnce('lutasp:' + text(speed, ''), 'velocidade "' + text(speed, '') + '" não existe (use rápido, médio ou pesado)'); return; }
-    side.moves[k] = {
+    var move = {
       name: k, sp: sp,
       dmg: Math.max(1, num(dmg, 10)),
       range: Math.max(4, num(range, 50)),
       pierce: !!pierce, special: !!special,
       from: 0, to: 0, hasAnim: false
     };
+    stored[k] = move;
+    var side = lutaSide(who);
+    if (side) side.moves[k] = move;
   }
   /** A animacao do golpe: os quadros. O fps e ESTICADO p/ durar exatamente o golpe. */
   function lutaMoveAnim(name, who, from, to) {
     var side = lutaSide(who);
-    if (!side) { warnOnce('lutaanim', 'use "Luta de" ANTES'); return; }
-    var mv = side.moves[text(name, '')];
+    var moves = side ? side.moves : lutaStoredMoves(who, false);
+    var mv = moves && moves[text(name, '')];
     if (!mv) { warnOnce('lutaanim:' + text(name, ''), 'o golpe "' + text(name, '') + '" não existe'); return; }
     mv.from = Math.max(0, Math.floor(num(from, 0)));
     mv.to = Math.max(mv.from, Math.floor(num(to, 0)));
@@ -5470,7 +5483,8 @@ export const gameKitRuntime = `(function () {
     flags: nameMap(),     // StoryFlags: nome -> true
     items: [],            // inventário: {name, image}
     maps: nameMap(),      // nome -> [fns de montagem]
-    mapOrder: [],         // ordem de registro (o 1º é o mapa inicial)
+    mapOrder: [],         // ordem de registro (fallback legado: o 1º é o mapa inicial)
+    startMap: '',         // mapa inicial explícito, escolhido por rpgSetStartMap
     currentMap: '',
     // 🌍 Mundo aberto: tamanho do mapa ATUAL em células + bordas ligadas
     // ('norte'|'sul'|'leste'|'oeste' -> nome do mapa). Declarados DENTRO do
@@ -5525,7 +5539,7 @@ export const gameKitRuntime = `(function () {
   function rpgBlockCell(cx, cy) { var k = cellKey(cx, cy); rpg.walls[k] = true; rpg.terrain[k] = true; }
   function rpgCellPx(n) { return num(n, 0) * tilePx; }
 
-  /** Recomeço de partida: a HISTÓRIA zera (flags/itens/batalha) e volta ao 1º mapa. */
+  /** Recomeço de partida: a HISTÓRIA zera e volta ao mapa inicial explícito/legado. */
   function rpgNewGame() {
     // O time do Kit Monstrinhos morre junto: é parte do "jogo", não do motor.
     pkmNewGame();
@@ -5555,7 +5569,8 @@ export const gameKitRuntime = `(function () {
     rpg.fade = 0;
     rpg.menu = null;
     rpg.menuBuilding = null;
-    if (rpg.mapOrder.length > 0) rpgGoMap(rpg.mapOrder[0]);
+    var initialMap = rpg.startMap || rpgFirstValidMap();
+    if (initialMap) rpgGoMap(initialMap);
     // Se "Recomeçar" rodou NO MEIO de uma batalha, a batalha foi zerada acima —
     // sem isto o mundo ficaria preso no estado 'batalha' (nada a desenhar/avançar).
     // No caminho normal (setState('jogando')) o estado já é 'jogando' → no-op.
@@ -5861,9 +5876,33 @@ export const gameKitRuntime = `(function () {
     }
     rpg.maps[k].push(fn);
   }
+  function rpgSetStartMap(name) {
+    var k = text(name, '');
+    if (!k) { warn('"Começar o jogo no mapa" precisa de um nome'); return; }
+    rpg.startMap = k;
+  }
+  function rpgFirstValidMap() {
+    for (var i = 0; i < rpg.mapOrder.length; i++) {
+      var k = rpg.mapOrder[i];
+      if (rpg.maps[k]) return k;
+    }
+    return '';
+  }
+  function rpgResolveMap(name) {
+    var requested = text(name, '');
+    if (requested && rpg.maps[requested]) return requested;
+    var fallback = rpgFirstValidMap();
+    if (fallback) {
+      warn('o mapa "' + requested + '" não existe — usando o primeiro mapa válido, "' + fallback + '"');
+      return fallback;
+    }
+    warn('o mapa "' + requested + '" não existe e nenhum mapa válido foi criado');
+    return '';
+  }
   function rpgGoMap(name) {
     if (rpg.recording) { rpg.sceneSteps.push({ type: 'goMap', name: text(name, '') }); return; }
-    var k = text(name, '');
+    var k = rpgResolveMap(name);
+    // Resolve ANTES do teardown: um destino inválido nunca apaga o mundo atual.
     if (!k) return;
     rpg.walls = {};
     rpg.terrain = {};
@@ -5886,12 +5925,8 @@ export const gameKitRuntime = `(function () {
     if (rpg.hero) rpg.hero._gridDest = null;
     rpg.currentMap = k;
     var hooks = rpg.maps[k];
-    if (!hooks) {
-      warn('o mapa "' + k + '" não existe — monte-o com "Quando chegar no mapa"');
-    } else {
-      for (var i = 0; i < hooks.length; i++) {
-        try { hooks[i](); } catch (e) { warn('erro ao montar o mapa "' + k + '": ' + e); }
-      }
+    for (var i = 0; i < hooks.length; i++) {
+      try { hooks[i](); } catch (e) { warn('erro ao montar o mapa "' + k + '": ' + e); }
     }
     rpg.fade = 1; // transição: o mapa novo aparece surgindo do preto (SceneTransition)
     emit('mapa:' + k);
@@ -7162,6 +7197,7 @@ export const gameKitRuntime = `(function () {
     rpgRemoveItem: guard('rpgRemoveItem', rpgRemoveItem),
     rpgDrawInventory: guard('rpgDrawInventory', rpgDrawInventory),
     rpgGoMap: guard('rpgGoMap', rpgGoMap),
+    rpgSetStartMap: guard('rpgSetStartMap', rpgSetStartMap),
     rpgOnMap: guard('rpgOnMap', rpgOnMap),
     rpgCreateDoor: guard('rpgCreateDoor', rpgCreateDoor),
     // ----- 🌍 Mundo aberto (tamanho do mapa + bordas ligadas) -----

@@ -10,6 +10,7 @@ import type { ExtensionExample } from '#extensions'
 
 export const meuMundoExample: ExtensionExample = {
   name: 'Meu Mundo',
+  experience: 'exploration',
   description:
     'Um mundo 3D aberto de floresta para dirigir: morros, agua, grama ao vento e ciclo de dia e noite. Tem carrinho com turbo, um totem de boas-vindas, um ponto secreto para achar e uma area que avisa. Feito so com blocos do Mundo 3D. Abra e explore!',
   ir: {
@@ -251,6 +252,7 @@ export const meuMundoExample: ExtensionExample = {
 
 export const corridaExample: ExtensionExample = {
   name: 'Corrida do Por do Sol',
+  experience: 'game',
   description:
     'Uma corrida no deserto ao entardecer: siga a trilha pelos 5 checkpoints na ordem e feche as voltas. O cronometro e o recorde aparecem sozinhos. Bata o seu melhor tempo!',
   ir: {
@@ -612,6 +614,7 @@ export const corridaExample: ExtensionExample = {
 
 export const bolicheExample: ExtensionExample = {
   name: 'Boliche na Praca',
+  experience: 'game',
   description:
     'Uma pista de boliche na praia: acelere o jipe contra os 10 pinos e derrube todos para o STRIKE! Tem tambem pilhas de latas e caixas para desabar.',
   ir: {
@@ -829,6 +832,7 @@ export const bolicheExample: ExtensionExample = {
 
 export const invernoExample: ExtensionExample = {
   name: 'Inverno Magico',
+  experience: 'exploration',
   description:
     'Um mundo de neve a noite, com nevando de verdade e vento. O gelo escorrega o carrinho! Pinheiros cobertos de neve e totens pelo caminho.',
   ir: {
@@ -974,6 +978,7 @@ export const invernoExample: ExtensionExample = {
 
 export const ilhaExample: ExtensionExample = {
   name: 'Ilha dos Criadores',
+  experience: 'game',
   description:
     'Um arquipelago de ferias para explorar a pe, de carrinho e de BARCO (aperte E para entrar e sair). Tem farol, ponte, palmeiras, a amiga Lia que conversa e uma missao: pegue 15 moedas e vire Cacador de Moedas, com fogos e conquista!',
   ir: {
@@ -1293,6 +1298,7 @@ export const ilhaExample: ExtensionExample = {
 
 export const parqueExample: ExtensionExample = {
   name: 'Parque dos Brinquedos',
+  experience: 'exploration',
   description:
     'Um parquinho de bagunca fisica: derrube as letras de PARQUE, jogue boliche com o carro de corrida, exploda caixas TNT em cadeia e aperte o botao do TORNADO! Buzine com H, deixe marcas de pneu e escreva um recado no cantinho.',
   ir: {
@@ -1629,6 +1635,7 @@ export const parqueExample: ExtensionExample = {
 
 export const vilaExample: ExtensionExample = {
   name: 'Vila das Vocacoes',
+  experience: 'exploration',
   description:
     'Uma cidadezinha COMPLETA com transito e semaforos de verdade! Converse com a Guia (ela faz uma PERGUNTA com dois botoes), abra as portas da Padaria e da Oficina para conhecer as profissoes, pegue moedas na praca e use o minimapa para teleportar.',
   ir: {
@@ -1831,6 +1838,7 @@ export const vilaExample: ExtensionExample = {
 
 export const luaExample: ExtensionExample = {
   name: 'Base da Lua',
+  experience: 'game',
   description:
     'Um mundo LUNAR de verdade: gravidade fraquinha (os pulos flutuam!), ceu estrelado, crateras, foguete e bandeira. Voe de jetpack ate a cratera grande, pegue as 12 moedas e vire Astronauta, com direito a fogos!',
   ir: {
@@ -2001,6 +2009,7 @@ export const luaExample: ExtensionExample = {
 
 export const fazendinhaExample: ExtensionExample = {
   name: 'Fazendinha',
+  experience: 'exploration',
   description:
     'Uma fazenda viva: celeiro vermelho, moinho que GIRA com o vento, fileiras de milho, alface e abobora, cerquinha de madeira e bichinhos passeando (galinhas que bicam e vacas que pastam). A Rosa pergunta o que voce quer colher!',
   ir: {

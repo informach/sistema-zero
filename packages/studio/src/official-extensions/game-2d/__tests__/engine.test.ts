@@ -111,6 +111,37 @@ describe('game-2d — gerador dos novos statements', () => {
     }).not.toThrow()
   })
 
+  it('áudio espera o primeiro gesto antes de criar AudioContext', () => {
+    const listeners: Record<string, Array<(event: unknown) => void>> = {}
+    let contextsCreated = 0
+    class FakeAudioContext {
+      state = 'suspended'
+      constructor() {
+        contextsCreated += 1
+      }
+      resume() {
+        this.state = 'running'
+      }
+    }
+    const win = {
+      addEventListener(name: string, listener: (event: unknown) => void) {
+        listeners[name] ??= []
+        listeners[name].push(listener)
+      },
+      AudioContext: FakeAudioContext,
+      SZGame2D: undefined,
+    } as unknown as Record<string, unknown>
+    new Function('window', 'requestAnimationFrame', gameTwoDRuntime)(win, () => 0)
+    const api = (win as { SZGame2D: Engine }).SZGame2D
+
+    api.playFx('coin')
+    expect(contextsCreated).toBe(0)
+    for (const listener of listeners.keydown ?? []) {
+      listener({ key: 'ArrowRight', repeat: false })
+    }
+    expect(contextsCreated).toBe(1)
+  })
+
   it('Tier 1: gerador de comandos (mira, vida, aparência, mundo, pausa)', () => {
     expect(gen({ type: 'g2d:aimAt', spriteVar: 'nave', targetVar: 'inimigo' })).toBe(
       'SZGame2D.aimAt(nave, inimigo);',

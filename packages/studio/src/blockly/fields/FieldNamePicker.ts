@@ -269,6 +269,8 @@ function collectScreens(workspace: Blockly.Workspace | null | undefined): string
  */
 const GK_BUILTIN_STATES = ['menu', 'jogando', 'pausado', 'fim', 'vitoria'] as const
 const GAMESTATE_DECL_BLOCKS: Record<string, string[]> = {
+  sz_g2d_set_scene: ['SCENE'],
+  sz_g2d_scene_is: ['SCENE'],
   sz_gk_set_state: ['STATE'],
   sz_gk_on_enter_state: ['STATE'],
   sz_gk_state_is: ['STATE'],

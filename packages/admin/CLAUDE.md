@@ -112,6 +112,9 @@ themes/[id]}` (adapters em `server/challenge.ts`, arquivo próprio); `apiSend` g
 > mínima) e bloco **quiz usa o MESMO editor TipTap** (`aulas/[lessonId]/quiz-builder.tsx` —
 > enunciado, opções e explicação são MARKDOWN com formatação rica + imagens, `compact` nas
 > opções/explicação; checkbox "correta"/nota de corte seguem; `validateQuiz` espelha o members;
+> abas **Manual/Importar JSON** aceitam o formato amigável
+> `{passingScore?,questions:[{prompt,choices:[{label,correct}],explanation?}]}`, geram os IDs
+> internos, validam e mostram prévia antes de substituir o form local; há modelo baixável;
 > o aluno renderiza via `member-shell/lib/markdown`)) + **Painel "Gestão de vendas"**
 > (estilo Hotmart: filtros produto/período **7/30/90 dias + 6/12 meses**, cards
 > líquido/transações/cancelamentos com tooltip, gráfico Recharts colapsável — série densa via BFF,
@@ -604,7 +607,10 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   `components/studio/studio-blocks-picker.tsx`, busca + grupos por categoria, carrega o `BLOCK_CATALOG`
   do pacote — **CORE + extensões Jogo 2D/3D** — por import DINÂMICO; preenchida = o aluno vê SÓ esses
   blocos na paleta; rótulo repetido na MESMA categoria mostra o **id** ao lado p/ desambiguar, ex.:
-  "Tocar som de explosão" nos 2 kits do Jogo 2D). **Reaproveitar config entre aulas:**
+  "Tocar som de explosão" nos 2 kits do Jogo 2D). O picker também tem abas **Manual/Importar JSON**:
+  importa `{blocks:["id_do_bloco"]}` de forma estrita, valida cada ID no catálogo, mostra prévia e
+  oferece downloads do modelo importável e do catálogo atual (ID/rótulo/categoria), tudo local no
+  navegador e sem endpoint. **Reaproveitar config entre aulas:**
   `components/studio/studio-config-clipboard.tsx` — botões "Copiar/Colar configuração" (curadoria:
   nível+modos+categorias+lista de blocos+revelar) via `localStorage` (`sz:admin:studio-block-config`);
   copia numa aula, cola nas outras do curso (e entre cursos), sem backend; NÃO leva projeto

@@ -6,6 +6,7 @@ import type { ExtensionExample } from '#extensions'
  */
 export const rotatingCubeExample: ExtensionExample = {
   name: 'Cubo girando',
+  experience: 'demo',
   description: 'Uma cena 3D com um cubo que gira continuamente (Three.js).',
   ir: {
     html: [{ type: 'canvas', id: 'tela', width: 480, height: 360 }],
@@ -61,6 +62,7 @@ export const rotatingCubeExample: ExtensionExample = {
  */
 export const shapesExample: ExtensionExample = {
   name: 'Boneco de formas',
+  experience: 'demo',
   description:
     'Um boneco montado com esferas, cone e cilindro (um modelo) sobre o chão, girando — mostra formas, materiais e montar modelo.',
   ir: {
@@ -210,6 +212,7 @@ export const shapesExample: ExtensionExample = {
  */
 export const nightExample: ExtensionExample = {
   name: 'Noite enevoada',
+  experience: 'demo',
   description:
     'Cena à noite: céu degradê, neblina, sombras e uma luz pontual (tocha) sobre um cubo girando — mostra luz & céu.',
   ir: {
@@ -300,6 +303,7 @@ export const nightExample: ExtensionExample = {
  */
 export const swarmExample: ExtensionExample = {
   name: 'Enxame que gira',
+  experience: 'demo',
   description:
     'Um molde escondido vira 5 cópias num enxame, e o "para cada" gira todas juntas — mostra criar enxame, soltar cópias e repetir para cada uma.',
   ir: {
@@ -360,6 +364,7 @@ export const swarmExample: ExtensionExample = {
  */
 export const dodgeExample: ExtensionExample = {
   name: 'Desvie dos blocos',
+  experience: 'game',
   description:
     'Cubo que anda (WASD), pula e desvia de blocos que avançam acelerando. Encostar em um = fim de jogo.',
   ir: {
@@ -445,6 +450,7 @@ export const dodgeExample: ExtensionExample = {
  */
 export const crossingExample: ExtensionExample = {
   name: 'Atravesse a rua',
+  experience: 'game',
   description:
     'Pule de casa em casa numa grade isométrica e desvie dos carros e caminhões. Pontuação e fim de jogo no HUD.',
   ir: {
@@ -645,6 +651,7 @@ export const crossingExample: ExtensionExample = {
  */
 export const raceExample: ExtensionExample = {
   name: 'Corrida maluca',
+  experience: 'game',
   description:
     'Dê voltas na pista (↑ acelera, ↓ freia) desviando dos rivais. A pontuação são as voltas completas.',
   ir: {
@@ -821,6 +828,7 @@ export const raceExample: ExtensionExample = {
 
 export const stackExample: ExtensionExample = {
   name: 'Torre maluca',
+  experience: 'game',
   description:
     'Empilhe os blocos! Clique em "Soltar" na hora certa: a parte que encaixa fica, a sobra cai. A pontuação são os andares.',
   ir: {

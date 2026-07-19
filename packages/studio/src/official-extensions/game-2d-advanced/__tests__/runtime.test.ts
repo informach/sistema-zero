@@ -168,6 +168,7 @@ interface GameKitApi {
   rpgRemoveItem: Fn
   rpgDrawInventory: Fn
   rpgGoMap: Fn
+  rpgSetStartMap: Fn
   rpgOnMap: Fn
   rpgCreateDoor: Fn
   rpgMapSize: Fn
@@ -569,7 +570,7 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 333 métodos (spawn_named reusa spawnFromMold)', () => {
+  it('expõe os 334 métodos (spawn_named reusa spawnFromMold)', () => {
     const { api } = loadRuntime()
     const expected = [
       // v1 (33)
@@ -678,6 +679,7 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'rpgRemoveItem',
       'rpgDrawInventory',
       'rpgGoMap',
+      'rpgSetStartMap',
       'rpgOnMap',
       'rpgCreateDoor',
       // 🌍 Mundo aberto: tamanho do mapa + bordas ligadas + nome do mapa
@@ -1542,6 +1544,61 @@ describe('SZGameKit — R2: câmera, velocidade, animação, mouse, barra', () =
 })
 
 describe('SZGameKit — R3: Kit RPG (grade, fala, flags, mapas, batalha)', () => {
+  it('mapa inicial explícito vence a ordem, sobrevive ao reinício e o legado usa o primeiro', async () => {
+    const explicit = loadRuntime()
+    await startGame(explicit)
+    let firstMounts = 0
+    let startMounts = 0
+    explicit.api.rpgOnMap('primeiro', () => {
+      firstMounts += 1
+    })
+    explicit.api.rpgOnMap('inicio', () => {
+      startMounts += 1
+    })
+    explicit.api.rpgSetStartMap('inicio')
+
+    explicit.api.setState('jogando')
+    expect(explicit.api.rpgCurrentMap()).toBe('inicio')
+    expect(firstMounts).toBe(0)
+    expect(startMounts).toBe(1)
+
+    explicit.api.endGame()
+    explicit.api.setState('jogando')
+    expect(explicit.api.rpgCurrentMap()).toBe('inicio')
+    expect(startMounts).toBe(2)
+
+    const legacy = loadRuntime()
+    await startGame(legacy)
+    legacy.api.rpgOnMap('legado', () => {})
+    legacy.api.rpgOnMap('segundo', () => {})
+    legacy.api.setState('jogando')
+    expect(legacy.api.rpgCurrentMap()).toBe('legado')
+  })
+
+  it('mapa inexistente avisa e cai no primeiro mapa válido, sem mundo vazio', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    let mounts = 0
+    h.api.rpgOnMap('seguro', () => {
+      mounts += 1
+    })
+    h.api.rpgSetStartMap('fantasma')
+    const warns: string[] = []
+    const realWarn = console.warn
+    console.warn = (...args: unknown[]) => warns.push(args.join(' '))
+    try {
+      h.api.setState('jogando')
+      expect(h.api.rpgCurrentMap()).toBe('seguro')
+      h.api.rpgGoMap('outro-fantasma')
+      expect(h.api.rpgCurrentMap()).toBe('seguro')
+    } finally {
+      console.warn = realWarn
+    }
+    expect(mounts).toBe(2)
+    expect(warns.some((warning) => warning.includes('fantasma'))).toBe(true)
+    expect(warns.some((warning) => warning.includes('primeiro mapa válido'))).toBe(true)
+  })
+
   it('grade: anda célula a célula, parede bloqueia, porta troca de mapa', async () => {
     const h = loadRuntime()
     h.api.setup({ width: 640, height: 640 })

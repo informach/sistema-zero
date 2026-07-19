@@ -1,4 +1,4 @@
-import type { BlockLevel, ProjectAsset } from '#core'
+import type { BlockLevel, ExampleExperience, ProjectAsset } from '#core'
 import type { SZIR } from '#ir'
 
 export type ExtensionPermission = 'canvas' | 'keyboard' | 'mouse' | 'audio' | 'storage' | 'network'
@@ -38,6 +38,7 @@ export interface ExtensionManifest {
 
 export interface ExtensionExample {
   name: string
+  experience: ExampleExperience
   description?: string
   ir: SZIR
   /**

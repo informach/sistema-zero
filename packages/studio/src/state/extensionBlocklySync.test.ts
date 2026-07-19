@@ -93,7 +93,7 @@ describe('validateManifest — pré-guarda de profundidade do IR de exemplo', ()
   it('rejeita um IR de exemplo absurdamente profundo (antes do parse recursivo)', () => {
     const overDeep = {
       ...baseManifest,
-      examples: [{ name: 'fundo', ir: nest(5_000) }],
+      examples: [{ name: 'fundo', experience: 'game' as const, ir: nest(5_000) }],
     }
     expect(() => validateManifest(overDeep)).toThrow()
   })
@@ -115,6 +115,7 @@ describe('validateManifest — pré-guarda de profundidade do IR de exemplo', ()
       examples: [
         {
           name: 'exemplo',
+          experience: 'game' as const,
           ir: { html: [], css: [], js: [], extensions: [] },
         },
       ],
