@@ -85,6 +85,7 @@ interface Api {
   start: Fn
   state: () => string
   setState: Fn
+  restartGame: Fn
   onDraw: Fn
   pkmCreature: Fn
   pkmMove: Fn
@@ -123,9 +124,9 @@ interface Api {
   lutaWinsOf: (c: unknown) => number
   lutaSpecialOf: (c: unknown) => number
   onUpdate: Fn
-  rpgOnMap: Fn
+  rpgCreateMap: Fn
+  rpgOnEnterMap: Fn
   rpgGoMap: Fn
-  rpgMapSize: Fn
   rpgConnectEdge: Fn
   rpgCurrentMap: () => string
   rpgMoveGrid: Fn
@@ -190,18 +191,11 @@ interface Api {
   hurt: Fn
   isDead: (c: unknown) => boolean
   drawActive: Fn
-  _battle?: () => {
-    phase: string
-    menuOpen: boolean
-    menuIndex: number
-    menuLabels: string[]
-    allies: Array<{ energy: number }>
-    foes: Array<{ hp: number }>
-  } | null
 }
 
 interface Harness {
   api: Api
+  inspectors: Record<string, () => unknown>
   fire: (name: string, ev?: unknown) => void
   nextFrame: (ts: number) => void
   storage: Map<string, string>
@@ -212,7 +206,9 @@ function loadRuntime(): Harness {
   const rafQueue: Array<(ts: number) => void> = []
   const clock = { value: 0 }
   const storage = new Map<string, string>()
+  const inspectors: Record<string, () => unknown> = {}
   const win = {
+    __SZSTUDIO_RUNTIME_INSPECTORS: inspectors,
     addEventListener(name: string, fn: Listener) {
       listeners[name] ??= []
       listeners[name].push(fn)
@@ -236,6 +232,7 @@ function loadRuntime(): Harness {
   if (!api) throw new Error('runtime não montou window.SZGameKit')
   return {
     api,
+    inspectors,
     fire: (name, ev = {}) => {
       for (const fn of listeners[name] ?? []) fn(ev)
     },
@@ -253,6 +250,10 @@ async function startGame(h: Harness): Promise<void> {
   h.api.start()
   await Promise.resolve()
   await Promise.resolve()
+}
+
+function inspectBattle<T>(h: Harness): T | null {
+  return (h.inspectors['game-2d-advanced:battle']?.() as T | null | undefined) ?? null
 }
 
 // Cada loadRuntime cria um runtime NOVO, mas todos compartilham o `document`
@@ -282,7 +283,7 @@ async function mundoDoDesmaio(h: Harness) {
   h.api.pkmTypeChart('fogo', 'planta', 2)
   h.api.pkmTypeChart('planta', 'fogo', 0.5)
   await startGame(h)
-  h.api.setState('jogando')
+  h.api.restartGame()
 }
 
 /**
@@ -324,7 +325,7 @@ describe('gk — JOGAR a batalha do Kit Monstrinhos até o fim (não só abrir)'
     h.api.pkmCreature('Meu', 'normal', 30, 8, 3, 9, '', '')
     h.api.pkmMove('Tapa', 'Meu', 'normal', 12, 100, 'investida', '#999')
     await startGame(h)
-    h.api.setState('jogando')
+    h.api.restartGame()
     h.api.pkmGive('Meu', 5)
     h.api.pkmBattleWild('Mudo', 3)
 
@@ -338,7 +339,7 @@ describe('gk — JOGAR a batalha do Kit Monstrinhos até o fim (não só abrir)'
     const h = loadRuntime()
     h.api.setup({ width: 960, height: 540, background: '#222' })
     await startGame(h)
-    h.api.setState('jogando')
+    h.api.restartGame()
 
     // É a chamada exata que o pkmBattleWild faz ao abrir toda batalha.
     h.api.flashScreen('#ffffff', 2)
@@ -364,17 +365,18 @@ describe('gk — JOGAR a batalha do Kit Monstrinhos até o fim (não só abrir)'
     h.api.pkmMove('Chicote', 'Folhinha', 'planta', 10, 100, 'onda', '#0a0')
     const heroi = h.api.createCharacter({ w: 40, h: 48, speed: 200, color: '#00f' }) as object
     // É a FORMA do exemplo oficial: grama e tabela declaradas DENTRO do mapa…
-    h.api.rpgOnMap('quintal', () => {
+    h.api.rpgCreateMap('quintal', 10, 10, () => {})
+    h.api.rpgCreateMap('caverna', 10, 10, () => {})
+    h.api.rpgOnEnterMap('quintal', () => {
       h.api.pkmGrassCells(0, 0, 8, 8)
       h.api.pkmWild('Folhinha', 3, 6)
     })
     // …e a caverna NÃO tem grama nem bicho nenhum.
-    h.api.rpgOnMap('caverna', () => {})
     h.api.pkmEncounterRate(100) // encontro garantido: o teste fica determinístico
     h.api.onUpdate((dt: number) => h.api.rpgMoveGrid(heroi, 64, dt))
     await startGame(h)
-    h.api.setState('jogando')
-    // ⚠️ DEPOIS do setState (que zera o time) e obrigatório: sem monstrinho em pé o
+    h.api.restartGame()
+    // ⚠️ DEPOIS do restartGame (que zera o time) e obrigatório: sem monstrinho em pé o
     // pkmBattleWild aborta ANTES de olhar a grama — e o teste passaria à toa.
     h.api.pkmGive('Folhinha', 5)
 
@@ -554,7 +556,7 @@ describe('gk — JOGAR uma luta inteira do Kit Luta (a lição do R17)', () => {
     expect(h.api.state()).toBe('fim')
     // ⚠️ TODO global de jogo entra no reset do setState. Sem isso a luta anterior
     // sobrevive e "Jogar de novo" abre já decidida.
-    h.api.setState('jogando')
+    h.api.restartGame()
     expect(h.api.lutaRoundNow()).toBe(0) // 0 = nenhuma luta declarada
     expect(h.api.lutaWinner()).toBe('')
   })
@@ -926,7 +928,7 @@ describe('gk — JOGAR uma invasão inteira do 🚀 Kit Nave (a lição do R17)'
     h.api.navePowerup(nave, 'metralhadora', 99)
     expect(h.api.navePowerOf(nave)).toBe('metralhadora')
     h.api.setState('menu')
-    h.api.setState('jogando') // recomeço de verdade
+    h.api.restartGame()
     expect(h.api.countActive('ovni')).toBe(0) // o releaseAll recolheu o enxame
     expect(h.api.navePowerOf(nave)).toBe('normal') // o poder não sobrevive
     for (let i = 1; i <= 3; i++) h.nextFrame(i * 50)
@@ -1122,11 +1124,13 @@ describe('gk — JOGAR uma aventura inteira do 🧙 Kit RPG', () => {
     h.api.setup({ width: 960, height: 640 })
     h.api.rpgBattleStats(60, 50, 10)
     const heroi = h.api.createCharacter({ w: 48, h: 48, speed: 640, color: '#2b6cb0' }) as Heroi
-    h.api.rpgOnMap('vila', () => {
+    h.api.rpgCreateMap('vila', 10, 10, () => {})
+    h.api.rpgCreateMap('salao', 10, 10, () => {})
+    h.api.rpgOnEnterMap('vila', () => {
       h.api.placeCharacter(heroi, h.api.rpgCell(1), h.api.rpgCell(2))
       h.api.rpgCreateNpc('guarda', 3, 2, '', '')
     })
-    h.api.rpgOnMap('salao', () => {
+    h.api.rpgOnEnterMap('salao', () => {
       h.api.placeCharacter(heroi, h.api.rpgCell(1), h.api.rpgCell(2))
       h.api.rpgCreateNpc('chefe', 2, 2, '', '')
     })
@@ -1143,7 +1147,7 @@ describe('gk — JOGAR uma aventura inteira do 🧙 Kit RPG', () => {
     })
     h.api.onUpdate((dt: number) => h.api.rpgMoveGrid(heroi, 64, dt))
     await startGame(h)
-    h.api.setState('jogando') // rpgNewGame vai ao 1º mapa (vila) e posiciona
+    h.api.restartGame() // a nova partida vai ao mapa inicial e posiciona
     return heroi
   }
   function segura(h: Harness, key: string, n: number, from: number): number {
@@ -1272,19 +1276,29 @@ describe('gk — JOGAR uma aventura inteira do 🧙 Kit RPG', () => {
       return JSON.parse(raw) as { map: string; hx: number; hy: number }
     }
 
-    h.api.setState('jogando')
+    h.api.restartGame()
     frame() // o primeiro onUpdate registra o personagem como herói do RPG
     expect(h.api.rpgCurrentMap()).toBe('vila')
     expect(savedPosition()).toMatchObject({ map: 'vila', hx: 2, hy: 2 })
 
-    // Termina a abertura, vira para o ferreiro e percorre a conversa da missão.
+    // A vila precisa se explicar visualmente antes de qualquer ação secreta.
+    rects = []
+    texts = []
+    frame()
+    expect(rects.some((item) => item.fill === '#5c7f45')).toBe(true)
+    expect(texts.some((item) => item.text === 'VILA DO DRAGÃO')).toBe(true)
+    expect(texts.some((item) => item.text === 'Objetivo: ouça o Ferreiro')).toBe(true)
+
+    // Termina a abertura. A conversa que a pessoa já viu ENTREGA a missão:
+    // não existe uma segunda interação invisível com o ferreiro.
     for (let i = 0; i < 32; i++) tap(' ')
-    moveCell('ArrowRight')
-    for (let i = 0; i < 16 && !h.api.rpgHasItem('chave'); i++) tap(' ')
     expect(h.api.rpgHasFlag('aceitou-missao')).toBe(true)
     expect(h.api.rpgHasItem('chave')).toBe(true)
-    // Duas falas: completar + avançar cada linha.
-    for (let i = 0; i < 4; i++) tap(' ')
+    rects = []
+    texts = []
+    frame()
+    expect(texts.some((item) => item.text === 'Objetivo: entre na caverna')).toBe(true)
+    expect(texts.some((item) => item.text === 'PORTA DA CAVERNA')).toBe(true)
 
     // Caminho real até a porta criada em (9,6), sem chamar rpgGoMap no teste.
     for (let i = 0; i < 4; i++) moveCell('ArrowDown')
@@ -1294,6 +1308,12 @@ describe('gk — JOGAR uma aventura inteira do 🧙 Kit RPG', () => {
     }
     expect(h.api.rpgCurrentMap()).toBe('caverna')
     expect(savedPosition()).toMatchObject({ map: 'caverna', hx: 1, hy: 5 })
+    rects = []
+    texts = []
+    frame()
+    expect(rects.some((item) => item.fill === '#17131f')).toBe(true)
+    expect(texts.some((item) => item.text === 'CAVERNA DO DRAGÃO')).toBe(true)
+    expect(texts.some((item) => item.text === 'ESPAÇO: enfrentar o Dragão')).toBe(true)
 
     // Encosta no dragão em (8,2), conversa e abre a batalha do fixture exato.
     for (let i = 0; i < 3; i++) moveCell('ArrowUp')
@@ -1303,7 +1323,12 @@ describe('gk — JOGAR uma aventura inteira do 🧙 Kit RPG', () => {
     advance(8)
     expect(h.api.state()).toBe('batalha')
 
-    const battle = () => h.api._battle?.() ?? null
+    const battle = () =>
+      inspectBattle<{
+        menuOpen: boolean
+        menuLabels: string[]
+        allies: Array<{ energy: number }>
+      }>(h)
     const waitForMenu = () => {
       for (let i = 0; i < 30 && h.api.state() === 'batalha'; i++) {
         if (battle()?.menuOpen) return
@@ -1335,13 +1360,13 @@ describe('gk — JOGAR uma aventura inteira do 🧙 Kit RPG', () => {
     expect(h.api.rpgLevel()).toBe(2)
 
     // O botão "Jogar de novo" realiza esta transição e deve zerar tudo.
-    h.api.setState('jogando')
+    h.api.restartGame()
     expect(h.api.rpgCurrentMap()).toBe('vila')
     expect(h.api.rpgHasItem('chave')).toBe(false)
     expect(h.api.rpgHasFlag('aceitou-missao')).toBe(false)
     expect(h.api.rpgLevel()).toBe(1)
     expect(h.api.rpgXp()).toBe(0)
-    expect(h.api._battle?.()).toBeNull()
+    expect(inspectBattle(h)).toBeNull()
   })
 })
 
@@ -1352,7 +1377,7 @@ describe('gk — ⚔️ JOGAR a batalha em EQUIPE (aliados + vários inimigos)',
     foes: Array<{ name: string; alive: boolean }>
   }
   function snap(h: Harness): BattleSnap | null {
-    return (h.api as unknown as { _battle: () => BattleSnap | null })._battle()
+    return inspectBattle<BattleSnap>(h)
   }
 
   it('⭐ o time (herói + aliado) derrota DOIS inimigos e a vitória dá XP', async () => {
@@ -1422,19 +1447,19 @@ describe('gk — 🌍 ATRAVESSAR as bordas do mundo aberto (mapas ligados)', () 
   async function mundoAberto(h: Harness): Promise<Heroi> {
     h.api.setup({ width: 960, height: 640 })
     const heroi = h.api.createCharacter({ w: 48, h: 48, speed: 640, color: '#2b6cb0' }) as Heroi
-    h.api.rpgOnMap('campo', () => {
-      h.api.rpgMapSize(6, 5)
+    h.api.rpgCreateMap('campo', 6, 5, () => {})
+    h.api.rpgCreateMap('praia', 6, 5, () => {})
+    h.api.rpgOnEnterMap('campo', () => {
       h.api.rpgConnectEdge('leste', 'praia')
       h.api.placeCharacter(heroi, h.api.rpgCell(4), h.api.rpgCell(2))
     })
-    h.api.rpgOnMap('praia', () => {
-      h.api.rpgMapSize(6, 5)
+    h.api.rpgOnEnterMap('praia', () => {
       h.api.rpgConnectEdge('oeste', 'campo')
       h.api.placeCharacter(heroi, h.api.rpgCell(4), h.api.rpgCell(4)) // LONGE da borda
     })
     h.api.onUpdate((dt: number) => h.api.rpgMoveGrid(heroi, 64, dt))
     await startGame(h)
-    h.api.setState('jogando') // vai ao 1º mapa (campo)
+    h.api.restartGame() // vai ao mapa inicial (campo)
     return heroi
   }
   function segura(h: Harness, key: string, n: number, from: number): number {
@@ -1491,13 +1516,13 @@ describe('gk — 🌍 ATRAVESSAR as bordas do mundo aberto (mapas ligados)', () 
       x: number
       y: number
     }
-    h.api.rpgOnMap('ilha', () => {
-      h.api.rpgMapSize(6, 5)
+    h.api.rpgCreateMap('ilha', 6, 5, () => {})
+    h.api.rpgOnEnterMap('ilha', () => {
       h.api.placeCharacter(heroi, h.api.rpgCell(5), h.api.rpgCell(2))
     })
     h.api.onUpdate((dt: number) => h.api.rpgMoveGrid(heroi, 64, dt))
     await startGame(h)
-    h.api.setState('jogando')
+    h.api.restartGame()
     let eventos = 0
     h.api.on('mapa:ilha', () => {
       eventos += 1
@@ -1532,7 +1557,7 @@ describe('gk — JOGAR uma partida inteira do 🏰 Kit Defesa de Torre (R26)', (
       h.api.pathPoint(1000, 200)
     })
     await startGame(h)
-    h.api.setState('jogando')
+    h.api.restartGame()
   }
 
   function vivos(h: Harness, mold: string): Inv[] {
@@ -1644,7 +1669,7 @@ describe('gk — JOGAR uma partida inteira do 🏰 Kit Defesa de Torre (R26)', (
     expect(h.api.countActive('torre')).toBe(1)
     // "Jogar de novo" passa por outro estado (o gate do reset é prev !== jogando)
     h.api.setState('fim')
-    h.api.setState('jogando')
+    h.api.restartGame()
     expect(h.api.tdCoins()).toBe(100) // moedas voltam ao inicial
     expect(h.api.countActive('torre')).toBe(0) // o reset recolheu a torre antiga
     clickAt(300, 220) // o lugar liberou: comprar de novo cobra de novo

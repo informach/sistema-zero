@@ -360,6 +360,9 @@ export const world3DRuntime = `import * as THREE from 'three';
   var wind = 1;                 // força do vento (o bloco de vento chega na R4)
   // Qualidade: 'alta' | 'turbo' (auto: mede o FPS nos primeiros segundos).
   var quality = { tier: 'alta', auto: true, decided: false, probeT: 0, fpsAcc: 0, fpsN: 0 };
+  // Mundo v4: inventário pequeno, persistente e independente de assets.
+  var inventoryData = Object.create(null);
+  var inventoryLoaded = false;
 
   function warn(msg) {
     try { console.warn('SZWorld3D: ' + msg); } catch (e) {}
@@ -2776,6 +2779,9 @@ export const world3DRuntime = `import * as THREE from 'three';
       else if (r.kind === 'whisperCorner') buildWhisperCorner(r.x, r.z);
       else if (r.kind === 'flameNote') addFlame(r.x, r.z, r.text, false);
       else if (r.kind === 'city') buildCity();
+      else if (r.kind === 'district') buildDistrict(r);
+      else if (r.kind === 'roadGrid') buildRoadGrid(r);
+      else if (r.kind === 'houseRow') buildHouseRow(r);
       else if (r.kind === 'stringLights') buildStringSpan(r.x1, r.z1, r.x2, r.z2);
       else if (r.kind === 'door') buildDoor(r);
       else if (r.kind === 'crops') buildCrops(r);
@@ -3026,7 +3032,7 @@ export const world3DRuntime = `import * as THREE from 'three';
 
       renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvasEl });
       // Resolução interna FIXA (as contas do aluno nunca mudam com a janela).
-      renderer.setPixelRatio(1);
+      renderer.setPixelRatio(quality.tier === 'turbo' ? 0.75 : 1);
       renderer.setSize(config.w, config.h, false);
       if (renderer.shadowMap) {
         renderer.shadowMap.enabled = true;
@@ -6149,6 +6155,299 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (cityCfg.mode === 'neon') buildCityNeon(lots, cy);
   }
 
+  // ---- Mundo v4: composição urbana procedural de alto nível ----
+
+  var DISTRICT_PALETTES = {
+    residencial: ['#f7c9b5', '#f6d7a7', '#bfe3d0', '#bdd7ee'],
+    comercial: ['#f59e0b', '#22c55e', '#38bdf8', '#f472b6'],
+    educacao: ['#f4c95d', '#e07a5f', '#81b29a', '#3d5a80'],
+    saude: ['#f8fafc', '#dbeafe', '#bfdbfe', '#fecaca'],
+    industrial: ['#64748b', '#94a3b8', '#78716c', '#a8a29e'],
+    turistico: ['#fb7185', '#fbbf24', '#2dd4bf', '#60a5fa']
+  };
+  var HOUSE_PALETTES = {
+    coloridas: ['#fb7185', '#fbbf24', '#34d399', '#60a5fa', '#c084fc'],
+    praia: ['#fef3c7', '#bae6fd', '#fecdd3', '#ccfbf1'],
+    modernas: ['#f8fafc', '#cbd5e1', '#64748b', '#1e293b'],
+    campo: ['#f5deb3', '#d6b98c', '#b7c99d', '#e8c07d']
+  };
+
+  function roadSegments(rec) {
+    var cx = num(rec.x, 0);
+    var cz = num(rec.z, 0);
+    var size = clamp(num(rec.size, 80), 20, 240);
+    var halfSize = size * 0.5;
+    var layout = text(rec.layout, 'grade');
+    var segments = [];
+    if (layout === 'radial') {
+      for (var ray = 0; ray < 6; ray++) {
+        var angle = ray * Math.PI / 3;
+        segments.push({ x1: cx, z1: cz, x2: cx + Math.cos(angle) * halfSize, z2: cz + Math.sin(angle) * halfSize });
+      }
+      return segments;
+    }
+    if (layout === 'organica') {
+      segments.push({ x1: cx - halfSize, z1: cz - size * 0.18, x2: cx + halfSize, z2: cz + size * 0.12 });
+      segments.push({ x1: cx - halfSize, z1: cz + size * 0.28, x2: cx + halfSize, z2: cz + size * 0.18 });
+      segments.push({ x1: cx - size * 0.22, z1: cz - halfSize, x2: cx + size * 0.08, z2: cz + halfSize });
+      segments.push({ x1: cx + size * 0.3, z1: cz - halfSize, x2: cx + size * 0.18, z2: cz + halfSize });
+      return segments;
+    }
+    for (var line = -1; line <= 1; line++) {
+      var offset = line * size / 3;
+      segments.push({ x1: cx - halfSize, z1: cz + offset, x2: cx + halfSize, z2: cz + offset });
+      segments.push({ x1: cx + offset, z1: cz - halfSize, x2: cx + offset, z2: cz + halfSize });
+    }
+    return segments;
+  }
+
+  function reserveRoadGrid(rec) {
+    var segments = roadSegments(rec);
+    var width = clamp(num(rec.width, 6), 2, 18);
+    for (var i = 0; i < segments.length; i++) {
+      var seg = segments[i];
+      terrainMods.push({
+        kind: 'path', x1: seg.x1, z1: seg.z1, x2: seg.x2, z2: seg.z2,
+        w: width, y1: baseHeightAt(seg.x1, seg.z1), y2: baseHeightAt(seg.x2, seg.z2)
+      });
+    }
+  }
+
+  function buildRoadGrid(rec) {
+    if (!scene) return;
+    ensureCityGeos();
+    ensureDummies();
+    var segments = roadSegments(rec);
+    var width = clamp(num(rec.width, 6), 2, 18);
+    var pieces = [];
+    for (var i = 0; i < segments.length; i++) {
+      var seg = segments[i];
+      var dx = seg.x2 - seg.x1;
+      var dz = seg.z2 - seg.z1;
+      var distance = Math.sqrt(dx * dx + dz * dz);
+      var steps = Math.max(1, Math.ceil(distance / 8));
+      for (var step = 0; step < steps; step++) {
+        var t0 = step / steps;
+        var t1 = (step + 1) / steps;
+        var px = seg.x1 + dx * (t0 + t1) * 0.5;
+        var pz = seg.z1 + dz * (t0 + t1) * 0.5;
+        pieces.push({ x: px, z: pz, len: distance / steps, yaw: Math.atan2(dx, dz) });
+      }
+    }
+    var road = new THREE.InstancedMesh(UNIT_GEOS.box, speciesMat('#3f4854'), pieces.length);
+    var stripe = new THREE.InstancedMesh(UNIT_GEOS.box, speciesMat('#f8fafc'), pieces.length);
+    road.receiveShadow = true;
+    for (var p = 0; p < pieces.length; p++) {
+      var item = pieces[p];
+      var gy = heightAt(item.x, item.z);
+      _dummy.position.set(item.x, gy + 0.045, item.z);
+      _dummy.rotation.set(0, item.yaw, 0);
+      _dummy.scale.set(width, 0.08, item.len + 0.15);
+      _dummy.updateMatrix();
+      road.setMatrixAt(p, _dummy.matrix);
+      _dummy.position.y = gy + 0.09;
+      _dummy.scale.set(0.13, 0.03, Math.min(2.4, item.len * 0.55));
+      _dummy.updateMatrix();
+      stripe.setMatrixAt(p, _dummy.matrix);
+    }
+    road.instanceMatrix.needsUpdate = true;
+    stripe.instanceMatrix.needsUpdate = true;
+    scene.add(road);
+    scene.add(stripe);
+  }
+
+  function buildDistrict(rec) {
+    if (!scene) return;
+    ensureCityGeos();
+    ensureDummies();
+    var kind = text(rec.districtKind || rec.kind, 'residencial');
+    var palette = DISTRICT_PALETTES[kind] || DISTRICT_PALETTES.residencial;
+    var cx = num(rec.x, 0);
+    var cz = num(rec.z, 0);
+    var size = clamp(num(rec.size, 48), 20, 120);
+    var count = quality.tier === 'turbo' ? 9 : 16;
+    var side = Math.round(Math.sqrt(count));
+    var gap = size / side;
+    var buildings = [];
+    var rng = mulberry(1701 + Math.round(cx * 17 + cz * 29 + size));
+    for (var row = 0; row < side; row++) {
+      for (var col = 0; col < side; col++) {
+        var x = cx + (col - (side - 1) * 0.5) * gap;
+        var z = cz + (row - (side - 1) * 0.5) * gap;
+        var tall = kind === 'comercial' || kind === 'industrial';
+        var h = (tall ? 5 : 3) + rng() * (tall ? 9 : 4);
+        if (kind === 'educacao') h = 3.5 + rng() * 2;
+        if (kind === 'saude') h = 4 + rng() * 3;
+        var w = gap * (0.48 + rng() * 0.16);
+        var d = gap * (0.48 + rng() * 0.16);
+        buildings.push({ x: x, z: z, y: heightAt(x, z), w: w, d: d, h: h, color: palette[(row * side + col) % palette.length] });
+        colliderAdd(x, z, Math.max(w, d) * 0.48);
+      }
+    }
+    var walls = new THREE.InstancedMesh(UNIT_GEOS.box, toonMaterial({ color: '#ffffff' }), buildings.length);
+    var roofs = new THREE.InstancedMesh(UNIT_GEOS.box, speciesMat(kind === 'industrial' ? '#334155' : '#7c4a3b'), buildings.length);
+    var windows = new THREE.InstancedMesh(UNIT_GEOS.box, speciesMat('#bde3ff'), buildings.length);
+    walls.castShadow = true;
+    for (var i = 0; i < buildings.length; i++) {
+      var b = buildings[i];
+      _dummy.position.set(b.x, b.y + b.h * 0.5, b.z);
+      _dummy.rotation.set(0, 0, 0);
+      _dummy.scale.set(b.w, b.h, b.d);
+      _dummy.updateMatrix();
+      walls.setMatrixAt(i, _dummy.matrix);
+      walls.setColorAt(i, new THREE.Color(b.color));
+      _dummy.position.y = b.y + b.h + 0.15;
+      _dummy.scale.set(b.w + 0.35, 0.3, b.d + 0.35);
+      _dummy.updateMatrix();
+      roofs.setMatrixAt(i, _dummy.matrix);
+      _dummy.position.set(b.x, b.y + b.h * 0.58, b.z + b.d * 0.505);
+      _dummy.scale.set(b.w * 0.6, Math.max(0.7, b.h * 0.36), 0.08);
+      _dummy.updateMatrix();
+      windows.setMatrixAt(i, _dummy.matrix);
+    }
+    walls.instanceMatrix.needsUpdate = true;
+    if (walls.instanceColor) walls.instanceColor.needsUpdate = true;
+    roofs.instanceMatrix.needsUpdate = true;
+    windows.instanceMatrix.needsUpdate = true;
+    scene.add(walls);
+    scene.add(roofs);
+    scene.add(windows);
+  }
+
+  function buildHouseRow(rec) {
+    if (!scene) return;
+    ensureCityGeos();
+    ensureDummies();
+    var count = Math.round(clamp(num(rec.n, 8), 1, 40));
+    var x1 = num(rec.x1, -30);
+    var z1 = num(rec.z1, 15);
+    var x2 = num(rec.x2, 30);
+    var z2 = num(rec.z2, 15);
+    var dx = x2 - x1;
+    var dz = z2 - z1;
+    var distance = Math.sqrt(dx * dx + dz * dz);
+    var houseW = clamp(distance / Math.max(1, count) * 0.72, 2.6, 6);
+    var style = text(rec.style, 'coloridas');
+    var palette = HOUSE_PALETTES[style] || HOUSE_PALETTES.coloridas;
+    var yaw = Math.atan2(dx, dz) + Math.PI * 0.5;
+    var walls = new THREE.InstancedMesh(UNIT_GEOS.box, toonMaterial({ color: '#ffffff' }), count);
+    var roofs = new THREE.InstancedMesh(UNIT_GEOS.pyr, speciesMat(style === 'modernas' ? '#334155' : '#8b4a3b'), count);
+    var doors = new THREE.InstancedMesh(UNIT_GEOS.box, speciesMat('#5b3a29'), count);
+    var windows = new THREE.InstancedMesh(UNIT_GEOS.box, speciesMat('#bde3ff'), count * 2);
+    walls.castShadow = true;
+    for (var i = 0; i < count; i++) {
+      var t = count === 1 ? 0.5 : i / (count - 1);
+      var x = x1 + dx * t;
+      var z = z1 + dz * t;
+      var gy = heightAt(x, z);
+      var h = style === 'modernas' ? 4.2 : 3.2;
+      _dummy.position.set(x, gy + h * 0.5, z);
+      _dummy.rotation.set(0, yaw, 0);
+      _dummy.scale.set(houseW, h, 4.2);
+      _dummy.updateMatrix();
+      walls.setMatrixAt(i, _dummy.matrix);
+      walls.setColorAt(i, new THREE.Color(palette[i % palette.length]));
+      _dummy.position.y = gy + h + 1.0;
+      _dummy.scale.set(houseW + 0.7, 2, 5);
+      _dummy.updateMatrix();
+      roofs.setMatrixAt(i, _dummy.matrix);
+      var forwardX = Math.sin(yaw);
+      var forwardZ = Math.cos(yaw);
+      var rightX = Math.cos(yaw);
+      var rightZ = -Math.sin(yaw);
+      _dummy.position.set(x + forwardX * 2.12, gy + 0.95, z + forwardZ * 2.12);
+      _dummy.scale.set(0.85, 1.9, 0.1);
+      _dummy.updateMatrix();
+      doors.setMatrixAt(i, _dummy.matrix);
+      for (var wi = 0; wi < 2; wi++) {
+        var sideOffset = wi === 0 ? -houseW * 0.27 : houseW * 0.27;
+        _dummy.position.set(
+          x + forwardX * 2.13 + rightX * sideOffset,
+          gy + 1.85,
+          z + forwardZ * 2.13 + rightZ * sideOffset
+        );
+        _dummy.scale.set(0.72, 0.82, 0.08);
+        _dummy.updateMatrix();
+        windows.setMatrixAt(i * 2 + wi, _dummy.matrix);
+      }
+      colliderAdd(x, z, Math.max(houseW, 4.2) * 0.48);
+    }
+    walls.instanceMatrix.needsUpdate = true;
+    if (walls.instanceColor) walls.instanceColor.needsUpdate = true;
+    roofs.instanceMatrix.needsUpdate = true;
+    doors.instanceMatrix.needsUpdate = true;
+    windows.instanceMatrix.needsUpdate = true;
+    scene.add(walls);
+    scene.add(roofs);
+    scene.add(doors);
+    scene.add(windows);
+  }
+
+  function applyQualitySelection(mode) {
+    var selected = text(mode, 'automatica');
+    if (selected !== 'automatica' && selected !== 'alta' && selected !== 'desempenho') selected = 'automatica';
+    quality.auto = selected === 'automatica';
+    quality.decided = selected !== 'automatica';
+    quality.probeT = 0;
+    quality.fpsAcc = 0;
+    quality.fpsN = 0;
+    if (selected === 'desempenho') {
+      applyTurbo();
+      if (renderer) renderer.setPixelRatio(0.75);
+      return;
+    }
+    quality.tier = 'alta';
+    if (renderer) renderer.setPixelRatio(1);
+    if (grassMesh) buildGrass();
+  }
+
+  function inventoryStorageKey() {
+    var project = 'projeto';
+    if (typeof document !== 'undefined' && document.title) project = document.title;
+    return 'sz:w3d:inventario:' + project.slice(0, 80);
+  }
+
+  function inventoryLoad() {
+    if (inventoryLoaded) return;
+    inventoryLoaded = true;
+    var raw = shimGet(inventoryStorageKey());
+    if (!raw) return;
+    var parsed = null;
+    try { parsed = JSON.parse(raw); } catch (e) { parsed = null; }
+    if (!parsed || typeof parsed !== 'object') return;
+    var keys = Object.keys(parsed);
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
+      var amount = num(parsed[key], 0);
+      if (amount > 0) inventoryData[key] = Math.floor(amount);
+    }
+  }
+
+  function inventoryItem(value) {
+    var key = text(value, 'item').trim().slice(0, 60);
+    if (!key) key = 'item';
+    return key;
+  }
+
+  function inventorySave() {
+    shimSet(inventoryStorageKey(), JSON.stringify(inventoryData));
+  }
+
+  function inventoryAmount(item) {
+    inventoryLoad();
+    var key = inventoryItem(item);
+    return Math.max(0, Math.floor(num(inventoryData[key], 0)));
+  }
+
+  function inventoryChange(item, delta) {
+    inventoryLoad();
+    var key = inventoryItem(item);
+    var next = Math.max(0, inventoryAmount(key) + Math.floor(num(delta, 0)));
+    inventoryData[key] = next;
+    inventorySave();
+    return next;
+  }
+
   var FIREFLY_AMOUNTS = { pouca: 30, media: 80, muita: 150 };
 
   function buildFireflies(amount) {
@@ -8191,6 +8490,74 @@ export const world3DRuntime = `import * as THREE from 'three';
       if (grassMat) buildGrassHeightTex();
       if (waterMat) buildWaterFoamTex();
       buildCity();
+    }),
+    district: guard('district', function (kind, x, z, size) {
+      var districtKind = text(kind, 'residencial');
+      if (!DISTRICT_PALETTES[districtKind]) {
+        warn('não conheço o distrito "' + districtKind + '" — usando residencial');
+        districtKind = 'residencial';
+      }
+      var cx = num(x, 0);
+      var cz = num(z, 0);
+      var districtSize = clamp(num(size, 48), 20, 120);
+      terrainMods.push({ kind: 'flatten', x: cx, z: cz, r: districtSize * 0.72, y: baseHeightAt(cx, cz) });
+      exclusions.push({ x: cx, z: cz, r: districtSize * 0.72 });
+      var recipe = { kind: 'district', districtKind: districtKind, x: cx, z: cz, size: districtSize };
+      if (!worldReady) {
+        decorRecipes.push(recipe);
+        return;
+      }
+      buildTerrain();
+      if (grassMat) buildGrassHeightTex();
+      if (waterMat) buildWaterFoamTex();
+      buildDistrict({ kind: 'district', districtKind: districtKind, x: cx, z: cz, size: districtSize });
+    }),
+    roadGrid: guard('roadGrid', function (layout, x, z, size, width) {
+      var roadLayout = text(layout, 'grade');
+      if (roadLayout !== 'grade' && roadLayout !== 'radial' && roadLayout !== 'organica') roadLayout = 'grade';
+      var rec = {
+        kind: 'roadGrid', layout: roadLayout,
+        x: num(x, 0), z: num(z, 0),
+        size: clamp(num(size, 80), 20, 240), width: clamp(num(width, 6), 2, 18)
+      };
+      reserveRoadGrid(rec);
+      if (!worldReady) {
+        decorRecipes.push(rec);
+        return;
+      }
+      buildTerrain();
+      if (grassMat) buildGrassHeightTex();
+      if (waterMat) buildWaterFoamTex();
+      buildRoadGrid(rec);
+    }),
+    houseRow: guard('houseRow', function (n, x1, z1, x2, z2, style) {
+      var houseStyle = text(style, 'coloridas');
+      if (!HOUSE_PALETTES[houseStyle]) houseStyle = 'coloridas';
+      var rec = {
+        kind: 'houseRow', n: num(n, 8),
+        x1: num(x1, -30), z1: num(z1, 15), x2: num(x2, 30), z2: num(z2, 15),
+        style: houseStyle
+      };
+      if (!worldReady) {
+        decorRecipes.push(rec);
+        return;
+      }
+      buildHouseRow(rec);
+    }),
+    quality: guard('quality', function (mode) {
+      applyQualitySelection(mode);
+    }),
+    inventoryGive: guard('inventoryGive', function (item, amount) {
+      return inventoryChange(item, Math.max(0, Math.floor(num(amount, 1))));
+    }),
+    inventoryRemove: guard('inventoryRemove', function (item, amount) {
+      return inventoryChange(item, -Math.max(0, Math.floor(num(amount, 1))));
+    }),
+    inventoryCount: guard('inventoryCount', function (item) {
+      return inventoryAmount(item);
+    }),
+    inventoryHas: guard('inventoryHas', function (item, amount) {
+      return inventoryAmount(item) >= Math.max(0, Math.floor(num(amount, 1)));
     }),
     // 🚜 Fazenda + 🌙 Lua
     crops: guard('crops', function (n, kindName, x, z) {

@@ -30,14 +30,60 @@ async function expectFirstFrame(page: Page): Promise<FrameLocator> {
         try {
           const canvas = preview.locator('canvas').first()
           if ((await canvas.count()) > 0) {
-            const size = await canvas.evaluate((element) => {
+            const canvasState = await canvas.evaluate(async (element) => {
               const target = element as HTMLCanvasElement
-              return { width: target.width, height: target.height }
+              if (target.width <= 0 || target.height <= 0) return 'sem-tamanho'
+              // WebGL sem preserveDrawingBuffer pode devolver um dataURL vazio
+              // depois da composição. A leitura roda no próximo frame, após o
+              // callback contínuo do motor, para provar que pixels foram de fato
+              // desenhados sem confundir um canvas apenas dimensionado com jogo.
+              const gl = target.getContext('webgl2') ?? target.getContext('webgl')
+              if (
+                gl &&
+                !gl.isContextLost() &&
+                gl.drawingBufferWidth > 0 &&
+                gl.drawingBufferHeight > 0
+              ) {
+                await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+                const pixels = new Uint8Array(gl.drawingBufferWidth * gl.drawingBufferHeight * 4)
+                gl.readPixels(
+                  0,
+                  0,
+                  gl.drawingBufferWidth,
+                  gl.drawingBufferHeight,
+                  gl.RGBA,
+                  gl.UNSIGNED_BYTE,
+                  pixels,
+                )
+                return pixels.some((channel) => channel !== 0)
+                  ? 'webgl-renderizado'
+                  : 'transparente'
+              }
+              try {
+                const blank = document.createElement('canvas')
+                blank.width = target.width
+                blank.height = target.height
+                // Funciona para Canvas 2D e WebGL e, ao contrário de
+                // getImageData/readPixels, não emite warning por leituras repetidas.
+                return target.toDataURL() !== blank.toDataURL() ? 'renderizado' : 'transparente'
+              } catch {
+                return 'ilegível'
+              }
             })
-            if (size.width > 0 && size.height > 0) return 'ok'
+            if (canvasState === 'renderizado' || canvasState === 'webgl-renderizado') return 'ok'
           }
-          const visibleContent = preview.locator('body > :not(script):not(style)')
-          if ((await visibleContent.count()) > 0) return 'ok'
+          const visibleContent = preview.locator(
+            'body > :not(script):not(style):not(canvas):visible',
+          )
+          if ((await visibleContent.count()) > 0) {
+            const hasVisibleArea = await visibleContent.evaluateAll((elements) =>
+              elements.some((element) => {
+                const rect = element.getBoundingClientRect()
+                return rect.width > 1 && rect.height > 1
+              }),
+            )
+            if (hasVisibleArea) return 'ok'
+          }
           return (await body.innerText()).trim().length > 0 ? 'ok' : 'vazio'
         } catch (error) {
           // O editor pode estabilizar os arquivos e trocar o srcDoc entre duas
@@ -171,7 +217,59 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
   await card.click()
   await expect(page).toHaveURL(/\/editor\//, { timeout: 15_000 })
 
-  const preview = await expectFirstFrame(page)
+  let preview: FrameLocator
+  try {
+    preview = await expectFirstFrame(page)
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error)
+    const frameDebug = await page
+      .frameLocator('iframe')
+      .first()
+      .locator('html')
+      .evaluate(() => {
+        const moduleScript = Array.from(document.scripts).find(
+          (script) => script.type === 'module' && script.src.startsWith('data:'),
+        )
+        let moduleCode = { chars: 0, hasRenderer: false, hasPhysics: false, tail: '' }
+        if (moduleScript) {
+          const payload = moduleScript.src.slice(moduleScript.src.indexOf(',') + 1)
+          const decoded = moduleScript.src.includes(';base64,')
+            ? atob(payload)
+            : decodeURIComponent(payload)
+          moduleCode = {
+            chars: decoded.length,
+            hasRenderer: decoded.includes('new THREE.WebGLRenderer'),
+            hasPhysics: decoded.includes('createSZPhysicsLite'),
+            tail: decoded.slice(-240),
+          }
+        }
+        return {
+          bodyChildren: document.body.children.length,
+          bodyTags: Array.from(document.body.children, (child) => child.tagName),
+          canvases: Array.from(document.querySelectorAll('canvas'), (canvas) => ({
+            width: canvas.width,
+            height: canvas.height,
+            clientWidth: canvas.clientWidth,
+            clientHeight: canvas.clientHeight,
+          })),
+          moduleCode,
+          scripts: Array.from(document.scripts, (script) => ({
+            src: script.src.slice(0, 80),
+            type: script.type,
+            chars: script.textContent?.length ?? 0,
+          })),
+          resources: performance
+            .getEntriesByType('resource')
+            .map((entry) => entry.name.slice(0, 120)),
+        }
+      })
+      .catch(() => null)
+    throw new Error(
+      [detail, ...diagnostics, frameDebug ? JSON.stringify(frameDebug) : 'iframe indisponível']
+        .filter(Boolean)
+        .join('\n'),
+    )
+  }
   await focusPreview(page, preview)
   for (const interaction of contract.interactions) {
     await applyInteraction(page, preview, interaction)
@@ -181,12 +279,158 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
   expect(diagnostics, diagnostics.join('\n')).toEqual([])
 }
 
-test.describe('KitGallery — os 63 cartões no Chromium', () => {
+test.describe('KitGallery — os 67 cartões no Chromium', () => {
   for (const contract of EXAMPLE_QA_CONTRACTS) {
     test(`${contract.key}: cria, mostra primeiro frame e aceita controles`, async ({ page }) => {
       await openAndExercise(page, contract)
     })
   }
+})
+
+interface RpgBrowserSnapshot {
+  state: string
+  map: string
+  hasKey: boolean
+  hasIntro: boolean
+  missionReady: boolean
+  menuOpen: boolean
+  menuLabels: string[]
+  energy: number
+}
+
+async function rpgSnapshot(preview: FrameLocator): Promise<RpgBrowserSnapshot> {
+  return preview.locator('body').evaluate(() => {
+    const host = window as unknown as {
+      __SZSTUDIO_RUNTIME_INSPECTORS?: Record<string, () => unknown>
+      SZGameKit?: {
+        state: () => string
+        rpgCurrentMap: () => string
+        rpgHasItem: (name: string) => boolean
+        rpgHasFlag: (name: string) => boolean
+      }
+    }
+    const api = host.SZGameKit
+    const battle =
+      (host.__SZSTUDIO_RUNTIME_INSPECTORS?.['game-2d-advanced:battle']?.() as
+        | {
+            menuOpen: boolean
+            menuLabels: string[]
+            allies: Array<{ energy: number }>
+          }
+        | null
+        | undefined) ?? null
+    return {
+      state: api?.state() ?? '',
+      map: api?.rpgCurrentMap() ?? '',
+      hasKey: api?.rpgHasItem('chave') ?? false,
+      hasIntro: api?.rpgHasFlag('intro') ?? false,
+      missionReady: api?.rpgHasFlag('missao-pronta') ?? false,
+      menuOpen: battle?.menuOpen ?? false,
+      menuLabels: battle?.menuLabels ?? [],
+      energy: battle?.allies[0]?.energy ?? 0,
+    }
+  })
+}
+
+test('Vila do Dragão — fluxo visual completo no Chromium', async ({ page }) => {
+  test.setTimeout(60_000)
+  const diagnostics: string[] = []
+  page.on('pageerror', (error) => diagnostics.push(`pageerror: ${error.message}`))
+  page.on('console', (message) => {
+    if (message.type() === 'warning' || message.type() === 'error') {
+      const text = message.text()
+      if (text.includes('GL Driver Message') && text.includes('ReadPixels')) return
+      diagnostics.push(`${message.type()}: ${text}`)
+    }
+  })
+
+  const contract = EXAMPLE_QA_CONTRACTS.find(
+    (item) => item.key === 'game-2d-advanced:Vila do Dragão',
+  )
+  if (!contract) throw new Error('contrato da Vila do Dragão não encontrado')
+
+  await page.addInitScript(() => {
+    ;(
+      window as unknown as { __SZSTUDIO_RUNTIME_INSPECTORS?: Record<string, () => unknown> }
+    ).__SZSTUDIO_RUNTIME_INSPECTORS = {}
+  })
+  await page.goto('/')
+  await kitCard(page, contract).click()
+  const preview = await expectFirstFrame(page)
+  const gameBody = preview.locator('body')
+  // A Ponte pode substituir o srcDoc uma última vez ao estabilizar os blocos.
+  // Se isso acontecer depois do clique, a nova instância volta ao menu; iniciar
+  // de novo é parte da sincronização com o preview final, não um atalho de jogo.
+  let started = false
+  for (let attempt = 0; attempt < 4 && !started; attempt++) {
+    await focusPreview(page, preview)
+    await page.waitForTimeout(700)
+    const snapshot = await rpgSnapshot(preview)
+    started = snapshot.state === 'jogando' && snapshot.map === 'vila'
+  }
+  expect(started).toBe(true)
+  const canvas = preview.locator('canvas').first()
+  const villageFrame = await canvas.evaluate((element) =>
+    (element as HTMLCanvasElement).toDataURL(),
+  )
+
+  // A apresentação visível entrega a missão; não há uma segunda conversa secreta.
+  for (let i = 0; i < 50 && !(await rpgSnapshot(preview)).hasKey; i++) {
+    await gameBody.press('Space')
+    await page.waitForTimeout(150)
+  }
+  const afterIntro = await rpgSnapshot(preview)
+  if (!afterIntro.hasKey)
+    throw new Error(`apresentação não terminou: ${JSON.stringify(afterIntro)}`)
+
+  const moveCell = async (key: string) => {
+    await gameBody.focus()
+    await page.keyboard.down(key)
+    await page.waitForTimeout(220)
+    await page.keyboard.up(key)
+    await page.waitForTimeout(140)
+  }
+  for (let i = 0; i < 4; i++) await moveCell('ArrowDown')
+  for (let i = 0; i < 7; i++) await moveCell('ArrowRight')
+  await expect.poll(async () => (await rpgSnapshot(preview)).map).toBe('caverna')
+  await page.waitForTimeout(1_100)
+  const caveFrame = await canvas.evaluate((element) => (element as HTMLCanvasElement).toDataURL())
+  expect(caveFrame).not.toBe(villageFrame)
+
+  for (let i = 0; i < 3; i++) await moveCell('ArrowUp')
+  for (let i = 0; i < 7; i++) await moveCell('ArrowRight')
+  await gameBody.press('Space')
+  await expect.poll(async () => (await rpgSnapshot(preview)).state).toBe('batalha')
+
+  const choose = async (label: string) => {
+    await expect
+      .poll(async () => {
+        const snapshot = await rpgSnapshot(preview)
+        return snapshot.state === 'vitoria' || snapshot.menuOpen
+      })
+      .toBe(true)
+    const snapshot = await rpgSnapshot(preview)
+    if (snapshot.state === 'vitoria') return
+    const index = snapshot.menuLabels.findIndex((item) => item.includes(label))
+    if (index < 0) throw new Error(`ação ${label} ausente: ${snapshot.menuLabels.join(', ')}`)
+    for (let i = 0; i < index; i++) await gameBody.press('ArrowDown')
+    await gameBody.press('Space')
+    await page.waitForTimeout(650)
+  }
+
+  await choose('Defender')
+  await choose('Espada flamejante')
+  await choose('Item')
+  for (let turn = 0; turn < 10 && (await rpgSnapshot(preview)).state === 'batalha'; turn++) {
+    const snapshot = await rpgSnapshot(preview)
+    await choose(snapshot.energy >= 4 ? 'Espada flamejante' : 'Atacar')
+  }
+  await expect.poll(async () => (await rpgSnapshot(preview)).state).toBe('vitoria')
+
+  await preview.getByRole('button', { name: 'Jogar de novo' }).click()
+  await expect.poll(async () => (await rpgSnapshot(preview)).map).toBe('vila')
+  expect((await rpgSnapshot(preview)).hasKey).toBe(false)
+  expect(diagnostics, diagnostics.join('\n')).toEqual([])
 })
 
 const NARROW_FAMILY_SAMPLES = [

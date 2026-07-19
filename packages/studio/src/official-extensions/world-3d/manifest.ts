@@ -4,9 +4,9 @@ import { world3DExamples } from './examples'
 export const world3DManifest: ExtensionManifest = {
   id: 'world-3d',
   name: 'Mundo 3D',
-  version: '3.0.0',
+  version: '4.0.0',
   description:
-    'Crie um MUNDO 3D aberto no estilo dos grandes sites 3D: 7 cenários (🌲🏖️❄️🏜️🌸🌙🚜), arquipélago com barco, CIDADEZINHA completa com trânsito e semáforos 🏙️, lua com gravidade fraquinha e fazenda com moinho e bichinhos. Passeie a pé, de carrinho ou de barco; portas que abrem cartazes, amigos que conversam e PERGUNTAM, moedas, missões e conquistas salvas; minimapa com teleporte, tempestade e tornado. Blocos simples — e o "A cada quadro" para a sua mecânica.',
+    'Crie mundos 3D abertos só com primitivas: 7 cenários, arquipélago, cidade completa, distritos, redes de ruas e casas procedurais instanciadas. Passeie a pé, de carro ou barco; use física leve própria, inventário persistente, missões, clima e qualidade adaptativa — sem Rapier, WASM ou pacote de assets.',
   category: 'games',
   official: true,
   enabledByDefault: false,
@@ -174,6 +174,13 @@ O que o motor já faz por você:
   lâmpadas penduradas que ACENDEM quando escurece. Decore a praça, o quintal
   ou faça um caminho de festa (funciona em qualquer mundo, com ou sem
   cidade).
+- **Construir um distrito** — cria um bairro residencial, comercial,
+  educacional, de saúde, industrial ou turístico com prédios, telhados e
+  janelas feitos de primitivas instanciadas. Aplaina e limpa a área sozinho.
+- **Criar ruas em grade/radiais/orgânicas** — abre e desenha uma rede viária
+  procedural com marcações, em poucos draw calls.
+- **Fazer uma fileira de casas** — alinha casas coloridas, de praia, modernas
+  ou de campo entre dois pontos, também com instancing.
 
 ### 🌙 Lua & espaço
 
@@ -252,6 +259,8 @@ O que o motor já faz por você:
 - **Recados-chama 🔥** — o "Cantinho dos recados" deixa QUEM JOGA escrever
   (E abre a caixinha; o recado vira chaminha e fica salvo, até 20); o
   "Pôr um recado-chama" é a SUA dica escrita nos blocos. E lê.
+- **Inventário** — dar, tirar, contar e testar itens; as quantidades ficam
+  salvas no projeto e nunca se tornam negativas.
 
 ### 🌦️ Céu & clima
 
@@ -337,6 +346,8 @@ O que o motor já faz por você:
   LIGADOS de fábrica. Brilho 1 é o normal; até 3 vira show de luz. Num
   computador fraco o **modo turbo** liga sozinho: menos grama, sombra menor
   e sem efeitos — o passeio continua liso.
+- **Usar qualidade automática/alta/desempenho** — automática mede o aparelho;
+  desempenho reduz resolução interna, sombras, grama e pós-processamento.
 - **Soltar confete 🎉** — chuva de confete colorido sobre o jogador. A
   celebração de toda vitória: chegada da corrida, strike do boliche…
 - **Soltar fogos de artifício 🎆** — um foguete sobe assobiando e explode em

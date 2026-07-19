@@ -16,7 +16,7 @@ const BASE_HTML = `<!doctype html>
 `
 
 describe('buildProductionIndexHtml', () => {
-  it('sem extensoes nem extras devolve o HTML praticamente intacto (so injeta o meta de endurecimento)', () => {
+  it('sem extensoes nem extras preserva o HTML e injeta endurecimento + PWA', () => {
     const out = buildProductionIndexHtml({
       html: BASE_HTML,
       hasExternalCss: true,
@@ -27,12 +27,11 @@ describe('buildProductionIndexHtml', () => {
       extraCssHrefs: [],
       extraHtmlFragments: [],
     })
-    // Unica diferenca: o meta minimo de endurecimento perto do topo do <head>.
-    const expected = BASE_HTML.replace(
-      '<head>\n',
-      `<head>\n<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self'">\n`,
-    )
-    expect(out).toBe(expected)
+    expect(out).toContain('<h1>oi</h1>')
+    expect(out).toContain('<link rel="manifest" href="manifest.webmanifest" />')
+    expect(out).toContain("navigator.serviceWorker.register('./sw.js')")
+    expect(out.match(/href="style\.css"/g)?.length).toBe(1)
+    expect(out.match(/src="script\.js"/g)?.length).toBe(1)
   })
 
   it('injeta o meta minimo de endurecimento perto do topo do <head>', () => {

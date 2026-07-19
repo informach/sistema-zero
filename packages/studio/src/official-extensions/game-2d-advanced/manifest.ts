@@ -24,9 +24,9 @@ import {
 export const gameKitManifest: ExtensionManifest = {
   id: 'game-2d-advanced',
   name: 'Jogo 2D Avançado',
-  version: '0.40.0',
+  version: '0.42.0',
   description:
-    'A base de um jogo profissional em blocos: estados, telas, laço com tempo, enxames, colisão, física, câmera, som, faíscas e tabuleiro de grade — dá para inventar qualquer jogo 2D. E seis atalhos prontos: 🏃 plataforma (pulo gostoso, pisar no inimigo), 🧙 RPG (mapas, NPCs, falas, cenas, salvar), 👾 monstrinhos (criaturas, capturar, evoluir), 🥊 luta (rounds, combo, especial), 🚀 nave (a invasão que marcha, desce e acelera) e 🏰 defesa de torre (caminho, ondas, torres que miram).',
+    'A base de um jogo profissional em blocos: estados, telas, tempo, enxames, colisão, física, câmera, som e efeitos. Inclui sete kits prontos: 🏃 plataforma, 🧙 RPG com mapas autorais, 👾 monstrinhos, 🥊 luta, 🚀 nave, 🏰 defesa de torre e 🃏 cartas. Use os kits para começar e as peças de motor para inventar qualquer jogo 2D.',
   category: 'games',
   official: true,
   enabledByDefault: false,
@@ -63,13 +63,14 @@ O que o motor já faz por você (cada um tem a sua seção mais abaixo):
    ACOMPANHA a janela. Nesse modo "a largura/altura do jogo" mudam com a tela,
    então centralize por eles, não por números fixos; combine com "entrar em tela
    cheia" para tomar o monitor todo. Use UM dos dois "Preparar".)
-2. **Carregar a imagem** — uma por imagem do projeto (aba Imagens); o nome que
-   você der é o que o personagem usa.
+2. **Escolher a imagem no próprio bloco** — personagem, NPC, item e animação
+   carregam o desenho automaticamente. **Carregar a imagem** é opcional: use
+   apenas para pré-carregar ou dar um apelido diferente ao asset.
 3. **Criar o personagem** — quantos quiser. Nasce no centro; sem imagem, vira um
    retângulo da cor.
-4. **Quando entrar no estado "jogando"** — zere os pontos e recoloque os
-   personagens AQUI. É o que faz o "Jogar de novo" recomeçar limpo (sem isto, a
-   2ª partida abre com o placar e os inimigos da 1ª).
+4. **Quando começar ou recomeçar uma partida** — zere os pontos e recoloque os
+   personagens AQUI. Esse gancho roda somente numa partida nova, não quando o
+   herói volta de uma loja, inventário ou outro estado.
 5. **A cada quadro (dt)** — a mecânica: mover, testar "encostou", somar pontos…
 6. **Desenhar o jogo (ctx)** — o visual: fundo, personagens, placar (os blocos
    de Canvas funcionam aqui dentro, com esse pincel).
@@ -131,11 +132,17 @@ atributos) e depois **escolha com quem batalhar** — igual aos moldes do mundo.
 
 ### Estados
 
-- **Mudar o estado do jogo para…** — o "A cada quadro" só roda em \`jogando\`;
+- **Começar uma nova partida** — limpa personagens, enxames, missão, itens,
+  flags e mapas transitórios; depois entra em \`jogando\`. Os botões prontos
+  Jogar/Jogar de novo já usam esta operação.
+- **Quando começar ou recomeçar uma partida** — lugar para criar/recolocar os
+  objetos e zerar variáveis da partida.
+- **Mudar o estado do jogo para…** — troca somente o estado, sem apagar a
+  partida. O "A cada quadro" só roda em \`jogando\`;
   \`menu\`/\`pausado\`/\`fim\` mostram as telas deles; um estado inventado (ex.:
   \`loja\`) esconde as telas e congela o jogo — mostre a SUA tela nele.
-- **Quando o jogo entrar no estado…** — roda uma vez por entrada. Perfeito para
-  zerar pontos e recolocar personagens ao começar a jogar.
+- **Quando o jogo entrar no estado…** — roda uma vez por entrada, sem reset.
+  Use para montar/desmontar uma loja ou reagir a uma transição de tela.
 - **Pausar / Continuar / Voltar ao menu / Terminar o jogo** — atalhos dos estados
   prontos. A tecla de pausa (Esc) já alterna jogando↔pausado sozinha.
 - **o estado do jogo / o estado é…?** — perguntas para usar num "se".
@@ -855,12 +862,18 @@ tiles) continuam valendo e se combinam com o kit.
   flags): a conversa muda conforme o que você já fez.
 - **Ganhar/Perder o item / tenho o item…? / Desenhar o inventário** — a chave
   que abre a porta, a poção, o tesouro. O inventário fica ótimo no HUD.
-- **Começar o jogo no mapa…** — escolhe explicitamente onde a aventura começa e
-  recomeça. Projeto antigo sem esse bloco continua usando o primeiro mapa criado.
-- **Quando chegar no mapa… montar** — o cenário de CADA mapa (paredes, NPCs,
-  portas, posição do herói). Trocar de mapa limpa o anterior e monta o novo.
+- **Começar o jogo no mapa-cenário…** — escolhe explicitamente onde a aventura começa e
+  recomeça. Sem esse bloco, o primeiro mapa criado é usado.
+- **Criar mapa-cenário … com … × … células** — declara o mapa e o seu tamanho. Dentro
+  de **desenhar com ctx**, a criança constrói o visual com formas vetoriais, um
+  mapa do Pinta ou uma imagem importada; o motor não inventa um cenário.
+- **Quando entrar no mapa-cenário… fazer** — define somente os acontecimentos de CADA
+  entrada (paredes, NPCs, portas, posição do herói e diálogos). Trocar de mapa
+  limpa os acontecimentos do anterior e executa os do novo.
   **Ir para o mapa** troca na hora; **Criar a porta** troca ao pisar. Um nome de
   mapa inexistente avisa e cai no primeiro mapa válido, sem abrir um mundo vazio.
+  O mapa-cenário e um mapa de peças desenhado nele precisam declarar as mesmas
+  quantidades de colunas e linhas.
 
 ### 🌍 Mundo aberto (em 🧙 mundo)
 
@@ -869,12 +882,12 @@ O RPG de mundo aberto tem DOIS jeitos (e dá para misturar):
 1. **Um mapão com câmera** — carregue um mapa de tiles GRANDE e use **Fazer a
    câmera seguir … pelo mapa** (em 🎥 Câmera): a tela vira uma janela andando
    pelo mundo, e o motor só desenha o que aparece.
-2. **Mapas ligados pelas bordas (estilo Zelda)** — dentro de cada **Quando
-   chegar no mapa**: declare **Este mapa tem … × … células** e **Ligar a borda
-   … deste mapa ao mapa …**. Atravessou a borda → entra no vizinho pelo lado
+2. **Mapas ligados pelas bordas (estilo Zelda)** — crie cada mapa com seu tamanho
+   e, dentro de **Quando entrar no mapa**, use **Ligar a borda … deste mapa ao
+   mapa …**. Atravessou a borda → entra no vizinho pelo lado
    oposto, na MESMA linha (aviso \`mapa:<nome>\`). Ligue a borda ESPELHADA no
    outro mapa (leste de um = oeste do outro); borda sem ligação = fim do mundo.
-   Com a câmera ligada, o **Este mapa tem** também vira a trava dela.
+   Com a câmera ligada, o tamanho do **Criar o mapa** também vira a trava dela.
 
 **o nome do mapa de agora** completa: "se o mapa de agora = praia → tocar a
 música da praia" e o nome no HUD.
@@ -941,7 +954,7 @@ O jeito profissional de contar história:
   personagens nunca entram na mesma célula.
 - **Fazer o NPC vaguear** — anda sozinho pela vila (fora de cenas).
 - **Quando o herói pisar na célula… fazer** — encontro, armadilha ou cena
-  automática. Monte no "Quando chegar no mapa".
+  automática. Monte no "Quando entrar no mapa".
 - **Usar a folha de ANDAR** (🎞️) — 4 linhas (baixo/cima/esquerda/direita): o
   motor anima na direção certa quando anda. O RPG vivo.
 

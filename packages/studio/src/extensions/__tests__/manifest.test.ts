@@ -53,14 +53,19 @@ describe('ExtensionManifestSchema', () => {
 })
 
 describe('promptContext das extensões oficiais — teto de sanidade (R24)', () => {
-  it('nenhum contexto de IA passa do teto (o system prompt paga por char, em TODA chamada)', () => {
-    // O promptContext entra CRU no system prompt, sem truncagem em runtime (de
-    // propósito — cortar receita no meio ensinaria errado). Este teste é a única
-    // trava. Estourou? ENXUGUE o ai.ts da extensão — NÃO suba o teto sem medir o
-    // custo em tokens (a doença do MAX_DOCS_CHARS subindo 3x não se repete aqui).
+  it('nenhum manual completo carregado de forma eager passa do teto', () => {
+    // Extensões grandes podem fornecer promptSummary + loadPromptContext; nesse
+    // caso o manual completo fica num chunk sob demanda e não entra em toda chamada.
     const estourados = OFFICIAL_CATALOG.filter(
-      (e) => (e.ai?.promptContext.length ?? 0) > MAX_PROMPT_CONTEXT_CHARS,
-    ).map((e) => `${e.manifest.id}: ${e.ai?.promptContext.length}`)
+      (e) => (e.ai?.promptContext?.length ?? 0) > MAX_PROMPT_CONTEXT_CHARS,
+    ).map((e) => `${e.manifest.id}: ${e.ai?.promptContext?.length}`)
+    expect(estourados).toEqual([])
+  })
+
+  it('resumos permanentes ficam pequenos', () => {
+    const estourados = OFFICIAL_CATALOG.filter(
+      (extension) => (extension.ai?.promptSummary?.length ?? 0) > 6_000,
+    ).map((extension) => `${extension.manifest.id}: ${extension.ai?.promptSummary?.length}`)
     expect(estourados).toEqual([])
   })
 })

@@ -607,6 +607,10 @@ export function compileExpr(
       return 'SZWorld3D.coinCount()'
     case 'w3d:hasAchievement':
       return `SZWorld3D.hasAchievement(${JSON.stringify(expr.name)})`
+    case 'w3d:inventoryCount':
+      return `SZWorld3D.inventoryCount(${JSON.stringify(expr.item)})`
+    case 'w3d:inventoryHas':
+      return `SZWorld3D.inventoryHas(${JSON.stringify(expr.item)}, ${compileExpr(valueToExpr(expr.n), 0, identifiers, rec)})`
     case 'w3d:keyDown':
       return `SZWorld3D.keyDown(${JSON.stringify(expr.key)})`
     case 'w3d:keyPressed':

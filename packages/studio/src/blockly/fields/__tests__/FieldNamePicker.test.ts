@@ -2,6 +2,7 @@ import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
 import { gameTwoDBlocks } from '../../../official-extensions/game-2d/blocks'
+import { gameKitBlocks } from '../../../official-extensions/game-2d-advanced/blocks'
 import { gameThreeDBlocks } from '../../../official-extensions/game-3d/blocks'
 import { registerExtensionBlocks } from '../../blocks'
 import { ensureBlocklyInitialized } from '../../setup'
@@ -26,6 +27,7 @@ describe('FieldNamePicker', () => {
   beforeAll(() => {
     ensureBlocklyInitialized()
     registerExtensionBlocks(gameTwoDBlocks)
+    registerExtensionBlocks(gameKitBlocks)
     registerExtensionBlocks(gameThreeDBlocks)
   })
 
@@ -316,6 +318,12 @@ describe('FieldNamePicker', () => {
       ws.newBlock('sz_g2d_create_tilemap').setFieldValue('fase1', 'NAME')
       expect(collectSpritesheets(ws)).toEqual(['correr'])
       expect(collectTilemaps(ws)).toEqual(['fase1'])
+    })
+
+    it('mapa vazio criado por código também aparece no seletor de tilemaps', () => {
+      const ws = new Blockly.Workspace()
+      ws.newBlock('sz_gk_create_empty_tilemap').setFieldValue('masmorra', 'NAME')
+      expect(collectTilemaps(ws)).toEqual(['masmorra'])
     })
 
     it('animar sprite consome a folha (SHEET = spritesheet); NAME que declara segue texto', () => {

@@ -6,6 +6,7 @@ import type { SZIR } from '#ir'
 import { findExtension } from '#official-extensions'
 import {
   countExtensionBlocksInProject,
+  installExtension,
   registerExtension,
   removeExtension,
   removeExtensionArtifacts,
@@ -25,6 +26,26 @@ function fakeStore(): { api: ProjectStoreApi; removed: string[] } {
 }
 
 describe('extensionsAdapter', () => {
+  it('impede instalar extensões que disputam o mesmo canvas', () => {
+    const advanced = findExtension('game-2d-advanced')
+    if (!advanced) throw new Error('extensão game-2d-advanced não encontrada')
+    let installs = 0
+    const api = {
+      getState: () => ({
+        project: {
+          ...createEmptyProject('p1', 'Projeto'),
+          installedExtensions: [{ id: 'game-2d', version: '0.1.0', installedAt: 1 }],
+        },
+        installExtension: () => {
+          installs += 1
+        },
+      }),
+    } as unknown as ProjectStoreApi
+
+    expect(installExtension(advanced, api)).toEqual({ ok: false, conflictId: 'game-2d' })
+    expect(installs).toBe(0)
+  })
+
   it('remove blocos e nós IR da extensão game-2d', () => {
     const ir: SZIR = {
       html: [{ type: 'canvas', id: 'tela', width: 400, height: 300 }],

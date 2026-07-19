@@ -42,6 +42,10 @@ describe('buildClassicFileMap', () => {
     expect(files['public/script.js']).toBe('console.log("oi");')
     expect(files['public/index.html']).toContain('href="style.css"')
     expect(files['public/index.html']).toContain('src="script.js"')
+    expect(files['public/manifest.webmanifest']).toBeDefined()
+    expect(files['public/icon.svg']).toContain('<svg')
+    expect(files['public/sw.js']).toContain('./index.html')
+    expect(files['public/index.html']).toContain('rel="manifest"')
   })
 
   it('assets viram arquivos binários public/<nome> (url() relativa do CSS resolve)', async () => {

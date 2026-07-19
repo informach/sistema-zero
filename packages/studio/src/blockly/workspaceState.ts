@@ -3520,6 +3520,10 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return block('sz_gk_hide_screens', {}, {}, stmt.__id)
     case 'gk:setState':
       return block('sz_gk_set_state', { STATE: stmt.name }, {}, stmt.__id)
+    case 'gk:restartGame':
+      return block('sz_gk_restart_game', {}, {}, stmt.__id)
+    case 'gk:onGameStart':
+      return block('sz_gk_on_game_start', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id)
     case 'gk:onEnterState':
       return block(
         'sz_gk_on_enter_state',
@@ -3700,9 +3704,22 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return block('sz_gk_rpg_go_map', { MAP: stmt.map }, {}, stmt.__id)
     case 'gk:rpgSetStartMap':
       return block('sz_gk_rpg_set_start_map', { MAP: stmt.map }, {}, stmt.__id)
-    case 'gk:rpgOnMap':
+    case 'gk:rpgCreateMap': {
+      const cols = exprToValueBlock(valueToExpr(stmt.cols))
+      const rows = exprToValueBlock(valueToExpr(stmt.rows))
+      return cols === null || rows === null
+        ? rawJSBlock(stmt)
+        : block(
+            'sz_gk_rpg_create_map',
+            { MAP: stmt.map, PARAM: stmt.ctxName },
+            { BODY: statementsToBlocks(stmt.body) },
+            stmt.__id,
+            { COLS: cols, ROWS: rows },
+          )
+    }
+    case 'gk:rpgOnEnterMap':
       return block(
-        'sz_gk_rpg_on_map',
+        'sz_gk_rpg_on_enter_map',
         { MAP: stmt.map },
         { BODY: statementsToBlocks(stmt.body) },
         stmt.__id,
@@ -3714,14 +3731,7 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block('sz_gk_rpg_create_door', { MAP: stmt.map }, {}, stmt.__id, { CX: cx, CY: cy })
     }
-    // 🌍 Mundo aberto: tamanho do mapa + bordas ligadas
-    case 'gk:rpgMapSize': {
-      const cols = exprToValueBlock(valueToExpr(stmt.cols))
-      const rows = exprToValueBlock(valueToExpr(stmt.rows))
-      return cols === null || rows === null
-        ? rawJSBlock(stmt)
-        : block('sz_gk_rpg_map_size', {}, {}, stmt.__id, { COLS: cols, ROWS: rows })
-    }
+    // 🌍 Mundo aberto: bordas ligadas; o tamanho pertence ao mapa criado.
     case 'gk:rpgConnectEdge':
       return block('sz_gk_rpg_connect_edge', { SIDE: stmt.side, MAP: stmt.map }, {}, stmt.__id)
     case 'gk:rpgBattleStats': {
@@ -6406,6 +6416,58 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block('sz_w3d_city', { SIZE: stmt.size, MODE: stmt.mode }, {}, stmt.__id, { X: x, Z: z })
     }
+    case 'w3d:district': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      const size = exprToValueBlock(valueToExpr(stmt.size))
+      return x === null || z === null || size === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_district', { KIND: stmt.kind }, {}, stmt.__id, { X: x, Z: z, SIZE: size })
+    }
+    case 'w3d:roadGrid': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const z = exprToValueBlock(valueToExpr(stmt.z))
+      const size = exprToValueBlock(valueToExpr(stmt.size))
+      const width = exprToValueBlock(valueToExpr(stmt.width))
+      return x === null || z === null || size === null || width === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_road_grid', { LAYOUT: stmt.layout }, {}, stmt.__id, {
+            X: x,
+            Z: z,
+            SIZE: size,
+            WIDTH: width,
+          })
+    }
+    case 'w3d:houseRow': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      const x1 = exprToValueBlock(valueToExpr(stmt.x1))
+      const z1 = exprToValueBlock(valueToExpr(stmt.z1))
+      const x2 = exprToValueBlock(valueToExpr(stmt.x2))
+      const z2 = exprToValueBlock(valueToExpr(stmt.z2))
+      return n === null || x1 === null || z1 === null || x2 === null || z2 === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_house_row', { STYLE: stmt.style }, {}, stmt.__id, {
+            N: n,
+            X1: x1,
+            Z1: z1,
+            X2: x2,
+            Z2: z2,
+          })
+    }
+    case 'w3d:quality':
+      return block('sz_w3d_quality', { MODE: stmt.mode }, {}, stmt.__id)
+    case 'w3d:inventoryGive': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      return n === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_inventory_give', { ITEM: stmt.item }, {}, stmt.__id, { N: n })
+    }
+    case 'w3d:inventoryRemove': {
+      const n = exprToValueBlock(valueToExpr(stmt.n))
+      return n === null
+        ? rawJSBlock(stmt)
+        : block('sz_w3d_inventory_remove', { ITEM: stmt.item }, {}, stmt.__id, { N: n })
+    }
     case 'w3d:traffic': {
       const n = exprToValueBlock(valueToExpr(stmt.n))
       return n === null
@@ -6807,6 +6869,150 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         stmt.__id,
         vs,
       )
+    }
+    case 'primitiveSetup': {
+      const vs = valueSocketsOf([
+        ['W', stmt.width],
+        ['H', stmt.height],
+        ['D', stmt.depth],
+        ['COLOR', stmt.color],
+      ])
+      if (!vs) return rawJSBlock(stmt)
+      return block(
+        'sz_t3d_primitive',
+        { SHAPE: stmt.shape, SCENE: stmt.scene, MESH: stmt.mesh },
+        {},
+        stmt.__id,
+        vs,
+      )
+    }
+    case 'terrainSetup': {
+      const vs = valueSocketsOf([
+        ['SIZE', stmt.size],
+        ['SEGMENTS', stmt.segments],
+        ['HILLS', stmt.hills],
+        ['SMOOTH', stmt.smooth],
+        ['COLOR', stmt.color],
+      ])
+      if (!vs) return rawJSBlock(stmt)
+      return block(
+        'sz_t3d_terrain',
+        { SCENE: stmt.scene, TERRAIN: stmt.terrain, HEIGHT_FN: stmt.heightFunction },
+        {},
+        stmt.__id,
+        vs,
+      )
+    }
+    case 'roadSetup': {
+      const vs = valueSocketsOf([
+        ['X1', stmt.x1],
+        ['Z1', stmt.z1],
+        ['X2', stmt.x2],
+        ['Z2', stmt.z2],
+        ['WIDTH', stmt.width],
+        ['COLOR', stmt.color],
+      ])
+      if (!vs) return rawJSBlock(stmt)
+      return block('sz_t3d_road', { SCENE: stmt.scene, ROAD: stmt.road }, {}, stmt.__id, vs)
+    }
+    case 'buildingSetup': {
+      const vs = valueSocketsOf([
+        ['X', stmt.x],
+        ['Z', stmt.z],
+        ['W', stmt.width],
+        ['H', stmt.height],
+        ['D', stmt.depth],
+        ['COLOR', stmt.color],
+        ['ROOF', stmt.roofColor],
+      ])
+      if (!vs) return rawJSBlock(stmt)
+      return block(
+        'sz_t3d_building',
+        { SCENE: stmt.scene, BUILDING: stmt.building },
+        {},
+        stmt.__id,
+        vs,
+      )
+    }
+    case 'physicsLiteSetup': {
+      const vs = valueSocketsOf([
+        ['GRAVITY', stmt.gravity],
+        ['SUBSTEPS', stmt.maxSubSteps],
+      ])
+      if (!vs) return rawJSBlock(stmt)
+      return block(
+        'sz_t3d_physics_setup',
+        { WORLD: stmt.world, HEIGHT_FN: stmt.heightFunction },
+        {},
+        stmt.__id,
+        vs,
+      )
+    }
+    case 'physicsLiteStaticBox': {
+      const vs = valueSocketsOf([
+        ['X', stmt.x],
+        ['Y', stmt.y],
+        ['Z', stmt.z],
+        ['W', stmt.width],
+        ['H', stmt.height],
+        ['D', stmt.depth],
+      ])
+      if (!vs) return rawJSBlock(stmt)
+      return block(
+        'sz_t3d_physics_static_box',
+        { WORLD: stmt.world, ID: stmt.id },
+        {},
+        stmt.__id,
+        vs,
+      )
+    }
+    case 'physicsLiteBody': {
+      const vs = valueSocketsOf([
+        ['W', stmt.width],
+        ['H', stmt.height],
+        ['D', stmt.depth],
+        ['FRICTION', stmt.friction],
+        ['BOUNCE', stmt.bounce],
+      ])
+      if (!vs) return rawJSBlock(stmt)
+      return block(
+        'sz_t3d_physics_body',
+        { WORLD: stmt.world, OBJECT: stmt.object, ID: stmt.id, KIND: stmt.kind },
+        {},
+        stmt.__id,
+        vs,
+      )
+    }
+    case 'physicsLiteMove': {
+      const vs = valueSocketsOf([
+        ['X', stmt.x],
+        ['Z', stmt.z],
+        ['SPEED', stmt.speed],
+      ])
+      if (!vs) return rawJSBlock(stmt)
+      return block('sz_t3d_physics_move', { WORLD: stmt.world, ID: stmt.id }, {}, stmt.__id, vs)
+    }
+    case 'physicsLiteJump': {
+      const vs = valueSocketsOf([['SPEED', stmt.speed]])
+      if (!vs) return rawJSBlock(stmt)
+      return block('sz_t3d_physics_jump', { WORLD: stmt.world, ID: stmt.id }, {}, stmt.__id, vs)
+    }
+    case 'physicsLiteTrigger': {
+      const vs = valueSocketsOf([
+        ['X', stmt.x],
+        ['Y', stmt.y],
+        ['Z', stmt.z],
+        ['W', stmt.width],
+        ['H', stmt.height],
+        ['D', stmt.depth],
+      ])
+      if (!vs) return rawJSBlock(stmt)
+      return block('sz_t3d_physics_trigger', { WORLD: stmt.world, ID: stmt.id }, {}, stmt.__id, vs)
+    }
+    case 'physicsLiteStep': {
+      const vs = valueSocketsOf([['DT', stmt.dt]])
+      if (!vs) return rawJSBlock(stmt)
+      return block('sz_t3d_physics_step', { WORLD: stmt.world }, {}, stmt.__id, vs)
     }
     case 'exprStatement': {
       const value = exprToValueBlock(stmt.value)
@@ -7463,6 +7669,14 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_w3d_coin_count', {})
     case 'w3d:hasAchievement':
       return block('sz_w3d_has_achievement', { NAME: expr.name })
+    case 'w3d:inventoryCount':
+      return block('sz_w3d_inventory_count', { ITEM: expr.item })
+    case 'w3d:inventoryHas': {
+      const n = exprToValueBlock(valueToExpr(expr.n))
+      return n === null
+        ? null
+        : block('sz_w3d_inventory_has', { ITEM: expr.item }, {}, undefined, { N: n })
+    }
     case 'w3d:keyDown':
       return block('sz_w3d_key_down', { KEY: expr.key })
     case 'w3d:keyPressed':

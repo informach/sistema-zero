@@ -2,24 +2,30 @@ import { describe, expect, it } from 'bun:test'
 import { SZIRSchema } from '#ir'
 import { parseJS } from '../../../parsers/js'
 import { BOLICHE_SOURCE } from '../__gen_boliche'
+import { COASTAL_PROCEDURAL_SOURCE } from '../__gen_coastal_procedural'
 import { CORRIDA_SOURCE } from '../__gen_corrida'
 import { FAZENDINHA_SOURCE } from '../__gen_fazendinha'
+import { FOLIO_PROCEDURAL_SOURCE } from '../__gen_folio_procedural'
 import { ILHA_SOURCE } from '../__gen_ilha'
 import { INVERNO_SOURCE } from '../__gen_inverno'
 import { LUA_SOURCE } from '../__gen_lua'
 import { MEU_MUNDO_SOURCE } from '../__gen_meumundo'
 import { PARQUE_SOURCE } from '../__gen_parque'
 import { VILA_SOURCE } from '../__gen_vila'
+import { VOCATION_PROCEDURAL_SOURCE } from '../__gen_vocation_procedural'
 import {
   bolicheExample,
+  coastalProceduralExample,
   corridaExample,
   fazendinhaExample,
+  folioProceduralExample,
   ilhaExample,
   invernoExample,
   luaExample,
   meuMundoExample,
   parqueExample,
   vilaExample,
+  vocationProceduralExample,
   world3DExamples,
 } from '../examples'
 import { world3DManifest } from '../manifest'
@@ -63,12 +69,23 @@ const CASES = [
   { name: 'Vila das Vocacoes', source: VILA_SOURCE, example: vilaExample },
   { name: 'Base da Lua', source: LUA_SOURCE, example: luaExample },
   { name: 'Fazendinha', source: FAZENDINHA_SOURCE, example: fazendinhaExample },
+  { name: 'Folio Procedural', source: FOLIO_PROCEDURAL_SOURCE, example: folioProceduralExample },
+  {
+    name: 'Coastal World Procedural',
+    source: COASTAL_PROCEDURAL_SOURCE,
+    example: coastalProceduralExample,
+  },
+  {
+    name: 'Vocation Vista Procedural',
+    source: VOCATION_PROCEDURAL_SOURCE,
+    example: vocationProceduralExample,
+  },
 ]
 
 describe('Mundo 3D — exemplos da vitrine', () => {
-  it('o manifest registra os 9 exemplos', () => {
-    expect(world3DExamples.length).toBe(9)
-    expect(world3DManifest.examples.length).toBe(9)
+  it('o manifest registra os 12 exemplos', () => {
+    expect(world3DExamples.length).toBe(12)
+    expect(world3DManifest.examples.length).toBe(12)
   })
 
   for (const { name, source, example } of CASES) {

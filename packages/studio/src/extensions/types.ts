@@ -73,6 +73,8 @@ export interface ExtensionToolboxCategory {
  */
 export interface ExtensionDefinition {
   manifest: ExtensionManifest
+  /** Extensões oficiais que não podem coexistir no mesmo projeto. */
+  conflictsWith?: readonly string[]
   /**
    * Degrau mínimo de aprendizado para a categoria da extensão aparecer na paleta
    * (divulgação progressiva). Ausente ⇒ `DEFAULT_EXTENSION_MIN_LEVEL`. Use
@@ -98,7 +100,11 @@ export interface ExtensionDefinition {
     esmImports?: Record<string, string>
   }
   ai?: {
-    /** Contexto rico para futuras integrações de IA. */
-    promptContext: string
+    /** Manual completo, disponível para operações especializadas/retrieval. */
+    promptContext?: string
+    /** Resumo operacional enviado em toda chamada; evita pagar o manual inteiro. */
+    promptSummary?: string
+    /** Carrega o manual completo somente quando uma operação especializada pedir. */
+    loadPromptContext?: () => Promise<string>
   }
 }

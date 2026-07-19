@@ -146,3 +146,33 @@ describe('ExtensionsPanel — "Saiba mais" expande a docs do manifest', () => {
     expect(screen.queryByText('Esconder detalhes')).toBeNull()
   })
 })
+
+describe('ExtensionsPanel — conflitos entre motores', () => {
+  afterEach(() => {
+    cleanup()
+    useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+  })
+
+  it('explica por que Jogo 2D Avançado fica bloqueado quando Jogo 2D está instalado', () => {
+    const simple = OFFICIAL_CATALOG.find((extension) => extension.manifest.id === 'game-2d')
+    const advanced = OFFICIAL_CATALOG.find(
+      (extension) => extension.manifest.id === 'game-2d-advanced',
+    )
+    if (!simple || !advanced) throw new Error('fixture: esperava os dois motores 2D')
+    const project = createEmptyProject('p1', 'Meu Jogo')
+    project.installedExtensions = [
+      { id: simple.manifest.id, version: simple.manifest.version, installedAt: 0 },
+    ]
+    useProjectStore.setState({ project, isDirty: false, saveError: null })
+
+    render(<ExtensionsPanel open onClose={() => {}} />)
+
+    const card = screen.getByText(advanced.manifest.name).closest('li')
+    expect(card?.querySelector('button[disabled]')).not.toBeNull()
+    expect(
+      screen.getByText(
+        `Remova ${simple.manifest.name} antes de instalar: as duas extensões controlam a mesma tela.`,
+      ),
+    ).not.toBeNull()
+  })
+})

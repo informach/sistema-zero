@@ -187,6 +187,28 @@ export const gameKitBlocks = [
       'O jogo profissional vive em UM estado por vez: menu, jogando, pausado, fim… ou um que você inventar (loja, vitória). O "a cada quadro" só roda em "jogando"; as telas prontas aparecem sozinhas nos estados delas.',
   },
   {
+    type: 'sz_gk_restart_game',
+    message0: 'Começar uma nova partida',
+    args0: [],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Limpa completamente a partida anterior e começa em “jogando”. Use em botões Jogar/Jogar de novo; mudar de estado nunca apaga o jogo.',
+  },
+  {
+    type: 'sz_gk_on_game_start',
+    message0: 'Quando começar ou recomeçar uma partida',
+    args0: [],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Lugar certo para zerar pontos e criar personagens. Não roda ao voltar de loja, inventário, pausa ou batalha.',
+  },
+  {
     type: 'sz_gk_on_enter_state',
     message0: 'Quando o jogo entrar no estado %1',
     args0: [{ type: 'field_name_picker', name: 'STATE', text: 'jogando', kind: 'gamestate' }],
@@ -197,7 +219,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Roda o "fazer" toda vez que o jogo ENTRAR nesse estado. Ótimo para zerar pontos e recolocar personagens quando começar a jogar.',
+      'Roda toda vez que o jogo realmente entrar nesse estado. Para preparar uma partida nova, use “Quando começar ou recomeçar uma partida”.',
   },
   {
     type: 'sz_gk_state_is',
@@ -1050,7 +1072,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Marca uma célula da grade como parede — ninguém atravessa. Monte o cenário dentro do "Quando chegar no mapa" (trocar de mapa limpa as paredes).',
+      'Marca uma célula da grade como parede — ninguém atravessa. Monte as regras dentro de "Quando entrar no mapa" (trocar de mapa limpa as paredes).',
   },
   {
     type: 'sz_gk_rpg_cell',
@@ -1193,17 +1215,37 @@ export const gameKitBlocks = [
       'Escolhe explicitamente o mapa inicial. Se o nome não existir, o jogo avisa e usa o primeiro mapa criado.',
   },
   {
-    type: 'sz_gk_rpg_on_map',
-    message0: 'Quando chegar no mapa %1',
-    args0: [{ type: 'field_input', name: 'MAP', text: 'vila' }],
-    message1: 'montar %1',
+    type: 'sz_gk_rpg_create_map',
+    message0: 'Criar o mapa-cenário %1 com %2 × %3 células',
+    args0: [
+      { type: 'field_input', name: 'MAP', text: 'vila' },
+      { type: 'input_value', name: 'COLS', check: 'JSValue' },
+      { type: 'input_value', name: 'ROWS', check: 'JSValue' },
+    ],
+    message1: 'desenhar com %1 %2',
+    args1: [
+      { type: 'field_input', name: 'PARAM', text: 'ctx' },
+      { type: 'input_statement', name: 'BODY' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria o lugar onde a aventura acontece. Dentro de “desenhar”, você decide a aparência com formas vetoriais, um mapa de peças feito no Pinta ou uma imagem importada. Nada é criado automaticamente.',
+  },
+  {
+    type: 'sz_gk_rpg_on_enter_map',
+    message0: 'Quando entrar no mapa-cenário %1',
+    args0: [{ type: 'field_name_picker', name: 'MAP', text: 'vila', kind: 'map' }],
+    message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'BODY' }],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Monta o cenário do mapa: paredes, NPCs, portas e a posição do herói. Use “Começar o jogo no mapa” para escolher o inicial; projetos antigos continuam começando no primeiro mapa criado.',
+      'Define somente o que acontece ao entrar: posição do herói, paredes, NPCs, portas e diálogos. O visual pertence ao bloco “Criar o mapa”.',
   },
   {
     type: 'sz_gk_rpg_go_map',
@@ -1230,21 +1272,7 @@ export const gameKitBlocks = [
     tooltip:
       'Pisou na célula → vai para o outro mapa. Lembre de posicionar o herói na montagem do mapa de destino.',
   },
-  // ---- 🌍 Mundo aberto: tamanho do mapa + bordas ligadas (estilo Zelda) ----
-  {
-    type: 'sz_gk_rpg_map_size',
-    message0: 'Este mapa tem %1 × %2 células',
-    args0: [
-      { type: 'input_value', name: 'COLS', check: 'JSValue' },
-      { type: 'input_value', name: 'ROWS', check: 'JSValue' },
-    ],
-    inputsInline: true,
-    previousStatement: 'JSStmt',
-    nextStatement: 'JSStmt',
-    colour: C,
-    tooltip:
-      'O tamanho do mapa (use dentro do "Quando chegar no mapa"). Com ele, a câmera trava nas bordas do mapa e as bordas viram o fim do mundo — a não ser que você LIGUE a borda a outro mapa.',
-  },
+  // ---- 🌍 Mundo aberto: bordas ligadas (estilo Zelda) ----
   {
     type: 'sz_gk_rpg_connect_edge',
     message0: 'Ligar a borda %1 deste mapa ao mapa %2',
@@ -1266,7 +1294,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Atravessou essa borda → entra no outro mapa pelo lado oposto, na MESMA linha (estilo Zelda). Declare o "Este mapa tem" antes, e ligue a borda espelhada no outro mapa também.',
+      'Atravessou essa borda → entra no outro mapa pelo lado oposto, na MESMA linha (estilo Zelda). O tamanho vem de “Criar o mapa”; ligue a borda espelhada no outro mapa também.',
   },
   {
     type: 'sz_gk_rpg_current_map',
@@ -1696,7 +1724,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Roda quando o herói ENCAIXA nessa célula: encontro com inimigo, armadilha, começar uma cena automática. Monte dentro de "Quando chegar no mapa".',
+      'Roda quando o herói ENCAIXA nessa célula: encontro com inimigo, armadilha, começar uma cena automática. Monte dentro de "Quando entrar no mapa".',
   },
 
   // ---- 💬 Escolhas & 💾 Salvar ----
@@ -1885,7 +1913,7 @@ export const gameKitBlocks = [
   // ---- 🗺️ Mundo de tiles & profundidade ----
   {
     type: 'sz_gk_load_tilemap',
-    message0: 'Carregar o mapa %1 do meu desenho %2',
+    message0: 'Carregar o mapa de peças %1 do desenho %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'mundo' },
       { type: 'field_asset_picker', name: 'IMAGE', text: 'meu-mapa', filter: 'tilemap' },
@@ -1895,11 +1923,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Monta um mapa de tiles que você desenhou no Pinta (a grade, as peças e os sólidos já vêm juntos no desenho). Dê um nome ao mapa; é ele que você usa em "Desenhar o mapa". Use no comecinho, antes de "Começar o jogo".',
+      'Carrega exatamente a grade que você desenhou no Pinta: peças, sólidos e camadas. Este é um desenho de peças, não um mapa-cenário do RPG. Use-o dentro de “Criar o mapa-cenário”.',
   },
   {
     type: 'sz_gk_draw_tilemap',
-    message0: 'Desenhar o mapa %1 (camada %2)',
+    message0: 'Desenhar o mapa de peças %1 (camada %2)',
     args0: [
       { type: 'field_name_picker', name: 'MAP', text: 'mundo', kind: 'tilemap' },
       {
@@ -3192,7 +3220,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_create_empty_tilemap',
-    message0: 'Criar o mapa vazio %1: %2 colunas × %3 linhas, peça %4, folha %5',
+    message0: 'Criar o mapa de peças vazio %1: %2 colunas × %3 linhas, peça %4, folha %5',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'masmorra' },
       { type: 'input_value', name: 'COLS', check: 'JSValue' },
@@ -3425,7 +3453,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O retângulo de mato onde os bichos aparecem, em CÉLULAS da grade (como o "Bloquear a célula"). Monte dentro do "Quando chegar no mapa" e cada mapa tem a sua grama.',
+      'O retângulo de mato onde os bichos aparecem, em CÉLULAS da grade (como o "Bloquear a célula"). Monte dentro do "Quando entrar no mapa" e cada mapa tem a sua grama.',
   },
   {
     type: 'sz_gk_pkm_grass_tiles',
@@ -3454,7 +3482,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Um destes por bicho = a tabela de encontros (todos com a mesma chance). Monte no "Quando chegar no mapa" e cada rota tem os bichos dela.',
+      'Um destes por bicho = a tabela de encontros (todos com a mesma chance). Monte no "Quando entrar no mapa" e cada rota tem os bichos dela.',
   },
   {
     type: 'sz_gk_pkm_encounter_rate',
@@ -4622,6 +4650,8 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     colour: C,
     types: [
       'sz_gk_set_state',
+      'sz_gk_restart_game',
+      'sz_gk_on_game_start',
       'sz_gk_on_enter_state',
       'sz_gk_game_state',
       'sz_gk_state_is',
@@ -5063,11 +5093,11 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     colour: C,
     types: [
       'sz_gk_rpg_set_start_map',
-      'sz_gk_rpg_on_map',
+      'sz_gk_rpg_create_map',
+      'sz_gk_rpg_on_enter_map',
       'sz_gk_rpg_go_map',
       'sz_gk_rpg_create_door',
-      // 🌍 Mundo aberto: tamanho do mapa + bordas ligadas (estilo Zelda)
-      'sz_gk_rpg_map_size',
+      // 🌍 Mundo aberto: bordas ligadas (estilo Zelda)
       'sz_gk_rpg_connect_edge',
       'sz_gk_rpg_current_map',
       'sz_gk_rpg_move_grid',
@@ -5393,7 +5423,7 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_rpg_draw_inventory: { X: numShadow(20), Y: numShadow(20) },
   sz_gk_rpg_create_door: { CX: numShadow(5), CY: numShadow(5) },
   // 🌍 Mundo aberto
-  sz_gk_rpg_map_size: { COLS: numShadow(30), ROWS: numShadow(20) },
+  sz_gk_rpg_create_map: { COLS: numShadow(15), ROWS: numShadow(10) },
   sz_gk_rpg_battle_stats: { HP: numShadow(30), STR: numShadow(7), DEF: numShadow(3) },
   sz_gk_rpg_battle_start: { HP: numShadow(20), STR: numShadow(5), DEF: numShadow(2) },
   sz_gk_rpg_add_ally: { HP: numShadow(24), STR: numShadow(6), DEF: numShadow(1) },

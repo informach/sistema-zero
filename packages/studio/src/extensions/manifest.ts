@@ -131,14 +131,10 @@ const MAX_CATEGORY_CHARS = 60
 // Kit Cartas novos deixaram a doc do Jogo 2D Avançado em 47,9k/48k — sem folga
 // para explicar os gêneros novos. Sanidade, não UI.
 const MAX_DOCS_CHARS = 60_000
-// Espelho do MAX_DOCS_CHARS para o CONTEXTO DA IA (ExtensionDefinition.ai.
-// promptContext): ele é concatenado CRU no system prompt (state/aiAdapter →
-// ai/prompts.buildSystemPrompt) e NÃO tem teto em runtime DE PROPÓSITO —
-// truncar cortaria uma receita no meio e a IA passaria a ensinar errado. A
-// trava é de SANIDADE, validada em teste (extensions/__tests__/manifest.test.ts)
-// contra TODAS as extensões oficiais. Hoje o maior (game-2d-advanced) tem ~30k;
-// estourou o teto? ENXUGUE o ai.ts — cada char daqui custa em toda chamada.
-// Subiu 36k → 42k no R30 (as receitas de cartas/tabuleiro/chefe não cabiam).
+// Teto de sanidade do manual completo de IA. Contextos pequenos podem viver em
+// `promptContext`; extensões grandes devem fornecer `promptSummary` para toda
+// chamada e `loadPromptContext` para carregar o manual em um chunk sob demanda.
+// Nunca truncamos texto: cortar uma receita no meio ensinaria errado.
 export const MAX_PROMPT_CONTEXT_CHARS = 42_000
 const MAX_EXAMPLES = 50
 

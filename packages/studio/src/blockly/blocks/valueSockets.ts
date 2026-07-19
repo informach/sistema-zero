@@ -86,6 +86,19 @@ export const VALUE_SOCKETS: Record<string, Record<string, number>> = {
   sz_t3d_grass: { COUNT: 5000, SIZE: 1, SPREAD: 50 },
   // Macro Letreiro: a largura do plano do letreiro (a altura é metade).
   sz_t3d_sign: { SIZE: 4 },
+  // Mundo procedural com primitivas — defaults leves o bastante para celular.
+  sz_t3d_primitive: { W: 1, H: 1, D: 1 },
+  sz_t3d_terrain: { SIZE: 160, SEGMENTS: 48, HILLS: 4, SMOOTH: 18 },
+  sz_t3d_road: { X1: -20, Z1: 0, X2: 20, Z2: 0, WIDTH: 6 },
+  sz_t3d_building: { X: 0, Z: 0, W: 8, H: 10, D: 8 },
+  // Física própria: 3 subpassos protegem contra frames lentos sem espiral de CPU.
+  sz_t3d_physics_setup: { GRAVITY: -22, SUBSTEPS: 3 },
+  sz_t3d_physics_static_box: { X: 0, Y: 1, Z: 0, W: 2, H: 2, D: 2 },
+  sz_t3d_physics_body: { W: 1, H: 2, D: 1, FRICTION: 0.82, BOUNCE: 0 },
+  sz_t3d_physics_move: { X: 0, Z: 0, SPEED: 6 },
+  sz_t3d_physics_jump: { SPEED: 7 },
+  sz_t3d_physics_trigger: { X: 0, Y: 1, Z: 0, W: 6, H: 2, D: 6 },
+  sz_t3d_physics_step: { DT: 0.0166667 },
 }
 
 /**
@@ -112,6 +125,10 @@ export const COLOR_SOCKETS: Record<string, Record<string, string>> = {
   sz_t3d_grass: { COLOR: '#4a7c2a' },
   // Macro Letreiro: a cor das letras (branco = destaca em qualquer céu).
   sz_t3d_sign: { COLOR: '#ffffff' },
+  sz_t3d_primitive: { COLOR: '#38bdf8' },
+  sz_t3d_terrain: { COLOR: '#65a30d' },
+  sz_t3d_road: { COLOR: '#334155' },
+  sz_t3d_building: { COLOR: '#f59e0b', ROOF: '#b91c1c' },
 }
 
 /**

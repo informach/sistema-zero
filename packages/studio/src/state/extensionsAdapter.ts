@@ -18,9 +18,13 @@ export function registerExtension(ext: ExtensionDefinition): void {
 export function installExtension(
   ext: ExtensionDefinition,
   store: ProjectStoreApi = useProjectStore,
-): void {
+): { ok: true } | { ok: false; conflictId: string } {
+  const installed = store.getState().project?.installedExtensions ?? []
+  const conflictId = ext.conflictsWith?.find((id) => installed.some((entry) => entry.id === id))
+  if (conflictId) return { ok: false, conflictId }
   registerExtension(ext)
   store.getState().installExtension(ext.manifest.id, ext.manifest.version)
+  return { ok: true }
 }
 
 /**

@@ -209,6 +209,10 @@ function routeNode(node: RoutedNode, ir: SZIR): void {
 function f(block: Blockly.Block, name: string): string {
   return String(block.getFieldValue(name) ?? '')
 }
+
+function fieldChoice<T extends string>(value: string, allowed: readonly T[], fallback: T): T {
+  return allowed.find((option) => option === value) ?? fallback
+}
 function fn(block: Blockly.Block, name: string, fallback = 0): number {
   const v = block.getFieldValue(name)
   const n = Number(v)
@@ -783,6 +787,14 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'w3d:coinCount' }
     case 'sz_w3d_has_achievement':
       return { type: 'w3d:hasAchievement', name: f(block, 'NAME') || 'conquista' }
+    case 'sz_w3d_inventory_count':
+      return { type: 'w3d:inventoryCount', item: f(block, 'ITEM') || 'item' }
+    case 'sz_w3d_inventory_has':
+      return {
+        type: 'w3d:inventoryHas',
+        item: f(block, 'ITEM') || 'item',
+        n: exprInput(block, 'N', { type: 'num', value: 1 }),
+      }
     case 'sz_w3d_key_down':
       return { type: 'w3d:keyDown', key: f(block, 'KEY') || 'e' }
     case 'sz_w3d_key_pressed':
@@ -3462,17 +3474,15 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       }
     case 'sz_t3d_renderer_config': {
       // Modernização do renderizador (forward-only) — os dropdowns viram a grafia atual.
-      const oneOf = <T extends string>(v: string, allowed: readonly T[], fallback: T): T =>
-        (allowed as readonly string[]).includes(v) ? (v as T) : fallback
       return {
         kind: 'js',
         value: {
           type: 'rendererConfig',
           renderer: f(block, 'R'),
-          pixels: oneOf(f(block, 'PIXELS'), ['device', 'off'] as const, 'off'),
-          shadows: oneOf(f(block, 'SHADOWS'), ['soft', 'hard', 'off'] as const, 'off'),
-          colorSpace: oneOf(f(block, 'COLORSPACE'), ['srgb', 'off'] as const, 'off'),
-          toneMapping: oneOf(f(block, 'TONE'), ['aces', 'off'] as const, 'off'),
+          pixels: fieldChoice(f(block, 'PIXELS'), ['device', 'off'] as const, 'off'),
+          shadows: fieldChoice(f(block, 'SHADOWS'), ['soft', 'hard', 'off'] as const, 'off'),
+          colorSpace: fieldChoice(f(block, 'COLORSPACE'), ['srgb', 'off'] as const, 'off'),
+          toneMapping: fieldChoice(f(block, 'TONE'), ['aces', 'off'] as const, 'off'),
         },
       }
     }
@@ -3562,6 +3572,158 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           text: f(block, 'TEXT') || 'Oi!',
           size: exprInput(block, 'SIZE', { type: 'num', value: 4 }),
           color: exprInput(block, 'COLOR', { type: 'color', value: '#ffffff' }),
+        },
+      }
+    case 'sz_t3d_primitive':
+      return {
+        kind: 'js',
+        value: {
+          type: 'primitiveSetup',
+          mesh: f(block, 'MESH') || 'objeto',
+          scene: f(block, 'SCENE'),
+          shape: fieldChoice(
+            f(block, 'SHAPE'),
+            ['box', 'sphere', 'cylinder', 'cone', 'capsule'] as const,
+            'box',
+          ),
+          width: exprInput(block, 'W', { type: 'num', value: 1 }),
+          height: exprInput(block, 'H', { type: 'num', value: 1 }),
+          depth: exprInput(block, 'D', { type: 'num', value: 1 }),
+          color: exprInput(block, 'COLOR', { type: 'color', value: '#38bdf8' }),
+        },
+      }
+    case 'sz_t3d_terrain':
+      return {
+        kind: 'js',
+        value: {
+          type: 'terrainSetup',
+          terrain: f(block, 'TERRAIN') || 'terreno',
+          scene: f(block, 'SCENE'),
+          heightFunction: f(block, 'HEIGHT_FN') || 'alturaChao',
+          size: exprInput(block, 'SIZE', { type: 'num', value: 160 }),
+          segments: exprInput(block, 'SEGMENTS', { type: 'num', value: 48 }),
+          hills: exprInput(block, 'HILLS', { type: 'num', value: 4 }),
+          smooth: exprInput(block, 'SMOOTH', { type: 'num', value: 18 }),
+          color: exprInput(block, 'COLOR', { type: 'color', value: '#65a30d' }),
+        },
+      }
+    case 'sz_t3d_road':
+      return {
+        kind: 'js',
+        value: {
+          type: 'roadSetup',
+          road: f(block, 'ROAD') || 'estrada',
+          scene: f(block, 'SCENE'),
+          x1: exprInput(block, 'X1', { type: 'num', value: -20 }),
+          z1: exprInput(block, 'Z1', { type: 'num', value: 0 }),
+          x2: exprInput(block, 'X2', { type: 'num', value: 20 }),
+          z2: exprInput(block, 'Z2', { type: 'num', value: 0 }),
+          width: exprInput(block, 'WIDTH', { type: 'num', value: 6 }),
+          color: exprInput(block, 'COLOR', { type: 'color', value: '#334155' }),
+        },
+      }
+    case 'sz_t3d_building':
+      return {
+        kind: 'js',
+        value: {
+          type: 'buildingSetup',
+          building: f(block, 'BUILDING') || 'predio',
+          scene: f(block, 'SCENE'),
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+          width: exprInput(block, 'W', { type: 'num', value: 8 }),
+          height: exprInput(block, 'H', { type: 'num', value: 10 }),
+          depth: exprInput(block, 'D', { type: 'num', value: 8 }),
+          color: exprInput(block, 'COLOR', { type: 'color', value: '#f59e0b' }),
+          roofColor: exprInput(block, 'ROOF', { type: 'color', value: '#b91c1c' }),
+        },
+      }
+    case 'sz_t3d_physics_setup':
+      return {
+        kind: 'js',
+        value: {
+          type: 'physicsLiteSetup',
+          world: f(block, 'WORLD') || 'fisica',
+          heightFunction: f(block, 'HEIGHT_FN') || 'alturaChao',
+          gravity: exprInput(block, 'GRAVITY', { type: 'num', value: -22 }),
+          maxSubSteps: exprInput(block, 'SUBSTEPS', { type: 'num', value: 3 }),
+        },
+      }
+    case 'sz_t3d_physics_static_box':
+      return {
+        kind: 'js',
+        value: {
+          type: 'physicsLiteStaticBox',
+          world: f(block, 'WORLD'),
+          id: f(block, 'ID') || 'parede',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 1 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+          width: exprInput(block, 'W', { type: 'num', value: 2 }),
+          height: exprInput(block, 'H', { type: 'num', value: 2 }),
+          depth: exprInput(block, 'D', { type: 'num', value: 2 }),
+        },
+      }
+    case 'sz_t3d_physics_body':
+      return {
+        kind: 'js',
+        value: {
+          type: 'physicsLiteBody',
+          world: f(block, 'WORLD'),
+          object: f(block, 'OBJECT'),
+          id: f(block, 'ID') || 'jogador',
+          kind: fieldChoice(f(block, 'KIND'), ['character', 'dynamic'] as const, 'character'),
+          width: exprInput(block, 'W', { type: 'num', value: 1 }),
+          height: exprInput(block, 'H', { type: 'num', value: 2 }),
+          depth: exprInput(block, 'D', { type: 'num', value: 1 }),
+          friction: exprInput(block, 'FRICTION', { type: 'num', value: 0.82 }),
+          bounce: exprInput(block, 'BOUNCE', { type: 'num', value: 0 }),
+        },
+      }
+    case 'sz_t3d_physics_move':
+      return {
+        kind: 'js',
+        value: {
+          type: 'physicsLiteMove',
+          world: f(block, 'WORLD'),
+          id: f(block, 'ID') || 'jogador',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 6 }),
+        },
+      }
+    case 'sz_t3d_physics_jump':
+      return {
+        kind: 'js',
+        value: {
+          type: 'physicsLiteJump',
+          world: f(block, 'WORLD'),
+          id: f(block, 'ID') || 'jogador',
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 7 }),
+        },
+      }
+    case 'sz_t3d_physics_trigger':
+      return {
+        kind: 'js',
+        value: {
+          type: 'physicsLiteTrigger',
+          world: f(block, 'WORLD'),
+          id: f(block, 'ID') || 'praca',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 1 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+          width: exprInput(block, 'W', { type: 'num', value: 6 }),
+          height: exprInput(block, 'H', { type: 'num', value: 2 }),
+          depth: exprInput(block, 'D', { type: 'num', value: 6 }),
+        },
+      }
+    case 'sz_t3d_physics_step':
+      return {
+        kind: 'js',
+        value: {
+          type: 'physicsLiteStep',
+          world: f(block, 'WORLD'),
+          dt: exprInput(block, 'DT', { type: 'num', value: 1 / 60 }),
         },
       }
     case 'sz_js_call_method':
@@ -5999,6 +6161,15 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     case 'sz_gk_set_state':
       seen.add('game-2d-advanced')
       return { kind: 'js', value: { type: 'gk:setState', name: f(block, 'STATE') || 'jogando' } }
+    case 'sz_gk_restart_game':
+      seen.add('game-2d-advanced')
+      return { kind: 'js', value: { type: 'gk:restartGame' } }
+    case 'sz_gk_on_game_start':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: { type: 'gk:onGameStart', body: getStatementChildren(block, 'BODY', seen) },
+      }
     case 'sz_gk_on_enter_state':
       seen.add('game-2d-advanced')
       return {
@@ -6233,12 +6404,25 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     case 'sz_gk_rpg_set_start_map':
       seen.add('game-2d-advanced')
       return { kind: 'js', value: { type: 'gk:rpgSetStartMap', map: f(block, 'MAP') } }
-    case 'sz_gk_rpg_on_map':
+    case 'sz_gk_rpg_create_map':
       seen.add('game-2d-advanced')
       return {
         kind: 'js',
         value: {
-          type: 'gk:rpgOnMap',
+          type: 'gk:rpgCreateMap',
+          map: f(block, 'MAP'),
+          cols: exprInput(block, 'COLS', { type: 'num', value: 15 }),
+          rows: exprInput(block, 'ROWS', { type: 'num', value: 10 }),
+          ctxName: f(block, 'PARAM') || 'ctx',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_gk_rpg_on_enter_map':
+      seen.add('game-2d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'gk:rpgOnEnterMap',
           map: f(block, 'MAP'),
           body: getStatementChildren(block, 'BODY', seen),
         },
@@ -6254,17 +6438,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           map: f(block, 'MAP'),
         },
       }
-    // 🌍 Mundo aberto: tamanho do mapa + bordas ligadas
-    case 'sz_gk_rpg_map_size':
-      seen.add('game-2d-advanced')
-      return {
-        kind: 'js',
-        value: {
-          type: 'gk:rpgMapSize',
-          cols: exprInput(block, 'COLS', { type: 'num', value: 30 }),
-          rows: exprInput(block, 'ROWS', { type: 'num', value: 20 }),
-        },
-      }
+    // 🌍 Mundo aberto: bordas ligadas; o tamanho pertence ao mapa criado.
     case 'sz_gk_rpg_connect_edge':
       seen.add('game-2d-advanced')
       return {
@@ -9717,6 +9891,65 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           z: exprInput(block, 'Z', { type: 'num', value: 0 }),
           size: f(block, 'SIZE') || 'media',
           mode: f(block, 'MODE') || 'dia',
+        },
+      }
+    case 'sz_w3d_district':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:district',
+          kind: f(block, 'KIND') || 'residencial',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+          size: exprInput(block, 'SIZE', { type: 'num', value: 48 }),
+        },
+      }
+    case 'sz_w3d_road_grid':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:roadGrid',
+          layout: f(block, 'LAYOUT') || 'grade',
+          x: exprInput(block, 'X', { type: 'num', value: 0 }),
+          z: exprInput(block, 'Z', { type: 'num', value: 0 }),
+          size: exprInput(block, 'SIZE', { type: 'num', value: 80 }),
+          width: exprInput(block, 'WIDTH', { type: 'num', value: 6 }),
+        },
+      }
+    case 'sz_w3d_house_row':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:houseRow',
+          n: exprInput(block, 'N', { type: 'num', value: 8 }),
+          x1: exprInput(block, 'X1', { type: 'num', value: -30 }),
+          z1: exprInput(block, 'Z1', { type: 'num', value: 15 }),
+          x2: exprInput(block, 'X2', { type: 'num', value: 30 }),
+          z2: exprInput(block, 'Z2', { type: 'num', value: 15 }),
+          style: f(block, 'STYLE') || 'coloridas',
+        },
+      }
+    case 'sz_w3d_quality':
+      return {
+        kind: 'js',
+        value: { type: 'w3d:quality', mode: f(block, 'MODE') || 'automatica' },
+      }
+    case 'sz_w3d_inventory_give':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:inventoryGive',
+          item: f(block, 'ITEM') || 'item',
+          n: exprInput(block, 'N', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_w3d_inventory_remove':
+      return {
+        kind: 'js',
+        value: {
+          type: 'w3d:inventoryRemove',
+          item: f(block, 'ITEM') || 'item',
+          n: exprInput(block, 'N', { type: 'num', value: 1 }),
         },
       }
     case 'sz_w3d_traffic':

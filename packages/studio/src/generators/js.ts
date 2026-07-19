@@ -1,5 +1,6 @@
 import type { JSExpr, JSStatement } from '#ir'
 import { screenTextToExpr, valueToExpr } from '#ir'
+import { physicsLiteRuntimeSource } from '../three/physicsLiteRuntime'
 import {
   _setExprStatementCompiler,
   compileExpr,
@@ -88,7 +89,8 @@ function jsChildBodies(stmt: JSStatement): JSStatement[][] {
     case 'gk:onGameClick':
     case 'gk:onEvent':
     case 'gk:rpgOnTalk':
-    case 'gk:rpgOnMap':
+    case 'gk:rpgCreateMap':
+    case 'gk:rpgOnEnterMap':
     case 'gk:rpgOnBattleEnd':
     case 'gk:rpgCutscene':
     case 'gk:rpgOnStep':
@@ -287,7 +289,14 @@ export function generateJSWithMap(opts: GenerateJSOptions): GenerateJSWithMapRes
   // Statements começam após o header (1-indexed).
   let currentLine = headerText ? countLines(headerText) + 1 : 1
   const pieces: string[] = []
+  const needsPhysicsLite = treeHasStatementType(statements, 'physicsLiteSetup')
+  let physicsLiteInserted = false
   for (const stmt of statements) {
+    if (needsPhysicsLite && !physicsLiteInserted && !isImport(stmt)) {
+      pieces.push(physicsLiteRuntimeSource)
+      currentLine += countLines(physicsLiteRuntimeSource)
+      physicsLiteInserted = true
+    }
     const piece = compileStatement(stmt, 0, identifiers, { map, startLine: currentLine })
     const lines = countLines(piece)
     pieces.push(piece)
@@ -295,6 +304,7 @@ export function generateJSWithMap(opts: GenerateJSOptions): GenerateJSWithMapRes
     // piece começa exatamente em currentLine + lines.
     currentLine += lines
   }
+  if (needsPhysicsLite && !physicsLiteInserted) pieces.push(physicsLiteRuntimeSource)
   const body = pieces.join('\n')
   const code = headerText + (body ? `${body}\n` : '')
   return { code, map }
@@ -1642,6 +1652,17 @@ function compileStatementCode(
       return `${pad}SZGameKit.hideScreens();`
     case 'gk:setState':
       return `${pad}SZGameKit.setState(${JSON.stringify(stmt.name)});`
+    case 'gk:restartGame':
+      return `${pad}SZGameKit.restartGame();`
+    case 'gk:onGameStart': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.onGameStart(function () {\n${body}\n${pad}});`
+    }
     case 'gk:onEnterState': {
       const body = compileStatements(
         stmt.body,
@@ -1744,20 +1765,27 @@ function compileStatementCode(
       return `${pad}SZGameKit.rpgGoMap(${JSON.stringify(stmt.map)});`
     case 'gk:rpgSetStartMap':
       return `${pad}SZGameKit.rpgSetStartMap(${JSON.stringify(stmt.map)});`
-    case 'gk:rpgOnMap': {
+    case 'gk:rpgCreateMap': {
       const body = compileStatements(
         stmt.body,
         indent + 1,
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.rpgOnMap(${JSON.stringify(stmt.map)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.rpgCreateMap(${JSON.stringify(stmt.map)}, ${compileExpr(valueToExpr(stmt.cols), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.rows), 0, identifiers, recAt(base))}, function (${identifiers.get(stmt.ctxName)}) {\n${body}\n${pad}}, ${stmt.body.length > 0 ? 'true' : 'false'});`
+    }
+    case 'gk:rpgOnEnterMap': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit.rpgOnEnterMap(${JSON.stringify(stmt.map)}, function () {\n${body}\n${pad}});`
     }
     case 'gk:rpgCreateDoor':
       return `${pad}SZGameKit.rpgCreateDoor(${compileExpr(valueToExpr(stmt.cx), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.cy), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.map)});`
-    // 🌍 Mundo aberto: tamanho do mapa + bordas ligadas
-    case 'gk:rpgMapSize':
-      return `${pad}SZGameKit.rpgMapSize(${compileExpr(valueToExpr(stmt.cols), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.rows), 0, identifiers, recAt(base))});`
+    // 🌍 Mundo aberto: bordas ligadas; o tamanho pertence ao mapa criado.
     case 'gk:rpgConnectEdge':
       return `${pad}SZGameKit.rpgConnectEdge(${JSON.stringify(stmt.side)}, ${JSON.stringify(stmt.map)});`
     case 'gk:rpgBattleStats':
@@ -2894,6 +2922,18 @@ ${pad}});`
       return `${pad}SZWorld3D.lamp(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
     case 'w3d:city':
       return `${pad}SZWorld3D.city(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.size)}, ${JSON.stringify(stmt.mode)});`
+    case 'w3d:district':
+      return `${pad}SZWorld3D.district(${JSON.stringify(stmt.kind)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))});`
+    case 'w3d:roadGrid':
+      return `${pad}SZWorld3D.roadGrid(${JSON.stringify(stmt.layout)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.width), 0, identifiers, recAt(base))});`
+    case 'w3d:houseRow':
+      return `${pad}SZWorld3D.houseRow(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z2), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.style)});`
+    case 'w3d:quality':
+      return `${pad}SZWorld3D.quality(${JSON.stringify(stmt.mode)});`
+    case 'w3d:inventoryGive':
+      return `${pad}SZWorld3D.inventoryGive(${JSON.stringify(stmt.item)}, ${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))});`
+    case 'w3d:inventoryRemove':
+      return `${pad}SZWorld3D.inventoryRemove(${JSON.stringify(stmt.item)}, ${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))});`
     case 'w3d:stringLights':
       return `${pad}SZWorld3D.stringLights(${compileExpr(valueToExpr(stmt.x1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z2), 0, identifiers, recAt(base))});`
     case 'w3d:traffic':
@@ -3325,6 +3365,185 @@ ${pad}});`
         `${sc}.add(${s});`,
       ]
       return lines.map((l) => `${pad}${l}`).join('\n')
+    }
+    case 'primitiveSetup': {
+      const mesh = identifiers.get(stmt.mesh)
+      const scene = identifiers.get(stmt.scene)
+      const width = compileExpr(stmt.width, 0, identifiers, recAt(base))
+      const height = compileExpr(stmt.height, 0, identifiers, recAt(base))
+      const depth = compileExpr(stmt.depth, 0, identifiers, recAt(base))
+      const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
+      const geometry = `${mesh}Geometry`
+      const material = `${mesh}Material`
+      const geometryCode =
+        stmt.shape === 'sphere' || stmt.shape === 'capsule'
+          ? 'new THREE.SphereGeometry(0.5, 20, 14)'
+          : stmt.shape === 'cylinder'
+            ? 'new THREE.CylinderGeometry(0.5, 0.5, 1, 16)'
+            : stmt.shape === 'cone'
+              ? 'new THREE.ConeGeometry(0.5, 1, 16)'
+              : 'new THREE.BoxGeometry(1, 1, 1)'
+      const scaleY = stmt.shape === 'capsule' ? `Math.max(${height}, ${width})` : height
+      const lines = [
+        `const ${geometry} = ${geometryCode};`,
+        `const ${material} = new THREE.MeshStandardMaterial({ color: ${color} });`,
+        `const ${mesh} = new THREE.Mesh(${geometry}, ${material});`,
+        `${mesh}.scale.set(${width}, ${scaleY}, ${depth});`,
+        `${mesh}.castShadow = true;`,
+        `${mesh}.receiveShadow = true;`,
+        `${scene}.add(${mesh});`,
+      ]
+      return lines.map((line) => `${pad}${line}`).join('\n')
+    }
+    case 'terrainSetup': {
+      const terrain = identifiers.get(stmt.terrain)
+      const scene = identifiers.get(stmt.scene)
+      const heightFunction = identifiers.get(stmt.heightFunction)
+      const size = compileExpr(stmt.size, 0, identifiers, recAt(base))
+      const segments = compileExpr(stmt.segments, 0, identifiers, recAt(base))
+      const hills = compileExpr(stmt.hills, 0, identifiers, recAt(base))
+      const smooth = compileExpr(stmt.smooth, 0, identifiers, recAt(base))
+      const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
+      const geometry = `${terrain}Geometry`
+      const positions = `${terrain}Positions`
+      const lines = [
+        `function ${heightFunction}(x, z) {`,
+        `  return (Math.sin(x / ${smooth}) * 0.58 + Math.cos(z / (${smooth} * 0.83)) * 0.42) * ${hills};`,
+        `}`,
+        `const ${geometry} = new THREE.PlaneGeometry(${size}, ${size}, ${segments}, ${segments});`,
+        `${geometry}.rotateX(-Math.PI / 2);`,
+        `const ${positions} = ${geometry}.attributes.position;`,
+        `for (let i = 0; i < ${positions}.count; i++) {`,
+        `  ${positions}.setY(i, ${heightFunction}(${positions}.getX(i), ${positions}.getZ(i)));`,
+        `}`,
+        `${positions}.needsUpdate = true;`,
+        `${geometry}.computeVertexNormals();`,
+        `const ${terrain} = new THREE.Mesh(${geometry}, new THREE.MeshStandardMaterial({ color: ${color}, roughness: 0.92 }));`,
+        `${terrain}.receiveShadow = true;`,
+        `${scene}.add(${terrain});`,
+      ]
+      return lines.map((line) => `${pad}${line}`).join('\n')
+    }
+    case 'roadSetup': {
+      const road = identifiers.get(stmt.road)
+      const scene = identifiers.get(stmt.scene)
+      const x1 = compileExpr(stmt.x1, 0, identifiers, recAt(base))
+      const z1 = compileExpr(stmt.z1, 0, identifiers, recAt(base))
+      const x2 = compileExpr(stmt.x2, 0, identifiers, recAt(base))
+      const z2 = compileExpr(stmt.z2, 0, identifiers, recAt(base))
+      const width = compileExpr(stmt.width, 0, identifiers, recAt(base))
+      const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
+      const dx = `${road}Dx`
+      const dz = `${road}Dz`
+      const length = `${road}Length`
+      const asphalt = `${road}Asphalt`
+      const stripe = `${road}Stripe`
+      const lines = [
+        `const ${dx} = ${x2} - ${x1};`,
+        `const ${dz} = ${z2} - ${z1};`,
+        `const ${length} = Math.hypot(${dx}, ${dz});`,
+        `const ${road} = new THREE.Group();`,
+        `const ${asphalt} = new THREE.Mesh(new THREE.BoxGeometry(${width}, 0.12, ${length}), new THREE.MeshStandardMaterial({ color: ${color}, roughness: 0.95 }));`,
+        `const ${stripe} = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.02, ${length} * 0.82), new THREE.MeshBasicMaterial({ color: 16771942 }));`,
+        `${stripe}.position.y = 0.07;`,
+        `${road}.add(${asphalt});`,
+        `${road}.add(${stripe});`,
+        `${road}.position.set((${x1} + ${x2}) / 2, 0.06, (${z1} + ${z2}) / 2);`,
+        `${road}.rotation.y = Math.atan2(${dx}, ${dz});`,
+        `${road}.traverse((part) => { part.receiveShadow = true; });`,
+        `${scene}.add(${road});`,
+      ]
+      return lines.map((line) => `${pad}${line}`).join('\n')
+    }
+    case 'buildingSetup': {
+      const building = identifiers.get(stmt.building)
+      const scene = identifiers.get(stmt.scene)
+      const x = compileExpr(stmt.x, 0, identifiers, recAt(base))
+      const z = compileExpr(stmt.z, 0, identifiers, recAt(base))
+      const width = compileExpr(stmt.width, 0, identifiers, recAt(base))
+      const height = compileExpr(stmt.height, 0, identifiers, recAt(base))
+      const depth = compileExpr(stmt.depth, 0, identifiers, recAt(base))
+      const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
+      const roofColor = compileExpr(stmt.roofColor, 0, identifiers, recAt(base))
+      const body = `${building}Body`
+      const roof = `${building}Roof`
+      const door = `${building}Door`
+      const windows = `${building}Windows`
+      const windowDummy = `${building}WindowDummy`
+      const lines = [
+        `const ${building} = new THREE.Group();`,
+        `const ${body} = new THREE.Mesh(new THREE.BoxGeometry(${width}, ${height}, ${depth}), new THREE.MeshStandardMaterial({ color: ${color}, roughness: 0.82 }));`,
+        `${body}.position.y = ${height} / 2;`,
+        `const ${roof} = new THREE.Mesh(new THREE.ConeGeometry(Math.max(${width}, ${depth}) * 0.72, Math.max(1, ${height} * 0.22), 4), new THREE.MeshStandardMaterial({ color: ${roofColor}, roughness: 0.9 }));`,
+        `${roof}.position.y = ${height} + Math.max(1, ${height} * 0.11);`,
+        `${roof}.rotation.y = Math.PI / 4;`,
+        `const ${door} = new THREE.Mesh(new THREE.BoxGeometry(Math.max(0.9, ${width} * 0.16), Math.max(1.8, ${height} * 0.24), 0.12), new THREE.MeshStandardMaterial({ color: 5918790 }));`,
+        `${door}.position.set(0, Math.max(0.9, ${height} * 0.12), ${depth} / 2 + 0.07);`,
+        `const ${windows} = new THREE.InstancedMesh(new THREE.BoxGeometry(0.9, 0.9, 0.08), new THREE.MeshBasicMaterial({ color: 11259375 }), 4);`,
+        `const ${windowDummy} = new THREE.Object3D();`,
+        `for (let i = 0; i < 4; i++) {`,
+        `  ${windowDummy}.position.set((i % 2 === 0 ? -1 : 1) * ${width} * 0.25, ${height} * (i < 2 ? 0.42 : 0.72), ${depth} / 2 + 0.08);`,
+        `  ${windowDummy}.updateMatrix();`,
+        `  ${windows}.setMatrixAt(i, ${windowDummy}.matrix);`,
+        `}`,
+        `${windows}.instanceMatrix.needsUpdate = true;`,
+        `${building}.add(${body});`,
+        `${building}.add(${roof});`,
+        `${building}.add(${door});`,
+        `${building}.add(${windows});`,
+        `${building}.position.set(${x}, 0, ${z});`,
+        `${building}.traverse((part) => { part.castShadow = true; part.receiveShadow = true; });`,
+        `${scene}.add(${building});`,
+      ]
+      return lines.map((line) => `${pad}${line}`).join('\n')
+    }
+    case 'physicsLiteSetup': {
+      const world = identifiers.get(stmt.world)
+      const heightFunction = identifiers.get(stmt.heightFunction)
+      const gravity = compileExpr(stmt.gravity, 0, identifiers, recAt(base))
+      const maxSubSteps = compileExpr(stmt.maxSubSteps, 0, identifiers, recAt(base))
+      return `${pad}const ${world} = createSZPhysicsLite({ groundHeight: ${heightFunction}, gravity: ${gravity}, maxSubSteps: ${maxSubSteps} });`
+    }
+    case 'physicsLiteStaticBox': {
+      const world = identifiers.get(stmt.world)
+      const args = [stmt.x, stmt.y, stmt.z, stmt.width, stmt.height, stmt.depth]
+        .map((value) => compileExpr(value, 0, identifiers, recAt(base)))
+        .join(', ')
+      return `${pad}${world}.addStaticBox(${JSON.stringify(stmt.id)}, ${args});`
+    }
+    case 'physicsLiteBody': {
+      const world = identifiers.get(stmt.world)
+      const object = identifiers.get(stmt.object)
+      const width = compileExpr(stmt.width, 0, identifiers, recAt(base))
+      const height = compileExpr(stmt.height, 0, identifiers, recAt(base))
+      const depth = compileExpr(stmt.depth, 0, identifiers, recAt(base))
+      const friction = compileExpr(stmt.friction, 0, identifiers, recAt(base))
+      const bounce = compileExpr(stmt.bounce, 0, identifiers, recAt(base))
+      return `${pad}${world}.addBody(${JSON.stringify(stmt.id)}, ${object}, { kind: ${JSON.stringify(stmt.kind)}, width: ${width}, height: ${height}, depth: ${depth}, friction: ${friction}, bounce: ${bounce} });`
+    }
+    case 'physicsLiteMove': {
+      const world = identifiers.get(stmt.world)
+      const x = compileExpr(stmt.x, 0, identifiers, recAt(base))
+      const z = compileExpr(stmt.z, 0, identifiers, recAt(base))
+      const speed = compileExpr(stmt.speed, 0, identifiers, recAt(base))
+      return `${pad}${world}.moveCharacter(${JSON.stringify(stmt.id)}, ${x}, ${z}, ${speed});`
+    }
+    case 'physicsLiteJump': {
+      const world = identifiers.get(stmt.world)
+      const speed = compileExpr(stmt.speed, 0, identifiers, recAt(base))
+      return `${pad}${world}.jump(${JSON.stringify(stmt.id)}, ${speed});`
+    }
+    case 'physicsLiteTrigger': {
+      const world = identifiers.get(stmt.world)
+      const args = [stmt.x, stmt.y, stmt.z, stmt.width, stmt.height, stmt.depth]
+        .map((value) => compileExpr(value, 0, identifiers, recAt(base)))
+        .join(', ')
+      return `${pad}${world}.addTrigger(${JSON.stringify(stmt.id)}, ${args});`
+    }
+    case 'physicsLiteStep': {
+      const world = identifiers.get(stmt.world)
+      const dt = compileExpr(stmt.dt, 0, identifiers, recAt(base))
+      return `${pad}${world}.step(${dt});`
     }
     case 'return':
       return stmt.value === undefined
@@ -4835,6 +5054,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'gk:showScreen':
     case 'gk:hideScreens':
     case 'gk:setState':
+    case 'gk:restartGame':
     case 'gk:pause':
     case 'gk:resume':
     case 'gk:returnToMenu':
@@ -4857,6 +5077,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
     case 'gk:onEnterState':
+    case 'gk:onGameStart':
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
     case 'gk:onUpdate':
@@ -4938,8 +5159,14 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'gk:rpgNpcWander':
       // Nomes de flag/item/mapa/NPC são STRING (JSON.stringify), não identifier.
       return
+    case 'gk:rpgCreateMap':
+      collectExprIdentifiers(valueToExpr(stmt.cols), names)
+      collectExprIdentifiers(valueToExpr(stmt.rows), names)
+      names.add(stmt.ctxName)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
     case 'gk:rpgOnTalk':
-    case 'gk:rpgOnMap':
+    case 'gk:rpgOnEnterMap':
     case 'gk:rpgOnBattleEnd':
     case 'gk:rpgOnFoeTurn':
     case 'gk:rpgCutscene':
@@ -5510,11 +5737,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.cx), names)
       collectExprIdentifiers(valueToExpr(stmt.cy), names)
       return
-    // 🌍 Mundo aberto (side/map são STRING; só os soquetes têm refs)
-    case 'gk:rpgMapSize':
-      collectExprIdentifiers(valueToExpr(stmt.cols), names)
-      collectExprIdentifiers(valueToExpr(stmt.rows), names)
-      return
+    // 🌍 Mundo aberto (side/map são STRING; não há refs de identificador)
     case 'gk:rpgConnectEdge':
       return
     case 'gk:rpgBattleStats':
@@ -6462,6 +6685,92 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(stmt.size, names)
       collectExprIdentifiers(stmt.color, names)
       return
+    case 'primitiveSetup':
+      names.add(stmt.mesh)
+      names.add(stmt.scene)
+      collectExprIdentifiers(stmt.width, names)
+      collectExprIdentifiers(stmt.height, names)
+      collectExprIdentifiers(stmt.depth, names)
+      collectExprIdentifiers(stmt.color, names)
+      return
+    case 'terrainSetup':
+      names.add(stmt.terrain)
+      names.add(stmt.scene)
+      names.add(stmt.heightFunction)
+      collectExprIdentifiers(stmt.size, names)
+      collectExprIdentifiers(stmt.segments, names)
+      collectExprIdentifiers(stmt.hills, names)
+      collectExprIdentifiers(stmt.smooth, names)
+      collectExprIdentifiers(stmt.color, names)
+      return
+    case 'roadSetup':
+      names.add(stmt.road)
+      names.add(stmt.scene)
+      collectExprIdentifiers(stmt.x1, names)
+      collectExprIdentifiers(stmt.z1, names)
+      collectExprIdentifiers(stmt.x2, names)
+      collectExprIdentifiers(stmt.z2, names)
+      collectExprIdentifiers(stmt.width, names)
+      collectExprIdentifiers(stmt.color, names)
+      return
+    case 'buildingSetup':
+      names.add(stmt.building)
+      names.add(stmt.scene)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.z, names)
+      collectExprIdentifiers(stmt.width, names)
+      collectExprIdentifiers(stmt.height, names)
+      collectExprIdentifiers(stmt.depth, names)
+      collectExprIdentifiers(stmt.color, names)
+      collectExprIdentifiers(stmt.roofColor, names)
+      return
+    case 'physicsLiteSetup':
+      names.add(stmt.world)
+      names.add(stmt.heightFunction)
+      collectExprIdentifiers(stmt.gravity, names)
+      collectExprIdentifiers(stmt.maxSubSteps, names)
+      return
+    case 'physicsLiteStaticBox':
+      names.add(stmt.world)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.y, names)
+      collectExprIdentifiers(stmt.z, names)
+      collectExprIdentifiers(stmt.width, names)
+      collectExprIdentifiers(stmt.height, names)
+      collectExprIdentifiers(stmt.depth, names)
+      return
+    case 'physicsLiteBody':
+      names.add(stmt.world)
+      names.add(stmt.object)
+      collectExprIdentifiers(stmt.width, names)
+      collectExprIdentifiers(stmt.height, names)
+      collectExprIdentifiers(stmt.depth, names)
+      collectExprIdentifiers(stmt.friction, names)
+      collectExprIdentifiers(stmt.bounce, names)
+      return
+    case 'physicsLiteMove':
+      names.add(stmt.world)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.z, names)
+      collectExprIdentifiers(stmt.speed, names)
+      return
+    case 'physicsLiteJump':
+      names.add(stmt.world)
+      collectExprIdentifiers(stmt.speed, names)
+      return
+    case 'physicsLiteTrigger':
+      names.add(stmt.world)
+      collectExprIdentifiers(stmt.x, names)
+      collectExprIdentifiers(stmt.y, names)
+      collectExprIdentifiers(stmt.z, names)
+      collectExprIdentifiers(stmt.width, names)
+      collectExprIdentifiers(stmt.height, names)
+      collectExprIdentifiers(stmt.depth, names)
+      return
+    case 'physicsLiteStep':
+      names.add(stmt.world)
+      collectExprIdentifiers(stmt.dt, names)
+      return
     case 'return':
       if (stmt.value !== undefined) collectExprIdentifiers(stmt.value, names)
       return
@@ -6867,6 +7176,7 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'w3d:isDriving':
     case 'w3d:coinCount':
     case 'w3d:hasAchievement':
+    case 'w3d:inventoryCount':
     case 'w3d:keyDown':
     case 'w3d:keyPressed':
     case 'w3d:timeOfDay':
@@ -6874,6 +7184,9 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'w3d:raceBest':
     case 'w3d:pinsDown':
     case 'w3d:knockedCount':
+      return
+    case 'w3d:inventoryHas':
+      collectExprIdentifiers(valueToExpr(expr.n), names)
       return
     case 'w3d:groundHeight':
       collectExprIdentifiers(valueToExpr(expr.x), names)

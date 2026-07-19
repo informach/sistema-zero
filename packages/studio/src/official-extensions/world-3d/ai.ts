@@ -81,6 +81,12 @@ SZWorld3D.start(); // SEMPRE por último
   cruzamentos; o chão aplaina sozinho e as ruas aparecem no minimapa. UMA
   por mundo. Modo 'neon' = noite + chuva leve por default (se a criança não
   pediu outra hora/clima) + letreiros emissivos brilhando no bloom.
+- \`SZWorld3D.district('residencial'|'comercial'|'educacao'|'saude'|
+  'industrial'|'turistico', x, z, tamanho)\` — bairro procedural instanciado;
+  aplaina e limpa a área sozinho. \`SZWorld3D.roadGrid('grade'|'radial'|
+  'organica', x, z, tamanho, largura)\` — rede de ruas em 2 draw calls.
+  \`SZWorld3D.houseRow(n, x1, z1, x2, z2, 'coloridas'|'praia'|'modernas'|
+  'campo')\` — fileira de casas primitivas instanciadas.
 - 🌙 \`SZWorld3D.crater(x, z, raio)\` — tigela com borda erguida no heightAt
   (compõe com flatten/trilha; qualquer estilo). \`SZWorld3D.flag(x, z,
   corHex)\` — mastro + bandeira (cap 8). \`SZWorld3D.rocket(x, z)\` — foguete
@@ -114,6 +120,9 @@ SZWorld3D.start(); // SEMPRE por último
 - \`SZWorld3D.quest('nome', 'descrição')\` — a missão ATIVA aparece no painel sozinha. \`SZWorld3D.questDone('nome')\` — confete + fanfarra + \`SZWorld3D.onQuestDone('nome', () => { … })\`. Meta automática NÃO existe: componha com onCollect + se coinCount() >= N.
 - \`SZWorld3D.marker('alerta'|'estrela'|'alvo'|'moeda', x, z)\` — ícone quicando sobre o lugar. \`SZWorld3D.guideArrow(x, z, 'ligada'|'desligada')\` — seta na tela que aponta o alvo e some ao chegar.
 - \`SZWorld3D.achievement('nome')\` — conquista PARA SEMPRE (salva no projeto; 1ª vez = toast+confete; repetir não refesteja). \`SZWorld3D.onAchievement('nome', () => { … })\` · \`SZWorld3D.hasAchievement('nome')\` → booleano (vale entre jogadas).
+- Inventário persistente: \`SZWorld3D.inventoryGive('item', n)\`,
+  \`inventoryRemove('item', n)\`, \`inventoryCount('item')\` → número e
+  \`inventoryHas('item', n)\` → booleano. Nunca fica negativo.
 - \`SZWorld3D.minimap('ver'|'teleporte')\` — minimapa no canto; M abre o mapa grande (teleporte = clicar viaja).
 - \`SZWorld3D.racePodium()\` — fim da corrida pede 3 INICIAIS (setas+E); top-5 salvo no projeto; P reabre.
 - \`SZWorld3D.whisperCorner(x, z)\` — cantinho onde o JOGADOR escreve recados (viram chamas 🔥 persistentes, cap 20). \`SZWorld3D.flameNote(x, z, 'texto')\` — a SUA dica-chama (E lê).
@@ -144,6 +153,8 @@ SZWorld3D.start(); // SEMPRE por último
 - \`SZWorld3D.setEffects('ligados'|'desligados', brilho)\` — bloom + vinheta
   (composer próprio, ACES). Default LIGADO com brilho 1; brilho 0–3. O modo
   turbo (FPS < 45 nos primeiros segundos) desliga sozinho e reduz a grama.
+- \`SZWorld3D.quality('automatica'|'alta'|'desempenho')\` — escolha explícita;
+  automática mede FPS, desempenho reduz resolução interna/sombras/grama.
 - \`SZWorld3D.cameraMode('seguir'|'topo'|'cinema')\` — modo da câmera (seguir
   por trás / vista de cima / órbita cinema). \`SZWorld3D.cameraShake(forca, segundos)\`
   — tremor. (Joystick mobile aparece sozinho em toque; não tem método.)

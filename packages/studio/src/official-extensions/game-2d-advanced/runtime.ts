@@ -40,6 +40,7 @@ export const gameKitRuntime = `(function () {
   var pending = [];                      // promessas de carregamento
   var updateHooks = [];
   var drawHooks = [];
+  var gameStartHooks = [];
   var enterStateHooks = Object.create(null); // estado -> [fn]
   var screens = Object.create(null);     // nome -> { el, title, text, mainBtn }
   var stageEl = null;
@@ -302,16 +303,16 @@ export const gameKitRuntime = `(function () {
       // As 5 telas PRONTAS, com textos default em português (P24 tem gameOver E
       // missionComplete SEPARADAS — aqui: 'fim' = derrota, 'vitoria' = missão).
       var menu = makeScreen('menu', 'h1', 'Meu Jogo', 'WASD ou setas para andar');
-      makeButton(menu, 'Jogar', function () { api.setState('jogando'); });
+      makeButton(menu, 'Jogar', function () { api.restartGame(); });
       var pausa = makeScreen('pausa', 'h2', 'Pausa', '');
       makeButton(pausa, 'Continuar', function () { api.resume(); });
       makeButton(pausa, 'Sair para o menu', function () { api.returnToMenu(); });
       makeScreen('carregando', 'h2', 'Carregando...', 'Preparando os pixels...');
       var fim = makeScreen('fim', 'h2', 'Fim de jogo', '');
-      makeButton(fim, 'Jogar de novo', function () { api.setState('jogando'); });
+      makeButton(fim, 'Jogar de novo', function () { api.restartGame(); });
       makeButton(fim, 'Sair para o menu', function () { api.returnToMenu(); });
       var vitoria = makeScreen('vitoria', 'h2', 'Missão cumprida!', 'Você venceu!');
-      makeButton(vitoria, 'Jogar de novo', function () { api.setState('jogando'); });
+      makeButton(vitoria, 'Jogar de novo', function () { api.restartGame(); });
       makeButton(vitoria, 'Sair para o menu', function () { api.returnToMenu(); });
 
       shellReady = true;
@@ -355,20 +356,7 @@ export const gameKitRuntime = `(function () {
 
   // ---- Máquina de estados (Game.state do kit, generalizada p/ nomes livres) ----
 
-  function setState(name) {
-    var n = text(name, '');
-    if (!n) return;
-    var prev = state;
-    state = n;
-    applyStateScreens(n);
-    // Entrou em "jogando": zera o relógio p/ o dt não dar um salto (startGame do kit)
-    // e RECOMEÇA a arena (recolhe todos os enxames, zera missão/contadores e faíscas)
-    // ANTES dos ganchos "quando entrar" da criança — assim "Jogar de novo" funciona.
-    // ⚠️ EXCETO vindo de 'pausado'/'batalha' (estados do MEIO do jogo, geridos
-    // pelo motor): despausar ou fechar uma batalha NÃO pode apagar os enxames.
-    if (n === 'jogando' && prev !== 'jogando') {
-      lastTime = now();
-      if (prev !== 'pausado' && prev !== 'batalha') {
+  function resetGameData() {
         missionDone = false;
         playTime = 0;
         killCount = 0;
@@ -416,20 +404,40 @@ export const gameKitRuntime = `(function () {
         tweens.length = 0;
         secondTimers = Object.create(null); // sem protótipo: a chave vem da criança
         rpgNewGame();
-      }
-    }
+  }
+  function runEnterStateHooks(n, prev, force) {
     // Os hooks de "quando entrar no estado" só rodam numa ENTRADA de verdade:
     // - despausar / fechar batalha é "voltar ao meio do jogo" (isMidResume);
     // - trocar para o estado em que JÁ se está não é entrar (senão um setState
     //   dentro do "A cada quadro" re-criaria inimigos/música 60×/s).
-    var isMidResume = (n === 'jogando' && (prev === 'pausado' || prev === 'batalha'));
+    var isMidResume = !force && (n === 'jogando' && (prev === 'pausado' || prev === 'batalha'));
     var isSameState = (n === prev);
     var hooks = enterStateHooks[n];
-    if (hooks && !isMidResume && !isSameState) {
+    if (hooks && !isMidResume && (!isSameState || force)) {
       for (var i = 0; i < hooks.length; i++) {
         try { hooks[i](); } catch (e) { warn('erro no "quando entrar no estado ' + n + '": ' + e); }
       }
     }
+  }
+  function setState(name) {
+    var n = text(name, '');
+    if (!n) return;
+    var prev = state;
+    state = n;
+    applyStateScreens(n);
+    if (n === 'jogando' && prev !== 'jogando') lastTime = now();
+    runEnterStateHooks(n, prev, false);
+  }
+  function restartGame() {
+    var prev = state;
+    resetGameData();
+    state = 'jogando';
+    applyStateScreens(state);
+    lastTime = now();
+    for (var i = 0; i < gameStartHooks.length; i++) {
+      try { gameStartHooks[i](); } catch (e) { warn('erro no "quando começar uma partida": ' + e); }
+    }
+    runEnterStateHooks(state, prev, true);
   }
 
   // ---- Entrada (Game.setupInput do kit) ----
@@ -789,6 +797,19 @@ export const gameKitRuntime = `(function () {
     var dk = text(name, '');
     var m = tilemaps[dk];
     if (!m) { warnOnce('drawmap:' + dk, 'o mapa "' + dk + '" não existe — carregue com "Carregar o mapa"'); return; }
+    if (rpg.currentMap && rpg.maps[rpg.currentMap]) {
+      var declared = rpg.maps[rpg.currentMap];
+      var mapRows = m.rows.length;
+      var mapCols = 0;
+      for (var ri = 0; ri < m.rows.length; ri++) mapCols = Math.max(mapCols, m.rows[ri].length);
+      if (declared.cols !== mapCols || declared.rows !== mapRows) {
+        warnOnce(
+          'mapsize:' + rpg.currentMap + ':' + dk,
+          'o mapa-cenário "' + rpg.currentMap + '" tem ' + declared.cols + ' × ' + declared.rows +
+          ' células, mas o mapa de peças "' + dk + '" tem ' + mapCols + ' × ' + mapRows + ' — use o mesmo tamanho nos dois',
+        );
+      }
+    }
     var sheet = images[m.imgKey];
     if (!sheet || !sheet.loaded || !sheet.img) return;
     var at = m.artTile;
@@ -898,6 +919,12 @@ export const gameKitRuntime = `(function () {
       ctx2d.translate(-Math.round(camera.x) + Math.round(shx), -Math.round(camera.y) + Math.round(shy));
     }
     worldPass = true; // 🌍 culling SO aqui (mundo transladado; HUD fica de fora)
+    var activeMap = rpg.maps[rpg.currentMap];
+    if (activeMap && typeof activeMap.draw === 'function') {
+      try { activeMap.draw(ctx2d); }
+      catch (e) { warnOnce('mapdraw:' + rpg.currentMap, 'erro ao desenhar o mapa "' + rpg.currentMap + '": ' + e); }
+      if (activeMap.empty) drawEmptyMapNotice(rpg.currentMap);
+    }
     runHooks(drawHooks, ctx2d, 'Desenhar o jogo');
     if (debugOverlay) drawDebugOverlay();
     // R21: onda de choque + textos flutuantes são do MUNDO (dentro do translate,
@@ -1328,6 +1355,7 @@ export const gameKitRuntime = `(function () {
 
   function setSheet(c, imageName, fw, fh) {
     if (!c || typeof c !== 'object') return;
+    ensureImageLoaded(imageName);
     c._sheetImg = text(imageName, '');
     c._sheetFw = Math.max(1, num(fw, num(c.w, 32)));
     c._sheetFh = Math.max(1, num(fh, num(c.h, 32)));
@@ -1495,6 +1523,7 @@ export const gameKitRuntime = `(function () {
 
   function setWalkSheet(c, imageName, fw, fh) {
     if (!c || typeof c !== 'object') return;
+    ensureImageLoaded(imageName);
     c._walkImg = text(imageName, '');
     c._walkFw = Math.max(1, num(fw, num(c.w, 16)));
     c._walkFh = Math.max(1, num(fh, num(c.h, 16)));
@@ -3308,9 +3337,8 @@ export const gameKitRuntime = `(function () {
   //     stepUiInput, stepTweens e stepParticles. Uma batalha em canvas precisa dos
   //     quatro, senão a fala fica com 0 letras PARA SEMPRE. Por isso existe o
   //     stepPkmBattle, chamado do gameLoop FORA do gate de estado.
-  //  3. O estado TEM que se chamar 'batalha': o setState só poupa o recomeço
-  //     quando prev é 'pausado' ou 'batalha' — um nome novo chamaria rpgNewGame()
-  //     ao voltar e APAGARIA o jogo da criança ("ganhei e o jogo recomeçou").
+  //  3. O estado 'batalha' pausa o onUpdate do mundo, mas setState preserva toda
+  //     a partida ao entrar e sair. Só restartGame chama a limpeza completa.
   // O efeito do acerto nasce pronto: é do MOTOR da batalha, não uma escolha da
   // criança (ela nunca declarou "faíscas de batalha").
   var pkmFxReady = false;
@@ -4674,12 +4702,14 @@ export const gameKitRuntime = `(function () {
    */
   function scrollImage(name, vx, vy) {
     var k = text(name, '');
+    ensureImageLoaded(k);
     var rec = images[k];
     // O aviso vem ANTES do gate de canvas: nome errado nunca e silencioso.
-    if (!rec || !rec.loaded || !rec.img) {
-      warnOnce('scroll:' + k, 'a imagem "' + k + '" não está carregada — use "Carregar a imagem"');
+    if (!rec) {
+      warnOnce('scroll:' + k, 'a imagem "' + k + '" não está no projeto');
       return;
     }
+    if (!rec.loaded || !rec.img) return;
     if (!ctx2d) return;
     var iw = Math.max(1, num(rec.img.width, 1));
     var ih = Math.max(1, num(rec.img.height, 1));
@@ -4714,11 +4744,13 @@ export const gameKitRuntime = `(function () {
    */
   function parallaxLayer(name, fx, fy) {
     var k = text(name, '');
+    ensureImageLoaded(k);
     var rec = images[k];
-    if (!rec || !rec.loaded || !rec.img) {
-      warnOnce('parallax:' + k, 'a imagem "' + k + '" não está carregada — use "Carregar a imagem"');
+    if (!rec) {
+      warnOnce('parallax:' + k, 'a imagem "' + k + '" não está no projeto');
       return;
     }
+    if (!rec.loaded || !rec.img) return;
     if (!ctx2d) return;
     if (!camera.on) { warnOnce('parallaxcam:' + k, 'a paralaxe precisa da câmera ligada — use "A câmera segue"'); }
     var iw = Math.max(1, num(rec.img.width, 1));
@@ -4891,11 +4923,13 @@ export const gameKitRuntime = `(function () {
       return;
     }
     var k = text(name, '');
+    ensureImageLoaded(k);
     var rec = images[k];
-    if (!rec || !rec.loaded || !rec.img) {
-      warnOnce('sheetburst:' + k, 'a imagem "' + k + '" não está carregada — use "Carregar a imagem"');
+    if (!rec) {
+      warnOnce('sheetburst:' + k, 'a imagem "' + k + '" não está no projeto');
       return;
     }
+    if (!rec.loaded || !rec.img) return;
     var s = sheetBursts.free.pop() || {};
     s.img = rec.img;
     s.frames = Math.max(1, Math.round(num(frames, 4)));
@@ -5482,13 +5516,13 @@ export const gameKitRuntime = `(function () {
     stepHandlers: {},     // 'cx,cy' -> [fns do "quando pisar" — footstep cutscenes]
     flags: nameMap(),     // StoryFlags: nome -> true
     items: [],            // inventário: {name, image}
-    maps: nameMap(),      // nome -> [fns de montagem]
-    mapOrder: [],         // ordem de registro (fallback legado: o 1º é o mapa inicial)
+    maps: nameMap(),      // nome -> { cols, rows, draw } — declaração visual explícita
+    mapEnter: nameMap(),  // nome -> [fns de comportamento ao entrar]
+    mapOrder: [],         // ordem de criação (fallback: o 1º mapa válido)
     startMap: '',         // mapa inicial explícito, escolhido por rpgSetStartMap
     currentMap: '',
-    // 🌍 Mundo aberto: tamanho do mapa ATUAL em células + bordas ligadas
-    // ('norte'|'sul'|'leste'|'oeste' -> nome do mapa). Declarados DENTRO do
-    // "Quando chegar no mapa" e remontados a cada entrada (como pkm.grass).
+    // 🌍 Mundo aberto: tamanho do mapa ATUAL em células vem da declaração;
+    // bordas são comportamento e são remontadas a cada entrada (como pkm.grass).
     mapCols: 0,
     mapRows: 0,
     edges: {},
@@ -5561,14 +5595,15 @@ export const gameKitRuntime = `(function () {
     // ⚠️ Os GOLPES ensinados NÃO zeram mais: são DEFINIÇÕES (como as fichas/moldes/
     // aparências, que também persistem). Antes o wipe apagava "Ensinar o golpe" posto
     // no TOPO já no 1º "Jogar" (o jeito natural da criança; o exemplo O Chefão caía
-    // nisso). rpgTeachMove/Heal são IDEMPOTENTES (dedup por nome), então re-ensinar no
-    // "quando entrar em jogando" também não duplica — os dois jeitos funcionam.
+    // nisso). rpgTeachMove/Heal são IDEMPOTENTES (dedup por nome), então re-ensinar
+    // no gancho de nova partida também não duplica — os dois jeitos funcionam.
     rpg.scene = null;
     rpg.recording = false;
     rpg.sceneSteps = [];
     rpg.fade = 0;
     rpg.menu = null;
     rpg.menuBuilding = null;
+    rpgValidateMapEvents();
     var initialMap = rpg.startMap || rpgFirstValidMap();
     if (initialMap) rpgGoMap(initialMap);
     // Se "Recomeçar" rodou NO MEIO de uma batalha, a batalha foi zerada acima —
@@ -5580,6 +5615,7 @@ export const gameKitRuntime = `(function () {
   function rpgCreateNpc(name, cx, cy, image, look) {
     var k = text(name, '');
     if (!k) { warn('"Criar o NPC" precisa de um nome'); return; }
+    ensureImageLoaded(image);
     var s = tilePx;
     // Recriar um NPC com o MESMO nome deixava a reserva antiga órfã (parede
     // fantasma para sempre); dois NPCs na MESMA célula dividiam uma entrada só e o
@@ -5758,7 +5794,7 @@ export const gameKitRuntime = `(function () {
       var ny = cy + dy;
       // 🌍 Mundo aberto: o passo cruzaria a BORDA do mapa? Com ligação, viaja
       // (estilo Zelda: entra espelhado do outro lado); sem ligação, a borda é o
-      // fim do mundo (só virou de lado). Sem "Este mapa tem", NADA muda. ⭐ POR EIXO:
+      // fim do mundo (só virou de lado). O tamanho vem do mapa criado. ⭐ POR EIXO:
       // só colunas já limita leste/oeste (norte/sul ficam livres) e vice-versa.
       if (rpg.mapCols > 0 || rpg.mapRows > 0) {
         var outX = rpg.mapCols > 0 && (nx < 0 || nx >= rpg.mapCols);
@@ -5812,6 +5848,7 @@ export const gameKitRuntime = `(function () {
   function rpgGiveItem(name, image) {
     var k = text(name, '');
     if (!k) return;
+    ensureImageLoaded(image);
     var it = rpgFindItem(k);
     if (it) { it.qty = num(it.qty, 1) + 1; return; } // ja tem: soma QUANTIDADE
     rpg.items.push({ name: k, image: text(image, ''), qty: 1 });
@@ -5848,6 +5885,7 @@ export const gameKitRuntime = `(function () {
     ctx2d.save();
     for (var i = 0; i < rpg.items.length; i++) {
       var it = rpg.items[i];
+      ensureImageLoaded(it.image);
       var ix = bx + i * (size + 8);
       ctx2d.fillStyle = 'rgba(0, 0, 0, 0.5)';
       ctx2d.fillRect(ix, by, size, size);
@@ -5866,15 +5904,43 @@ export const gameKitRuntime = `(function () {
     ctx2d.restore();
   }
 
-  // Mapas: trocar LIMPA paredes/NPCs/portas e roda a montagem do destino.
-  function rpgOnMap(name, fn) {
+  // Mapas têm duas responsabilidades explícitas: criar o espaço visual e reagir
+  // à entrada. Um evento nunca cria um mapa implicitamente.
+  function drawEmptyMapNotice(name) {
+    if (!ctx2d) return;
+    drawBackground('#20283a', true);
+    ctx2d.save();
+    ctx2d.fillStyle = '#ffffff';
+    ctx2d.font = 'bold 22px sans-serif';
+    ctx2d.textAlign = 'center';
+    ctx2d.fillText('O mapa “' + name + '” ainda não tem desenho', config.w / 2, config.h / 2 - 8);
+    ctx2d.font = '16px sans-serif';
+    ctx2d.fillText('Use formas, um mapa do Pinta ou uma imagem importada.', config.w / 2, config.h / 2 + 22);
+    ctx2d.restore();
+  }
+  function rpgCreateMap(name, cols, rows, draw, hasDrawing) {
+    var k = text(name, '');
+    var c = Math.round(num(cols, 0));
+    var r = Math.round(num(rows, 0));
+    if (!k) { warn('"Criar o mapa" precisa de um nome'); return; }
+    if (c <= 0 || r <= 0) { warn('o mapa "' + k + '" precisa ter largura e altura maiores que zero'); return; }
+    if (typeof draw !== 'function') { warn('o mapa "' + k + '" precisa de um corpo de desenho'); return; }
+    if (rpg.maps[k]) { warn('o mapa "' + k + '" foi criado mais de uma vez — usando a primeira criação'); return; }
+    var empty = hasDrawing === false;
+    if (empty) warn('o mapa "' + k + '" foi criado sem desenho — adicione formas, um mapa do Pinta ou uma imagem');
+    rpg.maps[k] = { cols: c, rows: r, draw: draw, empty: empty };
+    rpg.mapOrder.push(k);
+  }
+  function rpgOnEnterMap(name, fn) {
     var k = text(name, '');
     if (!k || typeof fn !== 'function') return;
-    if (!rpg.maps[k]) {
-      rpg.maps[k] = [];
-      rpg.mapOrder.push(k);
+    if (!rpg.mapEnter[k]) rpg.mapEnter[k] = [];
+    rpg.mapEnter[k].push(fn);
+  }
+  function rpgValidateMapEvents() {
+    for (var k in rpg.mapEnter) {
+      if (!rpg.maps[k]) warnOnce('mapenter:' + k, 'há um evento de entrada para o mapa "' + k + '", mas ele não foi criado');
     }
-    rpg.maps[k].push(fn);
   }
   function rpgSetStartMap(name) {
     var k = text(name, '');
@@ -5899,6 +5965,44 @@ export const gameKitRuntime = `(function () {
     warn('o mapa "' + requested + '" não existe e nenhum mapa válido foi criado');
     return '';
   }
+  function rpgEnsureHeroSafe(reason) {
+    var who = rpg.hero;
+    if (!who || rpg.mapCols <= 0 || rpg.mapRows <= 0) return;
+    var originalCx = Math.round(num(who.x, 0) / tilePx);
+    var originalCy = Math.round(num(who.y, 0) / tilePx);
+    var startCx = Math.max(0, Math.min(rpg.mapCols - 1, originalCx));
+    var startCy = Math.max(0, Math.min(rpg.mapRows - 1, originalCy));
+    var bestCx = -1;
+    var bestCy = -1;
+    var bestDistance = Infinity;
+    for (var cy = 0; cy < rpg.mapRows; cy++) {
+      for (var cx = 0; cx < rpg.mapCols; cx++) {
+        if (rpg.walls[cellKey(cx, cy)]) continue;
+        var distance = Math.abs(cx - startCx) + Math.abs(cy - startCy);
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          bestCx = cx;
+          bestCy = cy;
+        }
+      }
+    }
+    if (bestCx < 0) {
+      warnOnce('mapsafe:none:' + rpg.currentMap, 'o mapa "' + rpg.currentMap + '" não tem nenhuma célula livre para o herói');
+      return;
+    }
+    var moved = bestCx !== originalCx || bestCy !== originalCy;
+    who.x = bestCx * tilePx;
+    who.y = bestCy * tilePx;
+    who._prevX = who.x;
+    who._prevY = who.y;
+    who._gridDest = null;
+    if (moved) {
+      warnOnce(
+        'mapsafe:' + rpg.currentMap + ':' + reason,
+        'o herói estava fora do mapa ou numa célula bloqueada — colocado com segurança na célula ' + bestCx + ', ' + bestCy,
+      );
+    }
+  }
   function rpgGoMap(name) {
     if (rpg.recording) { rpg.sceneSteps.push({ type: 'goMap', name: text(name, '') }); return; }
     var k = rpgResolveMap(name);
@@ -5910,7 +6014,7 @@ export const gameKitRuntime = `(function () {
     rpg.doors = {};
     rpg.stepHandlers = {};   // gatilhos de pisar são por-mapa (montados de novo)
     // ⭐ A grama e a tabela de selvagens TAMBÉM são por-mapa (o exemplo oficial
-    // chama "Na grama alta deste mapa..." de DENTRO do "Quando chegar no mapa").
+    // chama "Na grama alta deste mapa..." de DENTRO do "Quando entrar no mapa").
     // Sem limpar aqui, o pkmWild — que faz PUSH — duplicava a cada entrada: sair e
     // voltar 20× no quintal dava 40 entradas; e a tabela sendo global fazia os
     // bichos do quintal aparecerem na caverna, apesar do comentário prometer o
@@ -5918,34 +6022,31 @@ export const gameKitRuntime = `(function () {
     pkm.wild = [];
     pkm.grass = {};
     pkm.grassTiles = {};
-    // 🌍 Tamanho e bordas TAMBÉM são por-mapa (declarados dentro do hook).
-    rpg.mapCols = 0;
-    rpg.mapRows = 0;
+    // 🌍 O tamanho é parte da criação; bordas continuam sendo comportamento.
+    var map = rpg.maps[k];
+    rpg.mapCols = map.cols;
+    rpg.mapRows = map.rows;
     rpg.edges = {};
     if (rpg.hero) rpg.hero._gridDest = null;
     rpg.currentMap = k;
-    var hooks = rpg.maps[k];
+    var hooks = rpg.mapEnter[k] || [];
     for (var i = 0; i < hooks.length; i++) {
-      try { hooks[i](); } catch (e) { warn('erro ao montar o mapa "' + k + '": ' + e); }
+      try { hooks[i](); } catch (e) { warn('erro ao entrar no mapa "' + k + '": ' + e); }
     }
+    rpgEnsureHeroSafe('entrada');
     rpg.fade = 1; // transição: o mapa novo aparece surgindo do preto (SceneTransition)
     emit('mapa:' + k);
   }
   function rpgCreateDoor(cx, cy, map) {
     var k = text(map, '');
     if (!k) return;
-    rpg.doors[cellKey(cx, cy)] = k;
+    var destination = rpgResolveMap(k);
+    if (destination) rpg.doors[cellKey(cx, cy)] = destination;
   }
-  // ---- 🌍 Mundo aberto: tamanho do mapa + bordas ligadas (estilo Zelda) ----
-  /** Tamanho do mapa ATUAL em células (use dentro do "Quando chegar no mapa").
-   *  Liga a trava da câmera E o "fim do mundo" nas bordas sem ligação. */
-  function rpgMapSize(cols, rows) {
-    rpg.mapCols = Math.max(0, Math.round(num(cols, 0)));
-    rpg.mapRows = Math.max(0, Math.round(num(rows, 0)));
-  }
+  // ---- 🌍 Mundo aberto: bordas ligadas (estilo Zelda) ----
   var EDGE_SIDES = { norte: true, sul: true, leste: true, oeste: true };
-  /** Liga uma borda deste mapa a outro mapa: atravessou, viaja (declare o
-   *  "Este mapa tem" antes, e ligue a borda ESPELHADA no outro mapa também). */
+  /** Liga uma borda deste mapa a outro mapa: atravessou, viaja (o tamanho vem de
+   *  "Criar o mapa"; ligue a borda ESPELHADA no outro mapa também). */
   function rpgConnectEdge(side, map) {
     var s = text(side, '');
     var k = text(map, '');
@@ -5954,6 +6055,10 @@ export const gameKitRuntime = `(function () {
       return;
     }
     if (!k) return;
+    if (!rpg.maps[k]) {
+      warnOnce('edgemap:' + k, 'a borda aponta para o mapa "' + k + '", mas ele não foi criado');
+      return;
+    }
     rpg.edges[s] = k;
   }
   function rpgCurrentMap() {
@@ -5976,6 +6081,7 @@ export const gameKitRuntime = `(function () {
     who.x = ncx * tilePx;
     who.y = ncy * tilePx;
     who._gridDest = null;
+    rpgEnsureHeroSafe('borda-' + side);
   }
   // Gatilho ao PISAR numa célula (footstep cutscene do Pizza): roda quando o herói
   // ENCAIXA nessa célula. Encontros aleatórios, armadilhas, cenas automáticas.
@@ -6432,7 +6538,7 @@ export const gameKitRuntime = `(function () {
     b.message = (f ? f.name : text(name, 'O inimigo')) + ' atingiu TODO o time!';
   }
   // Ensinar é IDEMPOTENTE: um golpe com o MESMO nome REPÕE o anterior em vez de
-  // empilhar — assim re-ensinar no "quando entrar em jogando" (a cada "Jogar de novo")
+  // empilhar — assim re-ensinar no onGameStart (a cada "Jogar de novo")
   // não duplica os golpes, agora que eles PERSISTEM (ver rpgNewGame).
   function teachMoveTo(k, mv) {
     if (!rpg.movesByName[k]) rpg.movesByName[k] = [];
@@ -7085,6 +7191,10 @@ export const gameKitRuntime = `(function () {
     showScreen: guard('showScreen', showScreen),
     hideScreens: guard('hideScreens', hideScreens),
     setState: guard('setState', setState),
+    restartGame: guard('restartGame', restartGame),
+    onGameStart: guard('onGameStart', function (fn) {
+      if (typeof fn === 'function') gameStartHooks.push(fn);
+    }),
     onEnterState: guard('onEnterState', function (name, fn) {
       var key = text(name, '');
       if (!key || typeof fn !== 'function') return;
@@ -7198,10 +7308,10 @@ export const gameKitRuntime = `(function () {
     rpgDrawInventory: guard('rpgDrawInventory', rpgDrawInventory),
     rpgGoMap: guard('rpgGoMap', rpgGoMap),
     rpgSetStartMap: guard('rpgSetStartMap', rpgSetStartMap),
-    rpgOnMap: guard('rpgOnMap', rpgOnMap),
+    rpgCreateMap: guard('rpgCreateMap', rpgCreateMap),
+    rpgOnEnterMap: guard('rpgOnEnterMap', rpgOnEnterMap),
     rpgCreateDoor: guard('rpgCreateDoor', rpgCreateDoor),
-    // ----- 🌍 Mundo aberto (tamanho do mapa + bordas ligadas) -----
-    rpgMapSize: guard('rpgMapSize', rpgMapSize),
+    // ----- 🌍 Mundo aberto (bordas ligadas; tamanho vem da criação) -----
     rpgConnectEdge: guard('rpgConnectEdge', rpgConnectEdge),
     rpgCurrentMap: guard('rpgCurrentMap', rpgCurrentMap),
     rpgBattleStats: guard('rpgBattleStats', rpgBattleStats),
@@ -7256,7 +7366,7 @@ export const gameKitRuntime = `(function () {
       var k = text(mold, '');
       if (!k) return;
       // Dedupe por molde: re-ligar SUBSTITUI o intervalo (senão o bloco dentro de
-      // "quando entrar em jogando" DOBRAVA a taxa a cada "Jogar de novo").
+      // onGameStart DOBRAVA a taxa a cada "Jogar de novo").
       for (var i = 0; i < spawners.length; i++) {
         if (spawners[i].mold === k) {
           spawners[i].interval = Math.max(0.05, num(seconds, 1.5));
@@ -7508,13 +7618,13 @@ export const gameKitRuntime = `(function () {
     playTone: guard('playTone', playTone)
   };
 
-  // Espelho SÓ-LEITURA da batalha em equipe para os testes dirigirem o painel de
-  // ação sem enxergar o estado interno. NÃO-enumerável: fora do Object.keys(api),
-  // então não conta como "método" nem vira bloco (invisível para o jogo da criança).
-  try {
-    Object.defineProperty(api, '_battle', {
-      enumerable: false,
-      value: function () {
+  // Diagnóstico opt-in do HOST: o Estúdio e seus harnesses podem fornecer um
+  // registro separado para inspecionar o runtime. Nada é acrescentado à API da
+  // criança, e num projeto/export comum esse objeto nem existe.
+  var runtimeInspectors = window.__SZSTUDIO_RUNTIME_INSPECTORS;
+  if (runtimeInspectors && typeof runtimeInspectors === 'object') {
+    try {
+      runtimeInspectors['game-2d-advanced:battle'] = function () {
         var b = rpg.battle;
         if (!b) return null;
         function snap(c) { return { name: c.name, side: c.side, hp: c.hp, max: c.max, energy: c.energy, alive: c.alive, poison: c.poison, regen: c.regen, str: c.str, def: c.def, moves: c.moves.length, boss: !!c.boss, image: c.image, color: c.color }; }
@@ -7531,9 +7641,9 @@ export const gameKitRuntime = `(function () {
           target: b.target ? b.target.name : '',
           allies: allies, foes: foes
         };
-      }
-    });
-  } catch (e) {}
+      };
+    } catch (e) {}
+  }
 
   window.SZGameKit = api;
 })();

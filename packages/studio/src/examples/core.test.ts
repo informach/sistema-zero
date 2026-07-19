@@ -1,15 +1,40 @@
 import { describe, expect, it } from 'bun:test'
-import { compileStatements } from '#generators'
+import { compileStatements, generateJS } from '#generators'
 import { SZIRSchema } from '#ir'
 import {
   CORE_EXAMPLES,
   defesaDaTorreNaMaoExample,
   dueloNaMaoExample,
+  folioCanvasProceduralExample,
   gorilasNaMaoExample,
   invadersNaMaoExample,
   plataformaVerticalNaMaoExample,
   portasDoCasteloNaMaoExample,
 } from './core'
+
+describe('CORE_EXAMPLES — Folio 3D procedural (Canvas 3D sem extensão)', () => {
+  it('é válido, asset-free e usa apenas IR nativa', () => {
+    expect(CORE_EXAMPLES).toContain(folioCanvasProceduralExample)
+    expect(folioCanvasProceduralExample.ir.extensions).toEqual([])
+    expect(folioCanvasProceduralExample.assets ?? []).toEqual([])
+    expect(SZIRSchema.safeParse(folioCanvasProceduralExample.ir).success).toBe(true)
+
+    const types = collectTypes(folioCanvasProceduralExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('terrainSetup')).toBe(true)
+    expect(types.has('roadSetup')).toBe(true)
+    expect(types.has('buildingSetup')).toBe(true)
+    expect(types.has('physicsLiteSetup')).toBe(true)
+  })
+
+  it('gera Three.js e o kernel próprio sem Rapier/WASM', () => {
+    const code = generateJS({ statements: folioCanvasProceduralExample.ir.js })
+    expect(code).toContain("import * as THREE from 'three'")
+    expect(code).toContain('function createSZPhysicsLite')
+    expect(code).not.toContain('Rapier')
+    expect(code).not.toContain('WebAssembly')
+  })
+})
 
 function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string> {
   if (Array.isArray(value)) for (const item of value) collectTypes(item, out)

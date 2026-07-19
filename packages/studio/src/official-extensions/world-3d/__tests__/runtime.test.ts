@@ -24,6 +24,21 @@ interface Api {
   carPos: (a?: unknown) => number
   carSpeed: () => number
   carBoost: (force?: unknown) => unknown
+  district: (kind?: unknown, x?: unknown, z?: unknown, size?: unknown) => unknown
+  roadGrid: (layout?: unknown, x?: unknown, z?: unknown, size?: unknown, width?: unknown) => unknown
+  houseRow: (
+    n?: unknown,
+    x1?: unknown,
+    z1?: unknown,
+    x2?: unknown,
+    z2?: unknown,
+    style?: unknown,
+  ) => unknown
+  quality: (mode?: unknown) => unknown
+  inventoryGive: (item?: unknown, n?: unknown) => number | undefined
+  inventoryRemove: (item?: unknown, n?: unknown) => number | undefined
+  inventoryCount: (item?: unknown) => number
+  inventoryHas: (item?: unknown, n?: unknown) => boolean
   engineSound: (on?: unknown) => unknown
   loadSound: (name?: unknown, asset?: unknown) => unknown
   playSound: (name?: unknown) => unknown
@@ -98,6 +113,14 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
       'car',
       'carStats',
       'carBoost',
+      'district',
+      'roadGrid',
+      'houseRow',
+      'quality',
+      'inventoryGive',
+      'inventoryRemove',
+      'inventoryCount',
+      'inventoryHas',
       'engineSound',
       'carPlace',
       'carPos',
@@ -164,6 +187,21 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
     expect(api.worldSize()).toBe(40)
     api.setup({ style: 'praia', world: 9999 })
     expect(api.worldSize()).toBe(600)
+  })
+
+  it('macros v4 anotam cidade sem Three e o inventário nunca fica negativo', () => {
+    const api = boot()
+
+    expect(() => api.roadGrid('grade', 0, 0, 80, 6)).not.toThrow()
+    expect(() => api.district('educacao', 20, 10, 48)).not.toThrow()
+    expect(() => api.houseRow(8, -30, 15, 30, 15, 'coloridas')).not.toThrow()
+    expect(() => api.quality('desempenho')).not.toThrow()
+
+    expect(api.inventoryGive('madeira', 3)).toBe(3)
+    expect(api.inventoryRemove('madeira', 1)).toBe(2)
+    expect(api.inventoryHas('madeira', 2)).toBe(true)
+    expect(api.inventoryRemove('madeira', 99)).toBe(0)
+    expect(api.inventoryCount('madeira')).toBe(0)
   })
 
   it('groundHeight: determinístico, e o centro do mundo é PLANO (spawn em paz)', () => {

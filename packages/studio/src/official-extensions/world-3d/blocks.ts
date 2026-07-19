@@ -2046,6 +2046,158 @@ export const world3DBlocks = [
     tooltip:
       'Dois postes e um fio de luzinhas penduradas entre eles (elas acendem quando escurece). Faça um caminho de festa ou decore a sua praça!',
   },
+  {
+    type: 'sz_w3d_district',
+    message0: 'Construir um distrito %1 🏘️ no centro x %2 z %3',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'KIND',
+        options: [
+          ['residencial', 'residencial'],
+          ['comercial', 'comercial'],
+          ['educação', 'educacao'],
+          ['saúde', 'saude'],
+          ['industrial', 'industrial'],
+          ['turístico', 'turistico'],
+        ],
+      },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+    ],
+    message1: 'com %1 metros de largura',
+    args1: [{ type: 'input_value', name: 'SIZE', check: 'JSValue' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria um bairro inteiro só com primitivas do Three.js. Prédios, detalhes e árvores são agrupados com instancing para manter poucos desenhos na placa de vídeo.',
+  },
+  {
+    type: 'sz_w3d_road_grid',
+    message0: 'Criar ruas %1 🛣️ no centro x %2 z %3',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'LAYOUT',
+        options: [
+          ['em grade', 'grade'],
+          ['radiais', 'radial'],
+          ['orgânicas', 'organica'],
+        ],
+      },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+    ],
+    message1: 'ocupando %1 metros · largura %2',
+    args1: [
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
+      { type: 'input_value', name: 'WIDTH', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha uma rede de ruas procedurais e aplaina os corredores do terreno. Grade serve para cidade, radial para praça e orgânica para vila ou parque.',
+  },
+  {
+    type: 'sz_w3d_house_row',
+    message0: 'Fazer %1 casas 🏠 de x %2 z %3 até x %4 z %5',
+    args0: [
+      { type: 'input_value', name: 'N', check: 'JSValue' },
+      { type: 'input_value', name: 'X1', check: 'JSValue' },
+      { type: 'input_value', name: 'Z1', check: 'JSValue' },
+      { type: 'input_value', name: 'X2', check: 'JSValue' },
+      { type: 'input_value', name: 'Z2', check: 'JSValue' },
+    ],
+    message1: 'estilo %1',
+    args1: [
+      {
+        type: 'field_dropdown',
+        name: 'STYLE',
+        options: [
+          ['coloridas', 'coloridas'],
+          ['praia', 'praia'],
+          ['modernas', 'modernas'],
+          ['campo', 'campo'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Monta uma rua de casas procedurais alinhadas entre dois pontos. Paredes, telhados, portas e janelas são instanciados.',
+  },
+  {
+    type: 'sz_w3d_quality',
+    message0: 'Usar qualidade %1 ⚡',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'MODE',
+        options: [
+          ['automática', 'automatica'],
+          ['visual alta', 'alta'],
+          ['desempenho', 'desempenho'],
+        ],
+      },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Automática mede o aparelho e reduz detalhes se necessário. Visual alta fixa os efeitos; desempenho reduz sombras, grama e resolução interna.',
+  },
+  {
+    type: 'sz_w3d_inventory_give',
+    message0: 'Dar %1 unidades do item %2 🎒',
+    args0: [
+      { type: 'input_value', name: 'N', check: 'JSValue' },
+      { type: 'field_input', name: 'ITEM', text: 'madeira' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Adiciona um item ao inventário do passeio e salva a quantidade neste projeto.',
+  },
+  {
+    type: 'sz_w3d_inventory_remove',
+    message0: 'Tirar %1 unidades do item %2 🎒',
+    args0: [
+      { type: 'input_value', name: 'N', check: 'JSValue' },
+      { type: 'field_input', name: 'ITEM', text: 'madeira' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Remove até a quantidade disponível, sem deixar o inventário negativo.',
+  },
+  {
+    type: 'sz_w3d_inventory_count',
+    message0: 'quantos %1 há no inventário',
+    args0: [{ type: 'field_input', name: 'ITEM', text: 'madeira' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Informa a quantidade salva desse item.',
+  },
+  {
+    type: 'sz_w3d_inventory_has',
+    message0: 'tem pelo menos %1 do item %2 ?',
+    args0: [
+      { type: 'input_value', name: 'N', check: 'JSValue' },
+      { type: 'field_input', name: 'ITEM', text: 'madeira' },
+    ],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Verdadeiro quando o inventário tem a quantidade pedida.',
+  },
 ]
 
 // ---- Sub-categorias da paleta (a ordem é a ordem de leitura da criança) ----
@@ -2091,7 +2243,15 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '🏙️ Cidade',
     colour: C,
-    types: ['sz_w3d_city', 'sz_w3d_traffic', 'sz_w3d_door', 'sz_w3d_string_lights'],
+    types: [
+      'sz_w3d_city',
+      'sz_w3d_district',
+      'sz_w3d_road_grid',
+      'sz_w3d_house_row',
+      'sz_w3d_traffic',
+      'sz_w3d_door',
+      'sz_w3d_string_lights',
+    ],
   },
   {
     name: '🌙 Lua & espaço',
@@ -2258,7 +2418,12 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_w3d_achievement',
       'sz_w3d_on_achievement',
       'sz_w3d_has_achievement',
+      'sz_w3d_inventory_give',
+      'sz_w3d_inventory_remove',
+      'sz_w3d_inventory_count',
+      'sz_w3d_inventory_has',
       'sz_w3d_minimap',
+      'sz_w3d_quality',
       'sz_w3d_on_update',
       'sz_w3d_key_down',
       'sz_w3d_key_pressed',
@@ -2341,6 +2506,23 @@ export const W3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   },
   sz_w3d_lighthouse: { X: numShadow(50), Z: numShadow(-40) },
   sz_w3d_city: { X: numShadow(0), Z: numShadow(0) },
+  sz_w3d_district: { X: numShadow(0), Z: numShadow(0), SIZE: numShadow(48) },
+  sz_w3d_road_grid: {
+    X: numShadow(0),
+    Z: numShadow(0),
+    SIZE: numShadow(80),
+    WIDTH: numShadow(6),
+  },
+  sz_w3d_house_row: {
+    N: numShadow(8),
+    X1: numShadow(-30),
+    Z1: numShadow(15),
+    X2: numShadow(30),
+    Z2: numShadow(15),
+  },
+  sz_w3d_inventory_give: { N: numShadow(1) },
+  sz_w3d_inventory_remove: { N: numShadow(1) },
+  sz_w3d_inventory_has: { N: numShadow(1) },
   sz_w3d_traffic: { N: numShadow(6) },
   sz_w3d_door: { X: numShadow(0), Z: numShadow(8), DEG: numShadow(0) },
   sz_w3d_crops: { N: numShadow(4), X: numShadow(0), Z: numShadow(20) },

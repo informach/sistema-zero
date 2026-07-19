@@ -1,4 +1,11 @@
 import type { ExtensionExample } from '#extensions'
+import {
+  coastalProceduralExample,
+  folioProceduralExample,
+  vocationProceduralExample,
+} from './referenceExamples'
+
+export { coastalProceduralExample, folioProceduralExample, vocationProceduralExample }
 
 /**
  * Exemplos da vitrine do Mundo 3D. A IR de cada um foi GERADA pelo parser real
@@ -2260,4 +2267,7 @@ export const world3DExamples: ExtensionExample[] = [
   vilaExample,
   luaExample,
   fazendinhaExample,
+  folioProceduralExample,
+  coastalProceduralExample,
+  vocationProceduralExample,
 ]

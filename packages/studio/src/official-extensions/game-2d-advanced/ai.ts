@@ -15,10 +15,10 @@ RECEITA CANÔNICA (ordem no ⚙️ Comportamento):
    · OU SZGameKit.setupFull({ background, accent }) — "ocupar a tela toda": SEM
      dimensões, o canvas preenche a viewport e config.w/h (width()/height())
      ACOMPANHAM a janela (centralize por eles, não por número fixo). Use UM dos dois.
-2. SZGameKit.loadImage("nome", "asset") / loadSound("nome", "asset")
+2. SZGameKit.loadImage("nome", "asset") (opcional: apelido/pré-carga) / loadSound
 3. SZGameKit.defineLook / defineMold / defineEffect / setMission — os DADOS
 4. const heroi = SZGameKit.createCharacter({ image, w, h, speed, color })
-5. SZGameKit.onEnterState("jogando", function () {…})       — reiniciar partida
+5. SZGameKit.onGameStart(function () {…})                   — preparar cada partida
 6. SZGameKit.startSpawner("molde", segundos)                — fábricas
 7. SZGameKit.onUpdate(function (dt) {…})                    — mecânica (só roda em "jogando")
 8. SZGameKit.on("aviso", function () {…})                   — reações desacopladas
@@ -32,12 +32,14 @@ API global injetada como window.SZGameKit:
 - start(): mostra a tela "carregando", espera imagens+sons (Promise.all), vai ao
   estado "menu" e liga o requestAnimationFrame. Chamar UMA vez, por último.
 - width() / height(): a resolução interna (use nas contas de limite/aleatório).
-- loadImage(nome, asset): registra p/ pré-carregamento; falhou → retângulo (nunca quebra).
+- loadImage(nome, asset): OPCIONAL; registra p/ pré-carregamento ou dá apelido.
+  Seletores de imagem já carregam o asset escolhido; falhou → fallback visível.
 - Estados: setState(nome) / state() / stateIs(nome) / pause() / resume() /
   returnToMenu() / endGame(). Fixos com comportamento automático: "menu",
   "jogando", "pausado", "fim" (derrota) e "vitoria" (missão cumprida) — telas
-  ligam sozinhas; update SÓ roda em "jogando". Entrar em "jogando" RECOMEÇA a
-  arena (recolhe enxames, zera missão/faíscas/i-frames). Estados INVENTADOS
+  ligam sozinhas; update SÓ roda em "jogando". setState só troca de estado e
+  preserva a partida. restartGame() limpa a partida e entra em "jogando";
+  onGameStart(fn) prepara cada partida nova. Estados INVENTADOS
   (ex.: "loja") valem: congelam o update e escondem as telas — mostre a sua com
   showScreen. onEnterState(nome, fn) roda fn a cada ENTRADA no estado.
 - Telas: setScreenText("menu"|"pausa"|"carregando"|"fim"|"vitoria", titulo,
@@ -104,7 +106,7 @@ API global injetada como window.SZGameKit:
   playTone(freqHz, ms) synth cru. Áudio "acorda" no 1º gesto (clique/tecla) —
   automático.
 - 🎞️ Folha de quadros (em 🎨 Aparência): setSheet(c, "imagem", fw, fh) cola a spritesheet
-  (carregada por loadImage) no personagem; playAnim(c, de, até, fps) toca a
+  (o seletor carrega automaticamente) no personagem; playAnim(c, de, até, fps) toca a
   faixa em loop — PODE rodar todo quadro (guarda de transição: repetir a mesma
   não reinicia). A folha VENCE a imagem estática no desenho.
 - 🎥 Câmera: cameraFollow(c, mundoW, mundoH) liga o mundo maior (onDraw vira
@@ -124,7 +126,7 @@ API global injetada como window.SZGameKit:
 - 📊 drawBar(atual, max, x, y, w, h, cor): barra proporcional (vida/mana/
   progresso) — ideal dentro do onDrawHud.
 - 👾 Kit Monstrinhos (o gênero "pegue e treine bichinhos"). ⭐ TESE: é um jogo do
-  Kit RPG com OUTRA batalha — o mundo (rpgMoveGrid/NPC/rpgSay/rpgOnMap/flags/
+  Kit RPG com OUTRA batalha — o mundo (rpgMoveGrid/NPC/rpgSay/rpgCreateMap/flags/
   rpgSave) vem de lá; NÃO duplique nada disso. Dados: pkmCreature(nome, tipo, vida,
   força, defesa, veloc, imagem, aparência) — os pontos são do NÍVEL 1 (+8 vida/+2
   força/+1 def por nível); ⭐ o TIPO é TEXTO LIVRE (fogo, gelo, doce, dinossauro —
@@ -139,15 +141,16 @@ API global injetada como window.SZGameKit:
   pkmLevelOf/pkmDrawTeam(x, y). Encontros: pkmGrassCells(x1,y1,x2,y2) ou
   pkmGrassTiles(peça, mapa) + pkmWild(espécie, min, max) (um por bicho = a tabela) +
   pkmEncounterRate(%) — ⭐ o sorteio é por PASSO do rpgMoveGrid (não por quadro).
-  Monte tudo no rpgOnMap e cada rota ganha os bichos dela. Batalha:
+  Monte grama, bichos e NPCs no rpgOnEnterMap e cada rota ganha os seus. Batalha:
   pkmBattleWild(espécie, nível) (o lendário/cena; a grama chama sozinha) ·
   pkmBattleTrainer(nome, fn) + pkmTrainerCreature(espécie, nível) DENTRO (rival/
   ginásio: troca sozinho, sem bola nem fuga) · pkmCaught(). ⭐ REUSE
   rpgOnBattleEnd/rpgBattleWon (é o MESMO conceito — não existe pkmOnBattleEnd). O
   XP/nível/evolução são automáticos e ANUNCIADOS; o rpgSave leva o time junto.
   ⚠️ Um kit OU o outro: pkmBattleWild com a batalha do Kit RPG aberta avisa e sai.
-  Padrão canônico: rpgOnMap("rota") → rpgBlockCell/rpgCreateNpc/pkmGrassCells/
-  pkmWild; rpgOnTalk("professora") → pkmGive+pkmGiveBall; rpgOnTalk("enfermeira") →
+  Padrão canônico: rpgCreateMap("rota", cols, rows, ctx => desenho) declara o
+  visual; rpgOnEnterMap("rota") → rpgBlockCell/rpgCreateNpc/pkmGrassCells/pkmWild;
+  rpgOnTalk("professora") → pkmGive+pkmGiveBall; rpgOnTalk("enfermeira") →
   pkmHealTeam; rpgOnBattleEnd → "se pkmCaught() e pkmTeamSize() >= 3: vitoria".
 - 🧙 Kit RPG (Canvas RPG Kit em blocos; mecânicas PRONTAS sobre o mesmo motor):
   rpgMoveGrid(heroi, cellPx, dt) — andar por CÉLULAS c/ paredes, portas e o
@@ -158,12 +161,14 @@ API global injetada como window.SZGameKit:
   "fala:terminada"); rpgAddFlag/rpgHasFlag (story flags — conversa condicionada);
   rpgGiveItem(nome, img)/rpgHasItem/rpgRemoveItem/rpgDrawInventory(x, y);
   rpgSetStartMap(nome) escolhe explicitamente o mapa de início/recomeço;
-  rpgOnMap(nome, fn) monta o mapa (sem rpgSetStartMap, o 1º registrado segue
-  como fallback legado; trocar limpa paredes/NPCs/portas e REMONTA — reposicione
-  o herói na montagem; nome inexistente avisa e cai no 1º mapa válido) +
+  rpgCreateMap(nome, cols, rows, fn(ctx)) declara tamanho e desenho autoral
+  (formas vetoriais, Pinta ou imagem); rpgOnEnterMap(nome, fn) define APENAS o
+  comportamento de entrada. Sem rpgSetStartMap, o 1º mapa criado é o fallback;
+  trocar limpa paredes/NPCs/portas e roda o evento — reposicione o herói nele;
+  nome inexistente avisa e cai no 1º mapa válido. Viagem:
   rpgGoMap(nome) + rpgCreateDoor(cx, cy, mapa); MUNDO ABERTO estilo Zelda:
-  DENTRO do rpgOnMap declare rpgMapSize(cols, rows) (trava da câmera + a borda
-  vira fim do mundo) e rpgConnectEdge("leste"|"oeste"|"norte"|"sul", "mapa") —
+  o tamanho de rpgCreateMap trava a câmera e faz a borda virar fim do mundo;
+  dentro de rpgOnEnterMap use rpgConnectEdge("leste"|"oeste"|"norte"|"sul", "mapa") —
   atravessou, entra no vizinho pelo lado oposto na MESMA linha (declare a borda
   espelhada NOS DOIS mapas; sai o aviso "mapa:<nome>"); rpgCurrentMap() = o nome
   do mapa de agora ("se = praia → música da praia"); batalha por TURNOS com menu
@@ -171,16 +176,16 @@ API global injetada como window.SZGameKit:
   (Atacar = força ± 20%, Defender = ½ do próximo dano, Fugir = 50%; o mundo
   congela SEM resetar) + rpgOnBattleEnd(fn) + rpgBattleWon(). Padrão canônico:
   no onTalk do chefe → rpgBattleStart; no rpgOnBattleEnd → "se ganhei:
-  setState('vitoria') senão endGame()". Recomeçar o jogo zera flags/itens e
-  volta ao 1º mapa.
+  setState('vitoria') senão endGame()". restartGame() zera flags/itens e volta
+  ao mapa escolhido por rpgSetStartMap (ou ao primeiro mapa no projeto legado).
 - 🎬 cenas (& NPCs vivos — Pizza Legends): rpgCutscene(fn) grava o corpo (cada
   passo ENFILEIRA) e toca a fila com esperas — o herói fica TRAVADO até acabar.
   Passos: rpgWait(seg), rpgSay, rpgNpcWalkTo("npc", cx, cy) (anda célula a
   célula; a cena espera chegar), rpgFace("npc", "down"|"up"|"left"|"right"),
   rpgAddFlag, rpgGoMap, rpgBattleStart — na ordem montada. Fora de cena:
   rpgNpcWander("npc") (mila pela vila) e rpgOnStep(cx, cy, fn) (roda ao herói
-  PISAR na célula — encontros/armadilhas/cenas automáticas; montar no rpgOnMap).
-  Abertura única: no rpgOnMap, "se NÃO tem a flag intro: rpgCutscene(...);
+  PISAR na célula — encontros/armadilhas/cenas automáticas; montar no rpgOnEnterMap).
+  Abertura única: no rpgOnEnterMap, "se NÃO tem a flag intro: rpgCutscene(...);
   rpgAddFlag('intro')". Reserva de intenção: herói e NPC não entram na mesma
   célula. setWalkSheet(c, "folha", fw, fh) = folha de ANDAR de 4 linhas
   (baixo/cima/esquerda/direita) animada pela direção + movimento.
@@ -510,8 +515,8 @@ API global injetada como window.SZGameKit:
 REGRAS DE OURO ao gerar código:
 - Velocidade SEMPRE × dt (px/segundo), nunca px/quadro.
 - onDraw: começar com drawBackground e desenhar TUDO de novo (o quadro zera).
-- Reinício de partida vive em onEnterState("jogando") — os botões
-  "Jogar"/"Jogar de novo" das telas prontas funcionam sem código extra.
+- Preparação de partida vive em onGameStart. Botões "Jogar"/"Jogar de novo"
+  chamam restartGame(); onEnterState serve para reagir à entrada sem apagar dados.
 - start() é a ÚLTIMA linha. setup() a primeira. defineMold/defineLook/
   defineEffect/setMission ANTES do start.
 - Posição aleatória: Math.random() * (SZGameKit.width() - larguraDoPersonagem).

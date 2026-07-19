@@ -11,10 +11,11 @@ import type { BlockLevel } from '#core'
  * - **Iniciante 3D** = a PORTA DE ENTRADA do 3D: os facilitadores do Jogo 3D
  *   (`sz_g3d_*` não-avançados) — piso por prefixo.
  * - **Intermediário 2D** = programação "real" guiada (variáveis avulsas, laços,
- *   funções, getters/setters, desenho manual, matemática básica) + Jogo 2D Avançado.
+ *   funções, getters/setters, desenho manual, matemática básica) + caminho feliz
+ *   e kits de gênero do Jogo 2D Avançado.
  * - **Intermediário 3D** = Mundo 3D (mundo aberto dirigível, blocos "mágicos").
  * - **Avançado 2D** = baixo nível / expert em 2D (classes/OOP, objetos, código
- *   cru, física manual, trigonometria, vetores, dados).
+ *   cru, física manual, trigonometria, vetores, dados e peças internas de motor).
  * - **Avançado 3D** = engine de verdade: getters/física do Jogo 3D, Jogo 3D
  *   Avançado (`sz_g3k_*`) e Canvas 3D three.js cru (`sz_t3d_*`).
  *
@@ -329,6 +330,87 @@ const AVANCADO_2D: ReadonlySet<string> = new Set<string>([
   'sz_g2d_draw_hitbox',
   'sz_g2d_show_fps',
   'sz_g2d_play_sound',
+  // ── Jogo 2D Avançado — peças de MOTOR, não os kits prontos ───────────────
+  // O caminho feliz e os kits de gênero continuam no intermediário. Este
+  // recorte evita despejar pooling, estruturas e física manual junto dos
+  // primeiros blocos de preparar/personagem/mapa.
+  'sz_gk_property_of',
+  'sz_gk_set_property',
+  'sz_gk_set_hitbox',
+  'sz_gk_angle_of',
+  'sz_gk_angle_to',
+  'sz_gk_on_event',
+  'sz_gk_emit',
+  'sz_gk_define_mold',
+  'sz_gk_spawn_from_mold',
+  'sz_gk_spawn_named',
+  'sz_gk_start_spawner',
+  'sz_gk_stop_spawner',
+  'sz_gk_for_each_active',
+  'sz_gk_cull_offscreen',
+  'sz_gk_recycle',
+  'sz_gk_draw_active',
+  'sz_gk_count_active',
+  'sz_gk_nearest_active',
+  'sz_gk_launch_towards',
+  'sz_gk_move_by_velocity',
+  'sz_gk_launch_to_point',
+  'sz_gk_set_velocity_angle',
+  'sz_gk_fan_shot',
+  'sz_gk_tween_to',
+  'sz_gk_camera_x',
+  'sz_gk_camera_y',
+  'sz_gk_set_tile_size',
+  'sz_gk_tile_at',
+  'sz_gk_set_tile_at',
+  'sz_gk_break_tile_at',
+  'sz_gk_create_empty_tilemap',
+  'sz_gk_define_path',
+  'sz_gk_path_point',
+  'sz_gk_follow_path',
+  'sz_gk_path_progress',
+  'sz_gk_apply_gravity',
+  'sz_gk_jump',
+  'sz_gk_is_on_ground',
+  'sz_gk_set_velocity',
+  'sz_gk_velocity_of',
+  'sz_gk_set_terminal_velocity',
+  'sz_gk_thrust',
+  'sz_gk_apply_friction',
+  'sz_gk_bounce_on_edges',
+  'sz_gk_paddle_bounce',
+  'sz_gk_wrap_edges',
+  'sz_gk_collide_tilemap',
+  'sz_gk_collide_group',
+  'sz_gk_overlap_groups',
+  'sz_gk_board_create',
+  'sz_gk_board_set',
+  'sz_gk_board_get',
+  'sz_gk_board_count',
+  'sz_gk_board_in',
+  'sz_gk_card',
+  'sz_gk_pile_move_top',
+  'sz_gk_pile_shuffle_from',
+  'sz_gk_pile_top',
+  'sz_gk_pile_size',
+  'sz_gk_card_flip',
+  'sz_gk_card_is_up',
+  'sz_gk_card_face',
+  'sz_gk_hand_draw',
+  'sz_gk_card_at',
+  'sz_gk_every_seconds',
+  'sz_gk_cooldown_ready',
+  'sz_gk_define_region',
+  'sz_gk_is_inside',
+  'sz_gk_overlap_percent',
+  'sz_gk_chance',
+  'sz_gk_distance_between',
+  'sz_gk_point_in',
+  'sz_gk_random_active',
+  'sz_gk_pick_active',
+  'sz_gk_opacity_of',
+  'sz_gk_fade_to',
+  'sz_gk_tween_property',
 ])
 
 // ── EXTENSÃO Jogo 3D — getters/manual/física: o lado ENGINE do kit 3D. Os
@@ -388,8 +470,8 @@ export function resolveBlockLevel(type: string): BlockLevel {
   // Jogo 3D é a PORTA DE ENTRADA do 3D: piso iniciante-3d por prefixo — os
   // facilitadores caem aqui (o lado engine já saiu no AVANCADO_3D acima).
   if (type.startsWith('sz_g3d_')) return G3D_FLOOR
-  // Jogo 2D Avançado: TODOS os blocos são intermediário-2d (decisão de produto —
-  // apesar do nome, é a ponte entre o Jogo 2D facilitado e o código puro).
+  // Jogo 2D Avançado: o caminho feliz e os kits são intermediário-2d; as peças
+  // internas de motor já foram separadas no AVANCADO_2D acima.
   if (type.startsWith('sz_gk_')) return 'intermediario-2d'
   // Jogo 3D Avançado: TODOS avançado-3d (decisão de produto — é a base de
   // engine profissional: FSM por entidade, pooling, grade espacial).

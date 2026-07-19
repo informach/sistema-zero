@@ -111,4 +111,39 @@ describe('game-2d-advanced — IR no schema', () => {
     expect(statementIsExtension(stmt, 'game-2d')).toBe(false)
     expect(statementIsExtension({ type: 'g2d:clear' }, 'game-2d-advanced')).toBe(false)
   })
+
+  it('impede comportamento dentro do desenho do mapa', () => {
+    const parsed = SZIRSchema.safeParse({
+      html: [],
+      css: [],
+      extensions: [{ extensionId: 'game-2d-advanced' }],
+      js: [
+        {
+          type: 'gk:rpgCreateMap',
+          map: 'vila',
+          cols: 10,
+          rows: 8,
+          ctxName: 'ctx',
+          body: [{ type: 'gk:rpgCreateNpc', name: 'guia', cx: 2, cy: 2, image: '', look: '' }],
+        },
+      ],
+    })
+    expect(parsed.success).toBe(false)
+  })
+
+  it('impede desenho dentro do evento de entrada do mapa', () => {
+    const parsed = SZIRSchema.safeParse({
+      html: [],
+      css: [],
+      extensions: [{ extensionId: 'game-2d-advanced' }],
+      js: [
+        {
+          type: 'gk:rpgOnEnterMap',
+          map: 'vila',
+          body: [{ type: 'gk:drawBackground', color: '#123456', grid: false }],
+        },
+      ],
+    })
+    expect(parsed.success).toBe(false)
+  })
 })

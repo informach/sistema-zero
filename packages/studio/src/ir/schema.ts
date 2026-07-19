@@ -361,6 +361,8 @@ export type JSExpr =
   | (JSExprCommon & { type: 'w3d:isDriving' })
   | (JSExprCommon & { type: 'w3d:coinCount' })
   | (JSExprCommon & { type: 'w3d:hasAchievement'; name: string })
+  | (JSExprCommon & { type: 'w3d:inventoryCount'; item: string })
+  | (JSExprCommon & { type: 'w3d:inventoryHas'; item: string; n: number | JSExpr })
   | (JSExprCommon & { type: 'w3d:keyDown'; key: string })
   | (JSExprCommon & { type: 'w3d:keyPressed'; key: string })
   | (JSExprCommon & { type: 'w3d:timeOfDay' })
@@ -886,6 +888,13 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('w3d:isDriving'), ...idField }),
     z.object({ type: z.literal('w3d:coinCount'), ...idField }),
     z.object({ type: z.literal('w3d:hasAchievement'), name: irText(), ...idField }),
+    z.object({ type: z.literal('w3d:inventoryCount'), item: irText(), ...idField }),
+    z.object({
+      type: z.literal('w3d:inventoryHas'),
+      item: irText(),
+      n: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
     z.object({ type: z.literal('w3d:keyDown'), key: irText(), ...idField }),
     z.object({ type: z.literal('w3d:keyPressed'), key: irText(), ...idField }),
     z.object({ type: z.literal('w3d:timeOfDay'), ...idField }),
@@ -2775,6 +2784,8 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'gk:showScreen'; name: string })
   | (JSStatementCommon & { type: 'gk:hideScreens' })
   | (JSStatementCommon & { type: 'gk:setState'; name: string })
+  | (JSStatementCommon & { type: 'gk:restartGame' })
+  | (JSStatementCommon & { type: 'gk:onGameStart'; body: JSStatement[] })
   | (JSStatementCommon & { type: 'gk:onEnterState'; name: string; body: JSStatement[] })
   | (JSStatementCommon & { type: 'gk:pause' })
   | (JSStatementCommon & { type: 'gk:resume' })
@@ -2872,19 +2883,22 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'gk:rpgGoMap'; map: string })
   | (JSStatementCommon & { type: 'gk:rpgSetStartMap'; map: string })
-  | (JSStatementCommon & { type: 'gk:rpgOnMap'; map: string; body: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'gk:rpgCreateMap'
+      map: string
+      cols: number | JSExpr
+      rows: number | JSExpr
+      ctxName: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & { type: 'gk:rpgOnEnterMap'; map: string; body: JSStatement[] })
   | (JSStatementCommon & {
       type: 'gk:rpgCreateDoor'
       cx: number | JSExpr
       cy: number | JSExpr
       map: string
     })
-  // 🌍 Mundo aberto: tamanho do mapa em células + bordas ligadas (estilo Zelda).
-  | (JSStatementCommon & {
-      type: 'gk:rpgMapSize'
-      cols: number | JSExpr
-      rows: number | JSExpr
-    })
+  // 🌍 Mundo aberto: bordas ligadas (estilo Zelda). O tamanho pertence à criação.
   | (JSStatementCommon & { type: 'gk:rpgConnectEdge'; side: string; map: string })
   | (JSStatementCommon & {
       type: 'gk:rpgBattleStats'
@@ -4279,6 +4293,33 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'w3d:traffic'; n: number | JSExpr; sem: string })
   | (JSStatementCommon & {
+      type: 'w3d:district'
+      kind: string
+      x: number | JSExpr
+      z: number | JSExpr
+      size: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:roadGrid'
+      layout: string
+      x: number | JSExpr
+      z: number | JSExpr
+      size: number | JSExpr
+      width: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'w3d:houseRow'
+      n: number | JSExpr
+      x1: number | JSExpr
+      z1: number | JSExpr
+      x2: number | JSExpr
+      z2: number | JSExpr
+      style: string
+    })
+  | (JSStatementCommon & { type: 'w3d:quality'; mode: string })
+  | (JSStatementCommon & { type: 'w3d:inventoryGive'; item: string; n: number | JSExpr })
+  | (JSStatementCommon & { type: 'w3d:inventoryRemove'; item: string; n: number | JSExpr })
+  | (JSStatementCommon & {
       type: 'w3d:door'
       x: number | JSExpr
       z: number | JSExpr
@@ -4608,6 +4649,110 @@ export type JSStatement =
       size: JSExpr
       color: JSExpr
     })
+  // Canvas 3D: receitas procedurais com primitivas. São macros forward-only que
+  // expandem para Three.js legível e não dependem de extensão/runtime externo.
+  | (JSStatementCommon & {
+      type: 'primitiveSetup'
+      mesh: string
+      scene: string
+      shape: 'box' | 'sphere' | 'cylinder' | 'cone' | 'capsule'
+      width: JSExpr
+      height: JSExpr
+      depth: JSExpr
+      color: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'terrainSetup'
+      terrain: string
+      scene: string
+      heightFunction: string
+      size: JSExpr
+      segments: JSExpr
+      hills: JSExpr
+      smooth: JSExpr
+      color: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'roadSetup'
+      road: string
+      scene: string
+      x1: JSExpr
+      z1: JSExpr
+      x2: JSExpr
+      z2: JSExpr
+      width: JSExpr
+      color: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'buildingSetup'
+      building: string
+      scene: string
+      x: JSExpr
+      z: JSExpr
+      width: JSExpr
+      height: JSExpr
+      depth: JSExpr
+      color: JSExpr
+      roofColor: JSExpr
+    })
+  // Canvas 3D: fachada de blocos para o kernel físico próprio. O gerador injeta
+  // a implementação somente quando encontra `physicsLiteSetup`.
+  | (JSStatementCommon & {
+      type: 'physicsLiteSetup'
+      world: string
+      heightFunction: string
+      gravity: JSExpr
+      maxSubSteps: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'physicsLiteStaticBox'
+      world: string
+      id: string
+      x: JSExpr
+      y: JSExpr
+      z: JSExpr
+      width: JSExpr
+      height: JSExpr
+      depth: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'physicsLiteBody'
+      world: string
+      object: string
+      id: string
+      kind: 'character' | 'dynamic'
+      width: JSExpr
+      height: JSExpr
+      depth: JSExpr
+      friction: JSExpr
+      bounce: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'physicsLiteMove'
+      world: string
+      id: string
+      x: JSExpr
+      z: JSExpr
+      speed: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'physicsLiteJump'
+      world: string
+      id: string
+      speed: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'physicsLiteTrigger'
+      world: string
+      id: string
+      x: JSExpr
+      y: JSExpr
+      z: JSExpr
+      width: JSExpr
+      height: JSExpr
+      depth: JSExpr
+    })
+  | (JSStatementCommon & { type: 'physicsLiteStep'; world: string; dt: JSExpr })
   // Chamada de método como comando sobre qualquer objeto (object.metodo(args);).
   | (JSStatementCommon & { type: 'memberCall'; object: JSExpr; method: string; args: JSExpr[] })
   // Chamada do construtor da classe-mãe dentro do construtor filho (`super(args);`).
@@ -6576,6 +6721,12 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({ type: z.literal('gk:showScreen'), name: irText(), ...idField }),
     z.object({ type: z.literal('gk:hideScreens'), ...idField }),
     z.object({ type: z.literal('gk:setState'), name: irText(), ...idField }),
+    z.object({ type: z.literal('gk:restartGame'), ...idField }),
+    z.object({
+      type: z.literal('gk:onGameStart'),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
     z.object({
       type: z.literal('gk:onEnterState'),
       name: irText(),
@@ -6718,7 +6869,16 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({ type: z.literal('gk:rpgGoMap'), map: irText(), ...idField }),
     z.object({ type: z.literal('gk:rpgSetStartMap'), map: irText(), ...idField }),
     z.object({
-      type: z.literal('gk:rpgOnMap'),
+      type: z.literal('gk:rpgCreateMap'),
+      map: irText(),
+      cols: z.union([JSExprSchema, z.number()]),
+      rows: z.union([JSExprSchema, z.number()]),
+      ctxName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:rpgOnEnterMap'),
       map: irText(),
       body: z.array(JSStatementSchema),
       ...idField,
@@ -6728,12 +6888,6 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       cx: z.union([JSExprSchema, z.number()]),
       cy: z.union([JSExprSchema, z.number()]),
       map: irText(),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('gk:rpgMapSize'),
-      cols: z.union([JSExprSchema, z.number()]),
-      rows: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
@@ -8737,6 +8891,46 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('w3d:district'),
+      kind: z.string(),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      size: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:roadGrid'),
+      layout: z.string(),
+      x: z.union([z.number(), JSExprSchema]),
+      z: z.union([z.number(), JSExprSchema]),
+      size: z.union([z.number(), JSExprSchema]),
+      width: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:houseRow'),
+      n: z.union([z.number(), JSExprSchema]),
+      x1: z.union([z.number(), JSExprSchema]),
+      z1: z.union([z.number(), JSExprSchema]),
+      x2: z.union([z.number(), JSExprSchema]),
+      z2: z.union([z.number(), JSExprSchema]),
+      style: z.string(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('w3d:quality'), mode: z.string(), ...idField }),
+    z.object({
+      type: z.literal('w3d:inventoryGive'),
+      item: z.string(),
+      n: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('w3d:inventoryRemove'),
+      item: z.string(),
+      n: z.union([z.number(), JSExprSchema]),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('w3d:door'),
       x: z.union([z.number(), JSExprSchema]),
       z: z.union([z.number(), JSExprSchema]),
@@ -9185,6 +9379,121 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('primitiveSetup'),
+      mesh: irText(),
+      scene: irText(),
+      shape: z.enum(['box', 'sphere', 'cylinder', 'cone', 'capsule']),
+      width: JSExprSchema,
+      height: JSExprSchema,
+      depth: JSExprSchema,
+      color: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('terrainSetup'),
+      terrain: irText(),
+      scene: irText(),
+      heightFunction: irText(),
+      size: JSExprSchema,
+      segments: JSExprSchema,
+      hills: JSExprSchema,
+      smooth: JSExprSchema,
+      color: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('roadSetup'),
+      road: irText(),
+      scene: irText(),
+      x1: JSExprSchema,
+      z1: JSExprSchema,
+      x2: JSExprSchema,
+      z2: JSExprSchema,
+      width: JSExprSchema,
+      color: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('buildingSetup'),
+      building: irText(),
+      scene: irText(),
+      x: JSExprSchema,
+      z: JSExprSchema,
+      width: JSExprSchema,
+      height: JSExprSchema,
+      depth: JSExprSchema,
+      color: JSExprSchema,
+      roofColor: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('physicsLiteSetup'),
+      world: irText(),
+      heightFunction: irText(),
+      gravity: JSExprSchema,
+      maxSubSteps: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('physicsLiteStaticBox'),
+      world: irText(),
+      id: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      z: JSExprSchema,
+      width: JSExprSchema,
+      height: JSExprSchema,
+      depth: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('physicsLiteBody'),
+      world: irText(),
+      object: irText(),
+      id: irText(),
+      kind: z.enum(['character', 'dynamic']),
+      width: JSExprSchema,
+      height: JSExprSchema,
+      depth: JSExprSchema,
+      friction: JSExprSchema,
+      bounce: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('physicsLiteMove'),
+      world: irText(),
+      id: irText(),
+      x: JSExprSchema,
+      z: JSExprSchema,
+      speed: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('physicsLiteJump'),
+      world: irText(),
+      id: irText(),
+      speed: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('physicsLiteTrigger'),
+      world: irText(),
+      id: irText(),
+      x: JSExprSchema,
+      y: JSExprSchema,
+      z: JSExprSchema,
+      width: JSExprSchema,
+      height: JSExprSchema,
+      depth: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('physicsLiteStep'),
+      world: irText(),
+      dt: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
       type: z.literal('memberCall'),
       object: JSExprSchema,
       method: irText(),
@@ -9349,13 +9658,64 @@ export interface SZIR {
   htmlShell?: HTMLShell
 }
 
-export const SZIRSchema = z.object({
-  html: z.array(HTMLNodeSchema),
-  css: z.array(CSSEntrySchema),
-  js: z.array(JSStatementSchema),
-  extensions: z.array(ExtensionUsageSchema),
-  htmlShell: HTMLShellSchema.optional(),
-})
+const GK_MAP_VISUAL_STATEMENTS = new Set(['gk:drawBackground', 'gk:drawTilemap'])
+
+function findNestedType(value: unknown, forbidden: (type: string) => boolean): string | undefined {
+  if (Array.isArray(value)) {
+    for (const child of value) {
+      const found = findNestedType(child, forbidden)
+      if (found) return found
+    }
+    return undefined
+  }
+  if (typeof value !== 'object' || value === null) return undefined
+  if ('type' in value && typeof value.type === 'string' && forbidden(value.type)) return value.type
+  for (const child of Object.values(value)) {
+    const found = findNestedType(child, forbidden)
+    if (found) return found
+  }
+  return undefined
+}
+
+export const SZIRSchema = z
+  .object({
+    html: z.array(HTMLNodeSchema),
+    css: z.array(CSSEntrySchema),
+    js: z.array(JSStatementSchema),
+    extensions: z.array(ExtensionUsageSchema),
+    htmlShell: HTMLShellSchema.optional(),
+  })
+  .superRefine((ir, ctx) => {
+    for (let index = 0; index < ir.js.length; index += 1) {
+      const statement = ir.js[index]
+      if (statement?.type === 'gk:rpgCreateMap') {
+        const forbidden = findNestedType(
+          statement.body,
+          (type) => GK_STATEMENT_TYPES.has(type) && !GK_MAP_VISUAL_STATEMENTS.has(type),
+        )
+        if (forbidden) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['js', index, 'body'],
+            message: `“Criar o mapa” aceita somente desenho; mova ${forbidden} para “Quando entrar no mapa”`,
+          })
+        }
+      }
+      if (statement?.type === 'gk:rpgOnEnterMap') {
+        const forbidden = findNestedType(
+          statement.body,
+          (type) => GK_MAP_VISUAL_STATEMENTS.has(type) || type.startsWith('canvas'),
+        )
+        if (forbidden) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['js', index, 'body'],
+            message: `“Quando entrar no mapa” aceita somente comportamento; mova ${forbidden} para “Criar o mapa”`,
+          })
+        }
+      }
+    }
+  })
 
 export function isAdvancedHTML(node: HTMLNode): node is Extract<HTMLNode, { type: 'rawHTML' }> {
   return node.type === 'rawHTML'
@@ -9624,6 +9984,8 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:showScreen',
   'gk:hideScreens',
   'gk:setState',
+  'gk:restartGame',
+  'gk:onGameStart',
   'gk:onEnterState',
   'gk:pause',
   'gk:resume',
@@ -9654,9 +10016,9 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:rpgDrawInventory',
   'gk:rpgGoMap',
   'gk:rpgSetStartMap',
-  'gk:rpgOnMap',
+  'gk:rpgCreateMap',
+  'gk:rpgOnEnterMap',
   'gk:rpgCreateDoor',
-  'gk:rpgMapSize',
   'gk:rpgConnectEdge',
   'gk:rpgBattleStats',
   'gk:rpgBattleStart',
@@ -10037,6 +10399,12 @@ export const W3D_STATEMENT_TYPES = new Set([
   'w3d:city',
   'w3d:stringLights',
   'w3d:traffic',
+  'w3d:district',
+  'w3d:roadGrid',
+  'w3d:houseRow',
+  'w3d:quality',
+  'w3d:inventoryGive',
+  'w3d:inventoryRemove',
   'w3d:door',
   'w3d:npcAsk',
   'w3d:crops',

@@ -20,6 +20,31 @@ function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string>
   return out
 }
 
+function collectRpgMaps(
+  value: unknown,
+  created: Set<string> = new Set(),
+  referenced: Set<string> = new Set(),
+): { created: Set<string>; referenced: Set<string> } {
+  if (Array.isArray(value)) {
+    for (const item of value) collectRpgMaps(item, created, referenced)
+  } else if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>
+    if (record.type === 'gk:rpgCreateMap' && typeof record.map === 'string') {
+      created.add(record.map)
+      expect(Array.isArray(record.body) && record.body.length > 0).toBe(true)
+    } else if (
+      ['gk:rpgOnEnterMap', 'gk:rpgSetStartMap', 'gk:rpgGoMap', 'gk:rpgCreateDoor'].includes(
+        String(record.type),
+      ) &&
+      typeof record.map === 'string'
+    ) {
+      referenced.add(record.map)
+    }
+    for (const item of Object.values(record)) collectRpgMaps(item, created, referenced)
+  }
+  return { created, referenced }
+}
+
 function catalogEntries(): KitEntry[] {
   return buildKitGroups().flatMap((group) => group.entries)
 }
@@ -31,7 +56,7 @@ beforeAll(() => {
   }
 })
 
-describe('contrato transversal dos 63 exemplos da KitGallery', () => {
+describe('contrato transversal dos 67 exemplos da KitGallery', () => {
   it('catálogo e contratos têm exatamente as mesmas chaves', () => {
     const catalogKeys = catalogEntries()
       .map((entry) => entry.key)
@@ -39,14 +64,14 @@ describe('contrato transversal dos 63 exemplos da KitGallery', () => {
     const contractKeys = EXAMPLE_QA_CONTRACTS.map((contract) => contract.key).sort()
 
     expect(catalogKeys).toEqual(contractKeys)
-    expect(catalogKeys).toHaveLength(63)
-    expect(new Set(catalogKeys).size).toBe(63)
+    expect(catalogKeys).toHaveLength(67)
+    expect(new Set(catalogKeys).size).toBe(67)
   })
 
-  it('mantém a classificação acordada: 46 jogos, 9 demos e 8 explorações', () => {
+  it('mantém a classificação acordada: 46 jogos, 9 demos e 12 explorações', () => {
     const counts = { game: 0, demo: 0, exploration: 0 }
     for (const contract of EXAMPLE_QA_CONTRACTS) counts[contract.experience] += 1
-    expect(counts).toEqual({ game: 46, demo: 9, exploration: 8 })
+    expect(counts).toEqual({ game: 46, demo: 9, exploration: 12 })
   })
 
   const contractsByKey = new Map<string, ExampleQAContract>(
@@ -71,13 +96,16 @@ describe('contrato transversal dos 63 exemplos da KitGallery', () => {
       expect(types.has('rawHTML')).toBe(false)
       expect(types.has('rawCSS')).toBe(false)
 
-      const firstRpgMap = entry.ir.js.findIndex((statement) => statement.type === 'gk:rpgOnMap')
+      const firstRpgMap = entry.ir.js.findIndex((statement) => statement.type === 'gk:rpgCreateMap')
       if (firstRpgMap >= 0) {
         const explicitStart = entry.ir.js.findIndex(
           (statement) => statement.type === 'gk:rpgSetStartMap',
         )
         expect(explicitStart).toBeGreaterThanOrEqual(0)
         expect(explicitStart).toBeLessThan(firstRpgMap)
+
+        const maps = collectRpgMaps(entry.ir.js)
+        for (const referenced of maps.referenced) expect(maps.created.has(referenced)).toBe(true)
       }
 
       for (const extensionRef of entry.ir.extensions) {

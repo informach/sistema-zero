@@ -14,6 +14,13 @@ import { rewriteCssAssetUrlsToAssetNames } from '../preview/cssAssets'
 import { transpileExtra } from '../preview/transpile'
 import type { Minifiers } from './minify'
 import { buildProductionIndexHtml } from './productionHtml'
+import {
+  buildPwaRevision,
+  buildServiceWorker,
+  buildWebAppManifest,
+  PWA_ICON_SVG,
+  publicPathToUrl,
+} from './pwa'
 
 /** Mapa de arquivos em memória: caminho (com `/`) → conteúdo. Vira ZIP. */
 export type ExportFileMap = Record<string, string | Uint8Array>
@@ -177,7 +184,7 @@ export async function buildClassicFileMap(
   // carregadas da internet em tempo de execução do VISITANTE no site estático.
   if (usesEsmImports) {
     warnings.push(
-      'Este projeto usa uma biblioteca 3D carregada da internet (esm.sh); quem abrir o site publicado precisa estar online.',
+      'A primeira abertura deste projeto 3D precisa de internet para carregar a biblioteca (esm.sh). Depois disso, o PWA prepara os recursos usados para as próximas aberturas offline.',
     )
   }
 
@@ -223,6 +230,13 @@ export async function buildClassicFileMap(
     assetsScriptSrc,
   })
   files['public/index.html'] = minifiers.html(indexHtml)
+  files['public/manifest.webmanifest'] = buildWebAppManifest(project.name)
+  files['public/icon.svg'] = PWA_ICON_SVG
+
+  const precacheUrls = Object.keys(files)
+    .filter((path) => path.startsWith('public/') && path !== 'public/sw.js')
+    .map(publicPathToUrl)
+  files['public/sw.js'] = buildServiceWorker(precacheUrls, buildPwaRevision(files))
 
   return { files, warnings }
 }

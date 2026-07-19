@@ -1,6 +1,6 @@
 import type { ExtensionDefinition } from '#extensions'
 import { validateManifest } from '#extensions'
-import { gameKitPromptContext } from './ai'
+import { gameKitPromptSummary } from './aiSummary'
 import { gameKitBlocks, gameKitToolboxCategory } from './blocks'
 import { gameKitManifest } from './manifest'
 import { gameKitRuntime } from './runtime'
@@ -11,9 +11,10 @@ validateManifest(gameKitManifest)
 
 export const gameKitExtension: ExtensionDefinition = {
   manifest: gameKitManifest,
-  // Decisão de produto (14/07/2026): apesar do NOME "Avançado", todos os blocos
-  // são nível INTERMEDIÁRIO 2D — a extensão é a ponte entre o Jogo 2D facilitado
-  // e o jogo 100% em código. O piso por prefixo sz_gk_ vive em blockLevels.ts.
+  conflictsWith: ['game-2d'],
+  // A extensão começa no Intermediário 2D com o caminho feliz e os kits de
+  // gênero. Peças internas de motor (pooling, física manual, grades, pilhas e
+  // interpolação genérica) sobem individualmente ao Avançado 2D em blockLevels.
   minLevel: 'intermediario-2d',
   blockly: {
     blocks: gameKitBlocks,
@@ -23,7 +24,8 @@ export const gameKitExtension: ExtensionDefinition = {
     bootstrapScript: gameKitRuntime,
   },
   ai: {
-    promptContext: gameKitPromptContext,
+    promptSummary: gameKitPromptSummary,
+    loadPromptContext: async () => (await import('./ai')).gameKitPromptContext,
   },
 }
 

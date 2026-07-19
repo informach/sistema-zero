@@ -198,6 +198,7 @@ const TILEMAP_DECL_BLOCKS: Record<string, string[]> = {
   sz_g2d_create_tilemap_from_asset: ['NAME'],
   // Jogo 2D Avançado (Kit): "Carregar mapa … do meu desenho" também declara um nome de mapa.
   sz_gk_load_tilemap: ['NAME'],
+  sz_gk_create_empty_tilemap: ['NAME'],
 }
 
 /** Figuras (desenho por código) do Jogo 2D — fonte do seletor SHAPE. */
@@ -374,8 +375,8 @@ const ITEM_DECL_BLOCKS: Record<string, string[]> = { sz_gk_rpg_give_item: ['NAME
 function collectItems(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, ITEM_DECL_BLOCKS)
 }
-/** Mapas: quem DECLARA é o "Quando chegar no mapa" (go_map/porta consomem). */
-const MAP_DECL_BLOCKS: Record<string, string[]> = { sz_gk_rpg_on_map: ['MAP'] }
+/** Mapas: somente "Criar o mapa" declara; eventos, viagem e portas consomem. */
+const MAP_DECL_BLOCKS: Record<string, string[]> = { sz_gk_rpg_create_map: ['MAP'] }
 function collectMaps(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, MAP_DECL_BLOCKS)
 }
@@ -756,7 +757,7 @@ const KIND_UI: Record<NameKind, KindUI> = {
   map: {
     icon: '🗺️',
     placeholder: 'nome do mapa',
-    empty: 'Nenhum mapa ainda — crie um ("Quando chegar no mapa") ou digite o nome abaixo.',
+    empty: 'Nenhum mapa ainda — use “Criar o mapa” antes de escolher um nome.',
   },
   entity3d: {
     icon: '🤖',

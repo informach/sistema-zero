@@ -4,7 +4,7 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useShallow } from 'zustand/react/shallow'
 import { buildWorkspaceStateFromIR, isBlocksStateEmpty } from '#blockly'
 import { t } from '#core'
-import { BlocklyPanel } from '../components/blocks/BlocklyPanel'
+import { BlocksWorkspaceEditor } from '../components/blocks/BlocksWorkspaceEditor'
 import { ModeLimitationsNotice } from '../components/layout/ModeLimitationsNotice'
 import { NarrowPanels } from '../components/layout/NarrowPanels'
 import { PreviewIframe } from '../components/preview/PreviewIframe'
@@ -176,7 +176,9 @@ export function BlocksMode(): JSX.Element {
         <ModeLimitationsNotice />
         <div className="min-h-0 flex-1">
           <NarrowPanels
-            editorPanes={[{ id: 'blocks', label: t('tab.blocks'), content: <BlocklyPanel /> }]}
+            editorPanes={[
+              { id: 'blocks', label: t('tab.blocks'), content: <BlocksWorkspaceEditor /> },
+            ]}
             preview={showPreview ? <PreviewIframe /> : undefined}
           />
         </div>
@@ -189,7 +191,7 @@ export function BlocksMode(): JSX.Element {
       <ModeLimitationsNotice />
       <PanelGroup direction="horizontal" className="min-h-0 w-full flex-1">
         <Panel defaultSize={showPreview ? 65 : 100} minSize={30}>
-          <BlocklyPanel />
+          <BlocksWorkspaceEditor />
         </Panel>
         {showPreview && (
           <>

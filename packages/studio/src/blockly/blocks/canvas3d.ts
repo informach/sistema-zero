@@ -682,6 +682,257 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     tooltip:
       'Use DENTRO do laço de animação pra o vento soprar (a grama balançar). Vira "grama.material.uniforms.time.value += 0.02".',
   },
+
+  // ───────────────────────── 🧱 Mundo procedural ─────────────────────────────
+  {
+    type: 'sz_t3d_primitive',
+    message0: 'criar primitiva %1 na cena %2',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'SHAPE',
+        options: [
+          ['cubo', 'box'],
+          ['esfera', 'sphere'],
+          ['cilindro', 'cylinder'],
+          ['cone', 'cone'],
+          ['cápsula', 'capsule'],
+        ],
+      },
+      { type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' },
+    ],
+    message1: 'tamanho x %1 y %2 z %3 · cor %4 · guardar em %5',
+    args1: [
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
+      { type: 'input_value', name: 'D', check: 'JSValue' },
+      { type: 'input_value', name: 'COLOR', check: 'JSValue' },
+      { type: 'field_input', name: 'MESH', text: 'objeto' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria uma peça visual completa com geometria e material do próprio three.js. Use várias peças dentro de grupos/procedimentos para montar árvores, personagens, veículos e prédios sem arquivos externos.',
+  },
+  {
+    type: 'sz_t3d_terrain',
+    message0: 'criar terreno procedural na cena %1',
+    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' }],
+    message1: 'tamanho %1 · divisões %2 · morros %3 · suavidade %4',
+    args1: [
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
+      { type: 'input_value', name: 'SEGMENTS', check: 'JSValue' },
+      { type: 'input_value', name: 'HILLS', check: 'JSValue' },
+      { type: 'input_value', name: 'SMOOTH', check: 'JSValue' },
+    ],
+    message2: 'cor %1 · guardar em %2 · altura em %3',
+    args2: [
+      { type: 'input_value', name: 'COLOR', check: 'JSValue' },
+      { type: 'field_input', name: 'TERRAIN', text: 'terreno' },
+      { type: 'field_input', name: 'HEIGHT_FN', text: 'alturaChao' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Monta um terreno de primitivas com morros determinísticos e cria uma função que informa a altura em qualquer x/z. Essa mesma função pode alimentar a física leve.',
+  },
+  {
+    type: 'sz_t3d_road',
+    message0: 'construir estrada na cena %1 de x %2 z %3 até x %4 z %5',
+    args0: [
+      { type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' },
+      { type: 'input_value', name: 'X1', check: 'JSValue' },
+      { type: 'input_value', name: 'Z1', check: 'JSValue' },
+      { type: 'input_value', name: 'X2', check: 'JSValue' },
+      { type: 'input_value', name: 'Z2', check: 'JSValue' },
+    ],
+    message1: 'largura %1 · cor %2 · guardar em %3',
+    args1: [
+      { type: 'input_value', name: 'WIDTH', check: 'JSValue' },
+      { type: 'input_value', name: 'COLOR', check: 'JSValue' },
+      { type: 'field_input', name: 'ROAD', text: 'estrada' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Cria uma estrada reta com asfalto e faixa central, orientada automaticamente entre dois pontos. Combine vários blocos para formar quarteirões ou trajetos orgânicos.',
+  },
+  {
+    type: 'sz_t3d_building',
+    message0: 'construir prédio na cena %1 em x %2 z %3',
+    args0: [
+      { type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+    ],
+    message1: 'largura %1 · altura %2 · profundidade %3',
+    args1: [
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
+      { type: 'input_value', name: 'D', check: 'JSValue' },
+    ],
+    message2: 'parede %1 · telhado %2 · guardar em %3',
+    args2: [
+      { type: 'input_value', name: 'COLOR', check: 'JSValue' },
+      { type: 'input_value', name: 'ROOF', check: 'JSValue' },
+      { type: 'field_input', name: 'BUILDING', text: 'predio' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Monta um prédio low-poly completo com corpo, telhado, porta e janelas usando apenas primitivas. As dimensões também servem diretamente para o colisor.',
+  },
+
+  // ───────────────────────── 🧲 Física leve ──────────────────────────────────
+  {
+    type: 'sz_t3d_physics_setup',
+    message0: 'criar física leve %1 usando altura %2',
+    args0: [
+      { type: 'field_input', name: 'WORLD', text: 'fisica' },
+      { type: 'field_name_picker', name: 'HEIGHT_FN', text: 'alturaChao', kind: 'function' },
+    ],
+    message1: 'gravidade %1 · passos extras no máximo %2',
+    args1: [
+      { type: 'input_value', name: 'GRAVITY', check: 'JSValue' },
+      { type: 'input_value', name: 'SUBSTEPS', check: 'JSValue' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Liga a física própria do Sistema Zero: passo fixo, grade espacial e colisores simples, sem Rapier ou WASM. Use a função de altura criada pelo terreno procedural.',
+  },
+  {
+    type: 'sz_t3d_physics_static_box',
+    message0: 'na física %1 adicionar parede %2 em x %3 y %4 z %5',
+    args0: [
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'field_input', name: 'ID', text: 'parede' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+    ],
+    message1: 'tamanho x %1 y %2 z %3',
+    args1: [
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
+      { type: 'input_value', name: 'D', check: 'JSValue' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Cria um colisor caixa parado para paredes, casas, postes, pontes e limites.',
+  },
+  {
+    type: 'sz_t3d_physics_body',
+    message0: 'na física %1 tornar %2 o corpo %3',
+    args0: [
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'field_name_picker', name: 'OBJECT', text: 'objeto', kind: 'variable' },
+      { type: 'field_input', name: 'ID', text: 'jogador' },
+    ],
+    message1: 'tipo %1 · tamanho x %2 y %3 z %4',
+    args1: [
+      {
+        type: 'field_dropdown',
+        name: 'KIND',
+        options: [
+          ['personagem', 'character'],
+          ['objeto empurrável', 'dynamic'],
+        ],
+      },
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
+      { type: 'input_value', name: 'D', check: 'JSValue' },
+    ],
+    message2: 'atrito %1 · quique %2',
+    args2: [
+      { type: 'input_value', name: 'FRICTION', check: 'JSValue' },
+      { type: 'input_value', name: 'BOUNCE', check: 'JSValue' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Conecta uma primitiva visual a um corpo físico simples. Personagem recebe movimento e salto; objeto empurrável recebe gravidade, impulso e rotação visual.',
+  },
+  {
+    type: 'sz_t3d_physics_move',
+    message0: 'mover personagem %1 na física %2 direção x %3 z %4 velocidade %5',
+    args0: [
+      { type: 'field_input', name: 'ID', text: 'jogador' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Define a direção desejada do personagem; o motor normaliza diagonais e suaviza a velocidade.',
+  },
+  {
+    type: 'sz_t3d_physics_jump',
+    message0: 'personagem %1 pular na física %2 com força %3',
+    args0: [
+      { type: 'field_input', name: 'ID', text: 'jogador' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Faz o personagem saltar somente quando estiver apoiado no chão.',
+  },
+  {
+    type: 'sz_t3d_physics_trigger',
+    message0: 'na física %1 criar área %2 em x %3 y %4 z %5',
+    args0: [
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'field_input', name: 'ID', text: 'praca' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'Z', check: 'JSValue' },
+    ],
+    message1: 'tamanho x %1 y %2 z %3',
+    args1: [
+      { type: 'input_value', name: 'W', check: 'JSValue' },
+      { type: 'input_value', name: 'H', check: 'JSValue' },
+      { type: 'input_value', name: 'D', check: 'JSValue' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Cria uma área invisível para missões, portas, checkpoints e mudanças de distrito.',
+  },
+  {
+    type: 'sz_t3d_physics_step',
+    message0: 'atualizar física %1 por dt %2',
+    args0: [
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'input_value', name: 'DT', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Avança a física com passo fixo. Use uma vez dentro do laço de animação.',
+  },
 ]
 
 export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[] = [
@@ -746,6 +997,24 @@ export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[
       'sz_t3d_grass',
       'sz_t3d_grass_wave',
       'sz_t3d_sign',
+    ],
+  },
+  {
+    name: '🧱 Mundo procedural',
+    colour: C,
+    types: ['sz_t3d_primitive', 'sz_t3d_terrain', 'sz_t3d_road', 'sz_t3d_building'],
+  },
+  {
+    name: '🧲 Física leve',
+    colour: C,
+    types: [
+      'sz_t3d_physics_setup',
+      'sz_t3d_physics_static_box',
+      'sz_t3d_physics_body',
+      'sz_t3d_physics_move',
+      'sz_t3d_physics_jump',
+      'sz_t3d_physics_trigger',
+      'sz_t3d_physics_step',
     ],
   },
 ]

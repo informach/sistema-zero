@@ -45,7 +45,7 @@ export const cacaMoedasExample: ExtensionExample = {
         type: 'gk:addButton',
         screen: 'vitoria',
         label: { type: 'str', value: 'Jogar de novo' },
-        body: [{ type: 'gk:setState', name: 'jogando' }],
+        body: [{ type: 'gk:restartGame' }],
       },
       {
         type: 'gk:createCharacter',
@@ -67,8 +67,7 @@ export const cacaMoedasExample: ExtensionExample = {
       },
       { type: 'var', name: 'pontos', value: { type: 'num', value: 0 } },
       {
-        type: 'gk:onEnterState',
-        name: 'jogando',
+        type: 'gk:onGameStart',
         body: [
           { type: 'assign', name: 'pontos', value: { type: 'num', value: 0 } },
           { type: 'gk:resetCharacter', charVar: 'heroi' },
@@ -378,8 +377,7 @@ export const arenaGoblinsExample: ExtensionExample = {
         color: '#4a9eff',
       },
       {
-        type: 'gk:onEnterState',
-        name: 'jogando',
+        type: 'gk:onGameStart',
         body: [
           {
             type: 'gk:resetCharacter',
@@ -910,7 +908,180 @@ export const vilaDoDragaoExample: ExtensionExample = {
       },
       { type: 'gk:rpgSetStartMap', map: 'vila' },
       {
-        type: 'gk:rpgOnMap',
+        type: 'gk:rpgCreateMap',
+        map: 'vila',
+        cols: { type: 'num', value: 15 },
+        rows: { type: 'num', value: 10 },
+        ctxName: 'ctx',
+        body: [
+          { type: 'gk:drawBackground', color: '#5c7f45', grid: false },
+          { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#d8c28f' } },
+          {
+            type: 'canvasFillRect',
+            ctxVar: 'ctx',
+            x: { type: 'num', value: 0 },
+            y: { type: 'num', value: 128 },
+            w: { type: 'num', value: 960 },
+            h: { type: 'num', value: 128 },
+          },
+          {
+            type: 'canvasFillRect',
+            ctxVar: 'ctx',
+            x: { type: 'num', value: 512 },
+            y: { type: 'num', value: 128 },
+            w: { type: 'num', value: 128 },
+            h: { type: 'num', value: 320 },
+          },
+          { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#7f3f2b' } },
+          {
+            type: 'canvasFillRect',
+            ctxVar: 'ctx',
+            x: { type: 'num', value: 64 },
+            y: { type: 'num', value: 32 },
+            w: { type: 'num', value: 160 },
+            h: { type: 'num', value: 96 },
+          },
+          { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#30343b' } },
+          {
+            type: 'canvasFillRect',
+            ctxVar: 'ctx',
+            x: { type: 'num', value: 320 },
+            y: { type: 'num', value: 64 },
+            w: { type: 'num', value: 64 },
+            h: { type: 'num', value: 128 },
+          },
+          { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#3c2f2f' } },
+          {
+            type: 'canvasFillRect',
+            ctxVar: 'ctx',
+            x: { type: 'num', value: 560 },
+            y: { type: 'num', value: 384 },
+            w: { type: 'num', value: 96 },
+            h: { type: 'num', value: 64 },
+          },
+          {
+            type: 'if',
+            cond: { type: 'gk:rpgHasItem', item: 'chave' },
+            then: [
+              {
+                type: 'canvasFillStyle',
+                ctxVar: 'ctx',
+                color: { type: 'color', value: '#f3c969' },
+              },
+              {
+                type: 'canvasFillRect',
+                ctxVar: 'ctx',
+                x: { type: 'num', value: 584 },
+                y: { type: 'num', value: 396 },
+                w: { type: 'num', value: 48 },
+                h: { type: 'num', value: 52 },
+              },
+            ],
+          },
+          { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#ffffff' } },
+          { type: 'canvasFont', ctxVar: 'ctx', size: 24, family: 'sans-serif' },
+          {
+            type: 'canvasFillText',
+            ctxVar: 'ctx',
+            text: { type: 'str', value: 'VILA DO DRAGÃO' },
+            x: { type: 'num', value: 24 },
+            y: { type: 'num', value: 34 },
+          },
+          { type: 'canvasFont', ctxVar: 'ctx', size: 18, family: 'sans-serif' },
+          {
+            type: 'canvasFillText',
+            ctxVar: 'ctx',
+            text: { type: 'str', value: 'FERRARIA' },
+            x: { type: 'num', value: 304 },
+            y: { type: 'num', value: 56 },
+          },
+          {
+            type: 'canvasFillText',
+            ctxVar: 'ctx',
+            text: { type: 'str', value: 'Ferreiro' },
+            x: { type: 'num', value: 430 },
+            y: { type: 'num', value: 190 },
+          },
+          {
+            type: 'canvasFillText',
+            ctxVar: 'ctx',
+            text: { type: 'str', value: 'PORTA DA CAVERNA' },
+            x: { type: 'num', value: 564 },
+            y: { type: 'num', value: 478 },
+          },
+        ],
+      },
+      {
+        type: 'gk:rpgCreateMap',
+        map: 'caverna',
+        cols: { type: 'num', value: 12 },
+        rows: { type: 'num', value: 8 },
+        ctxName: 'ctx',
+        body: [
+          { type: 'gk:drawBackground', color: '#17131f', grid: false },
+          { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#31283d' } },
+          {
+            type: 'canvasFillRect',
+            ctxVar: 'ctx',
+            x: { type: 'num', value: 0 },
+            y: { type: 'num', value: 0 },
+            w: { type: 'num', value: 768 },
+            h: { type: 'num', value: 64 },
+          },
+          {
+            type: 'canvasFillRect',
+            ctxVar: 'ctx',
+            x: { type: 'num', value: 0 },
+            y: { type: 'num', value: 448 },
+            w: { type: 'num', value: 768 },
+            h: { type: 'num', value: 64 },
+          },
+          { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#8f3b24' } },
+          {
+            type: 'canvasFillRect',
+            ctxVar: 'ctx',
+            x: { type: 'num', value: 256 },
+            y: { type: 'num', value: 384 },
+            w: { type: 'num', value: 256 },
+            h: { type: 'num', value: 32 },
+          },
+          { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#7a263a' } },
+          {
+            type: 'canvasFillRect',
+            ctxVar: 'ctx',
+            x: { type: 'num', value: 480 },
+            y: { type: 'num', value: 96 },
+            w: { type: 'num', value: 112 },
+            h: { type: 'num', value: 112 },
+          },
+          { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#ffffff' } },
+          { type: 'canvasFont', ctxVar: 'ctx', size: 24, family: 'sans-serif' },
+          {
+            type: 'canvasFillText',
+            ctxVar: 'ctx',
+            text: { type: 'str', value: 'CAVERNA DO DRAGÃO' },
+            x: { type: 'num', value: 24 },
+            y: { type: 'num', value: 34 },
+          },
+          { type: 'canvasFont', ctxVar: 'ctx', size: 18, family: 'sans-serif' },
+          {
+            type: 'canvasFillText',
+            ctxVar: 'ctx',
+            text: { type: 'str', value: 'SAÍDA' },
+            x: { type: 'num', value: 8 },
+            y: { type: 'num', value: 310 },
+          },
+          {
+            type: 'canvasFillText',
+            ctxVar: 'ctx',
+            text: { type: 'str', value: 'Dragão' },
+            x: { type: 'num', value: 496 },
+            y: { type: 'num', value: 88 },
+          },
+        ],
+      },
+      {
+        type: 'gk:rpgOnEnterMap',
         map: 'vila',
         body: [
           {
@@ -1008,6 +1179,15 @@ export const vilaDoDragaoExample: ExtensionExample = {
                       value: 'Ferreiro',
                     },
                   },
+                  {
+                    type: 'gk:rpgSay',
+                    text: {
+                      type: 'str',
+                      value: 'O dragão roubou o ouro. Tome a chave e entre na caverna ao sul!',
+                    },
+                    speaker: { type: 'str', value: 'Ferreiro' },
+                  },
+                  { type: 'gk:rpgAddFlag', flag: 'missao-pronta' },
                 ],
               },
               {
@@ -1040,7 +1220,7 @@ export const vilaDoDragaoExample: ExtensionExample = {
         ],
       },
       {
-        type: 'gk:rpgOnMap',
+        type: 'gk:rpgOnEnterMap',
         map: 'caverna',
         body: [
           {
@@ -1248,6 +1428,29 @@ export const vilaDoDragaoExample: ExtensionExample = {
         dtName: 'dt',
         body: [
           {
+            type: 'if',
+            cond: {
+              type: 'logical',
+              op: '&&',
+              left: { type: 'gk:rpgHasFlag', flag: 'missao-pronta' },
+              right: {
+                type: 'logicalNot',
+                value: { type: 'gk:rpgHasItem', item: 'chave' },
+              },
+            },
+            then: [
+              { type: 'gk:rpgGiveItem', item: 'chave', image: '' },
+              { type: 'gk:rpgGivePotion', name: 'Poção', heal: { type: 'num', value: 20 } },
+              { type: 'gk:rpgAddFlag', flag: 'aceitou-missao' },
+              {
+                type: 'gk:rpgCreateDoor',
+                cx: { type: 'num', value: 9 },
+                cy: { type: 'num', value: 6 },
+                map: 'caverna',
+              },
+            ],
+          },
+          {
             type: 'gk:rpgMoveGrid',
             charVar: 'heroi',
             cell: {
@@ -1263,11 +1466,6 @@ export const vilaDoDragaoExample: ExtensionExample = {
         ctxName: 'ctx',
         body: [
           {
-            type: 'gk:drawBackground',
-            color: '#2a1f45',
-            grid: true,
-          },
-          {
             type: 'gk:rpgDrawNpcs',
           },
           {
@@ -1280,15 +1478,99 @@ export const vilaDoDragaoExample: ExtensionExample = {
         type: 'gk:onDrawHud',
         ctxName: 'ctx',
         body: [
+          { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#161923' } },
+          {
+            type: 'canvasFillRect',
+            ctxVar: 'ctx',
+            x: { type: 'num', value: 14 },
+            y: { type: 'num', value: 500 },
+            w: { type: 'num', value: 610 },
+            h: { type: 'num', value: 124 },
+          },
+          { type: 'canvasFillStyle', ctxVar: 'ctx', color: { type: 'color', value: '#ffffff' } },
+          { type: 'canvasFont', ctxVar: 'ctx', size: 19, family: 'sans-serif' },
+          {
+            type: 'if',
+            cond: {
+              type: 'binop',
+              op: '===',
+              left: { type: 'gk:rpgCurrentMap' },
+              right: { type: 'str', value: 'vila' },
+            },
+            then: [
+              {
+                type: 'if',
+                cond: { type: 'gk:rpgHasFlag', flag: 'aceitou-missao' },
+                then: [
+                  {
+                    type: 'canvasFillText',
+                    ctxVar: 'ctx',
+                    text: { type: 'str', value: 'Objetivo: entre na caverna' },
+                    x: { type: 'num', value: 32 },
+                    y: { type: 'num', value: 536 },
+                  },
+                  {
+                    type: 'canvasFillText',
+                    ctxVar: 'ctx',
+                    text: {
+                      type: 'str',
+                      value: 'Siga o caminho até a porta no canto inferior direito.',
+                    },
+                    x: { type: 'num', value: 32 },
+                    y: { type: 'num', value: 566 },
+                  },
+                ],
+                else: [
+                  {
+                    type: 'canvasFillText',
+                    ctxVar: 'ctx',
+                    text: { type: 'str', value: 'Objetivo: ouça o Ferreiro' },
+                    x: { type: 'num', value: 32 },
+                    y: { type: 'num', value: 536 },
+                  },
+                  {
+                    type: 'canvasFillText',
+                    ctxVar: 'ctx',
+                    text: { type: 'str', value: 'Ele está vindo falar com você.' },
+                    x: { type: 'num', value: 32 },
+                    y: { type: 'num', value: 566 },
+                  },
+                ],
+              },
+            ],
+            else: [
+              {
+                type: 'canvasFillText',
+                ctxVar: 'ctx',
+                text: { type: 'str', value: 'Objetivo: enfrente o Dragão' },
+                x: { type: 'num', value: 32 },
+                y: { type: 'num', value: 536 },
+              },
+              {
+                type: 'canvasFillText',
+                ctxVar: 'ctx',
+                text: { type: 'str', value: 'ESPAÇO: enfrentar o Dragão' },
+                x: { type: 'num', value: 32 },
+                y: { type: 'num', value: 566 },
+              },
+            ],
+          },
+          {
+            type: 'canvasFillText',
+            ctxVar: 'ctx',
+            text: { type: 'str', value: 'Mover: setas/WASD  •  Interagir: ESPAÇO' },
+            x: { type: 'num', value: 32 },
+            y: { type: 'num', value: 602 },
+          },
           {
             type: 'gk:rpgDrawInventory',
             x: {
               type: 'num',
-              value: 20,
+              value: 650,
             },
             y: {
               type: 'num',
-              value: 20,
+              value: 540,
             },
           },
         ],
@@ -1370,8 +1652,7 @@ export const florestaNinjaExample: ExtensionExample = {
         },
         body: [
           {
-            type: 'gk:setState',
-            name: 'jogando',
+            type: 'gk:restartGame',
           },
         ],
       },
@@ -1455,8 +1736,7 @@ export const florestaNinjaExample: ExtensionExample = {
         },
       },
       {
-        type: 'gk:onEnterState',
-        name: 'jogando',
+        type: 'gk:onGameStart',
         body: [
           {
             type: 'gk:placeCharacter',
@@ -2064,8 +2344,7 @@ export const saltoNaFlorestaExample: ExtensionExample = {
         },
       },
       {
-        type: 'gk:onEnterState',
-        name: 'jogando',
+        type: 'gk:onGameStart',
         body: [
           {
             type: 'assign',
@@ -3415,7 +3694,15 @@ export const bichinhosDoQuintalExample: ExtensionExample = {
       },
       { type: 'gk:rpgSetStartMap', map: 'quintal' },
       {
-        type: 'gk:rpgOnMap',
+        type: 'gk:rpgCreateMap',
+        map: 'quintal',
+        cols: { type: 'num', value: 15 },
+        rows: { type: 'num', value: 12 },
+        ctxName: 'ctx',
+        body: [{ type: 'gk:drawBackground', color: '#2d5a2d', grid: false }],
+      },
+      {
+        type: 'gk:rpgOnEnterMap',
         map: 'quintal',
         body: [
           {
@@ -3663,11 +3950,6 @@ export const bichinhosDoQuintalExample: ExtensionExample = {
         type: 'gk:onDraw',
         ctxName: 'ctx',
         body: [
-          {
-            type: 'gk:drawBackground',
-            color: '#2d5a2d',
-            grid: false,
-          },
           {
             type: 'canvasFillStyle',
             ctxVar: 'ctx',
@@ -3988,8 +4270,7 @@ export const invasaoDosOvnisExample: ExtensionExample = {
         },
       },
       {
-        type: 'gk:onEnterState',
-        name: 'jogando',
+        type: 'gk:onGameStart',
         body: [
           {
             type: 'assign',
@@ -4949,8 +5230,7 @@ export const dueloDosBonecosExample: ExtensionExample = {
         special: true,
       },
       {
-        type: 'gk:onEnterState',
-        name: 'jogando',
+        type: 'gk:onGameStart',
         body: [
           {
             type: 'gk:spawnFromMold',
@@ -5657,8 +5937,7 @@ export const defesaDoReinoExample: ExtensionExample = {
         ],
       },
       {
-        type: 'gk:onEnterState',
-        name: 'jogando',
+        type: 'gk:onGameStart',
         body: [
           {
             type: 'assign',
@@ -6131,7 +6410,7 @@ export const defesaDoReinoExample: ExtensionExample = {
  * Exemplo "Reino Aberto" (🌍 mundo aberto — R27): a IR embutida foi GERADA pelo
  * parser real a partir do SOURCE do teste (one-off). Mostra os DOIS jeitos de
  * mundo aberto: 4 mapas ligados pelas bordas (estilo Zelda, 2×2) e a vila MAIOR
- * que a tela com a câmera clampando pelo "Este mapa tem".
+ * que a tela com a câmera clampando pelo tamanho declarado em "Criar o mapa".
  */
 export const reinoAbertoExample: ExtensionExample = {
   name: 'Reino Aberto',
@@ -6175,14 +6454,41 @@ export const reinoAbertoExample: ExtensionExample = {
       },
       { type: 'gk:rpgSetStartMap', map: 'campo' },
       {
-        type: 'gk:rpgOnMap',
+        type: 'gk:rpgCreateMap',
+        map: 'campo',
+        cols: { type: 'num', value: 15 },
+        rows: { type: 'num', value: 10 },
+        ctxName: 'ctx',
+        body: [{ type: 'gk:drawBackground', color: '#2d5a2d', grid: true }],
+      },
+      {
+        type: 'gk:rpgCreateMap',
+        map: 'praia',
+        cols: { type: 'num', value: 15 },
+        rows: { type: 'num', value: 10 },
+        ctxName: 'ctx',
+        body: [{ type: 'gk:drawBackground', color: '#2b4a63', grid: true }],
+      },
+      {
+        type: 'gk:rpgCreateMap',
+        map: 'bosque',
+        cols: { type: 'num', value: 15 },
+        rows: { type: 'num', value: 10 },
+        ctxName: 'ctx',
+        body: [{ type: 'gk:drawBackground', color: '#173317', grid: true }],
+      },
+      {
+        type: 'gk:rpgCreateMap',
+        map: 'vila',
+        cols: { type: 'num', value: 30 },
+        rows: { type: 'num', value: 20 },
+        ctxName: 'ctx',
+        body: [{ type: 'gk:drawBackground', color: '#4a3c2b', grid: true }],
+      },
+      {
+        type: 'gk:rpgOnEnterMap',
         map: 'campo',
         body: [
-          {
-            type: 'gk:rpgMapSize',
-            cols: { type: 'num', value: 15 },
-            rows: { type: 'num', value: 10 },
-          },
           { type: 'gk:rpgConnectEdge', side: 'leste', map: 'praia' },
           { type: 'gk:rpgConnectEdge', side: 'sul', map: 'bosque' },
           { type: 'gk:rpgBlockCell', cx: { type: 'num', value: 5 }, cy: { type: 'num', value: 4 } },
@@ -6197,14 +6503,9 @@ export const reinoAbertoExample: ExtensionExample = {
         ],
       },
       {
-        type: 'gk:rpgOnMap',
+        type: 'gk:rpgOnEnterMap',
         map: 'praia',
         body: [
-          {
-            type: 'gk:rpgMapSize',
-            cols: { type: 'num', value: 15 },
-            rows: { type: 'num', value: 10 },
-          },
           { type: 'gk:rpgConnectEdge', side: 'oeste', map: 'campo' },
           { type: 'gk:rpgConnectEdge', side: 'sul', map: 'vila' },
           {
@@ -6218,14 +6519,9 @@ export const reinoAbertoExample: ExtensionExample = {
         ],
       },
       {
-        type: 'gk:rpgOnMap',
+        type: 'gk:rpgOnEnterMap',
         map: 'bosque',
         body: [
-          {
-            type: 'gk:rpgMapSize',
-            cols: { type: 'num', value: 15 },
-            rows: { type: 'num', value: 10 },
-          },
           { type: 'gk:rpgConnectEdge', side: 'norte', map: 'campo' },
           { type: 'gk:rpgConnectEdge', side: 'leste', map: 'vila' },
           { type: 'gk:rpgBlockCell', cx: { type: 'num', value: 4 }, cy: { type: 'num', value: 4 } },
@@ -6238,14 +6534,9 @@ export const reinoAbertoExample: ExtensionExample = {
         ],
       },
       {
-        type: 'gk:rpgOnMap',
+        type: 'gk:rpgOnEnterMap',
         map: 'vila',
         body: [
-          {
-            type: 'gk:rpgMapSize',
-            cols: { type: 'num', value: 30 },
-            rows: { type: 'num', value: 20 },
-          },
           { type: 'gk:rpgConnectEdge', side: 'norte', map: 'praia' },
           { type: 'gk:rpgConnectEdge', side: 'oeste', map: 'bosque' },
           {
@@ -6293,8 +6584,7 @@ export const reinoAbertoExample: ExtensionExample = {
         ],
       },
       {
-        type: 'gk:onEnterState',
-        name: 'jogando',
+        type: 'gk:onGameStart',
         body: [
           {
             type: 'gk:cameraFollow',
@@ -6307,41 +6597,7 @@ export const reinoAbertoExample: ExtensionExample = {
       {
         type: 'gk:onDraw',
         ctxName: 'ctx',
-        body: [
-          {
-            type: 'if',
-            cond: {
-              type: 'binop',
-              op: '===',
-              left: { type: 'gk:rpgCurrentMap' },
-              right: { type: 'str', value: 'praia' },
-            },
-            then: [{ type: 'gk:drawBackground', color: '#2b4a63', grid: true }],
-            elseif: [
-              {
-                cond: {
-                  type: 'binop',
-                  op: '===',
-                  left: { type: 'gk:rpgCurrentMap' },
-                  right: { type: 'str', value: 'bosque' },
-                },
-                then: [{ type: 'gk:drawBackground', color: '#173317', grid: true }],
-              },
-              {
-                cond: {
-                  type: 'binop',
-                  op: '===',
-                  left: { type: 'gk:rpgCurrentMap' },
-                  right: { type: 'str', value: 'vila' },
-                },
-                then: [{ type: 'gk:drawBackground', color: '#4a3c2b', grid: true }],
-              },
-            ],
-            else: [{ type: 'gk:drawBackground', color: '#2d5a2d', grid: true }],
-          },
-          { type: 'gk:rpgDrawNpcs' },
-          { type: 'gk:drawCharacter', charVar: 'heroi' },
-        ],
+        body: [{ type: 'gk:rpgDrawNpcs' }, { type: 'gk:drawCharacter', charVar: 'heroi' }],
       },
       {
         type: 'gk:onDrawHud',
@@ -6459,7 +6715,15 @@ export const batalhaEmEquipeExample: ExtensionExample = {
       { type: 'gk:rpgGivePotion', name: 'Pocao', heal: { type: 'num', value: 25 } },
       { type: 'gk:rpgSetStartMap', map: 'praca' },
       {
-        type: 'gk:rpgOnMap',
+        type: 'gk:rpgCreateMap',
+        map: 'praca',
+        cols: { type: 'num', value: 15 },
+        rows: { type: 'num', value: 10 },
+        ctxName: 'ctx',
+        body: [{ type: 'gk:drawBackground', color: '#2d3a2d', grid: true }],
+      },
+      {
+        type: 'gk:rpgOnEnterMap',
         map: 'praca',
         body: [
           {
@@ -6533,11 +6797,7 @@ export const batalhaEmEquipeExample: ExtensionExample = {
       {
         type: 'gk:onDraw',
         ctxName: 'ctx',
-        body: [
-          { type: 'gk:drawBackground', color: '#2d3a2d', grid: true },
-          { type: 'gk:rpgDrawNpcs' },
-          { type: 'gk:drawCharacter', charVar: 'heroi' },
-        ],
+        body: [{ type: 'gk:rpgDrawNpcs' }, { type: 'gk:drawCharacter', charVar: 'heroi' }],
       },
       { type: 'gk:start' },
     ],
@@ -6730,8 +6990,7 @@ export const cobrinhaExample: ExtensionExample = {
         },
       },
       {
-        type: 'gk:onEnterState',
-        name: 'jogando',
+        type: 'gk:onGameStart',
         body: [
           {
             type: 'gk:boardCreate',
@@ -7561,8 +7820,7 @@ export const quebraBlocosExample: ExtensionExample = {
         look: '',
       },
       {
-        type: 'gk:onEnterState',
-        name: 'jogando',
+        type: 'gk:onGameStart',
         body: [
           {
             type: 'gk:placeCharacter',
@@ -8089,7 +8347,15 @@ export const oChefaoExample: ExtensionExample = {
       },
       { type: 'gk:rpgSetStartMap', map: 'caverna' },
       {
-        type: 'gk:rpgOnMap',
+        type: 'gk:rpgCreateMap',
+        map: 'caverna',
+        cols: { type: 'num', value: 15 },
+        rows: { type: 'num', value: 10 },
+        ctxName: 'ctx',
+        body: [{ type: 'gk:drawBackground', color: '#241a2e', grid: true }],
+      },
+      {
+        type: 'gk:rpgOnEnterMap',
         map: 'caverna',
         body: [
           {
@@ -8223,11 +8489,6 @@ export const oChefaoExample: ExtensionExample = {
         type: 'gk:onDraw',
         ctxName: 'ctx',
         body: [
-          {
-            type: 'gk:drawBackground',
-            color: '#241a2e',
-            grid: true,
-          },
           {
             type: 'gk:rpgDrawNpcs',
           },
@@ -8441,8 +8702,7 @@ export const corridaTabuleiroExample: ExtensionExample = {
         ],
       },
       {
-        type: 'gk:onEnterState',
-        name: 'jogando',
+        type: 'gk:onGameStart',
         body: [
           {
             type: 'gk:playersSetup',
@@ -8789,8 +9049,7 @@ export const jogoDaMemoriaExample: ExtensionExample = {
         },
       },
       {
-        type: 'gk:onEnterState',
-        name: 'jogando',
+        type: 'gk:onGameStart',
         body: [
           {
             type: 'assign',
@@ -9307,8 +9566,7 @@ export const dueloDeCartasExample: ExtensionExample = {
         },
       },
       {
-        type: 'gk:onEnterState',
-        name: 'jogando',
+        type: 'gk:onGameStart',
         body: [
           {
             type: 'assign',
@@ -9980,7 +10238,15 @@ export const oChefaoFichaExample: ExtensionExample = {
       },
       { type: 'gk:rpgSetStartMap', map: 'caverna' },
       {
-        type: 'gk:rpgOnMap',
+        type: 'gk:rpgCreateMap',
+        map: 'caverna',
+        cols: { type: 'num', value: 15 },
+        rows: { type: 'num', value: 10 },
+        ctxName: 'ctx',
+        body: [{ type: 'gk:drawBackground', color: '#241a2e', grid: true }],
+      },
+      {
+        type: 'gk:rpgOnEnterMap',
         map: 'caverna',
         body: [
           {
@@ -10086,11 +10352,6 @@ export const oChefaoFichaExample: ExtensionExample = {
         type: 'gk:onDraw',
         ctxName: 'ctx',
         body: [
-          {
-            type: 'gk:drawBackground',
-            color: '#241a2e',
-            grid: true,
-          },
           {
             type: 'gk:rpgDrawNpcs',
           },

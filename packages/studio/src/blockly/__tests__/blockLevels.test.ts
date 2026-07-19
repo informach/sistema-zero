@@ -70,7 +70,7 @@ describe('resolveBlockLevel — amostras representativas', () => {
     expect(resolveBlockLevel('sz_g3d_control_keys')).toBe('iniciante-3d')
   })
 
-  it('programação real guiada + Jogo 2D Avançado = intermediario-2d', () => {
+  it('programação real guiada + kits prontos do Jogo 2D Avançado = intermediario-2d', () => {
     for (const t of [
       'sz_js_while',
       'sz_js_for_range',
@@ -79,7 +79,11 @@ describe('resolveBlockLevel — amostras representativas', () => {
       'sz_g2d_sprite_vx', // getter de velocidade
       'sz_g2d_set_opacity',
       'sz_css_border',
-      'sz_gk_qualquer_bloco', // prefixo gk inteiro
+      'sz_gk_setup',
+      'sz_gk_restart_game',
+      'sz_gk_rpg_create_map',
+      'sz_gk_plat_hero',
+      'sz_gk_luta_match',
     ]) {
       expect(resolveBlockLevel(t)).toBe('intermediario-2d')
     }
@@ -96,6 +100,12 @@ describe('resolveBlockLevel — amostras representativas', () => {
       'sz_val_object',
       'sz_adv_raw_js',
       'sz_g2d_apply_velocity', // física manual
+      'sz_gk_property_of', // acesso genérico ao modelo
+      'sz_gk_define_mold', // pooling/data-driven
+      'sz_gk_apply_gravity', // física manual do motor
+      'sz_gk_board_create', // estrutura de grade genérica
+      'sz_gk_pile_move_top', // manipulação de pilhas/listas
+      'sz_gk_tween_property', // interpolação de propriedade arbitrária
       'sz_css_keyframes',
       'sz_svg_path',
       'sz_math_trig',

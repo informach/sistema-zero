@@ -1,0 +1,160 @@
+import type { ExtensionExample } from '#extensions'
+
+const num = (value: number) => ({ type: 'num' as const, value })
+
+export const folioProceduralExample: ExtensionExample = {
+  name: 'Folio Procedural',
+  experience: 'exploration',
+  description:
+    'Uma recriacao funcional da experiencia de portfolio 3D: exploracao a pe e de jipe, letras empurraveis, objetos fisicos, caminhos organicos e um distrito criativo. Tudo desenhado com primitivas, sem assets externos.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [{ extensionId: 'world-3d' }],
+    js: [
+      { type: 'w3d:setup', style: 'floresta', world: num(240) },
+      { type: 'w3d:quality', mode: 'automatica' },
+      { type: 'w3d:terrain', h: num(5), s: num(7) },
+      {
+        type: 'w3d:roadGrid',
+        layout: 'organica',
+        x: num(0),
+        z: num(0),
+        size: num(150),
+        width: num(7),
+      },
+      { type: 'w3d:district', kind: 'turistico', x: num(45), z: num(-30), size: num(42) },
+      {
+        type: 'w3d:houseRow',
+        n: num(8),
+        x1: num(-55),
+        z1: num(25),
+        x2: num(10),
+        z2: num(45),
+        style: 'coloridas',
+      },
+      { type: 'w3d:clearArea', x: num(0), z: num(0), r: num(38) },
+      { type: 'w3d:scatter', n: num(260), thing: 'arvores' },
+      { type: 'w3d:scatter', n: num(80), thing: 'pedras' },
+      { type: 'w3d:person', color: '#f97316', hat: 'bone' },
+      { type: 'w3d:personAccessory', acc: 'botas' },
+      { type: 'w3d:car', style: 'jipe', color: '#ef4444' },
+      { type: 'w3d:letters', word: 'BRUNO', x: num(0), z: num(14), s: num(1.4) },
+      { type: 'w3d:pushScatter', n: num(18), x: num(22), z: num(8), r: num(12) },
+      { type: 'w3d:explosive', x: num(28), z: num(8) },
+      {
+        type: 'w3d:totemText',
+        x: num(0),
+        z: num(7),
+        title: 'Folio procedural',
+        body: 'Explore, dirija, empurre as letras e encontre a cidade criativa.',
+      },
+      { type: 'w3d:start' },
+    ],
+  },
+}
+
+export const coastalProceduralExample: ExtensionExample = {
+  name: 'Coastal World Procedural',
+  experience: 'exploration',
+  description:
+    'Arquipelago exploravel com personagem, jetpack, barco, pontes, farol, palmeiras, moedas e missao. Uma experiencia costeira completa feita apenas com geometria procedural.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [{ extensionId: 'world-3d' }],
+    js: [
+      { type: 'w3d:setup', style: 'praia', world: num(260) },
+      { type: 'w3d:quality', mode: 'automatica' },
+      { type: 'w3d:islands', n: num(5), y: num(0) },
+      { type: 'w3d:person', color: '#0ea5e9', hat: 'palha' },
+      { type: 'w3d:personAccessory', acc: 'jetpack' },
+      { type: 'w3d:boat', color: '#f8fafc' },
+      { type: 'w3d:bridge', x1: num(0), z1: num(22), x2: num(42), z2: num(18), w: num(4) },
+      { type: 'w3d:bridge', x1: num(42), z1: num(18), x2: num(72), z2: num(-24), w: num(4) },
+      { type: 'w3d:lighthouse', x: num(76), z: num(-28) },
+      { type: 'w3d:scatter', n: num(180), thing: 'palmeiras' },
+      { type: 'w3d:coinsLine', n: num(18), x1: num(0), z1: num(12), x2: num(72), z2: num(-24) },
+      {
+        type: 'w3d:quest',
+        name: 'Explorador da costa',
+        desc: 'Atravesse as ilhas e chegue ao farol.',
+      },
+      {
+        type: 'w3d:totemText',
+        x: num(0),
+        z: num(8),
+        title: 'Coastal World',
+        body: 'Use o barco, as pontes ou o jetpack para explorar o arquipelago.',
+      },
+      { type: 'w3d:ambience', kind: 'mar' },
+      { type: 'w3d:start' },
+    ],
+  },
+}
+
+export const vocationProceduralExample: ExtensionExample = {
+  name: 'Vocation Vista Procedural',
+  experience: 'exploration',
+  description:
+    'Cidade educativa com rede radial, distritos de educacao, saude e comercio, casas modernas, moradores, portas informativas, inventario e missao. Toda a arquitetura usa primitivas instanciadas.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [{ extensionId: 'world-3d' }],
+    js: [
+      { type: 'w3d:setup', style: 'primavera', world: num(260) },
+      { type: 'w3d:quality', mode: 'automatica' },
+      { type: 'w3d:terrain', h: num(2), s: num(10) },
+      {
+        type: 'w3d:roadGrid',
+        layout: 'radial',
+        x: num(0),
+        z: num(0),
+        size: num(180),
+        width: num(7),
+      },
+      { type: 'w3d:district', kind: 'educacao', x: num(-48), z: num(30), size: num(38) },
+      { type: 'w3d:district', kind: 'saude', x: num(48), z: num(30), size: num(38) },
+      { type: 'w3d:district', kind: 'comercial', x: num(0), z: num(-52), size: num(42) },
+      {
+        type: 'w3d:houseRow',
+        n: num(10),
+        x1: num(-55),
+        z1: num(-12),
+        x2: num(55),
+        z2: num(-12),
+        style: 'modernas',
+      },
+      { type: 'w3d:person', color: '#8b5cf6', hat: 'bone' },
+      { type: 'w3d:npc', name: 'Lia', x: num(-18), z: num(8), color: '#f97316', hat: 'bone' },
+      { type: 'w3d:npc', name: 'Caio', x: num(18), z: num(8), color: '#22c55e', hat: 'nenhum' },
+      {
+        type: 'w3d:door',
+        x: num(-48),
+        z: num(30),
+        deg: num(0),
+        title: 'Escola Criativa',
+        body: 'Descubra carreiras em tecnologia, arte e ciencia.',
+        image: '',
+      },
+      {
+        type: 'w3d:door',
+        x: num(48),
+        z: num(30),
+        deg: num(0),
+        title: 'Centro de Saude',
+        body: 'Conheca quem cuida das pessoas e da comunidade.',
+        image: '',
+      },
+      { type: 'w3d:inventoryGive', item: 'mapa de carreiras', n: num(1) },
+      {
+        type: 'w3d:quest',
+        name: 'Minha vocacao',
+        desc: 'Visite os tres distritos e converse com os moradores.',
+      },
+      { type: 'w3d:minimap', mode: 'ver' },
+      { type: 'w3d:start' },
+    ],
+  },
+}

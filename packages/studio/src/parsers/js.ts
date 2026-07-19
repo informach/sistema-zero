@@ -4694,6 +4694,12 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
       if (args[0]?.type !== 'StringLiteral') return null
       return { type: 'gk:setState', name: args[0].value as string }
     }
+    case 'restartGame':
+      return args.length === 0 ? { type: 'gk:restartGame' } : null
+    case 'onGameStart': {
+      if (!isFn(args[0])) return null
+      return { type: 'gk:onGameStart', body: bodyOfFn(args[0], source, ctx) }
+    }
     case 'onEnterState': {
       // generator: SZGameKit.onEnterState("jogando", function () {…})
       if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
@@ -4903,10 +4909,26 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
       if (args[0]?.type !== 'StringLiteral') return null
       return { type: 'gk:rpgSetStartMap', map: args[0].value as string }
     }
-    case 'rpgOnMap': {
+    case 'rpgCreateMap': {
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[3])) return null
+      const cols = toExpr(args[1], ctx)
+      const rows = toExpr(args[2], ctx)
+      if (!isSimpleValue(cols) || !isSimpleValue(rows)) return null
+      const ctxParam = identifierName(args[3].params?.[0])
+      if (ctxParam) ctx.ctxVars.add(ctxParam)
+      return {
+        type: 'gk:rpgCreateMap',
+        map: args[0].value as string,
+        cols,
+        rows,
+        ctxName: ctxParam ?? 'ctx',
+        body: bodyOfFn(args[3], source, ctx),
+      }
+    }
+    case 'rpgOnEnterMap': {
       if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
       return {
-        type: 'gk:rpgOnMap',
+        type: 'gk:rpgOnEnterMap',
         map: args[0].value as string,
         body: bodyOfFn(args[1], source, ctx),
       }
@@ -4919,14 +4941,7 @@ function tryMatchGameKitCall(expr: Node, source: string, ctx: ParseCtx): JSState
         ? { type: 'gk:rpgCreateDoor', cx, cy, map: args[2].value as string }
         : null
     }
-    // 🌍 Mundo aberto: tamanho do mapa + bordas ligadas
-    case 'rpgMapSize': {
-      const cols = toExpr(args[0], ctx)
-      const rows = toExpr(args[1], ctx)
-      return isSimpleValue(cols) && isSimpleValue(rows)
-        ? { type: 'gk:rpgMapSize', cols, rows }
-        : null
-    }
+    // 🌍 Mundo aberto: bordas ligadas; o tamanho pertence ao mapa criado.
     case 'rpgConnectEdge': {
       // Lado fora do enum → rawJS (o dropdown coagiria; código é sagrado).
       if (args[0]?.type !== 'StringLiteral' || args[1]?.type !== 'StringLiteral') return null
@@ -6558,6 +6573,17 @@ const W3D_ACCESSORIES = new Set(['nenhum', 'jetpack', 'botas'])
 const W3D_EMOTES = new Set(['acenar', 'pular', 'girar', 'dancar'])
 const W3D_DAY_PHASES = new Set(['dia', 'noite'])
 const W3D_POS_AXES = new Set(['x', 'y', 'z'])
+const W3D_DISTRICTS = new Set([
+  'residencial',
+  'comercial',
+  'educacao',
+  'saude',
+  'industrial',
+  'turistico',
+])
+const W3D_ROAD_LAYOUTS = new Set(['grade', 'radial', 'organica'])
+const W3D_HOUSE_STYLES = new Set(['coloridas', 'praia', 'modernas', 'campo'])
+const W3D_QUALITY_MODES = new Set(['automatica', 'alta', 'desempenho'])
 
 /** Chave de ObjectProperty não-computada (Identifier ou string). */
 function w3dPropKey(prop: Node): string | null {
@@ -6565,6 +6591,11 @@ function w3dPropKey(prop: Node): string | null {
   if (prop.key?.type === 'Identifier') return prop.key.name as string
   if (prop.key?.type === 'StringLiteral') return prop.key.value as string
   return null
+}
+
+function w3dStringLiteral(node: Node | undefined): string | null {
+  if (node?.type !== 'StringLiteral' || typeof node.value !== 'string') return null
+  return node.value
 }
 
 /** SZWorld3D.keyDown("e") / groundHeight(x, z) / worldSize() … em posição de VALOR. */
@@ -6591,6 +6622,17 @@ function matchWorld3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (method === 'coinCount' && args.length === 0) return { type: 'w3d:coinCount' }
   if (method === 'hasAchievement' && args[0]?.type === 'StringLiteral') {
     return { type: 'w3d:hasAchievement', name: args[0].value as string }
+  }
+  if (method === 'inventoryCount') {
+    const item = w3dStringLiteral(args[0])
+    if (item !== null) return { type: 'w3d:inventoryCount', item }
+  }
+  if (method === 'inventoryHas') {
+    const item = w3dStringLiteral(args[0])
+    const n = toExpr(args[1], ctx)
+    if (item !== null && isSimpleValue(n)) {
+      return { type: 'w3d:inventoryHas', item, n }
+    }
   }
   if (method === 'keyDown' && args[0]?.type === 'StringLiteral') {
     return { type: 'w3d:keyDown', key: args[0].value as string }
@@ -7201,6 +7243,63 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
       const mode = args[3].value as string
       if (!W3D_CITY_SIZES.has(size) || !W3D_CITY_MODES.has(mode)) return null
       return isSimpleValue(x) && isSimpleValue(z) ? { type: 'w3d:city', x, z, size, mode } : null
+    }
+    case 'district': {
+      const kind = w3dStringLiteral(args[0])
+      if (kind === null) return null
+      const x = toExpr(args[1], ctx)
+      const z = toExpr(args[2], ctx)
+      const size = toExpr(args[3], ctx)
+      return W3D_DISTRICTS.has(kind) && isSimpleValue(x) && isSimpleValue(z) && isSimpleValue(size)
+        ? { type: 'w3d:district', kind, x, z, size }
+        : null
+    }
+    case 'roadGrid': {
+      const layout = w3dStringLiteral(args[0])
+      if (layout === null) return null
+      const x = toExpr(args[1], ctx)
+      const z = toExpr(args[2], ctx)
+      const size = toExpr(args[3], ctx)
+      const width = toExpr(args[4], ctx)
+      return W3D_ROAD_LAYOUTS.has(layout) &&
+        isSimpleValue(x) &&
+        isSimpleValue(z) &&
+        isSimpleValue(size) &&
+        isSimpleValue(width)
+        ? { type: 'w3d:roadGrid', layout, x, z, size, width }
+        : null
+    }
+    case 'houseRow': {
+      const n = toExpr(args[0], ctx)
+      const x1 = toExpr(args[1], ctx)
+      const z1 = toExpr(args[2], ctx)
+      const x2 = toExpr(args[3], ctx)
+      const z2 = toExpr(args[4], ctx)
+      const style = w3dStringLiteral(args[5])
+      if (style === null) return null
+      return W3D_HOUSE_STYLES.has(style) &&
+        isSimpleValue(n) &&
+        isSimpleValue(x1) &&
+        isSimpleValue(z1) &&
+        isSimpleValue(x2) &&
+        isSimpleValue(z2)
+        ? { type: 'w3d:houseRow', n, x1, z1, x2, z2, style }
+        : null
+    }
+    case 'quality': {
+      const mode = w3dStringLiteral(args[0])
+      if (mode === null) return null
+      return W3D_QUALITY_MODES.has(mode) ? { type: 'w3d:quality', mode } : null
+    }
+    case 'inventoryGive':
+    case 'inventoryRemove': {
+      const item = w3dStringLiteral(args[0])
+      if (item === null) return null
+      const n = toExpr(args[1], ctx)
+      if (!isSimpleValue(n)) return null
+      return method === 'inventoryGive'
+        ? { type: 'w3d:inventoryGive', item, n }
+        : { type: 'w3d:inventoryRemove', item, n }
     }
     case 'stringLights': {
       const x1 = toExpr(args[0], ctx)
@@ -11359,6 +11458,7 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'w3d:isDriving':
     case 'w3d:coinCount':
     case 'w3d:hasAchievement':
+    case 'w3d:inventoryCount':
     case 'w3d:keyDown':
     case 'w3d:keyPressed':
     case 'w3d:timeOfDay':
@@ -11387,6 +11487,8 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
         (typeof expr.x === 'number' || isSimpleValue(expr.x)) &&
         (typeof expr.z === 'number' || isSimpleValue(expr.z))
       )
+    case 'w3d:inventoryHas':
+      return typeof expr.n === 'number' || isSimpleValue(expr.n)
     case 'concat':
     case 'concatArrays':
       return expr.parts.every(isSimpleValue)

@@ -277,9 +277,10 @@ function schedulePostLoadRepaint(workspace: Blockly.WorkspaceSvg): void {
 
 export interface BlocklyPanelProps {
   className?: string
+  onWorkspaceReady?: (workspace: Blockly.WorkspaceSvg | null) => void
 }
 
-export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
+export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps): JSX.Element {
   const { blocksState, installedExtensions, projectMode, blocksHydration } = useProjectStore(
     useShallow((s) => ({
       blocksState: s.project?.blocksState ?? null,
@@ -310,6 +311,8 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
   const [isLoadingWorkspace, setIsLoadingWorkspace] = useState(false)
 
   const blocklyRef = useRef<HTMLDivElement>(null)
+  const onWorkspaceReadyRef = useRef(onWorkspaceReady)
+  onWorkspaceReadyRef.current = onWorkspaceReady
   const [workspace, setWorkspace] = useState<Blockly.WorkspaceSvg | null>(null)
   const lastSerializedRef = useRef<string>('')
   const isApplyingStateRef = useRef(false)
@@ -863,6 +866,7 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
         })
     }
     setWorkspace(injected)
+    onWorkspaceReadyRef.current?.(injected)
 
     // Handlers POR INSTÂNCIA do colar de blocos (os itens de menu são GLOBAIS):
     // mapeia o workspace de volta ao projectStore desta instância + ao aviso.
@@ -906,6 +910,7 @@ export function BlocklyPanel({ className }: BlocklyPanelProps): JSX.Element {
       detachAnimNames()
       detachSpriteThumbs()
       unregisterPasteTarget(injected)
+      onWorkspaceReadyRef.current?.(null)
       injected.dispose()
       appliedToolboxRef.current = null
     }

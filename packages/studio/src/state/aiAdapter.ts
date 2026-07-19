@@ -2,12 +2,25 @@ import { useMemo } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { type AIProvider, MockAIProvider, OpenRouterProvider } from '#ai'
 import type { IDEMode, InstalledExtension } from '#core'
+import { formatExtensionPromptContext } from '#extensions'
 import { findExtension } from '#official-extensions'
 import { useStudioConfig } from '../studio/config'
 import { useProjectStore } from './projectStore'
 import { useSettingsStore } from './settingsStore'
 
 const EMPTY_INSTALLED_EXTENSIONS: InstalledExtension[] = []
+
+/** Contexto estável e curto das extensões instaladas para o system prompt. */
+export function buildInstalledExtensionContext(
+  installedExtensions: readonly InstalledExtension[],
+): string {
+  const extensions = installedExtensions
+    .map((entry) => findExtension(entry.id))
+    .filter((extension): extension is NonNullable<ReturnType<typeof findExtension>> =>
+      Boolean(extension),
+    )
+  return formatExtensionPromptContext(extensions)
+}
 
 /**
  * Factory que escolhe o provider de IA. Precedência: chave/modelo injetados
@@ -34,11 +47,7 @@ export function useAIProvider(): { provider: AIProvider; isReal: boolean; mode: 
     if (!apiKey) {
       return { provider: new MockAIProvider(), isReal: false, mode }
     }
-    const extContext = installedExtensions
-      .map((entry) => findExtension(entry.id))
-      .filter((e): e is NonNullable<ReturnType<typeof findExtension>> => Boolean(e))
-      .map((e) => `- ${e.manifest.name} (${e.manifest.id}): ${e.ai?.promptContext ?? ''}`)
-      .join('\n\n')
+    const extContext = buildInstalledExtensionContext(installedExtensions)
     return {
       provider: new OpenRouterProvider({
         apiKey,

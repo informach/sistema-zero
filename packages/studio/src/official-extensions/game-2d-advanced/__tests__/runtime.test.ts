@@ -26,7 +26,9 @@ const fakeCtx = {
   stroke() {},
   arc() {},
   fill() {},
-  fillText() {},
+  fillText(...a: number[]) {
+    ctxCalls.push(['fillText', a])
+  },
   save() {
     ctxCalls.push(['save', []])
   },
@@ -76,6 +78,8 @@ interface GameKitApi {
   showScreen: Fn
   hideScreens: Fn
   setState: Fn
+  restartGame: Fn
+  onGameStart: Fn
   onEnterState: Fn
   stateIs: Fn
   state: Fn
@@ -169,9 +173,9 @@ interface GameKitApi {
   rpgDrawInventory: Fn
   rpgGoMap: Fn
   rpgSetStartMap: Fn
-  rpgOnMap: Fn
+  rpgCreateMap: Fn
+  rpgOnEnterMap: Fn
   rpgCreateDoor: Fn
-  rpgMapSize: Fn
   rpgConnectEdge: Fn
   rpgCurrentMap: Fn
   rpgBattleStats: Fn
@@ -382,6 +386,7 @@ interface GameKitApi {
 
 interface Harness {
   api: GameKitApi
+  inspectors: Record<string, () => unknown>
   listeners: Record<string, Listener[]>
   fire: (name: string, ev?: unknown) => void
   clock: { value: number }
@@ -419,8 +424,10 @@ function loadRuntime(assetMeta?: unknown): Harness {
   const clock = { value: 0 }
   const rafQueue: Array<(ts: number) => void> = []
   const store = new Map<string, string>()
+  const inspectors: Record<string, () => unknown> = {}
   const win = {
     __SZGAME_ASSET_META: assetMeta,
+    __SZSTUDIO_RUNTIME_INSPECTORS: inspectors,
     addEventListener(name: string, fn: Listener) {
       listeners[name] ??= []
       listeners[name].push(fn)
@@ -450,6 +457,7 @@ function loadRuntime(assetMeta?: unknown): Harness {
   if (!api) throw new Error('runtime não montou window.SZGameKit')
   return {
     api,
+    inspectors,
     listeners,
     fire: (name, ev = {}) => {
       for (const fn of listeners[name] ?? []) fn(ev)
@@ -500,9 +508,9 @@ interface BattleSnap {
   allies: BattlerSnap[]
   foes: BattlerSnap[]
 }
-/** Espelho só-leitura da batalha (hook não-enumerável `_battle`), ou null fora dela. */
+/** Espelho só-leitura registrado no canal de diagnóstico do host. */
 function battleSnap(h: Harness): BattleSnap | null {
-  return (h.api as unknown as { _battle: () => BattleSnap | null })._battle()
+  return (h.inspectors['game-2d-advanced:battle']?.() as BattleSnap | null | undefined) ?? null
 }
 
 /**
@@ -570,8 +578,8 @@ afterEach(() => {
 })
 
 describe('SZGameKit — API e personagens (sem DOM)', () => {
-  it('expõe os 334 métodos (spawn_named reusa spawnFromMold)', () => {
-    const { api } = loadRuntime()
+  it('expõe os 336 métodos (spawn_named reusa spawnFromMold)', () => {
+    const { api, inspectors } = loadRuntime()
     const expected = [
       // v1 (33)
       'setup',
@@ -587,6 +595,8 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'showScreen',
       'hideScreens',
       'setState',
+      'restartGame',
+      'onGameStart',
       'onEnterState',
       'stateIs',
       'state',
@@ -680,10 +690,10 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
       'rpgDrawInventory',
       'rpgGoMap',
       'rpgSetStartMap',
-      'rpgOnMap',
+      'rpgCreateMap',
+      'rpgOnEnterMap',
       'rpgCreateDoor',
-      // 🌍 Mundo aberto: tamanho do mapa + bordas ligadas + nome do mapa
-      'rpgMapSize',
+      // 🌍 Mundo aberto: bordas ligadas + nome do mapa
       'rpgConnectEdge',
       'rpgCurrentMap',
       'rpgBattleStats',
@@ -953,6 +963,8 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
     const rec = api as unknown as Record<string, unknown>
     for (const m of expected) expect(typeof rec[m]).toBe('function')
     expect(Object.keys(api).length).toBe(expected.length)
+    expect((api as unknown as Record<string, unknown>)._battle).toBeUndefined()
+    expect(typeof inspectors['game-2d-advanced:battle']).toBe('function')
   })
 
   it('setup muda a resolução interna e o personagem nasce centrado nela', () => {
@@ -1072,6 +1084,42 @@ describe('SZGameKit — máquina de estados', () => {
     expect(seen).toEqual(['jogando', 'loja'])
     expect(api.stateIs('loja')).toBe(true)
     expect(api.stateIs('jogando')).toBe(false)
+  })
+
+  it('estado personalizado preserva a partida; só restartGame começa outra', () => {
+    const { api } = loadRuntime()
+    const entradas: string[] = []
+    api.defineMold('moeda', {})
+    api.onEnterState('jogando', () => entradas.push('jogando'))
+
+    api.setState('jogando')
+    api.spawnFromMold('moeda', 10, 10)
+    api.setState('loja')
+    api.setState('jogando')
+
+    expect(api.countActive('moeda')).toBe(1)
+    expect(entradas).toEqual(['jogando', 'jogando'])
+
+    api.restartGame()
+    expect(api.countActive('moeda')).toBe(0)
+    expect(api.state()).toBe('jogando')
+    expect(entradas).toEqual(['jogando', 'jogando', 'jogando'])
+  })
+
+  it('onGameStart roda somente ao começar/recomeçar, nunca ao voltar de loja', () => {
+    const { api } = loadRuntime()
+    let partidas = 0
+    api.onGameStart(() => {
+      partidas += 1
+    })
+
+    api.restartGame()
+    api.setState('loja')
+    api.setState('jogando')
+    expect(partidas).toBe(1)
+
+    api.restartGame()
+    expect(partidas).toBe(2)
   })
 
   it('pause só pausa jogando; resume só continua pausado; endGame vai ao fim', () => {
@@ -1316,7 +1364,7 @@ describe('SZGameKit — P24: avisos, moldes, combate, missão', () => {
     expect(h.api.state()).toBe('vitoria')
   })
 
-  it('faíscas: burst cria partículas; entrar em jogando reinicia a arena', async () => {
+  it('faíscas: burst cria partículas; começar nova partida reinicia a arena', async () => {
     const h = loadRuntime()
     h.api.defineMold('g', {})
     h.api.defineEffect('poeira', { count: 8 })
@@ -1326,9 +1374,9 @@ describe('SZGameKit — P24: avisos, moldes, combate, missão', () => {
     expect(h.api.countActive('g')).toBe(1)
     h.api.burst('poeira', 50, 50)
     h.api.drawEffects() // move/desenha (com o ctx stub)
-    // Reentrar em jogando (Jogar de novo) zera pools e contadores.
+    // Começar nova partida (Jogar de novo) zera pools e contadores.
     h.api.setState('menu')
-    h.api.setState('jogando')
+    h.api.restartGame()
     expect(h.api.countActive('g')).toBe(0)
     expect(h.api.kills()).toBe(0)
   })
@@ -1357,7 +1405,7 @@ describe('SZGameKit — R1: correções do full review', () => {
     expect(h.api.isInvincible(heroi)).toBe(true)
     expect(heroi.health).toBe(90)
     h.api.setState('fim')
-    h.api.setState('jogando') // Jogar de novo
+    h.api.restartGame()
     expect(h.api.isInvincible(heroi)).toBe(false)
     h.api.hurt(heroi, 10, 1) // volta a levar dano
     expect(heroi.health).toBe(80)
@@ -1407,7 +1455,7 @@ describe('SZGameKit — R1: correções do full review', () => {
     const h = loadRuntime()
     h.api.defineEffect('p', { count: 4, life: 9, speed: 100, gravity: 0 })
     await startGame(h)
-    h.api.setState('jogando')
+    h.api.restartGame()
     h.nextFrame(16)
     h.api.burst('p', 50, 50)
     h.api.drawEffects()
@@ -1544,42 +1592,89 @@ describe('SZGameKit — R2: câmera, velocidade, animação, mouse, barra', () =
 })
 
 describe('SZGameKit — R3: Kit RPG (grade, fala, flags, mapas, batalha)', () => {
-  it('mapa inicial explícito vence a ordem, sobrevive ao reinício e o legado usa o primeiro', async () => {
+  it('criação desenha o mapa ativo; evento de entrada não declara mapa implicitamente', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    let draws = 0
+    let enters = 0
+    h.api.rpgCreateMap('vila', 15, 10, () => {
+      draws += 1
+    })
+    h.api.rpgOnEnterMap('vila', () => {
+      enters += 1
+    })
+    h.api.restartGame()
+    h.nextFrame(16)
+    expect(enters).toBe(1)
+    expect(draws).toBeGreaterThan(0)
+
+    const removed = h.api as unknown as Record<string, unknown>
+    expect(removed.rpgOnMap).toBeUndefined()
+    expect(removed.rpgMapSize).toBeUndefined()
+  })
+
+  it('mapa sem desenho e evento para mapa não criado produzem diagnóstico', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    const warns: string[] = []
+    const realWarn = console.warn
+    console.warn = (...args: unknown[]) => warns.push(args.join(' '))
+    try {
+      h.api.rpgCreateMap('vazio', 8, 6, () => {}, false)
+      h.api.rpgOnEnterMap('fantasma', () => {})
+      h.api.restartGame()
+      h.nextFrame(16)
+    } finally {
+      console.warn = realWarn
+    }
+    expect(
+      warns.some((warning) => warning.includes('vazio') && warning.includes('sem desenho')),
+    ).toBe(true)
+    expect(
+      warns.some((warning) => warning.includes('fantasma') && warning.includes('não foi criado')),
+    ).toBe(true)
+    expect(ctxCalls.some(([name]) => name === 'fillText')).toBe(true)
+  })
+
+  it('mapa inicial explícito vence a ordem, sobrevive ao reinício e o fallback usa o primeiro', async () => {
     const explicit = loadRuntime()
     await startGame(explicit)
     let firstMounts = 0
     let startMounts = 0
-    explicit.api.rpgOnMap('primeiro', () => {
+    explicit.api.rpgCreateMap('primeiro', 10, 10, () => {})
+    explicit.api.rpgOnEnterMap('primeiro', () => {
       firstMounts += 1
     })
-    explicit.api.rpgOnMap('inicio', () => {
+    explicit.api.rpgCreateMap('inicio', 10, 10, () => {})
+    explicit.api.rpgOnEnterMap('inicio', () => {
       startMounts += 1
     })
     explicit.api.rpgSetStartMap('inicio')
 
-    explicit.api.setState('jogando')
+    explicit.api.restartGame()
     expect(explicit.api.rpgCurrentMap()).toBe('inicio')
     expect(firstMounts).toBe(0)
     expect(startMounts).toBe(1)
 
     explicit.api.endGame()
-    explicit.api.setState('jogando')
+    explicit.api.restartGame()
     expect(explicit.api.rpgCurrentMap()).toBe('inicio')
     expect(startMounts).toBe(2)
 
-    const legacy = loadRuntime()
-    await startGame(legacy)
-    legacy.api.rpgOnMap('legado', () => {})
-    legacy.api.rpgOnMap('segundo', () => {})
-    legacy.api.setState('jogando')
-    expect(legacy.api.rpgCurrentMap()).toBe('legado')
+    const fallback = loadRuntime()
+    await startGame(fallback)
+    fallback.api.rpgCreateMap('primeiro', 10, 10, () => {})
+    fallback.api.rpgCreateMap('segundo', 10, 10, () => {})
+    fallback.api.restartGame()
+    expect(fallback.api.rpgCurrentMap()).toBe('primeiro')
   })
 
   it('mapa inexistente avisa e cai no primeiro mapa válido, sem mundo vazio', async () => {
     const h = loadRuntime()
     await startGame(h)
     let mounts = 0
-    h.api.rpgOnMap('seguro', () => {
+    h.api.rpgCreateMap('seguro', 10, 10, () => {})
+    h.api.rpgOnEnterMap('seguro', () => {
       mounts += 1
     })
     h.api.rpgSetStartMap('fantasma')
@@ -1587,7 +1682,7 @@ describe('SZGameKit — R3: Kit RPG (grade, fala, flags, mapas, batalha)', () =>
     const realWarn = console.warn
     console.warn = (...args: unknown[]) => warns.push(args.join(' '))
     try {
-      h.api.setState('jogando')
+      h.api.restartGame()
       expect(h.api.rpgCurrentMap()).toBe('seguro')
       h.api.rpgGoMap('outro-fantasma')
       expect(h.api.rpgCurrentMap()).toBe('seguro')
@@ -1599,6 +1694,28 @@ describe('SZGameKit — R3: Kit RPG (grade, fala, flags, mapas, batalha)', () =>
     expect(warns.some((warning) => warning.includes('primeiro mapa válido'))).toBe(true)
   })
 
+  it('mapa pequeno sempre recebe o herói numa célula livre e dentro dos limites', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 960, height: 540 })
+    await startGame(h)
+    const heroi = h.api.createCharacter({ w: 64, h: 64 }) as Record<string, number>
+    h.api.rpgMoveGrid(heroi, 64, 0)
+    h.api.rpgCreateMap('sala', 2, 2, () => {
+      h.api.drawBackground('#123456', false)
+    })
+    h.api.rpgOnEnterMap('sala', () => {
+      h.api.rpgBlockCell(0, 0)
+    })
+
+    h.api.restartGame()
+
+    expect(heroi.x).toBeGreaterThanOrEqual(0)
+    expect(heroi.y).toBeGreaterThanOrEqual(0)
+    expect(heroi.x).toBeLessThan(128)
+    expect(heroi.y).toBeLessThan(128)
+    expect([heroi.x, heroi.y]).not.toEqual([0, 0])
+  })
+
   it('grade: anda célula a célula, parede bloqueia, porta troca de mapa', async () => {
     const h = loadRuntime()
     h.api.setup({ width: 640, height: 640 })
@@ -1606,11 +1723,13 @@ describe('SZGameKit — R3: Kit RPG (grade, fala, flags, mapas, batalha)', () =>
     h.api.setState('jogando')
     const heroi = h.api.createCharacter({ w: 64, h: 64, speed: 6400 }) as Record<string, number>
     let montouCaverna = 0
-    h.api.rpgOnMap('vila', () => {
+    h.api.rpgCreateMap('vila', 10, 10, () => {})
+    h.api.rpgCreateMap('caverna', 10, 10, () => {})
+    h.api.rpgOnEnterMap('vila', () => {
       h.api.rpgBlockCell(1, 0) // parede à direita da origem
       h.api.rpgCreateDoor(0, 1, 'caverna')
     })
-    h.api.rpgOnMap('caverna', () => {
+    h.api.rpgOnEnterMap('caverna', () => {
       montouCaverna += 1
     })
     h.api.rpgGoMap('vila')
@@ -1722,7 +1841,7 @@ describe('SZGameKit — R3: Kit RPG (grade, fala, flags, mapas, batalha)', () =>
     expect(h.api.countActive('g')).toBe(1) // antes: o unpause APAGAVA o enxame
     // "Jogar de novo" de verdade (vindo do fim) segue resetando.
     h.api.endGame()
-    h.api.setState('jogando')
+    h.api.restartGame()
     expect(h.api.countActive('g')).toBe(0)
   })
 })
@@ -1768,7 +1887,8 @@ describe('SZGameKit — V6: cenas & NPCs vivos', () => {
     h.api.setup({ width: 640, height: 640 })
     await startGame(h)
     h.api.setState('jogando')
-    h.api.rpgOnMap('vila', () => {
+    h.api.rpgCreateMap('vila', 10, 10, () => {})
+    h.api.rpgOnEnterMap('vila', () => {
       h.api.rpgCreateNpc('bob', 2, 5, '', '')
     })
     h.api.rpgGoMap('vila')
@@ -1796,7 +1916,8 @@ describe('SZGameKit — V6: cenas & NPCs vivos', () => {
     await startGame(h)
     h.api.setState('jogando')
     const heroi = h.api.createCharacter({ w: 64, h: 64, speed: 64 }) as Record<string, number>
-    h.api.rpgOnMap('sala', () => {
+    h.api.rpgCreateMap('sala', 10, 10, () => {})
+    h.api.rpgOnEnterMap('sala', () => {
       h.api.rpgCreateNpc('guarda', 3, 0, '', '')
     })
     h.api.rpgGoMap('sala')
@@ -1816,7 +1937,8 @@ describe('SZGameKit — V6: cenas & NPCs vivos', () => {
     h.api.setState('jogando')
     const heroi = h.api.createCharacter({ w: 64, h: 64, speed: 6400 }) as Record<string, number>
     let pisou = 0
-    h.api.rpgOnMap('mapa', () => {
+    h.api.rpgCreateMap('mapa', 10, 10, () => {})
+    h.api.rpgOnEnterMap('mapa', () => {
       h.api.rpgOnStep(1, 0, () => {
         pisou += 1
       })
@@ -1882,7 +2004,7 @@ describe('SZGameKit — V7: escolhas & salvar', () => {
     const h = loadRuntime()
     await startGame(h)
     h.api.setState('jogando')
-    h.api.rpgOnMap('vila', () => {})
+    h.api.rpgCreateMap('vila', 10, 10, () => {})
     h.api.rpgGoMap('vila')
     // Estado de história.
     h.api.rpgAddFlag('achou-a-espada')
@@ -1893,7 +2015,7 @@ describe('SZGameKit — V7: escolhas & salvar', () => {
     expect(h.api.rpgHasSave()).toBe(true)
     // "Recomeçar" apaga a história em memória.
     h.api.setState('menu')
-    h.api.setState('jogando') // rpgNewGame zera flags/itens
+    h.api.restartGame()
     expect(h.api.rpgHasFlag('achou-a-espada')).toBe(false)
     expect(h.api.rpgHasItem('espada')).toBe(false)
     // Continuar do save: tudo volta.
@@ -2890,7 +3012,7 @@ describe('SZGameKit — R13: bugs do review #3', () => {
     // A criança marca o ponto numa bandeira no MEIO da fase (uso natural).
     h.api.setCheckpoint(600, 200)
     h.api.endGame() // morreu
-    h.api.setState('jogando') // "Jogar de novo"
+    h.api.restartGame()
     h.api.placeCharacter(c, 10, 999)
     h.api.respawn(c)
     // ⭐ Sem o reset, renascia em (600,200) — no meio da fase da partida passada.
@@ -2903,11 +3025,11 @@ describe('SZGameKit — R13: bugs do review #3', () => {
     h.api.setup({ width: 800, height: 600 })
     h.api.defineMold('bicho', { w: 32, h: 32 })
     await startGame(h)
-    h.api.setState('jogando')
+    h.api.restartGame()
     const a = h.api.spawnFromMold('bicho', 0, 0) as Record<string, number>
     h.api.tweenTo(a, 500, 500, 1) // em voo quando o jogo acaba
     h.api.endGame()
-    h.api.setState('jogando')
+    h.api.restartGame()
     const b = h.api.spawnFromMold('bicho', 10, 10) as Record<string, number>
     expect(b).toBe(a as unknown as typeof b) // o pool reusa o MESMO objeto
     h.nextFrame(16)
@@ -3285,7 +3407,7 @@ describe('SZGameKit — R16: 👾 Kit Monstrinhos', () => {
     expect(h.api.pkmTeamSize()).toBe(1)
     expect(h.api.pkmBallCount()).toBe(5)
     h.api.endGame()
-    h.api.setState('jogando') // "Jogar de novo" (vindo de 'fim' = recomeço REAL)
+    h.api.restartGame()
     expect(h.api.pkmTeamSize()).toBe(0)
     expect(h.api.pkmBallCount()).toBe(0)
   })
@@ -3293,13 +3415,13 @@ describe('SZGameKit — R16: 👾 Kit Monstrinhos', () => {
   it('⭐ salvar leva o time junto (senão a criança perde 6 monstrinhos)', async () => {
     const h = loadRuntime()
     await mundo(h)
-    h.api.rpgOnMap('vila', () => {})
+    h.api.rpgCreateMap('vila', 10, 10, () => {})
     h.api.pkmGive('Fogoso', 12)
     h.api.pkmGiveBall(3, 60)
     h.api.rpgSave()
     // Some tudo (como fechar o jogo)…
     h.api.endGame()
-    h.api.setState('jogando')
+    h.api.restartGame()
     expect(h.api.pkmTeamSize()).toBe(0)
     // …e o "Continuar" traz o time DE VOLTA. Sem bloco novo: é o mesmo Salvar.
     h.api.rpgLoad()
@@ -3711,6 +3833,64 @@ describe('SZGameKit — 🌍 mundo aberto (culling + câmera pelo mapa + tamanho
     return new Array(rows).fill(linha).join('\n')
   }
 
+  it('avisa quando mapa-cenário e mapa de peças têm dimensões diferentes', async () => {
+    const h = loadRuntime(fakeTilemapAsset(gridCheio(3, 2), [], 64))
+    h.api.loadTilemap('chao-vila', 'mapa')
+    h.api.rpgCreateMap('vila', 10, 8, () => {
+      h.api.drawTilemap('chao-vila', 'chão')
+    })
+    h.api.rpgSetStartMap('vila')
+    const warnings: string[] = []
+    const originalWarn = console.warn
+    console.warn = (...args: unknown[]) => warnings.push(args.map(String).join(' '))
+    try {
+      await startGame(h)
+      h.api.restartGame()
+      h.nextFrame(16)
+    } finally {
+      console.warn = originalWarn
+    }
+
+    expect(
+      warnings.some(
+        (warning) =>
+          warning.includes('mapa-cenário "vila"') &&
+          warning.includes('10 × 8') &&
+          warning.includes('mapa de peças "chao-vila"') &&
+          warning.includes('3 × 2'),
+      ),
+    ).toBe(true)
+  })
+
+  it('todo seletor de imagem resolve o asset sem exigir Carregar imagem', async () => {
+    const h = loadRuntime()
+    const image = 'data:image/png;base64,AA=='
+    const heroi = h.api.createCharacter({ w: 32, h: 32 })
+    h.api.setSheet(heroi, image, 16, 16)
+    h.api.setWalkSheet(heroi, image, 16, 16)
+    h.api.rpgCreateNpc('guia', 1, 1, image, '')
+    h.api.rpgGiveItem('chave', image)
+    h.api.scrollImage(image, 0, 0)
+    h.api.parallaxLayer(image, 0.3, 1)
+    await startGame(h)
+
+    let draws = 0
+    const originalDraw = fakeCtx.drawImage
+    ;(fakeCtx as { drawImage: () => void }).drawImage = () => {
+      draws += 1
+    }
+    try {
+      h.api.drawCharacter(heroi)
+      h.api.rpgDrawNpcs()
+      h.api.rpgDrawInventory(10, 10)
+      h.api.scrollImage(image, 0, 0)
+      h.api.parallaxLayer(image, 0.3, 1)
+    } finally {
+      ;(fakeCtx as { drawImage: unknown }).drawImage = originalDraw
+    }
+    expect(draws).toBeGreaterThanOrEqual(5)
+  })
+
   it('⭐ culling: mapa 100×100 desenha SÓ a fatia visível (não os 10.000 tiles)', async () => {
     const h = loadRuntime(fakeTilemapAsset(gridCheio(100, 100), [1], 64))
     h.api.setup({ width: 800, height: 600 })
@@ -3845,17 +4025,17 @@ describe('SZGameKit — 🌍 mundo aberto (culling + câmera pelo mapa + tamanho
     expect(todas.length).toBe(50)
   })
 
-  it('rpgMapSize alimenta a trava da câmera (mundo = células × célula)', async () => {
+  it('o tamanho declarado na criação do mapa alimenta a trava da câmera', async () => {
     const h = loadRuntime()
     h.api.setup({ width: 800, height: 600 })
     const heroi = h.api.createCharacter({ w: 32, h: 32, speed: 0 })
-    h.api.rpgOnMap('campo', () => {
-      h.api.rpgMapSize(30, 20)
+    h.api.rpgCreateMap('campo', 30, 20, () => {})
+    h.api.rpgOnEnterMap('campo', () => {
       h.api.placeCharacter(heroi, 29 * 64, 19 * 64)
     })
     h.api.onUpdate((dt: unknown) => h.api.rpgMoveGrid(heroi, 64, dt))
     await startGame(h)
-    h.api.setState('jogando') // vai ao 1º mapa → o hook declara o tamanho
+    h.api.restartGame()
     // O mundo passado na mão (800×600) é SOBRESCRITO pelo tamanho do mapa.
     h.api.cameraFollow(heroi, 800, 600)
     h.nextFrame(16)
@@ -4120,7 +4300,7 @@ describe('SZGameKit — R30: 👑 chefes (o inimigo usa golpes, ler vida, IA de 
     h.api.rpgTeachMove('Ogro', 'Marreta', 30, 0) // ensinado UMA vez
     // "Jogar de novo": menu → jogando dispara o rpgNewGame de novo.
     h.api.setState('menu')
-    h.api.setState('jogando')
+    h.api.restartGame()
     h.api.rpgBattleStart('Ogro', 100, 1, 0) // o Ogro entra com o golpe (antes o wipe apagava)
     expect(battleSnap(h)?.foes.find((f) => f.name === 'Ogro')?.moves).toBe(1)
   })
@@ -4355,7 +4535,7 @@ describe('SZGameKit — R30: 🃏 Kit Cartas (deck-battler)', () => {
     expect(h.api.cardsEnemyLife()).toBe(0)
     // "Jogar de novo" = voltar ao menu e entrar em jogando de novo → dispara o reset.
     h.api.setState('menu')
-    h.api.setState('jogando')
+    h.api.restartGame()
     expect(h.api.cardsHeroLife()).toBe(0) // a batalha da partida anterior foi ZERADA (cardsNewGame)
     // recomeçar: vida cheia (não estragada) e a receita roda 1×/turno (não 2×/3× por dobra).
     h.api.cardsStart(30, 40)
