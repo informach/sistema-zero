@@ -17,6 +17,7 @@ interface SZGame2DSurface {
     isColliding: (a: unknown, b: unknown) => boolean
     drawSprite: (ctx: unknown, sprite: unknown) => void
     keys: { left: boolean; right: boolean; up: boolean; down: boolean }
+    randomBetween: (min: number, max: number) => number
   }
 }
 
@@ -52,6 +53,20 @@ describe('gameTwoDRuntime', () => {
     expect(s.w).toBe(32)
     expect(s.color).toBe('#22d3ee')
     expect(s.vx).toBe(0)
+  })
+
+  it('randomBetween sempre devolve um inteiro, inclusive com limites fracionários', () => {
+    const random = spyOn(Math, 'random')
+    try {
+      for (const value of [0, 0.25, 0.5, 0.75, 0.999]) {
+        random.mockReturnValue(value)
+        expect(Number.isInteger(api.randomBetween(0.5, 3.8))).toBe(true)
+      }
+      random.mockReturnValue(0.5)
+      expect(api.randomBetween(0.2, 0.8)).toBe(1)
+    } finally {
+      random.mockRestore()
+    }
   })
 
   it('velocidade: spriteVx/Vy/Speed + isMoving(H/V) leem a velocidade do sprite', () => {
@@ -357,6 +372,8 @@ describe('gameTwoDRuntime — imagens / spritesheet / animação', () => {
       w: number,
       h: number,
     ) => void
+    pauseGame: () => void
+    resumeGame: () => void
   }
 
   // Loader que injeta __SZGAME_ASSETS, um Image controlável e um relógio (performance.now)
@@ -485,6 +502,26 @@ describe('gameTwoDRuntime — imagens / spritesheet / animação', () => {
     expect(draws[0]?.args[1]).toBe(0)
     expect(draws[1]?.args[1]).toBe(32)
   })
+
+  it('animação não avança enquanto o jogo está pausado', () => {
+    const { api, setClock } = loadImaging({ folha: 'data:image/png;base64,AAAA' })
+    const sheet = api.loadSpriteSheet('folha', 32, 32)
+    sheet.image.loaded = true
+    sheet.image.img.naturalWidth = 128
+    const sprite = api.createSprite({ x: 0, y: 0, w: 32, h: 32 })
+    setClock(1000)
+    api.setAnimation(sprite, sheet, 0, 3, 8)
+    setClock(1125)
+    const { ctx, calls } = fakeCtx()
+    api.drawSprite(ctx, sprite)
+    api.pauseGame()
+    setClock(10_000)
+    api.resumeGame()
+    api.drawSprite(ctx, sprite)
+
+    const draws = calls.filter((call) => call.fn === 'drawImage')
+    expect(draws.map((call) => call.args[1])).toEqual([32, 32])
+  })
 })
 
 describe('gameTwoDRuntime — movimento e efeitos (v0.4.0)', () => {
@@ -515,6 +552,8 @@ describe('gameTwoDRuntime — movimento e efeitos (v0.4.0)', () => {
     drawParticles: (ctx: CanvasCtx) => void
     keys: { left: boolean; right: boolean; up: boolean; down: boolean }
     pointer: { x: number; y: number; down: boolean }
+    pauseGame: () => void
+    resumeGame: () => void
   }
 
   function load() {
@@ -620,6 +659,68 @@ describe('gameTwoDRuntime — movimento e efeitos (v0.4.0)', () => {
     rafs[0]?.() // roda um frame do tremor
     expect(ctx.canvas.style.transform ?? '').toContain('translate')
   })
+
+  it('shake congela durante a pausa e continua ao retomar', () => {
+    const { api, rafs } = load()
+    const { ctx } = fakeCtx()
+    api.shake(ctx, 8)
+    const pending = rafs.shift()
+    api.pauseGame()
+    pending?.()
+    expect(ctx.canvas.style.transform ?? '').toBe('')
+    expect(rafs).toHaveLength(0)
+    api.resumeGame()
+    expect(rafs).toHaveLength(1)
+  })
+})
+
+describe('gameTwoDRuntime — música e pausa', () => {
+  it('suspende o agendamento da música na pausa e continua ao retomar', () => {
+    let nextTimerId = 1
+    const timers = new Map<number, () => void>()
+    const setTimeoutControlled = (callback: () => void) => {
+      const id = nextTimerId
+      nextTimerId += 1
+      timers.set(id, callback)
+      return id
+    }
+    const clearTimeoutControlled = (id: number) => timers.delete(id)
+    const win = {
+      addEventListener() {},
+      SZGame2D: undefined,
+      performance: { now: () => 0 },
+    } as unknown as Record<string, unknown>
+    new Function('window', 'requestAnimationFrame', 'setTimeout', 'clearTimeout', gameTwoDRuntime)(
+      win,
+      () => 0,
+      setTimeoutControlled,
+      clearTimeoutControlled,
+    )
+    const api = (
+      win as unknown as {
+        SZGame2D: {
+          playMusic: (name: string) => void
+          pauseGame: () => void
+          resumeGame: () => void
+          stopMusic: () => void
+        }
+      }
+    ).SZGame2D
+
+    api.playMusic('adventure')
+    expect(timers.size).toBe(1)
+    api.pauseGame()
+    expect(timers.size).toBe(0)
+    api.resumeGame()
+    expect(timers.size).toBe(1)
+    const next = timers.values().next().value
+    if (typeof next !== 'function') throw new Error('próxima nota não foi agendada')
+    timers.clear()
+    next()
+    expect(timers.size).toBe(1)
+    api.stopMusic()
+    expect(timers.size).toBe(0)
+  })
 })
 
 describe('gameTwoDRuntime — tiles / tilemaps (v0.5.0)', () => {
@@ -643,11 +744,12 @@ describe('gameTwoDRuntime — tiles / tilemaps (v0.5.0)', () => {
     drawTileMap: (ctx: unknown, map: unknown, x: number, y: number, size?: number) => void
     collideTileMap: (sprite: TileSprite, map: unknown) => void
     tileAt: (map: unknown, px: number, py: number) => number
+    setupStage: (width: number, height: number, background: string) => void
   }
 
   // Loader com um Image fake (nunca carrega) — os tiles caem no placeholder, que é
   // o que queremos contar; o desenho real do tileset se verifica em browser.
-  function load(): TileApi {
+  function load(devicePixelRatio = 1): TileApi {
     const win = {
       addEventListener() {},
       SZGame2D: undefined,
@@ -660,6 +762,7 @@ describe('gameTwoDRuntime — tiles / tilemaps (v0.5.0)', () => {
         this.addEventListener = () => {}
         Object.defineProperty(this, 'src', { set() {}, get: () => '' })
       },
+      devicePixelRatio,
     } as unknown as Record<string, unknown>
     new Function('window', 'requestAnimationFrame', 'Image', gameTwoDRuntime)(
       win,
@@ -735,6 +838,25 @@ describe('gameTwoDRuntime — tiles / tilemaps (v0.5.0)', () => {
     // 0 (a sombra padrão do bloco) mantém o encaixe automático de sempre.
     api.drawTileMap(ctx, map, 0, 0, 0)
     expect(map.draw).toBe(50)
+  })
+
+  it('drawTileMap usa o palco lógico, não o backing store ampliado pelo DPR', () => {
+    document.body.innerHTML = '<canvas id="tela"></canvas>'
+    const canvas = document.querySelector('canvas')
+    if (!canvas) throw new Error('canvas do teste não foi criado')
+    canvas.getBoundingClientRect = () =>
+      ({ width: 800, height: 480, x: 0, y: 0, top: 0, left: 0, right: 800, bottom: 480 }) as DOMRect
+    const api = load(2)
+    api.setupStage(800, 480, '#000000')
+    expect(canvas.width).toBe(1600)
+    expect(canvas.height).toBe(960)
+
+    const map = api.createTileMap({ image: 'tileset', tile: 32, solid: '', grid: '0 0;0 0' })
+    const ctx = { canvas, fillRect() {}, drawImage() {}, clearRect() {} }
+    api.drawTileMap(ctx, map, 0, 0)
+    expect(map.draw).toBe(240)
+    expect(map.ox).toBe(160)
+    expect(map.oy).toBe(0)
   })
 
   it('collideTileMap pousa o sprite sobre o chão sólido e zera a velocidade vertical', () => {
@@ -1031,6 +1153,9 @@ describe('gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0)', () =
     everyFrames: (key: string, n: number) => boolean
     everySeconds: (key: string, secs: number) => boolean
     drawSprite: (ctx: unknown, s: unknown) => void
+    setCamera: (x: number, y: number) => void
+    pauseGame: () => void
+    resumeGame: () => void
   }
 
   let clock = 0
@@ -1093,6 +1218,20 @@ describe('gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0)', () =
     expect(api.countGroup(g)).toBe(1)
   })
 
+  it('pruneOffscreen usa o viewport deslocado da câmera nos quatro lados', () => {
+    const api = load()
+    const g = api.createGroup()
+    const ctx = { canvas: { width: 200, height: 100 } }
+    api.setCamera(1000, 500)
+    api.spawn(g, { x: 1050, y: 540, w: 10, h: 10, color: '#fff' })
+    api.spawn(g, { x: 900, y: 540, w: 10, h: 10, color: '#fff' })
+    api.spawn(g, { x: 1250, y: 540, w: 10, h: 10, color: '#fff' })
+    api.spawn(g, { x: 1050, y: 400, w: 10, h: 10, color: '#fff' })
+    api.spawn(g, { x: 1050, y: 650, w: 10, h: 10, color: '#fff' })
+    api.pruneOffscreen(ctx, g, 0)
+    expect(g.items.map((sprite) => [sprite.x, sprite.y])).toEqual([[1050, 540]])
+  })
+
   it('overlapGroups chama fn para cada par que se encosta', () => {
     const api = load()
     const a = api.createGroup()
@@ -1105,6 +1244,26 @@ describe('gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0)', () =
       pares += 1
     })
     expect(pares).toBe(1)
+  })
+
+  it('overlapGroups no mesmo grupo ignora o próprio sprite e visita cada par uma vez', () => {
+    const api = load()
+    const group = api.createGroup()
+    api.spawn(group, { x: 0, y: 0, w: 20, h: 20, color: '#fff' })
+    expect(() => api.overlapGroups(group, group, () => {})).not.toThrow()
+    let oneSpritePairs = 0
+    api.overlapGroups(group, group, () => {
+      oneSpritePairs += 1
+    })
+    expect(oneSpritePairs).toBe(0)
+
+    api.spawn(group, { x: 0, y: 0, w: 20, h: 20, color: '#fff' })
+    api.spawn(group, { x: 0, y: 0, w: 20, h: 20, color: '#fff' })
+    const pairs = new Set<string>()
+    api.overlapGroups(group, group, (a, b) => {
+      pairs.add([a.x, group.items.indexOf(a), group.items.indexOf(b)].join(':'))
+    })
+    expect(pairs.size).toBe(3)
   })
 
   it('overlapGroups: se o corpo REMOVE o tiro, ele não perfura os inimigos encostados (R1/A3)', () => {
@@ -1163,6 +1322,19 @@ describe('gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0)', () =
     expect(api.everySeconds('k', 2)).toBe(false) // só 1s passou
     clock = 3000
     expect(api.everySeconds('k', 2)).toBe(true) // 2s passaram → dispara
+  })
+
+  it('everySeconds desconta todo o tempo em que o jogo ficou pausado', () => {
+    const api = load()
+    clock = 1000
+    expect(api.everySeconds('pausa', 2)).toBe(false)
+    clock = 1500
+    api.pauseGame()
+    clock = 10_000
+    api.resumeGame()
+    expect(api.everySeconds('pausa', 2)).toBe(false)
+    clock = 11_500
+    expect(api.everySeconds('pausa', 2)).toBe(true)
   })
 })
 
@@ -1505,12 +1677,24 @@ describe('gameTwoDRuntime — nave clássica: girar + impulsionar (v0.10.0)', ()
   })
 
   it('spawnAsteroidFromEdge nasce numa borda e vai rumo ao centro', () => {
-    const api = load()
-    const g = api.createGroup()
-    const a = api.spawnAsteroidFromEdge(g, { size: 30, color: '#8d8f9b', speed: 2 })
-    expect(g.items.length).toBe(1)
-    // a velocidade tem magnitude = speed num único eixo (entra na tela reto)
-    expect(Math.abs(a?.vx ?? 0) + Math.abs(a?.vy ?? 0)).toBeCloseTo(2, 6)
+    const random = spyOn(Math, 'random').mockReturnValueOnce(0).mockReturnValueOnce(0.25)
+    try {
+      const api = load()
+      const g = api.createGroup()
+      const a = api.spawnAsteroidFromEdge(g, { size: 30, color: '#8d8f9b', speed: 2 })
+      expect(g.items.length).toBe(1)
+      if (!a) throw new Error('asteroide não foi criado')
+      const centerX = a.x + a.w / 2
+      const centerY = a.y + a.h / 2
+      const targetX = 360 / 2
+      const targetY = 360 / 2
+      const crossProduct = (targetX - centerX) * a.vy - (targetY - centerY) * a.vx
+      expect(Math.hypot(a.vx, a.vy)).toBeCloseTo(2, 6)
+      expect(crossProduct).toBeCloseTo(0, 6)
+      expect((targetX - centerX) * a.vx + (targetY - centerY) * a.vy).toBeGreaterThan(0)
+    } finally {
+      random.mockRestore()
+    }
   })
 })
 

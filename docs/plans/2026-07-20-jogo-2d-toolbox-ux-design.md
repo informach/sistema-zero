@@ -6,8 +6,8 @@ Data: 2026-07-20
 
 Simplificar a descoberta e a leitura dos blocos da extensão Jogo 2D sem reduzir
 a paleta. A toolbox deve ser organizada por assunto; as áreas estruturais do
-projeto continuam com os nomes `⚙️ Ao iniciar`, `⚡ Quando acontecer — Eventos` e
-`🔁 Enquanto estiver rodando — Loops`.
+projeto continuam com os nomes `⚙️ Ao iniciar`, `⚡ Quando acontecer` e
+`🔁 Enquanto estiver rodando`.
 
 ## Decisões aprovadas
 
@@ -15,8 +15,8 @@ projeto continuam com os nomes `⚙️ Ao iniciar`, `⚡ Quando acontecer — Ev
 
 Remover da toolbox as subcategorias baseadas em área/sintaxe:
 
-- `⚡ Quando acontecer — Eventos`;
-- `🔁 Enquanto estiver rodando — Loops`;
+- `⚡ Quando acontecer`;
+- `🔁 Enquanto estiver rodando`;
 - `❓ Perguntas`.
 
 Distribuir seus blocos em:

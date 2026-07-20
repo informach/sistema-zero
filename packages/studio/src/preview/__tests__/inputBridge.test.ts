@@ -58,6 +58,29 @@ describe('inputBridge — window.__szInput', () => {
     expect(input.y).toBe(17)
   })
 
+  it('usa a tela onde o evento aconteceu quando há mais de um Canvas', () => {
+    const first = {
+      isConnected: true,
+      getContext: () => ({}),
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 100, height: 100 }),
+      width: 100,
+      height: 100,
+    }
+    const second = {
+      isConnected: true,
+      getContext: () => ({}),
+      getBoundingClientRect: () => ({ left: 200, top: 50, width: 200, height: 100 }),
+      width: 400,
+      height: 200,
+    }
+    const { input, fire } = load({ canvas: first })
+
+    fire('pointermove', { clientX: 250, clientY: 75, target: second })
+
+    expect(input.x).toBe(100)
+    expect(input.y).toBe(50)
+  })
+
   it('limpa as teclas apertadas no blur (corrige tecla presa após alt-tab)', () => {
     const { input, fire } = load()
     fire('keydown', { key: 'ArrowLeft', code: 'ArrowLeft' })

@@ -1204,10 +1204,14 @@ export type HTMLNode =
     })
   | (HTMLNodeCommon & {
       type: 'canvas'
-      id: string
+      id?: string
+      /** Campo legado; código novo prefere `attrs.class`. */
       class?: string
       width?: number
       height?: number
+      attrs?: Record<string, string>
+      /** Conteúdo alternativo exibido quando Canvas não está disponível. */
+      children?: HTMLNode[]
     })
   // Pedaço de texto solto que vive dentro das `children` de uma tag inline/
   // container — permite que `<p>© <span></span> texto</p>` (conteúdo misto)
@@ -1237,10 +1241,12 @@ export const HTMLNodeSchema: z.ZodType<HTMLNode> = z.lazy(() =>
       }),
       z.object({
         type: z.literal('canvas'),
-        id: irText(),
+        id: irText().optional(),
         class: irText().optional(),
         width: z.number().int().positive().optional(),
         height: z.number().int().positive().optional(),
+        attrs: z.record(z.string(), irText()).optional(),
+        children: z.array(HTMLNodeSchema).optional(),
         ...idField,
       }),
       z.object({
@@ -1283,9 +1289,54 @@ export const HTMLNodeSchema: z.ZodType<HTMLNode> = z.lazy(() =>
 
 // ---------- CSS ----------
 
+/** Uma declaração CSS na ordem em que foi escrita ou montada com blocos. */
+export interface CSSDeclaration {
+  property: string
+  value: string
+  /** Id do bloco `sz_css_decl` que originou esta ocorrência. */
+  __id?: string
+}
+
+/**
+ * O array preserva fallbacks (`display` repetido) e ids por ocorrência. O Record
+ * compacto continua válido quando cada propriedade aparece uma única vez e para
+ * projetos legados; consumidores usam {@link cssDeclarationEntries} nos dois casos.
+ */
+export type CSSDeclarations = CSSDeclaration[] | Record<string, string>
+
+export function cssDeclarationEntries(
+  declarations: CSSDeclarations,
+  legacyIds?: Record<string, string>,
+): CSSDeclaration[] {
+  if (Array.isArray(declarations)) return declarations
+  return Object.entries(declarations).map(([property, value]) => ({
+    property,
+    value,
+    ...(legacyIds?.[property] ? { __id: legacyIds[property] } : {}),
+  }))
+}
+
+/** Último valor por propriedade, apenas para reconhecimento de blocos dedicados. */
+export function cssDeclarationsRecord(declarations: CSSDeclarations): Record<string, string> {
+  const record: Record<string, string> = {}
+  for (const declaration of cssDeclarationEntries(declarations)) {
+    record[declaration.property] = declaration.value
+  }
+  return record
+}
+
+export function hasDuplicateCSSDeclarations(declarations: CSSDeclarations): boolean {
+  const seen = new Set<string>()
+  for (const declaration of cssDeclarationEntries(declarations)) {
+    if (seen.has(declaration.property)) return true
+    seen.add(declaration.property)
+  }
+  return false
+}
+
 export interface CSSRule {
   selector: string
-  declarations: Record<string, string>
+  declarations: CSSDeclarations
   /**
    * Mapa `propriedade → block.id` do bloco `sz_css_decl` que originou aquela
    * declaração. Existe só quando a regra veio do canvas (não do reverse-parse
@@ -1356,9 +1407,20 @@ function cssValueHasNoLooseBrace(value: string): boolean {
 const cssValueText = () =>
   irText().refine(cssValueHasNoLooseBrace, 'Valor de CSS não pode conter chaves { } soltas')
 
+export const CSSDeclarationSchema: z.ZodType<CSSDeclaration> = z.object({
+  property: cssNameText().min(1),
+  value: cssValueText(),
+  ...idField,
+})
+
+const CSSDeclarationsSchema: z.ZodType<CSSDeclarations> = z.union([
+  z.array(CSSDeclarationSchema),
+  z.record(z.string(), cssValueText()),
+])
+
 export const CSSRuleSchema: z.ZodType<CSSRule> = z.object({
   selector: cssNameText().min(1),
-  declarations: z.record(z.string(), cssValueText()),
+  declarations: CSSDeclarationsSchema,
   __declIds: z.record(z.string(), z.string()).optional(),
   ...idField,
 })
@@ -1421,7 +1483,7 @@ export const MediaQueryCSSSchema: z.ZodType<MediaQueryCSS> = z.object({
 export interface KeyframesCSS {
   type: 'keyframes'
   name: string
-  steps: Array<{ at: string; declarations: Record<string, string> }>
+  steps: Array<{ at: string; declarations: CSSDeclarations }>
   __id?: string
 }
 
@@ -1431,7 +1493,7 @@ export const KeyframesCSSSchema: z.ZodType<KeyframesCSS> = z.object({
   steps: z.array(
     z.object({
       at: cssNameText().min(1),
-      declarations: z.record(z.string(), cssValueText()),
+      declarations: CSSDeclarationsSchema,
     }),
   ),
   ...idField,
@@ -4887,7 +4949,13 @@ export type JSStatement =
   // Retorno de um método (`return v;`) ou saída antecipada (`return;`).
   | (JSStatementCommon & { type: 'return'; value?: JSExpr })
   // Função nomeada de topo (`function nome(params) { ... }`).
-  | (JSStatementCommon & { type: 'funcDecl'; name: string; params: string[]; body: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'funcDecl'
+      name: string
+      params: string[]
+      async?: boolean
+      body: JSStatement[]
+    })
   // Chamada de função como comando (`nome(args);`).
   | (JSStatementCommon & { type: 'callFunction'; name: string; args: JSExpr[] })
   // Para cada item (com posição opcional) de uma lista (`<lista>.forEach((item, i) => {…})`).
@@ -9809,6 +9877,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('funcDecl'),
       name: irText(),
       params: z.array(irText()),
+      async: z.boolean().optional(),
       body: z.array(JSStatementSchema),
       ...idField,
     }),
@@ -9985,6 +10054,52 @@ const G2D_DECLARATION_FIELDS: Readonly<Record<string, string>> = {
   'g2d:createBalloon': 'varName',
 }
 
+/**
+ * Declarações que materializam identificadores JavaScript usados pelos blocos
+ * genéricos de variável. Diferente dos nomes de domínio (sprite, cena, missão),
+ * estes participam do escopo léxico real emitido pelo gerador.
+ */
+const PROGRAMMING_DECLARATION_FIELDS: Readonly<Record<string, string>> = {
+  ...G2D_DECLARATION_FIELDS,
+  declareVar: 'name',
+  getProperty: 'varName',
+  getAttribute: 'varName',
+  querySelector: 'varName',
+  querySelectorAll: 'varName',
+  getElementById: 'varName',
+  createElement: 'varName',
+  createElementNS: 'varName',
+  canvasSetup: 'varName',
+  canvasGradient: 'varName',
+  keyboardSimple: 'varName',
+  newInstance: 'varName',
+  newImage: 'varName',
+  rendererResponsive: 'cleanup',
+  environmentLoad: 'texture',
+  bloomSetup: 'composer',
+  particlesSetup: 'particles',
+  waterSetup: 'water',
+  grassSetup: 'grass',
+  signSetup: 'sign',
+  primitiveSetup: 'mesh',
+  terrainSetup: 'terrain',
+  roadSetup: 'road',
+  buildingSetup: 'building',
+  citySetup: 'city',
+  physicsLiteSetup: 'world',
+  physicsLiteRaycast: 'result',
+  physicsLiteBodyState: 'result',
+  physicsLiteStats: 'result',
+  'g3d:createScene': 'varName',
+  'g3d:createFullscreenScene': 'varName',
+  'g3d:createGroup': 'varName',
+  'g3d:createCrossingScene': 'varName',
+  'g3d:createRaceScene': 'varName',
+  'g3d:createStackScene': 'varName',
+  'g3d:createModel': 'varName',
+  'g3d:createSwarm': 'varName',
+}
+
 const G2D_REFERENCE_FIELDS = new Set([
   'spriteVar',
   'targetVar',
@@ -10047,10 +10162,21 @@ function childStatementEntries(statement: JSStatement): ChildStatementEntry[] {
         key === 'handler' ||
         key === 'finalizer' ||
         key === 'catchBody' ||
-        key === 'ctorBody') &&
+        key === 'ctorBody' ||
+        key === 'default' ||
+        key === 'bodyA' ||
+        key === 'bodyB') &&
       Array.isArray(value)
     ) {
       bodies.push({ path: [key], body: value as JSStatement[] })
+    }
+    if (key === 'cases' && Array.isArray(value)) {
+      for (let index = 0; index < value.length; index += 1) {
+        const branch = value[index]
+        if (branch && typeof branch === 'object' && Array.isArray(branch.body)) {
+          bodies.push({ path: ['cases', index, 'body'], body: branch.body })
+        }
+      }
     }
     if (key === 'methods' && Array.isArray(value)) {
       for (let index = 0; index < value.length; index += 1) {
@@ -10146,6 +10272,257 @@ function g2dLocalNames(statement: JSStatement): string[] {
   }
 }
 
+const PROGRAMMING_IMPLICIT_NAMES = new Set([
+  'ctx',
+  'event',
+  'window',
+  'document',
+  'Math',
+  'JSON',
+  'Object',
+  'Array',
+  'Date',
+  'Promise',
+  'console',
+  'performance',
+  // Facades oficiais injetados pelas extensões habilitadas. São globais de
+  // runtime, não declarações do programa do aluno.
+  'SZGame2D',
+  'SZGame3D',
+  'SZGameKit',
+  'SZGameKit3D',
+  'SZWorld3D',
+  'THREE',
+])
+
+const STATEMENT_BODY_KEYS = new Set([
+  'body',
+  'then',
+  'else',
+  'handler',
+  'finalizer',
+  'catchBody',
+  'ctorBody',
+  'default',
+  'bodyA',
+  'bodyB',
+  'methods',
+])
+
+function programmingDeclarationNames(statement: JSStatement): string[] {
+  const record = statement as unknown as Record<string, unknown>
+  const field = PROGRAMMING_DECLARATION_FIELDS[statement.type]
+  const names: string[] = []
+  if (field && typeof record[field] === 'string') names.push(record[field])
+  if (statement.type === 'importNamed') names.push(...statement.names)
+  if (statement.type === 'importStar') {
+    names.push(statement.name)
+  }
+  // canvasSetup materializa dois identificadores no JavaScript: o contexto
+  // escolhido e o elemento reservado como `canvas` pelo IdentifierScope.
+  if (statement.type === 'canvasSetup') names.push('canvas')
+  return names.map((name) => name.trim()).filter(Boolean)
+}
+
+function programmingLocalsForChild(statement: JSStatement, path: readonly PropertyKey[]): string[] {
+  const first = path[0]
+  switch (statement.type) {
+    case 'funcDecl':
+      return first === 'body' ? statement.params : []
+    case 'forRange':
+      return first === 'body' ? [statement.varName] : []
+    case 'forOf':
+      return first === 'body' ? [statement.itemName] : []
+    case 'forEach':
+      return first === 'body'
+        ? [statement.itemName, statement.indexName].filter(
+            (name): name is string => typeof name === 'string' && name.length > 0,
+          )
+        : []
+    case 'tryCatch':
+      return first === 'handler' && statement.errorName ? [statement.errorName] : []
+    case 'fetchJson':
+      if (first === 'body') return [statement.okName]
+      return first === 'catchBody' && statement.catchName ? [statement.catchName] : []
+    case 'classDecl': {
+      if (first === 'ctorBody') return statement.ctorParams ?? []
+      if (first === 'methods' && typeof path[1] === 'number') {
+        return statement.methods[path[1]]?.params ?? []
+      }
+      return []
+    }
+    case 'requestFrameDo':
+      return first === 'body' && statement.param ? [statement.param] : []
+    case 'loaderLoad':
+      if (first === 'body') return [statement.param]
+      return first === 'errorBody' && statement.errorParam ? [statement.errorParam] : []
+    case 'traverseEach':
+      return first === 'body' ? [statement.param] : []
+    case 'physicsLiteCollisionEvent':
+      return first === 'body' ? [statement.bodyParam, statement.colliderParam] : []
+    case 'physicsLiteTriggerEvent':
+      return first === 'body'
+        ? [statement.bodyParam, statement.triggerParam, statement.enteringParam]
+        : []
+    case 'animationLoop':
+      return first === 'body' && statement.deltaVar ? [statement.deltaVar] : []
+    case 'g3d:forEachInSwarm':
+      return first === 'body' ? [statement.itemName] : []
+    case 'gk:onUpdate':
+    case 'g3k:onUpdate':
+    case 'w3d:onUpdate':
+      return first === 'body' ? [statement.dtName] : []
+    case 'gk:onDraw':
+    case 'gk:onDrawHud':
+      return first === 'body' ? [statement.ctxName] : []
+    case 'gk:onGameClick':
+    case 'gk:tdOnBuy':
+      return first === 'body' ? [statement.xName, statement.yName] : []
+    case 'gk:rpgCreateMap':
+    case 'gk:defineLook':
+      return first === 'body' ? [statement.ctxName] : []
+    case 'gk:forEachActive':
+    case 'g3k:forEachAlive':
+    case 'g3k:forEachNear':
+    case 'g3k:onEnterEntityState':
+    case 'g3k:onExitEntityState':
+    case 'g3k:onEntityDeath':
+      return first === 'body' ? [statement.itemName] : []
+    case 'gk:overlapGroups':
+      return first === 'body' ? [statement.aName, statement.bName] : []
+    case 'g3k:onEntityStateUpdate':
+      return first === 'body' ? [statement.itemName, statement.dtName] : []
+    case 'g3k:onOverlap':
+      return first === 'body' ? [statement.zoneName, statement.whoName] : []
+    default:
+      return g2dLocalNames(statement)
+  }
+}
+
+function validateProgrammingValue(
+  value: unknown,
+  symbols: ReadonlySet<string>,
+  ctx: z.RefinementCtx,
+  path: (string | number)[],
+): void {
+  if (Array.isArray(value)) {
+    value.forEach((child, index) => {
+      validateProgrammingValue(child, symbols, ctx, [...path, index])
+    })
+    return
+  }
+  if (typeof value !== 'object' || value === null) return
+  const record = value as Record<string, unknown>
+  const type = typeof record.type === 'string' ? record.type : ''
+
+  if (type === 'var' && !Object.hasOwn(record, 'value') && typeof record.name === 'string') {
+    const name = record.name.trim()
+    if (name && !symbols.has(name) && !PROGRAMMING_IMPLICIT_NAMES.has(name)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: [...path, 'name'],
+        message: `A variável “${name}” ainda não foi declarada neste ponto`,
+      })
+    }
+    return
+  }
+
+  if (
+    (type === 'arrayMap' || type === 'arrayFind' || type === 'arrayFilter') &&
+    typeof record.itemName === 'string'
+  ) {
+    const nested = new Set(symbols)
+    nested.add(record.itemName)
+    for (const [key, child] of Object.entries(record)) {
+      if (key === 'transform' || key === 'cond') {
+        validateProgrammingValue(child, nested, ctx, [...path, key])
+      } else if (key !== '__id' && key !== 'type' && key !== 'itemName') {
+        validateProgrammingValue(child, symbols, ctx, [...path, key])
+      }
+    }
+    return
+  }
+
+  if (type === 'newPromise' && typeof record.param === 'string' && Array.isArray(record.body)) {
+    const nested = new Set(symbols)
+    nested.add(record.param)
+    validateProgrammingReferences(record.body as JSStatement[], ctx, [...path, 'body'], nested)
+    return
+  }
+
+  for (const [key, child] of Object.entries(record)) {
+    if (key === '__id' || key === 'type' || STATEMENT_BODY_KEYS.has(key)) continue
+    if (key === 'elseif' && Array.isArray(child)) {
+      child.forEach((branch, index) => {
+        if (branch && typeof branch === 'object') {
+          validateProgrammingValue((branch as Record<string, unknown>).cond, symbols, ctx, [
+            ...path,
+            'elseif',
+            index,
+            'cond',
+          ])
+        }
+      })
+      continue
+    }
+    if (key === 'cases' && Array.isArray(child)) {
+      child.forEach((branch, index) => {
+        if (branch && typeof branch === 'object') {
+          validateProgrammingValue((branch as Record<string, unknown>).match, symbols, ctx, [
+            ...path,
+            'cases',
+            index,
+            'match',
+          ])
+        }
+      })
+      continue
+    }
+    validateProgrammingValue(child, symbols, ctx, [...path, key])
+  }
+}
+
+function validateProgrammingReferences(
+  statements: JSStatement[],
+  ctx: z.RefinementCtx,
+  path: (string | number)[],
+  inherited: ReadonlySet<string> = PROGRAMMING_IMPLICIT_NAMES,
+): void {
+  const symbols = new Set(inherited)
+  for (let index = 0; index < statements.length; index += 1) {
+    const statement = statements[index]
+    if (!statement) continue
+    const statementPath = [...path, index]
+
+    validateProgrammingValue(statement, symbols, ctx, statementPath)
+    if (statement.type === 'assign') {
+      const name = statement.name.trim()
+      if (name && !symbols.has(name) && !PROGRAMMING_IMPLICIT_NAMES.has(name)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: [...statementPath, 'name'],
+          message: `A variável “${name}” ainda não foi declarada neste ponto`,
+        })
+      }
+    }
+
+    for (const child of childStatementEntries(statement)) {
+      const childSymbols = new Set(symbols)
+      for (const local of programmingLocalsForChild(statement, child.path)) {
+        if (local.trim()) childSymbols.add(local.trim())
+      }
+      validateProgrammingReferences(
+        child.body,
+        ctx,
+        [...statementPath, ...child.path],
+        childSymbols,
+      )
+    }
+
+    for (const name of programmingDeclarationNames(statement)) symbols.add(name)
+  }
+}
+
 function validateG2DReferenceValue(
   value: unknown,
   symbols: ReadonlySet<string>,
@@ -10155,17 +10532,6 @@ function validateG2DReferenceValue(
   if (Array.isArray(value) || typeof value !== 'object' || value === null) return
   const record = value as Record<string, unknown>
   const type = typeof record.type === 'string' ? record.type : ''
-
-  if (type === 'var' && !Object.hasOwn(record, 'value') && typeof record.name === 'string') {
-    const name = record.name.trim()
-    if (name && !symbols.has(name) && !G2D_IMPLICIT_NAMES.has(name)) {
-      ctx.addIssue({
-        code: 'custom',
-        path: [...path, 'name'],
-        message: `O nome “${name}” ainda não foi criado neste jogo`,
-      })
-    }
-  }
 
   for (const [key, child] of Object.entries(record)) {
     if (key === '__id' || key === 'body' || key === 'then' || key === 'else' || key === 'elseif')
@@ -10211,17 +10577,6 @@ function validateG2DReferences(
     if (!statement) continue
     validateG2DReferenceValue(statement, symbols, ctx, [...path, index])
 
-    if (statement.type === 'assign') {
-      const name = statement.name.trim()
-      if (name && !symbols.has(name) && !G2D_IMPLICIT_NAMES.has(name)) {
-        ctx.addIssue({
-          code: 'custom',
-          path: [...path, index, 'name'],
-          message: `A variável “${name}” ainda não foi criada neste jogo`,
-        })
-      }
-    }
-
     const childSymbols = new Set(symbols)
     for (const local of g2dLocalNames(statement)) {
       if (local.trim()) childSymbols.add(local.trim())
@@ -10243,6 +10598,7 @@ export const SZIRSchema = z
 
   .superRefine((ir, ctx) => {
     validateCanvas3DLifecycle(ir.js, ctx, ['js'])
+    validateProgrammingReferences(ir.js, ctx, ['js'])
     const starts = ir.js
       .map((statement, index) => ({ statement, index }))
       .filter(({ statement }) => statement.type === 'g2d:onStart')

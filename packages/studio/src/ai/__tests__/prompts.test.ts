@@ -35,6 +35,13 @@ describe('buildSystemPrompt', () => {
       expect(buildSystemPrompt({ mode })).toContain(CHILD_SAFETY_CLAUSE)
     }
   })
+
+  it('ensina as três áreas de comportamento pelos nomes mostrados à criança', () => {
+    const prompt = buildSystemPrompt({ mode: 'blocks' })
+    expect(prompt).toContain('⚙️ Ao iniciar')
+    expect(prompt).toContain('⚡ Quando acontecer')
+    expect(prompt).toContain('🔁 Enquanto estiver rodando')
+  })
 })
 
 describe('blindagem contra injeção de prompt', () => {

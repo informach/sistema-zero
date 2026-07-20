@@ -108,7 +108,7 @@ export const asteroidsExample: ExtensionExample = beginnerGameExample({
         },
       ],
       loops: [
-        // --- Enquanto estiver rodando — Loops: limpa, desenha o fundo e despacha por cena ---
+        // --- Enquanto estiver rodando: limpa, desenha o fundo e despacha por cena ---
         {
           type: 'g2d:updateEachFrame',
           body: [
@@ -372,7 +372,7 @@ export const dinoRunExample: ExtensionExample = beginnerGameExample({
         },
       ],
       loops: [
-        // --- Enquanto estiver rodando — Loops: limpa, desenha a floresta e despacha por cena ---
+        // --- Enquanto estiver rodando: limpa, desenha a floresta e despacha por cena ---
         {
           type: 'g2d:updateEachFrame',
           body: [
@@ -680,7 +680,7 @@ export const gorilasExample: ExtensionExample = beginnerGameExample({
         },
       ],
       loops: [
-        // --- Enquanto estiver rodando — Loops: limpa, desenha a cidade e despacha por cena ---
+        // --- Enquanto estiver rodando: limpa, desenha a cidade e despacha por cena ---
         {
           type: 'g2d:updateEachFrame',
           body: [
@@ -1248,7 +1248,7 @@ export const asteroidsClassicExample: ExtensionExample = beginnerGameExample({
         },
       ],
       loops: [
-        // --- Enquanto estiver rodando — Loops: limpa, desenha o fundo e despacha por cena ---
+        // --- Enquanto estiver rodando: limpa, desenha o fundo e despacha por cena ---
         {
           type: 'g2d:updateEachFrame',
           body: [

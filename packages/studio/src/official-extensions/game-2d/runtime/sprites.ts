@@ -15,12 +15,6 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     : {};
   var imageCache = Object.create(null);
 
-  function now() {
-    try {
-      return (window.performance && window.performance.now) ? window.performance.now() : Date.now();
-    } catch (e) { return Date.now(); }
-  }
-
   // Aviso DEDUPADO por chave: um nome errado (de figura/imagem/som/mapa) chamado
   // DENTRO do "a cada quadro" afogaria o console 60×/s. warnOnce fala UMA vez por
   // chave e o jogo segue rodando — a criança vê a dica sem o console travar.
@@ -180,8 +174,8 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     _shapeH = sprite.h;
     ctx.save();
     ctx.translate(sprite.x, sprite.y);
-    try { fn(ctx); } catch (e) { console.error(e && e.message ? e.message : e); }
-    ctx.restore();
+    try { fn(ctx); }
+    finally { ctx.restore(); }
   }
 
   // Blocos SIMPLES de desenho (coords locais dentro da figura; recebem o ctx da
@@ -437,5 +431,14 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     if (!a || !b) return false;
     return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
   }
+
+  _registerRuntimeDomain('sprites', {
+    reset: function () {
+      _warnedOnce = Object.create(null);
+      _shapes = Object.create(null);
+      _shapeW = 0;
+      _shapeH = 0;
+    }
+  });
 
 `

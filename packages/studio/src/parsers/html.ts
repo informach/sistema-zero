@@ -330,13 +330,25 @@ function mapNode(node: Node, depth: number): HTMLNode | null {
   }
 
   if (tag === 'canvas') {
-    const w = Number.parseInt(el.getAttribute('width') ?? '0', 10)
-    const h = Number.parseInt(el.getAttribute('height') ?? '0', 10)
-    const id = el.getAttribute('id') ?? 'tela'
-    // Largura/altura são opcionais — o tamanho costuma ser definido no JS.
-    const canvas: Extract<HTMLNode, { type: 'canvas' }> = { type: 'canvas', id }
-    if (w > 0) canvas.width = w
-    if (h > 0) canvas.height = h
+    const id = el.getAttribute('id') ?? undefined
+    const attrs = collectAllAttrs(el) ?? {}
+    const widthText = attrs.width
+    const heightText = attrs.height
+    const width = widthText && /^\d+$/.test(widthText) ? Number(widthText) : null
+    const height = heightText && /^\d+$/.test(heightText) ? Number(heightText) : null
+    // Dimensões inteiras positivas ganham os campos históricos; qualquer valor
+    // diferente continua em attrs verbatim, sem normalização inventada.
+    if (width !== null && width > 0) delete attrs.width
+    if (height !== null && height > 0) delete attrs.height
+    const children = mapChildren(el, depth)
+    const canvas: Extract<HTMLNode, { type: 'canvas' }> = {
+      type: 'canvas',
+      ...(id ? { id } : {}),
+      ...(width !== null && width > 0 ? { width } : {}),
+      ...(height !== null && height > 0 ? { height } : {}),
+      ...(Object.keys(attrs).length > 0 ? { attrs } : {}),
+      ...(children.length > 0 ? { children } : {}),
+    }
     return canvas
   }
 

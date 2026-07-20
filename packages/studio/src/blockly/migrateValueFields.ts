@@ -120,6 +120,7 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_g2d_spawn_obstacle: { X: 'number', SIZE: 'number', VX: 'number' },
   sz_g2d_spawn_egg: { X: 'number', Y: 'number', VX: 'number' },
   sz_g2d_prune_old: { SECONDS: 'number' },
+  sz_g2d_every_frames: { N: 'number' },
   sz_g2d_every_seconds: { SECS: 'number' },
   sz_g2d_random_between: { MIN: 'number', MAX: 'number' },
   sz_g2d_random_chance: { PERCENT: 'number' },

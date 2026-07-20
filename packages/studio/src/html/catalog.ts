@@ -244,7 +244,7 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     parserShape: 'void',
     contentModel: 'none',
     categories: PHRASING,
-    modeledAttributes: ['type', 'placeholder'],
+    modeledAttributes: ['type', 'placeholder', 'name', 'value', 'checked'],
     level: 'iniciante-2d',
   },
   {
@@ -253,7 +253,7 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     parserShape: 'leaf',
     contentModel: 'none',
     categories: PHRASING,
-    modeledAttributes: ['placeholder'],
+    modeledAttributes: ['placeholder', 'name'],
     level: 'iniciante-2d',
   },
   {
@@ -262,7 +262,7 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     parserShape: 'inline-text',
     contentModel: 'phrasing',
     categories: PHRASING,
-    modeledAttributes: [],
+    modeledAttributes: ['for'],
     level: 'iniciante-2d',
   },
   {

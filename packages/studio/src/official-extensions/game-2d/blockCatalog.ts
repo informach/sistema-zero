@@ -1,7 +1,4 @@
-import {
-  applyPlacementToBlockTypes,
-  START_ONLY_COMMAND_PLACEMENT,
-} from '../../blockly/blockContracts'
+import type { BlockDefinition } from '../../blockly/blocks/types'
 import { GAME_TWO_D_PERIODIC_TOOLTIPS } from './pedagogy'
 
 // Jogo 2D = uma cor da categoria; subcategorias recebem tons na montagem da toolbox.
@@ -11,6 +8,7 @@ const EVENT_C = '#f06bb0'
 export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_create_sprite',
+    placement: 'start-only-command',
     message0: 'Criar sprite %1 em x %2 y %3 largura %4 altura %5 cor %6',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'jogador' },
@@ -29,6 +27,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_draw_sprite',
+    placement: 'command',
     message0: 'Desenhar o sprite %1',
     args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
     previousStatement: 'JSStmt',
@@ -38,6 +37,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_set_position',
+    placement: 'command',
     message0: 'Mudar a posição do sprite %1 para x %2 y %3',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
@@ -52,6 +52,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_set_velocity',
+    placement: 'command',
     message0: 'Mudar a velocidade do sprite %1 para vx %2 vy %3',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
@@ -66,6 +67,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_collides',
+    placement: 'command',
     message0: 'Guardar em %1 se sprite %2 colide com sprite %3',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'bateu' },
@@ -79,6 +81,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_score',
+    placement: 'start-only-command',
     message0: 'Criar pontuação %1 começando em %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'pontos' },
@@ -92,6 +95,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_game_over',
+    placement: 'command',
     message0: 'Mostrar fim de jogo com o texto %1',
     args0: [{ type: 'input_value', name: 'TEXT', check: 'JSValue' }],
     inputsInline: true,
@@ -102,6 +106,8 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_on_start',
+    placement: 'legacy-start',
+    migration: 'unwrap-start',
     message0: 'Quando o jogo começar',
     message1: 'preparar %1',
     args1: [{ type: 'input_statement', name: 'BODY' }],
@@ -110,10 +116,11 @@ export const gameTwoDBlocks = [
     colour: EVENT_C,
     hidden: true,
     tooltip:
-      'Bloco legado mantido apenas para abrir projetos antigos. Em projetos novos, use “⚙️ Ao iniciar”, “⚡ Quando acontecer — Eventos” e “🔁 Enquanto estiver rodando — Loops”.',
+      'Bloco antigo mantido apenas para abrir projetos salvos. Em projetos novos, use “⚙️ Ao iniciar”, “⚡ Quando acontecer” e “🔁 Enquanto estiver rodando”.',
   },
   {
     type: 'sz_g2d_update_each_frame',
+    placement: 'loop-update',
     message0: 'A cada quadro do jogo',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'BODY' }],
@@ -125,6 +132,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_clear',
+    placement: 'command',
     message0: 'Limpar a tela',
     args0: [],
     previousStatement: 'JSStmt',
@@ -137,6 +145,7 @@ export const gameTwoDBlocks = [
   // ---- Física ----
   {
     type: 'sz_g2d_set_gravity',
+    placement: 'command',
     message0: 'Botar a gravidade do mundo em %1',
     args0: [{ type: 'input_value', name: 'VALUE', check: 'JSValue' }],
     inputsInline: true,
@@ -147,6 +156,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_apply_velocity',
+    placement: 'command',
     message0: 'Aplicar velocidade e gravidade ao sprite %1',
     args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
     previousStatement: 'JSStmt',
@@ -156,6 +166,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_bounce_edges',
+    placement: 'command',
     message0: 'Quicar o sprite %1 nas bordas da tela',
     args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'bola' }],
     previousStatement: 'JSStmt',
@@ -165,6 +176,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_circle_collides',
+    placement: 'command',
     message0: 'Guardar em %1 se sprite %2 encosta no sprite %3 (em círculo)',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'bateu' },
@@ -180,6 +192,7 @@ export const gameTwoDBlocks = [
   // ---- Áudio ----
   {
     type: 'sz_g2d_play_sound',
+    placement: 'command',
     message0: 'Tocar som de %1 Hz por %2 ms',
     args0: [
       { type: 'input_value', name: 'FREQ', check: 'JSValue' },
@@ -194,6 +207,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_play_fx',
+    placement: 'command',
     message0: 'Tocar efeito %1',
     args0: [
       {
@@ -237,6 +251,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_play_note',
+    placement: 'command',
     message0: 'Tocar a nota %1 por %2 ms',
     args0: [
       {
@@ -263,6 +278,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_play_music',
+    placement: 'command',
     message0: 'Tocar música de fundo %1',
     args0: [
       {
@@ -284,6 +300,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_stop_music',
+    placement: 'command',
     message0: 'Parar a música de fundo',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -294,6 +311,7 @@ export const gameTwoDBlocks = [
   // ---- Tier 1: Mira e contas ----
   {
     type: 'sz_g2d_aim_at',
+    placement: 'command',
     message0: 'Apontar o sprite %1 para o sprite %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
@@ -306,6 +324,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_move_toward',
+    placement: 'command',
     message0: 'Mover o sprite %1 na direção do sprite %2 com velocidade %3',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'inimigo' },
@@ -350,7 +369,8 @@ export const gameTwoDBlocks = [
     inputsInline: true,
     output: 'JSValue',
     colour: C,
-    tooltip: 'Sorteia um número inteiro entre os dois valores (incluindo as pontas).',
+    tooltip:
+      'Sorteia um número inteiro entre os dois valores (incluindo as pontas). Limites com vírgula são ajustados para os inteiros internos; se o intervalo não tiver nenhum inteiro, usa o mais próximo do meio.',
   },
   {
     type: 'sz_g2d_random_chance',
@@ -382,6 +402,7 @@ export const gameTwoDBlocks = [
   // ---- Tier 1: Vida e tempo ----
   {
     type: 'sz_g2d_set_health',
+    placement: 'command',
     message0: 'Dar ao sprite %1 %2 de vida',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
@@ -395,6 +416,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_change_health',
+    placement: 'command',
     message0: 'Mudar a vida do sprite %1 em %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
@@ -437,6 +459,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_prune_old',
+    placement: 'command',
     message0: 'Tirar do grupo %1 quem viveu mais de %2 segundos',
     args0: [
       { type: 'field_name_picker', name: 'GROUP', text: 'tiros', kind: 'group' },
@@ -557,6 +580,7 @@ export const gameTwoDBlocks = [
   // ---- Tier 1: Aparência (espelhar, transparência, tamanho) ----
   {
     type: 'sz_g2d_flip_sprite',
+    placement: 'command',
     message0: 'Virar o sprite %1 para %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
@@ -576,6 +600,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_set_opacity',
+    placement: 'command',
     message0: 'Mudar a transparência do sprite %1 para %2 %',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
@@ -589,6 +614,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_set_size',
+    placement: 'command',
     message0: 'Mudar o tamanho do sprite %1 para largura %2 altura %3',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
@@ -603,6 +629,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_scale_sprite',
+    placement: 'command',
     message0: 'Multiplicar o tamanho do sprite %1 por %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
@@ -618,6 +645,7 @@ export const gameTwoDBlocks = [
   // ---- Tier 1: Mundo ----
   {
     type: 'sz_g2d_wrap_edges',
+    placement: 'command',
     message0: 'Dar a volta na tela com o sprite %1',
     args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' }],
     previousStatement: 'JSStmt',
@@ -629,6 +657,7 @@ export const gameTwoDBlocks = [
   // ---- Tier 1: Pausa (estado do jogo) ----
   {
     type: 'sz_g2d_pause',
+    placement: 'command',
     message0: 'Pausar o jogo',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -638,6 +667,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_resume',
+    placement: 'command',
     message0: 'Continuar o jogo',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -655,6 +685,7 @@ export const gameTwoDBlocks = [
   // ---- Tier 2: Câmera (rola o mundo; o HUD fica fixo) ----
   {
     type: 'sz_g2d_camera_follow',
+    placement: 'command',
     message0: 'Fazer a câmera seguir o sprite %1 (mundo %2 x %3)',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
@@ -670,6 +701,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_set_camera',
+    placement: 'command',
     message0: 'Mover a câmera para x %1 y %2',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -699,6 +731,7 @@ export const gameTwoDBlocks = [
   // ---- Tier 2: Mapa destrutível (pela posição de um sprite) ----
   {
     type: 'sz_g2d_break_tile_at',
+    placement: 'command',
     message0: 'Quebrar o tile do mapa %1 onde está o sprite %2',
     args0: [
       { type: 'field_name_picker', name: 'MAP', text: 'mapa', kind: 'tilemap' },
@@ -711,6 +744,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_set_tile',
+    placement: 'command',
     message0: 'No mapa %1, pôr o tile número %2 onde está o sprite %3',
     args0: [
       { type: 'field_name_picker', name: 'MAP', text: 'mapa', kind: 'tilemap' },
@@ -739,6 +773,7 @@ export const gameTwoDBlocks = [
   // ---- Tier 2: Ordem de desenho dentro de um grupo ----
   {
     type: 'sz_g2d_bring_to_front',
+    placement: 'command',
     message0: 'Trazer o sprite %1 para a frente no grupo %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
@@ -751,6 +786,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_send_to_back',
+    placement: 'command',
     message0: 'Mandar o sprite %1 para trás no grupo %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
@@ -765,6 +801,7 @@ export const gameTwoDBlocks = [
   // ---- Tier 2: Depuração ----
   {
     type: 'sz_g2d_draw_hitbox',
+    placement: 'command',
     message0: 'Mostrar a caixa de colisão do sprite %1',
     args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
     previousStatement: 'JSStmt',
@@ -774,6 +811,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_show_fps',
+    placement: 'command',
     message0: 'Mostrar os quadros por segundo (FPS) em x %1 y %2',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -789,6 +827,7 @@ export const gameTwoDBlocks = [
   // ---- Mouse / toque ----
   {
     type: 'sz_g2d_on_pointer',
+    placement: 'event',
     message0: 'Quando clicar/tocar, na posição x %1 y %2',
     args0: [
       { type: 'field_input', name: 'PX', text: 'px' },
@@ -806,6 +845,7 @@ export const gameTwoDBlocks = [
   // ---- Eventos "Quando…" (hats) ----
   {
     type: 'sz_g2d_on_key',
+    placement: 'event',
     message0: 'Quando apertar a tecla %1',
     args0: [
       {
@@ -831,7 +871,8 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_on_overlap',
-    message0: 'Quando o sprite %1 encostar no sprite %2',
+    placement: 'event',
+    message0: 'Quando o sprite %1 começar a encostar no sprite %2',
     args0: [
       { type: 'field_sprite_picker', name: 'A', text: 'jogador' },
       { type: 'field_sprite_picker', name: 'B', text: 'inimigo' },
@@ -884,6 +925,7 @@ export const gameTwoDBlocks = [
   // ---- Imagens / spritesheet / animação (v0.3.0) ----
   {
     type: 'sz_g2d_create_image_sprite',
+    placement: 'start-only-command',
     message0: 'Criar sprite %1 em x %2 y %3 largura %4 altura %5 com imagem %6',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'heroi' },
@@ -902,6 +944,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_set_image',
+    placement: 'command',
     message0: 'Trocar imagem do sprite %1 para %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
@@ -914,6 +957,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_load_spritesheet',
+    placement: 'start-only-command',
     message0: 'Carregar folha de quadros %1 da imagem %2 com quadros de %3 x %4 px',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'andar' },
@@ -930,11 +974,12 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_animate_sprite',
+    placement: 'command',
     message0: 'Animar sprite %1 com a folha %2 na animação %3, do quadro %4 ao %5 a %6 fps',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
       { type: 'field_name_picker', name: 'SHEET', text: 'andar', kind: 'spritesheet' },
-      { type: 'field_animation_picker', name: 'ANIM', text: '— escolher —' },
+      { type: 'field_animation_picker', name: 'ANIM', text: 'Escolher' },
       { type: 'input_value', name: 'FROM', check: 'JSValue' },
       { type: 'input_value', name: 'TO', check: 'JSValue' },
       { type: 'input_value', name: 'FPS', check: 'JSValue' },
@@ -948,8 +993,8 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_set_state_anim',
-    message0:
-      'Quando o sprite %1 estiver %2 tocar da folha %3 a animação %4, do quadro %5 ao %6 a %7 fps',
+    placement: 'start-only-command',
+    message0: 'Animação do sprite %1 no estado %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
       {
@@ -964,8 +1009,11 @@ export const gameTwoDBlocks = [
           ['tomando dano', 'dano'],
         ],
       },
+    ],
+    message1: 'folha %1 animação %2, quadros %3 a %4, %5 fps',
+    args1: [
       { type: 'field_name_picker', name: 'SHEET', text: 'andar', kind: 'spritesheet' },
-      { type: 'field_animation_picker', name: 'ANIM', text: '— escolher —' },
+      { type: 'field_animation_picker', name: 'ANIM', text: 'Escolher' },
       { type: 'input_value', name: 'FROM', check: 'JSValue' },
       { type: 'input_value', name: 'TO', check: 'JSValue' },
       { type: 'input_value', name: 'FPS', check: 'JSValue' },
@@ -975,10 +1023,11 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Guarda a animação que o sprite toca NESSE estado (parado, andando, pulando, caindo, tomando dano). Configure uma por estado, FORA do "a cada quadro" — quem troca sozinho é o bloco "Animar e virar o sprite sozinho".',
+      'Guarda a animação que o sprite toca NESSE estado (parado, andando, pulando, caindo, tomando dano). Configure uma por estado, FORA do "a cada quadro". Quem troca sozinho é o bloco "Animar e virar o sprite sozinho".',
   },
   {
     type: 'sz_g2d_auto_animate',
+    placement: 'command',
     message0: 'Animar e virar o sprite %1 sozinho conforme ele se move',
     args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' }],
     inputsInline: true,
@@ -991,6 +1040,7 @@ export const gameTwoDBlocks = [
   // ---- Tipos de inimigo (v0.22.0): classes de inimigo com comportamento pronto ----
   {
     type: 'sz_g2d_define_enemy_type',
+    placement: 'start-only-command',
     message0:
       'Criar tipo de inimigo %1 que é %2 cor %3 imagem %4 vida %5 velocidade %6 dano %7 tamanho %8 x %9',
     args0: [
@@ -1024,8 +1074,8 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_enemy_state_anim',
-    message0:
-      'Quando um inimigo do tipo %1 estiver %2 tocar da folha %3 a animação %4, do quadro %5 ao %6 a %7 fps',
+    placement: 'start-only-command',
+    message0: 'Animação dos inimigos do tipo %1 no estado %2',
     args0: [
       { type: 'field_name_picker', name: 'TYPE', text: 'zumbi', kind: 'enemytype' },
       {
@@ -1040,8 +1090,11 @@ export const gameTwoDBlocks = [
           ['tomando dano', 'dano'],
         ],
       },
+    ],
+    message1: 'folha %1 animação %2, quadros %3 a %4, %5 fps',
+    args1: [
       { type: 'field_name_picker', name: 'SHEET', text: 'andar', kind: 'spritesheet' },
-      { type: 'field_animation_picker', name: 'ANIM', text: '— escolher —' },
+      { type: 'field_animation_picker', name: 'ANIM', text: 'Escolher' },
       { type: 'input_value', name: 'FROM', check: 'JSValue' },
       { type: 'input_value', name: 'TO', check: 'JSValue' },
       { type: 'input_value', name: 'FPS', check: 'JSValue' },
@@ -1055,6 +1108,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_enemy_type_param',
+    placement: 'command',
     message0: 'Ajustar no tipo de inimigo %1 o valor de %2 para %3',
     args0: [
       { type: 'field_name_picker', name: 'TYPE', text: 'zumbi', kind: 'enemytype' },
@@ -1080,6 +1134,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_spawn_enemy',
+    placement: 'command',
     message0: 'Soltar um inimigo do tipo %1 em x %2 y %3',
     args0: [
       { type: 'field_name_picker', name: 'TYPE', text: 'zumbi', kind: 'enemytype' },
@@ -1094,6 +1149,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_update_enemy_type',
+    placement: 'command',
     message0: 'Atualizar os inimigos do tipo %1 (alvo: o sprite %2)',
     args0: [
       { type: 'field_name_picker', name: 'TYPE', text: 'zumbi', kind: 'enemytype' },
@@ -1108,6 +1164,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_draw_enemy_type',
+    placement: 'command',
     message0: 'Desenhar os inimigos do tipo %1 (e os tiros deles)',
     args0: [{ type: 'field_name_picker', name: 'TYPE', text: 'zumbi', kind: 'enemytype' }],
     inputsInline: true,
@@ -1118,6 +1175,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_on_enemy_defeated',
+    placement: 'event',
     message0: 'Quando um inimigo do tipo %1 for derrotado (chamado %2)',
     args0: [
       { type: 'field_name_picker', name: 'TYPE', text: 'zumbi', kind: 'enemytype' },
@@ -1134,15 +1192,16 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_on_enemy_shot_hit',
-    message0:
-      'Dentro de “A cada quadro”: quando um tiro do tipo %1 acertar o sprite %2 (tiro chamado %3)',
+    placement: 'loop-body',
+    message0: 'Para cada tiro do tipo %1 que acertar o sprite %2',
     args0: [
       { type: 'field_name_picker', name: 'TYPE', text: 'zumbi', kind: 'enemytype' },
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
-      { type: 'field_input', name: 'ANAME', text: 'tiro' },
     ],
-    message1: 'fazer %1',
-    args1: [{ type: 'input_statement', name: 'BODY' }],
+    message1: 'chamar o tiro de %1',
+    args1: [{ type: 'field_input', name: 'ANAME', text: 'tiro' }],
+    message2: 'fazer %1',
+    args2: [{ type: 'input_statement', name: 'BODY' }],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -1152,6 +1211,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_hurt_by_enemy',
+    placement: 'command',
     message0: 'Machucar o sprite %1 com o dano de contato do inimigo %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
@@ -1162,7 +1222,7 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Tira da vida do sprite o dano do inimigo (ou do tiro) e faz o sprite piscar. Enquanto pisca, ele é INVENCÍVEL (não leva dano de novo) — o jeito clássico de dar um respiro depois do dano.',
+      'Tira da vida do sprite o dano do inimigo (ou do tiro) e faz o sprite piscar. Enquanto pisca, ele é INVENCÍVEL (não leva dano de novo). O jeito clássico de dar um respiro depois do dano.',
   },
   {
     type: 'sz_g2d_enemy_damage',
@@ -1175,6 +1235,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_draw_frame',
+    placement: 'command',
     message0: 'Desenhar quadro %1 da folha de quadros %2 em x %3 y %4 largura %5 altura %6',
     args0: [
       { type: 'input_value', name: 'INDEX', check: 'JSValue' },
@@ -1195,6 +1256,7 @@ export const gameTwoDBlocks = [
   // ---- Movimento (v0.4.0) ----
   {
     type: 'sz_g2d_platformer',
+    placement: 'command',
     message0: 'Mover o sprite %1 estilo plataforma, velocidade %2 pulo %3',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
@@ -1210,6 +1272,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_top_down',
+    placement: 'command',
     message0: 'Mover sprite %1 em 4 direções com setas, velocidade %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
@@ -1224,6 +1287,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_follow_pointer',
+    placement: 'command',
     message0: 'Fazer sprite %1 seguir o ponteiro, velocidade %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
@@ -1237,6 +1301,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_clamp_to_screen',
+    placement: 'command',
     message0: 'Manter o sprite %1 dentro da tela',
     args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' }],
     previousStatement: 'JSStmt',
@@ -1248,6 +1313,7 @@ export const gameTwoDBlocks = [
   // ---- Efeitos visuais (v0.4.0) ----
   {
     type: 'sz_g2d_flash',
+    placement: 'command',
     message0: 'Dar um clarão de cor %1',
     args0: [{ type: 'field_colour_sz', name: 'COLOR', colour: '#ffffff' }],
     previousStatement: 'JSStmt',
@@ -1258,6 +1324,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_shake',
+    placement: 'command',
     message0: 'Tremer a tela com intensidade %1',
     args0: [{ type: 'input_value', name: 'INTENSITY', check: 'JSValue' }],
     inputsInline: true,
@@ -1269,6 +1336,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_emit_particles',
+    placement: 'command',
     message0: 'Soltar %1 partículas de cor %2 em x %3 y %4',
     args0: [
       { type: 'input_value', name: 'COUNT', check: 'JSValue' },
@@ -1285,6 +1353,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_draw_particles',
+    placement: 'command',
     message0: 'Atualizar e desenhar as partículas',
     args0: [],
     previousStatement: 'JSStmt',
@@ -1296,6 +1365,7 @@ export const gameTwoDBlocks = [
   // ---- Tiles / tilemaps (v0.5.0) ----
   {
     type: 'sz_g2d_create_tilemap_from_asset',
+    placement: 'start-only-command',
     message0: 'Criar mapa %1 do meu desenho %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'mapa' },
@@ -1310,6 +1380,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_create_tilemap',
+    placement: 'start-only-command',
     message0:
       'Criar mapa de tiles %1 com imagem %2, tamanho do tile %3 px, tiles sólidos %4, tiles plataforma %5, grade %6',
     args0: [
@@ -1325,10 +1396,11 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Monta um mapa de tiles a partir de uma imagem (o tileset, com vários quadros lado a lado). O "tamanho do tile" é o tamanho de cada quadro NA ARTE (o Pinta já sugere) — na tela o mapa se AJUSTA sozinho para encaixar no canvas. Cada número da GRADE escolhe um quadro do tileset; use ";" para separar as linhas e espaço entre os números. Use "." para uma célula vazia. Em "tiles sólidos", toque nos tiles que barram o jogador. Em "tiles plataforma", toque nos que dá para PISAR por cima e passar por baixo (estilo Mario) — os sólidos e plataformas do Pinta já vêm sugeridos.',
+      'Monta um mapa de tiles a partir de uma imagem (o tileset, com vários quadros lado a lado). O "tamanho do tile" é o tamanho de cada quadro NA ARTE (o Pinta já sugere). Na tela o mapa se AJUSTA sozinho para encaixar no canvas. Cada número da GRADE escolhe um quadro do tileset; use ";" para separar as linhas e espaço entre os números. Use "." para uma célula vazia. Em "tiles sólidos", toque nos tiles que barram o jogador. Em "tiles plataforma", toque nos que dá para PISAR por cima e passar por baixo (estilo Mario). Os sólidos e plataformas do Pinta já vêm sugeridos.',
   },
   {
     type: 'sz_g2d_draw_tilemap',
+    placement: 'command',
     message0: 'Desenhar o mapa %1 em x %2 y %3 com tiles de %4 px (0 = encaixar na tela)',
     args0: [
       { type: 'field_name_picker', name: 'MAP', text: 'mapa', kind: 'tilemap' },
@@ -1345,6 +1417,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_tilemap_collide',
+    placement: 'command',
     message0: 'Impedir o sprite %1 de atravessar os tiles sólidos do mapa %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
@@ -1358,6 +1431,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_collide_group',
+    placement: 'command',
     message0: 'Impedir o sprite %1 de atravessar os sprites do grupo %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
@@ -1371,6 +1445,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_collide_sprite',
+    placement: 'command',
     message0: 'Impedir o sprite %1 de atravessar o sprite %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
@@ -1386,6 +1461,7 @@ export const gameTwoDBlocks = [
   // ---- Grupos de sprites: MUITOS sprites (v0.6.0) ----
   {
     type: 'sz_g2d_create_group',
+    placement: 'start-only-command',
     message0: 'Criar grupo de sprites %1',
     args0: [{ type: 'field_input', name: 'NAME', text: 'asteroides' }],
     previousStatement: 'JSStmt',
@@ -1396,6 +1472,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_spawn_in_group',
+    placement: 'command',
     message0:
       'No grupo %1 criar um sprite em x %2 y %3 largura %4 altura %5 cor %6 com vx %7 vy %8',
     args0: [
@@ -1417,6 +1494,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_spawn_image_in_group',
+    placement: 'command',
     message0:
       'No grupo %1 criar um sprite em x %2 y %3 largura %4 altura %5 com imagem %6 vx %7 vy %8',
     args0: [
@@ -1438,6 +1516,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_update_group',
+    placement: 'command',
     message0: 'Atualizar (mover) o grupo %1',
     args0: [{ type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' }],
     previousStatement: 'JSStmt',
@@ -1447,16 +1526,18 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_update_group_no_gravity',
+    placement: 'command',
     message0: 'Mover o grupo %1 sem gravidade',
     args0: [{ type: 'field_name_picker', name: 'GROUP', text: 'tiros', kind: 'group' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Move cada sprite do grupo pela velocidade, SEM somar a gravidade — para os TIROS do jogador num jogo com gravidade (senão eles caem/arqueiam em vez de ir reto).',
+      'Move cada sprite do grupo pela velocidade, SEM somar a gravidade. Para os TIROS do jogador num jogo com gravidade (senão eles caem/arqueiam em vez de ir reto).',
   },
   {
     type: 'sz_g2d_draw_group',
+    placement: 'command',
     message0: 'Desenhar o grupo %1',
     args0: [{ type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' }],
     previousStatement: 'JSStmt',
@@ -1466,6 +1547,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_for_each_in_group',
+    placement: 'command',
     message0: 'Para cada sprite %1 do grupo %2',
     args0: [
       { type: 'field_input', name: 'ITEM', text: 'sprite' },
@@ -1490,6 +1572,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_clear_group',
+    placement: 'command',
     message0: 'Esvaziar o grupo %1',
     args0: [{ type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' }],
     previousStatement: 'JSStmt',
@@ -1499,6 +1582,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_prune_offscreen',
+    placement: 'command',
     message0: 'Tirar do grupo %1 quem sair da tela, para cada um (chamado %2)',
     args0: [
       { type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' },
@@ -1515,6 +1599,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_remove_from_group',
+    placement: 'command',
     message0: 'Tirar o sprite %1 do grupo %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'asteroide' },
@@ -1530,16 +1615,19 @@ export const gameTwoDBlocks = [
   // ---- Colisão de grupo + temporizadores (hats/eventos) ----
   {
     type: 'sz_g2d_on_group_overlap',
-    message0:
-      'Dentro de “A cada quadro”: quando um sprite do grupo %1 (chamado %2) encostar num do grupo %3 (chamado %4)',
+    placement: 'loop-body',
+    message0: 'Para cada colisão entre os grupos %1 e %2',
     args0: [
       { type: 'field_name_picker', name: 'A', text: 'tiros', kind: 'group' },
-      { type: 'field_input', name: 'ANAME', text: 'tiro' },
       { type: 'field_name_picker', name: 'B', text: 'asteroides', kind: 'group' },
+    ],
+    message1: 'chamar os sprites de %1 e %2',
+    args1: [
+      { type: 'field_input', name: 'ANAME', text: 'tiro' },
       { type: 'field_input', name: 'BNAME', text: 'asteroide' },
     ],
-    message1: 'fazer %1',
-    args1: [{ type: 'input_statement', name: 'BODY' }],
+    message2: 'fazer %1',
+    args2: [{ type: 'input_statement', name: 'BODY' }],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -1549,6 +1637,8 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_every_frames',
+    placement: 'loop-periodic',
+    migration: 'lift-periodic-loop',
     message0: 'A cada %1 quadros',
     args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
     message1: 'fazer %1',
@@ -1561,6 +1651,8 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_every_seconds',
+    placement: 'loop-periodic',
+    migration: 'lift-periodic-loop',
     message0: 'A cada %1 segundos',
     args0: [{ type: 'input_value', name: 'SECS', check: 'JSValue' }],
     message1: 'fazer %1',
@@ -1575,6 +1667,7 @@ export const gameTwoDBlocks = [
   // ---- HUD no canvas: placar, texto, vidas e barra (v0.6.0) ----
   {
     type: 'sz_g2d_draw_score',
+    placement: 'command',
     message0: 'Mostrar placar %1 valor %2 em x %3 y %4 cor %5 tamanho %6',
     args0: [
       { type: 'field_input', name: 'LABEL', text: 'Pontos:' },
@@ -1592,6 +1685,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_draw_label',
+    placement: 'command',
     message0: 'Escrever %1 em x %2 y %3 cor %4 tamanho %5 alinhado %6',
     args0: [
       { type: 'field_input', name: 'TEXT', text: 'Nave contra Asteroides' },
@@ -1617,6 +1711,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_draw_hearts',
+    placement: 'command',
     message0: 'Desenhar %1 vidas (corações) em x %2 y %3 tamanho %4 cor %5',
     args0: [
       { type: 'input_value', name: 'COUNT', check: 'JSValue' },
@@ -1633,6 +1728,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_draw_bar',
+    placement: 'command',
     message0: 'Barra de %1 / %2 em x %3 y %4 largura %5 altura %6 cor %7',
     args0: [
       { type: 'input_value', name: 'VALUE', check: 'JSValue' },
@@ -1653,6 +1749,7 @@ export const gameTwoDBlocks = [
   // ---- Estado / telas (cenas) ----
   {
     type: 'sz_g2d_set_scene',
+    placement: 'command',
     message0: 'Ir para a tela %1',
     args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'inicio', kind: 'gamestate' }],
     previousStatement: 'JSStmt',
@@ -1670,6 +1767,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_show_screen',
+    placement: 'command',
     message0: 'Mostrar tela com título %1 subtítulo %2 dica %3 fundo %4',
     args0: [
       { type: 'input_value', name: 'TITLE', check: 'JSValue' },
@@ -1686,18 +1784,20 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_restart',
+    placement: 'command',
     message0: 'Reiniciar o jogo',
     args0: [],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Limpa a partida e executa novamente ⚙️ Ao iniciar, ⚡ Quando acontecer — Eventos e 🔁 Enquanto estiver rodando — Loops.',
+      'Limpa a partida e executa novamente ⚙️ Ao iniciar, ⚡ Quando acontecer e 🔁 Enquanto estiver rodando.',
   },
 
   // ---- Cenário: fundo de estrelas + arrastar com o dedo (v0.6.0) ----
   {
     type: 'sz_g2d_starfield',
+    placement: 'command',
     message0: 'Desenhar fundo de estrelas (velocidade %1)',
     args0: [{ type: 'input_value', name: 'SPEED', check: 'JSValue' }],
     inputsInline: true,
@@ -1709,6 +1809,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_drag_x',
+    placement: 'command',
     message0: 'Mover o sprite %1 com o dedo/mouse (só na horizontal)',
     args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' }],
     previousStatement: 'JSStmt',
@@ -1719,13 +1820,14 @@ export const gameTwoDBlocks = [
 
   {
     type: 'sz_g2d_setup_stage',
+    placement: 'start-only-command',
     message0: 'Preparar o jogo em tela cheia, tela %1 × %2, fundo %3',
     args0: [
       { type: 'input_value', name: 'W', check: 'JSValue' },
       { type: 'input_value', name: 'H', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'BG', colour: '#0b1020' },
     ],
-    message1: 'descrição para quem não vê a tela %1',
+    message1: 'objetivo e controles %1',
     args1: [{ type: 'field_input', name: 'DESCRIPTION', text: 'Meu jogo 2D' }],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -1736,9 +1838,10 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_setup_full',
+    placement: 'start-only-command',
     message0: 'Preparar o jogo para ocupar a tela toda, fundo %1',
     args0: [{ type: 'field_colour_sz', name: 'BG', colour: '#0b1020' }],
-    message1: 'descrição para quem não vê a tela %1',
+    message1: 'objetivo e controles %1',
     args1: [{ type: 'field_input', name: 'DESCRIPTION', text: 'Meu jogo 2D' }],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -1751,6 +1854,7 @@ export const gameTwoDBlocks = [
   // ---- Kit "Nave & Asteroides": desenhos prontos + efeitos (v0.7.0) ----
   {
     type: 'sz_g2d_fit_screen',
+    placement: 'start-only-command',
     message0: 'Fazer a tela preencher %1% da janela (mantendo a proporção)',
     args0: [{ type: 'input_value', name: 'PERCENT', check: 'JSValue' }],
     inputsInline: true,
@@ -1763,6 +1867,7 @@ export const gameTwoDBlocks = [
 
   {
     type: 'sz_g2d_spawn_bullet',
+    placement: 'command',
     message0: 'Criar tiro no grupo %1 em x %2 y %3 raio %4 cor %5 vx %6 vy %7',
     args0: [
       { type: 'field_name_picker', name: 'GROUP', text: 'tiros', kind: 'group' },
@@ -1782,6 +1887,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_arrows_x',
+    placement: 'command',
     message0: 'Mover o sprite %1 com as setas <- -> (velocidade %2)',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
@@ -1796,6 +1902,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_blink',
+    placement: 'command',
     message0: 'Fazer o sprite %1 piscar por %2 quadros',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
@@ -1812,6 +1919,7 @@ export const gameTwoDBlocks = [
   {
     // ---- Figuras: sprite desenhado por código (v0.23.0) ----
     type: 'sz_g2d_define_shape',
+    placement: 'start-only-command',
     message0: 'Desenhar a figura %1 assim:',
     args0: [{ type: 'field_input', name: 'NAME', text: 'heroi' }],
     message1: 'fazer %1',
@@ -1825,6 +1933,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_create_shape_sprite',
+    placement: 'start-only-command',
     message0: 'Criar sprite %1 em x %2 y %3 largura %4 altura %5 com a figura %6',
     args0: [
       { type: 'field_input', name: 'SPRITE', text: 'heroi' },
@@ -1839,10 +1948,11 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria um sprite que usa uma figura que você desenhou. O sprite anda, gira, vira e colide como qualquer outro — só que o visual é o seu desenho.',
+      'Cria um sprite que usa uma figura que você desenhou. O sprite anda, gira, vira e colide como qualquer outro. Só que o visual é o seu desenho.',
   },
   {
     type: 'sz_g2d_set_shape',
+    placement: 'command',
     message0: 'Trocar a figura do sprite %1 para %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'heroi' },
@@ -1856,6 +1966,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_paint_rect',
+    placement: 'command',
     message0: 'Desenhar retângulo em x %1 y %2 largura %3 altura %4 cor %5',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1872,6 +1983,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_paint_circle',
+    placement: 'command',
     message0: 'Desenhar círculo em x %1 y %2 raio %3 cor %4',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1887,6 +1999,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_paint_ellipse',
+    placement: 'command',
     message0: 'Desenhar oval em x %1 y %2 largura %3 altura %4 cor %5',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1903,6 +2016,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_paint_triangle',
+    placement: 'command',
     message0: 'Desenhar triângulo em (%1, %2) (%3, %4) (%5, %6) cor %7',
     args0: [
       { type: 'input_value', name: 'X1', check: 'JSValue' },
@@ -1921,6 +2035,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_paint_line',
+    placement: 'command',
     message0: 'Desenhar linha de x %1 y %2 até x %3 y %4 cor %5 espessura %6',
     args0: [
       { type: 'input_value', name: 'X1', check: 'JSValue' },
@@ -1953,6 +2068,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_create_ship',
+    placement: 'start-only-command',
     message0: 'Criar nave %1 em x %2 y %3 largura %4 altura %5, cor do corpo %6 cor das asas %7',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'nave' },
@@ -1972,6 +2088,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_spawn_asteroid',
+    placement: 'command',
     message0: 'No grupo %1 criar um asteroide em x %2 y %3 tamanho %4 cor %5 com vx %6 vy %7',
     args0: [
       { type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' },
@@ -1991,6 +2108,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_explode',
+    placement: 'command',
     message0: 'Soltar explosão no sprite %1 cor %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'asteroide' },
@@ -2004,6 +2122,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_play_shoot',
+    placement: 'command',
     message0: 'Tocar som de tiro',
     args0: [],
     previousStatement: 'JSStmt',
@@ -2013,6 +2132,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_play_explosion',
+    placement: 'command',
     message0: 'Tocar som de explosão',
     args0: [],
     previousStatement: 'JSStmt',
@@ -2022,14 +2142,16 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_on_sprite_group_overlap',
-    message0: 'Dentro de “A cada quadro”: quando o sprite %1 encostar num do grupo %2 (chamado %3)',
+    placement: 'loop-body',
+    message0: 'Para cada sprite do grupo %1 que colidir com o sprite %2',
     args0: [
-      { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
       { type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' },
-      { type: 'field_input', name: 'ANAME', text: 'inimigo' },
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
     ],
-    message1: 'fazer %1',
-    args1: [{ type: 'input_statement', name: 'BODY' }],
+    message1: 'chamar o sprite de %1',
+    args1: [{ type: 'field_input', name: 'ANAME', text: 'inimigo' }],
+    message2: 'fazer %1',
+    args2: [{ type: 'input_statement', name: 'BODY' }],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -2041,6 +2163,7 @@ export const gameTwoDBlocks = [
   // ---- Pulo no chão (genérico, Movimento) ----
   {
     type: 'sz_g2d_jump_on_ground',
+    placement: 'command',
     message0: 'Fazer o sprite %1 pular no chão, força do pulo %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'dino' },
@@ -2057,6 +2180,7 @@ export const gameTwoDBlocks = [
   // ---- Kit dino (v0.9.0): desenhos prontos + sons para um jogo de corrida ----
   {
     type: 'sz_g2d_create_dino',
+    placement: 'start-only-command',
     message0: 'Criar dinossauro %1 em x %2 y %3 tamanho %4 cor %5',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'dino' },
@@ -2074,6 +2198,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_control_dino',
+    placement: 'command',
     message0: 'Controlar o dinossauro %1, força do pulo %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'dino' },
@@ -2088,6 +2213,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_spawn_obstacle',
+    placement: 'command',
     message0: 'No grupo %1 criar obstáculo %2 em x %3 tamanho %4 com vx %5',
     args0: [
       { type: 'field_name_picker', name: 'GROUP', text: 'obstaculos', kind: 'group' },
@@ -2114,6 +2240,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_spawn_egg',
+    placement: 'command',
     message0: 'No grupo %1 criar um ovo (bônus) em x %2 y %3 com vx %4',
     args0: [
       { type: 'field_name_picker', name: 'GROUP', text: 'ovos', kind: 'group' },
@@ -2130,6 +2257,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_forest',
+    placement: 'command',
     message0: 'Desenhar fundo de floresta (velocidade %1)',
     args0: [{ type: 'input_value', name: 'SPEED', check: 'JSValue' }],
     inputsInline: true,
@@ -2141,6 +2269,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_play_jump',
+    placement: 'command',
     message0: 'Tocar som de pulo',
     args0: [],
     previousStatement: 'JSStmt',
@@ -2150,6 +2279,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_play_dino_hurt',
+    placement: 'command',
     message0: 'Tocar som de dano',
     args0: [],
     previousStatement: 'JSStmt',
@@ -2159,6 +2289,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_play_collect',
+    placement: 'command',
     message0: 'Tocar som de coletar',
     args0: [],
     previousStatement: 'JSStmt',
@@ -2170,6 +2301,7 @@ export const gameTwoDBlocks = [
   // ---- Nave clássica: girar + impulsionar na direção apontada (v0.10.0) ----
   {
     type: 'sz_g2d_steer_thrust',
+    placement: 'command',
     message0: 'Controlar o sprite %1 como nave, velocidade %2 giro %3',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
@@ -2185,6 +2317,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_rotate_sprite',
+    placement: 'command',
     message0: 'Girar o sprite %1 em %2 graus',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
@@ -2199,6 +2332,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_point_sprite',
+    placement: 'command',
     message0: 'Apontar o sprite %1 para %2 graus',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
@@ -2213,6 +2347,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_thrust',
+    placement: 'command',
     message0: 'Impulsionar o sprite %1 para a frente, força %2',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
@@ -2227,6 +2362,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_apply_friction',
+    placement: 'command',
     message0: 'Frear o sprite %1 aos poucos (atrito %2)',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
@@ -2250,6 +2386,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_shoot_from',
+    placement: 'command',
     message0: 'Atirar do sprite %1 para a frente, no grupo %2, velocidade %3 cor %4',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'nave' },
@@ -2266,6 +2403,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_spawn_asteroid_edge',
+    placement: 'command',
     message0: 'No grupo %1 soltar um asteroide de uma borda, tamanho %2 cor %3 velocidade %4',
     args0: [
       { type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' },
@@ -2284,6 +2422,7 @@ export const gameTwoDBlocks = [
   // ---- Kit gorilas (v0.11.0): batalha de bananas (artilharia) ----
   {
     type: 'sz_g2d_create_city',
+    placement: 'start-only-command',
     message0: 'Criar cidade de prédios %1',
     args0: [{ type: 'field_input', name: 'NAME', text: 'cidade' }],
     previousStatement: 'JSStmt',
@@ -2294,6 +2433,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_draw_city',
+    placement: 'command',
     message0: 'Desenhar a cidade %1',
     args0: [{ type: 'field_name_picker', name: 'CITY', text: 'cidade', kind: 'variable' }],
     previousStatement: 'JSStmt',
@@ -2304,6 +2444,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_place_thrower',
+    placement: 'command',
     message0: 'Pôr o gorila %1 na cidade %2 no lado %3 cor %4',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'gorila1' },
@@ -2326,6 +2467,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_new_wind',
+    placement: 'command',
     message0: 'Sortear o vento da cidade %1',
     args0: [{ type: 'field_name_picker', name: 'CITY', text: 'cidade', kind: 'variable' }],
     previousStatement: 'JSStmt',
@@ -2335,6 +2477,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_draw_wind',
+    placement: 'command',
     message0: 'Desenhar a seta do vento da cidade %1',
     args0: [{ type: 'field_name_picker', name: 'CITY', text: 'cidade', kind: 'variable' }],
     previousStatement: 'JSStmt',
@@ -2345,6 +2488,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_aim_drag',
+    placement: 'command',
     message0: 'Mirar arrastando a partir do gorila %1',
     args0: [{ type: 'field_sprite_picker', name: 'THROWER', text: 'gorila1' }],
     previousStatement: 'JSStmt',
@@ -2364,6 +2508,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_throw_banana',
+    placement: 'command',
     message0: 'Jogar a banana do gorila %1 na cidade %2',
     args0: [
       { type: 'field_sprite_picker', name: 'THROWER', text: 'gorila1' },
@@ -2376,6 +2521,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_update_banana',
+    placement: 'command',
     message0: 'Mover a banana da cidade %1',
     args0: [{ type: 'field_name_picker', name: 'CITY', text: 'cidade', kind: 'variable' }],
     previousStatement: 'JSStmt',
@@ -2386,6 +2532,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_draw_banana',
+    placement: 'command',
     message0: 'Desenhar a banana da cidade %1',
     args0: [{ type: 'field_name_picker', name: 'CITY', text: 'cidade', kind: 'variable' }],
     previousStatement: 'JSStmt',
@@ -2416,6 +2563,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_play_whistle',
+    placement: 'command',
     message0: 'Tocar som de banana caindo',
     args0: [],
     previousStatement: 'JSStmt',
@@ -2425,6 +2573,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_play_boom',
+    placement: 'command',
     message0: 'Tocar som de explosão',
     args0: [],
     previousStatement: 'JSStmt',
@@ -2434,6 +2583,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_computer_turn',
+    placement: 'command',
     message0: 'O robô do gorila %1 joga na cidade %2 mirando no %3',
     args0: [
       { type: 'field_sprite_picker', name: 'THROWER', text: 'gorila2' },
@@ -2448,6 +2598,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_draw_aim_readout',
+    placement: 'command',
     message0: 'Mostrar ângulo e força da mira',
     args0: [],
     previousStatement: 'JSStmt',
@@ -2460,6 +2611,7 @@ export const gameTwoDBlocks = [
   // ---- Kit equilibrista (Stick Hero) (v0.13.0) ----
   {
     type: 'sz_g2d_create_stickhero',
+    placement: 'start-only-command',
     message0: 'Criar equilibrista %1',
     args0: [{ type: 'field_input', name: 'NAME', text: 'jogo' }],
     previousStatement: 'JSStmt',
@@ -2470,6 +2622,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_update_stickhero',
+    placement: 'command',
     message0: 'Atualizar o equilibrista %1',
     args0: [{ type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' }],
     previousStatement: 'JSStmt',
@@ -2496,6 +2649,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_restart_stickhero',
+    placement: 'command',
     message0: 'Recomeçar o equilibrista %1',
     args0: [{ type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' }],
     previousStatement: 'JSStmt',
@@ -2508,6 +2662,7 @@ export const gameTwoDBlocks = [
   // ---- Kit balão (Hot-Air-Balloon) (v0.13.0) ----
   {
     type: 'sz_g2d_create_balloon',
+    placement: 'start-only-command',
     message0: 'Criar balão %1',
     args0: [{ type: 'field_input', name: 'NAME', text: 'jogo' }],
     previousStatement: 'JSStmt',
@@ -2518,6 +2673,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_update_balloon',
+    placement: 'command',
     message0: 'Atualizar o balão %1',
     args0: [{ type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' }],
     previousStatement: 'JSStmt',
@@ -2553,6 +2709,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_restart_balloon',
+    placement: 'command',
     message0: 'Recomeçar o balão %1',
     args0: [{ type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' }],
     previousStatement: 'JSStmt',
@@ -2561,29 +2718,4 @@ export const gameTwoDBlocks = [
     tooltip:
       'Zera o jogo do balão (combustível, distância e árvores). Bom para um botão "recomeçar".',
   },
-]
-
-const G2D_START_ONLY_BLOCK_TYPES = [
-  'sz_g2d_setup_stage',
-  'sz_g2d_setup_full',
-  'sz_g2d_fit_screen',
-  'sz_g2d_create_sprite',
-  'sz_g2d_create_image_sprite',
-  'sz_g2d_create_shape_sprite',
-  'sz_g2d_create_ship',
-  'sz_g2d_create_dino',
-  'sz_g2d_create_city',
-  'sz_g2d_create_stickhero',
-  'sz_g2d_create_balloon',
-  'sz_g2d_create_group',
-  'sz_g2d_score',
-  'sz_g2d_load_spritesheet',
-  'sz_g2d_set_state_anim',
-  'sz_g2d_define_enemy_type',
-  'sz_g2d_enemy_state_anim',
-  'sz_g2d_create_tilemap_from_asset',
-  'sz_g2d_create_tilemap',
-  'sz_g2d_define_shape',
-] as const
-
-applyPlacementToBlockTypes(gameTwoDBlocks, G2D_START_ONLY_BLOCK_TYPES, START_ONLY_COMMAND_PLACEMENT)
+] satisfies BlockDefinition[]

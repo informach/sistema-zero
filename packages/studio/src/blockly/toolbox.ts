@@ -6,6 +6,7 @@ import {
   isCategoryAllowed,
   type LearningProfile,
 } from '#core'
+import { inferBlockContract } from './blockContracts'
 import { resolveBlockLevel } from './blockLevels'
 import {
   ADVANCED_BLOCKS,
@@ -37,36 +38,6 @@ import { CATEGORY_COLORS } from './theme'
 /** Shadow anexado a um slot `input_value` (número editável ou seletor de cor). */
 type ShadowInput = SocketShadow
 
-// Eventos (listeners "Quando…") vivem em DOM_BLOCKS mas, na toolbox, saem da
-// subcategoria 🌐 Página e formam a 📡 ⚡ Eventos. Esta é a lista que define o
-// que é "evento" (sai da Página).
-const EVENT_LISTENER_TYPES: ReadonlySet<string> = new Set([
-  'sz_js_on_click',
-  'sz_js_on_click_anywhere',
-  'sz_js_on_mouseover',
-  'sz_js_on_input',
-  'sz_js_on_submit',
-  'sz_js_on_event_named',
-  'sz_js_event_method',
-  'sz_js_on_key',
-  'sz_js_on_mousemove',
-  'sz_js_on_pointer_down',
-  'sz_js_on_pointer_up',
-  'sz_js_on_resize',
-  'sz_js_on_fullscreen_change',
-  'sz_js_on_context_menu',
-  'sz_js_on_blur',
-  'sz_js_element_onclick',
-])
-
-// Estes leitores também aparecem em Valores na paleta completa para facilitar
-// descoberta. Em `allowBlocks` estrito, ficam somente em Eventos: uma aula que
-// libera um único tipo deve receber uma única entrada, não duas cópias.
-const EVENT_CONTEXT_VALUE_TYPES: ReadonlySet<string> = new Set([
-  'sz_val_event_key',
-  'sz_val_event_pos',
-])
-
 // Ordem dos blocos DENTRO da subcategoria ⚡ Eventos (teclado → mouse/clique →
 // formulário → janela → ligar-a-função). Reúne blocos de DOM e leitores do
 // evento. Temporizadores ficam só em 🔁 Repetições para não duplicar conceitos.
@@ -95,6 +66,37 @@ const EVENTOS_TYPE_ORDER: readonly string[] = [
   'sz_js_on_event_named',
   'sz_js_event_method',
 ]
+
+const EVENTOS_ORDER_INDEX = new Map(EVENTOS_TYPE_ORDER.map((type, index) => [type, index]))
+
+/** Valores que completam a unidade pedagógica de listas junto dos comandos JS. */
+const LIST_VALUE_TYPES = new Set([
+  'sz_val_array',
+  'sz_val_array_length',
+  'sz_val_array_map',
+  'sz_val_array_index',
+  'sz_val_array_last',
+  'sz_val_array_find',
+  'sz_val_array_filter',
+  'sz_val_concat_arrays',
+  'sz_val_shuffle',
+])
+
+/**
+ * A área/contexto declarados no contrato decidem o pertencimento à categoria.
+ * `EVENTOS_TYPE_ORDER` apenas ordena os conhecidos; um evento novo nunca some
+ * da paleta por faltar em uma segunda lista classificadora.
+ */
+function isEventToolboxDefinition(definition: BlockDefinition): boolean {
+  const placement = inferBlockContract(definition).placement
+  if (!placement) return false
+  if (placement.role === 'event') return true
+  return (
+    placement.root.length === 0 &&
+    placement.nested.length === 1 &&
+    placement.nested[0] === 'event-body'
+  )
+}
 
 export interface ToolboxBlockEntry {
   kind: 'block'
@@ -232,8 +234,8 @@ export function buildCoreToolbox(
     // Busca é sempre visível; ela só encontra os blocos que estão na toolbox
     // (já filtrada), então respeita o nível automaticamente.
     { kind: 'search', name: '🔎 Pesquisar', colour: CATEGORY_COLORS.search, contents: [] },
-    // 🗂️ Áreas do projeto: os 3 blocos-CONTAINER (frames). SEMPRE visíveis — a
-    // criança precisa deles em qualquer aula —, então não passam pelo filtro de
+    // 🗂️ Áreas do projeto: os cinco blocos-container. Sempre visíveis, pois a
+    // criança precisa deles em qualquer aula, então não passam pelo filtro de
     // nível/categoria. Cada frame carrega sua própria cor (HTML/CSS/JS).
     {
       kind: 'category',
@@ -321,12 +323,19 @@ export function buildCoreToolbox(
     // Objetos. Reservá-lo aqui evita que reapareça no grupo "Mais".
     const usedJs = new Set<string>(['sz_js_object_assign'])
     for (const g of JS_GROUPS) {
-      const blocks = g.types
+      const languageBlocks = g.types
         .map((t) => {
           usedJs.add(t)
           return jsByType.get(t)
         })
         .filter((b): b is BlockDefinition => Boolean(b))
+      const blocks =
+        g.name === '📋 Listas'
+          ? [
+              ...languageBlocks,
+              ...VALUE_BLOCKS.filter((definition) => LIST_VALUE_TYPES.has(definition.type)),
+            ]
+          : languageBlocks
       const entries = toEntries(blocks, 'iniciante-2d', profile)
       if (entries.length > 0)
         progSubs.push({ kind: 'category', name: g.name, colour: g.colour, contents: entries })
@@ -372,11 +381,17 @@ export function buildCoreToolbox(
   }
   pushSub('Matemática', '🔢 Matemática', CATEGORY_COLORS.math, 'intermediario-2d', MATH_BLOCKS)
   const valueBlocks = restrict
-    ? VALUE_BLOCKS.filter((block) => !EVENT_CONTEXT_VALUE_TYPES.has(block.type))
+    ? VALUE_BLOCKS.filter((block) => !isEventToolboxDefinition(block))
     : VALUE_BLOCKS
-  pushSub('Valores', '🔣 Valores', CATEGORY_COLORS.values, 'iniciante-2d', valueBlocks)
+  pushSub(
+    'Valores',
+    '🔣 Valores',
+    CATEGORY_COLORS.values,
+    'iniciante-2d',
+    valueBlocks.filter((block) => !LIST_VALUE_TYPES.has(block.type)),
+  )
   // Página: só os blocos de ELEMENTO (os "Quando…" saem para ⚡ Eventos).
-  const paginaBlocks = DOM_BLOCKS.filter((b) => !EVENT_LISTENER_TYPES.has(b.type))
+  const paginaBlocks = DOM_BLOCKS.filter((block) => !isEventToolboxDefinition(block))
   pushSub('DOM', '🌐 Página', CATEGORY_COLORS.dom, 'iniciante-2d', paginaBlocks)
   // ⚡ Eventos: listeners + leitores do evento, na ordem curada.
   // Gateada por 'DOM' (preserva o allowCategories das aulas). Resolve cada tipo a
@@ -384,9 +399,13 @@ export function buildCoreToolbox(
   const eventosByType = new Map(
     [...DOM_BLOCKS, ...JS_BLOCKS, ...VALUE_BLOCKS].map((b) => [b.type, b] as const),
   )
-  const eventosBlocks = EVENTOS_TYPE_ORDER.map((t) => eventosByType.get(t)).filter(
-    (b): b is BlockDefinition => Boolean(b),
-  )
+  const eventosBlocks = [...eventosByType.values()]
+    .filter(isEventToolboxDefinition)
+    .sort(
+      (a, b) =>
+        (EVENTOS_ORDER_INDEX.get(a.type) ?? Number.MAX_SAFE_INTEGER) -
+        (EVENTOS_ORDER_INDEX.get(b.type) ?? Number.MAX_SAFE_INTEGER),
+    )
   pushSub('DOM', '⚡ Eventos', CATEGORY_COLORS.events, 'iniciante-2d', eventosBlocks)
   pushSubCustom(
     'Funções',

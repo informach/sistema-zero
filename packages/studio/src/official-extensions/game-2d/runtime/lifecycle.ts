@@ -154,4 +154,16 @@ export const gameTwoDLifecycleRuntime = `  // ---- Ciclo de vida da partida ----
     catch (error) { _reportHandlerError('“Ao iniciar”', id, error); }
   }
 
+  _registerRuntimeDomain('lifecycle', {
+    reset: function () {
+      if (_driverFrame && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(_driverFrame);
+      _driverFrame = 0;
+      _resetDriverClock();
+      _loopHandlers = Object.create(null);
+      _loopOrder = [];
+      _runningLoopId = null;
+      _frameStamp = 0;
+    }
+  });
+
 `

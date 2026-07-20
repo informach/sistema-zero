@@ -1,18 +1,18 @@
+import { BEHAVIOR_AREA_LABELS } from '../core/behaviorAreas'
 import type {
   BehaviorArea,
   BlockDefinition,
+  BlockMigration,
   BlockPlacement,
+  BlockPlacementDeclaration,
+  BlockPlacementPreset,
   StatementContext,
 } from './blocks/types'
 
-export type ProjectAreaKind = 'structure' | 'appearance' | BehaviorArea
+export type { BlockMigration } from './blocks/types'
+export { BEHAVIOR_AREA_LABELS }
 
-export type BlockMigration =
-  | 'keep'
-  | 'unwrap-start'
-  | 'unwrap-load'
-  | 'remove-engine-boot'
-  | 'lift-periodic-loop'
+export type ProjectAreaKind = 'structure' | 'appearance' | BehaviorArea
 
 export interface BlockContract {
   type: string
@@ -67,40 +67,12 @@ export const EVENT_BODY_COMMAND_PLACEMENT: BlockPlacement = Object.freeze({
   role: 'command',
 })
 
-/**
- * Aplica um contrato explícito e falha cedo quando a lista contiver um typo.
- * Os arrays de blocos são a fonte da verdade; esta função só evita repetir o
- * mesmo objeto `placement` dezenas de vezes em catálogos grandes.
- */
-export function applyPlacementToBlockTypes(
-  definitions: readonly BlockDefinition[],
-  blockTypes: readonly string[],
-  placement: BlockPlacement,
-): void {
-  const pending = new Set(blockTypes)
-  for (const definition of definitions) {
-    if (!pending.delete(definition.type)) continue
-    definition.placement = placement
-  }
-  if (pending.size > 0) {
-    throw new Error(
-      `Contrato de posicionamento referencia blocos ausentes: ${[...pending].join(', ')}`,
-    )
-  }
-}
-
 export const FRAME_STRUCTURE = 'sz_frame_structure'
 export const FRAME_APPEARANCE = 'sz_frame_appearance'
 export const FRAME_BEHAVIOR_LEGACY = 'sz_frame_behavior'
 export const FRAME_START = 'sz_frame_start'
 export const FRAME_EVENTS = 'sz_frame_events'
 export const FRAME_LOOPS = 'sz_frame_loops'
-
-export const BEHAVIOR_AREA_LABELS = Object.freeze({
-  start: '⚙️ Ao iniciar',
-  events: '⚡ Quando acontecer — Eventos',
-  loops: '🔁 Enquanto estiver rodando — Loops',
-})
 
 export const PROJECT_AREA_TYPES = new Set<string>([
   FRAME_STRUCTURE,
@@ -115,59 +87,6 @@ export function isProjectAreaType(type: string): boolean {
   return PROJECT_AREA_TYPES.has(type)
 }
 
-const LEGACY_START_BLOCK_TYPES = new Set([
-  'sz_g2d_on_start',
-  'sz_gk_on_game_start',
-  'sz_js_on_load',
-])
-
-const ENGINE_BOOT_BLOCK_TYPES = new Set(['sz_gk_start', 'sz_g3k_start', 'sz_w3d_start'])
-
-const LOOP_BLOCK_TYPES = new Set([
-  'sz_canvas_anim_loop',
-  'sz_g2d_update_each_frame',
-  'sz_g2d_every_frames',
-  'sz_g2d_every_seconds',
-  'sz_g3d_animate',
-  'sz_gk_on_update',
-  'sz_gk_on_draw',
-  'sz_gk_on_draw_hud',
-  'sz_gk_every_seconds',
-  'sz_g3k_on_update',
-  'sz_g3k_on_entity_state_update',
-  'sz_w3d_on_update',
-  'sz_js_set_interval',
-  'sz_js_set_interval_seconds',
-])
-
-const LOOP_BODY_ONLY_BLOCK_TYPES = new Set([
-  'sz_g2d_on_enemy_shot_hit',
-  'sz_g2d_on_group_overlap',
-  'sz_g2d_on_sprite_group_overlap',
-  'sz_gk_overlap_groups',
-])
-
-const PERIODIC_BLOCK_TYPES = new Set([
-  'sz_g2d_every_frames',
-  'sz_g2d_every_seconds',
-  'sz_gk_every_seconds',
-  'sz_js_set_interval',
-  'sz_js_set_interval_seconds',
-])
-
-const DRAW_WORLD_BLOCK_TYPES = new Set(['sz_gk_on_draw'])
-const DRAW_HUD_BLOCK_TYPES = new Set(['sz_gk_on_draw_hud'])
-
-const START_DECLARATION_BLOCK_TYPES = new Set([
-  'sz_js_function',
-  'sz_js_class',
-  'sz_js_import_named',
-  'sz_js_import_default',
-  'sz_js_import_star',
-])
-
-const EVENT_BODY_ONLY_BLOCK_TYPES = new Set(['sz_js_event_method'])
-
 const BODY_CONTEXTS: readonly StatementContext[] = [
   'statement',
   'event-body',
@@ -181,6 +100,67 @@ const BODY_CONTEXTS: readonly StatementContext[] = [
   'map-draw',
   'map-enter',
 ]
+
+const PLACEMENT_PRESETS: Readonly<Record<BlockPlacementPreset, BlockPlacement>> = Object.freeze({
+  command: Object.freeze({ root: ['start'] as const, nested: BODY_CONTEXTS, role: 'command' }),
+  'start-declaration': START_ONLY_DECLARATION_PLACEMENT,
+  event: EVENT_ROOT_PLACEMENT,
+  'event-body': EVENT_BODY_COMMAND_PLACEMENT,
+  'loop-update': Object.freeze({
+    root: ['loops'] as const,
+    nested: [] as const,
+    role: 'loop',
+    phase: 'update',
+  }),
+  'loop-periodic': Object.freeze({
+    root: ['loops'] as const,
+    nested: [] as const,
+    role: 'loop',
+    phase: 'periodic',
+  }),
+  'loop-draw-world': Object.freeze({
+    root: ['loops'] as const,
+    nested: [] as const,
+    role: 'loop',
+    phase: 'draw-world',
+  }),
+  'loop-draw-hud': Object.freeze({
+    root: ['loops'] as const,
+    nested: [] as const,
+    role: 'loop',
+    phase: 'draw-hud',
+  }),
+  'loop-body': Object.freeze({
+    root: [] as const,
+    nested: ['loop-body'] as const,
+    role: 'loop',
+    phase: 'update',
+  }),
+  'legacy-start': Object.freeze({
+    root: ['start'] as const,
+    nested: [] as const,
+    role: 'event',
+  }),
+  'start-only-command': START_ONLY_COMMAND_PLACEMENT,
+  'resource-creator': RESOURCE_CREATOR_PLACEMENT,
+  'class-member': Object.freeze({
+    root: [] as const,
+    nested: ['class-member'] as const,
+    role: 'declaration',
+  }),
+  'switch-case': Object.freeze({
+    root: [] as const,
+    nested: ['statement'] as const,
+    role: 'command',
+  }),
+})
+
+function resolvePlacement(declaration: BlockPlacementDeclaration): BlockPlacement {
+  if (typeof declaration !== 'string') return declaration
+  const placement = PLACEMENT_PRESETS[declaration]
+  if (!placement) throw new Error(`Preset de posicionamento desconhecido: ${declaration}`)
+  return placement
+}
 
 const CHECK_BY_CONTEXT: Readonly<Record<StatementContext, string>> = {
   statement: 'JSStmt',
@@ -200,37 +180,6 @@ const CHECK_BY_CONTEXT: Readonly<Record<StatementContext, string>> = {
 export const NESTED_STATEMENT_CHECKS = [
   ...new Set(BODY_CONTEXTS.map((context) => CHECK_BY_CONTEXT[context])),
 ]
-
-function isEventBlockType(type: string): boolean {
-  if (
-    LEGACY_START_BLOCK_TYPES.has(type) ||
-    LOOP_BLOCK_TYPES.has(type) ||
-    LOOP_BODY_ONLY_BLOCK_TYPES.has(type)
-  ) {
-    return false
-  }
-  if (
-    type === 'sz_js_element_onclick' ||
-    type === 'sz_js_image_onload' ||
-    type === 'sz_js_image_onerror'
-  ) {
-    return true
-  }
-  return (
-    type.startsWith('sz_js_on_') ||
-    /^sz_(?:g2d|gk|g3k|w3d)_on_/.test(type) ||
-    /^sz_gk_(?:rpg|cards|td)_on_/.test(type) ||
-    /^sz_w3d_(?:race|bowling)_on_/.test(type) ||
-    type.startsWith('sz_t3d_physics_on_')
-  )
-}
-
-function loopPhase(type: string): BlockPlacement['phase'] {
-  if (DRAW_WORLD_BLOCK_TYPES.has(type)) return 'draw-world'
-  if (DRAW_HUD_BLOCK_TYPES.has(type)) return 'draw-hud'
-  if (PERIODIC_BLOCK_TYPES.has(type)) return 'periodic'
-  return 'update'
-}
 
 function statementChecks(placement: BlockPlacement): string[] {
   const checks = new Set<string>()
@@ -285,61 +234,21 @@ export function inferBlockContract(definition: BlockDefinition): BlockContract {
       type,
       domain: 'value',
       migration: 'keep',
-      placement: definition.placement ?? { root: [], nested: [], role: 'value' },
+      placement: definition.placement
+        ? resolvePlacement(definition.placement)
+        : { root: [], nested: [], role: 'value' },
     }
   }
 
-  if (previousChecks.includes('ClassMember')) {
-    return {
-      type,
-      domain: 'behavior',
-      migration: 'keep',
-      placement: definition.placement ?? {
-        root: [],
-        nested: ['class-member'],
-        role: 'declaration',
-      },
-    }
-  }
-  if (previousChecks.includes('SwitchCase')) {
-    return {
-      type,
-      domain: 'behavior',
-      migration: 'keep',
-      placement: definition.placement ?? { root: [], nested: ['statement'], role: 'command' },
-    }
-  }
-
-  let placement = definition.placement
-  let migration: BlockMigration = 'keep'
-  if (!placement && LEGACY_START_BLOCK_TYPES.has(type)) {
-    placement = { root: ['start'], nested: [], role: 'event' }
-    migration = type === 'sz_js_on_load' ? 'unwrap-load' : 'unwrap-start'
-  } else if (!placement && ENGINE_BOOT_BLOCK_TYPES.has(type)) {
-    placement = { root: ['start'], nested: [], role: 'command' }
-    migration = 'remove-engine-boot'
-  } else if (!placement && LOOP_BLOCK_TYPES.has(type)) {
-    placement = { root: ['loops'], nested: [], role: 'loop', phase: loopPhase(type) }
-    migration = PERIODIC_BLOCK_TYPES.has(type) ? 'lift-periodic-loop' : 'keep'
-  } else if (!placement && LOOP_BODY_ONLY_BLOCK_TYPES.has(type)) {
-    placement = { root: [], nested: ['loop-body'], role: 'loop', phase: 'update' }
-  } else if (!placement && isEventBlockType(type)) {
-    placement = EVENT_ROOT_PLACEMENT
-  } else if (!placement && START_DECLARATION_BLOCK_TYPES.has(type)) {
-    placement = { root: ['start'], nested: [], role: 'declaration' }
-  } else if (!placement && EVENT_BODY_ONLY_BLOCK_TYPES.has(type)) {
-    placement = { root: [], nested: ['event-body'], role: 'command' }
-  } else if (
-    !placement &&
-    (definition.previousStatement != null || definition.nextStatement != null)
-  ) {
-    placement = { root: ['start'], nested: BODY_CONTEXTS, role: 'command' }
-  }
-
-  if (!placement) {
+  if (!definition.placement) {
     throw new Error(`O bloco executável “${type}” não possui contrato de posicionamento`)
   }
-  return { type, domain: 'behavior', placement, migration }
+  return {
+    type,
+    domain: 'behavior',
+    placement: resolvePlacement(definition.placement),
+    migration: definition.migration ?? 'keep',
+  }
 }
 
 const contracts = new Map<string, BlockContract>()
@@ -381,7 +290,7 @@ export function materializeBlockDefinition(definition: BlockDefinition): BlockDe
     ...withInputs,
     previousStatement: definition.previousStatement == null ? definition.previousStatement : checks,
     nextStatement: definition.nextStatement == null ? definition.nextStatement : checks,
-  }
+  } as BlockDefinition
 }
 
 export function areaForBlockType(type: string): ProjectAreaKind | undefined {

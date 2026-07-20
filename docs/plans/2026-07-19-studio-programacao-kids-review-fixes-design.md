@@ -17,12 +17,14 @@ A correção preserva a arquitetura atual e fortalece seus contratos centrais. C
 - `return` só entra em funções, métodos e construtores.
 - `await` só entra em corpos assíncronos.
 - `super` só entra no contexto de classe adequado.
-- Métodos e valores de evento só entram em eventos.
-- A lista de nomes considera escopo léxico. Seletores de escrita excluem constantes e nomes ainda não declarados.
+- Métodos de evento exigem um evento; tecla/código exigem evento de teclado e coordenadas exigem evento de ponteiro.
+- A lista de nomes considera escopo léxico, ordem de declaração e o ramo exato de cada binder. Seletores de escrita excluem constantes e nomes ainda não declarados.
+- Classes aceitam no máximo um construtor. Em classe derivada, um construtor explícito começa com uma única chamada `super()`.
+- Alvos “elemento atual” usam a mesma regra de contexto de `this`, inclusive em operações de classe CSS.
 
 ## Paleta e progressão
 
-Flyouts de Funções e Classes filtram cada bloco pelo nível e por `allowBlocks`. As unidades pedagógicas aparecem completas: criar e modificar listas no mesmo degrau; salvar e ler dados no mesmo degrau; enviar formulário junto da forma segura de impedir o recarregamento.
+Flyouts de Funções e Classes filtram cada bloco pelo nível e por `allowBlocks`. Relatores de parâmetro ficam somente em Funções e somente para o escopo selecionado. As unidades pedagógicas aparecem completas: criar, ler e modificar listas em 📋 Listas no mesmo degrau; salvar e ler dados no mesmo degrau; enviar formulário junto da forma segura de impedir o recarregamento.
 
 `Quando a página carregar` fica na área correta. Temporizadores têm um único lugar. Operações de objetos deixam a seção de listas.
 
@@ -33,6 +35,12 @@ Os blocos guiados escrevem texto com `textContent` ou valores de formulário com
 ## Ponte e identidade
 
 O parser reconhece uma Promise vazia antes do caso genérico de instanciação. Cada `caso` de `switch` carrega seu próprio ID no IR, na serialização, no gerador e no source map.
+
+Funções nomeadas preservam `async` entre bloco, IR, JavaScript, parser e reabertura; `await` é aceito nelas e em métodos assíncronos. Construtores duplicados de estado legado geram erro explícito em vez de perder código silenciosamente.
+
+## Estado da implementação — 20/07/2026
+
+Os achados foram implementados com regressões para símbolos do núcleo coexistindo com extensões, declaração antes do uso, binders por ramo, capacidades de evento, `this`, construtores, `super`, flyouts, funções assíncronas, catálogo e progressão de listas. A documentação vigente reconhece cinco Áreas do projeto e todo bloco `sz_g3d_*` no degrau iniciante-3d.
 
 ## Linguagem e acessibilidade
 

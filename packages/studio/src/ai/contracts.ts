@@ -1,5 +1,5 @@
 import type { IDEMode } from '#core'
-import type { SZIR, SZIRInput } from '#ir'
+import type { SZIRInput, SZIRV2 } from '#ir'
 
 export interface ProjectContext {
   projectName: string
@@ -58,7 +58,7 @@ export interface AIProvider {
     lang: 'html' | 'css' | 'js',
     options?: AIRequestOptions,
   ): Promise<string>
-  convertIdeaToBlocks(idea: string, options?: AIRequestOptions): Promise<SZIR>
+  convertIdeaToBlocks(idea: string, options?: AIRequestOptions): Promise<SZIRV2>
   /** Conversa livre — opcional; implementações reais devem suportar streaming. */
   ask(req: AIFreeFormRequest): Promise<string>
 }

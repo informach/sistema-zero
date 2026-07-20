@@ -80,6 +80,10 @@ describe('resolveBlockLevel — amostras representativas', () => {
       'sz_val_arg',
       'sz_js_array_push',
       'sz_val_array',
+      'sz_val_array_length',
+      'sz_val_array_index',
+      'sz_val_array_last',
+      'sz_val_join',
       'sz_g2d_sprite_vx', // getter de velocidade
       'sz_g2d_set_opacity',
       'sz_css_display_flex',

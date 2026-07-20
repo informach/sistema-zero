@@ -28,7 +28,37 @@ export interface BlockPlacement {
   phase?: 'update' | 'periodic' | 'draw-world' | 'draw-hud'
 }
 
-export interface BlockDefinition {
+/**
+ * Vocabulário curto para declarar o posicionamento junto de catálogos grandes.
+ * Cada preset é expandido pelo registro central; nenhum deles infere semântica
+ * pelo nome do bloco.
+ */
+export type BlockPlacementPreset =
+  | 'command'
+  | 'start-declaration'
+  | 'event'
+  | 'event-body'
+  | 'loop-update'
+  | 'loop-periodic'
+  | 'loop-draw-world'
+  | 'loop-draw-hud'
+  | 'loop-body'
+  | 'legacy-start'
+  | 'start-only-command'
+  | 'resource-creator'
+  | 'class-member'
+  | 'switch-case'
+
+export type BlockPlacementDeclaration = BlockPlacement | BlockPlacementPreset
+
+export type BlockMigration =
+  | 'keep'
+  | 'unwrap-start'
+  | 'unwrap-load'
+  | 'remove-engine-boot'
+  | 'lift-periodic-loop'
+
+interface BlockDefinitionBase {
   type: string
   message0?: string
   args0?: unknown[]
@@ -42,9 +72,6 @@ export interface BlockDefinition {
   args4?: unknown[]
   message5?: string
   args5?: unknown[]
-  previousStatement?: string | string[] | null
-  nextStatement?: string | string[] | null
-  output?: string | null
   colour?: string | number
   tooltip?: string
   helpUrl?: string
@@ -59,10 +86,50 @@ export interface BlockDefinition {
    * Usado para blocos legados substituídos por versões mais novas.
    */
   hidden?: boolean
-  /**
-   * Exceção explícita ao contrato inferido pelo catálogo central. A maioria dos
-   * blocos usa a regra canônica do seu papel; somente contextos especializados
-   * precisam declarar uma substituição junto à definição.
-   */
-  placement?: BlockPlacement
 }
+
+export type ProjectAreaBlockType =
+  | 'sz_frame_structure'
+  | 'sz_frame_appearance'
+  | 'sz_frame_behavior'
+  | 'sz_frame_start'
+  | 'sz_frame_events'
+  | 'sz_frame_loops'
+
+type ContentStatementCheck = 'HTMLNode' | 'CSSEntry' | 'CSSDecl' | 'KeyframeStep'
+
+export type BlockDefinition = BlockDefinitionBase &
+  (
+    | {
+        type: ProjectAreaBlockType
+        previousStatement?: never
+        nextStatement?: never
+        output?: never
+        placement?: never
+        migration?: never
+      }
+    | {
+        previousStatement: ContentStatementCheck
+        nextStatement: ContentStatementCheck
+        output?: never
+        placement?: never
+        migration?: never
+      }
+    | {
+        output: string | null
+        previousStatement?: never
+        nextStatement?: never
+        /** Valores dependentes de contexto, como dados de evento, declaram onde cabem. */
+        placement?: BlockPlacementDeclaration
+        migration?: never
+      }
+    | {
+        /** Contrato semântico obrigatório para todo bloco executável de comportamento. */
+        placement: BlockPlacementDeclaration
+        previousStatement?: string | string[] | null
+        nextStatement?: string | string[] | null
+        output?: never
+        /** Regra explícita de compatibilidade; ausente significa `keep`. */
+        migration?: BlockMigration
+      }
+  )

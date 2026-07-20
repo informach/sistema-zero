@@ -1,3 +1,4 @@
+export * from './behaviorAreas'
 export * from './example'
 export * from './i18n'
 export * from './levels'

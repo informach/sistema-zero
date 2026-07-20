@@ -62,7 +62,7 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
   }
   function createStickHero(ctx) {
     if (!ctx || !ctx.canvas) return null;
-    var w = ctx.canvas.width, h = ctx.canvas.height;
+    var w = stageW(ctx), h = stageH(ctx);
     var game = { ctx: ctx, w: w, h: h, cfg: shConfig(w, h), paddingX: Math.round(w * 0.27) };
     shReset(game);
     return game;
@@ -288,7 +288,7 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
   }
   function createBalloon(ctx) {
     if (!ctx || !ctx.canvas) return null;
-    var w = ctx.canvas.width, h = ctx.canvas.height;
+    var w = stageW(ctx), h = stageH(ctx);
     var game = { ctx: ctx, w: w, h: h };
     blReset(game);
     return game;

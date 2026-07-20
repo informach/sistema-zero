@@ -1,6 +1,16 @@
 import type * as Blockly from 'blockly/core'
-import type { CSSEntry, HTMLNode, HTMLTag, JSExpr, JSStatement, SZIR, SZIRV2 } from '#ir'
-import { splitLegacyBehavior } from '#ir'
+import type {
+  CSSDeclaration,
+  CSSDeclarations,
+  CSSEntry,
+  HTMLNode,
+  HTMLTag,
+  JSExpr,
+  JSStatement,
+  SZIR,
+  SZIRV2,
+} from '#ir'
+import { cssDeclarationEntries, HTMLNodeSchema, splitLegacyBehavior } from '#ir'
 import { htmlElementForBlock, isSupportedHTMLInputType } from '../html/catalog'
 import {
   FRAME_APPEARANCE,
@@ -26,7 +36,7 @@ export {
 
 /**
  * Percorre o workspace e devolve a SZ-IR V2. Só gera o que está dentro de
- * Estrutura, Aparência, Ao iniciar, Quando acontecer — Eventos ou Enquanto
+ * Estrutura, Aparência, Ao iniciar, Quando acontecer ou Enquanto
  * estiver rodando — Loops. **Bloco solto é
  * rascunho** e fica fora da geração.
  * A inclusão é por CONTÊINER, não por posição/ordem no canvas.
@@ -199,7 +209,13 @@ function mergeBlockData(block: Blockly.Block, node: HTMLNode): void {
  * (contraparte do stash em `htmlNodeToBlockInner` de workspaceState). Só devolve
  * valores numéricos finitos; `data` ausente/inválido vira `{}`.
  */
-function parseCanvasData(raw: string | null | undefined): { width?: number; height?: number } {
+function parseCanvasData(raw: string | null | undefined): {
+  width?: number
+  height?: number
+  attrs?: Record<string, string>
+  children?: HTMLNode[]
+  classSource?: 'legacy'
+} {
   if (!raw) return {}
   let parsed: unknown
   try {
@@ -208,10 +224,35 @@ function parseCanvasData(raw: string | null | undefined): { width?: number; heig
     return {}
   }
   if (typeof parsed !== 'object' || parsed === null) return {}
-  const { width, height } = parsed as { width?: unknown; height?: unknown }
-  const out: { width?: number; height?: number } = {}
+  const record = parsed as Record<string, unknown>
+  const { width, height } = record
+  const out: {
+    width?: number
+    height?: number
+    attrs?: Record<string, string>
+    children?: HTMLNode[]
+    classSource?: 'legacy'
+  } = {}
   if (typeof width === 'number' && Number.isFinite(width)) out.width = width
   if (typeof height === 'number' && Number.isFinite(height)) out.height = height
+  if (record.attrs && typeof record.attrs === 'object' && !Array.isArray(record.attrs)) {
+    const attrs = Object.fromEntries(
+      Object.entries(record.attrs).filter(
+        (entry): entry is [string, string] => typeof entry[1] === 'string',
+      ),
+    )
+    if (Object.keys(attrs).length > 0) out.attrs = attrs
+  }
+  if (Array.isArray(record.children)) {
+    const children: HTMLNode[] = []
+    for (const child of record.children) {
+      const result = HTMLNodeSchema.safeParse(child)
+      if (!result.success) return out
+      children.push(result.data)
+    }
+    if (children.length > 0) out.children = children
+  }
+  if (record.classSource === 'legacy') out.classSource = 'legacy'
   return out
 }
 
@@ -1249,7 +1290,8 @@ interface ClassMembers {
 
 /**
  * Lê os membros encaixados no input MEMBERS: o `sz_js_constructor` (parâmetros +
- * corpo) e os `sz_js_class_method`. Se houver mais de um construtor, o último vence.
+ * corpo) e os `sz_js_class_method`. Estados legados com mais de um construtor
+ * falham explicitamente: escolher um deles descartaria código do aluno.
  */
 function getClassMembers(block: Blockly.Block, seen: Set<string>): ClassMembers {
   const out: ClassMembers = { ctorParams: [], ctorBody: [], methods: [] }
@@ -1260,6 +1302,11 @@ function getClassMembers(block: Blockly.Block, seen: Set<string>): ClassMembers 
       continue
     }
     if (cur.type === 'sz_js_constructor') {
+      if (out.ctorId) {
+        throw new Error(
+          `A classe “${f(block, 'NAME')}” tem mais de um construtor. Mantenha apenas um antes de gerar o projeto.`,
+        )
+      }
       out.ctorParams = getParamNames(cur)
       out.ctorBody = getStatementChildren(cur, 'BODY', seen)
       out.ctorId = cur.id
@@ -1287,9 +1334,14 @@ function getClassMembers(block: Blockly.Block, seen: Set<string>): ClassMembers 
 function getCssDeclarations(
   block: Blockly.Block,
   name: string,
-): { declarations: Record<string, string>; declIds: Record<string, string> } {
+): {
+  declarations: CSSDeclarations
+  declIds: Record<string, string>
+} {
+  const entries: CSSDeclaration[] = []
   const declarations: Record<string, string> = {}
   const declIds: Record<string, string> = {}
+  let hasDuplicate = false
   let cur: Blockly.Block | null = block.getInputTargetBlock(name)
   while (cur) {
     if (cur.isInsertionMarker()) {
@@ -1299,21 +1351,24 @@ function getCssDeclarations(
     if (cur.type === 'sz_css_decl') {
       const prop = f(cur, 'PROP').trim()
       if (prop) {
-        declarations[prop] = f(cur, 'VALUE').trim()
+        const value = f(cur, 'VALUE').trim()
+        if (Object.hasOwn(declarations, prop)) hasDuplicate = true
+        declarations[prop] = value
         declIds[prop] = cur.id
+        entries.push({ property: prop, value, __id: cur.id })
       }
     }
     cur = cur.getNextBlock()
   }
-  return { declarations, declIds }
+  return { declarations: hasDuplicate ? entries : declarations, declIds }
 }
 
 /** Coleta os blocos `sz_css_keyframe_step` de um input → passos da animação. */
 function getKeyframeSteps(
   block: Blockly.Block,
   name: string,
-): Array<{ at: string; declarations: Record<string, string> }> {
-  const out: Array<{ at: string; declarations: Record<string, string> }> = []
+): Array<{ at: string; declarations: CSSDeclarations }> {
+  const out: Array<{ at: string; declarations: CSSDeclarations }> = []
   let cur: Blockly.Block | null = block.getInputTargetBlock(name)
   while (cur) {
     if (cur.isInsertionMarker()) {
@@ -1376,12 +1431,14 @@ function htmlContainer(tag: HTMLTag, block: Blockly.Block, seen: Set<string>): R
 function htmlText(tag: HTMLTag, block: Blockly.Block, seen: Set<string>): RoutedNode {
   const text = f(block, 'TEXT')
   const children = getHtmlChildren(block, 'CHILDREN', seen)
+  const labelFor = tag === 'label' ? f(block, 'FOR') : ''
   return {
     kind: 'html',
     value: {
       type: 'element',
       tag,
       ...(text ? { text } : {}),
+      ...(labelFor ? { attrs: { for: labelFor } } : {}),
       ...(children.length > 0 ? { children } : {}),
     },
   }
@@ -1492,9 +1549,15 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       const id = f(block, 'ID')
       const inputType = f(block, 'TYPE')
       const placeholder = f(block, 'PLACEHOLDER')
+      const name = f(block, 'NAME')
+      const value = f(block, 'VALUE')
+      const checked = f(block, 'CHECKED') === 'TRUE'
       const attrs: Record<string, string> = {}
       if (inputType && isSupportedHTMLInputType(inputType)) attrs.type = inputType
       if (placeholder) attrs.placeholder = placeholder
+      if (name) attrs.name = name
+      if (value) attrs.value = value
+      if (checked) attrs.checked = ''
       return {
         kind: 'html',
         value: {
@@ -1508,6 +1571,10 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     case 'sz_html_textarea': {
       const id = f(block, 'ID')
       const placeholder = f(block, 'PLACEHOLDER')
+      const name = f(block, 'NAME')
+      const attrs: Record<string, string> = {}
+      if (placeholder) attrs.placeholder = placeholder
+      if (name) attrs.name = name
       return {
         kind: 'html',
         value: {
@@ -1515,7 +1582,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           tag: 'textarea',
           ...(id ? { id } : {}),
           text: f(block, 'TEXT'),
-          ...(placeholder ? { attrs: { placeholder } } : {}),
+          ...(Object.keys(attrs).length > 0 ? { attrs } : {}),
         },
       }
     }
@@ -1524,12 +1591,24 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       // blocos de Canvas (JS). Quando o canvas veio do HTML com width/height
       // (ex.: `<canvas width=200 height=100>`), o workspaceState os guardou no
       // `data` do bloco; recuperamos daqui para o round-trip não os perder.
-      const node: Extract<HTMLNode, { type: 'canvas' }> = { type: 'canvas', id: f(block, 'ID') }
+      const id = f(block, 'ID')
+      const data = parseCanvasData((block as unknown as { data?: string | null }).data)
+      const node: Extract<HTMLNode, { type: 'canvas' }> = {
+        type: 'canvas',
+        ...(id ? { id } : {}),
+      }
       const cls = f(block, 'CLASS')
-      if (cls) node.class = cls
-      const dims = parseCanvasData((block as unknown as { data?: string | null }).data)
-      if (dims.width != null) node.width = dims.width
-      if (dims.height != null) node.height = dims.height
+      const attrs = { ...(data.attrs ?? {}) }
+      if (cls) {
+        if (data.classSource === 'legacy') node.class = cls
+        else attrs.class = cls
+      }
+      if (Object.keys(attrs).length > 0) node.attrs = attrs
+      const description = f(block, 'DESCRIPTION')
+      if (description) node.children = [{ type: 'text', text: description }]
+      else if (data.children) node.children = data.children
+      if (data.width != null) node.width = data.width
+      if (data.height != null) node.height = data.height
       return { kind: 'html', value: node }
     }
     case 'sz_html_text':
@@ -1925,7 +2004,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           selector: f(block, 'SELECTOR'),
           declarations,
-          ...(Object.keys(declIds).length > 0 ? { __declIds: declIds } : {}),
+          ...(Array.isArray(declarations) || Object.keys(declIds).length === 0
+            ? {}
+            : { __declIds: declIds }),
         },
       }
     }
@@ -1971,7 +2052,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           selector: `${f(block, 'SELECTOR')}:hover`,
           declarations,
-          ...(Object.keys(declIds).length > 0 ? { __declIds: declIds } : {}),
+          ...(Array.isArray(declarations) || Object.keys(declIds).length === 0
+            ? {}
+            : { __declIds: declIds }),
         },
       }
     }
@@ -1990,9 +2073,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     case 'sz_css_keyframes': {
       const from = getCssDeclarations(block, 'FROM').declarations
       const to = getCssDeclarations(block, 'TO').declarations
-      const steps: Array<{ at: string; declarations: Record<string, string> }> = []
-      if (Object.keys(from).length > 0) steps.push({ at: 'from', declarations: from })
-      if (Object.keys(to).length > 0) steps.push({ at: 'to', declarations: to })
+      const steps: Array<{ at: string; declarations: CSSDeclarations }> = []
+      if (cssDeclarationEntries(from).length > 0) steps.push({ at: 'from', declarations: from })
+      if (cssDeclarationEntries(to).length > 0) steps.push({ at: 'to', declarations: to })
       return {
         kind: 'css',
         value: { type: 'keyframes', name: f(block, 'NAME') || 'animacao', steps },
@@ -3012,7 +3095,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: {
           type: 'cancelAnimationFrame',
-          handle: exprInput(block, 'HANDLE', { type: 'var', name: 'animId' }),
+          // Um encaixe ainda vazio precisa continuar gerando IR válido e um
+          // no-op seguro; `cancelAnimationFrame(0)` não cancela outro quadro.
+          handle: exprInput(block, 'HANDLE', { type: 'num', value: 0 }),
         },
       }
     case 'sz_canvas_keyboard':
@@ -4044,7 +4129,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: {
           type: 'imageOnLoad',
-          target: exprInput(block, 'TARGET', { type: 'var', name: 'img' }),
+          // O objeto vazio mantém o projeto executável enquanto a criança
+          // ainda não encaixou uma imagem, sem inventar uma variável global.
+          target: exprInput(block, 'TARGET', { type: 'objectLiteral', entries: [] }),
           body: getStatementChildren(block, 'DO', seen),
         },
       }
@@ -4053,7 +4140,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: {
           type: 'imageOnError',
-          target: exprInput(block, 'TARGET', { type: 'var', name: 'img' }),
+          target: exprInput(block, 'TARGET', { type: 'objectLiteral', entries: [] }),
           body: getStatementChildren(block, 'DO', seen),
         },
       }
@@ -4143,6 +4230,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'funcDecl',
           name: f(block, 'NAME'),
           params: getParamNames(block),
+          ...(f(block, 'ASYNC') === 'TRUE' ? { async: true } : {}),
           body: getStatementChildren(block, 'BODY', seen),
         },
       }

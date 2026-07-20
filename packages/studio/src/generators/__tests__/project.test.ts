@@ -16,6 +16,7 @@ describe('generateProjectFiles', () => {
     expect(files['index.html']).toContain('<canvas id="game"')
     expect(files['index.html']).not.toContain('SZGame2D')
     expect(files['style.css']).toContain('background: #0b1020;')
-    expect(files['script.js']).toContain("const ctx = canvas.getContext('2d');")
+    expect(files['script.js']).toContain("const ctx = canvas?.getContext?.('2d');")
+    expect(files['script.js']).toContain('if (!ctx)')
   })
 })

@@ -38,7 +38,13 @@ export function buildInputBridgeRuntime(): string {
     return canvasEl;
   }
   function at(e) {
-    var c = getCanvas();
+    // O evento sabe em qual tela aconteceu. Isso é essencial quando a página
+    // tem mais de um canvas: usamos esse alvo e o tornamos a tela ativa; sem um
+    // alvo Canvas, o primeiro canvas do DOM continua sendo o fallback estável.
+    var target = e && e.target;
+    var eventCanvas = target && typeof target.getContext === 'function' ? target : null;
+    if (eventCanvas) canvasEl = eventCanvas;
+    var c = eventCanvas || getCanvas();
     var rect = c && c.getBoundingClientRect ? c.getBoundingClientRect() : { left: 0, top: 0, width: 0, height: 0 };
     // Escala display -> coordenadas internas do canvas (quando exibido em tamanho
     // diferente da resolução, ex.: canvas que preenche a janela).

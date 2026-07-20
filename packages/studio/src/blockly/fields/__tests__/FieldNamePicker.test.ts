@@ -19,7 +19,9 @@ import {
   collectMutableVariables,
   collectObjects3d,
   collectPropertyNames,
+  collectReadableVariables,
   collectScenes3d,
+  collectScopedFunctionNames,
   collectScopedVariableNames,
   collectSpritesheets,
   collectSVGReferences,
@@ -118,6 +120,25 @@ describe('FieldNamePicker', () => {
       expect(collectMutableVariables(outside)).toEqual(['global'])
     })
 
+    it('não oferece uma variável antes do comando que a declara', () => {
+      const ws = new Blockly.Workspace()
+      const frame = ws.newBlock('sz_frame_start')
+      const readBefore = ws.newBlock('sz_js_console_log_value')
+      const writeBefore = ws.newBlock('sz_js_var_assign')
+      const declaration = ws.newBlock('sz_js_var_create')
+      declaration.setFieldValue('futuro', 'NAME')
+
+      frame
+        .getInput('CHILDREN')
+        ?.connection?.connect(readBefore.previousConnection as Blockly.Connection)
+      readBefore.nextConnection?.connect(writeBefore.previousConnection as Blockly.Connection)
+      writeBefore.nextConnection?.connect(declaration.previousConnection as Blockly.Connection)
+
+      expect(collectReadableVariables(readBefore)).not.toContain('futuro')
+      expect(collectMutableVariables(writeBefore)).not.toContain('futuro')
+      expect(collectReadableVariables(declaration)).not.toContain('futuro')
+    })
+
     it('workspace vazio → lista vazia', () => {
       expect(collectVariables(new Blockly.Workspace())).toEqual([])
       expect(collectVariables(null)).toEqual([])
@@ -176,6 +197,56 @@ describe('FieldNamePicker', () => {
         operation.getInput(input)?.connection?.connect(inner.outputConnection as Blockly.Connection)
         expect(collectScopedVariableNames(inner), type).toEqual(['inimigo'])
       }
+    })
+
+    it('expõe cada nome local somente no ramo onde ele existe', () => {
+      const ws = new Blockly.Workspace()
+      const loop = ws.newBlock('sz_js_for_range')
+      loop.setFieldValue('i', 'VAR')
+      const from = ws.newBlock('sz_val_variable')
+      const body = ws.newBlock('sz_js_console_log_value')
+      loop.getInput('FROM')?.connection?.connect(from.outputConnection as Blockly.Connection)
+      nestStmt(loop, body, 'DO')
+
+      const guarded = ws.newBlock('sz_js_try_catch')
+      guarded.setFieldValue('erro', 'ERR')
+      const tryBody = ws.newBlock('sz_js_console_log_value')
+      const handler = ws.newBlock('sz_js_console_log_value')
+      const finalizer = ws.newBlock('sz_js_console_log_value')
+      nestStmt(guarded, tryBody, 'BODY')
+      nestStmt(guarded, handler, 'HANDLER')
+      nestStmt(guarded, finalizer, 'FINALLY')
+
+      expect(collectScopedVariableNames(from)).toEqual([])
+      expect(collectScopedVariableNames(body)).toEqual(['i'])
+      expect(collectScopedVariableNames(tryBody)).toEqual([])
+      expect(collectScopedVariableNames(handler)).toEqual(['erro'])
+      expect(collectScopedVariableNames(finalizer)).toEqual([])
+    })
+
+    it('expõe resultado e erro do fetch somente em seus respectivos ramos', () => {
+      const ws = new Blockly.Workspace()
+      const fetch = ws.newBlock('sz_js_fetch_json')
+      fetch.setFieldValue('dados', 'OK')
+      fetch.setFieldValue('falha', 'ERR')
+      const success = ws.newBlock('sz_js_console_log_value')
+      const failure = ws.newBlock('sz_js_console_log_value')
+      nestStmt(fetch, success, 'BODY')
+      nestStmt(fetch, failure, 'CATCH')
+
+      expect(collectScopedVariableNames(success)).toEqual(['dados'])
+      expect(collectScopedVariableNames(failure)).toEqual(['falha'])
+    })
+
+    it('expõe a função de conclusão somente dentro do corpo da Promise', () => {
+      const ws = new Blockly.Workspace()
+      const promise = ws.newBlock('sz_val_new_promise')
+      promise.setFieldValue('concluir', 'PARAM')
+      const body = ws.newBlock('sz_js_set_timeout_call')
+      nestStmt(promise, body, 'DO')
+
+      expect(collectScopedFunctionNames(body)).toEqual(['concluir'])
+      expect(collectScopedFunctionNames(ws.newBlock('sz_js_set_timeout_call'))).toEqual([])
     })
 
     it('fora de qualquer laço → nenhuma variável local', () => {
@@ -540,6 +611,23 @@ describe('FieldNamePicker', () => {
       const use = ws.newBlock('sz_svg_use')
       const href = use.getField('HREF') as FieldNamePicker
       expect(href.kind).toBe('svg-reference')
+    })
+
+    it('oferece somente formas reutilizáveis e evita o ancestral cíclico', () => {
+      const ws = new Blockly.Workspace()
+      ws.newBlock('sz_html_svg').setFieldValue('raiz', 'ID')
+      ws.newBlock('sz_svg_defs').setFieldValue('pecas', 'ID')
+      ws.newBlock('sz_svg_symbol').setFieldValue('estrela', 'ID')
+      ws.newBlock('sz_svg_circle').setFieldValue('bola', 'ID')
+      ws.newBlock('sz_svg_use').setFieldValue('copia', 'ID')
+      const group = ws.newBlock('sz_svg_group')
+      group.setFieldValue('grupo', 'ID')
+      const nestedUse = ws.newBlock('sz_svg_use')
+      group
+        .getInput('CHILDREN')
+        ?.connection?.connect(nestedUse.previousConnection as Blockly.Connection)
+
+      expect(collectSVGReferences(ws, nestedUse)).toEqual(['#estrela', '#bola'])
     })
   })
 

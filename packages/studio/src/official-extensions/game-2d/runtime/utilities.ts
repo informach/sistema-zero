@@ -32,9 +32,14 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   }
   // Sorteia um número inteiro de min a max (inclusive).
   function randomBetween(min, max) {
-    var lo = (typeof min === 'number') ? min : 0;
-    var hi = (typeof max === 'number') ? max : 1;
-    if (hi < lo) { var t = lo; lo = hi; hi = t; }
+    var rawLo = (typeof min === 'number' && Number.isFinite(min)) ? min : 0;
+    var rawHi = (typeof max === 'number' && Number.isFinite(max)) ? max : 1;
+    if (rawHi < rawLo) { var t = rawLo; rawLo = rawHi; rawHi = t; }
+    var lo = Math.ceil(rawLo);
+    var hi = Math.floor(rawHi);
+    // Um intervalo como 0,2..0,8 não contém inteiro. Nesse caso impossível,
+    // escolhemos deterministicamente o inteiro mais próximo do centro.
+    if (lo > hi) return Math.round((rawLo + rawHi) / 2);
     return Math.floor(Math.random() * (hi - lo + 1)) + lo;
   }
   // Verdadeiro com a chance dada (em %). Ex.: randomChance(30) ~ 30% das vezes.
@@ -135,8 +140,18 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   // rodar o quadro do aluno); "Continuar o jogo" descongela. "está pausado?" lê o
   // estado (útil em eventos de tecla). ----
   var _paused = false;
-  function pauseGame() { _paused = true; }
-  function resumeGame() { _paused = false; }
+  function pauseGame() {
+    if (_paused) return;
+    _pauseGameClock();
+    _paused = true;
+    _pauseRuntimeDomains();
+  }
+  function resumeGame() {
+    if (!_paused) return;
+    _resumeGameClock();
+    _paused = false;
+    _resumeRuntimeDomains();
+  }
   function isPaused() { return _paused; }
 
   // ===== Genéricos Tier 2: câmera, mapa destrutível, ordem de desenho, depuração =====
@@ -238,5 +253,17 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
     c.fillText('FPS: ' + _fpsValue, typeof x === 'number' ? x : 8, typeof y === 'number' ? y : 20);
     c.restore();
   }
+
+  _registerRuntimeDomain('utilities', {
+    reset: function () {
+      _paused = false;
+      _resetGameClock();
+      camera.x = 0;
+      camera.y = 0;
+      _fpsLast = 0;
+      _fpsFrames = 0;
+      _fpsValue = 0;
+    }
+  });
 
 `

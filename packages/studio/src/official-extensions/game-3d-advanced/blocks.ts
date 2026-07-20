@@ -1,8 +1,5 @@
 import type { ExtensionToolboxCategory } from '#extensions'
-import {
-  applyPlacementToBlockTypes,
-  START_ONLY_COMMAND_PLACEMENT,
-} from '../../blockly/blockContracts'
+import type { BlockDefinition } from '../../blockly/blocks/types'
 import { categoryShades } from '../../blockly/colorShades'
 
 // Jogo 3D Avançado = UMA cor da categoria: ÍNDIGO. As sub-categorias são TONS
@@ -14,6 +11,7 @@ export const gameKit3DBlocks = [
   // ---- 🧰 O jogo ----
   {
     type: 'sz_g3k_setup',
+    placement: 'start-only-command',
     message0: 'Preparar o jogo 3D: tela %1 × %2, mundo de %3, céu %4, chão %5',
     args0: [
       { type: 'input_value', name: 'W', check: 'JSValue' },
@@ -31,6 +29,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_set_effects',
+    placement: 'command',
     message0: 'Efeitos de cinema: sombras %1, brilho %2 com força %3, vinheta %4',
     args0: [
       { type: 'field_checkbox', name: 'SHADOWS', checked: true },
@@ -43,10 +42,11 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Liga/desliga os efeitos que dão cara de cinema: sombras, brilho (as coisas claras "vazam" luz — bloom) e vinheta (os cantos escurecem). Tudo já vem LIGADO; desligue para ganhar velocidade num computador fraco (modo turbo).',
+      'Liga ou desliga os efeitos que dão cara de cinema: sombras, brilho nas coisas claras e cantos mais escuros. Tudo já vem ligado. Desligue para ganhar velocidade num computador mais fraco.',
   },
   {
     type: 'sz_g3k_set_seed',
+    placement: 'command',
     message0: 'Usar a semente %1 para o acaso',
     args0: [{ type: 'input_value', name: 'SEED', check: 'JSValue' }],
     inputsInline: true,
@@ -54,10 +54,11 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Trava o acaso do jogo numa semente: a MESMA semente dá exatamente a MESMA partida — os enfeites nascem no mesmo lugar, os inimigos vêm na mesma ordem, as faíscas voam igual. Ótimo para testar (o bug acontece de novo!) e para fazer um desafio idêntico para todo mundo. Semente 0 = acaso de verdade. ⚠️ Vale para o acaso do MOTOR e para os blocos "sortear" DESTE kit — o bloco "número aleatório" comum não obedece à semente.',
+      'Trava o acaso do jogo numa semente: a MESMA semente dá exatamente a MESMA partida. Os enfeites nascem no mesmo lugar, os inimigos vêm na mesma ordem, as faíscas voam igual. Ótimo para testar (o bug acontece de novo!) e para fazer um desafio idêntico para todo mundo. Semente 0 = acaso de verdade. ⚠️ Vale para o acaso do MOTOR e para os blocos "sortear" DESTE kit. O bloco "número aleatório" comum não obedece à semente.',
   },
   {
     type: 'sz_g3k_scatter_decor',
+    placement: 'command',
     message0: 'Espalhar %1 enfeites pelo chão (pedras e cristais)',
     args0: [{ type: 'input_value', name: 'COUNT', check: 'JSValue' }],
     inputsInline: true,
@@ -69,6 +70,8 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_start',
+    placement: 'start-only-command',
+    migration: 'remove-engine-boot',
     message0: 'Começar o jogo (mostra o menu)',
     args0: [],
     previousStatement: 'JSStmt',
@@ -90,6 +93,7 @@ export const gameKit3DBlocks = [
   // ---- 🧊 Moldes & peças ----
   {
     type: 'sz_g3k_define_mold',
+    placement: 'start-only-command',
     message0: 'Criar o molde 3D %1 com vida %2 e velocidade %3',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'inimigo' },
@@ -107,6 +111,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_part',
+    placement: 'command',
     message0: 'Peça %1 %2 cor %3 de %4 × %5 × %6',
     args0: [
       {
@@ -158,12 +163,13 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Uma peça do molde: a forma, o acabamento (normal, metal, vidro ou BRILHO — que acende com o efeito de brilho/bloom), a cor, o tamanho (largura × altura × profundidade) e onde ela fica em relação ao centro do molde. O y 0.5 senta um cubo de altura 1 no chão. Com a forma "modelo importado", escolha um arquivo .glb do projeto — aí a peça vira o modelo de verdade (a caixa que colide continua sendo o tamanho que você deu). Só funciona DENTRO de "Criar o molde 3D".',
+      'Uma peça do molde: escolha forma, acabamento, cor, tamanho e posição. O acabamento BRILHO acende com o efeito de luz. O y 0.5 coloca um cubo de altura 1 no chão. Com “modelo importado”, escolha um arquivo .glb do projeto. A caixa de colisão continua com o tamanho informado. Use dentro de “Criar o molde 3D”.',
   },
 
   // ---- 👾 Nascer & enxames ----
   {
     type: 'sz_g3k_spawn',
+    placement: 'command',
     message0: 'Nascer 1 do molde %1 em x %2 y %3 z %4',
     args0: [
       { type: 'field_name_picker', name: 'MOLD', text: 'inimigo', kind: 'mold3d' },
@@ -176,10 +182,11 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Faz nascer 1 entidade do molde nessa posição do mundo (y 0 = no chão). O motor reaproveita as recolhidas (pooling) — rápido mesmo com muitas. Ela nasce no estado "parado".',
+      'Faz nascer 1 entidade do molde nessa posição do mundo. Use y 0 para colocar no chão. O motor reaproveita as entidades recolhidas, por isso funciona bem mesmo com muitas. Ela nasce no estado “parado”.',
   },
   {
     type: 'sz_g3k_spawn_named',
+    placement: 'command',
     message0: 'Nascer 1 do molde %1 em x %2 y %3 z %4, chamando de %5',
     args0: [
       { type: 'field_name_picker', name: 'MOLD', text: 'heroi', kind: 'mold3d' },
@@ -193,10 +200,11 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Como o "Nascer 1", mas dá um APELIDO ao que nasceu — aí você usa esse nome nos outros blocos (câmera seguir, mover pelas teclas, perseguir…). Perfeito para o herói e o chefão.',
+      'Como o "Nascer 1", mas dá um APELIDO ao que nasceu. Aí você usa esse nome nos outros blocos (câmera seguir, mover pelas teclas, perseguir…). Perfeito para o herói e o chefão.',
   },
   {
     type: 'sz_g3k_spawn_from',
+    placement: 'command',
     message0: 'Nascer 1 do molde %1 no lugar de %2 (virado igual)',
     args0: [
       { type: 'field_name_picker', name: 'MOLD', text: 'tiro', kind: 'mold3d' },
@@ -207,10 +215,11 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Faz nascer 1 do molde na MESMA posição e virado para o MESMO lado de outra entidade. É assim que o tiro da torre nasce já mirado — junte com "Mover para frente".',
+      'Faz nascer 1 do molde na MESMA posição e virado para o MESMO lado de outra entidade. É assim que o tiro da torre nasce já mirado. Junte com "Mover para frente".',
   },
   {
     type: 'sz_g3k_start_spawner',
+    placement: 'command',
     message0: 'A cada %1 s, nascer 1 do molde %2 %3',
     args0: [
       { type: 'input_value', name: 'SEC', check: 'JSValue' },
@@ -233,16 +242,18 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_stop_spawner',
+    placement: 'command',
     message0: 'Parar a fábrica do molde %1',
     args0: [{ type: 'field_name_picker', name: 'MOLD', text: 'inimigo', kind: 'mold3d' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Desliga a fábrica desse molde — nada mais nasce dele (os vivos continuam). Bom para fases e fim de onda.',
+      'Desliga a fábrica desse molde. Nada mais nasce dele (os vivos continuam). Bom para fases e fim de onda.',
   },
   {
     type: 'sz_g3k_for_each_alive',
+    placement: 'command',
     message0: 'Para cada %1 vivo do molde %2',
     args0: [
       { type: 'field_input', name: 'ITEM', text: 'item' },
@@ -255,7 +266,7 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Repete o "fazer" para CADA entidade viva desse molde — dentro, "item" é a da vez. Use no "A cada quadro" para regras que valem para todos.',
+      'Repete o "fazer" para CADA entidade viva desse molde. Dentro, "item" é a da vez. Use no "A cada quadro" para regras que valem para todos.',
   },
   {
     type: 'sz_g3k_count_alive',
@@ -267,16 +278,18 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_recycle',
+    placement: 'command',
     message0: 'Recolher %1 (volta pro molde)',
     args0: [{ type: 'field_name_picker', name: 'WHO', text: 'ela', kind: 'entity3d' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Tira esta entidade do jogo e guarda para reaproveitar depois. Melhor que "apagar" — o motor reusa quando outra nascer (pooling profissional).',
+      'Tira esta entidade do jogo e guarda para reaproveitar depois. Melhor que "apagar". O motor reusa quando outra nascer (pooling profissional).',
   },
   {
     type: 'sz_g3k_recycle_all',
+    placement: 'command',
     message0: 'Recolher todos do molde %1',
     args0: [{ type: 'field_name_picker', name: 'MOLD', text: 'inimigo', kind: 'mold3d' }],
     previousStatement: 'JSStmt',
@@ -287,6 +300,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_cull_far',
+    placement: 'command',
     message0: 'Recolher do molde %1 quem passar de %2 do centro',
     args0: [
       { type: 'field_name_picker', name: 'MOLD', text: 'tiro', kind: 'mold3d' },
@@ -303,6 +317,7 @@ export const gameKit3DBlocks = [
   // ---- 🕹️ Jogar & teclas ----
   {
     type: 'sz_g3k_on_update',
+    placement: 'loop-update',
     message0: 'A cada quadro, com o tempo %1 (em segundos)',
     args0: [{ type: 'field_input', name: 'DT', text: 'dt' }],
     message1: 'fazer %1',
@@ -312,10 +327,11 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O coração do jogo: roda o "fazer" a cada quadro, SÓ enquanto o estado é "jogando". O tempo (dt) é quanto durou o último quadro, em segundos — multiplique a velocidade por ele para o jogo andar igual em qualquer computador.',
+      'O coração do jogo: roda o "fazer" a cada quadro, SÓ enquanto o estado é "jogando". O tempo (dt) é quanto durou o último quadro, em segundos. Multiplique a velocidade por ele para o jogo andar igual em qualquer computador.',
   },
   {
     type: 'sz_g3k_move_with_keys',
+    placement: 'command',
     message0: 'Mover %1 pelas teclas (WASD e setas) a %2 por segundo',
     args0: [
       { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'entity3d' },
@@ -348,6 +364,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_set_pause_key',
+    placement: 'start-only-command',
     message0: 'Usar a tecla %1 para pausar e continuar',
     args0: [{ type: 'field_input', name: 'KEY', text: 'Escape' }],
     previousStatement: 'JSStmt',
@@ -359,6 +376,7 @@ export const gameKit3DBlocks = [
   // ---- 🎥 Câmera ----
   {
     type: 'sz_g3k_camera_follow',
+    placement: 'command',
     message0: 'Câmera: seguir %1 de %2 de longe e %3 de altura',
     args0: [
       { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'entity3d' },
@@ -374,6 +392,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_camera_orbit',
+    placement: 'command',
     message0: 'Câmera: girar em volta do mundo (arraste o mouse), a %1 de distância',
     args0: [{ type: 'input_value', name: 'DIST', check: 'JSValue' }],
     inputsInline: true,
@@ -385,16 +404,18 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_camera_top',
+    placement: 'command',
     message0: 'Câmera: ver de cima, a %1 de altura',
     args0: [{ type: 'input_value', name: 'HEIGHT', check: 'JSValue' }],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Vista aérea do mundo inteiro — perfeita para tower defense e jogos de estratégia.',
+    tooltip: 'Vista aérea do mundo inteiro. Perfeita para tower defense e jogos de estratégia.',
   },
   {
     type: 'sz_g3k_camera_angle',
+    placement: 'command',
     message0: 'Câmera: girar para %1 ° e inclinar %2 °',
     args0: [
       { type: 'input_value', name: 'AZ', check: 'JSValue' },
@@ -409,6 +430,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_camera_distance',
+    placement: 'command',
     message0: 'Câmera: afastar %1',
     args0: [{ type: 'input_value', name: 'DIST', check: 'JSValue' }],
     inputsInline: true,
@@ -416,10 +438,11 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Aproxima ou afasta a câmera. Vale tanto para a de órbita quanto para a que segue alguém — dá para aproximar numa conversa e afastar na luta.',
+      'Aproxima ou afasta a câmera. Vale tanto para a de órbita quanto para a que segue alguém. Dá para aproximar numa conversa e afastar na luta.',
   },
   {
     type: 'sz_g3k_camera_shake',
+    placement: 'command',
     message0: 'Tremer a câmera com força %1 por %2 s',
     args0: [
       { type: 'input_value', name: 'STRENGTH', check: 'JSValue' },
@@ -434,6 +457,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_camera_lens',
+    placement: 'command',
     message0: 'Câmera: lente de %1 °',
     args0: [{ type: 'input_value', name: 'FOV', check: 'JSValue' }],
     inputsInline: true,
@@ -445,16 +469,18 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_camera_look_at',
+    placement: 'command',
     message0: 'Câmera: olhar para %1',
     args0: [{ type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'entity3d' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Faz a câmera de órbita/de cima girar em volta DELA em vez do meio do mundo. Sem este bloco a câmera olha sempre para o centro — num mundo grande, é o que te deixa acompanhar o herói ou o chefão.',
+      'Faz a câmera de órbita/de cima girar em volta DELA em vez do meio do mundo. Sem este bloco a câmera olha sempre para o centro. Num mundo grande, é o que te deixa acompanhar o herói ou o chefão.',
   },
   {
     type: 'sz_g3k_camera_look_at_point',
+    placement: 'command',
     message0: 'Câmera: olhar para o ponto x %1 y %2 z %3',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -470,6 +496,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_camera_smooth',
+    placement: 'command',
     message0: 'Câmera: suavidade do seguir %1',
     args0: [{ type: 'input_value', name: 'LAMBDA', check: 'JSValue' }],
     inputsInline: true,
@@ -483,6 +510,7 @@ export const gameKit3DBlocks = [
   // ---- 🤖 Entidades ----
   {
     type: 'sz_g3k_place',
+    placement: 'command',
     message0: 'Colocar %1 em x %2 y %3 z %4',
     args0: [
       { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'entity3d' },
@@ -498,6 +526,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_set_yaw',
+    placement: 'command',
     message0: 'Girar %1 para %2 graus (bússola)',
     args0: [
       { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'entity3d' },
@@ -512,6 +541,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_set_velocity',
+    placement: 'command',
     message0: 'Dar a %1 a velocidade x %2 y %3 z %4',
     args0: [
       { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'entity3d' },
@@ -524,10 +554,11 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Define a velocidade da entidade (unidades por segundo, em cada eixo). O motor integra sozinho a cada quadro — é a física do curso profissional.',
+      'Define a velocidade da entidade (unidades por segundo, em cada eixo). O motor integra sozinho a cada quadro. É a física do curso profissional.',
   },
   {
     type: 'sz_g3k_set_drag',
+    placement: 'command',
     message0: 'Frear %1 aos poucos (arrasto %2)',
     args0: [
       { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'entity3d' },
@@ -538,10 +569,11 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Liga o arrasto: a velocidade da entidade vai morrendo sozinha (quanto maior o número, mais rápido freia). Bom para empurrões e derrapadas. Freia só no PLANO (x/z) — a queda continua com a gravidade.',
+      'Liga o arrasto: a velocidade da entidade vai morrendo sozinha (quanto maior o número, mais rápido freia). Bom para empurrões e derrapadas. Freia só no PLANO (x/z). A queda continua com a gravidade.',
   },
   {
     type: 'sz_g3k_look_at',
+    placement: 'command',
     message0: 'Virar %1 de uma vez para %2',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'ela', kind: 'entity3d' },
@@ -555,6 +587,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_move_forward',
+    placement: 'command',
     message0: 'Mover %1 para frente a %2 por segundo',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'ela', kind: 'entity3d' },
@@ -593,7 +626,7 @@ export const gameKit3DBlocks = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Verdadeiro se a entidade existe e está viva (não foi recolhida). Use antes de mexer num alvo guardado — ele pode já ter sido derrotado.',
+      'Verdadeiro se a entidade existe e está viva (não foi recolhida). Use antes de mexer num alvo guardado. Ele pode já ter sido derrotado.',
   },
   {
     type: 'sz_g3k_is_mold',
@@ -605,10 +638,11 @@ export const gameKit3DBlocks = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Pergunta a IDENTIDADE de uma entidade. É o filtro das zonas: o "quem" do "Quando alguém encostar" pode ser qualquer coisa que entrou (herói, bola, tiro) — pergunte o molde antes de contar o ponto, como os jogos de verdade filtram os alvos.',
+      'Pergunta a IDENTIDADE de uma entidade. É o filtro das zonas: o "quem" do "Quando alguém encostar" pode ser qualquer coisa que entrou (herói, bola, tiro). Pergunte o molde antes de contar o ponto, como os jogos de verdade filtram os alvos.',
   },
   {
     type: 'sz_g3k_set_entity_value',
+    placement: 'command',
     message0: 'Guardar em %1 o valor %2 na gaveta %3',
     args0: [
       { type: 'field_name_picker', name: 'CHAR', text: 'ela', kind: 'entity3d' },
@@ -646,6 +680,7 @@ export const gameKit3DBlocks = [
   // ---- 🧠 Cérebro da entidade (FSM — o coração do curso) ----
   {
     type: 'sz_g3k_on_enter_entity_state',
+    placement: 'event',
     message0: 'Quando %1 do molde %2 entrar no estado %3',
     args0: [
       { type: 'field_input', name: 'ITEM', text: 'ela' },
@@ -659,10 +694,11 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Roda o "fazer" toda vez que QUALQUER entidade desse molde ENTRAR nesse estado — dentro, o apelido é a entidade da vez. É a máquina de estados dos jogos profissionais: cada torre e cada invasor tem o próprio cérebro.',
+      'Roda o "fazer" toda vez que QUALQUER entidade desse molde ENTRAR nesse estado. Dentro, o apelido é a entidade da vez. É a máquina de estados dos jogos profissionais: cada torre e cada invasor tem o próprio cérebro.',
   },
   {
     type: 'sz_g3k_on_entity_state_update',
+    placement: 'loop-update',
     message0: 'Enquanto %1 do molde %2 estiver no estado %3, a cada quadro (tempo %4)',
     args0: [
       { type: 'field_input', name: 'ITEM', text: 'ela' },
@@ -681,6 +717,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_on_exit_entity_state',
+    placement: 'event',
     message0: 'Quando %1 do molde %2 sair do estado %3',
     args0: [
       { type: 'field_input', name: 'ITEM', text: 'ela' },
@@ -697,6 +734,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_set_entity_state',
+    placement: 'command',
     message0: 'Mudar %1 para o estado %2',
     args0: [
       { type: 'field_name_picker', name: 'CHAR', text: 'ela', kind: 'entity3d' },
@@ -706,7 +744,7 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Muda o estado DESTA entidade (roda o "sair" do estado velho e o "entrar" do novo). Mudar para o estado em que ela já está não faz nada — como nos jogos de verdade.',
+      'Muda o estado DESTA entidade. Primeiro sai do estado velho e depois entra no novo. Pedir o estado atual de novo não faz nada, como nos jogos de verdade.',
   },
   {
     type: 'sz_g3k_entity_state_is',
@@ -721,6 +759,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_state_timer',
+    placement: 'start-only-command',
     message0: 'No molde %1, depois de %2 s no estado %3, mudar para %4',
     args0: [
       { type: 'field_name_picker', name: 'MOLD', text: 'torre', kind: 'mold3d' },
@@ -739,6 +778,7 @@ export const gameKit3DBlocks = [
   // ---- 🎯 Comportamentos ----
   {
     type: 'sz_g3k_seek',
+    placement: 'command',
     message0: 'Fazer %1 perseguir %2',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'ela', kind: 'entity3d' },
@@ -752,6 +792,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_seek_point',
+    placement: 'command',
     message0: 'Fazer %1 andar rumo ao ponto x %2 z %3',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'ela', kind: 'entity3d' },
@@ -763,10 +804,11 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Anda rumo a um LUGAR do mundo (não a uma entidade), na velocidade do molde, e para ao chegar. Só empurra no chão — a altura continua da gravidade. Com "sortear de … a …" vira passeio; com uma lista de pontos vira patrulha.',
+      'Anda rumo a um LUGAR do mundo (não a uma entidade), na velocidade do molde, e para ao chegar. Só empurra no chão. A altura continua da gravidade. Com "sortear de … a …" vira passeio; com uma lista de pontos vira patrulha.',
   },
   {
     type: 'sz_g3k_aim_at',
+    placement: 'command',
     message0: 'Fazer %1 mirar em %2 (suavidade %3)',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'ela', kind: 'entity3d' },
@@ -782,6 +824,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_face_velocity',
+    placement: 'command',
     message0: 'Virar %1 para onde anda',
     args0: [{ type: 'field_name_picker', name: 'WHO', text: 'ela', kind: 'entity3d' }],
     previousStatement: 'JSStmt',
@@ -799,12 +842,13 @@ export const gameKit3DBlocks = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Verdadeiro quando a frente da entidade aponta quase exatamente para o alvo — a hora de atirar. É a conta da torre profissional (o "mirar → atirar").',
+      'Verdadeiro quando a frente da entidade aponta quase exatamente para o alvo. A hora de atirar. É a conta da torre profissional (o "mirar → atirar").',
   },
 
   // ---- 🕸️ Vizinhança (grade espacial) ----
   {
     type: 'sz_g3k_for_each_near',
+    placement: 'command',
     message0: 'Para cada %1 do molde %2 a até %3 de %4',
     args0: [
       { type: 'field_input', name: 'ITEM', text: 'vizinho' },
@@ -819,10 +863,11 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Repete o "fazer" só para quem está PERTO (dentro do raio). Por dentro usa uma grade espacial — o truque dos jogos profissionais para nunca comparar todo mundo com todo mundo.',
+      'Repete o "fazer" só para quem está PERTO (dentro do raio). Por dentro usa uma grade espacial. O truque dos jogos profissionais para nunca comparar todo mundo com todo mundo.',
   },
   {
     type: 'sz_g3k_store_nearest',
+    placement: 'command',
     message0: 'Guardar em %1 quem do molde %2 está mais perto de %3',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'alvo' },
@@ -834,7 +879,7 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Acha a entidade viva mais próxima desse molde e guarda com um apelido — é como a torre escolhe o alvo. Pergunte "ainda está no jogo?" antes de usar (pode não haver ninguém).',
+      'Acha a entidade viva mais próxima desse molde e guarda com um apelido. É como a torre escolhe o alvo. Pergunte "ainda está no jogo?" antes de usar (pode não haver ninguém).',
   },
   {
     type: 'sz_g3k_touches',
@@ -854,6 +899,7 @@ export const gameKit3DBlocks = [
   // ---- ❤️ Combate ----
   {
     type: 'sz_g3k_hurt',
+    placement: 'command',
     message0: 'Machucar %1 tirando %2 de vida',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'ela', kind: 'entity3d' },
@@ -876,6 +922,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_show_health_bar',
+    placement: 'command',
     message0: 'Mostrar a barra de vida do molde %1 %2',
     args0: [
       { type: 'field_name_picker', name: 'MOLD', text: 'chefao', kind: 'mold3d' },
@@ -889,6 +936,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_on_entity_death',
+    placement: 'event',
     message0: 'Quando %1 do molde %2 for derrotado',
     args0: [
       { type: 'field_input', name: 'ITEM', text: 'ela' },
@@ -907,6 +955,7 @@ export const gameKit3DBlocks = [
   // ---- 💥 Faíscas 3D ----
   {
     type: 'sz_g3k_define_effect',
+    placement: 'start-only-command',
     message0: 'Criar o efeito 3D %1: %2 faíscas, cor %3 até %4, espalhar %5',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'explosao' },
@@ -927,10 +976,11 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Um efeito é a RECEITA de uma explosão de faíscas 3D, feita só de dados: quantas, a cor do começo e a do fim, o quanto espalham, o tamanho ao nascer e ao morrer, quanto duram e a gravidade (negativa cai, positiva sobe — fogo). Defina uma vez; solte quantas quiser. É o sistema de partículas dos jogos de verdade.',
+      'Um efeito é a receita de uma explosão de faíscas 3D. Escolha quantidade, cores, espalhamento, tamanhos, duração e gravidade. Gravidade negativa faz cair e positiva faz subir, como fogo. Defina uma vez e solte quantas quiser.',
   },
   {
     type: 'sz_g3k_burst_at',
+    placement: 'command',
     message0: 'Soltar o efeito %1 em x %2 y %3 z %4',
     args0: [
       { type: 'field_name_picker', name: 'EFFECT', text: 'explosao', kind: 'effect3d' },
@@ -946,6 +996,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_burst_on',
+    placement: 'command',
     message0: 'Soltar o efeito %1 em cima de %2',
     args0: [
       { type: 'field_name_picker', name: 'EFFECT', text: 'explosao', kind: 'effect3d' },
@@ -954,10 +1005,11 @@ export const gameKit3DBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Estoura o efeito em cima de uma entidade — perfeito no "quando for derrotado".',
+    tooltip: 'Estoura o efeito em cima de uma entidade. Perfeito no "quando for derrotado".',
   },
   {
     type: 'sz_g3k_define_emitter',
+    placement: 'start-only-command',
     message0: 'Criar o emissor 3D %1: cor %2 até %3, tamanho %4 até %5',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'fogo' },
@@ -996,6 +1048,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_start_emitter',
+    placement: 'command',
     message0: 'Ligar o jorro do efeito %1 em x %2 y %3 z %4',
     args0: [
       { type: 'field_name_picker', name: 'EFFECT', text: 'fogo', kind: 'effect3d' },
@@ -1012,6 +1065,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_emitter_on',
+    placement: 'command',
     message0: 'Ligar o jorro do efeito %1 em cima de %2',
     args0: [
       { type: 'field_name_picker', name: 'EFFECT', text: 'fogo', kind: 'effect3d' },
@@ -1021,10 +1075,11 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Liga o jorro contínuo seguindo uma entidade — o rastro de fogo da nave, a fumaça do carro, a aura mágica do herói. Ele acompanha a entidade por onde ela for.',
+      'Liga o jorro contínuo seguindo uma entidade. O rastro de fogo da nave, a fumaça do carro, a aura mágica do herói. Ele acompanha a entidade por onde ela for.',
   },
   {
     type: 'sz_g3k_stop_emitter',
+    placement: 'command',
     message0: 'Desligar o jorro do efeito %1',
     args0: [{ type: 'field_name_picker', name: 'EFFECT', text: 'fogo', kind: 'effect3d' }],
     previousStatement: 'JSStmt',
@@ -1035,6 +1090,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_add_attractor',
+    placement: 'start-only-command',
     message0: 'Puxar as faíscas do efeito %1 para x %2 y %3 z %4',
     args0: [
       { type: 'field_name_picker', name: 'EFFECT', text: 'fogo', kind: 'effect3d' },
@@ -1052,12 +1108,13 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria um ímã que PUXA as partículas desse efeito para um ponto — como um vórtice, um buraco negro ou o vento sugando a fumaça. A força diz o quanto puxa; o alcance, até onde o puxão é forte. Registre uma vez, fora do "A cada quadro"; cada efeito aceita até 16.',
+      'Cria um ímã que puxa as partículas para um ponto, como um vórtice ou um buraco negro. A força diz quanto puxa e o alcance diz até onde. Registre uma vez, fora de “A cada quadro”. Cada efeito aceita até 16 ímãs.',
   },
 
   // ---- 🏃 Física ----
   {
     type: 'sz_g3k_fall',
+    placement: 'command',
     message0: 'Fazer %1 cair com gravidade %2',
     args0: [
       { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'entity3d' },
@@ -1072,6 +1129,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_jump',
+    placement: 'command',
     message0: 'Fazer %1 pular com força %2',
     args0: [
       { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'entity3d' },
@@ -1082,7 +1140,7 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Dá um impulso para cima — mas SÓ se a entidade estiver no chão (não dá para voar segurando o pulo). Precisa da gravidade ligada.',
+      'Dá um impulso para cima. Mas SÓ se a entidade estiver no chão (não dá para voar segurando o pulo). Precisa da gravidade ligada.',
   },
   {
     type: 'sz_g3k_on_ground',
@@ -1095,6 +1153,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_make_solid',
+    placement: 'start-only-command',
     message0: 'Fazer o molde %1 ser sólido (parede/chão/plataforma)',
     args0: [{ type: 'field_name_picker', name: 'MOLD', text: 'parede', kind: 'mold3d' }],
     previousStatement: 'JSStmt',
@@ -1105,6 +1164,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_platformer_keys',
+    placement: 'command',
     message0: 'Mover %1 como plataforma: WASD a %2, pulo (espaço) %3',
     args0: [
       { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'entity3d' },
@@ -1122,6 +1182,7 @@ export const gameKit3DBlocks = [
   // ---- 🕺 Animação do modelo ----
   {
     type: 'sz_g3k_state_anim',
+    placement: 'start-only-command',
     message0: 'No molde %1, no estado %2, tocar a animação %3',
     args0: [
       { type: 'field_name_picker', name: 'MOLD', text: 'heroi', kind: 'mold3d' },
@@ -1132,10 +1193,11 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Amarra uma animação do modelo a um estado do cérebro. Você põe isso UMA vez e o boneco se anima sozinho: quando ele muda para o estado, a animação troca junto (com uma passagem suave). É o jeito profissional — o personagem do jogo não pede para animar, ele só muda de estado. O nome da animação é o que vem dentro do .glb (Idle, Run, Walk… cada site nomeia do seu jeito).',
+      'Amarra uma animação do modelo a um estado do cérebro. Você põe isso UMA vez e o boneco se anima sozinho: quando ele muda para o estado, a animação troca junto (com uma passagem suave). É o jeito profissional. O personagem do jogo não pede para animar, ele só muda de estado. O nome da animação é o que vem dentro do .glb (Idle, Run, Walk… cada site nomeia do seu jeito).',
   },
   {
     type: 'sz_g3k_play_anim',
+    placement: 'command',
     message0: 'Tocar a animação %1 em %2 %3',
     args0: [
       { type: 'field_input', name: 'CLIP', text: 'Idle' },
@@ -1157,6 +1219,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_stop_anim',
+    placement: 'command',
     message0: 'Parar a animação de %1',
     args0: [{ type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'entity3d' }],
     previousStatement: 'JSStmt',
@@ -1177,7 +1240,7 @@ export const gameKit3DBlocks = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Um número sorteado entre os dois (pode sair com vírgula). ⚠️ Use ESTE, e não o "número aleatório" comum: só o sorteio do kit obedece à semente — com ele, a mesma semente dá exatamente a mesma partida.',
+      'Um número sorteado entre os dois (pode sair com vírgula). ⚠️ Use ESTE, e não o "número aleatório" comum: só o sorteio do kit obedece à semente. Com ele, a mesma semente dá exatamente a mesma partida.',
   },
   {
     type: 'sz_g3k_random_chance',
@@ -1191,6 +1254,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_start_timer',
+    placement: 'command',
     message0: 'Começar a contagem de %1 s',
     args0: [{ type: 'input_value', name: 'SECONDS', check: 'JSValue' }],
     inputsInline: true,
@@ -1198,7 +1262,7 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Liga o relógio da partida: corrida contra o tempo, bomba, tempo da fase. Ele só corre no estado jogando — na pausa CONGELA, e recomeçar a partida zera.',
+      'Liga o relógio da partida: corrida contra o tempo, bomba, tempo da fase. Ele só corre no estado jogando. Na pausa CONGELA, e recomeçar a partida zera.',
   },
   {
     type: 'sz_g3k_time_left',
@@ -1209,6 +1273,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_stop_timer',
+    placement: 'command',
     message0: 'Parar a contagem',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -1217,6 +1282,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_on_timer_end',
+    placement: 'event',
     message0: 'Quando o tempo acabar',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'BODY' }],
@@ -1231,6 +1297,7 @@ export const gameKit3DBlocks = [
   // ---- 💬 Caixa de fala ----
   {
     type: 'sz_g3k_say',
+    placement: 'command',
     message0: '%1 diz %2 por %3 s',
     args0: [
       { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'entity3d' },
@@ -1246,6 +1313,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_hide_say',
+    placement: 'command',
     message0: 'Fechar a fala de %1',
     args0: [{ type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'entity3d' }],
     previousStatement: 'JSStmt',
@@ -1257,16 +1325,18 @@ export const gameKit3DBlocks = [
   // ---- 🔊 Música ----
   {
     type: 'sz_g3k_play_music',
+    placement: 'command',
     message0: 'Tocar a música %1 sem parar',
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'musica', kind: 'sound' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'A música de fundo: toca em repetição até você mandar parar. Carregue o som primeiro com "Carregar o som". Só toca UMA música por vez — pedir outra troca.',
+      'A música de fundo: toca em repetição até você mandar parar. Carregue o som primeiro com "Carregar o som". Só toca UMA música por vez. Pedir outra troca.',
   },
   {
     type: 'sz_g3k_stop_music',
+    placement: 'command',
     message0: 'Parar a música',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -1276,6 +1346,7 @@ export const gameKit3DBlocks = [
 
   {
     type: 'sz_g3k_set_physics',
+    placement: 'start-only-command',
     message0: 'Fazer o molde %1 ter física de %2',
     args0: [
       { type: 'field_name_picker', name: 'MOLD', text: 'bola', kind: 'mold3d' },
@@ -1300,6 +1371,7 @@ export const gameKit3DBlocks = [
 
   {
     type: 'sz_g3k_set_collider',
+    placement: 'start-only-command',
     message0: 'Fazer o molde %1 colidir como %2',
     args0: [
       { type: 'field_name_picker', name: 'MOLD', text: 'heroi', kind: 'mold3d' },
@@ -1321,6 +1393,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_pass_through',
+    placement: 'command',
     message0: 'Fazer %1 atravessar as paredes %2',
     args0: [
       { type: 'field_name_picker', name: 'CHAR', text: 'tiro', kind: 'entity3d' },
@@ -1330,10 +1403,11 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Ligado, essa entidade vira FANTASMA e passa através de tudo que é sólido — bom para tiro mágico, fantasma, ou uma câmera que entra na parede. Desligado, ela volta a bater nas paredes.',
+      'Ligado, essa entidade vira FANTASMA e passa através de tudo que é sólido. Bom para tiro mágico, fantasma, ou uma câmera que entra na parede. Desligado, ela volta a bater nas paredes.',
   },
   {
     type: 'sz_g3k_make_trigger',
+    placement: 'start-only-command',
     message0: 'Fazer o molde %1 ser uma zona (dá para atravessar)',
     args0: [{ type: 'field_name_picker', name: 'MOLD', text: 'moeda', kind: 'mold3d' }],
     previousStatement: 'JSStmt',
@@ -1344,6 +1418,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_on_overlap',
+    placement: 'event',
     message0: 'Quando alguém encostar em %1 do molde %2',
     args0: [
       { type: 'field_input', name: 'ZONE', text: 'zona' },
@@ -1357,10 +1432,11 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Roda o "fazer" na hora em que alguém ENTRA na zona — uma vez por entrada, não a cada quadro. "zona" é a moeda/porta que foi encostada e "quem" é quem encostou nela.',
+      'Roda o "fazer" na hora em que alguém ENTRA na zona. Uma vez por entrada, não a cada quadro. "zona" é a moeda/porta que foi encostada e "quem" é quem encostou nela.',
   },
   {
     type: 'sz_g3k_set_bounce',
+    placement: 'start-only-command',
     message0: 'Fazer o molde %1 quicar %2',
     args0: [
       { type: 'field_name_picker', name: 'MOLD', text: 'trampolim', kind: 'mold3d' },
@@ -1375,6 +1451,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_set_friction',
+    placement: 'start-only-command',
     message0: 'Fazer o molde %1 ter atrito %2',
     args0: [
       { type: 'field_name_picker', name: 'MOLD', text: 'gelo', kind: 'mold3d' },
@@ -1391,6 +1468,7 @@ export const gameKit3DBlocks = [
   // ---- 💡 Luz & céu ----
   {
     type: 'sz_g3k_add_light',
+    placement: 'command',
     message0: 'Pôr uma luz %1 em x %2 y %3 z %4 com força %5',
     args0: [
       { type: 'field_colour_sz', name: 'COLOR', colour: '#fff1b8' },
@@ -1408,6 +1486,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_set_ambient',
+    placement: 'command',
     message0: 'Luz do ambiente com força %1 (0 = escuro, 1 = claro)',
     args0: [{ type: 'input_value', name: 'INTENSITY', check: 'JSValue' }],
     inputsInline: true,
@@ -1419,6 +1498,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_set_fog',
+    placement: 'command',
     message0: 'Névoa %1 de %2 até %3 de distância',
     args0: [
       { type: 'field_colour_sz', name: 'COLOR', colour: '#9ca3af' },
@@ -1434,6 +1514,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_set_sky_photo',
+    placement: 'start-only-command',
     message0: 'Usar o céu de foto %1',
     args0: [
       {
@@ -1452,6 +1533,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_set_sky',
+    placement: 'command',
     message0: 'Trocar o céu: de %1 no alto até %2 no horizonte',
     args0: [
       { type: 'field_colour_sz', name: 'TOP', colour: '#0b1026' },
@@ -1494,7 +1576,7 @@ export const gameKit3DBlocks = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Quantos metros separam as duas entidades. Diferente de "encostou", que só responde sim/não, aqui você tem o NÚMERO — dá para fazer o inimigo correr mais quando está longe, o som ficar mais alto perto, etc.',
+      'Quantos metros separam as duas entidades. Diferente de "encostou", que só responde sim/não, aqui você tem o NÚMERO. Dá para fazer o inimigo correr mais quando está longe, o som ficar mais alto perto, etc.',
   },
   {
     type: 'sz_g3k_max_health_of',
@@ -1518,6 +1600,7 @@ export const gameKit3DBlocks = [
   // ---- 🖱️ Mira & clique (raycast) + 1ª pessoa ----
   {
     type: 'sz_g3k_pick',
+    placement: 'command',
     message0: 'Guardar em %1 a entidade do molde %2 sob o mouse',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'escolhida' },
@@ -1537,7 +1620,7 @@ export const gameKit3DBlocks = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Verdadeiro quando o ponteiro está em cima dessa entidade — para brilhar ao passar o mouse, mostrar dica, etc.',
+      'Verdadeiro quando o ponteiro está em cima dessa entidade. Para brilhar ao passar o mouse, mostrar dica, etc.',
   },
   {
     type: 'sz_g3k_ground_point',
@@ -1565,7 +1648,7 @@ export const gameKit3DBlocks = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Verdadeiro SÓ no quadro do clique/toque — o gatilho do point-and-click: "se o mouse foi clicado agora, guardar quem está sob o mouse". O irmão do "a tecla foi apertada agora?".',
+      'Verdadeiro SÓ no quadro do clique/toque. O gatilho do point-and-click: "se o mouse foi clicado agora, guardar quem está sob o mouse". O irmão do "a tecla foi apertada agora?".',
   },
   {
     type: 'sz_g3k_mouse_down',
@@ -1578,6 +1661,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_camera_fps',
+    placement: 'command',
     message0: 'Câmera em 1ª pessoa em %1 (olhar com o mouse)',
     args0: [{ type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'entity3d' }],
     previousStatement: 'JSStmt',
@@ -1588,6 +1672,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_move_fps',
+    placement: 'command',
     message0: 'Mover %1 em 1ª pessoa (WASD) a %2',
     args0: [
       { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'entity3d' },
@@ -1604,6 +1689,7 @@ export const gameKit3DBlocks = [
   // ---- 🖼️ Telas & HUD ----
   {
     type: 'sz_g3k_set_screen_text',
+    placement: 'start-only-command',
     message0: 'Na tela pronta %1, escrever título %2 texto %3 e botão %4',
     args0: [
       {
@@ -1630,6 +1716,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_create_screen',
+    placement: 'start-only-command',
     message0: 'Criar a tela %1 com título %2 e texto %3',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'loja' },
@@ -1641,10 +1728,11 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria uma tela SUA (ex.: loja, instruções), no mesmo estilo das prontas. Começa escondida — use "Mostrar a tela". Usar o nome de uma pronta faz você ASSUMIR a tela (os botões dela saem).',
+      'Cria uma tela SUA (ex.: loja, instruções), no mesmo estilo das prontas. Começa escondida. Use "Mostrar a tela". Usar o nome de uma pronta faz você ASSUMIR a tela (os botões dela saem).',
   },
   {
     type: 'sz_g3k_add_button',
+    placement: 'start-only-command',
     message0: 'Botão %1 na tela %2',
     args0: [
       { type: 'input_value', name: 'LABEL', check: 'JSValue' },
@@ -1657,10 +1745,11 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Põe um botão numa tela (pronta ou sua) e diz o que acontece no clique — mudar de estado, voltar ao menu, o que você quiser.',
+      'Põe um botão numa tela (pronta ou sua) e diz o que acontece no clique. Mudar de estado, voltar ao menu, o que você quiser.',
   },
   {
     type: 'sz_g3k_show_screen',
+    placement: 'command',
     message0: 'Mostrar a tela %1',
     args0: [{ type: 'field_name_picker', name: 'SCREEN', text: 'vitoria', kind: 'screen' }],
     previousStatement: 'JSStmt',
@@ -1670,15 +1759,17 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_hide_screens',
+    placement: 'command',
     message0: 'Esconder todas as telas',
     args0: [],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Esconde qualquer tela que esteja aparecendo — sobra só o jogo.',
+    tooltip: 'Esconde qualquer tela que esteja aparecendo. Sobra só o jogo.',
   },
   {
     type: 'sz_g3k_hud_text',
+    placement: 'command',
     message0: 'Escrever no canto %1 da tela: %2',
     args0: [
       {
@@ -1699,12 +1790,13 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Escreve um texto fixo num canto da tela (placar, vida, avisos) — o HUD do jogo. Escrever de novo no mesmo canto troca o texto; texto vazio apaga.',
+      'Escreve um texto fixo num canto da tela (placar, vida, avisos). O HUD do jogo. Escrever de novo no mesmo canto troca o texto; texto vazio apaga.',
   },
 
   // ---- 🚦 Estados do jogo ----
   {
     type: 'sz_g3k_set_state',
+    placement: 'command',
     message0: 'Mudar o estado do jogo para %1',
     args0: [{ type: 'field_name_picker', name: 'STATE', text: 'jogando', kind: 'gamestate' }],
     previousStatement: 'JSStmt',
@@ -1715,6 +1807,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_on_enter_state',
+    placement: 'event',
     message0: 'Quando o jogo entrar no estado %1',
     args0: [{ type: 'field_name_picker', name: 'STATE', text: 'jogando', kind: 'gamestate' }],
     message1: 'fazer %1',
@@ -1744,6 +1837,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_return_to_menu',
+    placement: 'command',
     message0: 'Voltar ao menu',
     args0: [],
     previousStatement: 'JSStmt',
@@ -1753,6 +1847,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_end_game',
+    placement: 'command',
     message0: 'Terminar o jogo (mostra a tela de fim)',
     args0: [],
     previousStatement: 'JSStmt',
@@ -1765,6 +1860,7 @@ export const gameKit3DBlocks = [
   // ---- 📢 Avisos ----
   {
     type: 'sz_g3k_on_event',
+    placement: 'event',
     message0: 'Quando chegar o aviso %1',
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'invasor:caiu', kind: 'event' }],
     message1: 'fazer %1',
@@ -1778,6 +1874,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_emit',
+    placement: 'command',
     message0: 'Avisar todo mundo: %1',
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'invasor:caiu', kind: 'event' }],
     previousStatement: 'JSStmt',
@@ -1790,6 +1887,7 @@ export const gameKit3DBlocks = [
   // ---- 🔊 Som ----
   {
     type: 'sz_g3k_load_sound',
+    placement: 'start-only-command',
     message0: 'Carregar o som %1 chamando de %2',
     args0: [
       { type: 'field_sound_picker', name: 'SOUND', text: '' },
@@ -1804,6 +1902,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_play_sound',
+    placement: 'command',
     message0: 'Tocar o som %1',
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'explosao', kind: 'sound' }],
     previousStatement: 'JSStmt',
@@ -1814,6 +1913,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_play_effect',
+    placement: 'command',
     message0: 'Tocar o som pronto %1',
     args0: [
       {
@@ -1841,6 +1941,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_play_tone',
+    placement: 'command',
     message0: 'Tocar um som de %1 Hz por %2 ms',
     args0: [
       { type: 'input_value', name: 'FREQ', check: 'JSValue' },
@@ -1852,35 +1953,7 @@ export const gameKit3DBlocks = [
     colour: C,
     tooltip: 'Toca uma notinha: quanto maior o Hz, mais agudo. Junte várias para uma melodia.',
   },
-]
-
-const GAME_KIT_3D_START_ONLY_BLOCK_TYPES = [
-  'sz_g3k_setup',
-  'sz_g3k_define_mold',
-  'sz_g3k_set_pause_key',
-  'sz_g3k_state_timer',
-  'sz_g3k_define_effect',
-  'sz_g3k_define_emitter',
-  'sz_g3k_add_attractor',
-  'sz_g3k_make_solid',
-  'sz_g3k_state_anim',
-  'sz_g3k_set_physics',
-  'sz_g3k_set_collider',
-  'sz_g3k_make_trigger',
-  'sz_g3k_set_bounce',
-  'sz_g3k_set_friction',
-  'sz_g3k_set_sky_photo',
-  'sz_g3k_set_screen_text',
-  'sz_g3k_create_screen',
-  'sz_g3k_add_button',
-  'sz_g3k_load_sound',
-] as const
-
-applyPlacementToBlockTypes(
-  gameKit3DBlocks,
-  GAME_KIT_3D_START_ONLY_BLOCK_TYPES,
-  START_ONLY_COMMAND_PLACEMENT,
-)
+] satisfies BlockDefinition[]
 
 /**
  * Sub-categorias da paleta (a cor de cada uma é um TOM do índigo, derivado

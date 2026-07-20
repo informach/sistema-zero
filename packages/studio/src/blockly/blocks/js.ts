@@ -12,6 +12,7 @@ const C = CATEGORY_COLORS.js
 export const JS_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_js_array_push',
+    placement: 'command',
     message0: 'na lista %1 adicionar %2',
     args0: [
       { type: 'field_name_picker', name: 'NAME', text: 'lista', kind: 'group' },
@@ -25,6 +26,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_array_remove',
+    placement: 'command',
     message0: 'na lista %1 remover o %2',
     args0: [
       { type: 'field_name_picker', name: 'NAME', text: 'lista', kind: 'group' },
@@ -45,6 +47,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_array_splice',
+    placement: 'command',
     message0: 'na lista %1 remover %2 item(ns) a partir da posição %3',
     args0: [
       { type: 'field_name_picker', name: 'NAME', text: 'lista', kind: 'group' },
@@ -59,6 +62,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_console_log_text',
+    placement: 'command',
     message0: 'Mostrar texto no console %1',
     args0: [{ type: 'field_input', name: 'VALUE', text: 'Olá' }],
     previousStatement: 'JSStmt',
@@ -69,6 +73,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_console_log_var',
+    placement: 'command',
     message0: 'Mostrar valor da variável %1 no console',
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'contador', kind: 'variable' }],
     previousStatement: 'JSStmt',
@@ -78,6 +83,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_console_log_value',
+    placement: 'command',
     message0: 'Mostrar no console %1',
     args0: [{ type: 'input_value', name: 'VALUE', check: 'JSValue' }],
     inputsInline: true,
@@ -88,6 +94,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_alert_text',
+    placement: 'command',
     message0: 'Mostrar aviso com texto %1',
     args0: [{ type: 'field_input', name: 'VALUE', text: 'Olá!' }],
     previousStatement: 'JSStmt',
@@ -97,6 +104,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_alert_var',
+    placement: 'command',
     message0: 'Mostrar aviso com valor da variável %1',
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'contador', kind: 'variable' }],
     previousStatement: 'JSStmt',
@@ -106,6 +114,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_var_declare',
+    placement: 'command',
     message0: 'declarar variável %1',
     args0: [{ type: 'field_input', name: 'NAME', text: 'x' }],
     previousStatement: 'JSStmt',
@@ -115,6 +124,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_var_create',
+    placement: 'command',
     message0: 'Criar variável %1 com valor %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'contador' },
@@ -128,6 +138,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_const_create',
+    placement: 'command',
     message0: 'Criar constante %1 com valor %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'PI' },
@@ -141,6 +152,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_var_assign',
+    placement: 'command',
     message0: 'Alterar variável %1 para %2',
     args0: [
       { type: 'field_name_picker', name: 'NAME', text: 'contador', kind: 'mutable-variable' },
@@ -158,6 +170,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     // um no-op comum em código copiado). Sem ele, essa linha viraria "código
     // avançado". A criança não precisa deste bloco para programar.
     type: 'sz_js_expr_statement',
+    placement: 'command',
     message0: 'avaliar %1',
     args0: [{ type: 'input_value', name: 'VALUE', check: 'JSValue' }],
     inputsInline: true,
@@ -169,6 +182,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_var_increment',
+    placement: 'command',
     message0: 'Somar %1 em variável %2',
     args0: [
       { type: 'field_number', name: 'DELTA', value: 1 },
@@ -183,6 +197,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     // Os ramos "senão se"/"senão" são criados pelo mutator (+/− estilo MakeCode);
     // o bloco nasce só com "Se … então [C]". Ver `blocks/ifElseMutator.ts`.
     type: 'sz_js_if_else',
+    placement: 'command',
     message0: 'Se %1',
     args0: [{ type: 'input_value', name: 'COND', check: 'JSValue' }],
     message1: 'então %1',
@@ -197,6 +212,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_repeat',
+    placement: 'command',
     message0: 'Repetir %1 vezes',
     args0: [{ type: 'input_value', name: 'TIMES', check: 'JSValue' }],
     message1: 'fazer %1',
@@ -209,6 +225,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_while',
+    placement: 'command',
     message0: 'enquanto %1',
     args0: [{ type: 'input_value', name: 'COND', check: 'JSValue' }],
     message1: 'fazer %1',
@@ -222,6 +239,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_do_while',
+    placement: 'command',
     message0: 'fazer %1',
     args0: [{ type: 'input_statement', name: 'DO' }],
     message1: 'enquanto %1',
@@ -252,6 +270,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_throw',
+    placement: 'command',
     message0: 'disparar erro com mensagem %1',
     args0: [{ type: 'input_value', name: 'MESSAGE', check: 'JSValue' }],
     inputsInline: true,
@@ -263,6 +282,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_object_assign',
+    placement: 'command',
     message0: 'copiar propriedades de %1 para %2',
     args0: [
       { type: 'field_name_picker', name: 'SOURCE', text: 'origem', kind: 'variable' },
@@ -277,6 +297,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_switch',
+    placement: 'command',
     message0: 'escolha %1',
     args0: [{ type: 'input_value', name: 'SUBJECT', check: 'JSValue' }],
     message1: 'casos %1',
@@ -291,6 +312,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_case',
+    placement: 'switch-case',
     message0: 'caso o valor for %1',
     args0: [{ type: 'input_value', name: 'MATCH', check: 'JSValue' }],
     message1: 'fazer %1',
@@ -302,6 +324,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_for_of',
+    placement: 'command',
     message0: 'para cada %1 de %2',
     args0: [
       { type: 'field_input', name: 'ITEM', text: 'item' },
@@ -318,6 +341,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_for_range',
+    placement: 'command',
     message0: 'contar %1 de %2 até %3 (passo %4)',
     args0: [
       { type: 'field_input', name: 'VAR', text: 'i' },
@@ -335,6 +359,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_try_catch',
+    placement: 'command',
     message0: 'tentar %1',
     args0: [{ type: 'input_statement', name: 'BODY' }],
     message1: 'se der erro %1 fazer %2',
@@ -352,6 +377,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_for_each',
+    placement: 'command',
     message0: 'para cada item %1 (posição %2) na lista %3',
     args0: [
       { type: 'field_input', name: 'ITEM', text: 'item' },
@@ -369,6 +395,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_set_timeout',
+    placement: 'command',
     message0: 'depois de %1 ms',
     args0: [{ type: 'input_value', name: 'MS', check: 'JSValue' }],
     message1: 'fazer %1',
@@ -381,6 +408,8 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_set_interval',
+    placement: 'loop-periodic',
+    migration: 'lift-periodic-loop',
     message0: 'repetir a cada %1 ms',
     args0: [{ type: 'input_value', name: 'MS', check: 'JSValue' }],
     message1: 'fazer %1',
@@ -393,6 +422,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_set_timeout_seconds',
+    placement: 'command',
     message0: 'depois de %1 segundos',
     args0: [{ type: 'input_value', name: 'S', check: 'JSValue' }],
     message1: 'fazer %1',
@@ -405,6 +435,8 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_set_interval_seconds',
+    placement: 'loop-periodic',
+    migration: 'lift-periodic-loop',
     message0: 'repetir a cada %1 segundos',
     args0: [{ type: 'input_value', name: 'S', check: 'JSValue' }],
     message1: 'fazer %1',
@@ -429,6 +461,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_set_timeout_call',
+    placement: 'command',
     message0: 'depois de %1 ms, chamar a função %2',
     args0: [
       { type: 'input_value', name: 'MS', check: 'JSValue' },
@@ -464,6 +497,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_storage_set',
+    placement: 'command',
     message0: 'guardar em %1 a chave %2 com o valor %3',
     args0: [
       {
@@ -486,6 +520,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_fetch_json',
+    placement: 'command',
     message0: 'buscar JSON da URL %1',
     args0: [{ type: 'field_input', name: 'URL', text: 'https://api.exemplo.com/dados' }],
     message1: 'quando chegar, guardar em %1 e fazer %2',

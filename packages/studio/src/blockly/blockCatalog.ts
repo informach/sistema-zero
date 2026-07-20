@@ -34,6 +34,18 @@ interface BlockLike {
  * não muda — é só o que o admin LÊ na lista). Cobre os 4 pares achados na auditoria de rótulos.
  */
 const LABEL_OVERRIDES: Record<string, string> = {
+  // Programação — mensagens compostas em várias linhas ou formadas só por
+  // soquetes não produzem um rótulo útil ao remover `%N`.
+  sz_js_if_else: 'Condição se, senão se e senão',
+  sz_js_try_catch: 'Tentar, tratar erro e finalizar',
+  sz_js_object_assign: 'Copiar propriedades entre objetos',
+  sz_val_number: 'Número',
+  sz_val_bool: 'Verdadeiro ou falso',
+  sz_val_compare: 'Comparar dois valores',
+  sz_val_logic: 'Combinar condições',
+  sz_math_arithmetic: 'Conta matemática',
+  sz_canvas_anim_loop: 'A cada quadro da animação',
+  sz_t3d_set_visible: 'Mostrar ou esconder objeto 3D',
   // SVG — o texto visual inclui coordenadas/atributos; o professor precisa ver
   // a intenção pedagógica, não uma lista como “id largura altura viewBox”.
   sz_html_svg: 'Criar uma área de desenho vetorial',

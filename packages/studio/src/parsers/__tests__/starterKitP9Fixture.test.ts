@@ -3,7 +3,7 @@ import 'blockly/blocks'
 import * as Blockly from 'blockly/core'
 import { buildIRFromWorkspace, buildWorkspaceStateFromIR } from '#blockly'
 import { generateProjectFiles } from '#generators'
-import { SZIRV2Schema } from '#ir'
+import { cssDeclarationsRecord, SZIRV2Schema } from '#ir'
 import { parseProjectFilesWithDiagnostics } from '#parsers'
 import { ensureBlocklyInitialized } from '../../blockly/setup'
 
@@ -432,7 +432,10 @@ function cssDeclMap(cssText: string): Record<string, Record<string, string>> {
   const map: Record<string, Record<string, string>> = {}
   for (const entry of ir.css) {
     if (!('selector' in entry) || !('declarations' in entry)) continue
-    map[entry.selector] = { ...(map[entry.selector] ?? {}), ...entry.declarations }
+    map[entry.selector] = {
+      ...(map[entry.selector] ?? {}),
+      ...cssDeclarationsRecord(entry.declarations),
+    }
   }
   return map
 }

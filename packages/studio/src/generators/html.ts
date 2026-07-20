@@ -237,12 +237,13 @@ const VOID_TAGS = new Set(
 )
 
 function canvasTag(node: Extract<HTMLNode, { type: 'canvas' }>): string {
-  // Largura/altura são opcionais: quando ausentes, o tamanho é definido depois
-  // pelos blocos de Canvas no JavaScript (ex.: canvas.width = largura da janela).
-  const w = node.width !== undefined ? ` width="${node.width}"` : ''
-  const h = node.height !== undefined ? ` height="${node.height}"` : ''
-  const cls = node.class ? ` class="${escapeAttr(node.class)}"` : ''
-  return `<canvas id="${escapeAttr(node.id)}"${cls}${w}${h}></canvas>`
+  const attrs: Record<string, string> = { ...(node.attrs ?? {}) }
+  // Compatibilidade com a IR histórica de Canvas.
+  if (node.class && !attrs.class) attrs.class = node.class
+  if (node.width !== undefined) attrs.width = String(node.width)
+  if (node.height !== undefined) attrs.height = String(node.height)
+  const children = (node.children ?? []).map((child) => renderInline(child)).join('')
+  return `<canvas${renderAttributeValues(node.id, attrs)}>${children}</canvas>`
 }
 
 function renderNodesWithMap(
@@ -462,11 +463,12 @@ function isDangerousUrl(value: string): boolean {
  * (modo avançado, autorado pelo aluno) — NÃO tentamos sanear `rawHTML` por regex
  * aqui; ele tem seu próprio caminho de confiança.
  */
-function renderAttrs(node: Extract<HTMLNode, { type: 'element' }>): string {
+function renderAttributeValues(id?: string, attrs?: Record<string, string>): string {
   const parts: string[] = []
-  if (node.id) parts.push(`id="${escapeAttr(node.id)}"`)
-  if (node.attrs) {
-    for (const [k, v] of Object.entries(node.attrs)) {
+  if (id) parts.push(`id="${escapeAttr(id)}"`)
+  if (attrs) {
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k.toLowerCase() === 'id') continue
       if (!VALID_ATTR_NAME.test(k)) continue
       // Handler inline (onclick, onerror, onload, …): descartado sempre.
       if (/^on/i.test(k)) continue
@@ -477,6 +479,10 @@ function renderAttrs(node: Extract<HTMLNode, { type: 'element' }>): string {
     }
   }
   return parts.length === 0 ? '' : ` ${parts.join(' ')}`
+}
+
+function renderAttrs(node: Extract<HTMLNode, { type: 'element' }>): string {
+  return renderAttributeValues(node.id, node.attrs)
 }
 
 function escapeHtml(s: string): string {

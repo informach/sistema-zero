@@ -196,11 +196,11 @@ describe('parseProjectFilesWithDiagnostics', () => {
       'style.css': '',
       'script.js': `// Ao iniciar
 let pontos = 0;
-// Quando acontecer — Eventos
+// Quando acontecer
 document.addEventListener("click", (event) => {
   pontos++;
 });
-// Enquanto estiver rodando — Loops
+// Enquanto estiver rodando
 setInterval(() => {
   console.log(pontos);
 }, 1000);`,

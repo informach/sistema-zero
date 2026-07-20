@@ -306,6 +306,27 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
   expect(diagnostics, diagnostics.join('\n')).toEqual([])
 }
 
+async function expectLogicalCanvasAtDpr(page: Page, expectedDpr: number): Promise<void> {
+  const canvas = page.frameLocator('iframe').first().locator('canvas').first()
+  await expect(canvas).toBeVisible()
+  const dimensions = await canvas.evaluate((element) => {
+    const target = element as HTMLCanvasElement
+    const rect = target.getBoundingClientRect()
+    return {
+      dpr: window.devicePixelRatio,
+      backingWidth: target.width,
+      backingHeight: target.height,
+      displayWidth: rect.width,
+      displayHeight: rect.height,
+    }
+  })
+  expect(dimensions.dpr).toBe(expectedDpr)
+  expect(dimensions.displayWidth).toBeGreaterThan(0)
+  expect(dimensions.displayHeight).toBeGreaterThan(0)
+  expect(dimensions.backingWidth).toBe(Math.round(dimensions.displayWidth * expectedDpr))
+  expect(dimensions.backingHeight).toBe(Math.round(dimensions.displayHeight * expectedDpr))
+}
+
 test.describe('KitGallery — os 67 cartões no Chromium', () => {
   for (const contract of EXAMPLE_QA_CONTRACTS) {
     test(`${contract.key}: cria, mostra primeiro frame e aceita controles`, async ({ page }) => {
@@ -313,6 +334,26 @@ test.describe('KitGallery — os 67 cartões no Chromium', () => {
     })
   }
 })
+
+const GAME_TWO_D_DPR_SAMPLES = ['game-2d:Sala com paredes', 'game-2d:Equilibrista', 'game-2d:Balão']
+
+for (const dpr of [1, 2, 3]) {
+  test.describe(`KitGallery — geometria lógica do Jogo 2D em DPR ${dpr}`, () => {
+    test.use({ deviceScaleFactor: dpr })
+
+    for (const key of GAME_TWO_D_DPR_SAMPLES) {
+      const contract = EXAMPLE_QA_CONTRACTS.find((item) => item.key === key)
+      if (!contract) throw new Error(`amostra DPR sem contrato: ${key}`)
+
+      test(`${contract.key}: primeiro frame e controles preservam o tamanho lógico`, async ({
+        page,
+      }) => {
+        await openAndExercise(page, contract)
+        await expectLogicalCanvasAtDpr(page, dpr)
+      })
+    }
+  })
+}
 
 test('Defesa do Reino cobra uma compra e cria uma torre após o boot automático', async ({
   page,
@@ -360,6 +401,13 @@ interface RpgBrowserSnapshot {
   menuOpen: boolean
   menuLabels: string[]
   energy: number
+  heroCellX: number | null
+  heroCellY: number | null
+  destinationCellX: number | null
+  destinationCellY: number | null
+  dialogOpen: boolean
+  sceneOpen: boolean
+  doorCells: string[]
 }
 
 async function rpgSnapshot(preview: FrameLocator): Promise<RpgBrowserSnapshot> {
@@ -383,6 +431,19 @@ async function rpgSnapshot(preview: FrameLocator): Promise<RpgBrowserSnapshot> {
           }
         | null
         | undefined) ?? null
+    const rpg =
+      (host.__SZSTUDIO_RUNTIME_INSPECTORS?.['game-2d-advanced:rpg']?.() as
+        | {
+            heroCellX: number | null
+            heroCellY: number | null
+            destinationCellX: number | null
+            destinationCellY: number | null
+            dialogOpen: boolean
+            sceneOpen: boolean
+            doorCells: string[]
+          }
+        | null
+        | undefined) ?? null
     return {
       apiPresent: api != null,
       state: api?.state() ?? '',
@@ -393,6 +454,13 @@ async function rpgSnapshot(preview: FrameLocator): Promise<RpgBrowserSnapshot> {
       menuOpen: battle?.menuOpen ?? false,
       menuLabels: battle?.menuLabels ?? [],
       energy: battle?.allies[0]?.energy ?? 0,
+      heroCellX: rpg?.heroCellX ?? null,
+      heroCellY: rpg?.heroCellY ?? null,
+      destinationCellX: rpg?.destinationCellX ?? null,
+      destinationCellY: rpg?.destinationCellY ?? null,
+      dialogOpen: rpg?.dialogOpen ?? false,
+      sceneOpen: rpg?.sceneOpen ?? false,
+      doorCells: rpg?.doorCells ?? [],
     }
   })
 }
@@ -449,17 +517,62 @@ test('Vila do Dragão — fluxo visual completo no Chromium', async ({ page }) =
     throw new Error(`apresentação não terminou: ${JSON.stringify(afterIntro)}`)
 
   const moveCell = async (key: string) => {
+    const before = await rpgSnapshot(preview)
+    if (before.heroCellX == null || before.heroCellY == null) {
+      throw new Error(`herói indisponível antes de mover: ${JSON.stringify(before)}`)
+    }
+    const dx = key === 'ArrowLeft' ? -1 : key === 'ArrowRight' ? 1 : 0
+    const dy = key === 'ArrowUp' ? -1 : key === 'ArrowDown' ? 1 : 0
+    const targetX = before.heroCellX + dx
+    const targetY = before.heroCellY + dy
     await gameBody.focus()
     await page.keyboard.down(key)
-    await page.waitForTimeout(220)
-    await page.keyboard.up(key)
-    await page.waitForTimeout(140)
+    try {
+      await expect
+        .poll(
+          async () => {
+            const snapshot = await rpgSnapshot(preview)
+            return (
+              snapshot.map !== before.map ||
+              snapshot.destinationCellX != null ||
+              snapshot.heroCellX !== before.heroCellX ||
+              snapshot.heroCellY !== before.heroCellY
+            )
+          },
+          { intervals: [16, 32, 64], timeout: 2_000 },
+        )
+        .toBe(true)
+    } finally {
+      await page.keyboard.up(key)
+    }
+    await expect
+      .poll(
+        async () => {
+          const snapshot = await rpgSnapshot(preview)
+          if (snapshot.map !== before.map) return true
+          return (
+            snapshot.destinationCellX == null &&
+            snapshot.destinationCellY == null &&
+            snapshot.heroCellX === targetX &&
+            snapshot.heroCellY === targetY
+          )
+        },
+        { intervals: [16, 32, 64], timeout: 2_000 },
+      )
+      .toBe(true)
   }
   for (let i = 0; i < 4; i++) await moveCell('ArrowDown')
   for (let i = 0; i < 7; i++) await moveCell('ArrowRight')
-  await expect
-    .poll(async () => rpgSnapshot(preview))
-    .toMatchObject({ apiPresent: true, state: 'jogando', map: 'caverna' })
+  try {
+    await expect
+      .poll(async () => rpgSnapshot(preview))
+      .toMatchObject({ apiPresent: true, state: 'jogando', map: 'caverna' })
+  } catch (error) {
+    const snapshot = await rpgSnapshot(preview)
+    throw new Error(
+      `a porta não levou à caverna: ${JSON.stringify(snapshot)}\n${String(error)}`,
+    )
+  }
   await page.waitForTimeout(1_100)
   const caveFrame = await canvas.evaluate((element) => (element as HTMLCanvasElement).toDataURL())
   expect(caveFrame).not.toBe(villageFrame)

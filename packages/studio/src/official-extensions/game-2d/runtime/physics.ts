@@ -30,4 +30,8 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
     return Math.sqrt(dx * dx + dy * dy) < ar + br;
   }
 
+  _registerRuntimeDomain('physics', {
+    reset: function () { world.gravity = 0; }
+  });
+
 `

@@ -195,8 +195,8 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
     var rowsN = map.rows.length;
     var cols = tileMapCols(map);
     if (cols === 0 || rowsN === 0) return;
-    var cw = (ctx.canvas && ctx.canvas.width) || 0;
-    var ch = (ctx.canvas && ctx.canvas.height) || 0;
+    var cw = stageW(ctx);
+    var ch = stageH(ctx);
     var hasCanvas = cw > 0 && ch > 0;
     // "size" (opcional) é o tamanho do tile NA TELA escolhido pelo aluno; 0 (ou
     // vazio) mantém o encaixe automático. Com tamanho manual o mapa continua
@@ -363,7 +363,12 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
         var h = overlapHandlers[id];
         if (!h) continue;
         var a = null, b = null;
-        try { a = h.getA(); b = h.getB(); } catch (e) { h.wasOverlapping = false; continue; }
+        try { a = h.getA(); b = h.getB(); }
+        catch (error) {
+          _reportHandlerError('“Quando encostar”', id, error);
+          _removeOrdered(overlapHandlers, _overlapOrder, id);
+          continue;
+        }
         var over = isColliding(a, b);
         if (over && !h.wasOverlapping) {
           try { h.fn(); }
@@ -517,7 +522,7 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
   function forEachInGroup(group, fn) {
     if (!group || !group.items || typeof fn !== 'function') return;
     for (var i = group.items.length - 1; i >= 0; i--) {
-      try { fn(group.items[i], i); } catch (e) { console.error(e && e.message ? e.message : e); }
+      fn(group.items[i], i);
     }
   }
   /** Quantos sprites o grupo tem agora. */
@@ -539,14 +544,14 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
     if (!ctx || !ctx.canvas || !group || !group.items) return;
     var m = typeof margin === 'number' ? margin : 40;
     var w = stageW(ctx), h = stageH(ctx);
+    var left = camera.x, top = camera.y;
+    var right = left + w, bottom = top + h;
     for (var i = group.items.length - 1; i >= 0; i--) {
       var s = group.items[i];
       if (!s) { group.items.splice(i, 1); continue; }
-      if (s.x + s.w < -m || s.x > w + m || s.y + s.h < -m || s.y > h + m) {
+      if (s.x + s.w < left - m || s.x > right + m || s.y + s.h < top - m || s.y > bottom + m) {
         group.items.splice(i, 1);
-        if (typeof onLeave === 'function') {
-          try { onLeave(s); } catch (e) { console.error(e && e.message ? e.message : e); }
-        }
+        if (typeof onLeave === 'function') onLeave(s);
       }
     }
   }
@@ -559,14 +564,18 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
    */
   function overlapGroups(a, b, fn) {
     if (!a || !a.items || !b || !b.items || typeof fn !== 'function') return;
-    for (var i = a.items.length - 1; i >= 0; i--) {
-      var ai = a.items[i];
-      if (!ai) continue;
-      for (var j = b.items.length - 1; j >= 0; j--) {
-        var bj = b.items[j];
-        if (!bj) continue;
+    var sameGroup = a === b;
+    var firstItems = a.items.slice();
+    var secondItems = sameGroup ? firstItems : b.items.slice();
+    for (var i = firstItems.length - 1; i >= 0; i--) {
+      var ai = firstItems[i];
+      if (!ai || a.items.indexOf(ai) === -1) continue;
+      var lastJ = sameGroup ? i - 1 : secondItems.length - 1;
+      for (var j = lastJ; j >= 0; j--) {
+        var bj = secondItems[j];
+        if (!bj || b.items.indexOf(bj) === -1) continue;
         if (isColliding(ai, bj)) {
-          try { fn(ai, bj); } catch (e) { console.error(e && e.message ? e.message : e); }
+          fn(ai, bj);
           // Se o corpo REMOVEU ai (ex.: "remova o tiro"), ele não deve acertar mais
           // ninguém neste quadro — senão um tiro só derrubaria TODOS os inimigos
           // encostados. Se NÃO removeu, o laço segue (o tiro "perfura" de propósito).
@@ -595,5 +604,19 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
     if (t - last >= period) { secondTimers[key] = t; return true; }
     return false;
   }
+
+  _registerRuntimeDomain('world', {
+    reset: function () {
+      keyHandlers = Object.create(null);
+      keyHandlerOrder = [];
+      overlapHandlers = Object.create(null);
+      _overlapOrder = [];
+      pressedKeys = Object.create(null);
+      frameCounters = Object.create(null);
+      secondTimers = Object.create(null);
+      _tileMapCreates = 0;
+      _releaseAllInputs();
+    }
+  });
 
 `

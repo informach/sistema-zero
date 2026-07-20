@@ -314,7 +314,7 @@ describe('morte e dano', () => {
     expect(defeated).toEqual([e])
   })
 
-  it('callback que lança não derruba o update (console.error)', () => {
+  it('deixa o erro do callback chegar ao controlador do bloco raiz', () => {
     const api = load()
     const ctx = fakeCtx()
     const t = api.createEnemyType({ hp: 1 })
@@ -323,7 +323,7 @@ describe('morte e dano', () => {
       throw new Error('boom')
     })
     api.changeHealth(e, -1)
-    expect(() => api.updateEnemyType(t, ctx, null)).not.toThrow()
+    expect(() => api.updateEnemyType(t, ctx, null)).toThrow('boom')
     expect(t.items.length).toBe(0)
   })
 

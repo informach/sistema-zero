@@ -379,10 +379,10 @@ function migrateLegacyBehaviorFrame(state: unknown): unknown {
 
 /**
  * MIGRAÇÃO transparente para o modelo CONTAINER (frames). Um projeto LEGADO
- * (blocos soltos, sem Áreas do projeto) é re-emitido nas áreas necessárias —
- * 🧱 Estrutura, 🎨 Aparência, ⚙️ Ao iniciar, ⚡ Quando acontecer — Eventos e
- * 🔁 Enquanto estiver rodando — Loops —
- * **preservando a saída**. Áreas antigas duplicadas viram rascunhos soltos para
+ * (blocos soltos, sem Áreas do projeto) é reemitido nas áreas necessárias:
+ * 🧱 Estrutura, 🎨 Aparência, ⚙️ Ao iniciar, ⚡ Quando acontecer e
+ * 🔁 Enquanto estiver rodando, sempre **preservando a saída**. Áreas antigas
+ * duplicadas viram rascunhos soltos para
  * não executar duas vezes nem apagar o trabalho da criança.
  *
  * Carrega o estado num workspace HEADLESS de descarte, deriva a IR PLANA (a mesma

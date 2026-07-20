@@ -157,4 +157,81 @@ describe('gramática recursiva do ciclo de vida', () => {
       }).success,
     ).toBe(true)
   })
+
+  it('valida capacidades específicas de teclado e ponteiro em eventos', () => {
+    const eventWithValue = (event: 'click' | 'keydown', prop: 'key' | 'clientX'): JSStatement => ({
+      type: 'event',
+      target: 'window',
+      targetKind: 'window',
+      event,
+      body: [{ type: 'consoleLog', value: { type: 'eventProp', prop } }],
+    })
+
+    expect(parse('events', eventWithValue('keydown', 'key')).success).toBe(true)
+    expect(parse('events', eventWithValue('click', 'clientX')).success).toBe(true)
+    expect(parse('events', eventWithValue('click', 'key')).success).toBe(false)
+    expect(parse('events', eventWithValue('keydown', 'clientX')).success).toBe(false)
+  })
+
+  it('recusa alvos this fora de funções e os aceita em funções', () => {
+    const classOp: JSStatement = {
+      type: 'classOp',
+      targetId: 'elemento',
+      targetKind: 'this',
+      op: 'add',
+      className: 'ativo',
+    }
+    const contains: JSStatement = {
+      type: 'consoleLog',
+      value: {
+        type: 'classContains',
+        targetId: 'elemento',
+        targetKind: 'this',
+        className: 'ativo',
+      },
+    }
+
+    expect(parse('start', classOp).success).toBe(false)
+    expect(parse('start', contains).success).toBe(false)
+    expect(
+      parse('start', {
+        type: 'funcDecl',
+        name: 'atualizar',
+        params: [],
+        body: [classOp, contains],
+      }).success,
+    ).toBe(true)
+  })
+
+  it('exige super único e primeiro em construtor derivado explícito', () => {
+    const derived = (ctorBody: JSStatement[]): JSStatement => ({
+      type: 'classDecl',
+      name: 'Filha',
+      superClass: 'Base',
+      ctorId: 'ctor-explicito',
+      ctorBody,
+      methods: [],
+    })
+
+    expect(parse('start', derived([])).success).toBe(false)
+    expect(
+      parse(
+        'start',
+        derived([
+          { type: 'setThisProp', name: 'x', value: { type: 'num', value: 1 } },
+          { type: 'superCall', args: [] },
+        ]),
+      ).success,
+    ).toBe(false)
+    expect(
+      parse(
+        'start',
+        derived([
+          { type: 'superCall', args: [] },
+          { type: 'superCall', args: [] },
+        ]),
+      ).success,
+    ).toBe(false)
+    expect(parse('start', derived([{ type: 'superCall', args: [] }])).success).toBe(true)
+  })
 })

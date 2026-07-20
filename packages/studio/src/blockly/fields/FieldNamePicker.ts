@@ -33,6 +33,7 @@ type ScopedBinderRegistry = Readonly<Record<string, ScopedBinder>>
  *                 global de propriedades quando não dá para resolver a classe;
  *  - `method`   → métodos de classe, mesma lógica de escopo do `property`;
  *  - `canvas`   → id de uma tela de desenho (`sz_html_canvas`);
+ *  - `form-control` → ids de campos que podem receber um rótulo HTML;
  *  - `selector` → partes da página já criadas (`body`, `#id` e `.classe`);
  *  - `svg-reference` → ids de formas SVG reutilizáveis, já com o prefixo `#`;
  *  - `font`     → fontes importadas por um bloco do Google Fonts;
@@ -62,6 +63,7 @@ export type NameKind =
   | 'property'
   | 'method'
   | 'canvas'
+  | 'form-control'
   | 'dom-target'
   | 'selector'
   | 'svg-reference'
@@ -122,6 +124,7 @@ const NAME_KINDS: readonly NameKind[] = [
   'property',
   'method',
   'canvas',
+  'form-control',
   'dom-target',
   'selector',
   'svg-reference',
@@ -274,15 +277,61 @@ export function collectDomElementIds(workspace: Blockly.Workspace | null | undef
   return ids
 }
 
-/** IDs disponíveis para o href de “Reutilizar forma”, já no formato `#nome`. */
-export function collectSVGReferences(workspace: Blockly.Workspace | null | undefined): string[] {
+/** IDs de controles que podem ser associados pelo atributo `for` de um label. */
+export function collectFormControlIds(workspace: Blockly.Workspace | null | undefined): string[] {
   if (!workspace) return []
+  const accepted = new Set(['sz_html_input', 'sz_html_textarea', 'sz_html_button'])
+  const seen = new Set<string>()
+  const ids: string[] = []
+  for (const block of workspace.getAllBlocks(false)) {
+    if (!accepted.has(block.type) || !block.getField('ID')) continue
+    const id = `${block.getFieldValue('ID') ?? ''}`.trim()
+    if (!id || seen.has(id)) continue
+    seen.add(id)
+    ids.push(id)
+  }
+  return ids
+}
+
+const REUSABLE_SVG_BLOCK_TYPES = new Set([
+  'sz_svg_symbol',
+  'sz_svg_group',
+  'sz_svg_path',
+  'sz_svg_circle',
+  'sz_svg_ellipse',
+  'sz_svg_line',
+  'sz_svg_rect',
+  'sz_svg_polyline',
+  'sz_svg_polygon',
+  'sz_svg_text',
+])
+
+/**
+ * IDs de peças gráficas que `<use>` pode reutilizar, já como `#nome`.
+ *
+ * Raiz, metadados, `<defs>` e outros `<use>` não são formas. Também retiramos
+ * os ancestrais do consumidor: reutilizar o grupo/símbolo que contém o próprio
+ * bloco criaria uma referência circular e um desenho invisível.
+ */
+export function collectSVGReferences(
+  workspace: Blockly.Workspace | null | undefined,
+  consumer?: Blockly.Block | null,
+): string[] {
+  if (!workspace) return []
+  const forbiddenIds = new Set<string>()
+  let ancestor = consumer?.getSurroundParent() ?? null
+  while (ancestor) {
+    const id = ancestor.getField('ID') ? `${ancestor.getFieldValue('ID') ?? ''}`.trim() : ''
+    if (id) forbiddenIds.add(id)
+    ancestor = ancestor.getSurroundParent()
+  }
   const seen = new Set<string>()
   const references: string[] = []
   for (const block of workspace.getAllBlocks(false)) {
-    if (!block.type.startsWith('sz_svg_') && block.type !== 'sz_html_svg') continue
+    if (!REUSABLE_SVG_BLOCK_TYPES.has(block.type) || block === consumer) continue
     if (!block.getField('ID')) continue
     const id = `${block.getFieldValue('ID') ?? ''}`.trim()
+    if (forbiddenIds.has(id)) continue
     const reference = id ? `#${id}` : ''
     if (!reference || seen.has(reference)) continue
     seen.add(reference)
@@ -630,13 +679,14 @@ const PROPERTY_WRITE_BLOCKS: Record<string, string[]> = {
  * ancestral). Os campos que aqui DECLARAM o nome seguem `field_input`.
  */
 const VARIABLE_LOOP_BINDERS: ScopedBinderRegistry = {
-  sz_js_for_range: ['VAR'],
-  sz_js_for_of: ['ITEM'],
-  sz_js_for_each: ['ITEM', 'INDEX'],
-  sz_js_try_catch: ['ERR'],
-  sz_val_array_map: ['ITEM'],
-  sz_val_array_find: ['ITEM'],
-  sz_val_array_filter: ['ITEM'],
+  sz_js_for_range: { DO: ['VAR'] },
+  sz_js_for_of: { DO: ['ITEM'] },
+  sz_js_for_each: { DO: ['ITEM', 'INDEX'] },
+  sz_js_try_catch: { HANDLER: ['ERR'] },
+  sz_js_fetch_json: { BODY: ['OK'], CATCH: ['ERR'] },
+  sz_val_array_map: { TRANSFORM: ['ITEM'] },
+  sz_val_array_find: { COND: ['ITEM'] },
+  sz_val_array_filter: { COND: ['ITEM'] },
   ...CANVAS3D_VARIABLE_BRANCH_BINDERS,
   // Ganchos do Jogo 2D Avançado: o tempo (dt), o pincel (ctx) e a posição do
   // clique (px/py) são nomes LOCAIS dos corpos dos ganchos.
@@ -648,6 +698,11 @@ const VARIABLE_LOOP_BINDERS: ScopedBinderRegistry = {
   // Ganchos do Jogo 3D Avançado: o tempo (dt) é nome LOCAL do corpo.
   sz_g3k_on_update: ['DT'],
   sz_g3k_on_entity_state_update: ['DT'],
+}
+
+/** Funções locais introduzidas por valores com corpo de comandos. */
+const FUNCTION_LOCAL_BINDERS: ScopedBinderRegistry = {
+  sz_val_new_promise: { DO: ['PARAM'] },
 }
 
 /**
@@ -751,6 +806,11 @@ const KIND_UI: Record<NameKind, KindUI> = {
     placeholder: 'id da tela de desenho',
     empty:
       'Nenhuma tela de desenho ainda — crie uma ("Criar tela de desenho") ou digite o id abaixo.',
+  },
+  'form-control': {
+    icon: '🏷️',
+    placeholder: 'id do campo',
+    empty: 'Nenhum campo com id ainda — dê um id ao campo ou digite o nome aqui.',
   },
   'dom-target': {
     icon: '🌐',
@@ -946,6 +1006,7 @@ const KIND_UI: Record<NameKind, KindUI> = {
 const LOOP_BINDERS_BY_KIND: Partial<Record<NameKind, ScopedBinderRegistry>> = {
   variable: VARIABLE_LOOP_BINDERS,
   'mutable-variable': VARIABLE_LOOP_BINDERS,
+  function: FUNCTION_LOCAL_BINDERS,
   object3d: OBJECT3D_LOOP_BINDERS,
   character: CHARACTER_LOOP_BINDERS,
   entity3d: ENTITY3D_LOOP_BINDERS,
@@ -1009,10 +1070,66 @@ function variableScopeKeys(block: Blockly.Block | null | undefined): string[] {
   return keys
 }
 
+function enclosingProjectArea(block: Blockly.Block): Blockly.Block | null {
+  let current: Blockly.Block | null = block
+  while (current) {
+    if (current.type.startsWith('sz_frame_')) return current
+    current = current.getSurroundParent()
+  }
+  return null
+}
+
+/** Bloco diretamente pertencente ao escopo informado. */
+function blockAtScope(block: Blockly.Block, scope: string): Blockly.Block | null {
+  let child: Blockly.Block | null = block
+  let parent = child.getSurroundParent()
+  while (child && parent) {
+    const input = containingInput(parent, child)
+    if (scope === 'global' && parent.type.startsWith('sz_frame_')) return child
+    if (scope === `${parent.id}:${input?.name ?? ''}`) return child
+    child = parent
+    parent = parent.getSurroundParent()
+  }
+  return scope === 'global' ? child : null
+}
+
+function appearsBeforeInStatementChain(declaration: Blockly.Block, use: Blockly.Block): boolean {
+  let current: Blockly.Block | null = declaration
+  while (current) {
+    if (current === use) return true
+    current = current.getNextBlock()
+  }
+  return false
+}
+
+/**
+ * `let`/`const` só entram no seletor depois do comando declarador. Para usos em
+ * outra Área, Ao iniciar acontece antes de Eventos/Loops e é o único lugar que
+ * pode introduzir globais guiadas.
+ */
+function declarationPrecedesUse(
+  declaration: Blockly.Block,
+  use: Blockly.Block,
+  scope: string,
+): boolean {
+  const declarationAtScope = blockAtScope(declaration, scope)
+  const useAtScope = blockAtScope(use, scope)
+  if (!declarationAtScope || !useAtScope || declarationAtScope === useAtScope) return false
+
+  const declarationArea = enclosingProjectArea(declarationAtScope)
+  const useArea = enclosingProjectArea(useAtScope)
+  if (!declarationArea && !useArea) return true
+  if (scope === 'global' && declarationArea !== useArea) {
+    return declarationArea?.type === 'sz_frame_start'
+  }
+  return appearsBeforeInStatementChain(declarationAtScope, useAtScope)
+}
+
 function collectVariableDeclarations(
   workspace: Blockly.Workspace,
   registry: NameFieldRegistry,
   visibleScopes: ReadonlySet<string>,
+  useBlock?: Blockly.Block | null,
 ): string[] {
   const seen = new Set<string>()
   const ordered: string[] = []
@@ -1021,6 +1138,7 @@ function collectVariableDeclarations(
     if (!fields) continue
     const declarationScope = variableScopeKeys(declaration)[0] ?? 'global'
     if (!visibleScopes.has(declarationScope)) continue
+    if (useBlock && !declarationPrecedesUse(declaration, useBlock, declarationScope)) continue
     for (const field of fields) {
       const name = declaration.getFieldValue(field)
       if (!name || seen.has(name)) continue
@@ -1043,7 +1161,7 @@ function collectVisibleVariables(
 ): string[] {
   const workspace = block?.workspace
   if (!workspace) return []
-  return collectVariableDeclarations(workspace, registry, new Set(variableScopeKeys(block)))
+  return collectVariableDeclarations(workspace, registry, new Set(variableScopeKeys(block)), block)
 }
 
 /** Variáveis legíveis no ponto do bloco, incluindo constantes e escopos externos. */
@@ -1097,6 +1215,11 @@ function collectScopedNames(
 /** Nomes de variável LOCAIS (o "i" do contar, o "item" do para-cada…) em escopo. */
 export function collectScopedVariableNames(block: Blockly.Block | null | undefined): string[] {
   return collectScopedNames(block, VARIABLE_LOOP_BINDERS)
+}
+
+/** Funções locais disponíveis no ponto atual (ex.: `resolve` de uma Promise). */
+export function collectScopedFunctionNames(block: Blockly.Block | null | undefined): string[] {
+  return collectScopedNames(block, FUNCTION_LOCAL_BINDERS)
 }
 
 /**
@@ -1278,6 +1401,8 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectFunctionNames(ws)
       case 'canvas':
         return collectCanvasIds(ws)
+      case 'form-control':
+        return collectFormControlIds(ws)
       case 'dom-target': {
         const targetKind = block?.getFieldValue('TARGET_KIND')
         if (targetKind === 'var') return collectReadableVariables(block)
@@ -1292,7 +1417,7 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
       case 'selector':
         return collectCSSSelectors(ws)
       case 'svg-reference':
-        return collectSVGReferences(ws)
+        return collectSVGReferences(ws, block)
       case 'font':
         return collectCSSFonts(ws)
       case 'animation':

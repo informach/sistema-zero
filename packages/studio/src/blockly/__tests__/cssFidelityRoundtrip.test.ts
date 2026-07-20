@@ -93,6 +93,11 @@ button {
     expect((out.match(/\.box\s*\{/g) ?? []).length).toBe(1)
   })
 
+  it('mantém fallbacks repetidos ao atravessar código, blocos e código', () => {
+    const css = '.caixa {\n  display: flex;\n  display: grid;\n}'
+    expect(bridgeCss(css).trim()).toBe(css)
+  })
+
   // Cenário reportado pelo aluno: CSS com width em % (vira `sz_css_width_percent`)
   // + outras propriedades sem bloco amigável (caem num `sz_css_rule` genérico).
   // O gerador FUNDE as duas regras (mesmo seletor) no texto final; cada bloco

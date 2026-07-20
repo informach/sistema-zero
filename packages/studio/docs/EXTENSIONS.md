@@ -129,7 +129,7 @@ antes de o código do aluno rodar). Regras:
 ### 4. Blocos namespaced
 
 - [ ] **Todos** os blocos da extensão usam um prefixo de tipo próprio
-      (ex.: `g2d:createSprite`). Nenhum bloco de extensão pode colidir com um
+      (ex.: `sz_g2d_*`). Nenhum bloco de extensão pode colidir com um
       bloco core (`sz_*`, `html_*`, etc.) nem com outra extensão — o registro
       `Blockly.Blocks` é um global de módulo compartilhado por TODAS as
       instâncias `<Studio>` da página (invariante #5). Um `type` duplicado
@@ -143,13 +143,15 @@ antes de o código do aluno rodar). Regras:
       hardcode hex por bloco (game-3d já teve uma sub-cat presa em rosa por
       faltar o loop). O texto do bloco é BRANCO, então os tons não podem clarear
       demais (o `categoryShades` já é viés-escuro).
-- [ ] Todo bloco executável possui contrato de `placement` materializado em
-      `blockly/blockContracts.ts`: áreas-raiz (`start`, `events`, `loops`),
-      contextos aninhados, papel e fase. Não crie checks ou classificadores
-      paralelos no toolbox, builder ou schema.
+- [ ] Todo bloco executável declara `placement` junto da própria definição.
+      `blockly/blockContracts.ts` expande os presets para áreas-raiz (`start`,
+      `events`, `loops`), contextos aninhados, papel e fase. Não crie um
+      classificador paralelo na toolbox ou no builder. O schema da IR pode
+      repetir os tipos de nós para proteger projetos importados, desde que o
+      teste cruzado prove que catálogo e IR continuam alinhados.
 - [ ] Comandos de preparo entram em **⚙️ Ao iniciar**; chapéus “Quando…” entram em
-      **⚡ Quando acontecer — Eventos**; atualizações contínuas e periódicas entram
-      em **🔁 Enquanto estiver rodando — Loops**. Eventos e loops-raiz não podem ser aninhados. Corpos internos
+      **⚡ Quando acontecer**; atualizações contínuas e periódicas entram
+      em **🔁 Enquanto estiver rodando**. Eventos e loops-raiz não podem ser aninhados. Corpos internos
       usam os checks de contexto (`event-body`, `loop-body`, `function-body`,
       etc.) materializados pelo contrato.
 - [ ] Blocos de compatibilidade com migração `unwrap-*` ou

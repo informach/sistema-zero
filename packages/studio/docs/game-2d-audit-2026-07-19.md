@@ -9,7 +9,7 @@ blocos apresentar à criança.
 Os 14 exemplos reais foram revisados no código-fonte, no pipeline
 IR → Blockly → JavaScript → IR, no runtime e no Chromium. Todos possuem uma raiz
 **Ao iniciar** quando precisam preparar a partida, raízes independentes em
-**⚡ Quando acontecer — Eventos** e **🔁 Enquanto estiver rodando — Loops**, e abrem com um primeiro frame visível. O motor inicia
+**⚡ Quando acontecer** e **🔁 Enquanto estiver rodando**, e abrem com um primeiro frame visível. O motor inicia
 automaticamente depois do registro dessas áreas. A classificação ficou em nove
 jogos, quatro demonstrações e uma exploração.
 
@@ -17,7 +17,7 @@ jogos, quatro demonstrações e uma exploração.
 
 1. **O comportamento não separava preparação, eventos e repetição.** Os 14
    exemplos foram convertidos diretamente para IR V2. Preparação fica em **Ao
-   iniciar**, ocorrências em **⚡ Quando acontecer — Eventos** e laços contínuos/periódicos em
+   iniciar**, ocorrências em **⚡ Quando acontecer** e laços contínuos/periódicos em
    **Loops**. O antigo `g2d:onStart` é aceito apenas pela migração transparente;
    projetos e exemplos novos não dependem dele.
 2. **Reiniciar recarregava a página e deixava estado escapar.** O runtime agora

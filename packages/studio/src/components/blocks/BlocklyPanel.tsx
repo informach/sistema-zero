@@ -804,7 +804,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       return
     }
     // Migração transparente p/ o modelo CONTAINER: um projeto LEGADO (blocos
-    // soltos, sem frames) é re-embrulhado nos 3 frames preservando a saída.
+    // soltos, sem áreas) é distribuído pelas cinco áreas preservando a saída.
     // Idempotente (no-op se já tem frame). As extensões já foram re-registradas no
     // efeito acima, então o load headless da migração enxerga os blocos delas.
     const stateToLoad = normalizeBlocksStateToFrames(blocksState)

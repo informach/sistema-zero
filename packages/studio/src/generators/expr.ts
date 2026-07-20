@@ -820,11 +820,16 @@ export function compileExpr(
       // escopo externo antes de o parâmetro local passar a existir.
       return `((__szLista) => { for (let __szI = __szLista.length - 1; __szI > 0; __szI--) { const __szJ = Math.floor(Math.random() * (__szI + 1)); [__szLista[__szI], __szLista[__szJ]] = [__szLista[__szJ], __szLista[__szI]]; } return __szLista; })([...${identifiers.get(expr.arrayVar)}])`
     case 'objectLiteral': {
-      if (expr.entries.length === 0) return '{}'
-      const parts = expr.entries
-        .map((e) => `${objectKey(e.key)}: ${compileExpr(e.value, 0, identifiers, rec)}`)
-        .join(', ')
-      return `{ ${parts} }`
+      const out =
+        expr.entries.length === 0
+          ? '{}'
+          : `{ ${expr.entries
+              .map((e) => `${objectKey(e.key)}: ${compileExpr(e.value, 0, identifiers, rec)}`)
+              .join(', ')} }`
+      // Um literal usado como receptor precisa de parênteses: `({}).x`.
+      // Sem isso, no início de um statement, `{}` é interpretado como bloco e
+      // o código deixa de ser JavaScript válido.
+      return parentPrecedence > 0 ? `(${out})` : out
     }
     case 'memberGet':
       return `${compileExpr(expr.object, MEMBER_PRECEDENCE, identifiers, rec)}${expr.optional ? '?.' : '.'}${normalizeIdentifier(expr.name)}`

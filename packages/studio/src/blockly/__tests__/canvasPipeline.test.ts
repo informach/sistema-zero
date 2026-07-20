@@ -5,7 +5,7 @@ import { behaviorStatements, type JSStatement, type SZIRV2, SZIRV2Schema } from 
 import 'blockly/blocks'
 import { parseHTML } from '../../parsers/html'
 import { parseJS } from '../../parsers/js'
-import { FRAME_STRUCTURE } from '../blockContracts'
+import { FRAME_START, FRAME_STRUCTURE } from '../blockContracts'
 import { CANVAS_BLOCKS } from '../blocks/canvas'
 import type { BlockDefinition } from '../blocks/types'
 import { buildIRFromWorkspace } from '../buildIR'
@@ -66,6 +66,18 @@ function buildCase(
         expressionInput: 'VALUE',
         loopHost: 'sz_canvas_anim_loop',
       })
+      if (definition.type === 'sz_js_image_onload' || definition.type === 'sz_js_image_onerror') {
+        const start = workspace.newBlock(FRAME_START)
+        const creator = workspace.newBlock('sz_js_new_image')
+        creator.setFieldValue('img', 'VAR')
+        start
+          .getInput('CHILDREN')
+          ?.connection?.connect(creator.previousConnection as Blockly.Connection)
+
+        const image = workspace.newBlock('sz_val_variable')
+        image.setFieldValue('img', 'NAME')
+        block.getInput('TARGET')?.connection?.connect(image.outputConnection as Blockly.Connection)
+      }
     }
     configure?.(block)
     return { ir: buildIRFromWorkspace(workspace), targetId: block.id }

@@ -9,8 +9,8 @@ import type { BehaviorIR, JSStatement, SZIR, SZIRInput, SZIRV2 } from './schema'
 
 export const BEHAVIOR_SECTION_MARKERS = {
   start: '// Ao iniciar',
-  events: '// Quando acontecer — Eventos',
-  loops: '// Enquanto estiver rodando — Loops',
+  events: '// Quando acontecer',
+  loops: '// Enquanto estiver rodando',
 } as const
 
 function bodyOf(statement: JSStatement): JSStatement[] {

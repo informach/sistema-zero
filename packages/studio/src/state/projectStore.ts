@@ -381,7 +381,7 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_css_opacity',
   'sz_css_z_index',
   'sz_css_background_image',
-  // Blocos-CONTAINER (frames): 🧱 Estrutura / 🎨 Aparência / ⚙️ Comportamento.
+  // Cinco áreas: Estrutura, Aparência, Ao iniciar, Quando acontecer e Enquanto estiver rodando.
   'sz_frame_appearance',
   'sz_frame_behavior',
   'sz_frame_events',

@@ -76,6 +76,7 @@ export const FRAME_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_legacy_nested_start',
+    placement: 'command',
     message0: 'Compatibilidade: início antigo %1',
     args0: [{ type: 'input_statement', name: 'CHILD', check: 'JSStartRoot' }],
     previousStatement: 'JSStmt',
@@ -86,6 +87,7 @@ export const FRAME_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_legacy_nested_event',
+    placement: 'command',
     message0: 'Compatibilidade: evento antigo %1',
     args0: [{ type: 'input_statement', name: 'CHILD', check: 'JSEventRoot' }],
     previousStatement: 'JSStmt',
@@ -96,6 +98,7 @@ export const FRAME_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_legacy_nested_loop',
+    placement: 'command',
     message0: 'Compatibilidade: repetição antiga %1',
     args0: [{ type: 'input_statement', name: 'CHILD', check: 'JSLoopRoot' }],
     previousStatement: 'JSStmt',

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import type { ExtensionToolboxCategory } from '#extensions'
 import { gameTwoDPromptContext } from '../ai'
-import { gameTwoDBlocks, gameTwoDToolboxCategory } from '../blocks'
+import { G2D_SOCKET_SHADOW_TYPES, gameTwoDBlocks, gameTwoDToolboxCategory } from '../blocks'
 import { gameTwoDManifest } from '../manifest'
 import { GAME_TWO_D_AREAS } from '../pedagogy'
 import { gameTwoDRuntime } from '../runtime'
@@ -41,6 +41,17 @@ function tiposDaCategoria(name: string): string[] {
   )
   if (!category) throw new Error(`Categoria ausente: ${name}`)
   return tiposNaToolbox(category)
+}
+
+function blocoNaToolbox(type: string): Record<string, unknown> | undefined {
+  for (const category of gameTwoDToolboxCategory.contents) {
+    if (category.kind !== 'category') continue
+    const block = category.contents.find(
+      (content) => content.kind === 'block' && content.type === type,
+    )
+    if (block?.kind === 'block') return block as unknown as Record<string, unknown>
+  }
+  return undefined
 }
 
 const COM_EMOJI = /^(\p{Extended_Pictographic}|\p{Emoji_Presentation})/u
@@ -101,19 +112,69 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
     expect(gameTwoDBlocks.length).toBe(190)
   })
 
-  it('separa eventos, loops-raiz e contatos contínuos como as Áreas do projeto', () => {
-    expect(tiposDaCategoria(GAME_TWO_D_AREAS.events)).toEqual([
+  it('organiza controles, colisões e tempo por assunto, não pela Área do projeto', () => {
+    const categories = nomesDeCategoria(gameTwoDToolboxCategory)
+    expect(categories).not.toContain(GAME_TWO_D_AREAS.events)
+    expect(categories).not.toContain(GAME_TWO_D_AREAS.loop)
+    expect(categories).not.toContain('❓ Perguntas')
+
+    expect(tiposDaCategoria('🎛️ Controles')).toEqual([
       'sz_g2d_on_key',
-      'sz_g2d_on_overlap',
       'sz_g2d_on_pointer',
+      'sz_g2d_key_down',
     ])
-    expect(tiposDaCategoria(GAME_TWO_D_AREAS.loop)).toEqual([
+    expect(tiposDaCategoria('💥 Colisões')).toEqual([
+      'sz_g2d_on_overlap',
+      'sz_g2d_touches',
+      'sz_g2d_collides',
+      'sz_g2d_circle_collides',
+      'sz_g2d_collide_group',
+      'sz_g2d_collide_sprite',
+      'sz_g2d_on_group_overlap',
+    ])
+    expect(tiposDaCategoria('⏱️ Tempo e repetição')).toEqual([
       'sz_g2d_update_each_frame',
       'sz_g2d_every_frames',
       'sz_g2d_every_seconds',
+      'sz_g2d_cooldown_ready',
+      'sz_g2d_prune_old',
     ])
-    expect(tiposDaCategoria('📦 Muitos')).toContain('sz_g2d_on_group_overlap')
     expect(tiposDaCategoria('🚀 Kit espaço')).toContain('sz_g2d_on_sprite_group_overlap')
+  })
+
+  it('mantém instruções de posicionamento fora da face dos blocos', () => {
+    const visibleMessages = gameTwoDBlocks
+      .filter((block) => !block.hidden)
+      .flatMap((block) => [block.message0, block.message1, block.message2])
+      .filter((message): message is string => typeof message === 'string')
+    expect(
+      visibleMessages.filter((message) => message.includes('Dentro de “A cada quadro”')),
+    ).toEqual([])
+
+    const message = (type: string) =>
+      gameTwoDBlocks.find((block) => block.type === type)?.message0 ?? ''
+    expect(message('sz_g2d_on_overlap')).toContain('começar a encostar')
+    expect(message('sz_g2d_on_group_overlap')).toStartWith('Para cada colisão')
+    expect(message('sz_g2d_on_enemy_shot_hit')).toStartWith('Para cada tiro')
+    expect(message('sz_g2d_on_sprite_group_overlap')).toStartWith('Para cada sprite')
+    expect(message('sz_g2d_set_state_anim')).toStartWith('Animação do sprite')
+    expect(message('sz_g2d_enemy_state_anim')).toStartWith('Animação dos inimigos')
+  })
+
+  it('preenche A cada N quadros com sombra 30 e simplifica os blocos de preparação', () => {
+    expect(G2D_SOCKET_SHADOW_TYPES.sz_g2d_every_frames).toEqual({ N: 'sz_val_number' })
+    const periodic = blocoNaToolbox('sz_g2d_every_frames') as {
+      inputs?: { N?: { shadow?: { type?: string; fields?: { NUM?: number } } } }
+    }
+    expect(periodic.inputs?.N?.shadow).toMatchObject({
+      type: 'sz_val_number',
+      fields: { NUM: 30 },
+    })
+
+    for (const type of ['sz_g2d_setup_stage', 'sz_g2d_setup_full']) {
+      const block = gameTwoDBlocks.find((candidate) => candidate.type === type)
+      expect(block?.message1).toBe('objetivo e controles %1')
+    }
   })
 
   it('não ensina mais a arquitetura legada de início e loops periódicos', () => {

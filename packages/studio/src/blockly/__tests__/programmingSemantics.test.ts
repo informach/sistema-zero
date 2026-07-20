@@ -2,6 +2,7 @@ import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
 import { DOM_BLOCKS } from '../blocks'
+import { buildIRFromWorkspace } from '../buildIR'
 import { HTMLConnectionChecker } from '../htmlConnectionChecker'
 import { ensureBlocklyInitialized } from '../setup'
 
@@ -23,6 +24,13 @@ function connectValue(parent: Blockly.Block, input: string, child: Blockly.Block
   const output = child.outputConnection
   if (!target || !output) throw new Error('Conexão de valor ausente no teste')
   return target.connect(output)
+}
+
+function connectNext(parent: Blockly.Block, child: Blockly.Block): boolean {
+  const next = parent.nextConnection
+  const previous = child.previousConnection
+  if (!next || !previous) throw new Error('Conexão seguinte ausente no teste')
+  return next.connect(previous)
 }
 
 function classWithMember(
@@ -219,7 +227,7 @@ describe('contextos semânticos de Programação', () => {
     invalid.dispose()
   })
 
-  it('await só entra em método assíncrono', () => {
+  it('await só entra em função ou método assíncrono', () => {
     const invalid = workspace()
     const regular = classWithMember(invalid, 'sz_js_class_method')
     expect(connectStatement(regular.member, 'BODY', invalid.newBlock('sz_js_await'))).toBe(true)
@@ -235,6 +243,13 @@ describe('contextos semânticos de Programação', () => {
       connectStatement(valid.newBlock('sz_frame_start'), 'CHILDREN', asynchronous.classBlock),
     ).toBe(true)
     valid.dispose()
+
+    const named = workspace()
+    const asyncFunction = named.newBlock('sz_js_function')
+    asyncFunction.setFieldValue('TRUE', 'ASYNC')
+    expect(connectStatement(asyncFunction, 'BODY', named.newBlock('sz_js_await'))).toBe(true)
+    expect(connectStatement(named.newBlock('sz_frame_start'), 'CHILDREN', asyncFunction)).toBe(true)
+    named.dispose()
   })
 
   it('super exige classe com herança e o membro correto', () => {
@@ -255,20 +270,160 @@ describe('contextos semânticos de Programação', () => {
     valid.dispose()
   })
 
-  it('valores do evento só entram numa árvore de evento', () => {
+  it('oferece cada valor somente no tipo de evento que realmente o entrega', () => {
     const invalid = workspace()
     const log = invalid.newBlock('sz_js_console_log_value')
     expect(connectValue(log, 'VALUE', invalid.newBlock('sz_val_event_key'))).toBe(true)
     expect(connectStatement(invalid.newBlock('sz_frame_start'), 'CHILDREN', log)).toBe(false)
     invalid.dispose()
 
-    const valid = workspace()
-    const click = valid.newBlock('sz_js_on_click')
-    const eventLog = valid.newBlock('sz_js_console_log_value')
-    expect(connectValue(eventLog, 'VALUE', valid.newBlock('sz_val_event_key'))).toBe(true)
-    expect(connectStatement(click, 'DO', eventLog)).toBe(true)
-    expect(connectStatement(valid.newBlock('sz_frame_events'), 'CHILDREN', click)).toBe(true)
-    valid.dispose()
+    const keyboard = workspace()
+    const keyEvent = keyboard.newBlock('sz_js_on_key')
+    const keyLog = keyboard.newBlock('sz_js_console_log_value')
+    expect(connectValue(keyLog, 'VALUE', keyboard.newBlock('sz_val_event_key'))).toBe(true)
+    expect(connectStatement(keyEvent, 'DO', keyLog)).toBe(true)
+    expect(connectStatement(keyboard.newBlock('sz_frame_events'), 'CHILDREN', keyEvent)).toBe(true)
+    keyboard.dispose()
+
+    const keyInClick = workspace()
+    const click = keyInClick.newBlock('sz_js_on_click')
+    const clickLog = keyInClick.newBlock('sz_js_console_log_value')
+    expect(connectValue(clickLog, 'VALUE', keyInClick.newBlock('sz_val_event_key'))).toBe(true)
+    expect(connectStatement(click, 'DO', clickLog)).toBe(true)
+    expect(connectStatement(keyInClick.newBlock('sz_frame_events'), 'CHILDREN', click)).toBe(false)
+    keyInClick.dispose()
+
+    const pointer = workspace()
+    const pointerClick = pointer.newBlock('sz_js_on_click')
+    const pointerLog = pointer.newBlock('sz_js_console_log_value')
+    expect(connectValue(pointerLog, 'VALUE', pointer.newBlock('sz_val_event_pos'))).toBe(true)
+    expect(connectStatement(pointerClick, 'DO', pointerLog)).toBe(true)
+    expect(connectStatement(pointer.newBlock('sz_frame_events'), 'CHILDREN', pointerClick)).toBe(
+      true,
+    )
+    pointer.dispose()
+
+    const pointerInKey = workspace()
+    const key = pointerInKey.newBlock('sz_js_on_key')
+    const pointerInKeyLog = pointerInKey.newBlock('sz_js_console_log_value')
+    expect(connectValue(pointerInKeyLog, 'VALUE', pointerInKey.newBlock('sz_val_event_pos'))).toBe(
+      true,
+    )
+    expect(connectStatement(key, 'DO', pointerInKeyLog)).toBe(true)
+    expect(connectStatement(pointerInKey.newBlock('sz_frame_events'), 'CHILDREN', key)).toBe(false)
+    pointerInKey.dispose()
+  })
+
+  it('trata alvos “elemento atual” como uso real de this', () => {
+    for (const type of ['sz_js_class_op', 'sz_val_class_contains']) {
+      const invalid = workspace()
+      const current = invalid.newBlock(type)
+      current.setFieldValue('this', 'TARGET_KIND')
+      const consumer =
+        type === 'sz_js_class_op' ? current : invalid.newBlock('sz_js_console_log_value')
+      if (type === 'sz_val_class_contains') {
+        expect(connectValue(consumer, 'VALUE', current)).toBe(true)
+      }
+      expect(connectStatement(invalid.newBlock('sz_frame_start'), 'CHILDREN', consumer)).toBe(false)
+      invalid.dispose()
+
+      const valid = workspace()
+      const fn = valid.newBlock('sz_js_function')
+      const nestedCurrent = valid.newBlock(type)
+      nestedCurrent.setFieldValue('this', 'TARGET_KIND')
+      const nested =
+        type === 'sz_js_class_op' ? nestedCurrent : valid.newBlock('sz_js_console_log_value')
+      if (type === 'sz_val_class_contains') {
+        expect(connectValue(nested, 'VALUE', nestedCurrent)).toBe(true)
+      }
+      expect(connectStatement(fn, 'BODY', nested)).toBe(true)
+      expect(connectStatement(valid.newBlock('sz_frame_start'), 'CHILDREN', fn)).toBe(true)
+      valid.dispose()
+    }
+  })
+
+  it('aceita no máximo um construtor por classe', () => {
+    const ws = workspace()
+    const classBlock = ws.newBlock('sz_js_class')
+    const first = ws.newBlock('sz_js_constructor')
+    const second = ws.newBlock('sz_js_constructor')
+    expect(connectStatement(classBlock, 'MEMBERS', first)).toBe(true)
+    expect(connectNext(first, second)).toBe(false)
+    expect(second.getParent()).toBeNull()
+    ws.dispose()
+  })
+
+  it('não descarta construtores duplicados de um estado legado ao montar a IR', () => {
+    const ws = new Blockly.Workspace()
+    const frame = ws.newBlock('sz_frame_start')
+    const classBlock = ws.newBlock('sz_js_class')
+    const first = ws.newBlock('sz_js_constructor')
+    const second = ws.newBlock('sz_js_constructor')
+    expect(connectStatement(classBlock, 'MEMBERS', first)).toBe(true)
+    expect(connectNext(first, second)).toBe(true)
+    expect(connectStatement(frame, 'CHILDREN', classBlock)).toBe(true)
+
+    expect(() => buildIRFromWorkspace(ws)).toThrow('mais de um construtor')
+    ws.dispose()
+  })
+
+  it('exige uma única chamada super como primeiro comando do construtor derivado', () => {
+    const missing = workspace()
+    const withoutSuper = classWithMember(missing, 'sz_js_constructor', { extends: 'Base' })
+    expect(
+      connectStatement(missing.newBlock('sz_frame_start'), 'CHILDREN', withoutSuper.classBlock),
+    ).toBe(false)
+    missing.dispose()
+
+    const late = workspace()
+    const lateSuper = classWithMember(late, 'sz_js_constructor', { extends: 'Base' })
+    const before = late.newBlock('sz_js_set_this_prop')
+    const superCall = late.newBlock('sz_js_super_ctor')
+    expect(connectStatement(lateSuper.member, 'BODY', before)).toBe(true)
+    expect(connectNext(before, superCall)).toBe(true)
+    expect(
+      connectStatement(late.newBlock('sz_frame_start'), 'CHILDREN', lateSuper.classBlock),
+    ).toBe(false)
+    late.dispose()
+
+    const duplicate = workspace()
+    const twoSupers = classWithMember(duplicate, 'sz_js_constructor', { extends: 'Base' })
+    const firstSuper = duplicate.newBlock('sz_js_super_ctor')
+    const secondSuper = duplicate.newBlock('sz_js_super_ctor')
+    expect(connectStatement(twoSupers.member, 'BODY', firstSuper)).toBe(true)
+    expect(connectNext(firstSuper, secondSuper)).toBe(true)
+    expect(
+      connectStatement(duplicate.newBlock('sz_frame_start'), 'CHILDREN', twoSupers.classBlock),
+    ).toBe(false)
+    duplicate.dispose()
+  })
+
+  it('preserva as regras de super ao editar uma classe derivada já ancorada', () => {
+    const addingConstructor = workspace()
+    const startWithDefault = addingConstructor.newBlock('sz_frame_start')
+    const derivedWithDefault = addingConstructor.newBlock('sz_js_class')
+    derivedWithDefault.loadExtraState?.({ extends: 'Base' })
+    expect(connectStatement(startWithDefault, 'CHILDREN', derivedWithDefault)).toBe(true)
+    expect(
+      connectStatement(
+        derivedWithDefault,
+        'MEMBERS',
+        addingConstructor.newBlock('sz_js_constructor'),
+      ),
+    ).toBe(false)
+    addingConstructor.dispose()
+
+    const addingSuper = workspace()
+    const start = addingSuper.newBlock('sz_frame_start')
+    const derived = classWithMember(addingSuper, 'sz_js_constructor', { extends: 'Base' })
+    const firstSuper = addingSuper.newBlock('sz_js_super_ctor')
+    expect(connectStatement(derived.member, 'BODY', firstSuper)).toBe(true)
+    expect(connectStatement(start, 'CHILDREN', derived.classBlock)).toBe(true)
+
+    const secondSuper = addingSuper.newBlock('sz_js_super_ctor')
+    expect(connectNext(firstSuper, secondSuper)).toBe(false)
+    expect(secondSuper.getParent()).toBeNull()
+    addingSuper.dispose()
   })
 })
 

@@ -1,6 +1,7 @@
 # Áreas de comportamento e ciclo de vida do Estúdio
 
-Status: aprovado em 19 de julho de 2026.
+Status: implementado em 20 de julho de 2026. Este documento registra a decisão
+arquitetural. A seção “Problema” descreve o estado anterior à implementação.
 
 ## Problema
 
@@ -11,7 +12,7 @@ semanticamente inválidos.
 
 O problema atravessa todo o pipeline:
 
-| Parte | Estado atual | Consequência |
+| Parte | Estado anterior | Consequência |
 | --- | --- | --- |
 | Blockly | Um `sz_frame_behavior` aceita qualquer `JSStmt` | Eventos, loops e comandos se misturam |
 | IR | `SZIR.js` é um único array | Parser e gerador precisam inferir o ciclo de vida |
@@ -22,7 +23,7 @@ O problema atravessa todo o pipeline:
 
 O catálogo real contém 67 exemplos: 14 de Jogo 2D, 19 de Jogo 2D Avançado,
 8 de Jogo 3D, 6 de Jogo 3D Avançado, 12 de Mundo 3D e 8 exemplos do núcleo.
-Todos ainda usam `ir.js` e ciclos de vida antigos.
+Naquele momento, todos ainda usavam `ir.js` e ciclos de vida antigos.
 
 ## Objetivos
 
@@ -55,8 +56,8 @@ Workspace Blockly
   ├─ 🧱 HTML
   ├─ 🎨 CSS
   ├─ ⚙️ Ao iniciar
-  ├─ ⚡ Quando acontecer — Eventos
-  └─ 🔁 Enquanto estiver rodando — Loops
+  ├─ ⚡ Quando acontecer
+  └─ 🔁 Enquanto estiver rodando
              │
              ▼
       IR de comportamento
@@ -83,8 +84,8 @@ As cinco molduras serão:
 | `sz_frame_structure` | 🧱 HTML | `HTMLNode` |
 | `sz_frame_appearance` | 🎨 CSS | `CSSEntry` |
 | `sz_frame_start` | ⚙️ Ao iniciar | `JSStartRoot` |
-| `sz_frame_events` | ⚡ Quando acontecer — Eventos | `JSEventRoot` |
-| `sz_frame_loops` | 🔁 Enquanto estiver rodando — Loops | `JSLoopRoot` |
+| `sz_frame_events` | ⚡ Quando acontecer | `JSEventRoot` |
+| `sz_frame_loops` | 🔁 Enquanto estiver rodando | `JSLoopRoot` |
 
 `sz_frame_behavior` continuará registrado como entrada legada oculta. O migrador
 o consumirá, mas nenhum projeto novo nem reconstrução voltará a emiti-lo.
@@ -124,18 +125,19 @@ O contrato também guarda a regra de migração e, quando o bloco registra um
 recurso, sua relação com o ciclo de vida. `BlockDefinition` deixa de ser apenas
 JSON livre e passa a exigir esse metadado para blocos executáveis.
 
-O registro alimenta cinco consumidores:
+As declarações alimentam diretamente quatro consumidores:
 
 1. conexões físicas do Blockly;
 2. organização da caixa de ferramentas;
-3. validação semântica do IR;
-4. migração de projetos antigos;
-5. compilação do ciclo de vida.
+3. migração de projetos antigos;
+4. reconstrução e compilação do ciclo de vida.
 
-Essa fonte única substitui listas paralelas como `EVENT_LISTENER_TYPES`, conjuntos
-de eventos por motor e classificações repetidas no parser e no gerador. Um teste
-de contrato falha se um bloco oficial não declarar posicionamento ou se dois
-tipos se contradisserem.
+O schema da IR repete a gramática com tipos de nós para proteger código e projetos
+importados. Um teste atravessa definição, Blockly, IR e área para impedir que essa
+validação fique diferente do catálogo. A caixa de ferramentas não possui uma lista
+classificadora paralela. Sua lista de eventos serve apenas para ordenar os blocos.
+Um teste de contrato falha se um bloco oficial não declarar posicionamento ou se
+dois tipos se contradisserem.
 
 ### Gramática
 
@@ -178,8 +180,8 @@ O JavaScript gerado contém marcadores estáveis:
 
 ```js
 // Ao iniciar
-// Quando acontecer — Eventos
-// Enquanto estiver rodando — Loops
+// Quando acontecer
+// Enquanto estiver rodando
 ```
 
 O parser usa esses marcadores para reconstruir as áreas sem heurística. Para
@@ -335,8 +337,8 @@ de aula continuam controlando somente os blocos de conteúdo.
 Cada moldura explica quando roda:
 
 - `Ao iniciar`: “Roda ao abrir ou a cada nova partida.”
-- `Eventos`: “Roda quando alguma coisa acontece.”
-- `Loops`: “Repete enquanto o projeto estiver rodando.”
+- `Quando acontecer`: “Roda quando alguma coisa acontece.”
+- `Enquanto estiver rodando`: “Repete enquanto o projeto estiver rodando.”
 
 O organizador usa duas linhas:
 
@@ -355,7 +357,7 @@ bloco incompatível também o preserva como rascunho.
 
 Todo statement solto recebe contorno e aviso persistentes:
 
-> Rascunho — coloque este bloco em uma Área do projeto para ele funcionar.
+> Este bloco é um rascunho. Coloque em uma Área do projeto para ele funcionar.
 
 O painel mostra a quantidade de rascunhos; clicar no aviso centraliza o bloco.
 O preview avisa que esses blocos não foram executados. Valores soltos usados para

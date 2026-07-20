@@ -1,4 +1,4 @@
-import type { CSSEntry } from '#ir'
+import type { CSSDeclaration, CSSDeclarations, CSSEntry } from '#ir'
 
 /**
  * Parser CSS parcial baseado em regex (suficiente para regras planas). Qualquer
@@ -86,18 +86,16 @@ function parseCSSAtDepth(source: string, depth: number): CSSEntry[] {
 
     const selector = source.slice(index, open).trim()
     const declBlock = source.slice(open + 1, close)
-    const declarations = parseDeclarations(declBlock)
+    const declarationEntries = parseDeclarations(declBlock)
     if (selector) {
-      // Regra VAZIA (placeholder `.x {}` / só com declarações inválidas) ou com
-      // PROPRIEDADE DUPLICADA (fallback de progressive enhancement, ex.:
-      // `display: flex; display: grid`) não cabe no Record do IR (chave única,
-      // última vence) — preserva a regra INTEIRA verbatim como rawCSS avançado,
-      // honrando "código é sagrado" sem mudar o schema. Senão, regra estruturada.
-      if (Object.keys(declarations).length === 0 || hasDuplicateDeclKeys(declBlock)) {
+      // Regra vazia ou com comentário posicionado antes/entre declarações ainda
+      // não cabe nos blocos de declaração. Preservamos a regra inteira; já as
+      // propriedades repetidas cabem no array ordenado e continuam editáveis.
+      if (declarationEntries.length === 0 || hasUnrepresentedDeclarationComment(declBlock)) {
         const code = source.slice(index, close + 1).trim()
         if (code) entries.push({ type: 'rawCSS', code, advanced: true })
       } else {
-        entries.push({ selector, declarations })
+        entries.push({ selector, declarations: compactDeclarations(declarationEntries) })
       }
     }
     index = close + 1
@@ -157,22 +155,36 @@ function tryParseKeyframes(source: string, start: number, end: number): CSSEntry
   if (close < 0) return null
   const inner = slice.slice(open + 1, close)
 
-  const steps: Array<{ at: string; declarations: Record<string, string> }> = []
+  const steps: Array<{ at: string; declarations: CSSDeclarations }> = []
   let i = 0
   while (i < inner.length) {
     i = skipWhitespaceAndComments(inner, i)
     if (i >= inner.length) break
     const stepOpen = inner.indexOf('{', i)
-    if (stepOpen < 0) break
+    if (stepOpen < 0) return null
     const stepClose = findMatchingBrace(inner, stepOpen)
-    if (stepClose < 0) break
+    if (stepClose < 0) return null
     const at = inner.slice(i, stepOpen).trim().toLowerCase()
-    const declarations = parseDeclarations(inner.slice(stepOpen + 1, stepClose))
-    if (at && Object.keys(declarations).length > 0) steps.push({ at, declarations })
+    const body = inner.slice(stepOpen + 1, stepClose)
+    const declarationEntries = parseDeclarations(body)
+    if (
+      !isKeyframeSelector(at) ||
+      declarationEntries.length === 0 ||
+      hasUnrepresentedDeclarationComment(body)
+    ) {
+      return null
+    }
+    steps.push({ at, declarations: compactDeclarations(declarationEntries) })
     i = stepClose + 1
   }
   if (steps.length === 0) return null
+  if (skipWhitespaceAndComments(inner, i) !== inner.length) return null
   return { type: 'keyframes', name, steps }
+}
+
+function isKeyframeSelector(value: string): boolean {
+  const part = '(?:from|to|(?:\\d+(?:\\.\\d+)?)%)'
+  return new RegExp(`^${part}(?:\\s*,\\s*${part})*$`).test(value)
 }
 
 function skipWhitespaceAndComments(source: string, start: number): number {
@@ -393,20 +405,14 @@ function maskPropComments(propRaw: string): string {
 }
 
 /**
- * Há propriedade REPETIDA em profundidade 0 dentro deste bloco de declarações?
- * Usa a MESMA segmentação/normalização do {@link parseDeclarations}, então o que
- * o parser veria como uma chave colapsada é exatamente o que conta como duplicata
- * — o chamador então preserva a regra inteira verbatim em vez de perder o fallback.
+ * Comentários antes do nome de uma propriedade ou soltos entre declarações não
+ * têm um bloco-filho correspondente. Comentários dentro do VALOR continuam no
+ * próprio valor e não exigem fallback.
  */
-function hasDuplicateDeclKeys(block: string): boolean {
-  const seen = new Set<string>()
+function hasUnrepresentedDeclarationComment(block: string): boolean {
   for (const { segStart, segEnd, colon } of scanDeclarationSegments(block, 0, block.length)) {
-    if (colon < 0) continue
-    const key = normalizeDeclKey(maskPropComments(block.slice(segStart, colon)).trim())
-    const value = block.slice(colon + 1, segEnd).trim()
-    if (!key || !value) continue
-    if (seen.has(key)) return true
-    seen.add(key)
+    const beforeValue = block.slice(segStart, colon < 0 ? segEnd : colon)
+    if (/\/\*[\s\S]*?\*\//.test(beforeValue)) return true
   }
   return false
 }
@@ -415,10 +421,10 @@ function hasDuplicateDeclKeys(block: string): boolean {
  * Declarações para o IR (sem posições). Roteia pelo {@link scanDeclarationSegments}
  * para enxergar parênteses/strings/comentários do mesmo jeito que o parser de
  * posições — `;`/`:` dentro de `url(data:…;base64,…)`, `calc()` ou strings não
- * truncam mais o valor. Mantém a semântica de Record (última duplicata vence).
+ * truncam mais o valor. O array preserva ordem e propriedades repetidas.
  */
-function parseDeclarations(raw: string): Record<string, string> {
-  const out: Record<string, string> = {}
+function parseDeclarations(raw: string): CSSDeclaration[] {
+  const out: CSSDeclaration[] = []
   for (const { segStart, segEnd, colon } of scanDeclarationSegments(raw, 0, raw.length)) {
     if (colon < 0) continue
     // Mascara comentários no NOME da prop (mesma fonte da verdade dos spans) — sem
@@ -426,9 +432,19 @@ function parseDeclarations(raw: string): Record<string, string> {
     // quebrando o realce bloco↔código de toda declaração precedida de comentário.
     const key = normalizeDeclKey(maskPropComments(raw.slice(segStart, colon)).trim())
     const value = raw.slice(colon + 1, segEnd).trim()
-    if (key && value) out[key] = value
+    if (key && value) out.push({ property: key, value })
   }
   return out
+}
+
+/** Usa o formato compacto legado quando não há repetição; fallbacks ficam em array. */
+function compactDeclarations(entries: CSSDeclaration[]): CSSDeclarations {
+  const record: Record<string, string> = {}
+  for (const entry of entries) {
+    if (Object.hasOwn(record, entry.property)) return entries
+    record[entry.property] = entry.value
+  }
+  return record
 }
 
 // ---------------------------------------------------------------------------

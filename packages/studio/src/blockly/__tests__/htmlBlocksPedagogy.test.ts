@@ -33,10 +33,12 @@ describe('blocos HTML — contrato pedagógico infantil', () => {
 
   it('botões novos são ações comuns, não envios acidentais de formulário', () => {
     const button = HTML_BLOCKS.find((block) => block.type === 'sz_html_button')
-    const typeField = button?.args0?.find(
-      (arg) =>
-        Boolean(arg) && typeof arg === 'object' && (arg as { name?: string }).name === 'TYPE',
-    ) as { options?: Array<[string, string]> } | undefined
+    const typeField = [button?.args0, button?.args1, button?.args2]
+      .flat()
+      .find(
+        (arg) =>
+          Boolean(arg) && typeof arg === 'object' && (arg as { name?: string }).name === 'TYPE',
+      ) as { options?: Array<[string, string]> } | undefined
     expect(typeField?.options?.[0]?.[1]).toBe('button')
   })
 

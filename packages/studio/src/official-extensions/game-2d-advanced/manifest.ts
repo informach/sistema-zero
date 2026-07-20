@@ -11,7 +11,7 @@ export const gameKitManifest: ExtensionManifest = {
   category: 'games',
   official: true,
   enabledByDefault: false,
-  // mouse: botões e jogos apontáveis. audio: sons e efeitos. storage: saves
+  // mouse: botões e jogos apontáveis. Audio: sons e efeitos. Storage: saves
   // e valores persistentes usam o shim isolado por projeto do preview.
   permissions: ['canvas', 'keyboard', 'mouse', 'audio', 'storage'],
   docs: gameKitDocs,

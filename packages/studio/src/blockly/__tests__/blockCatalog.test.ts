@@ -8,6 +8,7 @@ describe('BLOCK_CATALOG (picker da lista de blocos da aula)', () => {
       expect(e.type).toBeTruthy()
       expect(e.label).toBeTruthy()
       expect(e.category).toBeTruthy()
+      expect(e.label, e.type).not.toBe(e.type)
       // Nenhum placeholder de argumento (%1, %2…) vazou pro rótulo (um `%` literal de
       // porcentagem é texto válido e pode ficar).
       expect(e.label).not.toMatch(/%\d/)
@@ -61,6 +62,9 @@ describe('BLOCK_CATALOG (picker da lista de blocos da aula)', () => {
     // aparecem no catálogo da aula (foram substituídos pelos blocos de Objetos).
     expect(labelOf('sz_js_call_method')).toBeUndefined()
     expect(labelOf('sz_val_call_method')).toBeUndefined()
+    expect(labelOf('sz_js_try_catch')).toBe('Tentar, tratar erro e finalizar')
+    expect(labelOf('sz_canvas_anim_loop')).toBe('A cada quadro da animação')
+    expect(labelOf('sz_t3d_set_visible')).toBe('Mostrar ou esconder objeto 3D')
   })
 
   it('explica os blocos SVG sem expor uma lista de atributos', () => {

@@ -1,6 +1,21 @@
 import { compileStatements, renderNodes } from '#generators'
-import type { CSSEntry, JSExpr, JSStatement, KeyframesCSS, SZIR, SZIRInput } from '#ir'
-import { normalizeSZIR, screenTextToExpr, valueToExpr } from '#ir'
+import type {
+  CSSDeclarations,
+  CSSEntry,
+  JSExpr,
+  JSStatement,
+  KeyframesCSS,
+  SZIR,
+  SZIRInput,
+} from '#ir'
+import {
+  cssDeclarationEntries,
+  cssDeclarationsRecord,
+  hasDuplicateCSSDeclarations,
+  normalizeSZIR,
+  screenTextToExpr,
+  valueToExpr,
+} from '#ir'
 import { htmlElementForTag, isSupportedHTMLInputType } from '../html/catalog'
 import {
   FRAME_APPEARANCE,
@@ -109,7 +124,7 @@ export function buildWorkspaceStateFromIR(
   const startX = options.startX ?? 32
   const startY = options.startY ?? 32
   // Cada categoria vira uma Área do projeto: Estrutura, Aparência, Ao iniciar,
-  // Quando acontecer — Eventos ou Enquanto estiver rodando — Loops. É o inverso
+  // Quando acontecer ou Enquanto estiver rodando. É o inverso
   // exato de buildIRFromWorkspace.
   const colGap = options.colGap ?? 420
 
@@ -203,16 +218,29 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
     return block('sz_html_comment', { TEXT: node.text }, {}, node.__id)
   }
   if (node.type === 'canvas') {
-    // Largura/altura não são mais campos do bloco — só o id. Quando a IR carrega
-    // width/height (ex.: `<canvas width=200 height=100>` vindo do HTML), os
-    // guardamos no `data` do bloco (mesma estratégia do `extraData`) para que o
-    // round-trip blocos→código não os perca. `buildIR` os recupera de `data`.
-    const canvasFields: Record<string, string> = { ID: node.id }
-    if (node.class) canvasFields.CLASS = node.class
+    const simpleDescription =
+      node.children?.length === 1 && node.children[0]?.type === 'text' ? node.children[0].text : ''
+    const canvasFields: Record<string, string> = {
+      ID: node.id ?? '',
+      CLASS: node.class ?? node.attrs?.class ?? '',
+      DESCRIPTION: simpleDescription,
+    }
     const built = block('sz_html_canvas', canvasFields, {}, node.__id)
-    const extra: Record<string, number> = {}
+    const extra: {
+      width?: number
+      height?: number
+      attrs?: Record<string, string>
+      children?: SZIR['html']
+      classSource?: 'legacy'
+    } = {}
     if (node.width !== undefined) extra.width = node.width
     if (node.height !== undefined) extra.height = node.height
+    const attrs = Object.fromEntries(
+      Object.entries(node.attrs ?? {}).filter(([name]) => name !== 'class'),
+    )
+    if (Object.keys(attrs).length > 0) extra.attrs = attrs
+    if (node.children && !simpleDescription) extra.children = node.children
+    if (node.class) extra.classSource = 'legacy'
     if (Object.keys(extra).length > 0) built.data = JSON.stringify(extra)
     return built
   }
@@ -232,9 +260,11 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
   }
 
   if (descriptor?.parserShape === 'inline-text') {
+    const fields: Record<string, string> = { TEXT: node.text ?? '' }
+    if (node.tag === 'label') fields.FOR = node.attrs?.for ?? ''
     return block(
       descriptor.blockType,
-      { TEXT: node.text ?? '' },
+      fields,
       { CHILDREN: (node.children ?? []).map(htmlNodeToBlock) },
       node.__id,
     )
@@ -275,6 +305,9 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
         ID: node.id ?? '',
         TYPE: inputType,
         PLACEHOLDER: node.attrs?.placeholder ?? '',
+        NAME: node.attrs?.name ?? '',
+        VALUE: node.attrs?.value ?? '',
+        CHECKED: node.attrs && Object.hasOwn(node.attrs, 'checked') ? 'TRUE' : 'FALSE',
       },
       {},
       node.__id,
@@ -285,6 +318,7 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
       'sz_html_textarea',
       {
         ID: node.id ?? '',
+        NAME: node.attrs?.name ?? '',
         TEXT: node.text ?? '',
         PLACEHOLDER: node.attrs?.placeholder ?? '',
       },
@@ -443,10 +477,10 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
 }
 
 /** Declarações → blocos `sz_css_decl` (encaixáveis num input CSSDecl). */
-function declarationsToBlocks(declarations?: Record<string, string>): SerializedBlocklyBlock[] {
+function declarationsToBlocks(declarations?: CSSDeclarations): SerializedBlocklyBlock[] {
   if (!declarations) return []
-  return Object.entries(declarations).map(([prop, value]) =>
-    block('sz_css_decl', { PROP: prop, VALUE: value }),
+  return cssDeclarationEntries(declarations).map(({ property, value, __id }) =>
+    block('sz_css_decl', { PROP: property, VALUE: value }, {}, __id),
   )
 }
 
@@ -454,8 +488,8 @@ function declarationsToBlocks(declarations?: Record<string, string>): Serialized
 function keyframesToText(entry: KeyframesCSS): string {
   const steps = entry.steps
     .map((step) => {
-      const decls = Object.entries(step.declarations)
-        .map(([k, v]) => `    ${k}: ${v};`)
+      const decls = cssDeclarationEntries(step.declarations)
+        .map(({ property, value }) => `    ${property}: ${value};`)
         .join('\n')
       return `  ${step.at} {\n${decls}\n  }`
     })
@@ -532,7 +566,26 @@ function cssEntryToBlocks(entry: CSSEntry): SerializedBlocklyBlock[] {
 
   const blocks: SerializedBlocklyBlock[] = []
   // Após os early-returns de rawCSS e mediaQuery, só resta CSSRule (sem `type`).
-  const rule = entry as Exclude<CSSEntry, { type: string }>
+  const sourceRule = entry as Exclude<CSSEntry, { type: string }>
+  const orderedDeclarations = cssDeclarationEntries(sourceRule.declarations, sourceRule.__declIds)
+  // Fallbacks repetidos dependem da ordem. Mantemos todos dentro de UMA regra
+  // genérica, sem promover alguns para blocos dedicados que poderiam reordená-los.
+  if (hasDuplicateCSSDeclarations(sourceRule.declarations)) {
+    return [
+      block(
+        'sz_css_rule',
+        { SELECTOR: sourceRule.selector },
+        { CHILDREN: declarationsToBlocks(orderedDeclarations) },
+        sourceRule.__id,
+      ),
+    ]
+  }
+  // O reconhecedor de blocos dedicados trabalha por propriedade. Este record é
+  // apenas uma visão derivada; a ordem/identidade segue em orderedDeclarations.
+  const rule = {
+    ...sourceRule,
+    declarations: cssDeclarationsRecord(sourceRule.declarations),
+  }
   const consumed = new Set<string>()
   const selector = rule.selector
 
@@ -828,15 +881,15 @@ function cssEntryToBlocks(entry: CSSEntry): SerializedBlocklyBlock[] {
     }
   }
 
-  const remaining = Object.entries(rule.declarations).filter(([name]) => !consumed.has(name))
+  const remaining = orderedDeclarations.filter(({ property }) => !consumed.has(property))
   if (remaining.length > 0) {
     // Declarações sem bloco amigável dedicado viram uma "Regra CSS" genérica
     // (seletor livre) com um bloco "propriedade: valor" por declaração —
     // em vez de cair em "código avançado". Preserva o `block.id` de cada
     // declaração (vindo de `__declIds`) para manter o realce bloco↔código
     // funcionando após round-trips IR→Blocks.
-    const decls = remaining.map(([prop, value]) =>
-      block('sz_css_decl', { PROP: prop, VALUE: value }, {}, rule.__declIds?.[prop]),
+    const decls = remaining.map(({ property, value, __id }) =>
+      block('sz_css_decl', { PROP: property, VALUE: value }, {}, __id),
     )
     blocks.push(block('sz_css_rule', { SELECTOR: selector }, { CHILDREN: decls }))
   }
@@ -7260,7 +7313,12 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       const params = new Set(stmt.params)
       const body = statementsToBlocks(stmt.body)
       for (const b of body) retypeParamsAsArgs(b, params)
-      const blk = block('sz_js_function', { NAME: stmt.name }, { BODY: body }, stmt.__id)
+      const blk = block(
+        'sz_js_function',
+        { NAME: stmt.name, ASYNC: stmt.async ? 'TRUE' : 'FALSE' },
+        { BODY: body },
+        stmt.__id,
+      )
       blk.extraState = paramsExtra(stmt.params)
       return blk
     }

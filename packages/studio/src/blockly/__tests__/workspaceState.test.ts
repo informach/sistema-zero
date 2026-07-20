@@ -738,6 +738,46 @@ describe('buildWorkspaceStateFromIR', () => {
     expect(types).not.toContain('sz_adv_raw_js')
   })
 
+  it('preserva função nomeada assíncrona e await no round-trip por blocos', () => {
+    const source: SZIR = {
+      html: [],
+      css: [],
+      js: [
+        {
+          type: 'funcDecl',
+          name: 'carregar',
+          params: ['url'],
+          async: true,
+          body: [
+            {
+              type: 'awaitStmt',
+              value: {
+                type: 'call',
+                name: 'fetch',
+                args: [{ type: 'var', name: 'url' }],
+              },
+            },
+          ],
+        },
+      ],
+      extensions: [],
+    }
+    const state = buildWorkspaceStateFromIR(source)
+    const functionBlock = collectBlocks(state.blocks.blocks).find(
+      (candidate) => candidate.type === 'sz_js_function',
+    )
+    expect(functionBlock?.fields).toMatchObject({ NAME: 'carregar', ASYNC: 'TRUE' })
+
+    const workspace = new Blockly.Workspace()
+    Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, workspace)
+    expect(buildIRFromWorkspace(workspace).behavior.start[0]).toMatchObject({
+      type: 'funcDecl',
+      name: 'carregar',
+      async: true,
+    })
+    workspace.dispose()
+  })
+
   it('Fase 0: booleano e incremento fazem roundtrip sem cair em avançado', () => {
     const source: SZIR = {
       html: [],

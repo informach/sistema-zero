@@ -377,7 +377,7 @@ export function generateJSWithMap(opts: GenerateJSOptions): GenerateJSWithMapRes
   // mesmo escopo da função, então ambos sobem juntos.
   const hoistedLoops = hoistAnimationLoops(opts.statements)
   // `import * as X` / `import { X }` precisam estar no TOPO do módulo (regra do
-  // JS). Os blocos de import são top-level (no frame de Comportamento); movê-los à
+  // JS). Os blocos de import são top-level (na área Ao iniciar); movê-los à
   // frente garante o código válido mesmo se a criança os arrastar para baixo.
   const isImport = (s: JSStatement): boolean => s.type === 'importStar' || s.type === 'importNamed'
   const injectedImports = injectedCanvas3DImports(hoistedLoops)
@@ -1042,9 +1042,13 @@ function compileStatementCode(
     case 'canvasSetup': {
       const v = identifiers.get(stmt.varName)
       const canvas = identifiers.getCanvasElement(stmt.varName)
+      const message = `Não foi possível preparar a tela Canvas “${stmt.canvasId}”. Confira se o id existe e pertence a uma tela Canvas.`
       return [
         `${pad}const ${canvas} = document.getElementById(${JSON.stringify(stmt.canvasId)});`,
-        `${pad}const ${v} = ${canvas}.getContext('2d');`,
+        `${pad}const ${v} = ${canvas}?.getContext?.('2d');`,
+        `${pad}if (!${v}) {`,
+        `${pad}  throw new Error(${JSON.stringify(message)});`,
+        `${pad}}`,
       ].join('\n')
     }
     case 'canvasSetSize': {
@@ -3480,7 +3484,8 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      const target = compileExpr(stmt.target, 20, identifiers, recAt(base))
+      const compiledTarget = compileExpr(stmt.target, 20, identifiers, recAt(base))
+      const target = stmt.target.type === 'objectLiteral' ? `(${compiledTarget})` : compiledTarget
       return `${pad}${target}.onload = () => {\n${body}\n${pad}};`
     }
     case 'imageOnError': {
@@ -3490,7 +3495,8 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      const target = compileExpr(stmt.target, 20, identifiers, recAt(base))
+      const compiledTarget = compileExpr(stmt.target, 20, identifiers, recAt(base))
+      const target = stmt.target.type === 'objectLiteral' ? `(${compiledTarget})` : compiledTarget
       return `${pad}${target}.onerror = () => {\n${body}\n${pad}};`
     }
     case 'onClickAssign': {
@@ -3500,7 +3506,8 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      const target = compileExpr(stmt.target, 20, identifiers, recAt(base))
+      const compiledTarget = compileExpr(stmt.target, 20, identifiers, recAt(base))
+      const target = stmt.target.type === 'objectLiteral' ? `(${compiledTarget})` : compiledTarget
       return `${pad}${target}.onclick = () => {\n${body}\n${pad}};`
     }
     case 'requestFrameDo': {
@@ -4274,7 +4281,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      const head = `${pad}function ${identifiers.get(stmt.name)}(${params}) {`
+      const head = `${pad}${stmt.async ? 'async ' : ''}function ${identifiers.get(stmt.name)}(${params}) {`
       return body ? `${head}\n${body}\n${pad}}` : `${head}\n${pad}}`
     }
     case 'callFunction': {

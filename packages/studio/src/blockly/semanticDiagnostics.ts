@@ -1,8 +1,10 @@
 import type * as Blockly from 'blockly/core'
 import {
+  behaviorStatements,
   type CSSEntry,
   type CSSRule,
   type HTMLNode,
+  type JSStatement,
   normalizeSZIR,
   type SZIRInput,
   SZIRInputSchema,
@@ -44,35 +46,148 @@ function addBlockMessage(
   messagesByBlock.set(block, messages)
 }
 
+interface HtmlIdSymbol {
+  id: string
+  tag: string
+  blockId?: string
+}
+
 function collectHtmlTargets(nodes: HTMLNode[]): {
   ids: Set<string>
   classes: Set<string>
   tags: Set<string>
+  idSymbols: HtmlIdSymbol[]
 } {
   const ids = new Set<string>()
   const classes = new Set<string>()
   const tags = new Set<string>(['html', 'body'])
+  const idSymbols: HtmlIdSymbol[] = []
   const stack = [...nodes]
   while (stack.length > 0) {
     const node = stack.pop()
     if (!node) continue
     if (node.type === 'canvas') {
       tags.add('canvas')
-      ids.add(node.id)
-      for (const className of node.class?.split(/\s+/) ?? []) {
+      if (node.id) {
+        ids.add(node.id)
+        idSymbols.push({ id: node.id, tag: 'canvas', blockId: node.__id })
+      }
+      for (const className of (node.class ?? node.attrs?.class)?.split(/\s+/) ?? []) {
         if (className) classes.add(className)
       }
       continue
     }
     if (node.type !== 'element') continue
     tags.add(node.tag)
-    if (node.id) ids.add(node.id)
+    if (node.id) {
+      ids.add(node.id)
+      idSymbols.push({ id: node.id, tag: node.tag, blockId: node.__id })
+    }
     for (const className of node.attrs?.class?.split(/\s+/) ?? []) {
       if (className) classes.add(className)
     }
     stack.push(...(node.children ?? []))
   }
-  return { ids, classes, tags }
+  return { ids, classes, tags, idSymbols }
+}
+
+function collectCanvasSetups(
+  statements: JSStatement[],
+): Array<Extract<JSStatement, { type: 'canvasSetup' }>> {
+  const setups: Array<Extract<JSStatement, { type: 'canvasSetup' }>> = []
+  const visit = (value: unknown): void => {
+    if (Array.isArray(value)) {
+      for (const child of value) visit(child)
+      return
+    }
+    if (!value || typeof value !== 'object') return
+    const record = value as Record<string, unknown>
+    if (record.type === 'canvasSetup') {
+      setups.push(value as Extract<JSStatement, { type: 'canvasSetup' }>)
+      return
+    }
+    for (const [key, child] of Object.entries(record)) {
+      if (key !== '__id') visit(child)
+    }
+  }
+  visit(statements)
+  return setups
+}
+
+/**
+ * Confere os símbolos que o Canvas materializa antes de o gerador substituir o
+ * último preview válido. Esses casos seriam ambíguos no DOM ou produziriam uma
+ * declaração JavaScript repetida, portanto são erros bloqueantes (não dicas).
+ */
+function addCanvasMessages(
+  workspace: Blockly.Workspace,
+  input: SZIRInput,
+  messagesByBlock: Map<WarnableBlock, Set<string>>,
+): boolean {
+  const ir = normalizeSZIR(input)
+  const { idSymbols } = collectHtmlTargets(ir.html)
+  const symbolsById = new Map<string, HtmlIdSymbol[]>()
+  for (const symbol of idSymbols) {
+    const matches = symbolsById.get(symbol.id) ?? []
+    matches.push(symbol)
+    symbolsById.set(symbol.id, matches)
+  }
+
+  let valid = true
+  for (const [id, symbols] of symbolsById) {
+    if (symbols.length < 2) continue
+    valid = false
+    for (const symbol of symbols) {
+      addBlockMessage(
+        workspace,
+        messagesByBlock,
+        symbol.blockId,
+        `O id “${id}” aparece ${symbols.length} vezes. Cada parte da página precisa de um id diferente.`,
+      )
+    }
+  }
+
+  const setups = collectCanvasSetups(behaviorStatements(ir))
+  const setupsByContext = new Map<string, typeof setups>()
+  for (const setup of setups) {
+    const contextName = setup.varName.trim()
+    const sameName = setupsByContext.get(contextName) ?? []
+    sameName.push(setup)
+    setupsByContext.set(contextName, sameName)
+
+    const targets = symbolsById.get(setup.canvasId) ?? []
+    if (targets.length === 0) {
+      valid = false
+      addBlockMessage(
+        workspace,
+        messagesByBlock,
+        setup.__id,
+        `Não achei uma tela Canvas com o id “${setup.canvasId}”. Crie a tela no HTML ou escolha o id correto.`,
+      )
+    } else if (targets.length === 1 && targets[0]?.tag !== 'canvas') {
+      valid = false
+      addBlockMessage(
+        workspace,
+        messagesByBlock,
+        setup.__id,
+        `O id “${setup.canvasId}” pertence a <${targets[0]?.tag}>. Escolha uma tela Canvas.`,
+      )
+    }
+  }
+
+  for (const [contextName, repeated] of setupsByContext) {
+    if (repeated.length < 2) continue
+    valid = false
+    for (const setup of repeated) {
+      addBlockMessage(
+        workspace,
+        messagesByBlock,
+        setup.__id,
+        `O pincel “${contextName}” foi preparado ${repeated.length} vezes. Dê um nome diferente a cada pincel.`,
+      )
+    }
+  }
+  return valid
 }
 
 function collectCssRules(entries: CSSEntry[]): CSSRule[] {
@@ -163,24 +278,155 @@ function hasValidSvgPoints(value: string): boolean {
 
 function hasValidSvgPath(value: string): boolean {
   const clean = value.trim()
-  return /^[Mm][\s\S]*$/.test(clean) && !/[^MmZzLlHhVvCcSsQqTtAaEe0-9+.,\-\s]/.test(clean)
+  if (!/^[Mm]/.test(clean)) return false
+  const tokenPattern = /[A-Za-z]|[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?/gi
+  const tokens: string[] = []
+  let end = 0
+  for (const match of clean.matchAll(tokenPattern)) {
+    if (!/^[\s,]*$/.test(clean.slice(end, match.index))) return false
+    tokens.push(match[0])
+    end = (match.index ?? 0) + match[0].length
+  }
+  if (!/^[\s,]*$/.test(clean.slice(end)) || tokens.length === 0) return false
+
+  const arity: Readonly<Record<string, number>> = {
+    M: 2,
+    L: 2,
+    H: 1,
+    V: 1,
+    C: 6,
+    S: 4,
+    Q: 4,
+    T: 2,
+    A: 7,
+    Z: 0,
+  }
+  let index = 0
+  while (index < tokens.length) {
+    const command = tokens[index]
+    if (!command || !/^[A-Za-z]$/.test(command)) return false
+    const upper = command.toUpperCase()
+    const commandArity = arity[upper]
+    if (commandArity === undefined) return false
+    index += 1
+    const start = index
+    while (index < tokens.length && !/^[A-Za-z]$/.test(tokens[index] ?? '')) index += 1
+    const args = tokens.slice(start, index)
+    if (commandArity === 0) {
+      if (args.length > 0) return false
+      continue
+    }
+    if (
+      args.length < commandArity ||
+      args.length % commandArity !== 0 ||
+      !args.every((part) => SVG_NUMBER_RE.test(part))
+    ) {
+      return false
+    }
+    if (upper === 'A') {
+      for (let offset = 0; offset < args.length; offset += commandArity) {
+        if (!/^[01]$/.test(args[offset + 3] ?? '') || !/^[01]$/.test(args[offset + 4] ?? '')) {
+          return false
+        }
+      }
+    }
+  }
+  return true
+}
+
+function hasValidSvgViewBox(value: string): boolean {
+  const numbers = value.trim().replace(/,/g, ' ').split(/\s+/).filter(Boolean)
+  return (
+    numbers.length === 4 &&
+    numbers.every((part) => SVG_NUMBER_RE.test(part)) &&
+    Number(numbers[2]) > 0 &&
+    Number(numbers[3]) > 0
+  )
+}
+
+function hasValidSvgTransform(value: string): boolean {
+  const clean = value.trim()
+  if (!clean) return true
+  const allowedArity: Readonly<Record<string, readonly number[]>> = {
+    matrix: [6],
+    translate: [1, 2],
+    scale: [1, 2],
+    rotate: [1, 3],
+    skewX: [1],
+    skewY: [1],
+  }
+  const transformPattern = /([A-Za-z]+)\s*\(([^()]*)\)/g
+  let found = false
+  let end = 0
+  for (const match of clean.matchAll(transformPattern)) {
+    if (!/^[\s,]*$/.test(clean.slice(end, match.index))) return false
+    const acceptedCounts = allowedArity[match[1] ?? '']
+    const args = (match[2] ?? '').replace(/,/g, ' ').split(/\s+/).filter(Boolean)
+    if (!acceptedCounts?.includes(args.length) || !args.every((part) => SVG_NUMBER_RE.test(part))) {
+      return false
+    }
+    found = true
+    end = (match.index ?? 0) + match[0].length
+  }
+  return found && /^[\s,]*$/.test(clean.slice(end))
 }
 
 function addSvgMessages(
   workspace: Blockly.Workspace,
   input: SZIRInput,
   messagesByBlock: Map<WarnableBlock, Set<string>>,
-): void {
+): boolean {
   const ir = normalizeSZIR(input)
-  const ids = new Set<string>()
-  const elements: Array<Extract<HTMLNode, { type: 'element' }>> = []
-  const stack = [...ir.html]
+  type SvgElement = Extract<HTMLNode, { type: 'element' }>
+  interface SvgRecord {
+    node: SvgElement
+    ancestorIds: string[]
+  }
+  const records: SvgRecord[] = []
+  const stack = ir.html.map((node) => ({ node, ancestorIds: [] as string[] }))
   while (stack.length > 0) {
-    const node = stack.pop()
+    const current = stack.pop()
+    const node = current?.node
     if (node?.type !== 'element') continue
-    elements.push(node)
-    if (node.id) ids.add(node.id)
-    stack.push(...(node.children ?? []))
+    const ancestorIds = current?.ancestorIds ?? []
+    records.push({ node, ancestorIds })
+    const childAncestors = node.id ? [...ancestorIds, node.id] : ancestorIds
+    stack.push(
+      ...(node.children ?? []).map((child) => ({ node: child, ancestorIds: childAncestors })),
+    )
+  }
+  const nodesById = new Map<string, SvgElement[]>()
+  for (const { node } of records) {
+    if (!node.id) continue
+    const matches = nodesById.get(node.id) ?? []
+    matches.push(node)
+    nodesById.set(node.id, matches)
+  }
+
+  const useRecords = records.filter(({ node }) => node.tag === 'use')
+  const referenceGraph = new Map<string, Set<string>>()
+  for (const { node, ancestorIds } of useRecords) {
+    const href = node.attrs?.href ?? node.attrs?.['xlink:href']
+    const owner = ancestorIds.at(-1)
+    if (!owner || !href?.startsWith('#')) continue
+    const targets = referenceGraph.get(owner) ?? new Set<string>()
+    targets.add(href.slice(1))
+    referenceGraph.set(owner, targets)
+  }
+  const reaches = (from: string, to: string, seen = new Set<string>()): boolean => {
+    if (from === to) return true
+    if (seen.has(from)) return false
+    seen.add(from)
+    for (const next of referenceGraph.get(from) ?? []) {
+      if (reaches(next, to, seen)) return true
+    }
+    return false
+  }
+
+  let valid = true
+  const warn = (blockId: string | undefined, message: string): void => {
+    valid = false
+    addBlockMessage(workspace, messagesByBlock, blockId, message)
   }
 
   const lengthAttributes: Record<string, readonly string[]> = {
@@ -198,13 +444,11 @@ function addSvgMessages(
     rect: ['width', 'height'],
   }
 
-  for (const node of elements) {
+  for (const { node, ancestorIds } of records) {
     for (const attribute of lengthAttributes[node.tag] ?? []) {
       const value = node.attrs?.[attribute]
       if (value && !isSvgLength(value)) {
-        addBlockMessage(
-          workspace,
-          messagesByBlock,
+        warn(
           node.__id,
           `“${value}” não parece uma medida válida para ${attribute}. Tente um número, como 50.`,
         )
@@ -213,45 +457,75 @@ function addSvgMessages(
     for (const attribute of nonNegativeAttributes[node.tag] ?? []) {
       const value = node.attrs?.[attribute]
       if (value && SVG_NUMBER_RE.test(value) && Number(value) < 0) {
-        addBlockMessage(
-          workspace,
-          messagesByBlock,
-          node.__id,
-          `${attribute} não pode ser negativo. Use zero ou um número maior.`,
-        )
+        warn(node.__id, `${attribute} não pode ser negativo. Use zero ou um número maior.`)
       }
+    }
+
+    if (node.tag === 'svg' && node.attrs?.viewBox && !hasValidSvgViewBox(node.attrs.viewBox)) {
+      warn(
+        node.__id,
+        'O mapa interno precisa de quatro números: início horizontal, início vertical, largura e altura. Exemplo: “0 0 200 200”.',
+      )
+    }
+    if (node.attrs?.transform && !hasValidSvgTransform(node.attrs.transform)) {
+      warn(
+        node.__id,
+        'A transformação não está completa. Tente, por exemplo, “translate(20 10)”, “rotate(45)” ou “scale(2)”.',
+      )
     }
 
     if ((node.tag === 'polyline' || node.tag === 'polygon') && node.attrs?.points) {
       if (!hasValidSvgPoints(node.attrs.points)) {
-        addBlockMessage(
-          workspace,
-          messagesByBlock,
+        warn(
           node.__id,
           'Os pontos precisam formar pares x,y separados por espaços, como “20,30 80,90”.',
         )
       }
     }
     if (node.tag === 'path' && node.attrs?.d && !hasValidSvgPath(node.attrs.d)) {
-      addBlockMessage(
-        workspace,
-        messagesByBlock,
-        node.__id,
-        'O caminho precisa começar com M e usar instruções como L, C e Z.',
-      )
+      warn(node.__id, 'O caminho precisa começar com M e usar instruções como L, C e Z.')
     }
     if (node.tag === 'use') {
       const href = node.attrs?.href ?? node.attrs?.['xlink:href']
-      if (href?.startsWith('#') && !ids.has(href.slice(1))) {
-        addBlockMessage(
-          workspace,
-          messagesByBlock,
+      if (!href?.startsWith('#')) continue
+      const targetId = href.slice(1)
+      const targets = nodesById.get(targetId) ?? []
+      if (targets.length === 0) {
+        warn(
           node.__id,
           `Não achei ${href}. Dê esse id a uma forma ou escolha outra forma guardada.`,
+        )
+        continue
+      }
+      const allowedTargets = new Set([
+        'symbol',
+        'g',
+        'path',
+        'circle',
+        'ellipse',
+        'line',
+        'rect',
+        'polyline',
+        'polygon',
+        'text',
+      ])
+      if (targets.some((target) => !allowedTargets.has(target.tag))) {
+        warn(
+          node.__id,
+          `${href} aponta para <${targets[0]?.tag}>. Escolha uma forma, um grupo ou uma peça reutilizável.`,
+        )
+        continue
+      }
+      const owner = ancestorIds.at(-1)
+      if ((owner && reaches(targetId, owner)) || node.id === targetId) {
+        warn(
+          node.__id,
+          `${href} criaria uma referência circular. Escolha uma forma que não contenha este bloco.`,
         )
       }
     }
   }
+  return valid
 }
 
 /**
@@ -266,9 +540,11 @@ export function applySemanticDiagnostics(workspace: Blockly.Workspace, input: SZ
 
   const parsed = SZIRInputSchema.safeParse(input)
   const messagesByBlock = new Map<WarnableBlock, Set<string>>()
+  let semanticValid = true
   if (parsed.success) {
     addCssSelectorMessages(workspace, parsed.data, messagesByBlock)
-    addSvgMessages(workspace, parsed.data, messagesByBlock)
+    semanticValid = addSvgMessages(workspace, parsed.data, messagesByBlock)
+    semanticValid = addCanvasMessages(workspace, parsed.data, messagesByBlock) && semanticValid
   } else {
     for (const issue of parsed.error.issues) {
       addBlockMessage(workspace, messagesByBlock, closestBlockId(input, issue.path), issue.message)
@@ -278,5 +554,5 @@ export function applySemanticDiagnostics(workspace: Blockly.Workspace, input: SZ
   for (const [block, messages] of messagesByBlock) {
     block.setWarningText?.([...messages].join('\n'), SEMANTIC_WARNING_ID)
   }
-  return parsed.success
+  return parsed.success && semanticValid
 }

@@ -6,8 +6,8 @@ import { buildWorkspaceStateFromIR, emptyFramesBlocksState } from '../workspaceS
 /**
  * `omitEmptyAuxFrames` (Bug: num projeto só-JS — ex.: Canvas 3D — os frames
  * 🧱 Estrutura / 🎨 Aparência VAZIOS "ressuscitavam" a cada ida-e-volta pela
- * Ponte). Com a opção, HTML/CSS vazios são omitidos; ⚙️ Comportamento fica sempre.
- * O seed de projeto novo NÃO passa a opção → segue com os 3 frames.
+ * Ponte). Com a opção, HTML e CSS vazios são omitidos. Só as áreas usadas permanecem.
+ * O projeto novo nasce vazio e não cria áreas automaticamente.
  */
 function frameTypes(state: ReturnType<typeof buildWorkspaceStateFromIR>): string[] {
   return state.blocks.blocks.map((b) => b.type)

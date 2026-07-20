@@ -34,6 +34,44 @@ describe('contrato central de posicionamento', () => {
     }
   })
 
+  it('usa linguagem visível simples e sem travessões', () => {
+    const blocks = [
+      ...CORE_BLOCKS,
+      ...OFFICIAL_CATALOG.flatMap((extension) => extension.blockly.blocks),
+    ]
+    const visibleBlockText = (block: (typeof blocks)[number]) => ({
+      message0: block.message0,
+      args0: block.args0,
+      message1: block.message1,
+      args1: block.args1,
+      message2: block.message2,
+      args2: block.args2,
+      message3: block.message3,
+      args3: block.args3,
+      message4: block.message4,
+      args4: block.args4,
+      message5: block.message5,
+      args5: block.args5,
+      tooltip: block.tooltip,
+    })
+    const blockOffenders = blocks
+      .filter((block) => /[—–]/u.test(JSON.stringify(visibleBlockText(block))))
+      .map((block) => block.type)
+    const extensionOffenders = OFFICIAL_CATALOG.filter((extension) =>
+      /[—–]/u.test(
+        JSON.stringify({
+          name: extension.manifest.name,
+          description: extension.manifest.description,
+          docs: extension.manifest.docs,
+          toolbox: extension.blockly.toolboxCategory,
+        }),
+      ),
+    ).map((extension) => extension.manifest.id)
+
+    expect(blockOffenders).toEqual([])
+    expect(extensionOffenders).toEqual([])
+  })
+
   it('classifica todos os blocos core e das extensões oficiais', () => {
     const all = [
       ...CORE_BLOCKS,
@@ -42,6 +80,18 @@ describe('contrato central de posicionamento', () => {
     expect(() => registerBlockContracts(all)).not.toThrow()
     for (const block of all) {
       expect(getBlockContract(block.type), block.type).toBeDefined()
+    }
+  })
+
+  it('exige placement declarado em todo bloco executável oficial', () => {
+    const all = [
+      ...CORE_BLOCKS,
+      ...OFFICIAL_CATALOG.flatMap((extension) => extension.blockly.blocks),
+    ]
+    for (const block of all) {
+      const contract = inferBlockContract(block)
+      if (contract.domain !== 'behavior') continue
+      expect(block.placement, block.type).toBeDefined()
     }
   })
 
@@ -154,7 +204,8 @@ describe('contrato central de posicionamento', () => {
       if (
         definition.hidden ||
         contract.domain !== 'behavior' ||
-        placement?.role !== 'command' ||
+        !placement ||
+        (placement.role !== 'command' && definition.type !== 'sz_canvas_setup') ||
         placement.root.length !== 1 ||
         placement.root[0] !== 'start' ||
         placement.nested.length !== 0
@@ -211,6 +262,7 @@ describe('contrato central de posicionamento', () => {
     const raw = {
       type: 'sz_test_external_registration',
       message0: 'teste',
+      placement: 'command' as const,
       previousStatement: 'JSStmt',
       nextStatement: 'JSStmt',
       colour: 20,

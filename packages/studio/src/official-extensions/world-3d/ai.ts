@@ -16,14 +16,14 @@ dirige um carrinho nele. Unidades em METROS; o carrinho tem ~3 m.
 SZWorld3D.setup({ style: 'floresta', world: 160 });
 SZWorld3D.terrain(4, 5);
 SZWorld3D.car({ style: 'passeio', color: '#ef4444' });
-// 🔁 Enquanto estiver rodando — Loops
+// 🔁 Enquanto estiver rodando
 SZWorld3D.onUpdate(function (dt) {
   // mecânica extra da criança (opcional)
 });
 \`\`\`
 
-Use ⚡ Quando acontecer — Eventos para os chapéus “Quando…” e
-🔁 Enquanto estiver rodando — Loops para onUpdate e outros loops-raiz. O Studio
+Use ⚡ Quando acontecer para os chapéus “Quando…” e
+🔁 Enquanto estiver rodando para onUpdate e outros loops-raiz. O Studio
 chama o ciclo de vida automaticamente. NÃO gere
 \`SZWorld3D.start()\`: esse método existe apenas para projetos legados.
 
@@ -123,7 +123,7 @@ chama o ciclo de vida automaticamente. NÃO gere
   postes (catenária; as lâmpadas acendem com o escurecer). Vale em qualquer
   mundo, com ou sem cidade.
 - \`SZWorld3D.npc('Nome', x, z, corHex, chapeu)\` — amigo que olha p/ você de perto (cap 8). \`SZWorld3D.npcWander('Nome', raio)\` — passeia ao redor de casa.
-- \`SZWorld3D.npcTalk('Nome', () => { … })\` — chapéu de **⚡ Quando acontecer — Eventos**; roda no E perto do amigo. Dentro, \`SZWorld3D.npcSay('Nome', 'fala')\` ENFILEIRA falas (cada E mostra a próxima, typewriter + blip por letra à la Animal Crossing). \`SZWorld3D.npcEmote('Nome', 'acenar'|'pular'|'girar'|'dancar')\`.
+- \`SZWorld3D.npcTalk('Nome', () => { … })\` — chapéu de **⚡ Quando acontecer**; roda no E perto do amigo. Dentro, \`SZWorld3D.npcSay('Nome', 'fala')\` ENFILEIRA falas (cada E mostra a próxima, typewriter + blip por letra à la Animal Crossing). \`SZWorld3D.npcEmote('Nome', 'acenar'|'pular'|'girar'|'dancar')\`.
 - \`SZWorld3D.coinsScatter(n)\` / \`coinsRing(n, x, z, raio)\` / \`coinsLine(n, x1, z1, x2, z2)\` — moedas girando (cap 512; nunca na água). Pegar = encostar: plim + HUD 🪙 automático + \`SZWorld3D.onCollect(() => { … })\`. \`SZWorld3D.coinCount()\` → total.
 - \`SZWorld3D.quest('nome', 'descrição')\` — a missão ATIVA aparece no painel sozinha. \`SZWorld3D.questDone('nome')\` — confete + fanfarra + \`SZWorld3D.onQuestDone('nome', () => { … })\`. Meta automática NÃO existe: componha com onCollect + se coinCount() >= N.
 - \`SZWorld3D.marker('alerta'|'estrela'|'alvo'|'moeda', x, z)\` — ícone quicando sobre o lugar. \`SZWorld3D.guideArrow(x, z, 'ligada'|'desligada')\` — seta na tela que aponta o alvo e some ao chegar.

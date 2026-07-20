@@ -412,18 +412,24 @@ function mapClass(node: Node, source: string, ctx: ParseCtx): JSStatement {
 
 /**
  * `function nome(params) { ... }` de topo → `funcDecl`. Params precisam ser
- * identificadores simples; async/generator e params não-triviais viram raw.
+ * identificadores simples; generators e params não-triviais viram raw.
  * Roda DEPOIS dos matchers de fusão (anim loop), que têm prioridade.
  */
 function mapFunction(node: Node, source: string, ctx: ParseCtx): JSStatement {
   if (node.id?.type !== 'Identifier') return asRaw(source, node)
-  if (node.async || node.generator) return asRaw(source, node)
+  if (node.generator) return asRaw(source, node)
   if (!Array.isArray(node.params) || !node.params.every((p: Node) => p?.type === 'Identifier')) {
     return asRaw(source, node)
   }
   const params: string[] = node.params.map((p: Node) => p.name)
   const body = mapStatementList(node.body?.body ?? [], source, ctx)
-  return { type: 'funcDecl', name: node.id.name, params, body }
+  return {
+    type: 'funcDecl',
+    name: node.id.name,
+    params,
+    ...(node.async ? { async: true } : {}),
+    body,
+  }
 }
 
 /**
@@ -686,7 +692,41 @@ function mapStatementList(nodes: Node[], source: string, ctx: ParseCtx): JSState
   // também está aqui. Fazer a remoção por escopo (e não só no topo) impede o
   // `getElementById` morto de crescer a cada ciclo parse→gen→parse dentro de
   // funções/blocos aninhados (idempotente — ponto fixo do round-trip).
-  return out.filter((s) => !(s.type === 'getElementById' && ctx.canvasElementVars.has(s.varName)))
+  const withoutAbsorbedElements = out.filter(
+    (s) => !(s.type === 'getElementById' && ctx.canvasElementVars.has(s.varName)),
+  )
+  return withoutAbsorbedElements.filter((statement, index, statements) => {
+    const previous = statements[index - 1]
+    return !(
+      previous?.type === 'canvasSetup' &&
+      isGeneratedCanvasSetupGuard(statement, previous.varName, previous.canvasId)
+    )
+  })
+}
+
+function isGeneratedCanvasSetupGuard(
+  statement: JSStatement,
+  contextName: string,
+  canvasId: string,
+): boolean {
+  if (
+    statement.type !== 'if' ||
+    statement.elseif?.length ||
+    statement.else?.length ||
+    statement.cond.type !== 'logicalNot' ||
+    statement.cond.value.type !== 'var' ||
+    statement.cond.value.name !== contextName ||
+    statement.then.length !== 1
+  ) {
+    return false
+  }
+  const thrown = statement.then[0]
+  return (
+    thrown?.type === 'throwError' &&
+    thrown.message.type === 'str' &&
+    thrown.message.value ===
+      `Não foi possível preparar a tela Canvas “${canvasId}”. Confira se o id existe e pertence a uma tela Canvas.`
+  )
 }
 
 function mapVariable(node: Node, source: string, ctx: ParseCtx): JSStatement | JSStatement[] {

@@ -1,4 +1,4 @@
-import type { CSSEntry, CSSRule } from '#ir'
+import { type CSSEntry, type CSSRule, cssDeclarationEntries } from '#ir'
 import { normalizeDeclKey, normalizeSelector, parseCSSWithSpans } from '#parsers'
 
 /**
@@ -277,7 +277,8 @@ export function buildCssSourceMapFromText(
     const declRecords: Array<{ id: string; line: number }> = []
     let minLine = Number.POSITIVE_INFINITY
     let maxLine = 0
-    for (const prop of Object.keys(rule.declarations)) {
+    for (const declaration of cssDeclarationEntries(rule.declarations, rule.__declIds)) {
+      const prop = declaration.property
       // Mesma normalização do parser: minúscula para props padrão, caixa
       // PRESERVADA para custom properties (`--Cor` é case-sensitive). Casa com
       // as chaves dos spans, que agora também preservam a caixa das custom props.
@@ -285,7 +286,7 @@ export function buildCssSourceMapFromText(
       if (line == null) continue
       if (line < minLine) minLine = line
       if (line > maxLine) maxLine = line
-      const declId = rule.__declIds?.[prop]
+      const declId = declaration.__id
       if (declId) declRecords.push({ id: declId, line })
     }
     if (maxLine === 0) continue // nenhuma declaracao casou no texto exibido

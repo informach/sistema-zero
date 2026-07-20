@@ -1,4 +1,11 @@
-import type { CSSEntry, CSSRule, GoogleFontCSS, KeyframesCSS, MediaQueryCSS } from '#ir'
+import {
+  type CSSEntry,
+  type CSSRule,
+  cssDeclarationEntries,
+  type GoogleFontCSS,
+  type KeyframesCSS,
+  type MediaQueryCSS,
+} from '#ir'
 import { assertGeneratorDepth } from './js'
 import { countLines, SourceMapBuilder } from './sourceMap'
 
@@ -58,11 +65,10 @@ type RenderGroup =
   | { kind: 'keyframes'; entry: KeyframesCSS }
 
 function entryDeclarations(entry: CSSRule): GroupedDeclaration[] {
-  const declIds = entry.__declIds
-  return Object.entries(entry.declarations).map(([key, value]) => ({
-    key,
-    value,
-    ...(declIds?.[key] ? { declId: declIds[key] } : {}),
+  return cssDeclarationEntries(entry.declarations, entry.__declIds).map((declaration) => ({
+    key: declaration.property,
+    value: declaration.value,
+    ...(declaration.__id ? { declId: declaration.__id } : {}),
   }))
 }
 
@@ -283,9 +289,11 @@ function renderRule(selector: string, declarations: GroupedDeclaration[]): strin
 function renderKeyframes(entry: KeyframesCSS): string {
   const steps = entry.steps
     .map((step) => {
-      const decls = Object.entries(step.declarations)
-        .filter(([k, v]) => isSafeDeclarationKey(k) && isSafeDeclarationValue(v))
-        .map(([k, v]) => `    ${stripBraces(k)}: ${v};`)
+      const decls = cssDeclarationEntries(step.declarations)
+        .filter(
+          ({ property, value }) => isSafeDeclarationKey(property) && isSafeDeclarationValue(value),
+        )
+        .map(({ property, value }) => `    ${stripBraces(property)}: ${value};`)
         .join('\n')
       return `  ${stripBraces(step.at)} {\n${decls}\n  }`
     })

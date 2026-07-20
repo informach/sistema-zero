@@ -23,6 +23,7 @@ const C = CATEGORY_COLORS.classes
 export const OOP_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_js_class',
+    placement: 'start-declaration',
     message0: 'Classe %1',
     args0: [{ type: 'field_input', name: 'NAME', text: 'Pessoa' }],
     message1: '%1',
@@ -37,6 +38,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_constructor',
+    placement: 'class-member',
     message0: 'construtor',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'BODY', check: 'JSStmt' }],
@@ -50,6 +52,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_class_method',
+    placement: 'class-member',
     message0: 'método %1 assíncrono %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'falar' },
@@ -87,6 +90,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_new_var',
+    placement: 'command',
     message0: 'criar %1 = novo %2',
     args0: [
       { type: 'field_input', name: 'VARNAME', text: 'pessoa' },
@@ -102,6 +106,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_call_method',
+    placement: 'command',
     hidden: true,
     message0: 'no objeto %1 chamar método %2',
     args0: [
@@ -166,6 +171,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_set_this_prop',
+    placement: 'command',
     message0: 'definir minha propriedade %1 = %2',
     args0: [
       { type: 'field_name_picker', name: 'NAME', text: 'nome', kind: 'property' },
@@ -179,6 +185,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_set_prop',
+    placement: 'command',
     hidden: true,
     message0: 'no objeto %1 definir propriedade %2 = %3',
     args0: [

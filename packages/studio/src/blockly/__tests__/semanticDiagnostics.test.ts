@@ -16,6 +16,27 @@ function warningWorkspace(blockId: string) {
   return { workspace, warnings }
 }
 
+function warningWorkspaceFor(blockIds: string[]) {
+  const warnings = new Map<string, Array<string | null>>()
+  const blocks = new Map(
+    blockIds.map((id) => [
+      id,
+      {
+        setWarningText(text: string | null) {
+          const current = warnings.get(id) ?? []
+          current.push(text)
+          warnings.set(id, current)
+        },
+      },
+    ]),
+  )
+  const workspace = {
+    getAllBlocks: () => [...blocks.values()],
+    getBlockById: (id: string) => blocks.get(id) ?? null,
+  } as unknown as Blockly.Workspace
+  return { workspace, warnings }
+}
+
 describe('diagnósticos semânticos nos blocos', () => {
   it('prende o nome inexistente ao bloco e impede a geração', () => {
     const { workspace, warnings } = warningWorkspace('desenho-1')
@@ -99,7 +120,7 @@ describe('diagnósticos semânticos nos blocos', () => {
       extensions: [],
     })
 
-    expect(valid).toBe(true)
+    expect(valid).toBe(false)
     expect(warnings.at(-1)).toContain('#estrela')
   })
 
@@ -125,7 +146,169 @@ describe('diagnósticos semânticos nos blocos', () => {
       extensions: [],
     })
 
-    expect(valid).toBe(true)
+    expect(valid).toBe(false)
     expect(warnings.at(-1)).toContain('pontos')
+  })
+
+  it('bloqueia viewBox, caminho e transformação incompletos com exemplos acionáveis', () => {
+    const ids = ['svg-1', 'path-1', 'group-1']
+    const { workspace, warnings } = warningWorkspaceFor(ids)
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [
+        {
+          type: 'element',
+          tag: 'svg',
+          attrs: { viewBox: '0 0 200' },
+          __id: 'svg-1',
+          children: [
+            { type: 'element', tag: 'path', attrs: { d: 'M' }, __id: 'path-1' },
+            {
+              type: 'element',
+              tag: 'g',
+              attrs: { transform: 'rotate()' },
+              __id: 'group-1',
+            },
+          ],
+        },
+      ],
+      css: [],
+      js: [],
+      extensions: [],
+    })
+
+    expect(valid).toBe(false)
+    expect(warnings.get('svg-1')?.at(-1)).toContain('quatro números')
+    expect(warnings.get('path-1')?.at(-1)).toContain('começar com M')
+    expect(warnings.get('group-1')?.at(-1)).toContain('transformação')
+  })
+
+  it('aceita viewBox, transformação e caminho SVG completos', () => {
+    const { workspace, warnings } = warningWorkspace('svg-1')
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [
+        {
+          type: 'element',
+          tag: 'svg',
+          attrs: { viewBox: '0 0 200 200', transform: 'translate(10 20) scale(2)' },
+          __id: 'svg-1',
+          children: [
+            {
+              type: 'element',
+              tag: 'path',
+              attrs: { d: 'M 10 10 L 30 30 C 40 40 50 50 60 60 Z' },
+            },
+          ],
+        },
+      ],
+      css: [],
+      js: [],
+      extensions: [],
+    })
+
+    expect(valid).toBe(true)
+    expect(warnings).toEqual([null])
+  })
+
+  it('bloqueia alvo incompatível e referência SVG circular', () => {
+    const { workspace, warnings } = warningWorkspaceFor(['use-root', 'use-cycle'])
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [
+        {
+          type: 'element',
+          tag: 'svg',
+          id: 'raiz',
+          children: [
+            {
+              type: 'element',
+              tag: 'use',
+              attrs: { href: '#raiz' },
+              __id: 'use-root',
+            },
+            {
+              type: 'element',
+              tag: 'g',
+              id: 'grupo',
+              children: [
+                {
+                  type: 'element',
+                  tag: 'use',
+                  attrs: { href: '#grupo' },
+                  __id: 'use-cycle',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      css: [],
+      js: [],
+      extensions: [],
+    })
+
+    expect(valid).toBe(false)
+    expect(warnings.get('use-root')?.at(-1)).toContain('aponta para <svg>')
+    expect(warnings.get('use-cycle')?.at(-1)).toContain('referência circular')
+  })
+
+  it('impede o preview quando o preparo aponta para uma tela inexistente', () => {
+    const { workspace, warnings } = warningWorkspace('setup-1')
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [],
+      css: [],
+      js: [{ type: 'canvasSetup', canvasId: 'jogo', varName: 'ctx', __id: 'setup-1' }],
+      extensions: [],
+    })
+
+    expect(valid).toBe(false)
+    expect(warnings.at(-1)).toContain('Não achei uma tela Canvas')
+  })
+
+  it('impede o preview quando o id escolhido pertence a outro elemento', () => {
+    const { workspace, warnings } = warningWorkspace('setup-1')
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [{ type: 'element', tag: 'div', id: 'jogo', __id: 'div-1' }],
+      css: [],
+      js: [{ type: 'canvasSetup', canvasId: 'jogo', varName: 'ctx', __id: 'setup-1' }],
+      extensions: [],
+    })
+
+    expect(valid).toBe(false)
+    expect(warnings.at(-1)).toContain('pertence a <div>')
+  })
+
+  it('impede ids DOM e nomes de pincel repetidos, avisando todos os blocos', () => {
+    const ids = ['canvas-1', 'canvas-2', 'setup-1', 'setup-2']
+    const { workspace, warnings } = warningWorkspaceFor(ids)
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [
+        { type: 'canvas', id: 'jogo', __id: 'canvas-1' },
+        { type: 'canvas', id: 'jogo', __id: 'canvas-2' },
+      ],
+      css: [],
+      js: [
+        { type: 'canvasSetup', canvasId: 'jogo', varName: 'ctx', __id: 'setup-1' },
+        { type: 'canvasSetup', canvasId: 'jogo', varName: 'ctx', __id: 'setup-2' },
+      ],
+      extensions: [],
+    })
+
+    expect(valid).toBe(false)
+    expect(warnings.get('canvas-1')?.at(-1)).toContain('aparece 2 vezes')
+    expect(warnings.get('canvas-2')?.at(-1)).toContain('aparece 2 vezes')
+    expect(warnings.get('setup-1')?.at(-1)).toContain('foi preparado 2 vezes')
+    expect(warnings.get('setup-2')?.at(-1)).toContain('foi preparado 2 vezes')
+  })
+
+  it('aceita um Canvas existente com id e pincel únicos', () => {
+    const { workspace, warnings } = warningWorkspace('setup-1')
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [{ type: 'canvas', id: 'jogo', __id: 'canvas-1' }],
+      css: [],
+      js: [{ type: 'canvasSetup', canvasId: 'jogo', varName: 'ctx', __id: 'setup-1' }],
+      extensions: [],
+    })
+
+    expect(valid).toBe(true)
+    expect(warnings).toEqual([null])
   })
 })

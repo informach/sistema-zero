@@ -351,8 +351,8 @@ export function BridgeMode(): JSX.Element {
         markSynced()
         return
       }
-      // Modelo CONTAINER: o reverse-parse reconstrói os frames (🧱 Estrutura /
-      // 🎨 Aparência / ⚙️ Comportamento) a partir da IR. Blocos soltos (rascunho)
+      // Modelo de áreas: o reverse-parse reconstrói Estrutura, Aparência,
+      // Ao iniciar, Quando acontecer e Enquanto estiver rodando a partir da IR. Rascunhos
       // não estão na IR, então não voltam — esperado ao sincronizar pelo código.
       // `omitEmptyAuxFrames`: HTML/CSS vazios NÃO ressuscitam num projeto só-JS
       // (ex.: Canvas 3D) a cada ida-e-volta pela Ponte.

@@ -1,8 +1,5 @@
 import type { ExtensionToolboxCategory } from '#extensions'
-import {
-  applyPlacementToBlockTypes,
-  START_ONLY_COMMAND_PLACEMENT,
-} from '../../blockly/blockContracts'
+import type { BlockDefinition } from '../../blockly/blocks/types'
 import { categoryShades } from '../../blockly/colorShades'
 
 // Jogo 3D = UMA cor da categoria: AMARELO/dourado. A categoria inteira fica em
@@ -18,6 +15,7 @@ const STACK_C = '#ffe89a' // Kit Empilhar
 export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_create_scene',
+    placement: 'start-only-command',
     message0: 'Criar cena 3D no canvas %1 e guardar em %2',
     args0: [
       { type: 'field_name_picker', name: 'CANVAS', text: 'tela', kind: 'canvas' },
@@ -31,6 +29,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_create_fullscreen_scene',
+    placement: 'start-only-command',
     message0: 'Criar cena 3D em tela cheia e guardar em %1, fundo %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'cena' },
@@ -44,6 +43,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_set_background',
+    placement: 'command',
     message0: 'Cor de fundo da cena %1 como %2',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
@@ -56,6 +56,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_set_camera',
+    placement: 'command',
     message0: 'Posicionar câmera da cena %1 em x %2 y %3 z %4',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
@@ -71,6 +72,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_create_box',
+    placement: 'start-only-command',
     message0: 'Criar cubo %1 na cena %2 tamanho %3 cor %4',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'caixa' },
@@ -86,6 +88,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_create_sphere',
+    placement: 'start-only-command',
     message0: 'Criar esfera %1 na cena %2 raio %3 cor %4',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'bola' },
@@ -101,6 +104,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_create_block',
+    placement: 'start-only-command',
     message0: 'Criar caixa %1 na cena %2 largura %3 altura %4 profundidade %5 cor %6',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'chao' },
@@ -119,6 +123,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_set_position',
+    placement: 'command',
     message0: 'Posição do objeto %1 em x %2 y %3 z %4',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'caixa', kind: 'object3d' },
@@ -134,6 +139,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_set_rotation',
+    placement: 'command',
     message0: 'Rotação do objeto %1 em x %2 y %3 z %4 (radianos)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'caixa', kind: 'object3d' },
@@ -149,6 +155,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_set_scale',
+    placement: 'command',
     message0: 'Tamanho (escala) do objeto %1 em %2',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'caixa', kind: 'object3d' },
@@ -162,6 +169,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_animate',
+    placement: 'loop-update',
     message0: 'A cada frame 3D da cena %1',
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' }],
     message1: 'fazer %1',
@@ -177,6 +185,7 @@ export const gameThreeDBlocks = [
   // ---- Física & controles ----
   {
     type: 'sz_g3d_control_keys',
+    placement: 'command',
     message0: 'Mover %1 com o teclado (WASD/setas), velocidade %2',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -191,6 +200,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_set_velocity',
+    placement: 'command',
     message0: 'Definir velocidade do objeto %1 em x %2 y %3 z %4',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -206,6 +216,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_jump',
+    placement: 'command',
     message0: 'Fazer %1 pular com força %2',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -220,6 +231,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_apply_gravity',
+    placement: 'command',
     message0: 'Mover %1 com gravidade (chão: %2)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -233,6 +245,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_camera_follow',
+    placement: 'command',
     message0: 'A câmera da cena %1 segue o objeto %2',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
@@ -297,6 +310,7 @@ export const gameThreeDBlocks = [
   // ---- Kit "Desvie": grupo de inimigos, spawner que avança e fim de jogo ----
   {
     type: 'sz_g3d_create_group',
+    placement: 'start-only-command',
     message0: 'Criar grupo de objetos %1',
     args0: [{ type: 'field_input', name: 'NAME', text: 'inimigos' }],
     previousStatement: 'JSStmt',
@@ -306,6 +320,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_run_enemies',
+    placement: 'command',
     message0: 'Na cena %1, soltar inimigos no grupo %2 (chão %3) a cada %4 quadros, velocidade %5',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
@@ -323,6 +338,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_stop',
+    placement: 'command',
     message0: 'Fim de jogo: parar a cena %1',
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' }],
     previousStatement: 'JSStmt',
@@ -334,6 +350,7 @@ export const gameThreeDBlocks = [
   // ---- GENÉRICOS de grade/isométrico (fora do kit, p/ outros jogos) ----
   {
     type: 'sz_g3d_isometric_camera',
+    placement: 'command',
     message0: 'Câmera isométrica na cena %1 seguindo o objeto %2',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
@@ -347,6 +364,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_grid_position',
+    placement: 'command',
     message0: 'Colocar o objeto %1 na linha %2 coluna %3',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'caixa', kind: 'object3d' },
@@ -361,6 +379,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_grid_step',
+    placement: 'command',
     message0: 'Mover %1 em grade com as setas (a cada frame)',
     args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' }],
     previousStatement: 'JSStmt',
@@ -371,6 +390,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_grid_move',
+    placement: 'command',
     message0: 'Dar um passo de %1 para %2',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -392,6 +412,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_move_across',
+    placement: 'command',
     message0: 'Mover os objetos do grupo %1 (velocidade %2, dando a volta de x %3 até %4)',
     args0: [
       { type: 'field_name_picker', name: 'GROUP', text: 'carros', kind: 'group3d' },
@@ -422,6 +443,7 @@ export const gameThreeDBlocks = [
   // ---- Kit Travessia (atravessar a rua / Crossy Road) ----
   {
     type: 'sz_g3d_create_crossing_scene',
+    placement: 'start-only-command',
     message0: 'Criar mundo Travessia no canvas %1 e guardar em %2',
     args0: [
       { type: 'field_name_picker', name: 'CANVAS', text: 'jogo', kind: 'canvas' },
@@ -435,6 +457,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_create_crosser',
+    placement: 'start-only-command',
     message0: 'Criar personagem da Travessia no mundo %1 cor %2 e guardar em %3',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'scene3d' },
@@ -448,6 +471,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_crosser_move',
+    placement: 'command',
     message0: 'Mover o personagem %1 para %2',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -470,6 +494,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_crosser_step',
+    placement: 'command',
     message0: 'Atualizar o personagem %1 no mundo %2 (a cada frame)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -483,6 +508,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_crosser_reset',
+    placement: 'command',
     message0: 'Recomeçar a Travessia: personagem %1 no mundo %2',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -495,6 +521,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_add_row',
+    placement: 'start-only-command',
     message0: 'No mundo %1, na linha %2, criar faixa de %3 indo para %4 velocidade %5',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'scene3d' },
@@ -528,6 +555,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_generate_rows',
+    placement: 'start-only-command',
     message0: 'No mundo %1, gerar %2 linhas aleatórias',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'scene3d' },
@@ -542,6 +570,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_move_traffic',
+    placement: 'command',
     message0: 'Mover os veículos do mundo %1 (a cada frame)',
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'scene3d' }],
     previousStatement: 'JSStmt',
@@ -574,6 +603,7 @@ export const gameThreeDBlocks = [
   // ---- GENÉRICOS: câmera aérea + movimento circular + distância ----
   {
     type: 'sz_g3d_top_camera',
+    placement: 'command',
     message0: 'Câmera aérea (de cima) na cena %1 seguindo o objeto %2',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
@@ -587,6 +617,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_move_in_circle',
+    placement: 'command',
     message0: 'Mover %1 em círculo: raio %2 velocidade %3',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'carro', kind: 'object3d' },
@@ -628,6 +659,7 @@ export const gameThreeDBlocks = [
   // ---- Kit Corrida (correr numa pista) ----
   {
     type: 'sz_g3d_create_race_scene',
+    placement: 'start-only-command',
     message0: 'Criar mundo de corrida no canvas %1 e guardar em %2',
     args0: [
       { type: 'field_name_picker', name: 'CANVAS', text: 'pista', kind: 'canvas' },
@@ -641,6 +673,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_create_race_track',
+    placement: 'start-only-command',
     message0: 'No mundo %1, criar a pista de corrida',
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'scene3d' }],
     previousStatement: 'JSStmt',
@@ -650,6 +683,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_create_race_car',
+    placement: 'start-only-command',
     message0: 'Criar carro do jogador no mundo %1 cor %2 e guardar em %3',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'scene3d' },
@@ -663,6 +697,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_race_step',
+    placement: 'command',
     message0: 'Dirigir o carro %1 no mundo %2 (a cada frame)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'carro', kind: 'object3d' },
@@ -676,6 +711,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_race_control',
+    placement: 'command',
     message0: 'Carro %1: %2',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'carro', kind: 'object3d' },
@@ -696,6 +732,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_run_rivals',
+    placement: 'command',
     message0: 'No mundo %1, soltar e mover os carros rivais',
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'scene3d' }],
     previousStatement: 'JSStmt',
@@ -705,6 +742,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_race_reset',
+    placement: 'command',
     message0: 'Recomeçar a corrida: carro %1 no mundo %2',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'carro', kind: 'object3d' },
@@ -740,6 +778,7 @@ export const gameThreeDBlocks = [
   // ---- GENÉRICOS: cair (com tombo), deslizar e girar (sem lib de física) ----
   {
     type: 'sz_g3d_fall',
+    placement: 'command',
     message0: 'fazer %1 cair girando',
     args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'peca', kind: 'object3d' }],
     previousStatement: 'JSStmt',
@@ -750,6 +789,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_slide_between',
+    placement: 'command',
     message0: 'Mover %1 no eixo %2 de %3 até %4 e voltar (velocidade %5)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'plataforma', kind: 'object3d' },
@@ -775,6 +815,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_spin',
+    placement: 'command',
     message0: 'Girar %1 no eixo %2 velocidade %3',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
@@ -800,6 +841,7 @@ export const gameThreeDBlocks = [
   // ---- Kit Empilhar (torre de blocos) ----
   {
     type: 'sz_g3d_create_stack_scene',
+    placement: 'start-only-command',
     message0: 'Criar mundo de empilhar no canvas %1 e guardar em %2',
     args0: [
       { type: 'field_name_picker', name: 'CANVAS', text: 'jogo', kind: 'canvas' },
@@ -813,6 +855,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_create_stack_tower',
+    placement: 'start-only-command',
     message0: 'No mundo %1, montar a base da torre',
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'torre', kind: 'scene3d' }],
     previousStatement: 'JSStmt',
@@ -822,6 +865,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_stack_drop',
+    placement: 'command',
     message0: 'Soltar o bloco do mundo %1',
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'torre', kind: 'scene3d' }],
     previousStatement: 'JSStmt',
@@ -832,6 +876,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_stack_step',
+    placement: 'command',
     message0: 'Atualizar a torre %1 (a cada frame)',
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'torre', kind: 'scene3d' }],
     previousStatement: 'JSStmt',
@@ -842,6 +887,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_stack_reset',
+    placement: 'command',
     message0: 'Recomeçar a torre %1',
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'torre', kind: 'scene3d' }],
     previousStatement: 'JSStmt',
@@ -962,6 +1008,7 @@ export const gameThreeDBlocks = [
   // ---- GENÉRICOS: mover/girar relativo + suavizar (lerp) ----
   {
     type: 'sz_g3d_move_by',
+    placement: 'command',
     message0: 'mover %1 em x %2 y %3 z %4 (relativo)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -978,6 +1025,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_rotate_by',
+    placement: 'command',
     message0: 'girar %1 no eixo %2 em %3 (relativo)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -1000,6 +1048,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_move_towards',
+    placement: 'command',
     message0: 'suavizar %1 até x %2 y %3 z %4 (força %5)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -1019,6 +1068,7 @@ export const gameThreeDBlocks = [
   // ---- GENÉRICOS: olhar / apontar / andar para frente ----
   {
     type: 'sz_g3d_look_at_object',
+    placement: 'command',
     message0: 'virar %1 para olhar o objeto %2',
     args0: [
       { type: 'field_name_picker', name: 'A', text: 'canhao', kind: 'object3d' },
@@ -1031,6 +1081,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_look_at_point',
+    placement: 'command',
     message0: 'virar %1 para o ponto x %2 y %3 z %4',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -1046,6 +1097,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_move_forward',
+    placement: 'command',
     message0: 'andar %1 para frente %2 (na direção que olha)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -1060,6 +1112,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_face_velocity',
+    placement: 'command',
     message0: 'girar %1 para a direção do movimento',
     args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' }],
     previousStatement: 'JSStmt',
@@ -1141,6 +1194,7 @@ export const gameThreeDBlocks = [
   // ---- GENÉRICOS: física avançada (corpo, sólidos, presets) ----
   {
     type: 'sz_g3d_body',
+    placement: 'start-only-command',
     message0: 'dar corpo físico a %1 (gravidade %2)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -1154,6 +1208,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_step_body',
+    placement: 'command',
     message0: 'mover %1 com física no mundo %2',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -1167,6 +1222,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_set_solid',
+    placement: 'start-only-command',
     message0: 'marcar %1 como sólido (não atravessa)',
     args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'chao', kind: 'object3d' }],
     previousStatement: 'JSStmt',
@@ -1176,6 +1232,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_platformer_controls',
+    placement: 'command',
     message0: 'controle de plataforma para %1 no mundo %2 (velocidade %3, pulo %4)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -1192,6 +1249,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_fps_controls',
+    placement: 'command',
     message0: 'controle de primeira pessoa para %1 no mundo %2 (velocidade %3)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -1207,6 +1265,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_resolve_collision',
+    placement: 'command',
     message0: 'empurrar %1 para fora de %2',
     args0: [
       { type: 'field_name_picker', name: 'A', text: 'jogador', kind: 'object3d' },
@@ -1221,6 +1280,7 @@ export const gameThreeDBlocks = [
   // ---- GENÉRICOS: câmeras vivas (1ª pessoa, orbital, 3ª pessoa, FOV) ----
   {
     type: 'sz_g3d_fps_camera',
+    placement: 'command',
     message0: 'câmera em primeira pessoa na cena %1 presa a %2',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
@@ -1234,6 +1294,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_orbit_camera',
+    placement: 'command',
     message0: 'câmera orbital na cena %1 olhando para %2',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
@@ -1246,6 +1307,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_third_person_camera',
+    placement: 'command',
     message0: 'câmera em terceira pessoa na cena %1 atrás de %2 (distância %3, altura %4)',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
@@ -1262,6 +1324,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_camera_look_at',
+    placement: 'command',
     message0: 'a câmera da cena %1 olha para %2',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
@@ -1274,6 +1337,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_set_fov',
+    placement: 'command',
     message0: 'campo de visão da câmera da cena %1 = %2 graus',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
@@ -1289,6 +1353,7 @@ export const gameThreeDBlocks = [
   // ---- GENÉRICOS: formas, materiais, texturas, modelo (Fase 6) ----
   {
     type: 'sz_g3d_create_cylinder',
+    placement: 'start-only-command',
     message0: 'Criar cilindro %1 na cena %2 (raio %3, altura %4, cor %5)',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'cilindro' },
@@ -1305,6 +1370,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_create_cone',
+    placement: 'start-only-command',
     message0: 'Criar cone %1 na cena %2 (raio %3, altura %4, cor %5)',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'cone' },
@@ -1321,6 +1387,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_create_plane',
+    placement: 'start-only-command',
     message0: 'Criar plano (chão) %1 na cena %2 (largura %3, profundidade %4, cor %5)',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'chao' },
@@ -1337,6 +1404,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_create_torus',
+    placement: 'start-only-command',
     message0: 'Criar rosca (anel) %1 na cena %2 (raio %3, grossura %4, cor %5)',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'anel' },
@@ -1353,6 +1421,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_create_model',
+    placement: 'start-only-command',
     message0: 'Criar modelo %1 na cena %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'modelo' },
@@ -1365,6 +1434,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_add_to_model',
+    placement: 'start-only-command',
     message0: 'Adicionar %1 ao modelo %2',
     args0: [
       { type: 'field_name_picker', name: 'PART', text: 'peca', kind: 'object3d' },
@@ -1377,6 +1447,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_set_visible',
+    placement: 'command',
     message0: '%1 o objeto %2',
     args0: [
       {
@@ -1396,6 +1467,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_remove_object',
+    placement: 'command',
     message0: 'Remover %1 da cena %2',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
@@ -1408,6 +1480,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_set_color',
+    placement: 'command',
     message0: 'Pintar %1 de %2',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
@@ -1420,6 +1493,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_set_opacity',
+    placement: 'command',
     message0: 'Transparência de %1 = %2 (0 a 1)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
@@ -1433,6 +1507,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_set_material',
+    placement: 'start-only-command',
     message0: 'Deixar %1 com material %2',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
@@ -1455,6 +1530,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_set_texture',
+    placement: 'start-only-command',
     message0: 'Vestir %1 com a imagem %2',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
@@ -1469,6 +1545,7 @@ export const gameThreeDBlocks = [
   // ---- GENÉRICOS: luz & céu (Fase 7) ----
   {
     type: 'sz_g3d_add_ambient_light',
+    placement: 'start-only-command',
     message0: 'Adicionar luz ambiente na cena %1 (cor %2, força %3)',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
@@ -1484,6 +1561,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_add_sun_light',
+    placement: 'start-only-command',
     message0: 'Adicionar luz do sol na cena %1 (cor %2, força %3)',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
@@ -1498,6 +1576,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_add_point_light',
+    placement: 'start-only-command',
     message0: 'Adicionar luz pontual na cena %1 (cor %2, força %3) em x %4 y %5 z %6',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
@@ -1515,6 +1594,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_set_fog',
+    placement: 'start-only-command',
     message0: 'Neblina na cena %1 (cor %2, perto %3, longe %4)',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
@@ -1530,6 +1610,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_set_sky',
+    placement: 'start-only-command',
     message0: 'Céu degradê na cena %1 (topo %2, horizonte %3)',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
@@ -1543,6 +1624,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_set_shadows',
+    placement: 'start-only-command',
     message0: '%1 as sombras na cena %2',
     args0: [
       {
@@ -1564,6 +1646,7 @@ export const gameThreeDBlocks = [
   // ---- GENÉRICOS: enxames & som (Fase 8) ----
   {
     type: 'sz_g3d_create_swarm',
+    placement: 'start-only-command',
     message0: 'Criar enxame %1 na cena %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'enxame' },
@@ -1576,6 +1659,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_spawn_in_swarm',
+    placement: 'command',
     message0: 'Soltar cópia de %1 no enxame %2 em x %3 y %4 z %5',
     args0: [
       { type: 'field_name_picker', name: 'ORIGINAL', text: 'modelo', kind: 'object3d' },
@@ -1600,6 +1684,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_for_each_swarm',
+    placement: 'command',
     message0: 'Para cada %1 do enxame %2',
     args0: [
       { type: 'field_input', name: 'ITEM', text: 'item' },
@@ -1615,6 +1700,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_remove_from_swarm',
+    placement: 'command',
     message0: 'Tirar %1 do enxame %2',
     args0: [
       { type: 'field_name_picker', name: 'ITEM', text: 'item', kind: 'object3d' },
@@ -1627,6 +1713,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_prune_swarm',
+    placement: 'command',
     message0: 'No enxame %1, tirar o que saiu de %2 a %3 no eixo %4',
     args0: [
       { type: 'field_name_picker', name: 'SWARM', text: 'enxame', kind: 'group3d' },
@@ -1650,6 +1737,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_play_note',
+    placement: 'command',
     message0: 'Tocar nota %1 Hz por %2 ms',
     args0: [
       { type: 'input_value', name: 'FREQ', check: 'JSValue' },
@@ -1663,6 +1751,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_play_effect',
+    placement: 'command',
     message0: 'Tocar efeito %1',
     args0: [
       {
@@ -1681,48 +1770,7 @@ export const gameThreeDBlocks = [
     colour: '#f472b6',
     tooltip: 'Toca um efeito sonoro pronto (moeda, pulo, explosão ou acerto).',
   },
-]
-
-const GAME_3D_START_ONLY_BLOCK_TYPES = [
-  'sz_g3d_create_scene',
-  'sz_g3d_create_fullscreen_scene',
-  'sz_g3d_create_box',
-  'sz_g3d_create_sphere',
-  'sz_g3d_create_block',
-  'sz_g3d_create_group',
-  'sz_g3d_create_crossing_scene',
-  'sz_g3d_create_crosser',
-  'sz_g3d_add_row',
-  'sz_g3d_generate_rows',
-  'sz_g3d_create_race_scene',
-  'sz_g3d_create_race_track',
-  'sz_g3d_create_race_car',
-  'sz_g3d_create_stack_scene',
-  'sz_g3d_create_stack_tower',
-  'sz_g3d_body',
-  'sz_g3d_set_solid',
-  'sz_g3d_create_cylinder',
-  'sz_g3d_create_cone',
-  'sz_g3d_create_plane',
-  'sz_g3d_create_torus',
-  'sz_g3d_create_model',
-  'sz_g3d_add_to_model',
-  'sz_g3d_set_material',
-  'sz_g3d_set_texture',
-  'sz_g3d_add_ambient_light',
-  'sz_g3d_add_sun_light',
-  'sz_g3d_add_point_light',
-  'sz_g3d_set_fog',
-  'sz_g3d_set_sky',
-  'sz_g3d_set_shadows',
-  'sz_g3d_create_swarm',
-] as const
-
-applyPlacementToBlockTypes(
-  gameThreeDBlocks,
-  GAME_3D_START_ONLY_BLOCK_TYPES,
-  START_ONLY_COMMAND_PLACEMENT,
-)
+] satisfies BlockDefinition[]
 
 /**
  * Subcategorias da paleta (mesmo padrão do Jogo 2D): agrupa os blocos por tema

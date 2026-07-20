@@ -1,8 +1,7 @@
-# Pesquisa histórica: MakeCode Arcade + Scratch
+# Pesquisa aplicada: MakeCode Arcade + Scratch
 
-> Este estudo registra o raciocínio anterior à divisão final do lifecycle. As
-> referências abaixo a três áreas e a um único “Comportamento” são históricas,
-> não o contrato atual. A fonte vigente é `CLAUDE.md` junto de
+> Este estudo foi atualizado para o lifecycle vigente. A especificação detalhada
+> também está em `CLAUDE.md` e em
 > [`docs/plans/2026-07-19-project-behavior-lifecycle-design.md`](../../../docs/plans/2026-07-19-project-behavior-lifecycle-design.md).
 
 ## 1. Por que isto importa
@@ -98,13 +97,15 @@ Problemas de usabilidade infantil identificados:
    maiores pra toque.
 7. **PT didático**: "Quicar nas bordas", "encosta em", "folha de quadros", "Mudar/Botar"; som por nota
    (Dó/Ré/Mi…) + duração (curta/média/longa) em vez de Hz/ms.
-8. **Áreas-container "só o que está dentro roda"** (estilo MakeCode `on start`): 3 blocos-CONTAINER —
-   🧱 Estrutura (HTML→index.html), 🎨 Aparência (CSS→style.css), ⚙️ Comportamento (passo a passo JS→
-   script.js). A criança põe cada coisa na sua área; o que fica SOLTO fora delas é RASCUNHO (não roda).
-   Tira a dependência de ordem/posição no canvas e deixa visualmente claro "o que é o quê". Projeto novo já
-   nasce com as 3 áreas; "Organizar blocos" as põe lado a lado (HTML | CSS | Comportamento). Funções/
-   classes/eventos seguem por ora DENTRO do Comportamento — viram chapéus injetados FORA dele numa fase
-   seguinte. Impl.: `blockly/blocks/frames.ts`; coleta por contêiner em `buildIRFromWorkspace` (ver CLAUDE.md).
+8. **Áreas-container “só o que está dentro roda”** (estilo MakeCode `on start`): 5 blocos-CONTAINER —
+   🧱 Estrutura (HTML→index.html), 🎨 Aparência (CSS→style.css), ⚙️ Ao iniciar, ⚡ Quando acontecer e
+   🔁 Enquanto estiver rodando (as três últimas→script.js). Início contém definições e preparações que
+   rodam ao abrir e a cada nova partida; Eventos contém chapéus como clique/tecla/colisão; Loops contém
+   atualização por quadro e tarefas periódicas. Os encaixes especializados impedem misturar esses papéis.
+   O que fica SOLTO é RASCUNHO: permanece salvo com aviso visual, mas não roda. Projetos novos nascem
+   completamente vazios; a criança adiciona somente as áreas que usar. “Organizar blocos” dispõe as áreas
+   existentes em duas linhas. Impl.: `blockly/blocks/frames.ts`, `blockContracts.ts`, `behaviorAreas.ts` e
+   coleta por contêiner em `buildIRFromWorkspace`.
 
 ## 5. Inegociável: a Ponte continua perfeita
 
@@ -123,11 +124,12 @@ blocos: ao detectar versão velha/bloco obsoleto, descartar `blocksState` e re-d
 `buildWorkspaceStateFromIR(parse(arquivos))`. O JS é a fonte da verdade; o parser aceita as assinaturas
 antigas (`SZGame2D.x(ctx, …)`).
 
-**Áreas-container (migração transparente):** ao adotar os 3 blocos-container, um projeto LEGADO (blocos
-soltos, sem áreas) é auto-embrulhado nas 3 áreas SEM perder o programa — `normalizeBlocksStateToFrames`
-(`blockly/normalizeFrames.ts`) carrega o estado num workspace headless, deriva a IR PLANA
-(`collectFlatFromWorkspace`, o modelo antigo) e re-emite via `buildWorkspaceStateFromIR` (que agora frama).
-Preserva a saída byte-a-byte; idempotente.
+**Áreas-container (migração transparente):** projetos legados com blocos soltos ou com a antiga área única
+de Comportamento são normalizados para as 5 áreas por `normalizeBlocksStateToFrames`
+(`blockly/normalizeFrames.ts`). A migração usa contratos explícitos de posicionamento para separar início,
+eventos e loops; quando mover um aninhamento mudaria a semântica, conserva-o em um invólucro legado oculto.
+Rascunhos continuam rascunhos, a saída é preservada e a operação é idempotente. A mesma compatibilidade é
+usada ao abrir no Estúdio e ao renderizar projetos antigos na página pública.
 
 ## 7. Fontes
 

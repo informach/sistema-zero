@@ -166,8 +166,8 @@ test.describe('Sistema Zero Studio — smoke', () => {
     await expect(flyout).toContainText('Estrutura: HTML')
     await expect(flyout).toContainText('Aparência: CSS')
     await expect(flyout).toContainText('Ao iniciar')
-    await expect(flyout).toContainText('Quando acontecer — Eventos')
-    await expect(flyout).toContainText('Enquanto estiver rodando — Loops')
+    await expect(flyout).toContainText('Quando acontecer')
+    await expect(flyout).toContainText('Enquanto estiver rodando')
   })
 
   test('AIPanel (projeto PRO) mostra badge MOCK por padrão', async ({ page }) => {
@@ -196,7 +196,9 @@ test.describe('Sistema Zero Studio — smoke', () => {
     // o BlocksMode deriva os blocos do código e os arquivos ficam intactos.
     await page.getByRole('button', { name: 'Blocos' }).click()
     await expect(
-      page.frameLocator('iframe').getByRole('heading', { name: 'Persistiu' }),
+      page
+        .frameLocator('iframe[title="Pré-visualização"]')
+        .getByRole('heading', { name: 'Persistiu' }),
     ).toBeVisible({
       timeout: 15_000,
     })
@@ -207,7 +209,9 @@ test.describe('Sistema Zero Studio — smoke', () => {
       timeout: 10_000,
     })
     await expect(
-      page.frameLocator('iframe').getByRole('heading', { name: 'Persistiu' }),
+      page
+        .frameLocator('iframe[title="Pré-visualização"]')
+        .getByRole('heading', { name: 'Persistiu' }),
     ).toBeVisible({
       timeout: 10_000,
     })
@@ -219,7 +223,9 @@ test.describe('Sistema Zero Studio — smoke', () => {
     await page.keyboard.type('document.body.innerHTML = "<h1>Preview apos reload</h1>";')
 
     await expect(
-      page.frameLocator('iframe').getByRole('heading', { name: 'Preview apos reload' }),
+      page
+        .frameLocator('iframe[title="Pré-visualização"]')
+        .getByRole('heading', { name: 'Preview apos reload' }),
     ).toBeVisible({
       timeout: 15_000,
     })
@@ -232,7 +238,9 @@ test.describe('Sistema Zero Studio — smoke', () => {
     await page.reload()
 
     await expect(
-      page.frameLocator('iframe').getByRole('heading', { name: 'Preview apos reload' }),
+      page
+        .frameLocator('iframe[title="Pré-visualização"]')
+        .getByRole('heading', { name: 'Preview apos reload' }),
     ).toBeVisible({
       timeout: 15_000,
     })
@@ -242,7 +250,9 @@ test.describe('Sistema Zero Studio — smoke', () => {
     await page.getByRole('button', { name: 'Abrir' }).first().click()
 
     await expect(
-      page.frameLocator('iframe').getByRole('heading', { name: 'Preview apos reload' }),
+      page
+        .frameLocator('iframe[title="Pré-visualização"]')
+        .getByRole('heading', { name: 'Preview apos reload' }),
     ).toBeVisible({
       timeout: 15_000,
     })

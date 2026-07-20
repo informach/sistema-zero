@@ -1,8 +1,8 @@
 export const gameKitPromptSummary = `Jogo 2D Avançado expõe window.SZGameKit e usa blocos reais de motor 2D.
 
 ÁREAS: “⚙️ Ao iniciar” contém setup/setupFull e declara dados, personagens e mapas;
-“⚡ Quando acontecer — Eventos” contém os chapéus de clique, aviso, estado e mapa;
-“🔁 Enquanto estiver rodando — Loops”
+“⚡ Quando acontecer” contém os chapéus de clique, aviso, estado e mapa;
+“🔁 Enquanto estiver rodando”
 contém onUpdate, onDraw, onDrawHud e cadências periódicas. O Estúdio registra as
 áreas e chama o boot automaticamente: não gere start() nem onGameStart().
 Movimento e física usam dt em segundos.

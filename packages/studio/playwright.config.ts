@@ -4,10 +4,9 @@ import { defineConfig, devices } from '@playwright/test'
  * Configuração mínima Playwright. Roda contra uma instância própria do Vite
  * para evitar testes contra servidores antigos de desenvolvimento.
  *
- * O teste assume que extensões e blocos foram registrados — apenas verifica
- * que a IDE boota com a estrutura esperada. Cobertura mais profunda (drag &
- * drop, instalar extensão, ponte) está documentada no roadmap como Fase
- * 2.5+.
+ * Além do boot, a suíte percorre criação/reabertura de projetos, colagem e
+ * arrasto de blocos, instalação de extensões, Ponte, preview e interações reais
+ * em Chromium, inclusive em layouts estreitos.
  */
 const e2ePort = Number(process.env.E2E_PORT ?? 5195)
 const baseURL = `http://127.0.0.1:${e2ePort}`

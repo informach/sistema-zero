@@ -23,11 +23,22 @@ export const PROGRAMMING_CATALOG_GROUPS: readonly {
   definitions: readonly BlockDefinition[]
 }[] = [
   { key: 'page-events', category: 'Página e Eventos', definitions: DOM_BLOCKS },
-  { key: 'language', category: 'Programação', definitions: JS_BLOCKS },
+  {
+    key: 'language',
+    category: 'Programação',
+    definitions: JS_BLOCKS.filter((definition) => definition.type !== 'sz_js_object_assign'),
+  },
   { key: 'values', category: 'Valores', definitions: VALUE_BLOCKS },
   { key: 'math', category: 'Matemática', definitions: MATH_BLOCKS },
   { key: 'functions', category: 'Funções', definitions: FUNCTION_CATEGORY_DEFINITIONS },
-  { key: 'objects', category: 'Objetos', definitions: OBJECT_BLOCKS },
+  {
+    key: 'objects',
+    category: 'Objetos',
+    definitions: [
+      ...OBJECT_BLOCKS,
+      ...JS_BLOCKS.filter((definition) => definition.type === 'sz_js_object_assign'),
+    ],
+  },
   { key: 'classes', category: 'Classes', definitions: CLASS_CATEGORY_DEFINITIONS },
 ] as const
 

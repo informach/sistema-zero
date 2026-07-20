@@ -1,7 +1,6 @@
 import type { ExtensionToolboxCategory } from '#extensions'
 import { categoryShades } from '../../blockly/colorShades'
 import { gameTwoDBlocks } from './blockCatalog'
-import { GAME_TWO_D_LIFECYCLE_TOOLBOX } from './pedagogy'
 
 const C = '#ec4899'
 
@@ -61,8 +60,6 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_update_group',
       'sz_g2d_update_group_no_gravity',
       'sz_g2d_draw_group',
-      'sz_g2d_collide_group',
-      'sz_g2d_collide_sprite',
       'sz_g2d_for_each_in_group',
       'sz_g2d_count_group',
       'sz_g2d_clear_group',
@@ -70,7 +67,6 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_remove_from_group',
       'sz_g2d_bring_to_front',
       'sz_g2d_send_to_back',
-      'sz_g2d_on_group_overlap',
     ],
   },
   {
@@ -113,22 +109,33 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
-    name: GAME_TWO_D_LIFECYCLE_TOOLBOX.events.name,
+    name: '🎛️ Controles',
     colour: '#ffbf00',
-    types: [...GAME_TWO_D_LIFECYCLE_TOOLBOX.events.types],
+    types: ['sz_g2d_on_key', 'sz_g2d_on_pointer', 'sz_g2d_key_down'],
   },
   {
-    name: GAME_TWO_D_LIFECYCLE_TOOLBOX.loop.name,
-    colour: '#ffbf00',
-    types: [...GAME_TWO_D_LIFECYCLE_TOOLBOX.loop.types],
-  },
-  {
-    // Só perguntas de VERDADE (booleanos ao vivo, para encaixar num "se"). Os
-    // blocos "Guardar em X se colide" são COMANDOS (gravam numa variável) — foram
-    // para 🎯 Mira e contas, junto das outras consultas/medidas de sprite.
-    name: '❓ Perguntas',
+    name: '💥 Colisões',
     colour: '#ff8c1a',
-    types: ['sz_g2d_key_down', 'sz_g2d_touches'],
+    types: [
+      'sz_g2d_on_overlap',
+      'sz_g2d_touches',
+      'sz_g2d_collides',
+      'sz_g2d_circle_collides',
+      'sz_g2d_collide_group',
+      'sz_g2d_collide_sprite',
+      'sz_g2d_on_group_overlap',
+    ],
+  },
+  {
+    name: '⏱️ Tempo e repetição',
+    colour: '#ffbf00',
+    types: [
+      'sz_g2d_update_each_frame',
+      'sz_g2d_every_frames',
+      'sz_g2d_every_seconds',
+      'sz_g2d_cooldown_ready',
+      'sz_g2d_prune_old',
+    ],
   },
   {
     name: '🎯 Mira e contas',
@@ -138,8 +145,6 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g2d_move_toward',
       'sz_g2d_angle_to',
       'sz_g2d_distance',
-      'sz_g2d_collides',
-      'sz_g2d_circle_collides',
       'sz_g2d_random_between',
       'sz_g2d_random_chance',
       'sz_g2d_random_x',
@@ -147,16 +152,9 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     ],
   },
   {
-    name: '❤️ Vida e tempo',
+    name: '❤️ Vida',
     colour: '#ff5c8d',
-    types: [
-      'sz_g2d_set_health',
-      'sz_g2d_change_health',
-      'sz_g2d_get_health',
-      'sz_g2d_has_health',
-      'sz_g2d_cooldown_ready',
-      'sz_g2d_prune_old',
-    ],
+    types: ['sz_g2d_set_health', 'sz_g2d_change_health', 'sz_g2d_get_health', 'sz_g2d_has_health'],
   },
   {
     name: '✨ Aparência',
@@ -514,6 +512,7 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g2d_spawn_obstacle: { X: numShadow(400), SIZE: numShadow(44), VX: numShadow(-3) },
   sz_g2d_spawn_egg: { X: numShadow(400), Y: numShadow(100), VX: numShadow(-3) },
   sz_g2d_prune_old: { SECONDS: numShadow(2) },
+  sz_g2d_every_frames: { N: numShadow(30) },
   sz_g2d_every_seconds: { SECS: numShadow(2) },
   sz_g2d_random_between: { MIN: numShadow(1), MAX: numShadow(6) },
   sz_g2d_random_chance: { PERCENT: numShadow(30) },

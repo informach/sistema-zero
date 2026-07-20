@@ -8,6 +8,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
   var _stageDescription = '';
   var _announcedScreen = '';
   var STAGE_DESCRIPTION_ID = 'sz-game-2d-description';
+  var STAGE_FOCUS_STYLE_ID = 'sz-game-2d-focus-style';
 
   function _defaultStageDescription() {
     var title = '';
@@ -36,6 +37,18 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
       document.body.appendChild(node);
     }
     return node;
+  }
+
+  function _ensureStageFocusStyle() {
+    var existing = null;
+    try { existing = document.getElementById(STAGE_FOCUS_STYLE_ID); } catch (e) {}
+    if (existing) return;
+    var parent = document.head || document.body;
+    if (!parent) return;
+    var style = document.createElement('style');
+    style.id = STAGE_FOCUS_STYLE_ID;
+    style.textContent = 'canvas[data-sz-game-2d-stage]:focus { outline: none; } canvas[data-sz-game-2d-stage]:focus-visible { outline: none; box-shadow: inset 0 0 0 3px rgba(255,255,255,0.9), inset 0 0 0 5px rgba(0,0,0,0.55); }';
+    parent.appendChild(style);
   }
 
   function _setStageDescription(description) {
@@ -83,8 +96,10 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     // O tabindex permite foco de teclado sem inserir controles visuais extras.
     if (c) {
       c.style.touchAction = 'none';
+      if (c.setAttribute) c.setAttribute('data-sz-game-2d-stage', '');
       if (!c.hasAttribute || !c.hasAttribute('tabindex')) c.tabIndex = 0;
     }
+    _ensureStageFocusStyle();
     _stageCanvas = c;
     _setStageDescription(_stageDescription);
     try { _stageCtx = c.getContext('2d'); } catch (e) {}

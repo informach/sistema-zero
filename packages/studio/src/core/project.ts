@@ -657,9 +657,15 @@ export function createEmptyProject(id: string, name: string): Project {
     },
     extraFiles: [],
     assets: [],
-    ir: { html: [], css: [], js: [], extensions: [] },
-    // Projeto novo nasce EM BRANCO (sem os blocos-CONTAINER 🧱 Estrutura / 🎨
-    // Aparência / ⚙️ Comportamento). A criança arrasta as "🗂️ Áreas do projeto"
+    ir: {
+      version: 2,
+      html: [],
+      css: [],
+      behavior: { start: [], events: [], loops: [] },
+      extensions: [],
+    },
+    // Projeto novo nasce em branco, sem Estrutura, Aparência, Ao iniciar,
+    // Quando acontecer ou Enquanto estiver rodando. A criança arrasta as "🗂️ Áreas do projeto"
     // da paleta quando quiser começar. ⚠️ blocksState VAZIO (não `null`): a
     // migração `normalizeBlocksStateToFrames` só embrulha em frames quando há
     // blocos SOLTOS — com a lista vazia ela não re-adiciona os frames.

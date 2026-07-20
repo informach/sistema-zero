@@ -12,6 +12,13 @@ describe('project defaults', () => {
 
     expect(project.files['style.css']).toBe('')
     expect(project.files['script.js']).toBe('')
+    expect(project.ir).toEqual({
+      version: 2,
+      html: [],
+      css: [],
+      behavior: { start: [], events: [], loops: [] },
+      extensions: [],
+    })
     expect(project.files['index.html']).toBe(`<!doctype html>
 <html lang="pt-BR">
   <head>

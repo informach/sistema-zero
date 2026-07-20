@@ -57,9 +57,10 @@ export const HTML_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_html_button',
-    message0: 'Criar botão com texto %1 tipo %2 id opcional %3',
-    args0: [
-      { type: 'field_input', name: 'TEXT', text: 'Clique' },
+    message0: 'Criar botão com texto %1',
+    args0: [{ type: 'field_input', name: 'TEXT', text: 'Clique' }],
+    message1: 'tipo %1 id opcional %2',
+    args1: [
       {
         type: 'field_dropdown',
         name: 'TYPE',
@@ -67,7 +68,8 @@ export const HTML_BLOCKS: BlockDefinition[] = [
       },
       { type: 'field_input', name: 'ID', text: '' },
     ],
-    ...classMsg1,
+    message2: 'classe (opcional) %1',
+    args2: [classFieldArg],
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
@@ -241,14 +243,18 @@ export const HTML_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_html_label',
-    message0: 'Explicar um campo com texto %1',
-    args0: [{ type: 'field_input', name: 'TEXT', text: 'Seu nome' }],
+    message0: 'Explicar o campo %1 com texto %2',
+    args0: [
+      { type: 'field_name_picker', name: 'FOR', text: '', kind: 'form-control' },
+      { type: 'field_input', name: 'TEXT', text: 'Seu nome' },
+    ],
     ...inlineChildren,
     ...classMsg2,
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Escreve o que a pessoa deve preencher em um campo do formulário.',
+    tooltip:
+      'Escreve o que a pessoa deve preencher e liga a explicação ao id do campo. Você também pode encaixar o campo dentro deste bloco.',
   },
   {
     type: 'sz_html_text',
@@ -302,9 +308,14 @@ export const HTML_BLOCKS: BlockDefinition[] = [
   // ---- Formulário (campos) ----
   {
     type: 'sz_html_input',
-    message0: 'Criar campo com id opcional %1 tipo %2 dica %3',
-    args0: [
+    message0: 'Criar campo',
+    message1: 'id (opcional) %1 nome para envio %2',
+    args1: [
       { type: 'field_input', name: 'ID', text: '' },
+      { type: 'field_input', name: 'NAME', text: '' },
+    ],
+    message2: 'tipo %1 dica %2',
+    args2: [
       {
         type: 'field_dropdown',
         name: 'TYPE',
@@ -312,7 +323,13 @@ export const HTML_BLOCKS: BlockDefinition[] = [
       },
       { type: 'field_input', name: 'PLACEHOLDER', text: 'Digite aqui' },
     ],
-    ...classMsg1,
+    message3: 'valor inicial %1 começar marcado %2',
+    args3: [
+      { type: 'field_input', name: 'VALUE', text: '' },
+      { type: 'field_checkbox', name: 'CHECKED', checked: false },
+    ],
+    message4: 'classe (opcional) %1',
+    args4: [classFieldArg],
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
@@ -320,13 +337,18 @@ export const HTML_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_html_textarea',
-    message0: 'Criar área de texto com id opcional %1 conteúdo inicial %2 dica %3',
-    args0: [
+    message0: 'Criar área de texto',
+    message1: 'id (opcional) %1 nome para envio %2',
+    args1: [
       { type: 'field_input', name: 'ID', text: '' },
-      { type: 'field_input', name: 'TEXT', text: '' },
-      { type: 'field_input', name: 'PLACEHOLDER', text: 'Sua mensagem' },
+      { type: 'field_input', name: 'NAME', text: '' },
     ],
-    ...classMsg1,
+    message2: 'conteúdo inicial %1',
+    args2: [{ type: 'field_input', name: 'TEXT', text: '' }],
+    message3: 'dica %1',
+    args3: [{ type: 'field_input', name: 'PLACEHOLDER', text: 'Sua mensagem' }],
+    message4: 'classe (opcional) %1',
+    args4: [classFieldArg],
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,

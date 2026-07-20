@@ -1,5 +1,5 @@
 import type { ExtensionExample } from '#extensions'
-import type { JSStatement } from '#ir'
+import { cssDeclarationsRecord, type JSStatement } from '#ir'
 
 function isBeginnerPeriodicLoop(
   statement: JSStatement,
@@ -54,10 +54,8 @@ export function beginnerGameExample(example: ExtensionExample): ExtensionExample
     (entry) => 'selector' in entry && entry.selector === 'canvas',
   )
   const background =
-    canvasRule &&
-    'declarations' in canvasRule &&
-    typeof canvasRule.declarations.background === 'string'
-      ? canvasRule.declarations.background
+    canvasRule && 'declarations' in canvasRule
+      ? (cssDeclarationsRecord(canvasRule.declarations).background ?? '#11172a')
       : '#11172a'
   const startId = `exemplo-${example.name.toLocaleLowerCase('pt-BR').replace(/[^a-z0-9]+/g, '-')}`
   return {

@@ -1074,6 +1074,33 @@ document.addEventListener('keyup', (e) => {
     ])
   })
 
+  it('preserva função nomeada assíncrona com await sem cair em código avançado', () => {
+    const code = ['async function carregar(url) {', '  await fetch(url);', '}'].join('\n')
+    const ir = parseJS(code)
+
+    expect(ir).toEqual([
+      {
+        type: 'funcDecl',
+        name: 'carregar',
+        params: ['url'],
+        async: true,
+        body: [
+          {
+            type: 'awaitStmt',
+            value: {
+              type: 'call',
+              name: 'fetch',
+              args: [{ type: 'var', name: 'url' }],
+            },
+          },
+        ],
+      },
+    ])
+    const generated = compileStatements(ir, 0)
+    expect(generated).toContain('async function carregar(url)')
+    expect(parseJS(generated)).toEqual(ir)
+  })
+
   it('reconhece chamada de função como comando', () => {
     expect(parseJS('iniciar();')).toEqual([{ type: 'callFunction', name: 'iniciar', args: [] }])
     expect(parseJS('mover(10, x);')).toEqual([

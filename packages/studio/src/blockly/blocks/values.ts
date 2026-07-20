@@ -242,7 +242,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Uma cor no formato HSL. Matiz (0–360), saturação e luminosidade (0–100%). Cada valor pode ser número, variável ou cálculo (ex.: matiz aleatório).',
+      'Uma cor no formato HSL. Matiz (0 a 360), saturação e luminosidade (0 a 100%). Cada valor pode ser número, variável ou cálculo (ex.: matiz aleatório).',
   },
   {
     type: 'sz_val_random_float',
@@ -268,6 +268,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_val_event_pos',
+    placement: { root: [], nested: ['event-body'], role: 'value' },
     message0: 'posição do clique %1',
     args0: [
       {
@@ -285,6 +286,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_val_event_key',
+    placement: { root: [], nested: ['event-body'], role: 'value' },
     message0: '%1 do evento',
     args0: [
       {

@@ -215,12 +215,19 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     var base = (typeof opts.size === 'number' && opts.size > 0) ? opts.size : 40;
     var m = base;
     var side = Math.floor(Math.random() * 4);
-    var x, y, vx, vy;
-    if (side === 0) { x = -m; y = Math.random() * H; vx = speed; vy = 0; }
-    else if (side === 1) { x = Math.random() * W; y = H + m; vx = 0; vy = -speed; }
-    else if (side === 2) { x = W + m; y = Math.random() * H; vx = -speed; vy = 0; }
-    else { x = Math.random() * W; y = -m; vx = 0; vy = speed; }
-    return spawnAsteroid(group, { x: x, y: y, size: base, color: opts.color, vx: vx, vy: vy });
+    var x, y;
+    if (side === 0) { x = -m; y = Math.random() * H; }
+    else if (side === 1) { x = Math.random() * W; y = H + m; }
+    else if (side === 2) { x = W + m; y = Math.random() * H; }
+    else { x = Math.random() * W; y = -m; }
+    var asteroid = spawnAsteroid(group, { x: x, y: y, size: base, color: opts.color, vx: 0, vy: 0 });
+    if (!asteroid) return null;
+    var dx = W / 2 - (asteroid.x + asteroid.w / 2);
+    var dy = H / 2 - (asteroid.y + asteroid.h / 2);
+    var distanceToCenter = Math.sqrt(dx * dx + dy * dy) || 1;
+    asteroid.vx = dx / distanceToCenter * speed;
+    asteroid.vy = dy / distanceToCenter * speed;
+    return asteroid;
   }
 
   // ---- Efeitos visuais (v0.4.0) ----
@@ -241,27 +248,44 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
    */
   var shakeAmount = 0;
   var shakeActive = false;
+  var shakeCanvas = null;
+  var shakeFrame = 0;
+  function _scheduleShake() {
+    if (!shakeActive || _paused || shakeFrame) return;
+    shakeFrame = requestAnimationFrame(_shakeTick);
+  }
+  function _shakeTick() {
+    shakeFrame = 0;
+    if (_paused || !shakeCanvas) return;
+    if (shakeAmount > 0.3) {
+      var dx = (Math.random() * 2 - 1) * shakeAmount;
+      var dy = (Math.random() * 2 - 1) * shakeAmount;
+      shakeCanvas.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+      shakeAmount *= 0.88;
+      _scheduleShake();
+    } else {
+      shakeCanvas.style.transform = '';
+      shakeAmount = 0;
+      shakeActive = false;
+      shakeCanvas = null;
+    }
+  }
+  function _resetShake() {
+    if (shakeFrame && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(shakeFrame);
+    shakeFrame = 0;
+    if (shakeCanvas) shakeCanvas.style.transform = '';
+    shakeAmount = 0;
+    shakeActive = false;
+    shakeCanvas = null;
+  }
   function shake(ctx, intensity) {
     if (!ctx || !ctx.canvas) return;
     var inten = typeof intensity === 'number' ? intensity : 8;
     if (inten > shakeAmount) shakeAmount = inten;
-    if (shakeActive) return;
+    shakeCanvas = ctx.canvas;
+    if (shakeActive) { _scheduleShake(); return; }
     shakeActive = true;
-    var canvas = ctx.canvas;
-    function tick() {
-      if (shakeAmount > 0.3) {
-        var dx = (Math.random() * 2 - 1) * shakeAmount;
-        var dy = (Math.random() * 2 - 1) * shakeAmount;
-        canvas.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
-        shakeAmount *= 0.88;
-        requestAnimationFrame(tick);
-      } else {
-        canvas.style.transform = '';
-        shakeAmount = 0;
-        shakeActive = false;
-      }
-    }
-    requestAnimationFrame(tick);
+    _scheduleShake();
   }
 
   // Partículas: estado + emitir + (atualizar e desenhar). Teto rígido p/ não vazar.
@@ -301,5 +325,24 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
       ctx.restore();
     }
   }
+
+  _registerRuntimeDomain('input-and-motion', {
+    reset: function () {
+      pointer.x = 0;
+      pointer.y = 0;
+      pointer.down = false;
+      pointerHandlers = Object.create(null);
+      pointerHandlerOrder = [];
+      _resetShake();
+      particles = [];
+      _particlesDrawnThisFrame = false;
+    },
+    pause: function () {
+      if (shakeFrame && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(shakeFrame);
+      shakeFrame = 0;
+      if (shakeCanvas) shakeCanvas.style.transform = '';
+    },
+    resume: function () { _scheduleShake(); }
+  });
 
 `

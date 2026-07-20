@@ -190,14 +190,11 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
    */
   function overlapSpriteGroup(getSprite, group, fn) {
     if (typeof getSprite !== 'function' || !group || !group.items || typeof fn !== 'function') return;
-    var sprite = null;
-    try { sprite = getSprite(); } catch (e) { return; }
+    var sprite = getSprite();
     if (!sprite) return;
     for (var i = group.items.length - 1; i >= 0; i--) {
       var it = group.items[i];
-      if (it && isColliding(sprite, it)) {
-        try { fn(it); } catch (err) { console.error(err && err.message ? err.message : err); }
-      }
+      if (it && isColliding(sprite, it)) fn(it);
     }
   }
 
@@ -414,9 +411,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
       if (typeof s.hp === 'number' && s.hp <= 0) {
         type.items.splice(i, 1);
         emitParticles(s.x + s.w / 2, s.y + s.h / 2, 12, s.color || c.color);
-        if (typeof type.onDefeat === 'function') {
-          try { type.onDefeat(s); } catch (err) { console.error(err && err.message ? err.message : err); }
-        }
+        if (typeof type.onDefeat === 'function') type.onDefeat(s);
       }
     }
     // Tiros dos atiradores: linha RETA (sem a gravidade do mundo — nao usar
@@ -454,15 +449,14 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
   function overlapEnemyShots(getSprite, type, fn) {
     if (typeof getSprite !== 'function' || typeof fn !== 'function') return;
     if (!type || !type.bullets || !type.bullets.items) return;
-    var sprite = null;
-    try { sprite = getSprite(); } catch (e) { return; }
+    var sprite = getSprite();
     if (!sprite) return;
     var items = type.bullets.items;
     for (var i = items.length - 1; i >= 0; i--) {
       var shot = items[i];
       if (shot && isColliding(sprite, shot)) {
         items.splice(i, 1);
-        try { fn(shot); } catch (err) { console.error(err && err.message ? err.message : err); }
+        fn(shot);
       }
     }
   }
@@ -622,42 +616,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     }
     _restarting = true;
     try {
-      if (_driverFrame && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(_driverFrame);
-      _driverFrame = 0;
-      _resetDriverClock();
-      _loopHandlers = Object.create(null);
-      _loopOrder = [];
-      pointerHandlers = Object.create(null);
-      pointerHandlerOrder = [];
-      keyHandlers = Object.create(null);
-      keyHandlerOrder = [];
-      overlapHandlers = Object.create(null);
-      _overlapOrder = [];
-      frameCounters = Object.create(null);
-      secondTimers = Object.create(null);
-      _warnedOnce = Object.create(null);
-      _shapes = Object.create(null);
-      _shapeW = 0; _shapeH = 0;
-      particles = [];
-      _particlesDrawnThisFrame = false;
-      _tileMapCreates = 0;
-      _enemyTypeCreates = 0;
-      _frameStamp = 0;
-      world.gravity = 0;
-      _scene = 'inicio';
-      _paused = false;
-      camera.x = 0; camera.y = 0;
-      shakeAmount = 0; shakeActive = false;
-      _stars = null;
-      _forest = null;
-      _banana = null;
-      _aim = { dragging: false, power: 0, angle: 0, vx: 0, vy: 0, released: false };
-      _ai = null;
-      _jumpTapPrev = false;
-      _dinoTapPrev = false;
-      _fpsLast = 0; _fpsFrames = 0; _fpsValue = 0;
-      stopMusic();
-      _releaseAllInputs();
+      _resetRuntimeDomains();
       try { clear(); } catch (error) { _reportHandlerError('de reinício', 'limpar-tela', error); }
 
       var starts = _startOrder.slice();
@@ -1604,6 +1563,20 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
       o.start(t); o.stop(t + 0.55);
     } catch (e) {}
   }
+
+  _registerRuntimeDomain('arcade-kits', {
+    reset: function () {
+      _enemyTypeCreates = 0;
+      _scene = 'inicio';
+      _stars = null;
+      _jumpTapPrev = false;
+      _dinoTapPrev = false;
+      _forest = null;
+      _banana = null;
+      _aim = { dragging: false, power: 0, angle: 0, vx: 0, vy: 0, released: false };
+      _ai = null;
+    }
+  });
   /** Som de explosão da banana (reusa a explosão do kit nave). */
 
 `

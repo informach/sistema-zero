@@ -66,6 +66,12 @@ describe('contrato exaustivo da categoria Programação', () => {
     }
   })
 
+  it('mantém Object.assign na família Objetos, igual à paleta', () => {
+    expect(BLOCK_CATALOG.filter((entry) => entry.type === 'sz_js_object_assign')).toEqual([
+      expect.objectContaining({ category: 'Objetos' }),
+    ])
+  })
+
   it('instancia, serializa e reabre todo bloco visível e legado sem perda', () => {
     ensureBlocklyInitialized()
     const definitions = [

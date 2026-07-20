@@ -1,8 +1,5 @@
 import type { ExtensionToolboxCategory } from '#extensions'
-import {
-  applyPlacementToBlockTypes,
-  START_ONLY_COMMAND_PLACEMENT,
-} from '../../blockly/blockContracts'
+import type { BlockDefinition } from '../../blockly/blocks/types'
 import { categoryShades } from '../../blockly/colorShades'
 
 // Jogo 2D Avançado = UMA cor da categoria: TEAL (verde-água). As sub-categorias
@@ -14,6 +11,7 @@ export const gameKitBlocks = [
   // ---- 🧰 O jogo ----
   {
     type: 'sz_gk_setup',
+    placement: 'start-only-command',
     message0: 'Preparar o jogo profissional: tela %1 × %2, fundo %3, destaque %4',
     args0: [
       { type: 'input_value', name: 'W', check: 'JSValue' },
@@ -30,6 +28,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_setup_full',
+    placement: 'start-only-command',
     message0: 'Preparar o jogo para ocupar a tela toda: fundo %1, destaque %2',
     args0: [
       { type: 'field_colour_sz', name: 'BG', colour: '#1a1a2e' },
@@ -40,10 +39,12 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Como o "Preparar o jogo", mas SEM dimensões: o canvas ocupa a tela inteira e a área do jogo ACOMPANHA o tamanho da janela (sem barras nas laterais). Aqui "a largura/altura do jogo" mudam junto com a tela — centralize as coisas usando esses blocos, não números fixos. Combine com "entrar em tela cheia" para o jogo tomar o monitor todo. Use um OU o outro "Preparar", no começo.',
+      'Como o "Preparar o jogo", mas SEM dimensões: o canvas ocupa a tela inteira e a área do jogo ACOMPANHA o tamanho da janela (sem barras nas laterais). Aqui "a largura/altura do jogo" mudam junto com a tela. Centralize as coisas usando esses blocos, não números fixos. Combine com "entrar em tela cheia" para o jogo tomar o monitor todo. Use um OU o outro "Preparar", no começo.',
   },
   {
     type: 'sz_gk_start',
+    placement: 'start-only-command',
+    migration: 'remove-engine-boot',
     message0: 'Começar o jogo (carrega as imagens e mostra o menu)',
     args0: [],
     previousStatement: 'JSStmt',
@@ -75,6 +76,7 @@ export const gameKitBlocks = [
   // ---- ⏳ Carregar ----
   {
     type: 'sz_gk_load_image',
+    placement: 'start-only-command',
     message0: 'Carregar a imagem %1 chamando de %2',
     args0: [
       { type: 'field_asset_picker', name: 'ASSET', text: 'heroi' },
@@ -85,12 +87,13 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'OPCIONAL: pré-carrega uma imagem do projeto (a tela de "carregando" espera todas) e dá um apelido a ela. Hoje não é obrigatório — os blocos de personagem/inimigo/molde já carregam a imagem do Pinta sozinhos ao escolher. Use este bloco só se quiser um apelido diferente do nome do arquivo. Se a imagem falhar, o jogo segue com um retângulo.',
+      'OPCIONAL: pré-carrega uma imagem do projeto (a tela de "carregando" espera todas) e dá um apelido a ela. Hoje não é obrigatório. Os blocos de personagem/inimigo/molde já carregam a imagem do Pinta sozinhos ao escolher. Use este bloco só se quiser um apelido diferente do nome do arquivo. Se a imagem falhar, o jogo segue com um retângulo.',
   },
 
   // ---- 🖼️ Telas ----
   {
     type: 'sz_gk_set_screen_text',
+    placement: 'command',
     message0: 'Na tela pronta %1, escrever título %2 texto %3 e botão %4',
     args0: [
       {
@@ -117,6 +120,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_create_screen',
+    placement: 'start-only-command',
     message0: 'Criar a tela %1 com título %2 e texto %3',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'loja' },
@@ -128,10 +132,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria uma tela SUA (ex.: loja, instruções), no mesmo estilo das prontas. Ela começa escondida — use "Mostrar a tela" quando quiser. Dá para pôr botões nela. Usar o nome de uma tela pronta (ex.: vitoria) faz você ASSUMIR a tela: os botões dela saem e os textos passam a ser os seus.',
+      'Cria uma tela SUA (ex.: loja, instruções), no mesmo estilo das prontas. Ela começa escondida. Use "Mostrar a tela" quando quiser. Dá para pôr botões nela. Usar o nome de uma tela pronta (ex.: vitoria) faz você ASSUMIR a tela: os botões dela saem e os textos passam a ser os seus.',
   },
   {
     type: 'sz_gk_add_button',
+    placement: 'start-only-command',
     message0: 'Botão %1 na tela %2',
     args0: [
       { type: 'input_value', name: 'LABEL', check: 'JSValue' },
@@ -144,10 +149,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Põe um botão numa tela (pronta ou sua) e diz o que acontece no clique — mudar de estado, voltar ao menu, o que você quiser.',
+      'Põe um botão numa tela (pronta ou sua) e diz o que acontece no clique. Mudar de estado, voltar ao menu, o que você quiser.',
   },
   {
     type: 'sz_gk_set_screen_bg',
+    placement: 'start-only-command',
     message0: 'Na tela %1, pôr fundo cor %2 e imagem %3',
     args0: [
       { type: 'field_name_picker', name: 'SCREEN', text: 'pausa', kind: 'screen' },
@@ -163,6 +169,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_show_screen',
+    placement: 'command',
     message0: 'Mostrar a tela %1',
     args0: [{ type: 'field_name_picker', name: 'SCREEN', text: 'vitoria', kind: 'screen' }],
     previousStatement: 'JSStmt',
@@ -172,17 +179,19 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_hide_screens',
+    placement: 'command',
     message0: 'Esconder todas as telas',
     args0: [],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Esconde qualquer tela que esteja aparecendo — sobra só o jogo.',
+    tooltip: 'Esconde qualquer tela que esteja aparecendo. Sobra só o jogo.',
   },
 
   // ---- 🚦 Estados ----
   {
     type: 'sz_gk_set_state',
+    placement: 'command',
     message0: 'Mudar o estado do jogo para %1',
     args0: [{ type: 'field_name_picker', name: 'STATE', text: 'jogando', kind: 'gamestate' }],
     previousStatement: 'JSStmt',
@@ -193,6 +202,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_restart_game',
+    placement: 'command',
     message0: 'Começar uma nova partida',
     args0: [],
     previousStatement: 'JSStmt',
@@ -203,6 +213,8 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_on_game_start',
+    placement: 'legacy-start',
+    migration: 'unwrap-start',
     message0: 'Quando começar ou recomeçar uma partida',
     args0: [],
     message1: 'fazer %1',
@@ -216,6 +228,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_on_enter_state',
+    placement: 'event',
     message0: 'Quando o jogo entrar no estado %1',
     args0: [{ type: 'field_name_picker', name: 'STATE', text: 'jogando', kind: 'gamestate' }],
     message1: 'fazer %1',
@@ -245,6 +258,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_pause',
+    placement: 'command',
     message0: 'Pausar o jogo',
     args0: [],
     previousStatement: 'JSStmt',
@@ -254,6 +268,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_resume',
+    placement: 'command',
     message0: 'Continuar o jogo',
     args0: [],
     previousStatement: 'JSStmt',
@@ -263,6 +278,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_return_to_menu',
+    placement: 'command',
     message0: 'Voltar ao menu',
     args0: [],
     previousStatement: 'JSStmt',
@@ -272,6 +288,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_end_game',
+    placement: 'command',
     message0: 'Terminar o jogo (mostra a tela de fim)',
     args0: [],
     previousStatement: 'JSStmt',
@@ -284,6 +301,7 @@ export const gameKitBlocks = [
   // ---- 🔁 A cada quadro ----
   {
     type: 'sz_gk_on_update',
+    placement: 'loop-update',
     message0: 'A cada quadro, com o tempo %1 (em segundos)',
     args0: [{ type: 'field_input', name: 'DT', text: 'dt' }],
     message1: 'fazer %1',
@@ -293,10 +311,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O coração do jogo: roda o "fazer" a cada quadro, SÓ enquanto o estado é "jogando". O tempo (dt) é quanto durou o último quadro, em segundos — multiplique a velocidade por ele para o jogo andar igual em qualquer computador.',
+      'O coração do jogo: roda o "fazer" a cada quadro, SÓ enquanto o estado é "jogando". O tempo (dt) é quanto durou o último quadro, em segundos. Multiplique a velocidade por ele para o jogo andar igual em qualquer computador.',
   },
   {
     type: 'sz_gk_on_draw',
+    placement: 'loop-draw-world',
     message0: 'Desenhar o jogo com o pincel %1',
     args0: [{ type: 'field_input', name: 'PARAM', text: 'ctx' }],
     message1: 'fazer %1',
@@ -306,10 +325,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Tudo o que aparece no jogo é desenhado aqui, a cada quadro: pinte o fundo, desenhe os personagens e o placar. Os blocos de Canvas funcionam aqui dentro, usando esse pincel. Desenha em "jogando", "pausado", "fim" e nos SEUS estados — só NÃO no "menu" nem no "carregando" (para um menu desenhado, use um estado inventado). Com a câmera ligada, este desenho é do MUNDO (anda com a câmera).',
+      'Tudo o que aparece no jogo é desenhado aqui, a cada quadro: pinte o fundo, desenhe os personagens e o placar. Os blocos de Canvas funcionam aqui dentro, usando esse pincel. Desenha em "jogando", "pausado", "fim" e nos SEUS estados. Só NÃO no "menu" nem no "carregando" (para um menu desenhado, use um estado inventado). Com a câmera ligada, este desenho é do MUNDO (anda com a câmera).',
   },
   {
     type: 'sz_gk_on_draw_hud',
+    placement: 'loop-draw-hud',
     message0: 'Desenhar por cima (HUD) com o pincel %1',
     args0: [{ type: 'field_input', name: 'PARAM', text: 'ctx' }],
     message1: 'fazer %1',
@@ -323,6 +343,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_draw_background',
+    placement: 'command',
     message0: 'Pintar o fundo do jogo de %1 com grade %2',
     args0: [
       { type: 'field_colour_sz', name: 'COLOR', colour: '#0f3460' },
@@ -338,6 +359,7 @@ export const gameKitBlocks = [
   // ---- 🧍 Personagens ----
   {
     type: 'sz_gk_create_character',
+    placement: 'command',
     message0: 'Criar o personagem %1 com imagem %2 largura %3 altura %4 velocidade %5 e cor %6',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'heroi' },
@@ -352,10 +374,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria um personagem do jogo (herói, moeda, inimigo…). Ele nasce no centro da tela. A imagem é um desenho do Pinta — escolha direto, não precisa "Carregar a imagem" antes; sem imagem, aparece um retângulo da cor escolhida. A velocidade é em pixels por segundo.',
+      'Cria um personagem do jogo (herói, moeda, inimigo…). Ele nasce no centro da tela. A imagem é um desenho do Pinta. Escolha direto, não precisa "Carregar a imagem" antes; sem imagem, aparece um retângulo da cor escolhida. A velocidade é em pixels por segundo.',
   },
   {
     type: 'sz_gk_move_with_keys',
+    placement: 'command',
     message0: 'Mover o personagem %1 pelas teclas (WASD e setas) usando o tempo %2',
     args0: [
       { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'character' },
@@ -369,6 +392,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_keep_on_screen',
+    placement: 'command',
     message0: 'Manter o personagem %1 dentro da tela',
     args0: [{ type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'character' }],
     previousStatement: 'JSStmt',
@@ -378,6 +402,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_draw_character',
+    placement: 'command',
     message0: 'Desenhar o personagem %1',
     args0: [{ type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'character' }],
     previousStatement: 'JSStmt',
@@ -388,6 +413,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_place_character',
+    placement: 'command',
     message0: 'Colocar o personagem %1 em x %2 y %3',
     args0: [
       { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'character' },
@@ -402,15 +428,17 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_reset_character',
+    placement: 'command',
     message0: 'Recolocar o personagem %1 no centro da tela',
     args0: [{ type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'character' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Volta o personagem ao centro e desliga o turbo — bom ao começar uma partida.',
+    tooltip: 'Volta o personagem ao centro e desliga o turbo. Bom ao começar uma partida.',
   },
   {
     type: 'sz_gk_set_speed_multiplier',
+    placement: 'command',
     message0: 'Mudar a velocidade do personagem %1 para %2 × (1 = normal, 2 = dobro, 0.5 = metade)',
     args0: [
       { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'character' },
@@ -472,6 +500,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_set_pause_key',
+    placement: 'start-only-command',
     message0: 'Usar a tecla %1 para pausar e continuar',
     args0: [{ type: 'field_input', name: 'KEY', text: 'Escape' }],
     previousStatement: 'JSStmt',
@@ -483,6 +512,7 @@ export const gameKitBlocks = [
   // ---- 📢 Avisos (event bus) ----
   {
     type: 'sz_gk_on_event',
+    placement: 'event',
     message0: 'Quando chegar o aviso %1',
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'inimigo:morreu', kind: 'event' }],
     message1: 'fazer %1',
@@ -496,6 +526,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_emit',
+    placement: 'command',
     message0: 'Avisar todo mundo: %1',
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'inimigo:morreu', kind: 'event' }],
     previousStatement: 'JSStmt',
@@ -508,6 +539,7 @@ export const gameKitBlocks = [
   // ---- 👾 Moldes & enxames ----
   {
     type: 'sz_gk_define_mold',
+    placement: 'start-only-command',
     message0:
       'Criar o molde %1: tamanho %2 × %3, vida %4, velocidade %5, dano %6, cor %7, imagem %8, aparência %9',
     args0: [
@@ -530,6 +562,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_spawn_from_mold',
+    placement: 'command',
     message0: 'Nascer 1 do molde %1 em x %2 y %3',
     args0: [
       { type: 'field_name_picker', name: 'MOLD', text: 'inimigo', kind: 'mold' },
@@ -541,10 +574,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Faz nascer 1 personagem do molde nessa posição. O motor reaproveita personagens recolhidos (pooling) — rápido mesmo com muitos.',
+      'Faz nascer 1 personagem do molde nessa posição. O motor reaproveita personagens recolhidos, por isso funciona bem mesmo com muitos.',
   },
   {
     type: 'sz_gk_spawn_named',
+    placement: 'command',
     message0: 'Nascer 1 do molde %1 em x %2 y %3 e chamar de %4',
     args0: [
       { type: 'field_name_picker', name: 'MOLD', text: 'tiro', kind: 'mold' },
@@ -557,10 +591,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Como o "Nascer 1", mas dá um APELIDO ao que nasceu — aí você pode mexer nele nos blocos de personagem (perseguir, empurrar, machucar…). Perfeito para tiro mirado e chefão.',
+      'Como o "Nascer 1", mas dá um APELIDO ao que nasceu. Aí você pode mexer nele nos blocos de personagem (perseguir, empurrar, machucar…). Perfeito para tiro mirado e chefão.',
   },
   {
     type: 'sz_gk_start_spawner',
+    placement: 'command',
     message0: 'A cada %1 s, nascer 1 do molde %2 numa borda da tela',
     args0: [
       { type: 'input_value', name: 'SEC', check: 'JSValue' },
@@ -575,16 +610,18 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_stop_spawner',
+    placement: 'command',
     message0: 'Parar a fábrica do molde %1',
     args0: [{ type: 'field_name_picker', name: 'MOLD', text: 'inimigo', kind: 'mold' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Desliga a fábrica desse molde — nada mais nasce dele (os vivos continuam). Bom para fases, chefões e fim de onda.',
+      'Desliga a fábrica desse molde. Nada mais nasce dele (os vivos continuam). Bom para fases, chefões e fim de onda.',
   },
   {
     type: 'sz_gk_for_each_active',
+    placement: 'command',
     message0: 'Para cada %1 vivo do molde %2',
     args0: [
       { type: 'field_input', name: 'ITEM', text: 'item' },
@@ -597,10 +634,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Repete o "fazer" para CADA personagem vivo desse molde — dentro, "item" é o da vez. Use no "A cada quadro" para mover/testar todos (ex.: perseguir o herói, ver se encostou).',
+      'Repete o "fazer" para CADA personagem vivo desse molde. Dentro, "item" é o da vez. Use no "A cada quadro" para mover/testar todos (ex.: perseguir o herói, ver se encostou).',
   },
   {
     type: 'sz_gk_cull_offscreen',
+    placement: 'command',
     message0: 'Recolher do molde %1 quem saiu %2 px da tela',
     args0: [
       { type: 'field_name_picker', name: 'MOLD', text: 'inimigo', kind: 'mold' },
@@ -611,20 +649,22 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Recolhe (guarda de volta) os personagens que foram longe demais da tela — o segredo de otimização para o jogo não ficar pesado. Use no "A cada quadro".',
+      'Recolhe (guarda de volta) os personagens que foram longe demais da tela. O segredo de otimização para o jogo não ficar pesado. Use no "A cada quadro".',
   },
   {
     type: 'sz_gk_recycle',
+    placement: 'command',
     message0: 'Recolher %1 (volta pro molde)',
     args0: [{ type: 'field_name_picker', name: 'WHO', text: 'item', kind: 'character' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Tira este personagem do jogo e guarda para reaproveitar depois (ex.: quando o inimigo morre). Melhor que "apagar" — não desperdiça.',
+      'Tira este personagem do jogo e guarda para reaproveitar depois (ex.: quando o inimigo morre). Melhor que "apagar". Não desperdiça.',
   },
   {
     type: 'sz_gk_draw_active',
+    placement: 'command',
     message0: 'Desenhar todos vivos do molde %1',
     args0: [{ type: 'field_name_picker', name: 'MOLD', text: 'inimigo', kind: 'mold' }],
     previousStatement: 'JSStmt',
@@ -645,6 +685,7 @@ export const gameKitBlocks = [
   // ---- 🎨 Desenho (aparência vetorial) ----
   {
     type: 'sz_gk_define_look',
+    placement: 'start-only-command',
     message0: 'Criar a aparência %1 (tamanho-base %2 × %3), desenhando com o pincel %4 assim:',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'inimigo' },
@@ -659,10 +700,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Desenha uma aparência com formas (retângulo, círculo, linha…) e dá um nome a ela — do cantinho (0,0) para dentro, no tamanho-base. Quem usar a aparência num tamanho diferente vê o desenho ESTICADO na proporção. Dá para usar os blocos de Canvas aqui dentro.',
+      'Desenha uma aparência com formas (retângulo, círculo, linha…) e dá um nome a ela. Do cantinho (0,0) para dentro, no tamanho-base. Quem usar a aparência num tamanho diferente vê o desenho ESTICADO na proporção. Dá para usar os blocos de Canvas aqui dentro.',
   },
   {
     type: 'sz_gk_draw_look',
+    placement: 'command',
     message0: 'Desenhar a aparência %1 em x %2 y %3 tamanho %4 × %5',
     args0: [
       { type: 'field_name_picker', name: 'LOOK', text: 'inimigo', kind: 'look' },
@@ -682,6 +724,7 @@ export const gameKitBlocks = [
   // ---- 🎯 Comportamentos ----
   {
     type: 'sz_gk_seek',
+    placement: 'command',
     message0: 'Fazer %1 perseguir %2 usando o tempo %3',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'item', kind: 'character' },
@@ -696,6 +739,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_drift',
+    placement: 'command',
     message0: 'Fazer %1 vaguear usando o tempo %2',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'item', kind: 'character' },
@@ -709,6 +753,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_face',
+    placement: 'command',
     message0: 'Fazer %1 virar para o lado de %2',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'item', kind: 'character' },
@@ -722,6 +767,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_launch_towards',
+    placement: 'command',
     message0: 'Lançar %1 na direção de %2 com velocidade %3',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'tiro', kind: 'character' },
@@ -733,10 +779,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Mira UMA vez: guarda no personagem a velocidade na direção do alvo (a conta do tiro de todo jogo). Depois use "Mover pela velocidade" a cada quadro — o tiro segue RETO mesmo se o alvo sair do lugar.',
+      'Mira UMA vez: guarda no personagem a velocidade na direção do alvo (a conta do tiro de todo jogo). Depois use "Mover pela velocidade" a cada quadro. O tiro segue RETO mesmo se o alvo sair do lugar.',
   },
   {
     type: 'sz_gk_move_by_velocity',
+    placement: 'command',
     message0: 'Mover %1 pela velocidade dele usando o tempo %2',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'tiro', kind: 'character' },
@@ -750,6 +797,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_set_angle',
+    placement: 'command',
     message0: 'Girar %1 para %2 graus',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -766,6 +814,7 @@ export const gameKitBlocks = [
   // ---- 🎞️ Folha de quadros (animação de pixel art) ----
   {
     type: 'sz_gk_set_sheet',
+    placement: 'start-only-command',
     message0: 'Usar a folha de quadros %1 em %2 (cada quadro tem %3 × %4)',
     args0: [
       { type: 'field_asset_picker', name: 'IMAGE', text: '' },
@@ -782,10 +831,11 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_play_anim',
+    placement: 'command',
     message0: 'Tocar em %1 a animação %2 dos quadros %3 a %4 (%5 por segundo)',
     args0: [
       { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'character' },
-      { type: 'field_animation_picker', name: 'ANIM', text: '— escolher —' },
+      { type: 'field_animation_picker', name: 'ANIM', text: 'Escolher' },
       { type: 'input_value', name: 'FROM', check: 'JSValue' },
       { type: 'input_value', name: 'TO', check: 'JSValue' },
       { type: 'input_value', name: 'FPS', check: 'JSValue' },
@@ -799,6 +849,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_set_walk_sheet',
+    placement: 'command',
     message0: 'Usar a folha de ANDAR %1 em %2 (cada quadro tem %3 × %4)',
     args0: [
       { type: 'field_asset_picker', name: 'IMAGE', text: '' },
@@ -817,6 +868,7 @@ export const gameKitBlocks = [
   // ---- 🎥 Câmera ----
   {
     type: 'sz_gk_camera_follow',
+    placement: 'command',
     message0: 'Fazer a câmera seguir %1 num mundo de %2 × %3',
     args0: [
       { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'character' },
@@ -834,6 +886,7 @@ export const gameKitBlocks = [
     // 🌍 Mundo aberto: o tamanho do mundo vem do PRÓPRIO mapa de tiles (colunas ×
     // célula), recalculado a cada quadro — a criança não faz conta nenhuma.
     type: 'sz_gk_camera_follow_map',
+    placement: 'command',
     message0: 'Fazer a câmera seguir %1 pelo mapa %2',
     args0: [
       { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'character' },
@@ -844,10 +897,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Igual ao "Fazer a câmera seguir", mas o tamanho do mundo é o do MAPA de tiles — a tela vira uma janela andando por ele, e o motor só desenha o pedaço visível (como nos jogos profissionais).',
+      'Igual ao "Fazer a câmera seguir", mas o tamanho do mundo é o do MAPA de tiles. A tela vira uma janela andando por ele, e o motor só desenha o pedaço visível (como nos jogos profissionais).',
   },
   {
     type: 'sz_gk_camera_stop',
+    placement: 'command',
     message0: 'Parar a câmera (tela fixa)',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -860,7 +914,7 @@ export const gameKitBlocks = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Onde começa o pedaço do mundo que aparece na tela (canto esquerdo). Some ao desenhar algo "preso na tela" dentro do "Desenhar o jogo" — ou desenhe no HUD, que já é preso.',
+      'Onde começa o pedaço do mundo que aparece na tela (canto esquerdo). Some ao desenhar algo "preso na tela" dentro do "Desenhar o jogo". Ou desenhe no HUD, que já é preso.',
   },
   {
     type: 'sz_gk_camera_y',
@@ -877,14 +931,14 @@ export const gameKitBlocks = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Onde o mouse (ou o dedo) está, na largura — já convertido para as coordenadas do JOGO (e do mundo, se a câmera segue).',
+      'Onde o mouse (ou o dedo) está, na largura. Já convertido para as coordenadas do JOGO (e do mundo, se a câmera segue).',
   },
   {
     type: 'sz_gk_mouse_y',
     message0: 'o mouse y',
     output: 'JSValue',
     colour: C,
-    tooltip: 'Onde o mouse (ou o dedo) está, na altura — em coordenadas do JOGO.',
+    tooltip: 'Onde o mouse (ou o dedo) está, na altura. Em coordenadas do JOGO.',
   },
   {
     type: 'sz_gk_mouse_down',
@@ -895,6 +949,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_on_game_click',
+    placement: 'event',
     message0: 'Quando clicar no jogo, na posição x %1 y %2',
     args0: [
       { type: 'field_input', name: 'PX', text: 'px' },
@@ -913,6 +968,7 @@ export const gameKitBlocks = [
   // ---- ❤️ Combate ----
   {
     type: 'sz_gk_hurt',
+    placement: 'command',
     message0: 'Machucar %1 tirando %2 de vida (invencível por %3 s)',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -928,6 +984,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_knockback',
+    placement: 'command',
     message0: 'Empurrar %1 para longe de %2 com força %3',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -943,6 +1000,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_draw_health_bar',
+    placement: 'command',
     message0: 'Desenhar a barra de vida de %1 (vida cheia = %2)',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -982,7 +1040,7 @@ export const gameKitBlocks = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Verdadeiro enquanto o personagem pisca depois de um dano. O padrão profissional: "se encostou E NÃO está invencível → machucar + empurrar + som" — assim o som e o empurrão só acontecem no dano de verdade.',
+      'Verdadeiro enquanto o personagem pisca depois de um dano. O padrão profissional: "se encostou E NÃO está invencível → machucar + empurrar + som". Assim o som e o empurrão só acontecem no dano de verdade.',
   },
   {
     type: 'sz_gk_health_of',
@@ -996,6 +1054,7 @@ export const gameKitBlocks = [
   // ---- 🖥️ HUD & Missão ----
   {
     type: 'sz_gk_set_mission',
+    placement: 'command',
     message0: 'Vencer quando sobreviver %1 s ou derrotar %2 inimigos',
     args0: [
       { type: 'input_value', name: 'SEC', check: 'JSValue' },
@@ -1010,6 +1069,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_mission_kill',
+    placement: 'command',
     message0: 'Contar +1 inimigo derrotado',
     args0: [],
     previousStatement: 'JSStmt',
@@ -1019,6 +1079,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_draw_timer',
+    placement: 'command',
     message0: 'Desenhar o cronômetro em x %1 y %2',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1032,6 +1093,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_draw_bar',
+    placement: 'command',
     message0: 'Desenhar uma barra de %1 / %2 em x %3 y %4 tamanho %5 × %6 cor %7',
     args0: [
       { type: 'input_value', name: 'CUR', check: 'JSValue' },
@@ -1053,6 +1115,7 @@ export const gameKitBlocks = [
   // ---- 🧙 Kit RPG: mundo em grade ----
   {
     type: 'sz_gk_rpg_move_grid',
+    placement: 'command',
     message0: 'Mover %1 pela grade (célula de %2 px) usando o tempo %3',
     args0: [
       { type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'character' },
@@ -1068,6 +1131,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_block_cell',
+    placement: 'command',
     message0: 'Bloquear a célula %1 , %2 (parede)',
     args0: [
       { type: 'input_value', name: 'CX', check: 'JSValue' },
@@ -1078,7 +1142,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Marca uma célula da grade como parede — ninguém atravessa. Monte as regras dentro de "Quando entrar no mapa" (trocar de mapa limpa as paredes).',
+      'Marca uma célula da grade como parede. Ninguém atravessa. Monte as regras dentro de "Quando entrar no mapa" (trocar de mapa limpa as paredes).',
   },
   {
     type: 'sz_gk_rpg_cell',
@@ -1094,6 +1158,7 @@ export const gameKitBlocks = [
   // ---- 🧙 Kit RPG: NPCs e fala ----
   {
     type: 'sz_gk_rpg_create_npc',
+    placement: 'command',
     message0: 'Criar o NPC %1 na célula %2 , %3 com imagem %4 ou aparência %5',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'ferreiro' },
@@ -1107,10 +1172,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Um morador do mundo: fica parado na célula (sólido — bloqueia o caminho) e conversa quando o herói aperta ESPAÇO olhando para ele. Sem imagem/aparência sai um retângulo lilás.',
+      'Um morador do mundo: fica parado na célula, bloqueia o caminho e conversa quando o herói aperta ESPAÇO olhando para ele. Sem imagem ou aparência, sai um retângulo lilás.',
   },
   {
     type: 'sz_gk_rpg_draw_npcs',
+    placement: 'command',
     message0: 'Desenhar os NPCs',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -1119,6 +1185,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_on_talk',
+    placement: 'event',
     message0: 'Quando conversar com o NPC %1',
     args0: [{ type: 'field_name_picker', name: 'NPC', text: 'ferreiro', kind: 'npc' }],
     message1: 'fazer %1',
@@ -1132,6 +1199,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_say',
+    placement: 'command',
     message0: 'Mostrar a fala %1 de %2',
     args0: [
       { type: 'input_value', name: 'TEXT', check: 'JSValue' },
@@ -1148,13 +1216,14 @@ export const gameKitBlocks = [
   // ---- 🧙 Kit RPG: história e inventário ----
   {
     type: 'sz_gk_rpg_add_flag',
+    placement: 'command',
     message0: 'Marcar que %1 aconteceu',
     args0: [{ type: 'field_name_picker', name: 'FLAG', text: 'falou-com-ferreiro', kind: 'flag' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Anota um acontecimento da história (story flag). É como os RPGs lembram o que você já fez — a conversa e as portas mudam conforme as marcas.',
+      'Anota um acontecimento da história (story flag). É como os RPGs lembram o que você já fez. A conversa e as portas mudam conforme as marcas.',
   },
   {
     type: 'sz_gk_rpg_has_flag',
@@ -1166,6 +1235,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_give_item',
+    placement: 'command',
     message0: 'Ganhar o item %1 com imagem %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'chave' },
@@ -1188,6 +1258,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_remove_item',
+    placement: 'command',
     message0: 'Perder o item %1',
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'chave', kind: 'item' }],
     previousStatement: 'JSStmt',
@@ -1197,6 +1268,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_draw_inventory',
+    placement: 'command',
     message0: 'Desenhar o inventário em x %1 y %2',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -1212,6 +1284,7 @@ export const gameKitBlocks = [
   // ---- 🧙 Kit RPG: mapas ----
   {
     type: 'sz_gk_rpg_set_start_map',
+    placement: 'start-only-command',
     message0: 'Começar o jogo no mapa %1',
     args0: [{ type: 'field_name_picker', name: 'MAP', text: 'vila', kind: 'map' }],
     previousStatement: 'JSStmt',
@@ -1222,6 +1295,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_create_map',
+    placement: 'start-only-command',
     message0: 'Criar o mapa-cenário %1 com %2 × %3 células',
     args0: [
       { type: 'field_input', name: 'MAP', text: 'vila' },
@@ -1242,6 +1316,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_on_enter_map',
+    placement: 'event',
     message0: 'Quando entrar no mapa-cenário %1',
     args0: [{ type: 'field_name_picker', name: 'MAP', text: 'vila', kind: 'map' }],
     message1: 'fazer %1',
@@ -1255,6 +1330,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_go_map',
+    placement: 'command',
     message0: 'Ir para o mapa %1',
     args0: [{ type: 'field_name_picker', name: 'MAP', text: 'vila', kind: 'map' }],
     previousStatement: 'JSStmt',
@@ -1265,6 +1341,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_create_door',
+    placement: 'command',
     message0: 'Criar a porta na célula %1 , %2 para o mapa %3',
     args0: [
       { type: 'input_value', name: 'CX', check: 'JSValue' },
@@ -1281,6 +1358,7 @@ export const gameKitBlocks = [
   // ---- 🌍 Mundo aberto: bordas ligadas (estilo Zelda) ----
   {
     type: 'sz_gk_rpg_connect_edge',
+    placement: 'command',
     message0: 'Ligar a borda %1 deste mapa ao mapa %2',
     args0: [
       {
@@ -1314,6 +1392,7 @@ export const gameKitBlocks = [
   // ---- ⚔️ Kit RPG: batalha por turnos ----
   {
     type: 'sz_gk_rpg_battle_stats',
+    placement: 'command',
     message0: 'Meus pontos de batalha: vida %1 , força %2 e defesa %3',
     args0: [
       { type: 'input_value', name: 'HP', check: 'JSValue' },
@@ -1325,10 +1404,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Define a vida, a força e a DEFESA do SEU lado nas batalhas (a defesa reduz o dano recebido). Cada batalha começa com a vida e a energia cheias. Use uma vez, no começo — é o seu nível 1.',
+      'Define a vida, a força e a DEFESA do SEU lado nas batalhas (a defesa reduz o dano recebido). Cada batalha começa com a vida e a energia cheias. Use uma vez, no começo. É o seu nível 1.',
   },
   {
     type: 'sz_gk_rpg_battle_start',
+    placement: 'command',
     message0: 'Começar a batalha contra %1 com vida %2, força %3, defesa %4 e imagem %5',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'Dragão' },
@@ -1342,10 +1422,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Abre a batalha por TURNOS com o menu pronto: Atacar (força ± 20% − defesa/2), Especial (gasta energia), Item (usa poção), Defender (dano pela metade) e Fugir (50%). A imagem é um desenho do Pinta — escolha direto, não precisa "Carregar" antes (vazio = retângulo da cor). O mundo espera a batalha acabar. (É a batalha por TURNOS do ⚔️ Kit RPG — para cartas use o 🃏 Kit Cartas; para bichinhos, o 👾 Kit Monstrinhos.)',
+      'Abre a batalha por TURNOS com o menu pronto: Atacar (força ± 20% − defesa/2), Especial (gasta energia), Item (usa poção), Defender (dano pela metade) e Fugir (50%). A imagem é um desenho do Pinta. Escolha direto, não precisa "Carregar" antes (vazio = retângulo da cor). O mundo espera a batalha acabar. (É a batalha por TURNOS do ⚔️ Kit RPG. Para cartas use o 🃏 Kit Cartas; para bichinhos, o 👾 Kit Monstrinhos.)',
   },
   {
     type: 'sz_gk_rpg_set_special',
+    placement: 'command',
     message0: 'Golpe especial %1 com dano %2 e custo de energia %3',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'Bola de fogo' },
@@ -1361,6 +1442,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_give_potion',
+    placement: 'command',
     message0: 'Ganhar a poção %1 que cura %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'Poção' },
@@ -1375,6 +1457,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_heal_hero',
+    placement: 'command',
     message0: 'Curar o herói',
     args0: [],
     previousStatement: 'JSStmt',
@@ -1385,6 +1468,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_battle_reward',
+    placement: 'command',
     message0: 'Ganhar %1 de experiência (XP)',
     args0: [{ type: 'input_value', name: 'XP', check: 'JSValue' }],
     inputsInline: true,
@@ -1396,6 +1480,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_inflict',
+    placement: 'command',
     message0: 'Aplicar %1 em %2 por %3 turnos',
     args0: [
       {
@@ -1426,6 +1511,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_add_ally',
+    placement: 'command',
     message0: 'Adicionar aliado %1 com vida %2, força %3, defesa %4, cor %5, imagem %6',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'Guerreiro' },
@@ -1440,10 +1526,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Põe um aliado no SEU time de batalha (o herói já entra sozinho). Na batalha em equipe você comanda cada um: escolhe o golpe e o alvo. A imagem é um desenho do Pinta — escolha direto, não precisa "Carregar" antes (vazio = retângulo da cor). O time fica salvo entre batalhas. Use no começo.',
+      'Põe um aliado no SEU time de batalha (o herói já entra sozinho). Na batalha em equipe você comanda cada um: escolhe o golpe e o alvo. A imagem é um desenho do Pinta. Escolha direto, não precisa "Carregar" antes (vazio = retângulo da cor). O time fica salvo entre batalhas. Use no começo.',
   },
   {
     type: 'sz_gk_rpg_add_foe',
+    placement: 'command',
     message0: 'Adicionar inimigo %1 com vida %2, força %3, defesa %4, cor %5, imagem %6',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'Capanga' },
@@ -1458,10 +1545,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Adiciona MAIS um inimigo à PRÓXIMA batalha (além do que você nomeia em "Começar a batalha"). Assim a luta vira vários contra vários. A imagem é um desenho do Pinta — escolha direto, não precisa "Carregar" antes (vazio = retângulo da cor). Use antes de "Começar a batalha".',
+      'Adiciona MAIS um inimigo à PRÓXIMA batalha (além do que você nomeia em "Começar a batalha"). Assim a luta vira vários contra vários. A imagem é um desenho do Pinta. Escolha direto, não precisa "Carregar" antes (vazio = retângulo da cor). Use antes de "Começar a batalha".',
   },
   {
     type: 'sz_gk_rpg_teach_move',
+    placement: 'command',
     message0: 'Ensinar o golpe %1 (dano %2, energia %3) para %4',
     args0: [
       { type: 'field_input', name: 'MOVE', text: 'Espadada' },
@@ -1478,6 +1566,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_teach_heal',
+    placement: 'command',
     message0: 'Ensinar o golpe de CURA %1 (cura %2, energia %3) para %4',
     args0: [
       { type: 'field_input', name: 'MOVE', text: 'Curar' },
@@ -1508,6 +1597,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_on_battle_end',
+    placement: 'event',
     message0: 'Quando a batalha terminar',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'BODY' }],
@@ -1528,6 +1618,7 @@ export const gameKitBlocks = [
   // ---- 👑 R30: chefes e chefões da batalha por turnos ----
   {
     type: 'sz_gk_rpg_add_boss',
+    placement: 'command',
     message0: 'Pôr o CHEFÃO %1 (vida %2, força %3, defesa %4, imagem %5)',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'Dragão' },
@@ -1541,11 +1632,12 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Como "Adicionar inimigo", mas um CHEFÃO: aparece MAIOR, com barra de vida grande e o nome com coroa. A imagem é um desenho do Pinta — escolha direto, não precisa "Carregar" antes (vazio = retângulo da cor). Ensine golpes a ele pelo nome. Use antes de "Começar a batalha".',
+      'Como "Adicionar inimigo", mas um CHEFÃO: aparece MAIOR, com barra de vida grande e o nome com coroa. A imagem é um desenho do Pinta. Escolha direto, não precisa "Carregar" antes (vazio = retângulo da cor). Ensine golpes a ele pelo nome. Use antes de "Começar a batalha".',
   },
   // ---- ⚔️ Fichas reutilizáveis: crie o inimigo separado e escolha na hora ----
   {
     type: 'sz_gk_rpg_define_battler',
+    placement: 'start-only-command',
     message0:
       'Criar a ficha do inimigo %1: vida %2, força %3, defesa %4, imagem %5, cor %6, chefão %7',
     args0: [
@@ -1566,6 +1658,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_battle_named',
+    placement: 'command',
     message0: 'Começar a batalha contra a ficha %1',
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'Dragão', kind: 'battler' }],
     inputsInline: true,
@@ -1573,10 +1666,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Abre a batalha por turnos ESCOLHENDO um inimigo que você já criou com "Criar a ficha do inimigo" — ele entra com a imagem e os atributos prontos. ⚠️ Crie a ficha ANTES (senão nada acontece + um aviso). Some "Adicionar o inimigo da ficha" antes para lutar contra vários.',
+      'Abre a batalha por turnos ESCOLHENDO um inimigo que você já criou com "Criar a ficha do inimigo". Ele entra com a imagem e os atributos prontos. ⚠️ Crie a ficha ANTES (senão nada acontece + um aviso). Some "Adicionar o inimigo da ficha" antes para lutar contra vários.',
   },
   {
     type: 'sz_gk_rpg_add_foe_named',
+    placement: 'command',
     message0: 'Adicionar o inimigo da ficha %1',
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'Capanga', kind: 'battler' }],
     inputsInline: true,
@@ -1606,6 +1700,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_on_foe_turn',
+    placement: 'event',
     message0: 'Quando for a vez do inimigo %1',
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'Dragão', kind: 'combatant' }],
     message1: 'fazer %1',
@@ -1618,6 +1713,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_foe_use',
+    placement: 'command',
     message0: 'O inimigo %1 usa o golpe %2',
     args0: [
       { type: 'field_name_picker', name: 'NAME', text: 'Dragão', kind: 'combatant' },
@@ -1632,6 +1728,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_foe_hit_all',
+    placement: 'command',
     message0: 'O inimigo %1 acerta TODO o time (dano %2)',
     args0: [
       { type: 'field_name_picker', name: 'NAME', text: 'Dragão', kind: 'combatant' },
@@ -1648,6 +1745,7 @@ export const gameKitBlocks = [
   // ---- 🎬 Cenas (cutscene) & NPCs vivos ----
   {
     type: 'sz_gk_rpg_cutscene',
+    placement: 'command',
     message0: 'Fazer a cena:',
     message1: 'passo a passo %1',
     args1: [{ type: 'input_statement', name: 'BODY' }],
@@ -1660,6 +1758,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_wait',
+    placement: 'command',
     message0: 'Esperar %1 s (na cena)',
     args0: [{ type: 'input_value', name: 'SECONDS', check: 'JSValue' }],
     inputsInline: true,
@@ -1667,10 +1766,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Uma pausa na cena — o próximo passo espera esses segundos. Use DENTRO de "Fazer a cena".',
+      'Uma pausa na cena. O próximo passo espera esses segundos. Use DENTRO de "Fazer a cena".',
   },
   {
     type: 'sz_gk_rpg_npc_walk_to',
+    placement: 'command',
     message0: 'Fazer o NPC %1 andar até a célula %2 , %3',
     args0: [
       { type: 'field_name_picker', name: 'NPC', text: 'ferreiro', kind: 'npc' },
@@ -1686,6 +1786,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_face',
+    placement: 'command',
     message0: 'Virar o NPC %1 para %2',
     args0: [
       { type: 'field_name_picker', name: 'NPC', text: 'ferreiro', kind: 'npc' },
@@ -1708,16 +1809,18 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_npc_wander',
+    placement: 'command',
     message0: 'Fazer o NPC %1 vaguear pela vila',
     args0: [{ type: 'field_name_picker', name: 'NPC', text: 'ferreiro', kind: 'npc' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O NPC anda sozinho por células vizinhas livres, de vez em quando — dá vida à vila. (Não use dentro de uma cena.)',
+      'O NPC anda sozinho por células vizinhas livres, de vez em quando. Dá vida à vila. (Não use dentro de uma cena.)',
   },
   {
     type: 'sz_gk_rpg_on_step',
+    placement: 'event',
     message0: 'Quando o herói pisar na célula %1 , %2',
     args0: [
       { type: 'input_value', name: 'CX', check: 'JSValue' },
@@ -1736,6 +1839,7 @@ export const gameKitBlocks = [
   // ---- 💬 Escolhas & 💾 Salvar ----
   {
     type: 'sz_gk_rpg_menu',
+    placement: 'command',
     message0: 'Menu de escolha %1',
     args0: [{ type: 'input_value', name: 'TITLE', check: 'JSValue' }],
     message1: 'opções %1',
@@ -1749,6 +1853,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_option',
+    placement: 'command',
     message0: 'Opção %1',
     args0: [{ type: 'input_value', name: 'LABEL', check: 'JSValue' }],
     message1: 'fazer %1',
@@ -1762,15 +1867,17 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_save',
+    placement: 'command',
     message0: 'Salvar o jogo',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Guarda o progresso (flags da história, itens, mapa atual, posição e atributos) — continua salvo mesmo fechando e abrindo o jogo.',
+      'Guarda o progresso (flags da história, itens, mapa atual, posição e atributos). Continua salvo mesmo fechando e abrindo o jogo.',
   },
   {
     type: 'sz_gk_rpg_load',
+    placement: 'command',
     message0: 'Continuar o jogo salvo',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -1806,6 +1913,7 @@ export const gameKitBlocks = [
   // ---- ✨ Faíscas (partículas) ----
   {
     type: 'sz_gk_define_effect',
+    placement: 'start-only-command',
     message0:
       'Criar o efeito %1: %2 faíscas, cor %3, tamanho %4, vida %5 s, velocidade %6, gravidade %7',
     args0: [
@@ -1826,6 +1934,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_burst',
+    placement: 'command',
     message0: 'Soltar o efeito %1 em x %2 y %3',
     args0: [
       { type: 'field_name_picker', name: 'EFFECT', text: 'explosao', kind: 'effect' },
@@ -1841,6 +1950,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_draw_effects',
+    placement: 'command',
     message0: 'Desenhar todas as faíscas',
     args0: [],
     previousStatement: 'JSStmt',
@@ -1853,6 +1963,7 @@ export const gameKitBlocks = [
   // ---- 🔊 Som ----
   {
     type: 'sz_gk_load_sound',
+    placement: 'start-only-command',
     message0: 'Carregar o som %1 chamando de %2',
     args0: [
       { type: 'field_sound_picker', name: 'SOUND', text: '' },
@@ -1867,6 +1978,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_play_sound',
+    placement: 'command',
     message0: 'Tocar o som %1',
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'explosao', kind: 'sound' }],
     previousStatement: 'JSStmt',
@@ -1877,6 +1989,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_play_effect',
+    placement: 'command',
     message0: 'Tocar o som pronto %1',
     args0: [
       {
@@ -1904,6 +2017,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_play_tone',
+    placement: 'command',
     message0: 'Tocar um som de %1 Hz por %2 ms',
     args0: [
       { type: 'input_value', name: 'FREQ', check: 'JSValue' },
@@ -1919,6 +2033,7 @@ export const gameKitBlocks = [
   // ---- 🗺️ Mundo de tiles & profundidade ----
   {
     type: 'sz_gk_load_tilemap',
+    placement: 'start-only-command',
     message0: 'Carregar o mapa de peças %1 do desenho %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'mundo' },
@@ -1933,6 +2048,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_draw_tilemap',
+    placement: 'command',
     message0: 'Desenhar o mapa de peças %1 (camada %2)',
     args0: [
       { type: 'field_name_picker', name: 'MAP', text: 'mundo', kind: 'tilemap' },
@@ -1951,10 +2067,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Desenha o mapa. Desenhe o "chão" ANTES dos personagens; DEPOIS deles desenhe "topos" (só as peças sólidas: muros/telhados) ou "frente" (a camada da frente que você marcou no Pinta, como copas de árvore) — assim o herói passa por trás e a cena ganha profundidade. O mapa encaixa sozinho na tela.',
+      'Desenha o mapa. Desenhe o "chão" ANTES dos personagens; DEPOIS deles desenhe "topos" (só as peças sólidas: muros/telhados) ou "frente" (a camada da frente que você marcou no Pinta, como copas de árvore). Assim o herói passa por trás e a cena ganha profundidade. O mapa encaixa sozinho na tela.',
   },
   {
     type: 'sz_gk_tilemap_solid',
+    placement: 'start-only-command',
     message0: 'Deixar sólidas as peças do mapa %1',
     args0: [{ type: 'field_name_picker', name: 'MAP', text: 'mundo', kind: 'tilemap' }],
     previousStatement: 'JSStmt',
@@ -1965,6 +2082,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_draw_shadow',
+    placement: 'command',
     message0: 'Desenhar a sombra de %1',
     args0: [{ type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'character' }],
     previousStatement: 'JSStmt',
@@ -1975,6 +2093,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_draw_by_depth',
+    placement: 'command',
     message0: 'Desenhar %1 e os personagens por profundidade',
     args0: [{ type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'character' }],
     previousStatement: 'JSStmt',
@@ -1985,6 +2104,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_camera_shake',
+    placement: 'command',
     message0: 'Tremer a câmera com força %1 por %2 s',
     args0: [
       { type: 'input_value', name: 'INT', check: 'JSValue' },
@@ -2005,6 +2125,7 @@ export const gameKitBlocks = [
   // ==========================================================================
   {
     type: 'sz_gk_apply_gravity',
+    placement: 'command',
     message0: 'Aplicar a gravidade em %1 com força %2 usando o tempo %3',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -2016,10 +2137,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Puxa o personagem para baixo a cada quadro (2160 é o padrão dos jogos). É o PASSO 1 da receita: gravidade → mover pela velocidade → colidir. Este bloco também DESLIGA o "está no chão" — só o pouso da colisão liga de volta.',
+      'Puxa o personagem para baixo a cada quadro (2160 é o padrão dos jogos). É o PASSO 1 da receita: gravidade → mover pela velocidade → colidir. Este bloco também DESLIGA o "está no chão". Só o pouso da colisão liga de volta.',
   },
   {
     type: 'sz_gk_jump',
+    placement: 'command',
     message0: 'Fazer %1 pular com força %2',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -2030,7 +2152,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Só funciona se o personagem estiver NO CHÃO — é isso que impede o pulo infinito (o erro nº 1 dos tutoriais de jogo).',
+      'Só funciona se o personagem estiver NO CHÃO. É isso que impede o pulo infinito (o erro nº 1 dos tutoriais de jogo).',
   },
   {
     type: 'sz_gk_is_on_ground',
@@ -2043,6 +2165,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_set_velocity',
+    placement: 'command',
     message0: 'Definir a velocidade de %1: x %2 y %3',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -2077,6 +2200,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_set_terminal_velocity',
+    placement: 'command',
     message0: 'Velocidade máxima de queda de %1: %2',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -2091,15 +2215,17 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_bounce_on_edges',
+    placement: 'command',
     message0: 'Fazer %1 quicar nas bordas',
     args0: [{ type: 'field_name_picker', name: 'WHO', text: 'bola', kind: 'character' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Bateu na borda, volta — a bolinha do pong e do breakout.',
+    tooltip: 'Bateu na borda, volta. A bolinha do pong e do breakout.',
   },
   {
     type: 'sz_gk_paddle_bounce',
+    placement: 'command',
     message0: 'Rebater %1 na raquete %2',
     args0: [
       { type: 'field_name_picker', name: 'BALL', text: 'bola', kind: 'character' },
@@ -2114,16 +2240,18 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_wrap_edges',
+    placement: 'command',
     message0: 'Fazer %1 atravessar para o outro lado',
     args0: [{ type: 'field_name_picker', name: 'WHO', text: 'nave', kind: 'character' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Saiu por um lado, aparece no outro — o Pac-Man e o Asteroids.',
+    tooltip: 'Saiu por um lado, aparece no outro. O Pac-Man e o Asteroids.',
   },
   // ---- 🧩 Grade (Snake, Match-3, Sokoban, puzzles) ----
   {
     type: 'sz_gk_board_create',
+    placement: 'start-only-command',
     message0: 'Criar o tabuleiro %1 com %2 colunas × %3 linhas (vazio = %4)',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'tabuleiro' },
@@ -2140,6 +2268,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_board_set',
+    placement: 'command',
     message0: 'No tabuleiro %1, pôr %2 na coluna %3, linha %4',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'tabuleiro' },
@@ -2176,7 +2305,7 @@ export const gameKitBlocks = [
     inputsInline: true,
     output: 'JSValue',
     colour: C,
-    tooltip: 'Conta quantas células têm um valor — ex.: quantas minas, quantas peças de uma cor.',
+    tooltip: 'Conta quantas células têm um valor. Ex.: quantas minas, quantas peças de uma cor.',
   },
   {
     type: 'sz_gk_board_in',
@@ -2190,11 +2319,12 @@ export const gameKitBlocks = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Verdadeiro se a célula está DENTRO da grade — o jeito de saber se a cobrinha bateu na parede ou se um movimento sai do tabuleiro.',
+      'Verdadeiro se a célula está DENTRO da grade. O jeito de saber se a cobrinha bateu na parede ou se um movimento sai do tabuleiro.',
   },
   // ---- 🃏 R30: CARTAS (pilha = lista do núcleo; carta de 2 faces; mão clicável) ----
   {
     type: 'sz_gk_pile_move_top',
+    placement: 'command',
     message0: 'Mover a carta do topo da pilha %1 para a pilha %2',
     args0: [
       { type: 'field_name_picker', name: 'FROM', text: 'baralho', kind: 'group' },
@@ -2209,6 +2339,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_pile_shuffle_from',
+    placement: 'command',
     message0: 'Remontar a pilha %1 juntando %2 e embaralhar',
     args0: [
       { type: 'field_name_picker', name: 'DECK', text: 'baralho', kind: 'group' },
@@ -2253,6 +2384,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_card_flip',
+    placement: 'command',
     message0: 'Virar a carta %1',
     args0: [{ type: 'input_value', name: 'CARD', check: 'JSValue' }],
     inputsInline: true,
@@ -2282,6 +2414,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_hand_draw',
+    placement: 'command',
     message0: 'Desenhar a pilha %1 como fileira em x %2 y %3 %4',
     args0: [
       { type: 'field_name_picker', name: 'PILE', text: 'mao', kind: 'group' },
@@ -2313,6 +2446,7 @@ export const gameKitBlocks = [
   // ---- 🃏 R30: KIT CARTAS (o RPG de cartas / deck-battler) ----
   {
     type: 'sz_gk_cards_start',
+    placement: 'command',
     message0: 'Começar uma batalha de cartas: você com %1 de vida, inimigo com %2',
     args0: [
       { type: 'input_value', name: 'HERO_HP', check: 'JSValue' },
@@ -2323,10 +2457,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Abre a arena da batalha de cartas (vida sua e do inimigo). NÃO cria deck nem cartas — isso é seu: monte o baralho com listas + o bloco "uma carta". ⚠️ Roda SÓ no estado "jogando" (não muda o estado); chame quando já estiver jogando, e já começa o seu 1º turno. Ponha o "Quando começar o meu turno"/"Quando for a vez do inimigo" NO TOPO (não dentro do "quando entrar em jogando"). (Batalha de CARTAS — para turnos com espada use o ⚔️ Kit RPG; para bichinhos, o 👾 Kit Monstrinhos.)',
+      'Abre a arena da batalha de cartas (vida sua e do inimigo). NÃO cria deck nem cartas. Isso é seu: monte o baralho com listas + o bloco "uma carta". ⚠️ Roda SÓ no estado "jogando" (não muda o estado); chame quando já estiver jogando, e já começa o seu 1º turno. Ponha o "Quando começar o meu turno"/"Quando for a vez do inimigo" NO TOPO (não dentro do "quando entrar em jogando"). (Batalha de CARTAS. Para turnos com espada use o ⚔️ Kit RPG; para bichinhos, o 👾 Kit Monstrinhos.)',
   },
   {
     type: 'sz_gk_cards_energy_per_turn',
+    placement: 'start-only-command',
     message0: 'A cada turno, começar com %1 de energia',
     args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
     inputsInline: true,
@@ -2345,6 +2480,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_cards_spend',
+    placement: 'command',
     message0: 'Gastar %1 de energia',
     args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
     inputsInline: true,
@@ -2355,6 +2491,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_cards_on_turn',
+    placement: 'event',
     message0: 'Quando começar o meu turno',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'BODY' }],
@@ -2366,6 +2503,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_cards_end_turn',
+    placement: 'command',
     message0: 'Passar o turno',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -2375,6 +2513,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_cards_draw_hud',
+    placement: 'command',
     message0: 'Desenhar o painel da batalha de cartas',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -2398,6 +2537,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_cards_hurt_enemy',
+    placement: 'command',
     message0: 'Tirar %1 de vida do inimigo',
     args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
     inputsInline: true,
@@ -2408,6 +2548,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_cards_hurt_me',
+    placement: 'command',
     message0: 'Tirar %1 da minha vida (o escudo absorve)',
     args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
     inputsInline: true,
@@ -2415,10 +2556,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O dano do inimigo em você — o ESCUDO absorve primeiro, o resto tira vida. Use no "Quando for a vez do inimigo" para resolver a intenção de ataque.',
+      'O dano do inimigo em você. O ESCUDO absorve primeiro, o resto tira vida. Use no "Quando for a vez do inimigo" para resolver a intenção de ataque.',
   },
   {
     type: 'sz_gk_cards_gain_block',
+    placement: 'command',
     message0: 'Ganhar %1 de escudo',
     args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
     inputsInline: true,
@@ -2430,6 +2572,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_cards_enemy_intent',
+    placement: 'command',
     message0: 'O inimigo vai %1 de %2 no próximo turno',
     args0: [
       { type: 'field_input', name: 'ACTION', text: 'atacar' },
@@ -2440,7 +2583,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Anuncia (telegrafa) o que o inimigo VAI fazer — o segredo do gênero: você vê o ataque vindo e se prepara. A ação é uma palavra que VOCÊ inventa (atacar, defender…).',
+      'Anuncia (telegrafa) o que o inimigo VAI fazer. O segredo do gênero: você vê o ataque vindo e se prepara. A ação é uma palavra que VOCÊ inventa (atacar, defender…).',
   },
   {
     type: 'sz_gk_cards_intent_action',
@@ -2459,6 +2602,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_cards_on_enemy_turn',
+    placement: 'event',
     message0: 'Quando for a vez do inimigo',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'BODY' }],
@@ -2470,6 +2614,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_collide_tilemap',
+    placement: 'command',
     message0: 'Fazer %1 colidir com o mapa %2',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -2480,10 +2625,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O personagem PARA nas peças sólidas do mapa (chão, parede, teto). Empurra pelo lado de menor sobreposição, zera a velocidade daquele eixo e marca "no chão" ao pousar. É o PASSO 3 da receita — ponha depois de mover.',
+      'O personagem PARA nas peças sólidas do mapa (chão, parede, teto). Empurra pelo lado de menor sobreposição, zera a velocidade daquele eixo e marca "no chão" ao pousar. É o PASSO 3 da receita. Ponha depois de mover.',
   },
   {
     type: 'sz_gk_collide_group',
+    placement: 'command',
     message0: 'Fazer %1 colidir com o enxame %2',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -2494,10 +2640,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O mesmo que colidir com o mapa, mas contra os vivos de um molde (plataformas, caixas, pedras) — sem precisar de mapa nenhum.',
+      'O mesmo que colidir com o mapa, mas contra os vivos de um molde (plataformas, caixas, pedras). Sem precisar de mapa nenhum.',
   },
   {
     type: 'sz_gk_overlap_groups',
+    placement: 'loop-body',
     message0: 'Para cada %1 do molde %2 que encostar em %3 do molde %4, fazer %5',
     args0: [
       { type: 'field_input', name: 'A_NAME', text: 'tiro' },
@@ -2514,6 +2661,8 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_every_seconds',
+    placement: 'loop-periodic',
+    migration: 'lift-periodic-loop',
     message0: 'A cada %1 s, fazer %2',
     args0: [
       { type: 'input_value', name: 'SECS', check: 'JSValue' },
@@ -2523,7 +2672,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Repete de tempo em tempo (nascer inimigo, piscar). Conta o tempo do JOGO: se pausar, para de contar — um relógio de parede erraria.',
+      'Repete de tempo em tempo (nascer inimigo, piscar). Conta o tempo do JOGO: se pausar, para de contar. Um relógio de parede erraria.',
   },
   {
     type: 'sz_gk_cooldown_ready',
@@ -2536,7 +2685,7 @@ export const gameKitBlocks = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'O "recarregando" do tiro e do golpe: verdadeiro só quando o tempo passou — e já reinicia a contagem sozinho.',
+      'O "recarregando" do tiro e do golpe: verdadeiro só quando o tempo passou. E já reinicia a contagem sozinho.',
   },
   {
     type: 'sz_gk_tile_at',
@@ -2554,6 +2703,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_set_tile_at',
+    placement: 'command',
     message0: 'Trocar a peça do mapa %1 em x %2 y %3 para %4',
     args0: [
       { type: 'field_name_picker', name: 'MAP', text: 'mundo', kind: 'tilemap' },
@@ -2569,6 +2719,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_break_tile_at',
+    placement: 'command',
     message0: 'Quebrar a peça do mapa %1 onde %2 está',
     args0: [
       { type: 'field_name_picker', name: 'MAP', text: 'mundo', kind: 'tilemap' },
@@ -2578,11 +2729,11 @@ export const gameKitBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Apaga a peça que está no centro do personagem — o mundo destrutível (cavar, minerar).',
+    tooltip: 'Apaga a peça que está no centro do personagem. O mundo destrutível (cavar, minerar).',
   },
   {
     type: 'sz_gk_set_tile_size',
+    placement: 'command',
     message0: 'Tamanho da peça do mapa: %1',
     args0: [{ type: 'input_value', name: 'PX', check: 'JSValue' }],
     inputsInline: true,
@@ -2620,6 +2771,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_set_property',
+    placement: 'command',
     message0: 'Mudar a propriedade %2 de %1 para %3',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -2646,10 +2798,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Escreve qualquer coisa do personagem. Mudar x/y aqui é um TELEPORTE (porta, cano) — o motor cuida para a colisão não arrastar de volta.',
+      'Escreve qualquer coisa do personagem. Mudar x/y aqui é um TELEPORTE (porta, cano). O motor cuida para a colisão não arrastar de volta.',
   },
   {
     type: 'sz_gk_set_facing',
+    placement: 'command',
     message0: 'Fazer %1 olhar para %2',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -2681,6 +2834,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_tween_to',
+    placement: 'command',
     message0: 'Mover %1 suavemente até x %2 y %3 em %4 s',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -2702,6 +2856,7 @@ export const gameKitBlocks = [
   // ==========================================================================
   {
     type: 'sz_gk_plat_hero',
+    placement: 'command',
     message0: 'Herói de plataforma %1 velocidade %2 pulo %3 usando o tempo %4',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -2714,10 +2869,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Tudo-em-um do plataforma: gravidade + andar com as setas (ou A/D) + pular (espaço, W ou ↑) + mover — com o pulo GOSTOSO já embutido (coyote, buffer e pulo variável). Ponha no "A cada quadro" e, LOGO DEPOIS, o bloco de colidir com o mapa (ou com o enxame): é a ordem de verdade.',
+      'Tudo-em-um do plataforma: gravidade + andar com as setas (ou A/D) + pular (espaço, W ou ↑) + mover. Com o pulo GOSTOSO já embutido (coyote, buffer e pulo variável). Ponha no "A cada quadro" e, LOGO DEPOIS, o bloco de colidir com o mapa (ou com o enxame): é a ordem de verdade.',
   },
   {
     type: 'sz_gk_plat_jump_feel',
+    placement: 'command',
     message0: 'Regular o pulo: coyote %1 s, buffer %2 s, segurar %3 s, gravidade %4',
     args0: [
       { type: 'input_value', name: 'COYOTE', check: 'JSValue' },
@@ -2734,6 +2890,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_plat_double_jump',
+    placement: 'command',
     message0: 'Deixar %1 pular no ar (força %2, até %3 vezes)',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -2749,6 +2906,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_plat_wall_slide',
+    placement: 'command',
     message0: 'Fazer %1 deslizar na parede (velocidade %2)',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -2759,10 +2917,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Encostado numa parede e caindo, o herói escorrega devagarzinho em vez de despencar. Ponha depois do "Herói de plataforma" — e o bloco de colidir é quem descobre a parede.',
+      'Encostado numa parede e caindo, o herói escorrega devagarzinho em vez de despencar. Ponha depois do "Herói de plataforma". E o bloco de colidir é quem descobre a parede.',
   },
   {
     type: 'sz_gk_plat_wall_jump',
+    placement: 'command',
     message0: 'Deixar %1 pular da parede (para o lado %2, para cima %3)',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -2778,6 +2937,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_plat_ladder',
+    placement: 'command',
     message0: 'Deixar %1 subir a escada (peça %3 do mapa %2) na velocidade %4',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -2794,6 +2954,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_plat_one_way',
+    placement: 'command',
     message0: 'Fazer %1 pousar nas plataformas do molde %2 (atravessa por baixo) usando o tempo %3',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -2809,6 +2970,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_plat_drop_through',
+    placement: 'command',
     message0: 'Deixar %1 descer da plataforma com ↓ e pulo',
     args0: [{ type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' }],
     previousStatement: 'JSStmt',
@@ -2819,6 +2981,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_plat_moving',
+    placement: 'command',
     message0: 'Fazer a plataforma %1 ir de x %2 y %3 até x %4 y %5 em %6 s, usando o tempo %7',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'plataforma', kind: 'character' },
@@ -2838,6 +3001,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_plat_ride_on',
+    placement: 'command',
     message0: 'Fazer %1 pegar carona nas plataformas do molde %2',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -2852,6 +3016,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_plat_stomp',
+    placement: 'command',
     message0: 'Fazer %1 derrotar o molde %2 pisando (quicar %3)',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -2867,6 +3032,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_plat_patrol_wall',
+    placement: 'command',
     message0: 'Fazer %1 patrulhar virando na parede (velocidade %2)',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'item', kind: 'character' },
@@ -2877,10 +3043,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O inimigo anda para um lado e VIRA ao bater numa parede — quem manda virar é a colisão, então ele nunca trava na quina. Use dentro do "para cada vivo", com o bloco de colidir logo depois.',
+      'O inimigo anda para um lado e VIRA ao bater numa parede. Quem manda virar é a colisão, então ele nunca trava na quina. Use dentro do "para cada vivo", com o bloco de colidir logo depois.',
   },
   {
     type: 'sz_gk_plat_checkpoint',
+    placement: 'command',
     message0: 'Marcar o ponto de renascer em x %1 y %2',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -2895,6 +3062,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_plat_respawn',
+    placement: 'command',
     message0: 'Fazer %1 renascer',
     args0: [{ type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' }],
     previousStatement: 'JSStmt',
@@ -2905,6 +3073,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_plat_state_frames',
+    placement: 'command',
     message0: 'Quando %1 estiver %2, usar os quadros %3 a %4 (fps %5)',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -2927,10 +3096,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Diz quais quadros da folha valem para cada estado do herói. Faça um destes por estado, no comecinho — depois o "Animar o herói" troca sozinho.',
+      'Diz quais quadros da folha valem para cada estado do herói. Faça um destes por estado, no comecinho. Depois o "Animar o herói" troca sozinho.',
   },
   {
     type: 'sz_gk_plat_anim',
+    placement: 'command',
     message0: 'Animar o herói %1 pelo que ele está fazendo',
     args0: [{ type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' }],
     previousStatement: 'JSStmt',
@@ -2945,6 +3115,7 @@ export const gameKitBlocks = [
   // ==========================================================================
   {
     type: 'sz_gk_define_region',
+    placement: 'start-only-command',
     message0: 'Criar a região %1 em x %2 y %3, largura %4 altura %5',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'grama' },
@@ -2983,7 +3154,7 @@ export const gameKitBlocks = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'De 0 a 100. É o segredo do encontro na grama alta: "se MAIS DA METADE do herói estiver no mato". Só encostar a quina não conta — e é isso que faz o jogo parecer justo.',
+      'De 0 a 100. É o segredo do encontro na grama alta: "se MAIS DA METADE do herói estiver no mato". Só encostar a quina não conta. E é isso que faz o jogo parecer justo.',
   },
   {
     type: 'sz_gk_chance',
@@ -3023,6 +3194,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_launch_to_point',
+    placement: 'command',
     message0: 'Lançar %1 até o ponto x %2 y %3 com velocidade %4',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'tiro', kind: 'character' },
@@ -3039,6 +3211,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_set_velocity_angle',
+    placement: 'command',
     message0: 'Fazer %1 andar no ângulo %2 graus com força %3',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'nave', kind: 'character' },
@@ -3050,10 +3223,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O par do "Girar para X graus" — aquele só vira o DESENHO, este faz ANDAR de verdade. Use os dois com o mesmo ângulo e você tem o tanque, a nave, o Asteroids.',
+      'O par do "Girar para X graus". Aquele só vira o DESENHO, este faz ANDAR de verdade. Use os dois com o mesmo ângulo e você tem o tanque, a nave, o Asteroids.',
   },
   {
     type: 'sz_gk_set_opacity',
+    placement: 'command',
     message0: 'Deixar %1 com %2 % de opacidade',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -3075,6 +3249,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_fade_to',
+    placement: 'command',
     message0: 'Fazer %1 sumir até %2 % em %3 s',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'inimigo', kind: 'character' },
@@ -3090,6 +3265,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_tween_property',
+    placement: 'command',
     message0: 'Deslizar a propriedade %2 de %1 até %3 em %4 s',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -3116,10 +3292,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Muda QUALQUER propriedade suavemente (crescer, encolher, drenar a vida, sumir). Ao terminar sai o aviso "deslizou:chegou" — dá para encadear um movimento no outro.',
+      'Muda QUALQUER propriedade suavemente (crescer, encolher, drenar a vida, sumir). Ao terminar sai o aviso "deslizou:chegou". Dá para encadear um movimento no outro.',
   },
   {
     type: 'sz_gk_set_hitbox',
+    placement: 'command',
     message0: 'Caixa de colisão de %1: deslocada x %2 y %3, largura %4 altura %5',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -3133,10 +3310,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'A caixa que COLIDE não precisa ser o desenho todo. Num personagem alto, deixe só os PÉS colidirem (ex.: y 52, altura 16) — senão ele encosta nas paredes com a cabeça. Largura/altura 0 = usar o desenho inteiro.',
+      'A caixa que COLIDE não precisa ser o desenho todo. Num personagem alto, deixe só os PÉS colidirem (ex.: y 52, altura 16). Senão ele encosta nas paredes com a cabeça. Largura/altura 0 = usar o desenho inteiro.',
   },
   {
     type: 'sz_gk_fade_screen',
+    placement: 'command',
     message0: 'Tela: %1 na cor %2 em %3 s',
     args0: [
       {
@@ -3155,10 +3333,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'A tela vai ficando preta (ou volta). O truque de todo jogo: ESCONDER a troca de cena atrás do escuro — escureça, troque tudo, clareie.',
+      'A tela vai ficando preta (ou volta). O truque de todo jogo: ESCONDER a troca de cena atrás do escuro. Escureça, troque tudo, clareie.',
   },
   {
     type: 'sz_gk_flash_screen',
+    placement: 'command',
     message0: 'Piscar a tela %2 vezes na cor %1',
     args0: [
       { type: 'field_colour_sz', name: 'COLOR', colour: '#ffffff' },
@@ -3172,6 +3351,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_save_value',
+    placement: 'command',
     message0: 'Guardar o valor %2 com o nome %1',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'recorde' },
@@ -3194,16 +3374,18 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_play_music',
+    placement: 'command',
     message0: 'Tocar a música %1 sem parar',
     args0: [{ type: 'field_name_picker', name: 'SOUND', text: 'trilha', kind: 'sound' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Toca em LOOP (acabou, começa de novo) — é a trilha do jogo. Chamar de novo NÃO reinicia. Use "Parar o som" para trocar de música.',
+      'Toca em LOOP (acabou, começa de novo). É a trilha do jogo. Chamar de novo NÃO reinicia. Use "Parar o som" para trocar de música.',
   },
   {
     type: 'sz_gk_stop_sound',
+    placement: 'command',
     message0: 'Parar o som %1',
     args0: [{ type: 'field_name_picker', name: 'SOUND', text: 'trilha', kind: 'sound' }],
     previousStatement: 'JSStmt',
@@ -3213,6 +3395,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_set_volume',
+    placement: 'command',
     message0: 'Volume do som %1: %2',
     args0: [
       { type: 'field_name_picker', name: 'SOUND', text: 'trilha', kind: 'sound' },
@@ -3226,6 +3409,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_create_empty_tilemap',
+    placement: 'start-only-command',
     message0: 'Criar o mapa de peças vazio %1: %2 colunas × %3 linhas, peça %4, folha %5',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'masmorra' },
@@ -3239,10 +3423,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Um mapa feito por CÓDIGO, não desenhado — é assim que se faz masmorra sorteada e mundo gerado. Depois use "Trocar a peça" num laço para cavar os corredores. Peça -1 = vazio.',
+      'Um mapa feito por CÓDIGO, não desenhado. É assim que se faz masmorra sorteada e mundo gerado. Depois use "Trocar a peça" num laço para cavar os corredores. Peça -1 = vazio.',
   },
   {
     type: 'sz_gk_move_with_custom_keys',
+    placement: 'command',
     message0: 'Mover %1 com as teclas: cima %2 baixo %3 esquerda %4 direita %5, usando o tempo %6',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'jogador2', kind: 'character' },
@@ -3257,7 +3442,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O "Mover pelas teclas" usa WASD E as setas no MESMO personagem — com este você escolhe as teclas e tem DOIS jogadores. Ganha a diagonal certinha de graça.',
+      'O "Mover pelas teclas" usa WASD E as setas no MESMO personagem. Com este você escolhe as teclas e tem DOIS jogadores. Ganha a diagonal certinha de graça.',
   },
   // ==========================================================================
   // 👾 KIT MONSTRINHOS — o atalho do gênero "pegue e treine bichinhos".
@@ -3267,6 +3452,7 @@ export const gameKitBlocks = [
   // ==========================================================================
   {
     type: 'sz_gk_pkm_creature',
+    placement: 'start-only-command',
     message0:
       'Criar a criatura %1 do tipo %2: vida %3, força %4, defesa %5, velocidade %6, imagem %7, aparência %8',
     args0: [
@@ -3284,10 +3470,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Os DADOS de uma espécie — os pontos são do NÍVEL 1; cada nível dá +8 de vida, +2 de força e +1 de defesa. O TIPO você inventa (fogo, gelo, doce, dinossauro…). Sem imagem nem aparência, vira um retângulo. Use uma vez por bicho.',
+      'Os DADOS de uma espécie. Os pontos são do NÍVEL 1; cada nível dá +8 de vida, +2 de força e +1 de defesa. O TIPO você inventa (fogo, gelo, doce, dinossauro…). Sem imagem nem aparência, vira um retângulo. Use uma vez por bicho.',
   },
   {
     type: 'sz_gk_pkm_move',
+    placement: 'start-only-command',
     message0: 'Ensinar o golpe %1 para %2: tipo %3, dano %4, acerto %5 %, efeito %6 na cor %7',
     args0: [
       { type: 'field_input', name: 'MOVE', text: 'Brasa' },
@@ -3312,10 +3499,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Um golpe da criatura (até 4 por bicho). O TIPO dele é quem enfrenta a tabela de tipos. Acerto 100 = nunca erra; 70 = erra às vezes — golpe forte com acerto baixo é o risco que vale a pena. O efeito é a animação.',
+      'Um golpe da criatura (até 4 por bicho). O TIPO dele é quem enfrenta a tabela de tipos. Acerto 100 = nunca erra; 70 = erra às vezes. Golpe forte com acerto baixo é o risco que vale a pena. O efeito é a animação.',
   },
   {
     type: 'sz_gk_pkm_type_chart',
+    placement: 'start-only-command',
     message0: 'Tabela de tipos: %1 contra %2 causa %3 × de dano',
     args0: [
       { type: 'field_name_picker', name: 'A', text: 'fogo', kind: 'pkmtype' },
@@ -3327,10 +3515,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'VOCÊ inventa a regra: 2 = super efetivo, 0.5 = fraquinho, 0 = não teve efeito. Três destes fazem o triângulo clássico (fogo > planta > água > fogo) — e aí a batalha vira ESCOLHER o golpe certo, que é a graça do gênero. Sem tabela, todo golpe vale 1×.',
+      'VOCÊ inventa a regra: 2 = super efetivo, 0.5 = fraquinho, 0 = não teve efeito. Três destes fazem o triângulo clássico (fogo > planta > água > fogo). E aí a batalha vira ESCOLHER o golpe certo, que é a graça do gênero. Sem tabela, todo golpe vale 1×.',
   },
   {
     type: 'sz_gk_pkm_evolve',
+    placement: 'start-only-command',
     message0: '%1 evolui para %2 no nível %3',
     args0: [
       { type: 'field_name_picker', name: 'FROM', text: 'Fogoso', kind: 'pkmcreature' },
@@ -3342,10 +3531,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Ao subir para esse nível, a criatura VIRA outra espécie — mantendo o nível e a experiência dela. O jogo anuncia "está evoluindo!" sozinho.',
+      'Ao subir para esse nível, a criatura VIRA outra espécie. Mantendo o nível e a experiência dela. O jogo anuncia "está evoluindo!" sozinho.',
   },
   {
     type: 'sz_gk_pkm_catch_difficulty',
+    placement: 'start-only-command',
     message0: '%1 é %2 de pegar',
     args0: [
       { type: 'field_name_picker', name: 'NAME', text: 'Fogoso', kind: 'pkmcreature' },
@@ -3376,6 +3566,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_pkm_give',
+    placement: 'command',
     message0: 'Ganhar a criatura %1 no nível %2',
     args0: [
       { type: 'field_name_picker', name: 'CREATURE', text: 'Fogoso', kind: 'pkmcreature' },
@@ -3390,6 +3581,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_pkm_give_ball',
+    placement: 'command',
     message0: 'Ganhar %1 bola(s) de captura de força %2 %',
     args0: [
       { type: 'input_value', name: 'COUNT', check: 'JSValue' },
@@ -3404,6 +3596,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_pkm_heal_team',
+    placement: 'command',
     message0: 'Curar todas as minhas criaturas',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -3434,6 +3627,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_pkm_draw_team',
+    placement: 'command',
     message0: 'Desenhar o meu time em x %1 y %2',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -3447,6 +3641,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_pkm_grass_cells',
+    placement: 'command',
     message0: 'Grama alta da célula %1 , %2 até %3 , %4',
     args0: [
       { type: 'input_value', name: 'X1', check: 'JSValue' },
@@ -3463,6 +3658,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_pkm_grass_tiles',
+    placement: 'command',
     message0: 'Grama alta: a peça %1 do mapa %2',
     args0: [
       { type: 'input_value', name: 'INDEX', check: 'JSValue' },
@@ -3473,10 +3669,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Desenhou o mato no Pinta? Diga QUAL peça é grama e ela vira mato em todo o mapa — sem marcar célula por célula.',
+      'Desenhou o mato no Pinta? Diga QUAL peça é grama e ela vira mato em todo o mapa. Sem marcar célula por célula.',
   },
   {
     type: 'sz_gk_pkm_wild',
+    placement: 'command',
     message0: 'Na grama alta deste mapa pode aparecer %1 do nível %2 ao %3',
     args0: [
       { type: 'field_name_picker', name: 'CREATURE', text: 'Folhinha', kind: 'pkmcreature' },
@@ -3492,6 +3689,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_pkm_encounter_rate',
+    placement: 'start-only-command',
     message0: 'Chance de encontro na grama: %1 % (a cada passo)',
     args0: [{ type: 'input_value', name: 'PCT', check: 'JSValue' }],
     inputsInline: true,
@@ -3499,10 +3697,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O sorteio é por PASSO na grama (é como o jogo de verdade faz — e dá para sentir). 20% é o normal; 100% é para testar.',
+      'O sorteio acontece a cada PASSO na grama, como no jogo de verdade. Dá para sentir. 20% é o normal; 100% é para testar.',
   },
   {
     type: 'sz_gk_pkm_battle_wild',
+    placement: 'command',
     message0: 'Começar a batalha contra a criatura selvagem %1 no nível %2',
     args0: [
       { type: 'field_name_picker', name: 'CREATURE', text: 'Folhinha', kind: 'pkmcreature' },
@@ -3513,10 +3712,11 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'A grama chama isto sozinha — use direto para o LENDÁRIO ou dentro de uma cena. Quem luta é a sua criatura, não você.',
+      'A grama chama isto sozinha. Use direto para o LENDÁRIO ou dentro de uma cena. Quem luta é a sua criatura, não você.',
   },
   {
     type: 'sz_gk_pkm_battle_trainer',
+    placement: 'command',
     message0: 'Começar a batalha contra o treinador %1, com o time dele %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'Rival' },
@@ -3530,6 +3730,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_pkm_trainer_creature',
+    placement: 'command',
     message0: 'Criatura do treinador: %1 no nível %2',
     args0: [
       { type: 'field_name_picker', name: 'CREATURE', text: 'Folhinha', kind: 'pkmcreature' },
@@ -3552,6 +3753,7 @@ export const gameKitBlocks = [
   // ---- 🥷 Ação em tempo real (estilo Zelda) ----
   {
     type: 'sz_gk_attack_facing',
+    placement: 'command',
     message0: 'Fazer %1 golpear na frente (alcance %2, por %3 s)',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -3576,10 +3778,11 @@ export const gameKitBlocks = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Verdadeiro quando a área do golpe encosta no alvo — e só UMA vez por golpe (não machuca 60 vezes por segundo). Padrão: "se o golpe de heroi acertou inimigo: machucar o inimigo".',
+      'Verdadeiro quando a área do golpe encosta no alvo. E só UMA vez por golpe (não machuca 60 vezes por segundo). Padrão: "se o golpe de heroi acertou inimigo: machucar o inimigo".',
   },
   {
     type: 'sz_gk_patrol_around',
+    placement: 'command',
     message0: 'Fazer %1 patrulhar em volta de x %2 y %3 (raio %4)',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'inimigo', kind: 'character' },
@@ -3596,6 +3799,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_draw_hearts',
+    placement: 'command',
     message0: 'Desenhar corações: %1 de %2, em x %3 y %4',
     args0: [
       { type: 'input_value', name: 'CUR', check: 'JSValue' },
@@ -3613,6 +3817,7 @@ export const gameKitBlocks = [
   // ---- 🥷 Ação: a JANELA do golpe (recuo + ativo) ----
   {
     type: 'sz_gk_swing_window',
+    placement: 'command',
     message0: 'Regular o golpe de %1: recuo %2 s, acerta por %3 s',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -3628,6 +3833,7 @@ export const gameKitBlocks = [
   // ---- 🎬 Animação ----
   {
     type: 'sz_gk_play_anim_once',
+    placement: 'command',
     message0: 'Tocar a animação de %1: quadros %2 a %3, %4 por segundo, uma vez só',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -3651,6 +3857,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_set_entity_state',
+    placement: 'command',
     message0: 'Pôr %1 no estado %2 por %3 s',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -3685,6 +3892,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_state_anim',
+    placement: 'start-only-command',
     message0: 'Animação de %1 no estado %2: quadros %3 a %4, %5 por segundo %6',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -3714,6 +3922,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_state_look',
+    placement: 'command',
     message0: 'Aparência de %1 no estado %2 é %3',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -3739,6 +3948,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_auto_animate',
+    placement: 'command',
     message0: 'Animar %1 sozinho (pelo que ele está fazendo)',
     args0: [{ type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' }],
     previousStatement: 'JSStmt',
@@ -3769,6 +3979,7 @@ export const gameKitBlocks = [
   // ---- ⚙️ Física: inércia e atrito ----
   {
     type: 'sz_gk_thrust',
+    placement: 'command',
     message0: 'Empurrar %1 no ângulo %2 com força %3',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'nave', kind: 'character' },
@@ -3779,10 +3990,11 @@ export const gameKitBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'SOMA velocidade no ângulo, em vez de trocar — é isso que dá INÉRCIA: a nave continua andando depois que você solta. Use no "A cada quadro": a força é por segundo (px/s²). (O "Mover no ângulo" apaga a velocidade de antes.)',
+      'SOMA velocidade no ângulo, em vez de trocar. É isso que dá INÉRCIA: a nave continua andando depois que você solta. Use no "A cada quadro": a força é por segundo (px/s²). (O "Mover no ângulo" apaga a velocidade de antes.)',
   },
   {
     type: 'sz_gk_apply_friction',
+    placement: 'command',
     message0: 'Frear %1 com atrito %2 usando o tempo %3',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'nave', kind: 'character' },
@@ -3798,6 +4010,7 @@ export const gameKitBlocks = [
   // ---- ⏱️ Tempo: esperar UMA vez ----
   {
     type: 'sz_gk_wait',
+    placement: 'command',
     message0: 'Esperar %1 segundos e então',
     args0: [{ type: 'input_value', name: 'SECS', check: 'JSValue' }],
     message1: '%1',
@@ -3842,10 +4055,11 @@ export const gameKitBlocks = [
     args0: [{ type: 'field_name_picker', name: 'MOLD', text: 'inimigo', kind: 'mold' }],
     output: 'JSValue',
     tooltip:
-      'Sorteia um dos vivos do molde (ou nada, se não houver nenhum). É como o jogo de nave escolhe qual inimigo atira — e serve para prêmio surpresa e horda.',
+      'Sorteia um dos vivos do molde (ou nada, se não houver nenhum). É como o jogo de nave escolhe qual inimigo atira. E serve para prêmio surpresa e horda.',
   },
   {
     type: 'sz_gk_float_text',
+    placement: 'command',
     message0: 'Soltar o texto %1 em x %2 y %3, cor %4, tamanho %5',
     args0: [
       { type: 'input_value', name: 'TEXT', check: 'JSValue' },
@@ -3858,10 +4072,11 @@ export const gameKitBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Um texto que sobe e some sozinho — o "+100" de todo arcade. Solte na posição de quem morreu; para pontos, junte "+" com a variável.',
+      'Um texto que sobe e some sozinho. O "+100" de todo arcade. Solte na posição de quem morreu; para pontos, junte "+" com a variável.',
   },
   {
     type: 'sz_gk_trail_on',
+    placement: 'command',
     message0: 'Ligar o rastro de %1: cor %2, tamanho %3, %4 por segundo, dura %5 s',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'nave', kind: 'character' },
@@ -3878,6 +4093,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_trail_off',
+    placement: 'command',
     message0: 'Desligar o rastro de %1',
     args0: [{ type: 'field_name_picker', name: 'WHO', text: 'nave', kind: 'character' }],
     previousStatement: 'JSStmt',
@@ -3886,6 +4102,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_shockwave',
+    placement: 'command',
     message0: 'Soltar uma onda de choque em x %1 y %2: até o raio %3 em %4 s, cor %5',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -3898,10 +4115,11 @@ export const gameKitBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Um círculo que cresce e some — a cara de explosão grande. É SÓ desenho: para machucar, use "para cada vivo" + "a distância entre" + "machucar" (a regra é sua).',
+      'Um círculo que cresce e some. A cara de explosão grande. É SÓ desenho: para machucar, use "para cada vivo" + "a distância entre" + "machucar" (a regra é sua).',
   },
   {
     type: 'sz_gk_scroll_image',
+    placement: 'command',
     message0: 'Pintar o fundo rolando: imagem %1, velocidade x %2 y %3',
     args0: [
       { type: 'field_asset_picker', name: 'IMAGE', text: '' },
@@ -3916,6 +4134,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_lean_on_move',
+    placement: 'command',
     message0: 'Inclinar %1 ao andar de lado (até %2 graus)',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'nave', kind: 'character' },
@@ -3925,10 +4144,11 @@ export const gameKitBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'O desenho tomba suavemente na direção do movimento — a nave que "deita" ao desviar, o peixe, o carro. Ligue UMA vez; 0 graus desliga.',
+      'O desenho tomba suavemente na direção do movimento. A nave que "deita" ao desviar, o peixe, o carro. Ligue UMA vez; 0 graus desliga.',
   },
   {
     type: 'sz_gk_fan_shot',
+    placement: 'command',
     message0: 'Atirar de %1 um leque do molde %2: %3 tiros num arco de %4 °, rumo %5 °, a %6 px/s',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'nave', kind: 'character' },
@@ -3951,6 +4171,7 @@ export const gameKitBlocks = [
     // O container (declara o NOME — segue field_input, regra de ouro). Espelho
     // do "Menu de escolha": os "ponto" viram a polilinha.
     type: 'sz_gk_define_path',
+    placement: 'start-only-command',
     message0: 'Criar o caminho %1, passando pelos pontos:',
     args0: [{ type: 'field_input', name: 'NAME', text: 'trilha' }],
     message1: 'fazer %1',
@@ -3963,6 +4184,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_path_point',
+    placement: 'command',
     message0: 'ponto x %1 y %2',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -3975,6 +4197,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_follow_path',
+    placement: 'command',
     message0: 'Fazer %1 seguir o caminho %2 a %3 px/s, usando o tempo %4',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'item', kind: 'character' },
@@ -4009,6 +4232,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_players_setup',
+    placement: 'start-only-command',
     message0: 'começar com %1 jogadores',
     args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
     inputsInline: true,
@@ -4028,6 +4252,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_next_player',
+    placement: 'command',
     message0: 'passar a vez',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -4037,6 +4262,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_on_turn_change',
+    placement: 'event',
     message0: 'Quando a vez mudar',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'BODY' }],
@@ -4048,6 +4274,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_move_along_track',
+    placement: 'command',
     message0: 'Andar %1 %2 casas na trilha %3',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'peao', kind: 'character' },
@@ -4072,6 +4299,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_on_land_space',
+    placement: 'event',
     message0: 'Quando um peão parar numa casa',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'BODY' }],
@@ -4118,6 +4346,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_parallax_layer',
+    placement: 'command',
     message0: 'Pintar o fundo %1 preso à câmera (fator x %2 y %3)',
     args0: [
       { type: 'field_asset_picker', name: 'IMAGE', text: '' },
@@ -4132,6 +4361,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_sheet_burst',
+    placement: 'command',
     message0: 'Estourar a folha %1 (%2 quadros, a %3 por s) em x %4 y %5 tamanho %6',
     args0: [
       { type: 'field_asset_picker', name: 'IMAGE', text: '' },
@@ -4145,7 +4375,7 @@ export const gameKitBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Toca uma folha de explosão UMA vez e some (a imagem tem os quadros lado a lado). É a explosão de spritesheet num bloco só — sem precisar de molde nem de "Tocar uma vez".',
+      'Toca uma folha de explosão UMA vez e some (a imagem tem os quadros lado a lado). É a explosão de spritesheet num bloco só. Sem precisar de molde nem de "Tocar uma vez".',
   },
   // ==========================================================================
   // 🚀 KIT NAVE — o atalho do gênero (Space Invaders / shoot-'em-up)
@@ -4158,6 +4388,7 @@ export const gameKitBlocks = [
   // a linha de invasão, o céu de estrelas e a bomba que quica.
   {
     type: 'sz_gk_nave_ship',
+    placement: 'command',
     message0:
       'Pilotar a nave %1: anda de lado a %2 px/s (setas ou A/D), inclina até %3 °, usando o tempo %4',
     args0: [
@@ -4174,6 +4405,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_nave_powerup',
+    placement: 'command',
     message0: 'Dar o poder de tiro %1 a %2 por %3 s',
     args0: [
       {
@@ -4191,7 +4423,7 @@ export const gameKitBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Um poder TEMPORÁRIO: acaba sozinho. Na hora de atirar, pergunte "o poder de tiro de…" — metralhadora = atire mais rápido (recarga menor); leque = "Atirar um leque".',
+      'Um poder TEMPORÁRIO: acaba sozinho. Na hora de atirar, pergunte "o poder de tiro de…". Metralhadora = atire mais rápido (recarga menor); leque = "Atirar um leque".',
   },
   {
     type: 'sz_gk_nave_power_of',
@@ -4203,8 +4435,9 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_nave_wave',
+    placement: 'command',
     message0:
-      'Invadir: onda do molde %1 com %2 colunas × %3 linhas (espaço %4 px), a %5 px/s — desce %6 px e acelera %7 % na borda',
+      'Invadir: onda do molde %1 com %2 colunas × %3 linhas (espaço %4 px), a %5 px/s: desce %6 px e acelera %7 % na borda',
     args0: [
       { type: 'field_name_picker', name: 'MOLD', text: 'ovni', kind: 'mold' },
       { type: 'input_value', name: 'COLS', check: 'JSValue' },
@@ -4218,10 +4451,11 @@ export const gameKitBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'A formação clássica: nasce em grade e o MOTOR marcha o bloco inteiro — bate na borda, desce e acelera. Derrotar todos avisa "onda:limpa"; alcançar a linha avisa "onda:invadiu". Não mova os invasores você mesmo: a marcha é do motor.',
+      'A formação clássica: nasce em grade e o MOTOR marcha o bloco inteiro. Bate na borda, desce e acelera. Derrotar todos avisa "onda:limpa"; alcançar a linha avisa "onda:invadiu". Não mova os invasores você mesmo: a marcha é do motor.',
   },
   {
     type: 'sz_gk_nave_wave_shooter',
+    placement: 'command',
     message0: 'A cada %1 s, um invasor do molde %2 atira 1 do molde %3 para baixo a %4 px/s',
     args0: [
       { type: 'input_value', name: 'SECS', check: 'JSValue' },
@@ -4233,10 +4467,11 @@ export const gameKitBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'A chuva de tiros da formação: um invasor SORTEADO atira (ligue 1 vez; religar troca o ritmo). O tiro nasce andando — recolha com "Recolher quem saiu da tela" e trate o acerto com "Quando se tocarem".',
+      'A chuva de tiros da formação: um invasor SORTEADO atira (ligue 1 vez; religar troca o ritmo). O tiro nasce andando. Recolha com "Recolher quem saiu da tela" e trate o acerto com "Quando se tocarem".',
   },
   {
     type: 'sz_gk_nave_invasion_line',
+    placement: 'command',
     message0: 'Marcar a linha de invasão na altura y %1 (avisa onda:invadiu)',
     args0: [{ type: 'input_value', name: 'Y', check: 'JSValue' }],
     inputsInline: true,
@@ -4247,6 +4482,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_nave_starfield',
+    placement: 'command',
     message0: 'Desenhar o céu de estrelas: %1 estrelas caindo a %2 px/s',
     args0: [
       { type: 'input_value', name: 'COUNT', check: 'JSValue' },
@@ -4260,6 +4496,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_nave_bomb',
+    placement: 'command',
     message0:
       'Soltar uma bomba do molde %1 quicando; recolhida, explode no raio %2 e recolhe o molde %3 (avisa bomba:acertou)',
     args0: [
@@ -4271,13 +4508,14 @@ export const gameKitBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'A bomba-prêmio: quica pela tela; quando o SEU tiro a recolher (no "Quando se tocarem": Recolher a bomba), o motor explode — onda de choque + recolhe o molde-alvo no raio + avisa "bomba:acertou" por vítima (some os pontos lá). No máximo 3 no ar.',
+      'A bomba-prêmio: quica pela tela; quando o SEU tiro a recolher (no "Quando se tocarem": Recolher a bomba), o motor explode. Onda de choque + recolhe o molde-alvo no raio + avisa "bomba:acertou" por vítima (some os pontos lá). No máximo 3 no ar.',
   },
   // ==========================================================================
   // KIT LUTA — o atalho do gênero
   // ==========================================================================
   {
     type: 'sz_gk_luta_match',
+    placement: 'command',
     message0: 'Luta de %1 × %2, melhor de %3 rounds de %4 s',
     args0: [
       { type: 'field_name_picker', name: 'P1', text: 'jogador1', kind: 'character' },
@@ -4293,7 +4531,8 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_luta_fighter',
-    message0: 'Lutador %1 — andar %2 %3, pular %4, agachar %5',
+    placement: 'command',
+    message0: 'Lutador %1: andar %2 %3, pular %4, agachar %5',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'jogador1', kind: 'character' },
       { type: 'field_input', name: 'LEFT', text: 'a' },
@@ -4309,10 +4548,11 @@ export const gameKitBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Faz TUDO: gravidade, andar, pular, agachar, defender — e virar de frente sozinho. Cada lutador tem as teclas DELE, então dois destes = dois jogadores no mesmo teclado. Use no "A cada quadro".',
+      'Faz TUDO: gravidade, andar, pular, agachar, defender. E virar de frente sozinho. Cada lutador tem as teclas DELE, então dois destes = dois jogadores no mesmo teclado. Use no "A cada quadro".',
   },
   {
     type: 'sz_gk_luta_ai',
+    placement: 'command',
     message0: 'Fazer %1 ser controlado pelo computador (dificuldade %2)',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'jogador2', kind: 'character' },
@@ -4330,11 +4570,12 @@ export const gameKitBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Põe no LUGAR do bloco "Lutador" daquele lutador — trocar um pelo outro é a diferença entre jogar sozinho e jogar com um amigo. Fácil quase não defende; difícil defende quase sempre, espera você errar o golpe e usa o especial quando a barra enche.',
+      'Põe no LUGAR do bloco "Lutador" daquele lutador. Trocar um pelo outro é a diferença entre jogar sozinho e jogar com um amigo. Fácil quase não defende; difícil defende quase sempre, espera você errar o golpe e usa o especial quando a barra enche.',
   },
   {
     type: 'sz_gk_luta_move',
-    message0: 'Golpe %1 de %2 — %3, dano %4, alcance %5',
+    placement: 'command',
+    message0: 'Golpe %1 de %2: %3, dano %4, alcance %5',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'soco' },
       { type: 'field_name_picker', name: 'WHO', text: 'jogador1', kind: 'character' },
@@ -4359,10 +4600,11 @@ export const gameKitBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'A palavra escolhe o RITMO do golpe: rápido sai antes mas machuca pouco; pesado demora, mas se acertar o outro fica travado tempo bastante para você emendar outro golpe — é assim que nasce o combo. "Atravessa a defesa" vence quem só fica defendendo.',
+      'A palavra escolhe o RITMO do golpe: rápido sai antes mas machuca pouco; pesado demora, mas se acertar o outro fica travado tempo bastante para você emendar outro golpe. É assim que nasce o combo. "Atravessa a defesa" vence quem só fica defendendo.',
   },
   {
     type: 'sz_gk_luta_move_anim',
+    placement: 'command',
     message0: 'A animação do golpe %1 de %2 são os quadros %3 a %4',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'soco' },
@@ -4374,10 +4616,11 @@ export const gameKitBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Os quadros da folha que tocam durante o golpe. A velocidade é calculada para a animação durar exatamente o golpe — você não precisa acertar nenhum número.',
+      'Os quadros da folha que tocam durante o golpe. A velocidade é calculada para a animação durar exatamente o golpe. Você não precisa acertar nenhum número.',
   },
   {
     type: 'sz_gk_luta_attack',
+    placement: 'command',
     message0: 'Fazer %1 dar o golpe %2',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'jogador1', kind: 'character' },
@@ -4391,6 +4634,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_luta_draw_hud',
+    placement: 'command',
     message0: 'Desenhar o placar da luta',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -4430,7 +4674,7 @@ export const gameKitBlocks = [
     args0: [{ type: 'field_name_picker', name: 'WHO', text: 'jogador1', kind: 'character' }],
     output: 'JSValue',
     tooltip:
-      'A barra de especial. Enche batendo e apanhando (defender não enche), e ATRAVESSA os rounds — por isso o último round é o mais tenso.',
+      'A barra de especial. Enche batendo e apanhando (defender não enche), e ATRAVESSA os rounds. Por isso o último round é o mais tenso.',
   },
   {
     type: 'sz_gk_luta_is_guarding',
@@ -4450,6 +4694,7 @@ export const gameKitBlocks = [
   // ONDA que nasce espaçada pelo caminho e a carteira de moedas.
   {
     type: 'sz_gk_td_slot',
+    placement: 'start-only-command',
     message0: 'Marcar um lugar de torre em x %1 y %2, tamanho %3',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -4464,6 +4709,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_td_draw_slots',
+    placement: 'command',
     message0: 'Desenhar os lugares de torre (o livre sob o mouse acende)',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -4472,7 +4718,8 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_td_on_buy',
-    message0: 'Quando clicar num lugar livre, pagando %1 moedas — com o lugar em x %2 y %3:',
+    placement: 'event',
+    message0: 'Quando clicar num lugar livre, pagando %1 moedas: com o lugar em x %2 y %3:',
     args0: [
       { type: 'input_value', name: 'COST', check: 'JSValue' },
       { type: 'field_input', name: 'PX', text: 'lugarX' },
@@ -4488,6 +4735,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_td_free_slot',
+    placement: 'command',
     message0: 'Liberar o lugar de torre em x %1 y %2',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -4501,6 +4749,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_td_draw_range',
+    placement: 'command',
     message0: 'Desenhar o alcance de %1 (raio %2)',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'torre', kind: 'character' },
@@ -4514,6 +4763,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_td_wave',
+    placement: 'command',
     message0: 'Invadir pelo caminho %1: %2 inimigos do molde %3, %4 px entre eles, a %5 px/s',
     args0: [
       { type: 'field_name_picker', name: 'PATH', text: 'trilha', kind: 'path' },
@@ -4530,6 +4780,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_td_set_coins',
+    placement: 'command',
     message0: 'Começar com %1 moedas',
     args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
     inputsInline: true,
@@ -4540,6 +4791,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_td_add_coins',
+    placement: 'command',
     message0: 'Ganhar %1 moedas',
     args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
     inputsInline: true,
@@ -4555,47 +4807,7 @@ export const gameKitBlocks = [
     tooltip:
       'Quantas moedas a criança tem agora. Mostre no placar e teste antes de deixar comprar.',
   },
-]
-
-const GAME_KIT_START_ONLY_BLOCK_TYPES = [
-  'sz_gk_setup',
-  'sz_gk_setup_full',
-  'sz_gk_load_image',
-  'sz_gk_create_screen',
-  'sz_gk_add_button',
-  'sz_gk_set_screen_bg',
-  'sz_gk_set_pause_key',
-  'sz_gk_define_mold',
-  'sz_gk_define_look',
-  'sz_gk_set_sheet',
-  'sz_gk_rpg_set_start_map',
-  'sz_gk_rpg_create_map',
-  'sz_gk_rpg_define_battler',
-  'sz_gk_define_effect',
-  'sz_gk_load_sound',
-  'sz_gk_load_tilemap',
-  'sz_gk_tilemap_solid',
-  'sz_gk_board_create',
-  'sz_gk_define_region',
-  'sz_gk_create_empty_tilemap',
-  'sz_gk_pkm_creature',
-  'sz_gk_pkm_move',
-  'sz_gk_pkm_type_chart',
-  'sz_gk_pkm_evolve',
-  'sz_gk_pkm_catch_difficulty',
-  'sz_gk_pkm_encounter_rate',
-  'sz_gk_cards_energy_per_turn',
-  'sz_gk_state_anim',
-  'sz_gk_define_path',
-  'sz_gk_players_setup',
-  'sz_gk_td_slot',
-] as const
-
-applyPlacementToBlockTypes(
-  gameKitBlocks,
-  GAME_KIT_START_ONLY_BLOCK_TYPES,
-  START_ONLY_COMMAND_PLACEMENT,
-)
+] satisfies BlockDefinition[]
 
 /**
  * Sub-categorias da paleta (a cor de cada uma é um TOM do teal, derivado abaixo).

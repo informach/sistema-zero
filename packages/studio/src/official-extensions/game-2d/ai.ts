@@ -146,7 +146,7 @@ criar um por um. Um grupo é uma lista gerenciada de sprites:
 - countGroup(grupo): quantidade atual (valor, use em if/conta). clearGroup(grupo): esvazia. removeFromGroup(grupo, sprite): tira um.
 - pruneOffscreen(ctx, grupo, margem, function (sprite) {…}): remove os que saíram da tela e roda o corpo para cada um (ex.: perder vida quando um inimigo escapa).
 - overlapGroups(a, b, function (sa, sb) {…}): para cada par (um de cada grupo) que se encosta, roda o corpo com os dois sprites (use DENTRO do gameLoop). NÃO confundir com onOverlap (que é 1 sprite × 1 sprite).
-- everyFrames("chave", N) / everySeconds("chave", S): mecanismos internos usados pelas raízes “A cada N quadros/segundos”. No projeto da criança, essas raízes ficam diretamente em “🔁 Enquanto estiver rodando — Loops”, nunca dentro de outro gameLoop.
+- everyFrames("chave", N) / everySeconds("chave", S): mecanismos internos usados pelas raízes “A cada N quadros/segundos”. No projeto da criança, essas raízes ficam diretamente em “🔁 Enquanto estiver rodando”, nunca dentro de outro gameLoop.
 
 Para um jogo de tiro (nave × asteroides): crie 2 grupos (tiros, asteroides); no gameLoop, a cada N quadros spawn um asteroide com x aleatório e vy positivo; updateGroup + drawGroup nos dois; overlapGroups(tiros, asteroides, …) para somar ponto e remover os dois; pruneOffscreen no grupo de asteroides para perder vida quando um escapa.
 
@@ -160,10 +160,10 @@ Estado/telas (cenas) — início → jogando → ganhou → perdeu, ou qualquer 
 inventado pela criança (ex.: ganhou1), com UM só gameLoop:
 - setScene("jogando") / sceneIs("jogando") (booleano, use no if) / showScreen(ctx, titulo, subtitulo, dica, fundo) / restart(). O titulo/subtitulo/dica aceitam texto fixo OU expressão (variável, "juntar texto", resultado de função) — ex.: "Destrua " + alvo + " asteroides" mostra a meta vinda de uma variável.
 - IMPORTANTE: variáveis, grupos e sprites ficam em “⚙️ Ao iniciar”; registros de
-  evento ficam em “⚡ Quando acontecer — Eventos”; raízes gameLoop ficam em “🔁 Enquanto estiver rodando — Loops”. As três
+  evento ficam em “⚡ Quando acontecer”; raízes gameLoop ficam em “🔁 Enquanto estiver rodando”. As três
   áreas compartilham o mesmo escopo da partida sem recriar objetos a cada quadro.
-- Padrão: setup + setScene("inicio") em ⚙️ Ao iniciar; Enter em ⚡ Quando acontecer — Eventos; um “A cada
-  quadro” em 🔁 Enquanto estiver rodando — Loops limpa a tela e usa “se a tela atual é X” para decidir
+- Padrão: setup + setScene("inicio") em ⚙️ Ao iniciar; Enter em ⚡ Quando acontecer; um “A cada
+  quadro” em 🔁 Enquanto estiver rodando limpa a tela e usa “se a tela atual é X” para decidir
   o que desenhar. No perdeu/ganhou, restart() começa uma execução limpa.
 
 Cenário (v0.6.0): drawStarfield(ctx, velocidade) desenha um céu de estrelas rolando (fundo espacial; chame logo após clear); dragX(sprite) faz o sprite seguir o dedo/mouse só na horizontal (nave no celular). Existe o exemplo pronto "Nave contra Asteroides" mostrando tudo junto.

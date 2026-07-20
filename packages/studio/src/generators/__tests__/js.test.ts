@@ -416,7 +416,8 @@ describe('generateJS', () => {
       statements: [{ type: 'canvasSetup', canvasId: 'game', varName: 'ctx' }],
     })
     expect(code).toContain('const canvas = document.getElementById("game")')
-    expect(code).toContain("const ctx = canvas.getContext('2d');")
+    expect(code).toContain("const ctx = canvas?.getContext?.('2d');")
+    expect(code).toContain('if (!ctx)')
   })
 
   it('console.log de "canvas" referencia o elemento (não vira canvas_2)', () => {

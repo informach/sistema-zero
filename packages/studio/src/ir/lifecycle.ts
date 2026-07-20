@@ -38,8 +38,8 @@ const LOOP_BODY_ONLY_TYPES = new Set([
  * uma partida. Eles só podem existir diretamente em `behavior.start`; executar
  * qualquer um dentro de evento, loop ou função duplicaria recursos/listeners.
  *
- * Esta lista espelha os contratos `START_ONLY_COMMAND_PLACEMENT` do catálogo
- * Blockly. O teste de contratos deriva a IR real de cada bloco e impede drift.
+ * Esta lista revalida nós importados da IR. O teste de contratos gera a IR real
+ * de cada bloco com placement exclusivo de início e impede divergência.
  */
 export const START_ONLY_STATEMENT_TYPES = new Set([
   'canvasSetup',
@@ -299,6 +299,8 @@ interface SemanticContext {
   nested: boolean
   loopDepth: number
   eventBody: boolean
+  keyboardEventBody: boolean
+  pointerEventBody: boolean
   functionBody: boolean
   asyncFunctionBody: boolean
   derivedConstructorBody: boolean
@@ -360,12 +362,21 @@ function validateContextDependentNode(
       }
       break
     case 'eventMethod':
-    case 'eventProp':
     case 'w3d:npcAsk':
       if (!context.eventBody) {
         issue(issues, path, 'Este valor ou comando só existe dentro do corpo de um evento')
       }
       break
+    case 'eventProp': {
+      const prop = node.prop
+      if ((prop === 'key' || prop === 'code') && !context.keyboardEventBody) {
+        issue(issues, path, 'A tecla do evento só existe dentro de um evento de teclado')
+      }
+      if ((prop === 'clientX' || prop === 'clientY') && !context.pointerEventBody) {
+        issue(issues, path, 'A posição do evento só existe dentro de um evento de ponteiro')
+      }
+      break
+    }
     case 'thisProp':
       if (!context.classBody) {
         issue(issues, path, '“this” só pode acessar propriedades dentro de uma classe')
@@ -376,7 +387,34 @@ function validateContextDependentNode(
         issue(issues, path, '“this” só pode ser usado dentro de uma função ou método')
       }
       break
+    case 'classOp':
+    case 'classContains':
+      if (node.targetKind === 'this' && !context.functionBody) {
+        issue(issues, path, '“this” só pode ser usado dentro de uma função ou método')
+      }
+      break
   }
+}
+
+const KEYBOARD_EVENTS = new Set(['keydown', 'keyup'])
+const POINTER_EVENTS = new Set([
+  'click',
+  'mouseover',
+  'mouseout',
+  'mousemove',
+  'mousedown',
+  'mouseup',
+  'contextmenu',
+])
+
+function eventCapabilities(statement: JSStatement): { keyboard: boolean; pointer: boolean } {
+  if (statement.type === 'event') {
+    return {
+      keyboard: KEYBOARD_EVENTS.has(statement.event),
+      pointer: POINTER_EVENTS.has(statement.event),
+    }
+  }
+  return { keyboard: false, pointer: statement.type === 'onClickAssign' }
 }
 
 function visitUnknown(
@@ -401,11 +439,56 @@ function visitUnknown(
 }
 
 function childContext(statement: JSStatement, context: SemanticContext): SemanticContext {
+  const capabilities = eventCapabilities(statement)
   return {
     ...context,
     nested: true,
     loopDepth: context.loopDepth + (SYNTACTIC_LOOP_TYPES.has(statement.type) ? 1 : 0),
     eventBody: context.eventBody || isEventStatement(statement),
+    keyboardEventBody: context.keyboardEventBody || capabilities.keyboard,
+    pointerEventBody: context.pointerEventBody || capabilities.pointer,
+  }
+}
+
+function countNodeType(value: unknown, type: string): number {
+  if (Array.isArray(value)) {
+    return value.reduce((total, child) => total + countNodeType(child, type), 0)
+  }
+  if (typeof value !== 'object' || value === null) return 0
+  const record = value as Record<string, unknown>
+  let total = record.type === type ? 1 : 0
+  for (const [key, child] of Object.entries(record)) {
+    if (key !== '__id' && key !== 'type') total += countNodeType(child, type)
+  }
+  return total
+}
+
+function validateDerivedConstructor(
+  statement: Extract<JSStatement, { type: 'classDecl' }>,
+  path: PropertyKey[],
+  issues: LifecycleSemanticIssue[],
+): void {
+  if (!statement.superClass) return
+  const explicitConstructor =
+    statement.ctorId !== undefined ||
+    (statement.ctorParams?.length ?? 0) > 0 ||
+    statement.ctorBody.length > 0
+  if (!explicitConstructor) return
+
+  const superCalls = countNodeType(statement.ctorBody, 'superCall')
+  if (statement.ctorBody[0]?.type !== 'superCall') {
+    issue(
+      issues,
+      [...path, 'ctorBody'],
+      'O construtor de uma classe derivada deve começar chamando super()',
+    )
+  }
+  if (superCalls !== 1) {
+    issue(
+      issues,
+      [...path, 'ctorBody'],
+      'O construtor de uma classe derivada deve chamar super() exatamente uma vez',
+    )
   }
 }
 
@@ -436,6 +519,7 @@ function visitStatement(
 
   if (statement.type === 'classDecl') {
     const derived = Boolean(statement.superClass)
+    validateDerivedConstructor(statement, path, issues)
     const constructorContext: SemanticContext = {
       ...context,
       nested: true,
@@ -476,7 +560,7 @@ function visitStatement(
       ? {
           ...nestedContext,
           functionBody: true,
-          asyncFunctionBody: false,
+          asyncFunctionBody: statement.async === true,
           derivedConstructorBody: false,
           derivedMethodBody: false,
           classBody: false,
@@ -511,6 +595,8 @@ export function validateLifecycleSemantics(
       nested: false,
       loopDepth: 0,
       eventBody: false,
+      keyboardEventBody: false,
+      pointerEventBody: false,
       functionBody: false,
       asyncFunctionBody: false,
       derivedConstructorBody: false,

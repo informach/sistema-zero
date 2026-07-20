@@ -130,6 +130,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
   // Só UMA música por vez: chamar de novo para a anterior antes de começar.
   var _musicTimer = null;
   var _musicStop = false;
+  var _musicState = null;
   var MUSIC_TUNES = {
     adventure: { wave: 'square', step: 200, notes: [262, 330, 392, 330, 440, 392, 330, 262] },
     happy: { wave: 'triangle', step: 180, notes: [523, 587, 659, 784, 659, 587, 523, 587] },
@@ -137,25 +138,46 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
     calm: { wave: 'sine', step: 320, notes: [392, 440, 523, 440, 392, 349, 392, 0] },
     victory: { wave: 'square', step: 200, notes: [523, 523, 523, 659, 784, 0, 784, 1047] }
   };
+  function _scheduleMusic(delay) {
+    if (_musicStop || !_musicState || _paused) return;
+    var wait = Math.max(0, typeof delay === 'number' ? delay : _musicState.step);
+    _musicState.remaining = wait;
+    _musicState.deadline = _wallNow() + wait;
+    _musicTimer = setTimeout(_musicNext, wait);
+  }
+  function _musicNext() {
+    _musicTimer = null;
+    if (_musicStop || !_musicState || _paused) return;
+    var tune = _musicState.tune;
+    var f = tune.notes[_musicState.index % tune.notes.length];
+    if (f > 0) _fxBeep(tune.wave, f, f, _musicState.step / 1000 * 0.9, 'none', 0.05);
+    _musicState.index++;
+    _scheduleMusic(_musicState.step);
+  }
   function playMusic(name) {
     stopMusic();
     if (!MUSIC_TUNES[name]) warnOnce('music:' + name, 'não conheço a música "' + name + '" — toquei "adventure". Escolha uma da lista do bloco.');
     var tune = MUSIC_TUNES[name] || MUSIC_TUNES.adventure;
     var step = (typeof tune.step === 'number' && tune.step > 0) ? tune.step : 200;
-    var i = 0;
     _musicStop = false;
-    function next() {
-      if (_musicStop) return;
-      var f = tune.notes[i % tune.notes.length];
-      if (f > 0) _fxBeep(tune.wave, f, f, step / 1000 * 0.9, 'none', 0.05);
-      i++;
-      _musicTimer = setTimeout(next, step);
-    }
-    next();
+    _musicState = { tune: tune, step: step, index: 0, remaining: 0, deadline: 0 };
+    _musicNext();
+  }
+  function _pauseMusic() {
+    if (!_musicState || _musicTimer === null) return;
+    _musicState.remaining = Math.max(0, _musicState.deadline - _wallNow());
+    clearTimeout(_musicTimer);
+    _musicTimer = null;
+  }
+  function _resumeMusic() {
+    if (_musicStop || !_musicState || _musicTimer !== null) return;
+    _scheduleMusic(_musicState.remaining);
   }
   function stopMusic() {
     _musicStop = true;
-    if (_musicTimer) { clearTimeout(_musicTimer); _musicTimer = null; }
+    if (_musicTimer !== null) clearTimeout(_musicTimer);
+    _musicTimer = null;
+    _musicState = null;
   }
 
   // ---- Notas musicais por nome (dó ré mi…) → frequência ----
@@ -164,5 +186,11 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
     var f = NOTE_FREQS[note];
     playSound(typeof f === 'number' ? f : 440, ms);
   }
+
+  _registerRuntimeDomain('audio', {
+    reset: stopMusic,
+    pause: _pauseMusic,
+    resume: _resumeMusic
+  });
 
 `

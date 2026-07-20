@@ -26,24 +26,24 @@ export const gameThreeDManifest: ExtensionManifest = {
 
 Adiciona \`window.SZGame3D\`, um wrapper didático sobre **Three.js**, para montar
 cenas e **jogos** 3D sobre WebGL. O Three.js é carregado de um CDN **fixado**
-(esm.sh) via importmap — a CSP do preview libera SÓ essa origem em \`script-src\`.
+(esm.sh) via importmap. A CSP do preview libera SÓ essa origem em \`script-src\`.
 
 ### Áreas do projeto
 
 - Em **⚙️ Ao iniciar**, crie a cena, objetos, modelos, luzes e enxames uma vez.
-- Em **⚡ Quando acontecer — Eventos**, coloque chapéus de tecla e clique.
-- Em **🔁 Enquanto estiver rodando — Loops**, coloque **A cada frame 3D** e
+- Em **⚡ Quando acontecer**, coloque chapéus de tecla e clique.
+- Em **🔁 Enquanto estiver rodando**, coloque **A cada frame 3D** e
   atualizações periódicas. Dentro do quadro, apenas mova, anime, aplique física
   e teste colisões.
 
 ### Cena & objetos
 
-- **Criar cena 3D** — cena + câmera + luz + renderizador num \`<canvas>\`.
-- **Criar cena 3D em tela cheia** — atalho para começar rápido: cria o canvas ocupando a janela inteira (responsivo, redimensiona sozinho) + cena/câmera/luz, com uma **cor de fundo** (o que aparece atrás dos objetos da cena), sem precisar de \`<canvas>\` no HTML. Os blocos individuais continuam disponíveis para montar na mão.
+- **Criar cena 3D**. Cena + câmera + luz + renderizador num \`<canvas>\`.
+- **Criar cena 3D em tela cheia**. Atalho para começar rápido: cria o canvas ocupando a janela inteira (responsivo, redimensiona sozinho) + cena/câmera/luz, com uma **cor de fundo** (o que aparece atrás dos objetos da cena), sem precisar de \`<canvas>\` no HTML. Os blocos individuais continuam disponíveis para montar na mão.
 - **Cor de fundo** / **Posicionar câmera**.
-- **Criar cubo** / **Criar esfera** / **Criar caixa** (largura/altura/profundidade — ótima p/ o chão).
+- **Criar cubo** / **Criar esfera** / **Criar caixa** (largura/altura/profundidade. Ótima p/ o chão).
 - **Posição** / **Rotação** (radianos) / **Tamanho (escala)** do objeto.
-- **A cada frame 3D** — loop de animação (\`setAnimationLoop\`) que redesenha a cena.
+- **A cada frame 3D**. Loop de animação (\`setAnimationLoop\`) que redesenha a cena.
 
 ### Formas, modelos & aparência
 
@@ -54,13 +54,13 @@ cenas e **jogos** 3D sobre WebGL. O Three.js é carregado de um CDN **fixado**
 
 ### Física & controles (dentro de "A cada frame 3D")
 
-- **Mover com o teclado (WASD/setas)** — anda no plano.
+- **Mover com o teclado (WASD/setas)**. Anda no plano.
 - **Definir velocidade** / **Fazer pular** (só no chão) / **Mover com gravidade (chão)**.
-- **A câmera segue o objeto** — acompanha mantendo o enquadramento.
+- **A câmera segue o objeto**. Acompanha mantendo o enquadramento.
 - Movimento relativo, olhar/mira e câmeras em primeira pessoa, terceira pessoa e orbital.
-- **Corpo + sólido + atualizar corpo** — física AABB leve da própria plataforma, sem biblioteca externa pesada.
+- **Corpo + sólido + atualizar corpo**. Física AABB leve da própria plataforma, sem biblioteca externa pesada.
 
-### Perguntas (booleanos — caem num "se")
+### Perguntas (booleanos. Caem num "se")
 
 - **a tecla … está apertada?**
 - **o objeto … está encostando em … ?** (colisão AABB).
@@ -68,8 +68,8 @@ cenas e **jogos** 3D sobre WebGL. O Three.js é carregado de um CDN **fixado**
 
 ### Kit "Desvie"
 
-- **Criar grupo de objetos** — lista p/ guardar os inimigos.
-- **Soltar inimigos** — cria/movimenta inimigos que vêm de longe acelerando (limpa os que passam).
+- **Criar grupo de objetos**. Lista p/ guardar os inimigos.
+- **Soltar inimigos**. Cria/movimenta inimigos que vêm de longe acelerando (limpa os que passam).
 - **Fim de jogo: parar a cena**.
 
 ### Enxames & som
@@ -77,12 +77,12 @@ cenas e **jogos** 3D sobre WebGL. O Three.js é carregado de um CDN **fixado**
 - Crie um enxame, solte cópias de uma primitiva, percorra, conte e remova as que saíram da área.
 - Toque notas e efeitos curtos depois da primeira interação do jogador.
 
-### Câmera & grade 3D (genéricos — para jogos de grade/isométrico)
+### Câmera & grade 3D (genéricos. Para jogos de grade/isométrico)
 
 - **Câmera isométrica** (vista de cima em ângulo, opcionalmente seguindo um objeto).
 - **Colocar na linha/coluna** / **Mover em grade com as setas** / **Dar um passo** (botões).
 - **Mover objetos de um grupo (esteira, dando a volta)**.
-- **encosta em algum de … (caixa real)?** — colisão que funciona com modelos compostos.
+- **encosta em algum de … (caixa real)?**. Colisão que funciona com modelos compostos.
 
 ### Kit "Travessia" (atravessar a rua)
 
@@ -94,15 +94,15 @@ cenas e **jogos** 3D sobre WebGL. O Three.js é carregado de um CDN **fixado**
 ### Kit "Corrida" (correr numa pista) + genéricos top-down
 
 - **Câmera aérea** (de cima) e **Mover em círculo** (movimento circular genérico).
-- **a distância entre … / está perto de … ?** — proximidade (p/ colisão de qualquer jogo).
+- **a distância entre … / está perto de … ?**. Proximidade (p/ colisão de qualquer jogo).
 - **Criar mundo de corrida** + **Criar a pista** (oval) + **Criar carro do jogador**.
 - **Dirigir o carro** (↑ acelera / ↓ freia, dá voltas) / **Soltar e mover rivais** / **marcha** (botões).
 - **bateu num rival?** / **voltas (pontuação)** / **Recomeçar**.
 
 ### Kit "Empilhar" (torre de blocos) + genéricos de movimento
 
-- **fazer … cair girando** / **Mover … de um lado a outro** / **Girar …** — genéricos de queda, plataforma e rotação (física na mão, SEM lib).
-- **Criar mundo de empilhar** + **montar a base da torre** — câmera isométrica que sobe com a torre.
+- **fazer … cair girando** / **Mover … de um lado a outro** / **Girar …**. Genéricos de queda, plataforma e rotação (física na mão, SEM lib).
+- **Criar mundo de empilhar** + **montar a base da torre**. Câmera isométrica que sobe com a torre.
 - **Soltar o bloco** (ligue ao clique/à tecla) / **Atualizar a torre** (a cada frame).
 - **pontuação (andares)** / **a torre caiu (fim de jogo)?** / **Recomeçar**.
 

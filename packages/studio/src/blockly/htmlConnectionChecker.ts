@@ -38,6 +38,8 @@ type ProgrammingRequirement =
   | 'function'
   | 'async-function'
   | 'event'
+  | 'keyboard-event'
+  | 'pointer-event'
   | 'derived-constructor'
   | 'derived-method'
   | 'parameter'
@@ -54,9 +56,11 @@ function programmingRequirement(block: Blockly.Block): ProgrammingRequirement | 
     case 'sz_js_await':
       return 'async-function'
     case 'sz_js_event_method':
-    case 'sz_val_event_pos':
-    case 'sz_val_event_key':
       return 'event'
+    case 'sz_val_event_key':
+      return 'keyboard-event'
+    case 'sz_val_event_pos':
+      return 'pointer-event'
     case 'sz_js_super_ctor':
       return 'derived-constructor'
     case 'sz_js_super_method':
@@ -65,6 +69,9 @@ function programmingRequirement(block: Blockly.Block): ProgrammingRequirement | 
       return 'parameter'
     case 'sz_val_this':
       return 'function'
+    case 'sz_js_class_op':
+    case 'sz_val_class_contains':
+      return block.getFieldValue('TARGET_KIND') === 'this' ? 'function' : null
     case 'sz_js_set_this_prop':
     case 'sz_val_this_prop':
       return 'class-body'
@@ -83,6 +90,19 @@ const SYNTACTIC_LOOP_TYPES = new Set([
 ])
 
 const FUNCTION_BODY_TYPES = new Set(['sz_js_function', 'sz_js_class_method', 'sz_js_constructor'])
+
+const KEYBOARD_EVENT_TYPES = new Set(['sz_js_on_key'])
+
+const POINTER_EVENT_TYPES = new Set([
+  'sz_js_on_click',
+  'sz_js_on_click_anywhere',
+  'sz_js_on_mouseover',
+  'sz_js_on_mousemove',
+  'sz_js_on_pointer_down',
+  'sz_js_on_pointer_up',
+  'sz_js_on_context_menu',
+  'sz_js_element_onclick',
+])
 
 function prospectiveAncestors(
   block: Blockly.Block,
@@ -129,10 +149,15 @@ function requirementFits(
     case 'async-function':
       return ancestors.some(
         (ancestor) =>
-          ancestor.type === 'sz_js_class_method' && ancestor.getFieldValue('ASYNC') === 'TRUE',
+          (ancestor.type === 'sz_js_class_method' || ancestor.type === 'sz_js_function') &&
+          ancestor.getFieldValue('ASYNC') === 'TRUE',
       )
     case 'event':
       return ancestors.some(isEventContainer)
+    case 'keyboard-event':
+      return ancestors.some((ancestor) => KEYBOARD_EVENT_TYPES.has(ancestor.type))
+    case 'pointer-event':
+      return ancestors.some((ancestor) => POINTER_EVENT_TYPES.has(ancestor.type))
     case 'derived-constructor':
       return (
         ancestors.some((ancestor) => ancestor.type === 'sz_js_constructor') &&
@@ -160,6 +185,109 @@ function requirementFits(
           ancestor.type === 'sz_js_class_method' || ancestor.type === 'sz_js_constructor',
       )
   }
+}
+
+function directClassConstructors(classBlock: Blockly.Block): Blockly.Block[] {
+  const constructors: Blockly.Block[] = []
+  let member = classBlock.getInputTargetBlock('MEMBERS')
+  while (member) {
+    if (member.type === 'sz_js_constructor') constructors.push(member)
+    member = member.getNextBlock()
+  }
+  return constructors
+}
+
+function constructorsInChain(root: Blockly.Block): number {
+  let count = 0
+  let current: Blockly.Block | null = root
+  while (current) {
+    if (current.type === 'sz_js_constructor') count += 1
+    current = current.getNextBlock()
+  }
+  return count
+}
+
+function surroundingClass(block: Blockly.Block | null): Blockly.Block | null {
+  let current = block
+  while (current) {
+    if (current.type === 'sz_js_class') return current
+    current = current.getSurroundParent()
+  }
+  return null
+}
+
+function isInsideBlock(block: Blockly.Block, expectedAncestor: Blockly.Block): boolean {
+  let current: Blockly.Block | null = block
+  while (current) {
+    if (current === expectedAncestor) return true
+    current = current.getSurroundParent()
+  }
+  return false
+}
+
+/** Classes JavaScript aceitam exatamente zero ou um construtor. */
+function constructorCardinalityFits(
+  destinationOwner: Blockly.Block,
+  movedRoot: Blockly.Block,
+): boolean {
+  for (const block of movedRoot.getDescendants(false)) {
+    if (block.type === 'sz_js_class' && directClassConstructors(block).length > 1) return false
+  }
+
+  const destinationClass = surroundingClass(destinationOwner)
+  if (!destinationClass || movedRoot.getSurroundParent() === destinationClass) return true
+  return directClassConstructors(destinationClass).length + constructorsInChain(movedRoot) <= 1
+}
+
+function countDescendantsOfType(root: Blockly.Block | null, type: string): number {
+  if (!root) return 0
+  return root.getDescendants(false).filter((block) => block.type === type).length
+}
+
+function derivedClassIsComplete(classBlock: Blockly.Block): boolean {
+  if (!getSuperName(classBlock)) return true
+  const [constructorBlock] = directClassConstructors(classBlock)
+  if (!constructorBlock) return true // O construtor padrão do JavaScript chama super().
+  const first = constructorBlock.getInputTargetBlock('BODY')
+  return (
+    first?.type === 'sz_js_super_ctor' && countDescendantsOfType(first, 'sz_js_super_ctor') === 1
+  )
+}
+
+/**
+ * Ao ancorar uma classe no projeto, seu construtor derivado já precisa formar
+ * JavaScript executável: `super()` é o primeiro comando e aparece uma única vez.
+ */
+function derivedConstructorsFit(
+  destinationOwner: Blockly.Block,
+  movedRoot: Blockly.Block,
+): boolean {
+  const prospectiveArea = ancestorTypes(destinationOwner).some(isProjectAreaType)
+  if (!prospectiveArea) return true
+
+  const classes = movedRoot.getDescendants(false).filter((block) => block.type === 'sz_js_class')
+  const enclosing = surroundingClass(destinationOwner)
+  if (enclosing && !classes.includes(enclosing)) classes.push(enclosing)
+  if (!classes.every(derivedClassIsComplete)) return false
+  if (!enclosing || !getSuperName(enclosing)) return true
+
+  // Uma classe derivada já ancorada pode receber seu construtor ou novos
+  // comandos depois. Valide a árvore prospectiva, não apenas a árvore atual.
+  if (movedRoot.type === 'sz_js_constructor') {
+    const first = movedRoot.getInputTargetBlock('BODY')
+    return (
+      first?.type === 'sz_js_super_ctor' && countDescendantsOfType(first, 'sz_js_super_ctor') === 1
+    )
+  }
+  const [constructorBlock] = directClassConstructors(enclosing)
+  if (!constructorBlock) return true
+  if (!isInsideBlock(destinationOwner, constructorBlock)) return true
+
+  const currentFirst = constructorBlock.getInputTargetBlock('BODY')
+  const prospectiveFirst = currentFirst ?? movedRoot
+  const existingSuperCalls = countDescendantsOfType(currentFirst, 'sz_js_super_ctor')
+  const addedSuperCalls = countDescendantsOfType(movedRoot, 'sz_js_super_ctor')
+  return prospectiveFirst.type === 'sz_js_super_ctor' && existingSuperCalls + addedSuperCalls === 1
 }
 
 function programmingTreeFits(destinationOwner: Blockly.Block, movedRoot: Blockly.Block): boolean {
@@ -195,7 +323,10 @@ function nestedStatementContexts(ancestors: readonly Blockly.Block[]): Set<State
         contexts.add('derived-constructor-body')
       }
     }
-    if (ancestor.type === 'sz_js_function') contexts.add('function-body')
+    if (ancestor.type === 'sz_js_function') {
+      contexts.add('function-body')
+      if (ancestor.getFieldValue('ASYNC') === 'TRUE') contexts.add('async-function-body')
+    }
     if (ancestor.type === 'sz_js_class') contexts.add('class-member')
   }
   return contexts
@@ -257,8 +388,10 @@ export class HTMLConnectionChecker extends Blockly.ConnectionChecker {
     const destination = moved === a ? b : a
     const parent = statementOwner(destination)
     if (!parent) return true
+    if (!constructorCardinalityFits(parent, moved.getSourceBlock())) return false
     if (!placementFits(parent, moved.getSourceBlock())) return false
     if (!programmingTreeFits(parent, moved.getSourceBlock())) return false
+    if (!derivedConstructorsFit(parent, moved.getSourceBlock())) return false
 
     const previous =
       a.type === Blockly.ConnectionType.PREVIOUS_STATEMENT

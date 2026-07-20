@@ -12,17 +12,6 @@ export const GAME_TWO_D_AREAS = {
   loop: BEHAVIOR_AREA_LABELS.loops,
 } as const
 
-export const GAME_TWO_D_LIFECYCLE_TOOLBOX = {
-  events: {
-    name: GAME_TWO_D_AREAS.events,
-    types: ['sz_g2d_on_key', 'sz_g2d_on_overlap', 'sz_g2d_on_pointer'],
-  },
-  loop: {
-    name: GAME_TWO_D_AREAS.loop,
-    types: ['sz_g2d_update_each_frame', 'sz_g2d_every_frames', 'sz_g2d_every_seconds'],
-  },
-} as const
-
 export const GAME_TWO_D_PERIODIC_TOOLTIPS = {
   frames: `Roda o “fazer” de tempos em tempos, a cada N quadros. É uma raiz de “${GAME_TWO_D_AREAS.loop}”; não encaixe dentro de “A cada quadro”.`,
   seconds: `Roda o “fazer” a cada N segundos. É uma raiz de “${GAME_TWO_D_AREAS.loop}”; não encaixe dentro de “A cada quadro”.`,

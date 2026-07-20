@@ -34,6 +34,54 @@ export const gameTwoDRuntime =
     if (e.key === 'ArrowDown' || e.key === 's') keys.down = false;
   });
 
+  // Cada domínio é dono do próprio estado de partida. O restart e a pausa apenas
+  // orquestram estes hooks; adicionar um domínio novo não exige editar um reset
+  // central distante.
+  var _runtimeDomains = Object.create(null);
+  var _runtimeDomainOrder = [];
+  function _registerRuntimeDomain(name, hooks) {
+    if (!_runtimeDomains[name]) _runtimeDomainOrder.push(name);
+    _runtimeDomains[name] = hooks || {};
+  }
+  function _runRuntimeDomainHook(hookName) {
+    var domains = _runtimeDomainOrder.slice();
+    for (var i = 0; i < domains.length; i++) {
+      var hooks = _runtimeDomains[domains[i]];
+      var hook = hooks && hooks[hookName];
+      if (typeof hook === 'function') hook();
+    }
+  }
+  function _resetRuntimeDomains() { _runRuntimeDomainHook('reset'); }
+  function _pauseRuntimeDomains() { _runRuntimeDomainHook('pause'); }
+  function _resumeRuntimeDomains() { _runRuntimeDomainHook('resume'); }
+
+  // Relógio monotônico da PARTIDA: o tempo de parede continua andando, mas todo
+  // período pausado é descontado. Animações, cooldowns e temporizadores usam now().
+  var _gameClockPausedAt = null;
+  var _gameClockPausedDuration = 0;
+  function _wallNow() {
+    try {
+      return (window.performance && window.performance.now) ? window.performance.now() : Date.now();
+    } catch (error) { return Date.now(); }
+  }
+  function now() {
+    var wall = _wallNow();
+    var currentPause = _gameClockPausedAt === null ? 0 : wall - _gameClockPausedAt;
+    return wall - _gameClockPausedDuration - currentPause;
+  }
+  function _pauseGameClock() {
+    if (_gameClockPausedAt === null) _gameClockPausedAt = _wallNow();
+  }
+  function _resumeGameClock() {
+    if (_gameClockPausedAt === null) return;
+    _gameClockPausedDuration += Math.max(0, _wallNow() - _gameClockPausedAt);
+    _gameClockPausedAt = null;
+  }
+  function _resetGameClock() {
+    _gameClockPausedAt = null;
+    _gameClockPausedDuration = 0;
+  }
+
 ` +
   gameTwoDSpritesRuntime +
   gameTwoDLifecycleRuntime +

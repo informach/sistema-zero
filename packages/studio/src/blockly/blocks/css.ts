@@ -570,12 +570,13 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   // ---- Atalhos: variável CSS, transform, perspectiva e grade ----
   {
     type: 'sz_css_var',
-    message0: 'Guardar o estilo --%1 = %2 em %3',
+    message0: 'Guardar o estilo --%1 = %2',
     args0: [
       { type: 'field_input', name: 'VARNAME', text: 'cor-principal' },
       { type: 'field_input', name: 'VALUE', text: '#e94560' },
-      { type: 'field_input', name: 'SELECTOR', text: ':root' },
     ],
+    message1: 'usar em %1',
+    args1: [{ type: 'field_input', name: 'SELECTOR', text: ':root' }],
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,

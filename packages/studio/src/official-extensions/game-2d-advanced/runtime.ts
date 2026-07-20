@@ -7543,6 +7543,20 @@ ${towerDefenseRuntime}
   var runtimeInspectors = window.__SZSTUDIO_RUNTIME_INSPECTORS;
   if (runtimeInspectors && typeof runtimeInspectors === 'object') {
     try {
+      runtimeInspectors['game-2d-advanced:rpg'] = function () {
+        var hero = rpg.hero;
+        var s = tilePx || 1;
+        return {
+          map: rpg.currentMap,
+          heroCellX: hero ? Math.round(num(hero.x, 0) / s) : null,
+          heroCellY: hero ? Math.round(num(hero.y, 0) / s) : null,
+          destinationCellX: hero && hero._gridDest ? Math.round(num(hero._gridDest.x, 0) / s) : null,
+          destinationCellY: hero && hero._gridDest ? Math.round(num(hero._gridDest.y, 0) / s) : null,
+          dialogOpen: !!rpg.dialog,
+          sceneOpen: !!rpg.scene,
+          doorCells: Object.keys(rpg.doors)
+        };
+      };
       runtimeInspectors['game-2d-advanced:battle'] = function () {
         var b = rpg.battle;
         if (!b) return null;

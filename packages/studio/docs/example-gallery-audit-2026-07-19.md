@@ -8,8 +8,8 @@ Cada cartão tem contrato de promessa, classificação e cenário de aceite pró
 A distribuição é **46 jogos, 9 demonstrações e 12 explorações**.
 
 Todos os exemplos foram convertidos diretamente para IR V2, com comportamento
-separado em **⚙️ Ao iniciar**, **⚡ Quando acontecer — Eventos** e
-**🔁 Enquanto estiver rodando — Loops**. A abertura pela `KitGallery`,
+separado em **⚙️ Ao iniciar**, **⚡ Quando acontecer** e
+**🔁 Enquanto estiver rodando**. A abertura pela `KitGallery`,
 o schema, os assets, as extensões, a geração, a reconstrução Blockly e o
 round-trip sem warnings são guardas obrigatórias do catálogo. As correções não
 alteraram o gate privilegiado da galeria nem a API pública do pacote.
@@ -23,8 +23,8 @@ alteraram o gate privilegiado da galeria nem a API pública do pacote.
    soltos ou vindos de uma área excluída continuam visíveis como rascunho com
    aviso, sem executar silenciosamente.
 3. O motor inicia automaticamente por um `RuntimeLifecycleContract` obrigatório
-   em cada extensão. **⚙️ Ao iniciar**, **⚡ Quando acontecer — Eventos** e
-   **🔁 Enquanto estiver rodando — Loops** formam uma fábrica de
+   em cada extensão. **⚙️ Ao iniciar**, **⚡ Quando acontecer** e
+   **🔁 Enquanto estiver rodando** formam uma fábrica de
    execução; nos motores com novo jogo, reiniciar limpa os registros e executa
    novamente a fábrica. O descarte do preview libera os recursos do motor,
    inclusive GPU nos motores 3D.

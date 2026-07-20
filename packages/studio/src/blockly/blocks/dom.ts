@@ -19,6 +19,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   // ---- Eventos ----
   {
     type: 'sz_js_on_click',
+    placement: 'event',
     message0: 'Quando clicarem %1 %2',
     args0: [
       {
@@ -40,6 +41,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_on_click_anywhere',
+    placement: 'event',
     message0: 'Quando clicarem em qualquer lugar da tela',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
@@ -51,6 +53,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_on_mouseover',
+    placement: 'event',
     message0: 'Quando o mouse passar %1 %2',
     args0: [
       {
@@ -72,6 +75,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_on_input',
+    placement: 'event',
     message0: 'Quando digitar %1 %2',
     args0: [
       {
@@ -93,6 +97,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_on_submit',
+    placement: 'event',
     message0: 'Quando enviar %1 %2',
     args0: [
       {
@@ -115,6 +120,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_on_event_named',
+    placement: 'event',
     message0: 'quando %1 em %2 %3 chamar a função %4',
     args0: [
       {
@@ -153,6 +159,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_event_method',
+    placement: 'event-body',
     message0: 'no evento, %1',
     args0: [
       {
@@ -173,6 +180,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   // ---- Eventos de teclado / mouse / janela (corpo embutido) ----
   {
     type: 'sz_js_on_key',
+    placement: 'event',
     message0: 'Quando %1',
     args0: [
       {
@@ -194,6 +202,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_on_mousemove',
+    placement: 'event',
     message0: 'Quando mover o mouse/dedo',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
@@ -205,6 +214,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_on_pointer_down',
+    placement: 'event',
     message0: 'Quando apertar o mouse/dedo',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
@@ -216,6 +226,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_on_pointer_up',
+    placement: 'event',
     message0: 'Quando soltar o mouse/dedo',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
@@ -228,6 +239,8 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     // Legado para abrir projetos antigos. O frame "Ao iniciar" já representa
     // este momento e evita ensinar dois jeitos para o mesmo conceito.
     type: 'sz_js_on_load',
+    placement: 'legacy-start',
+    migration: 'unwrap-load',
     message0: 'Quando a página terminar de carregar',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
@@ -239,6 +252,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_on_resize',
+    placement: 'event',
     message0: 'Quando a janela mudar de tamanho',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
@@ -249,6 +263,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_on_context_menu',
+    placement: 'event',
     message0: 'Quando abrir o menu do botão direito',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
@@ -260,6 +275,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_on_blur',
+    placement: 'event',
     message0: 'Quando a janela perder o foco',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
@@ -271,6 +287,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_element_onclick',
+    placement: 'event',
     message0: 'ao clicar no elemento %1 %2 fazer %3',
     args0: [
       { type: 'input_value', name: 'TARGET', check: 'JSValue' },
@@ -284,6 +301,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_on_fullscreen_change',
+    placement: 'event',
     message0: 'Quando a tela cheia mudar',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
@@ -296,6 +314,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   // ---- Tela cheia (Fullscreen API) ----
   {
     type: 'sz_js_request_fullscreen',
+    placement: 'command',
     message0: 'entrar em tela cheia',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -304,6 +323,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_exit_fullscreen',
+    placement: 'command',
     message0: 'sair da tela cheia',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -312,6 +332,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_toggle_fullscreen',
+    placement: 'command',
     message0: 'alternar tela cheia',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -330,6 +351,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   // ---- Buscar elementos ----
   {
     type: 'sz_js_get_element_by_id',
+    placement: 'command',
     message0: 'Pegar elemento id %1 e guardar em %2',
     args0: [
       { type: 'field_input', name: 'ID', text: 'meuBotao' },
@@ -371,6 +393,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_query_selector',
+    placement: 'command',
     message0: 'Pegar elemento via seletor %1 e guardar em %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
@@ -383,6 +406,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_query_selector_all',
+    placement: 'command',
     message0: 'Pegar TODOS os elementos via seletor %1 e guardar em %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '.item' },
@@ -397,6 +421,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   // ---- Ler/alterar conteúdo ----
   {
     type: 'sz_js_set_property_text',
+    placement: 'command',
     message0: 'Alterar %1 %2 %3 para %4',
     args0: [
       {
@@ -426,6 +451,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_set_property',
+    placement: 'command',
     message0: 'alterar %1 %2 %3 para o valor %4',
     args0: [
       {
@@ -455,6 +481,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_set_style',
+    placement: 'command',
     message0: 'Mudar o estilo %1 %2 %3 (ou %4) para %5',
     args0: [
       {
@@ -498,6 +525,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_set_style_text',
+    placement: 'command',
     message0: 'Definir o estilo completo %1 %2 como %3',
     args0: [
       {
@@ -519,6 +547,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_set_attribute',
+    placement: 'command',
     message0: 'Definir o atributo %1 %2 %3 como %4',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'stroke' },
@@ -542,6 +571,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_set_property_var',
+    placement: 'command',
     message0: 'Alterar %1 %2 %3 para o valor da variável %4',
     args0: [
       {
@@ -570,6 +600,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_set_property_calc',
+    placement: 'command',
     message0: 'Alterar %1 %2 %3 para %4',
     args0: [
       {
@@ -607,6 +638,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_get_property',
+    placement: 'command',
     message0: 'Pegar %1 %2 %3 e guardar em %4',
     args0: [
       {
@@ -636,6 +668,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_get_attribute',
+    placement: 'command',
     message0: 'Pegar o atributo %1 %2 %3 e guardar em %4',
     args0: [
       { type: 'field_input', name: 'ATTR', text: 'cx' },
@@ -659,6 +692,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     // Legado: substituído por sz_js_set_property_text. Mantido (oculto da
     // paleta) para que projetos antigos salvos com este bloco ainda carreguem.
     type: 'sz_js_set_text',
+    placement: 'command',
     message0: 'Alterar texto do elemento id %1 para %2',
     args0: [
       { type: 'field_name_picker', name: 'TARGET', text: 'saida', kind: 'dom-target' },
@@ -672,6 +706,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   // ---- Classes e dados ----
   {
     type: 'sz_js_class_op',
+    placement: 'command',
     message0: '%1 classe %2 %3 %4',
     args0: [
       {
@@ -702,6 +737,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_set_dataset',
+    placement: 'command',
     message0: 'no elemento %1 %2 guardar no dado %3 o valor %4',
     args0: [
       {
@@ -725,6 +761,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   // ---- Criar/inserir elementos ----
   {
     type: 'sz_js_create_element',
+    placement: 'command',
     message0: 'criar elemento %1 e guardar em %2',
     args0: [
       { type: 'field_input', name: 'TAG', text: 'div' },
@@ -739,6 +776,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_create_element_ns',
+    placement: 'command',
     message0: 'criar forma SVG %1 e guardar em %2',
     args0: [
       { type: 'field_input', name: 'TAG', text: 'circle' },
@@ -754,6 +792,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_append_child',
+    placement: 'command',
     message0: 'dentro de %1 adicionar %2',
     args0: [
       { type: 'field_name_picker', name: 'PARENT', text: 'pai', kind: 'variable' },

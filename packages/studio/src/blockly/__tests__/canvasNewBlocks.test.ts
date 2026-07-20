@@ -16,6 +16,16 @@ function types(v: unknown, out = new Set<string>()): Set<string> {
 const N = (value: number) => ({ type: 'num', value }) as const
 
 describe('Canvas — 11 blocos novos: round-trip Blocos↔Código', () => {
+  it('falha com orientação amigável quando a tela não existe e mantém o round-trip', () => {
+    const ir: JSStatement[] = [{ type: 'canvasSetup', canvasId: 'jogo', varName: 'ctx' }]
+    const code = compileStatements(ir, 0)
+
+    expect(() => new Function('document', code)({ getElementById: () => null })).toThrow(
+      'Não foi possível preparar a tela Canvas “jogo”',
+    )
+    expect(parseJS(code)).toEqual(ir)
+  })
+
   it('todos compilam e voltam SEM rawJS, mantendo o tipo do bloco', () => {
     const ir: JSStatement[] = [
       { type: 'canvasSetup', canvasId: 'tela', varName: 'ctx' },

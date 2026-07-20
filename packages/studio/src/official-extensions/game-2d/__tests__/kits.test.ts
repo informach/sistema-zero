@@ -16,6 +16,7 @@ import { gameTwoDRuntime } from '../runtime'
  */
 
 interface Game2DApi {
+  setupStage: (width: number, height: number, background: string) => void
   createStickHero: (ctx: unknown) => unknown
   updateStickHero: (g: unknown) => void
   stickHeroScore: (g: unknown) => number
@@ -29,12 +30,12 @@ interface Game2DApi {
   restartBalloon: (g: unknown) => void
 }
 
-function loadRuntime(): Game2DApi {
+function loadRuntime(devicePixelRatio = 1): Game2DApi {
   const win = {
     addEventListener() {},
     SZGame2D: undefined,
     performance: { now: () => 0 },
-    devicePixelRatio: 1,
+    devicePixelRatio,
   } as unknown as Record<string, unknown>
   new Function('window', 'requestAnimationFrame', gameTwoDRuntime)(win, () => 0)
   return (win as { SZGame2D: Game2DApi }).SZGame2D
@@ -193,5 +194,28 @@ describe('Kit equilibrista / Kit balão — fumaça do runtime', () => {
     expect(api.balloonOver(jogo)).toBe(false)
     expect(() => api.updateBalloon(jogo)).not.toThrow()
     expect(() => api.restartBalloon(jogo)).not.toThrow()
+  })
+
+  it.each([2, 3])('usa dimensões lógicas no DPR %i', (devicePixelRatio) => {
+    document.body.innerHTML = '<canvas id="tela"></canvas>'
+    const canvas = document.querySelector('canvas')
+    if (!canvas) throw new Error('canvas do teste não foi criado')
+    canvas.getBoundingClientRect = () =>
+      ({ width: 800, height: 480, x: 0, y: 0, top: 0, left: 0, right: 800, bottom: 480 }) as DOMRect
+    const api = loadRuntime(devicePixelRatio)
+    api.setupStage(800, 480, '#000000')
+    expect(canvas.width).toBe(800 * devicePixelRatio)
+    expect(canvas.height).toBe(480 * devicePixelRatio)
+
+    const stickHero = api.createStickHero(mockCtx(canvas.width, canvas.height)) as {
+      w: number
+      h: number
+    }
+    const balloon = api.createBalloon(mockCtx(canvas.width, canvas.height)) as {
+      w: number
+      h: number
+    }
+    expect([stickHero.w, stickHero.h]).toEqual([800, 480])
+    expect([balloon.w, balloon.h]).toEqual([800, 480])
   })
 })

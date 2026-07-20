@@ -107,6 +107,29 @@ describe('buildCoreToolbox — estrutura e itens sempre válidos', () => {
     expect(all.filter((type) => type === 'sz_js_object_assign')).toHaveLength(1)
   })
 
+  it('reúne comandos e valores de lista em 📋 Listas, sem duplicar em Valores', () => {
+    const toolbox = buildCoreToolbox([])
+    const programming = findCategory(toolbox.contents, 'Programação')
+    const listas = blockTypesIn(findCategory(programming?.contents ?? [], '📋 Listas'))
+    const valores = blockTypesIn(findCategory(toolbox.contents, '🔣 Valores'))
+
+    for (const type of [
+      'sz_js_array_push',
+      'sz_js_array_remove',
+      'sz_val_array',
+      'sz_val_array_length',
+      'sz_val_array_index',
+      'sz_val_array_last',
+      'sz_val_array_map',
+      'sz_val_array_filter',
+      'sz_val_concat_arrays',
+      'sz_val_shuffle',
+    ]) {
+      expect(listas, type).toContain(type)
+      expect(valores, type).not.toContain(type)
+    }
+  })
+
   it('a busca está sempre presente', () => {
     const tb = buildCoreToolbox([], { level: 'iniciante-2d' })
     expect(tb.contents.some((c) => c.kind === 'search')).toBe(true)
@@ -209,6 +232,10 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
       'sz_math_arithmetic',
       'sz_g3d_create_scene',
       'sz_g3d_get_pos',
+      'sz_val_array_length',
+      'sz_val_array_index',
+      'sz_val_array_last',
+      'sz_val_join',
     ]) {
       expect(types.has(t)).toBe(true)
     }

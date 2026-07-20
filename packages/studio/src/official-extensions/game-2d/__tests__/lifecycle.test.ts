@@ -158,6 +158,49 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
     expect(healthy).toBe(3)
   })
 
+  it('erro dentro de um bloco composto sobe até o driver e desativa a raiz culpada', () => {
+    const { api, flushFrame } = runtimeHarness()
+    const composed = api as GameTwoDLifecycleApi & {
+      createGroup: () => { items: Array<{ x: number; y: number; w: number; h: number }> }
+      spawn: (
+        group: { items: Array<{ x: number; y: number; w: number; h: number }> },
+        options: { x: number; y: number; w: number; h: number; color: string },
+      ) => void
+      forEachInGroup: (
+        group: { items: Array<{ x: number; y: number; w: number; h: number }> },
+        callback: () => void,
+      ) => void
+    }
+    const group = composed.createGroup()
+    composed.spawn(group, { x: 0, y: 0, w: 10, h: 10, color: '#ffffff' })
+    const original = console.error
+    const messages: unknown[][] = []
+    let brokenCalls = 0
+    let healthyCalls = 0
+    console.error = (...args: unknown[]) => messages.push(args)
+    try {
+      composed.gameLoop(() => {
+        composed.forEachInGroup(group, () => {
+          brokenCalls += 1
+          throw new Error('erro dentro do para cada')
+        })
+      }, 'raiz-composta')
+      composed.gameLoop(() => {
+        healthyCalls += 1
+      }, 'raiz-saudavel')
+      flushFrame()
+      flushFrame()
+      flushFrame()
+    } finally {
+      console.error = original
+    }
+
+    expect(brokenCalls).toBe(1)
+    expect(healthyCalls).toBe(3)
+    expect(messages).toHaveLength(1)
+    expect(String(messages[0]?.[0])).toContain('parei o bloco')
+  })
+
   it('usa passo fixo: 120 Hz e 60 Hz executam a mesma quantidade de atualizações', () => {
     const atRate = (stepMs: number) => {
       const { api, flushFrame } = runtimeHarness()
@@ -221,6 +264,11 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
     const canvas = document.querySelector('canvas')
 
     expect(canvas?.style.touchAction).toBe('none')
+    expect(canvas?.hasAttribute('data-sz-game-2d-stage')).toBe(true)
+    const focusStyle = document.getElementById('sz-game-2d-focus-style')
+    expect(focusStyle?.textContent).toContain(':focus-visible')
+    expect(focusStyle?.textContent).toContain('outline: none')
+    expect(focusStyle?.textContent).toContain('box-shadow: inset')
     expect(canvas?.getAttribute('aria-label')).toBe('Labirinto: use as setas e encontre a saída.')
     const descriptionId = canvas?.getAttribute('aria-describedby')
     expect(descriptionId).toBeTruthy()

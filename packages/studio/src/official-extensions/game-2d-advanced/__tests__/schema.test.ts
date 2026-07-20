@@ -82,18 +82,25 @@ describe('game-2d-advanced — IR no schema', () => {
     const parsed = SZIRSchema.safeParse({
       html: [],
       css: [],
-      js: GK_STATEMENTS,
+      js: [
+        { type: 'var', name: 'dica', value: { type: 'str', value: '' } },
+        { type: 'var', name: 'y', value: { type: 'num', value: 0 } },
+        ...GK_STATEMENTS,
+      ],
       extensions: [{ extensionId: 'game-2d-advanced' }],
     })
     expect(parsed.success).toBe(true)
   })
 
   it('todos os valores gk: validam dentro de um statement', () => {
-    const js: JSStatement[] = GK_EXPRS.map((expr) => ({
-      type: 'assign',
-      name: 'x',
-      value: expr,
-    }))
+    const js: JSStatement[] = [
+      { type: 'var', name: 'x', value: { type: 'num', value: 0 } },
+      ...GK_EXPRS.map((expr) => ({
+        type: 'assign' as const,
+        name: 'x',
+        value: expr,
+      })),
+    ]
     const parsed = SZIRSchema.safeParse({ html: [], css: [], js, extensions: [] })
     expect(parsed.success).toBe(true)
   })
