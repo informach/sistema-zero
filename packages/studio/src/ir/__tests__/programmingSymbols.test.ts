@@ -485,6 +485,24 @@ describe('símbolos léxicos da Programação', () => {
       ]),
     )
     expect(beforeAwait.success).toBe(false)
+
+    const localAfterAwait = SZIRSchema.safeParse(
+      legacyProject([
+        {
+          type: 'funcDecl',
+          name: 'carregar',
+          params: [],
+          async: true,
+          body: [
+            { type: 'awaitStmt', value: { type: 'num', value: 1 } },
+            { type: 'consoleLog', value: { type: 'var', name: 'resultado' } },
+            { type: 'var', name: 'resultado', value: { type: 'num', value: 1 } },
+          ],
+        },
+        { type: 'callFunction', name: 'carregar', args: [] },
+      ]),
+    )
+    expect(localAfterAwait.success).toBe(false)
   })
 
   it('promove símbolos futuros depois de await em método assíncrono', () => {

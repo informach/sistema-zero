@@ -11,6 +11,7 @@ import type {
   SZIRV2,
 } from '#ir'
 import { cssDeclarationEntries, HTMLNodeSchema, splitLegacyBehavior } from '#ir'
+import { normalizeCSSTransitionProperty } from '../css/motion'
 import { htmlElementForBlock, isSupportedHTMLInputType } from '../html/catalog'
 import {
   FRAME_APPEARANCE,
@@ -1538,15 +1539,16 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     case 'sz_html_image': {
       const id = f(block, 'ID')
       const alt = f(block, 'ALT')
+      const decorative = f(block, 'DECORATIVE') === 'TRUE'
       return {
         kind: 'html',
         value: {
           type: 'element',
           tag: 'img',
           ...(id ? { id } : {}),
-          // `alt` vazio NÃO vira atributo (round-trip fiel de `<img src id>` sem
-          // alt); com texto, é preservado.
-          attrs: { src: f(block, 'SRC'), ...(alt ? { alt } : {}) },
+          // A presença de `alt=""` é semântica: indica imagem decorativa. O
+          // checkbox separa esse caso de uma imagem importada sem atributo alt.
+          attrs: { src: f(block, 'SRC'), ...(decorative ? { alt: '' } : alt ? { alt } : {}) },
         },
       }
     }
@@ -2047,7 +2049,23 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'css',
         value: {
           selector: f(block, 'SELECTOR'),
-          declarations: { transition: `all ${fn(block, 'MS', 300)}ms ease` },
+          declarations: {
+            transition: `${normalizeCSSTransitionProperty(f(block, 'PROPERTY'))} ${fn(block, 'MS', 300)}ms ease`,
+          },
+        },
+      }
+    case 'sz_css_reduce_motion':
+      return {
+        kind: 'css',
+        value: {
+          type: 'mediaQuery',
+          feature: 'prefers-reduced-motion',
+          rules: [
+            {
+              selector: f(block, 'SELECTOR'),
+              declarations: { animation: 'none', transition: 'none' },
+            },
+          ],
         },
       }
     case 'sz_css_hover': {

@@ -1,5 +1,7 @@
 import { z } from 'zod'
 import { normalizeGoogleFontFamily } from '../css/googleFonts'
+import { isCSSKeyframeSelector, isCSSKeyframesName } from '../css/keyframes'
+import { CSS_MEDIA_SIZE_FEATURES, type CSSMediaSizeFeature } from '../css/mediaQueries'
 import { isGuidedDomElementTag } from '../domSafety'
 import { HTML_TAGS, isHTMLElementChildAllowed } from '../html/catalog'
 import { PERSISTENT_EXTENSION_STATEMENT_TYPES } from '../official-extensions/persistentResourceContract'
@@ -1472,28 +1474,33 @@ export const CommentCSSSchema: z.ZodType<CommentCSS> = z.object({
   ...idField,
 })
 
-/**
- * Media query (`@media (max-width: Npx) { ... }`). Modela só a forma de uma
- * única feature de largura — o caso comum de responsividade. Condições fora
- * desse formato continuam como {@link RawCSS} avançado (round-trip preserva o
- * código verbatim).
- */
-export interface MediaQueryCSS {
+/** Media query guiada de tamanho ou de preferência por movimento reduzido. */
+interface MediaQueryCSSBase {
   type: 'mediaQuery'
-  feature: 'max-width' | 'min-width' | 'max-height' | 'min-height'
-  px: number
   rules: CSSEntry[]
   __id?: string
 }
 
-export const MediaQueryCSSSchema: z.ZodType<MediaQueryCSS> = z.object({
-  type: z.literal('mediaQuery'),
-  feature: z.enum(['max-width', 'min-width', 'max-height', 'min-height']),
-  px: z.number(),
-  // Conteúdo da media query. Lazy por ciclo (CSSEntry inclui MediaQueryCSS).
-  rules: z.array(z.lazy(() => CSSEntrySchema)),
-  ...idField,
-})
+export type MediaQueryCSS = MediaQueryCSSBase &
+  ({ feature: CSSMediaSizeFeature; px: number } | { feature: 'prefers-reduced-motion'; px?: never })
+
+export const MediaQueryCSSSchema: z.ZodType<MediaQueryCSS> = z.union([
+  z.object({
+    type: z.literal('mediaQuery'),
+    feature: z.enum(CSS_MEDIA_SIZE_FEATURES),
+    px: z.number().nonnegative(),
+    // Conteúdo da media query. Lazy por ciclo (CSSEntry inclui MediaQueryCSS).
+    rules: z.array(z.lazy(() => CSSEntrySchema)),
+    ...idField,
+  }),
+  z.object({
+    type: z.literal('mediaQuery'),
+    feature: z.literal('prefers-reduced-motion'),
+    px: z.never().optional(),
+    rules: z.array(z.lazy(() => CSSEntrySchema)),
+    ...idField,
+  }),
+])
 
 /**
  * `@keyframes nome { 0% { … } 100% { … } }`. Cada passo tem um seletor de
@@ -1509,10 +1516,14 @@ export interface KeyframesCSS {
 
 export const KeyframesCSSSchema: z.ZodType<KeyframesCSS> = z.object({
   type: z.literal('keyframes'),
-  name: cssNameText().min(1),
+  name: cssNameText().min(1).refine(isCSSKeyframesName, {
+    error: 'Dê à animação um nome simples, sem espaços, como “pulsar”.',
+  }),
   steps: z.array(
     z.object({
-      at: cssNameText().min(1),
+      at: cssNameText().min(1).refine(isCSSKeyframeSelector, {
+        error: 'Use “from”, “to” ou percentuais entre 0% e 100%.',
+      }),
       declarations: CSSDeclarationsSchema,
     }),
   ),

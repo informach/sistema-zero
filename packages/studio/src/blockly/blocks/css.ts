@@ -1,3 +1,4 @@
+import { CSS_TRANSITION_PROPERTY_OPTIONS } from '../../css/motion'
 import { CATEGORY_COLORS, categoryShades } from '../theme'
 import type { BlockDefinition } from './types'
 
@@ -469,8 +470,13 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   // ---- CSS moderno ----
   {
     type: 'sz_css_transition',
-    message0: 'Suavizar as mudanças de %1 por %2 ms',
+    message0: 'Suavizar %1 de %2 por %3 ms',
     args0: [
+      {
+        type: 'field_dropdown',
+        name: 'PROPERTY',
+        options: CSS_TRANSITION_PROPERTY_OPTIONS.map(([label, value]) => [label, value]),
+      },
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'MS', value: 300, min: 0 },
     ],
@@ -478,7 +484,17 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'CSSEntry',
     colour: C,
     tooltip:
-      'Em vez de pular de um estilo para outro, faz a mudança escorregar suavemente. Combine com “Quando o ponteiro passar”.',
+      'Faz uma mudança visual específica acontecer devagar, sem animar o tamanho ou a posição da página por acidente.',
+  },
+  {
+    type: 'sz_css_reduce_motion',
+    message0: 'Respeitar menos movimento em %1',
+    args0: [{ type: 'field_input', name: 'SELECTOR', text: '#caixa' }],
+    previousStatement: 'CSSEntry',
+    nextStatement: 'CSSEntry',
+    colour: C,
+    tooltip:
+      'Desliga animações e transições nesta parte quando a pessoa pediu menos movimento no aparelho.',
   },
   {
     type: 'sz_css_hover',
@@ -900,7 +916,11 @@ export const CSS_GROUPS: { name: string; colour: string; types: string[] }[] = [
       'sz_css_apply_animation',
     ],
   },
-  { name: '📱 Responsivo', colour: '#8b5cf6', types: ['sz_css_media_query'] },
+  {
+    name: '📱 Responsivo',
+    colour: '#8b5cf6',
+    types: ['sz_css_media_query', 'sz_css_reduce_motion'],
+  },
   {
     name: '🎮 Posição & jogo',
     colour: '#7048e0',

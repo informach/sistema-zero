@@ -1,4 +1,4 @@
-import { compileStatements, renderNodes } from '#generators'
+import { compileStatements, generateCSS, renderNodes } from '#generators'
 import type {
   CSSDeclarations,
   CSSEntry,
@@ -287,9 +287,16 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
     )
   }
   if (node.tag === 'img') {
+    const hasAlt = Object.hasOwn(node.attrs ?? {}, 'alt')
+    const alt = node.attrs?.alt ?? ''
     return block(
       'sz_html_image',
-      { SRC: node.attrs?.src ?? '', ALT: node.attrs?.alt ?? '', ID: node.id ?? '' },
+      {
+        SRC: node.attrs?.src ?? '',
+        ALT: alt,
+        DECORATIVE: hasAlt && alt === '' ? 'TRUE' : 'FALSE',
+        ID: node.id ?? '',
+      },
       {},
       node.__id,
     )
@@ -547,6 +554,20 @@ function cssEntryToBlocks(entry: CSSEntry): SerializedBlocklyBlock[] {
     return [block('sz_css_comment', { TEXT: entry.text }, {}, entry.__id)]
   }
   if ('type' in entry && entry.type === 'mediaQuery') {
+    if (entry.feature === 'prefers-reduced-motion') {
+      const rule = entry.rules.length === 1 ? entry.rules[0] : undefined
+      if (rule && !('type' in rule)) {
+        const declarations = cssDeclarationsRecord(rule.declarations)
+        if (
+          Object.keys(declarations).length === 2 &&
+          declarations.animation === 'none' &&
+          declarations.transition === 'none'
+        ) {
+          return [block('sz_css_reduce_motion', { SELECTOR: rule.selector }, {}, entry.__id)]
+        }
+      }
+      return [block('sz_adv_raw_css', { CODE: generateCSS([entry]).trimEnd() }, {}, entry.__id)]
+    }
     const inner = entry.rules.flatMap(cssEntryToBlocks)
     return [
       block(

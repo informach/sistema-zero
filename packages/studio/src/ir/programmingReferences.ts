@@ -1,4 +1,4 @@
-import { programmingBodyTiming } from './programmingExecution'
+import { isProgrammingStatementBodyKey, programmingChildBodyEntries } from './programmingExecution'
 import {
   PROGRAMMING_REFERENCE_FIELDS,
   type ProgrammingReferenceField,
@@ -71,8 +71,6 @@ const VARIABLE_DECLARATION_FIELDS: Readonly<Record<string, string>> = {
 }
 
 const IMPLICIT_VARIABLES = new Set([
-  'ctx',
-  'event',
   'window',
   'document',
   'Math',
@@ -121,26 +119,6 @@ const IMPLICIT_FUNCTIONS = new Set([
   'setTimeout',
 ])
 
-const STATEMENT_BODY_KEYS = new Set([
-  'body',
-  'then',
-  'else',
-  'handler',
-  'finalizer',
-  'catchBody',
-  'ctorBody',
-  'default',
-  'bodyA',
-  'bodyB',
-  'errorBody',
-  'methods',
-])
-
-interface ChildStatementEntry {
-  path: (string | number)[]
-  body: JSStatement[]
-}
-
 interface FunctionDefinition {
   params: readonly string[]
   body: JSStatement[]
@@ -170,40 +148,6 @@ interface ProgrammingSymbols {
   checkingClassBodies: Set<string>
 }
 
-function childStatementEntries(statement: JSStatement): ChildStatementEntry[] {
-  const bodies: ChildStatementEntry[] = []
-  for (const [key, value] of Object.entries(statement)) {
-    if (key === 'elseif' && Array.isArray(value)) {
-      value.forEach((branch, index) => {
-        if (branch && typeof branch === 'object' && Array.isArray(branch.then)) {
-          bodies.push({ path: ['elseif', index, 'then'], body: branch.then })
-        }
-      })
-      continue
-    }
-    if (STATEMENT_BODY_KEYS.has(key) && Array.isArray(value)) {
-      if (key === 'methods') {
-        value.forEach((method, index) => {
-          if (method && typeof method === 'object' && Array.isArray(method.body)) {
-            bodies.push({ path: ['methods', index, 'body'], body: method.body })
-          }
-        })
-      } else {
-        bodies.push({ path: [key], body: value as JSStatement[] })
-      }
-      continue
-    }
-    if (key === 'cases' && Array.isArray(value)) {
-      value.forEach((branch, index) => {
-        if (branch && typeof branch === 'object' && Array.isArray(branch.body)) {
-          bodies.push({ path: ['cases', index, 'body'], body: branch.body })
-        }
-      })
-    }
-  }
-  return bodies
-}
-
 function cloneSymbols(symbols: ProgrammingSymbols): ProgrammingSymbols {
   return {
     variables: new Set(symbols.variables),
@@ -218,116 +162,38 @@ function cloneSymbols(symbols: ProgrammingSymbols): ProgrammingSymbols {
   }
 }
 
+/**
+ * Combina o escopo atual com nomes que estarão disponíveis quando a execução
+ * retornar ao callback/continuação. O escopo atual vence em mapas para manter
+ * o shadowing léxico; o futuro só acrescenta declarações ainda não vistas.
+ */
+function mergeFutureSymbols(
+  current: ProgrammingSymbols,
+  future: ProgrammingSymbols,
+): ProgrammingSymbols {
+  const merged = cloneSymbols(current)
+  for (const name of future.variables) merged.variables.add(name)
+  for (const name of future.canvasContexts) merged.canvasContexts.add(name)
+  for (const name of future.classes) merged.classes.add(name)
+  for (const name of future.functions) merged.functions.add(name)
+  future.functionDefinitions.forEach((definition, name) => {
+    if (!merged.functionDefinitions.has(name)) merged.functionDefinitions.set(name, definition)
+  })
+  for (const name of future.checkingFunctions) merged.checkingFunctions.add(name)
+  future.classDefinitions.forEach((definition, name) => {
+    if (!merged.classDefinitions.has(name)) merged.classDefinitions.set(name, definition)
+  })
+  future.instances.forEach((className, name) => {
+    if (!merged.instances.has(name)) merged.instances.set(name, className)
+  })
+  for (const name of future.checkingClassBodies) merged.checkingClassBodies.add(name)
+  return merged
+}
+
 function addName(target: Set<string>, value: unknown): void {
   if (typeof value !== 'string') return
   const name = value.trim()
   if (name) target.add(name)
-}
-
-function localVariablesForChild(statement: JSStatement, path: readonly PropertyKey[]): string[] {
-  const first = path[0]
-  switch (statement.type) {
-    case 'funcDecl':
-      return first === 'body' ? statement.params : []
-    case 'forRange':
-      return first === 'body' ? [statement.varName] : []
-    case 'forOf':
-      return first === 'body' ? [statement.itemName] : []
-    case 'forEach':
-      return first === 'body'
-        ? [statement.itemName, statement.indexName].filter(
-            (name): name is string => typeof name === 'string' && name.length > 0,
-          )
-        : []
-    case 'tryCatch':
-      return first === 'handler' && statement.errorName ? [statement.errorName] : []
-    case 'fetchJson':
-      if (first === 'body') return [statement.okName]
-      return first === 'catchBody' && statement.catchName ? [statement.catchName] : []
-    case 'classDecl':
-      if (first === 'ctorBody') return statement.ctorParams ?? []
-      if (first === 'methods' && typeof path[1] === 'number') {
-        return statement.methods[path[1]]?.params ?? []
-      }
-      return []
-    case 'requestFrameDo':
-      return first === 'body' && statement.param ? [statement.param] : []
-    case 'loaderLoad':
-      if (first === 'body') return [statement.param]
-      return first === 'errorBody' && statement.errorParam ? [statement.errorParam] : []
-    case 'traverseEach':
-      return first === 'body' ? [statement.param] : []
-    case 'physicsLiteCollisionEvent':
-      return first === 'body' ? [statement.bodyParam, statement.colliderParam] : []
-    case 'physicsLiteTriggerEvent':
-      return first === 'body'
-        ? [statement.bodyParam, statement.triggerParam, statement.enteringParam]
-        : []
-    case 'animationLoop':
-      return first === 'body'
-        ? [statement.handle, statement.timeVar, statement.deltaVar].filter(
-            (name): name is string => typeof name === 'string' && name.length > 0,
-          )
-        : []
-    case 'g2d:onPointer':
-      return first === 'body' ? [statement.xName, statement.yName] : []
-    case 'g2d:onGroupOverlap':
-      return first === 'body' ? [statement.aName, statement.bName] : []
-    case 'g2d:forEachInGroup':
-    case 'g2d:pruneOffscreen':
-    case 'g2d:onSpriteGroupOverlap':
-    case 'g2d:onEnemyDefeated':
-    case 'g2d:onEnemyShotHit':
-      return first === 'body' ? [statement.itemName] : []
-    case 'g3d:forEachInSwarm':
-      return first === 'body' ? [statement.itemName] : []
-    case 'gk:onUpdate':
-    case 'g3k:onUpdate':
-    case 'w3d:onUpdate':
-      return first === 'body' ? [statement.dtName] : []
-    case 'gk:onDraw':
-    case 'gk:onDrawHud':
-      return first === 'body' ? [statement.ctxName] : []
-    case 'gk:onGameClick':
-    case 'gk:tdOnBuy':
-      return first === 'body' ? [statement.xName, statement.yName] : []
-    case 'gk:rpgCreateMap':
-    case 'gk:defineLook':
-      return first === 'body' ? [statement.ctxName] : []
-    case 'gk:forEachActive':
-    case 'g3k:forEachAlive':
-    case 'g3k:forEachNear':
-    case 'g3k:onEnterEntityState':
-    case 'g3k:onExitEntityState':
-    case 'g3k:onEntityDeath':
-      return first === 'body' ? [statement.itemName] : []
-    case 'gk:overlapGroups':
-      return first === 'body' ? [statement.aName, statement.bName] : []
-    case 'g3k:onEntityStateUpdate':
-      return first === 'body' ? [statement.itemName, statement.dtName] : []
-    case 'g3k:onOverlap':
-      return first === 'body' ? [statement.zoneName, statement.whoName] : []
-    default:
-      return []
-  }
-}
-
-function localCanvasContextsForChild(
-  statement: JSStatement,
-  path: readonly PropertyKey[],
-): string[] {
-  if (path[0] !== 'body') return []
-  switch (statement.type) {
-    case 'g2d:defineShape':
-      return ['ctx']
-    case 'gk:onDraw':
-    case 'gk:onDrawHud':
-    case 'gk:rpgCreateMap':
-    case 'gk:defineLook':
-      return [statement.ctxName]
-    default:
-      return []
-  }
 }
 
 function missingIssue(
@@ -429,12 +295,13 @@ function validateCanvasContext(
 function validateValue(
   value: unknown,
   symbols: ProgrammingSymbols,
+  futureSymbols: ProgrammingSymbols,
   path: (string | number)[],
   issues: ProgrammingReferenceIssue[],
 ): void {
   if (Array.isArray(value)) {
     value.forEach((child, index) => {
-      validateValue(child, symbols, [...path, index], issues)
+      validateValue(child, symbols, futureSymbols, [...path, index], issues)
     })
     return
   }
@@ -463,17 +330,17 @@ function validateValue(
   }
 
   if ((type === 'call' || type === 'callFunction') && typeof record.name === 'string') {
-    validateCalledFunction(record.name, symbols, path, issues)
+    validateCalledFunction(record.name, symbols, futureSymbols, path, issues)
   }
   if (type === 'newExpr' && !hasText(record.namespace)) {
-    validateConstructedClass(record.className, symbols, path, issues)
+    validateConstructedClass(record.className, symbols, futureSymbols, path, issues)
   }
   if (
     type === 'callMethodExpr' &&
     typeof record.objectVar === 'string' &&
     typeof record.method === 'string'
   ) {
-    validateCalledMethod(record.objectVar, record.method, symbols, path, issues)
+    validateCalledMethod(record.objectVar, record.method, symbols, futureSymbols, path, issues)
   }
 
   if (
@@ -481,12 +348,14 @@ function validateValue(
     typeof record.itemName === 'string'
   ) {
     const nested = cloneSymbols(symbols)
+    const nestedFuture = cloneSymbols(futureSymbols)
     addName(nested.variables, record.itemName)
+    addName(nestedFuture.variables, record.itemName)
     for (const [key, child] of Object.entries(record)) {
       if (key === 'transform' || key === 'cond') {
-        validateValue(child, nested, [...path, key], issues)
+        validateValue(child, nested, nestedFuture, [...path, key], issues)
       } else if (key !== '__id' && key !== 'type' && key !== 'itemName' && key !== 'arrayVar') {
-        validateValue(child, symbols, [...path, key], issues)
+        validateValue(child, symbols, futureSymbols, [...path, key], issues)
       }
     }
     return
@@ -494,8 +363,17 @@ function validateValue(
 
   if (type === 'newPromise' && typeof record.param === 'string' && Array.isArray(record.body)) {
     const nested = cloneSymbols(symbols)
+    const nestedFuture = cloneSymbols(futureSymbols)
     addName(nested.functions, record.param)
-    validateStatements(record.body as JSStatement[], nested, [...path, 'body'], issues)
+    addName(nestedFuture.functions, record.param)
+    validateStatements(
+      record.body as JSStatement[],
+      nested,
+      nestedFuture,
+      nestedFuture,
+      [...path, 'body'],
+      issues,
+    )
     return
   }
 
@@ -506,7 +384,7 @@ function validateValue(
       key === 'arrayVar' ||
       key === 'className' ||
       key === 'superClass' ||
-      STATEMENT_BODY_KEYS.has(key)
+      isProgrammingStatementBodyKey(key)
     ) {
       continue
     }
@@ -516,6 +394,7 @@ function validateValue(
           validateValue(
             (branch as Record<string, unknown>).cond,
             symbols,
+            futureSymbols,
             [...path, 'elseif', index, 'cond'],
             issues,
           )
@@ -529,6 +408,7 @@ function validateValue(
           validateValue(
             (branch as Record<string, unknown>).match,
             symbols,
+            futureSymbols,
             [...path, 'cases', index, 'match'],
             issues,
           )
@@ -536,13 +416,14 @@ function validateValue(
       })
       continue
     }
-    validateValue(child, symbols, [...path, key], issues)
+    validateValue(child, symbols, futureSymbols, [...path, key], issues)
   }
 }
 
 function validateCalledFunction(
   rawName: string,
   symbols: ProgrammingSymbols,
+  futureSymbols: ProgrammingSymbols,
   path: (string | number)[],
   issues: ProgrammingReferenceIssue[],
 ): void {
@@ -551,16 +432,27 @@ function validateCalledFunction(
   if (!definition || symbols.checkingFunctions.has(name)) return
 
   const callSymbols = cloneSymbols(symbols)
+  const callFutureSymbols = mergeFutureSymbols(callSymbols, futureSymbols)
   callSymbols.checkingFunctions.add(name)
+  callFutureSymbols.checkingFunctions.add(name)
   definition.params.forEach((parameter) => {
     addName(callSymbols.variables, parameter)
+    addName(callFutureSymbols.variables, parameter)
   })
-  validateStatements(definition.body, callSymbols, [...path, 'body'], issues)
+  validateStatements(
+    definition.body,
+    callSymbols,
+    callFutureSymbols,
+    callFutureSymbols,
+    [...path, 'body'],
+    issues,
+  )
 }
 
 function validateConstructedClass(
   rawName: unknown,
   symbols: ProgrammingSymbols,
+  futureSymbols: ProgrammingSymbols,
   path: (string | number)[],
   issues: ProgrammingReferenceIssue[],
 ): void {
@@ -571,14 +463,24 @@ function validateConstructedClass(
   if (!definition || symbols.checkingClassBodies.has(guard)) return
 
   const callSymbols = cloneSymbols(symbols)
+  const callFutureSymbols = mergeFutureSymbols(callSymbols, futureSymbols)
   callSymbols.checkingClassBodies.add(guard)
+  callFutureSymbols.checkingClassBodies.add(guard)
   if (definition.superClass) {
-    validateConstructedClass(definition.superClass, callSymbols, path, issues)
+    validateConstructedClass(definition.superClass, callSymbols, callFutureSymbols, path, issues)
   }
   definition.ctorParams.forEach((parameter) => {
     addName(callSymbols.variables, parameter)
+    addName(callFutureSymbols.variables, parameter)
   })
-  validateStatements(definition.ctorBody, callSymbols, [...path, 'ctorBody'], issues)
+  validateStatements(
+    definition.ctorBody,
+    callSymbols,
+    callFutureSymbols,
+    callFutureSymbols,
+    [...path, 'ctorBody'],
+    issues,
+  )
 }
 
 function resolveClassMethod(
@@ -602,6 +504,7 @@ function validateCalledMethod(
   rawObjectName: string,
   rawMethodName: string,
   symbols: ProgrammingSymbols,
+  futureSymbols: ProgrammingSymbols,
   path: (string | number)[],
   issues: ProgrammingReferenceIssue[],
 ): void {
@@ -614,11 +517,21 @@ function validateCalledMethod(
   if (symbols.checkingClassBodies.has(guard)) return
 
   const callSymbols = cloneSymbols(symbols)
+  const callFutureSymbols = mergeFutureSymbols(callSymbols, futureSymbols)
   callSymbols.checkingClassBodies.add(guard)
+  callFutureSymbols.checkingClassBodies.add(guard)
   resolved.method.params.forEach((parameter) => {
     addName(callSymbols.variables, parameter)
+    addName(callFutureSymbols.variables, parameter)
   })
-  validateStatements(resolved.method.body, callSymbols, [...path, 'body'], issues)
+  validateStatements(
+    resolved.method.body,
+    callSymbols,
+    callFutureSymbols,
+    callFutureSymbols,
+    [...path, 'body'],
+    issues,
+  )
 }
 
 function hoistFunctions(statements: readonly JSStatement[], symbols: ProgrammingSymbols): void {
@@ -738,15 +651,17 @@ function statementDeclarations(statement: JSStatement): StatementDeclaration[] {
 function validateStatements(
   statements: JSStatement[],
   inherited: ProgrammingSymbols,
+  callbackBase: ProgrammingSymbols,
+  suspensionBase: ProgrammingSymbols,
   path: (string | number)[],
   issues: ProgrammingReferenceIssue[],
 ): void {
-  const symbols = cloneSymbols(inherited)
+  let symbols = cloneSymbols(inherited)
   const declaredHere = new Map<string, string>()
   hoistFunctions(statements, symbols)
-  const deferredSymbols = cloneSymbols(symbols)
-  for (const statement of statements) addStatementDeclarations(statement, deferredSymbols)
-  hoistFunctions(statements, deferredSymbols)
+  const afterSequenceSymbols = mergeFutureSymbols(symbols, callbackBase)
+  for (const statement of statements) addStatementDeclarations(statement, afterSequenceSymbols)
+  hoistFunctions(statements, afterSequenceSymbols)
 
   statements.forEach((statement, index) => {
     const statementPath = [...path, index]
@@ -765,7 +680,11 @@ function validateStatements(
         declaredHere.set(declaration.name, statement.type)
       }
     }
-    validateValue(statement, symbols, statementPath, issues)
+    const valueFutureSymbols =
+      statement.type === 'awaitStmt'
+        ? mergeFutureSymbols(symbols, suspensionBase)
+        : afterSequenceSymbols
+    validateValue(statement, symbols, valueFutureSymbols, statementPath, issues)
 
     if (statement.type === 'assign') {
       validateName(
@@ -779,28 +698,68 @@ function validateStatements(
     }
 
     if (statement.type === 'newInstance' && !statement.namespace?.trim()) {
-      validateConstructedClass(statement.className, symbols, statementPath, issues)
+      validateConstructedClass(
+        statement.className,
+        symbols,
+        afterSequenceSymbols,
+        statementPath,
+        issues,
+      )
     }
     if (statement.type === 'callMethod') {
-      validateCalledMethod(statement.objectVar, statement.method, symbols, statementPath, issues)
+      validateCalledMethod(
+        statement.objectVar,
+        statement.method,
+        symbols,
+        afterSequenceSymbols,
+        statementPath,
+        issues,
+      )
     }
 
-    for (const child of childStatementEntries(statement)) {
-      const timing = programmingBodyTiming(statement, child.path)
-      const childSymbols = cloneSymbols(timing === 'immediate' ? symbols : deferredSymbols)
-      if (statement.type === 'funcDecl') childSymbols.checkingFunctions.add(statement.name)
-      localVariablesForChild(statement, child.path).forEach((name) => {
+    for (const child of programmingChildBodyEntries(statement)) {
+      const childSymbols = cloneSymbols(
+        child.timing === 'immediate' ? symbols : afterSequenceSymbols,
+      )
+      const childCallbackBase = cloneSymbols(afterSequenceSymbols)
+      const childSuspensionBase = cloneSymbols(
+        child.timing === 'immediate' ? suspensionBase : afterSequenceSymbols,
+      )
+      if (statement.type === 'funcDecl') {
+        childSymbols.checkingFunctions.add(statement.name)
+        childCallbackBase.checkingFunctions.add(statement.name)
+        childSuspensionBase.checkingFunctions.add(statement.name)
+      }
+      child.localVariables.forEach((name) => {
         addName(childSymbols.variables, name)
+        addName(childCallbackBase.variables, name)
+        addName(childSuspensionBase.variables, name)
       })
-      localCanvasContextsForChild(statement, child.path).forEach((name) => {
+      child.canvasContexts.forEach((name) => {
         addName(childSymbols.canvasContexts, name)
+        addName(childCallbackBase.canvasContexts, name)
+        addName(childSuspensionBase.canvasContexts, name)
       })
-      if (statement.type === 'classDecl') addName(childSymbols.classes, statement.name)
-      validateStatements(child.body, childSymbols, [...statementPath, ...child.path], issues)
+      if (statement.type === 'classDecl') {
+        addName(childSymbols.classes, statement.name)
+        addName(childCallbackBase.classes, statement.name)
+        addName(childSuspensionBase.classes, statement.name)
+      }
+      validateStatements(
+        child.body,
+        childSymbols,
+        childCallbackBase,
+        childSuspensionBase,
+        [...statementPath, ...child.path],
+        issues,
+      )
     }
 
     addStatementDeclarations(statement, symbols)
     updateAssignedInstance(statement, symbols)
+    if (statement.type === 'awaitStmt') {
+      symbols = mergeFutureSymbols(symbols, suspensionBase)
+    }
   })
 }
 
@@ -809,21 +768,17 @@ export function validateProgrammingReferences(
   path: (string | number)[] = ['js'],
 ): ProgrammingReferenceIssue[] {
   const issues: ProgrammingReferenceIssue[] = []
-  validateStatements(
-    statements,
-    {
-      variables: new Set(IMPLICIT_VARIABLES),
-      canvasContexts: new Set(),
-      classes: new Set(IMPLICIT_CLASSES),
-      functions: new Set(IMPLICIT_FUNCTIONS),
-      functionDefinitions: new Map(),
-      checkingFunctions: new Set(),
-      classDefinitions: new Map(),
-      instances: new Map(),
-      checkingClassBodies: new Set(),
-    },
-    path,
-    issues,
-  )
+  const initialSymbols: ProgrammingSymbols = {
+    variables: new Set(IMPLICIT_VARIABLES),
+    canvasContexts: new Set(),
+    classes: new Set(IMPLICIT_CLASSES),
+    functions: new Set(IMPLICIT_FUNCTIONS),
+    functionDefinitions: new Map(),
+    checkingFunctions: new Set(),
+    classDefinitions: new Map(),
+    instances: new Map(),
+    checkingClassBodies: new Set(),
+  }
+  validateStatements(statements, initialSymbols, initialSymbols, initialSymbols, path, issues)
   return issues
 }

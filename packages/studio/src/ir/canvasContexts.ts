@@ -89,6 +89,7 @@ const NON_NEGATIVE_CANVAS_FIELDS: Readonly<
   ],
   canvasArcSlice: [['r', 'raio']],
   canvasArcTo: [['r', 'raio']],
+  canvasLineDash: [['segment', 'tamanho do tracejado']],
 }
 
 /**

@@ -3,7 +3,7 @@
 Data: 20/07/2026  
 Escopo: `packages/studio`, do catálogo Blockly ao preview no Chromium.  
 Natureza: auditoria, correção histórica e revalidação residual do estado atual.
-Status: **encerrado — os 14 achados anteriores e as 10 lacunas da reabertura foram corrigidos e revalidados**.
+Status: **encerrado — os 14 achados anteriores, as 10 lacunas da primeira reabertura e os 8 achados residuais foram corrigidos e revalidados**.
 
 ## Resumo executivo
 
@@ -14,6 +14,8 @@ Na auditoria original foram encontrados 10 problemas: **3 altos, 6 médios e 1 b
 Uma revisão residual depois das dez correções encontrou mais quatro lacunas: raios negativos capazes de interromper o Canvas, sanitização segura porém silenciosa em HTML/CSS e semântica/foco incompletos nos seletores infantis de cor, assets e pintura SVG. Todas também foram reproduzidas, cobertas e encerradas.
 
 Uma nova revalidação sobre o worktree de 20/07/2026 encontrou **10 lacunas adicionais: 1 crítica, 6 altas e 3 médias**. A mais grave fazia os blocos de teclado e ponteiro do Canvas funcionarem no preview, mas quebrarem no site exportado, no ZIP de fonte e na conversão para o modo profissional. Os dez achados foram corrigidos na causa compartilhada de cada pipeline e estão detalhados em “Reabertura — encerramento”.
+
+A revisão residual final encontrou **8 lacunas adicionais** em viewport, alternativa textual de imagens, nomes acessíveis de formulários, validação de keyframes, transições, movimento reduzido, referências SVG e tracejados/profundidade Canvas. As oito foram fechadas com contratos compartilhados e regressões no pipeline real; o encerramento está registrado ao fim deste documento.
 
 As três causas arquiteturais dominantes encontradas originalmente foram:
 
@@ -55,7 +57,7 @@ As correções foram feitas no contrato compartilhado de cada pipeline, não ape
 | Categoria | Blocos visíveis | Grupos | Distribuição por nível |
 |---|---:|---:|---|
 | HTML | 24 | 5 | 17 iniciante 2D, 7 intermediário 2D |
-| CSS | 52 | 8 | 12 iniciante 2D, 28 intermediário 2D, 12 avançado 2D |
+| CSS | 53 | 8 | 12 iniciante 2D, 28 intermediário 2D, 13 avançado 2D |
 | SVG | 21 | 4 | 10 iniciante 2D, 10 intermediário 2D, 1 avançado 2D |
 | Canvas | 54 de 55 | 8 | 15 iniciante 2D, 16 intermediário 2D, 23 avançado 2D |
 
@@ -419,7 +421,7 @@ O bloco possui IR dedicado `googleFont` e reconstrução dedicada, mas o parser 
 
 ### Código morto e compatibilidade
 
-Não foi encontrado bloco morto nessas quatro categorias: os 152 tipos estão catalogados e cada tipo pertence a exatamente um grupo. `sz_canvas_keyboard` é legado intencional, permanece registrado para abrir projetos antigos e está oculto da paleta por contrato e teste.
+Não foi encontrado bloco morto nessas quatro categorias: os 153 tipos estão catalogados e cada tipo pertence a exatamente um grupo. `sz_canvas_keyboard` é legado intencional, permanece registrado para abrir projetos antigos e está oculto da paleta por contrato e teste.
 
 ### Duplicação e drift
 
@@ -460,3 +462,18 @@ O conjunto Chromium dirigido terminou com 8/8 cenários verdes. Uma primeira exe
 - [x] O bloco Google Font sobrevive bloco → código → bloco.
 - [x] Comprimentos SVG negativos recebem o mesmo aviso com ou sem unidade.
 - [x] `bun test src` voltou a zero falhas no worktree integrado e o conjunto E2E terminou verde.
+
+## Segunda reabertura residual — encerramento
+
+| Achado residual | Correção aplicada | Cobertura de regressão |
+|---|---|---|
+| S-01 — documento padrão sem viewport | O shell HTML padrão agora inclui `width=device-width, initial-scale=1`. | Geração do documento completo. |
+| S-02 — `alt=""` perdido no round-trip | O bloco de imagem ganhou a escolha explícita “só enfeite”; ausência de `alt`, descrição textual e `alt=""` permanecem estados distintos em Blockly ↔ IR ↔ HTML. | Round-trip textual, serialização Blockly e contrato pedagógico. |
+| S-03 — controles de formulário sem nome acessível | `html/accessibility.ts` centraliza a associação por `label[for]`, rótulo aninhado, `aria-label` e `aria-labelledby`; input/textarea sem nome recebem orientação não bloqueante. Imagem sem descrição nem marca decorativa usa o mesmo diagnóstico pedagógico. | Casos inválidos e válidos no diagnóstico semântico. |
+| S-04 — keyframes inválidos aceitos | `css/keyframes.ts` valida nome da animação e seletores `from`, `to` e percentuais de 0% a 100%; schema e parser consomem o mesmo contrato. | Nomes/passos inválidos e lista percentual válida. |
+| S-05 — `transition: all` no bloco guiado | O bloco exige uma propriedade animável explícita e `css/motion.ts` mantém opções/default compartilhados. | Bloco → IR sem `all` e campo limitado no catálogo. |
+| S-06 — falta de caminho para movimento reduzido | Foi adicionado `sz_css_reduce_motion`, modelado como media query estruturada e reversível, com fallback avançado lossless para formas não canônicas. | Bloco ↔ IR, CSS ↔ IR, nível, catálogo e allowlist. |
+| S-07 — `<use href="forma">` sem diagnóstico | Reuso SVG sem referência local `#id` agora bloqueia o preview e mostra como corrigir; referências locais válidas continuam passando pela checagem de alvo e ciclo. | Referência ausente e referência sem `#`. |
+| S-08 — Canvas aceitava tracejado negativo e escapava da guarda de profundidade HTML | Segmentos negativos entram no contrato numérico não negativo; a guarda HTML agora percorre filhos do nó Canvas como percorre elementos comuns. | Diagnóstico de `canvasLineDash` e árvore profunda sob Canvas. |
+
+Além das correções pontuais, os contratos puros `html/accessibility.ts`, `css/keyframes.ts`, `css/mediaQueries.ts` e `css/motion.ts` reduzem o drift entre parser, schema, Blockly, diagnóstico e gerador. Isso trata a causa arquitetural das oito lacunas sem exigir migração de projetos existentes; a evolução para codecs completos por família continua sendo uma melhoria estrutural futura, não um defeito funcional aberto deste lote.

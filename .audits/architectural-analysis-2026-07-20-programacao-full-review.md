@@ -21,7 +21,7 @@ Também havia duas falhas de produto importantes para o público infantil: contr
 |---|---|
 | Fronteira do preview | `script-src` deixou de autorizar `data:`/`blob:` genericamente. Cada script produzido pelo Studio usa SHA-256 exato; módulos `data:` também recebem SRI. ESM oficial autoriza somente o entrypoint e, no `esm.sh`, o prefixo do pacote com versão pinada, nunca a origem. |
 | Símbolos léxicos | Pickers de listas, classes e funções passaram a respeitar escopo/ramo/ordem e não aceitam texto livre inexistente. A IR valida variáveis, listas, classes e funções antes da geração. |
-| Acessibilidade | A categoria Programação ganhou foreground escuro AA sobre todos os tons laranja e foco visível de 3 px, cobertos por unidade e Chromium. |
+| Acessibilidade | A categoria Programação ganhou texto branco AA sobre tons laranja normalizados e foco visível de 3 px, cobertos por unidade e Chromium. |
 | Progressão infantil | O vocabulário inicial caiu de 47 para 25 blocos, com orçamento e snapshot exatos. APIs detalhadas de navegador, storage e timers em milissegundos foram movidas ao intermediário. |
 | Contrato arquitetural | Inventário, oferta e níveis de Programação ficaram no mesmo contrato exaustivo; a validação de símbolos saiu do schema gigante; níveis duplicados foram removidos dos sets genéricos; bloco visível sem adapter de IR agora falha cedo em vez de sumir. |
 | Flake E2E | Abertura do menu e colagem foram centralizadas com espera por hit-test e visibilidade, sem espera arbitrária. |
@@ -89,7 +89,7 @@ A criança pode escolher um nome sugerido pela própria interface e ainda assim 
 
 - `packages/studio/src/styles/studio.css:98-102` remove o `outline` de categoria focada, inclusive `.blocklyActiveFocus`, sem substituição específica.
 - `packages/studio/src/styles/studio.css:145-152` força todo rótulo selecionado para branco.
-- `packages/studio/src/blockly/theme.ts:80-102` usa oito tons laranja/dourados na categoria. O contraste medido contra branco varia de **1,60:1 a 2,85:1**; o texto tem 15 px, abaixo do tamanho considerado “large text”.
+- Os oito tons laranja/dourados originais da categoria tinham contraste de **1,60:1 a 2,85:1** contra branco; o texto tem 15 px, abaixo do tamanho considerado “large text”.
 - O WCAG 2.2 exige 4,5:1 para texto normal e um indicador visível para itens operáveis por teclado: [Contrast Minimum](https://www.w3.org/TR/WCAG22/#contrast-minimum) e [Focus Visible](https://www.w3.org/WAI/WCAG22/Understanding/focus-visible).
 
 **Impacto**
@@ -99,7 +99,7 @@ O rótulo selecionado pode ficar difícil de ler e um usuário que navega por te
 **Recomendação**
 
 - Usar `:focus-visible` com perímetro sólido de pelo menos 2 px e contraste consistente.
-- Para a paleta laranja, usar o foreground escuro já existente (`#1a1410`): os mesmos oito fundos passam a variar de 6,40:1 a 11,43:1.
+- Manter o foreground branco do renderer Zelos e normalizar os oito fundos com `ensureWhiteTextContrast` para no mínimo 4,8:1, preservando a identidade laranja com margem sobre AA.
 - Adicionar E2E que percorra as categorias por teclado e teste estilos computados/contraste da seleção.
 
 ### P2 — O perfil iniciante ainda expõe vocabulário demais e mistura unidades — corrigido

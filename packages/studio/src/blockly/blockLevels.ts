@@ -115,6 +115,7 @@ const AVANCADO_2D: ReadonlySet<string> = new Set<string>([
   'sz_css_keyframe_step',
   'sz_css_apply_animation',
   'sz_css_media_query',
+  'sz_css_reduce_motion',
   // Canvas — traçado "na mão", transformações, imagem crua, gradiente/sombra/tracejado
   'sz_canvas_gradient',
   'sz_canvas_shadow',

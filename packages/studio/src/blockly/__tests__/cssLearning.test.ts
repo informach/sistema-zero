@@ -110,6 +110,13 @@ describe('CSS para crianças — contrato pedagógico e funcional', () => {
       kind: 'animation',
     })
     expect(argsOf('sz_css_hover').some((arg) => arg.type === 'input_statement')).toBe(true)
+    expect(argOf('sz_css_transition', 'PROPERTY')).toMatchObject({
+      type: 'field_dropdown',
+    })
+    expect(argOf('sz_css_reduce_motion', 'SELECTOR')).toMatchObject({
+      type: 'field_name_picker',
+      kind: 'selector',
+    })
   })
 
   it('usa campos limitados para números e seletor de imagem para assets', () => {

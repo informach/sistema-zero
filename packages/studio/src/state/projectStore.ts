@@ -362,6 +362,7 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_css_max_width',
   'sz_css_comment',
   'sz_css_media_query',
+  'sz_css_reduce_motion',
   'sz_css_padding',
   'sz_css_rule',
   'sz_css_shadow',

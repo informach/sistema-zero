@@ -6,6 +6,7 @@ import {
 import type { BehaviorIR, JSExpr, JSStatement } from '#ir'
 import { BEHAVIOR_SECTION_MARKERS, screenTextToExpr, valueToExpr } from '#ir'
 import { CANVAS_IMAGE_PRELOAD_MARKERS } from '../canvasImagePreloadCodec'
+import { programmingChildBodyEntries } from '../ir/programmingExecution'
 import { CANVAS3D_SEMANTIC_STATEMENT_TYPES } from '../three/canvas3dContract'
 import { wrapCanvas3DMacro, wrapCanvas3DRuntime } from '../three/canvas3dMacroCodec'
 import { physicsLiteRuntimeSource } from '../three/physicsLiteRuntime'
@@ -64,106 +65,7 @@ export function assertGeneratorDepth(depth: number): void {
 
 /** Sub-listas de statements (corpos) de um statement — `[]` para folhas. */
 function jsChildBodies(stmt: JSStatement): JSStatement[][] {
-  switch (stmt.type) {
-    case 'if':
-      return [stmt.then, ...(stmt.elseif ?? []).map((c) => c.then), stmt.else ?? []]
-    case 'repeat':
-    case 'while':
-    case 'doWhile':
-    case 'forOf':
-    case 'forRange':
-    case 'event':
-    case 'animationLoop':
-    case 'physicsLiteCollisionEvent':
-    case 'physicsLiteTriggerEvent':
-    case 'g2d:onStart':
-    case 'g2d:updateEachFrame':
-    case 'g2d:onPointer':
-    case 'g2d:onKey':
-    case 'g2d:onOverlap':
-    case 'g2d:forEachInGroup':
-    case 'g2d:pruneOffscreen':
-    case 'g2d:onGroupOverlap':
-    case 'g2d:onSpriteGroupOverlap':
-    case 'g2d:onEnemyDefeated':
-    case 'g2d:onEnemyShotHit':
-    case 'g2d:defineShape':
-    case 'g2d:everyFrames':
-    case 'g2d:everySeconds':
-    case 'g3d:animate':
-    case 'g3d:forEachInSwarm':
-    case 'gk:addButton':
-    case 'gk:onEnterState':
-    case 'gk:onUpdate':
-    case 'gk:onDraw':
-    case 'gk:onDrawHud':
-    case 'gk:onGameClick':
-    case 'gk:onEvent':
-    case 'gk:rpgOnTalk':
-    case 'gk:rpgCreateMap':
-    case 'gk:rpgOnEnterMap':
-    case 'gk:rpgOnBattleEnd':
-    case 'gk:rpgCutscene':
-    case 'gk:rpgOnStep':
-    case 'gk:rpgMenu':
-    case 'gk:rpgOption':
-    case 'gk:definePath':
-    case 'gk:tdOnBuy':
-    case 'gk:forEachActive':
-    case 'gk:defineLook':
-    case 'g3k:defineMold':
-    case 'g3k:forEachAlive':
-    case 'g3k:onUpdate':
-    case 'g3k:onEnterEntityState':
-    case 'g3k:onEntityStateUpdate':
-    case 'g3k:onExitEntityState':
-    case 'g3k:forEachNear':
-    case 'g3k:onEntityDeath':
-    case 'g3k:addButton':
-    case 'g3k:onEnterState':
-    case 'g3k:onTimerEnd':
-    case 'g3k:onEvent':
-    case 'w3d:onUpdate':
-    case 'w3d:onCrash':
-    case 'w3d:onHorn':
-    case 'w3d:onExplosion':
-    case 'w3d:onVehicle':
-    case 'w3d:npcTalk':
-    case 'w3d:onCollect':
-    case 'w3d:onQuestDone':
-    case 'w3d:onAchievement':
-    case 'w3d:onDayNight':
-    case 'w3d:onPoint':
-    case 'w3d:onZone':
-    case 'w3d:raceOnStart':
-    case 'w3d:raceOnCheckpoint':
-    case 'w3d:raceOnFinish':
-    case 'w3d:bowlingOnStrike':
-    case 'funcDecl':
-    case 'forEach':
-    case 'imageOnLoad':
-    case 'imageOnError':
-    case 'onClickAssign':
-    case 'requestFrameDo':
-    case 'traverseEach':
-    case 'setTimeout':
-    case 'setInterval':
-    case 'setTimeoutSeconds':
-    case 'setIntervalSeconds':
-      return [stmt.body]
-    case 'loaderLoad':
-      return [stmt.body, stmt.errorBody ?? []]
-    case 'tryCatch':
-      return [stmt.body, stmt.handler, stmt.finalizer ?? []]
-    case 'w3d:npcAsk':
-      return [stmt.bodyA, stmt.bodyB]
-    case 'fetchJson':
-      return [stmt.body, stmt.catchBody ?? []]
-    case 'classDecl':
-      return [stmt.ctorBody, ...stmt.methods.map((m) => m.body)]
-    default:
-      return []
-  }
+  return programmingChildBodyEntries(stmt).map((entry) => entry.body)
 }
 
 /**

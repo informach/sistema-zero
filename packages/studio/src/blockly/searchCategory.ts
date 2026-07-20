@@ -184,7 +184,12 @@ export function registerPtSearchCategory(): void {
       const dom = super.createDom_()
       const field = this.searchField
       if (field) {
-        field.placeholder = 'Pesquisar blocos...'
+        field.type = 'search'
+        field.name = 'block-search'
+        field.autocomplete = 'off'
+        field.spellcheck = false
+        field.setAttribute('aria-label', 'Pesquisar blocos')
+        field.placeholder = 'Pesquisar blocos…'
         stylizeSearchField(field)
         // Move o input da LINHA para o flyout (flutua sobre o topo do drawer).
         getInjectionDiv(this)?.appendChild(field)

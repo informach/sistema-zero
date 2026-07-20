@@ -16,6 +16,12 @@ describe('generateHTML', () => {
     expect(html).toContain('<script src="script.js"></script>')
   })
 
+  it('inclui a viewport móvel na casca padrão', () => {
+    const html = generateHTML({ title: 'Jogo', body: [] })
+
+    expect(html).toContain('<meta name="viewport" content="width=device-width, initial-scale=1" />')
+  })
+
   it('descarta atributos com nome inválido e mantém os válidos', () => {
     const html = generateHTML({
       title: 'Test',
@@ -252,6 +258,16 @@ describe('generateHTML', () => {
       node = { type: 'element', tag: 'div', children: [node] }
     }
     expect(() => generateHTML({ title: 'X', body: [node] })).toThrow(GeneratorDepthError)
+  })
+
+  it('aplica a mesma guarda aos filhos alternativos de Canvas', () => {
+    let child: HTMLNode = { type: 'element', tag: 'span', text: 'fundo' }
+    for (let i = 0; i < MAX_GENERATOR_DEPTH + 50; i += 1) {
+      child = { type: 'element', tag: 'span', children: [child] }
+    }
+    const canvas: HTMLNode = { type: 'canvas', id: 'jogo', children: [child] }
+
+    expect(() => generateHTML({ title: 'X', body: [canvas] })).toThrow(GeneratorDepthError)
   })
 
   describe('chokepoint de atributos (handlers inline + URLs)', () => {

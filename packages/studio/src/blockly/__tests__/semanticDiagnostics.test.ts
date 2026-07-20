@@ -125,6 +125,112 @@ describe('diagnósticos semânticos nos blocos', () => {
     expect(warnings.at(-1)).toContain('#estrela')
   })
 
+  it('avisa quando a referência SVG local esquece o #', () => {
+    const { workspace, warnings } = warningWorkspace('uso-1')
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [
+        {
+          type: 'element',
+          tag: 'svg',
+          children: [
+            { type: 'element', tag: 'circle', id: 'estrela' },
+            { type: 'element', tag: 'use', attrs: { href: 'estrela' }, __id: 'uso-1' },
+          ],
+        },
+      ],
+      css: [],
+      js: [],
+      extensions: [],
+    })
+
+    expect(valid).toBe(false)
+    expect(warnings.at(-1)).toContain('#estrela')
+  })
+
+  it('orienta imagem sem descrição ou marcação decorativa sem bloquear o preview', () => {
+    const { workspace, warnings } = warningWorkspace('imagem-1')
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [
+        {
+          type: 'element',
+          tag: 'img',
+          attrs: { src: 'heroi.png' },
+          __id: 'imagem-1',
+        },
+      ],
+      css: [],
+      js: [],
+      extensions: [],
+    })
+
+    expect(valid).toBe(true)
+    expect(warnings.at(-1)).toContain('só enfeite')
+  })
+
+  it('orienta campos HTML sem rótulo sem bloquear o preview', () => {
+    const ids = ['nome-1', 'mensagem-1']
+    const { workspace, warnings } = warningWorkspaceFor(ids)
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [
+        {
+          type: 'element',
+          tag: 'input',
+          attrs: { type: 'text', placeholder: 'Seu nome' },
+          __id: 'nome-1',
+        },
+        {
+          type: 'element',
+          tag: 'textarea',
+          attrs: { placeholder: 'Sua mensagem' },
+          __id: 'mensagem-1',
+        },
+      ],
+      css: [],
+      js: [],
+      extensions: [],
+    })
+
+    expect(valid).toBe(true)
+    expect(warnings.get('nome-1')?.at(-1)).toContain('Explicar o campo')
+    expect(warnings.get('mensagem-1')?.at(-1)).toContain('Explicar o campo')
+  })
+
+  it('aceita campos explicados por for, aninhamento ou aria-label', () => {
+    const ids = ['email-1', 'aceite-1', 'busca-1']
+    const { workspace, warnings } = warningWorkspaceFor(ids)
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [
+        { type: 'element', tag: 'label', text: 'E-mail', attrs: { for: 'email' } },
+        { type: 'element', tag: 'input', id: 'email', attrs: { type: 'email' }, __id: 'email-1' },
+        {
+          type: 'element',
+          tag: 'label',
+          text: 'Aceito',
+          children: [
+            {
+              type: 'element',
+              tag: 'input',
+              attrs: { type: 'checkbox' },
+              __id: 'aceite-1',
+            },
+          ],
+        },
+        {
+          type: 'element',
+          tag: 'input',
+          attrs: { type: 'search', 'aria-label': 'Buscar' },
+          __id: 'busca-1',
+        },
+      ],
+      css: [],
+      js: [],
+      extensions: [],
+    })
+
+    expect(valid).toBe(true)
+    for (const id of ids) expect(warnings.get(id), id).toEqual([null])
+  })
+
   it('avisa sobre geometria SVG inválida sem apagar o desenho', () => {
     const { workspace, warnings } = warningWorkspace('forma-1')
     const valid = applySemanticDiagnostics(workspace, {
@@ -519,6 +625,27 @@ describe('diagnósticos semânticos nos blocos', () => {
 
     expect(valid).toBe(false)
     expect(warnings.at(-1)).toContain('não pode ser negativo')
+  })
+
+  it('impede tamanho literal negativo no tracejado do Canvas', () => {
+    const { workspace, warnings } = warningWorkspace('traco-1')
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [{ type: 'canvas', id: 'jogo', __id: 'canvas-1' }],
+      css: [],
+      js: [
+        { type: 'canvasSetup', canvasId: 'jogo', varName: 'ctx', __id: 'setup-1' },
+        {
+          type: 'canvasLineDash',
+          ctxVar: 'ctx',
+          segment: { type: 'num', value: -1 },
+          __id: 'traco-1',
+        },
+      ],
+      extensions: [],
+    })
+
+    expect(valid).toBe(false)
+    expect(warnings.at(-1)).toContain('tracejado')
   })
 
   it('bloqueia declaração CSS que o gerador recusaria, no bloco da declaração', () => {

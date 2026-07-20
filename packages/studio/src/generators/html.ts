@@ -20,7 +20,11 @@ function assertHTMLDepth(nodes: HTMLNode[]): void {
     const { list, depth } = stack.pop() as { list: HTMLNode[]; depth: number }
     assertGeneratorDepth(depth)
     for (const node of list) {
-      if (node.type === 'element' && node.children && node.children.length > 0) {
+      if (
+        (node.type === 'element' || node.type === 'canvas') &&
+        node.children &&
+        node.children.length > 0
+      ) {
         stack.push({ list: node.children, depth: depth + 1 })
       }
     }
@@ -167,6 +171,7 @@ function buildDefaultHead(
     '<html lang="pt-BR">',
     '  <head>',
     '    <meta charset="UTF-8" />',
+    '    <meta name="viewport" content="width=device-width, initial-scale=1" />',
     `    <title>${title}</title>`,
   ]
   // Só linka style.css quando o CSS é externo; inline vai via headExtraText.

@@ -2,6 +2,12 @@ import { describe, expect, it } from 'bun:test'
 import { generateProjectFilesWithMap } from '../project'
 import { findIdAtLine, reverseSourceMap } from '../sourceMap'
 
+function lineNumberOf(source: string, snippet: string): number {
+  const index = source.split('\n').findIndex((line) => line.includes(snippet))
+  expect(index).toBeGreaterThanOrEqual(0)
+  return index + 1
+}
+
 describe('source map (top-level)', () => {
   it('mapeia cada bloco filho em conteúdo HTML misto', () => {
     const { sourceMap } = generateProjectFilesWithMap({
@@ -45,10 +51,20 @@ describe('source map (top-level)', () => {
       },
     })
 
-    expect(sourceMap['span-a']).toMatchObject({ startLine: 9, endLine: 9, startColumn: 5 })
-    expect(sourceMap.quebra).toMatchObject({ startLine: 9, endLine: 10 })
-    expect(sourceMap['span-b']).toMatchObject({ startLine: 10, endLine: 10, startColumn: 1 })
-    expect(files['index.html'].split('\n')[9]).toContain('<span>B</span>')
+    const html = files['index.html']
+    const spanALine = lineNumberOf(html, '<span>A</span>')
+    const spanBLine = lineNumberOf(html, '<span>B</span>')
+    expect(sourceMap['span-a']).toMatchObject({
+      startLine: spanALine,
+      endLine: spanALine,
+      startColumn: 5,
+    })
+    expect(sourceMap.quebra).toMatchObject({ startLine: spanALine, endLine: spanBLine })
+    expect(sourceMap['span-b']).toMatchObject({
+      startLine: spanBLine,
+      endLine: spanBLine,
+      startColumn: 1,
+    })
   })
 
   it('mapeia cada statement top-level para sua faixa de linhas no script.js', () => {
@@ -189,15 +205,12 @@ describe('source map (top-level)', () => {
     })
     expect(sourceMap.h1?.file).toBe('index.html')
     expect(sourceMap.h2?.file).toBe('index.html')
-    expect(sourceMap.h1?.startLine).toBe(9)
-    expect(sourceMap.h2?.startLine).toBe(10)
-    const lines = files['index.html'].split('\n')
-    expect(lines[8]).toContain('<h1>Olá</h1>')
-    expect(lines[9]).toContain('<p>mundo</p>')
+    expect(sourceMap.h1?.startLine).toBe(lineNumberOf(files['index.html'], '<h1>Olá</h1>'))
+    expect(sourceMap.h2?.startLine).toBe(lineNumberOf(files['index.html'], '<p>mundo</p>'))
   })
 
   it('mapeia HTML aninhado para o bloco filho específico', () => {
-    const { sourceMap } = generateProjectFilesWithMap({
+    const { files, sourceMap } = generateProjectFilesWithMap({
       projectName: 'Test',
       ir: {
         html: [
@@ -214,11 +227,19 @@ describe('source map (top-level)', () => {
       },
     })
 
-    expect(sourceMap.section).toMatchObject({ file: 'index.html', startLine: 9, endLine: 11 })
+    const html = files['index.html']
+    const sectionLine = lineNumberOf(html, '<section>')
+    const titleLine = lineNumberOf(html, '<h1>Olá</h1>')
+    const sectionEndLine = lineNumberOf(html, '</section>')
+    expect(sourceMap.section).toMatchObject({
+      file: 'index.html',
+      startLine: sectionLine,
+      endLine: sectionEndLine,
+    })
     expect(sourceMap.title).toMatchObject({
       file: 'index.html',
-      startLine: 10,
-      endLine: 10,
+      startLine: titleLine,
+      endLine: titleLine,
       startColumn: 7,
     })
   })

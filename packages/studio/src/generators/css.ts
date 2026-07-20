@@ -10,6 +10,7 @@ import {
   prepareCSSDeclaration,
 } from '#ir'
 import { googleFontImportRule } from '../css/googleFonts'
+import { formatGuidedMediaQueryCondition } from '../css/mediaQueries'
 import { assertGeneratorDepth } from './js'
 import { countLines, SourceMapBuilder } from './sourceMap'
 
@@ -202,13 +203,15 @@ export function generateCSSWithMap(entries: CSSEntry[]): GenerateCSSWithMapResul
  * documento. O próprio bloco @media é registrado na faixa completa.
  */
 function renderMediaQuery(entry: MediaQueryCSS, startLine: number, map: SourceMapBuilder): string {
+  const condition = formatGuidedMediaQueryCondition(entry.feature, entry.px)
+  if (!condition) throw new Error('Consulta responsiva sem uma medida válida em pixels.')
   const inner = generateCSSWithMap(entry.rules)
   const innerBody = inner.code.replace(/\n$/, '')
   const indented = innerBody
     .split('\n')
     .map((l) => (l.length > 0 ? `  ${l}` : l))
     .join('\n')
-  const rendered = `@media (${entry.feature}: ${entry.px}px) {\n${indented}\n}`
+  const rendered = `@media (${condition}) {\n${indented}\n}`
   // Conteúdo interno começa na linha seguinte ao `@media ... {` (offset = startLine).
   for (const [id, e] of Object.entries(inner.map.build())) {
     map.record(id, 'style.css', startLine + e.startLine, startLine + e.endLine)

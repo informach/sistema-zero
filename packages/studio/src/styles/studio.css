@@ -321,6 +321,12 @@
   animation: sz-activity-pop 350ms ease-out both;
 }
 @media (prefers-reduced-motion: reduce) {
+  [data-sz-theme] .blocklyToolboxCategory {
+    transition: none;
+  }
+  [data-sz-theme] .blocklyToolboxCategory:not(.blocklyToolboxSelected):hover {
+    transform: none;
+  }
   .sz-activity-pop {
     animation: none;
   }

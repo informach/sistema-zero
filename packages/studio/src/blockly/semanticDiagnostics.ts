@@ -14,6 +14,7 @@ import {
   type SZIRInput,
   SZIRInputSchema,
 } from '#ir'
+import { collectHTMLAccessibilityIssues } from '../html/accessibility'
 
 const SEMANTIC_WARNING_ID = 'sz-semantic-diagnostic'
 
@@ -49,6 +50,17 @@ function addBlockMessage(
   const messages = messagesByBlock.get(block) ?? new Set<string>()
   messages.add(message)
   messagesByBlock.set(block, messages)
+}
+
+function addHTMLAccessibilityMessages(
+  workspace: Blockly.Workspace,
+  input: SZIRInput,
+  messagesByBlock: Map<WarnableBlock, Set<string>>,
+): void {
+  const ir = normalizeSZIR(input)
+  for (const issue of collectHTMLAccessibilityIssues(ir.html)) {
+    addBlockMessage(workspace, messagesByBlock, issue.blockId, issue.message)
+  }
 }
 
 interface HtmlIdSymbol {
@@ -570,8 +582,19 @@ function addSvgMessages(
       warn(node.__id, 'O caminho precisa começar com M e usar instruções como L, C e Z.')
     }
     if (node.tag === 'use') {
-      const href = node.attrs?.href ?? node.attrs?.['xlink:href']
-      if (!href?.startsWith('#')) continue
+      const href = (node.attrs?.href ?? node.attrs?.['xlink:href'])?.trim()
+      if (!href) {
+        warn(node.__id, 'Escolha uma forma guardada para reutilizar neste desenho.')
+        continue
+      }
+      if (!href.startsWith('#')) {
+        const localName = href.includes('#') ? href.slice(href.lastIndexOf('#') + 1) : href
+        warn(
+          node.__id,
+          `Para usar uma forma deste desenho, escreva #${localName}. O # aponta para o id da forma guardada.`,
+        )
+        continue
+      }
       const targetId = href.slice(1)
       const targets = nodesById.get(targetId) ?? []
       if (targets.length === 0) {
@@ -627,6 +650,7 @@ export function applySemanticDiagnostics(workspace: Blockly.Workspace, input: SZ
   let semanticValid = true
   if (parsed.success) {
     addCssSelectorMessages(workspace, parsed.data, messagesByBlock)
+    addHTMLAccessibilityMessages(workspace, parsed.data, messagesByBlock)
     semanticValid = addSvgMessages(workspace, parsed.data, messagesByBlock)
     semanticValid = addCanvasMessages(workspace, parsed.data, messagesByBlock) && semanticValid
     semanticValid =

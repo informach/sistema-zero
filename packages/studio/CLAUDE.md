@@ -391,12 +391,14 @@ bloco visível some (preserva 🔎 Pesquisar e os flyouts dinâmicos `custom`); 
 9. teste de round-trip + `bun run typecheck/test/check`.
 
 **Contratos transversais das categorias web:** não replique invariantes nos
-switches centrais. Conteúdo HTML phrasing vem de `html/catalog.ts`; validação e
-codificação de famílias ficam em `css/googleFonts.ts`; declarações e usos de
-pincel, inclusive em expressões aninhadas, são descobertos por
-`ir/canvasContexts.ts`. Parser, schema, diagnóstico e gerador consomem esses
-contratos puros. Ao acrescentar um caso nessas famílias, estenda primeiro o
-contrato da categoria e prove o caminho inválido e o round-trip nos testes.
+switches centrais. Conteúdo HTML phrasing vem de `html/catalog.ts`, e nomes
+acessíveis/alternativas textuais de `html/accessibility.ts`; validação e
+codificação de famílias CSS ficam em `css/googleFonts.ts`, `css/keyframes.ts`,
+`css/mediaQueries.ts` e `css/motion.ts`; declarações e usos de pincel, inclusive
+em expressões aninhadas, são descobertos por `ir/canvasContexts.ts`. Parser,
+schema, diagnóstico, Blockly e gerador consomem esses contratos puros. Ao
+acrescentar um caso nessas famílias, estenda primeiro o contrato da categoria e
+prove o caminho inválido e o round-trip nos testes.
 
 **Bloco de EXTENSÃO** (`game-2d`/`game-3d`, prefixo `g2d:`/`g3d:`) vive em `official-extensions/<id>/blocks.ts` (NÃO no CORE); schema/buildIR/generators/parsers/workspaceState valem igual, mas com 3 pontos PRÓPRIOS além dos acima: (a) `state/projectStore.ts` → `EXTENSION_BLOCKLY_BLOCK_TYPES['<id>']` (não o CORE); (b) `ir/schema.ts` → o `type` no Set `G2D_STATEMENT_TYPES`/`G3D_STATEMENT_TYPES` (testado em `official-extensions/*/__tests__`); (c) o `blocks.ts` da extensão → a entrada na subcategoria certa do array `SUBCATS` (que monta o `*ToolboxCategory`), senão o bloco cai no grupo genérico "Mais". O `manifest.ts` traz a `docs` (markdown do aluno; `description` ≤ ~500 chars) + bump de `version`. Checklist de revisão: `docs/EXTENSIONS.md`.
 
@@ -582,8 +584,9 @@ passa a escrever também em literal REAL `sz_val_number` (não só shadow) — e
 
 Segundo jogo do Franks Laboratory (com HERANÇA e spritesheets) buildável 100% no núcleo. 6 lacunas
 fechadas, **todas em JS** (HTML e CSS já round-tripavam — `<img src id>` vira `sz_html_image`, que
-GANHOU campo `ID` visível + `img` em `ID_FIELD_TAGS`; `alt`/`id` vazios NÃO viram atributo, round-trip
-fiel). Prova: `lobstermorphFixture.test.ts` (0 raw, fixpoint textual + de blocos). ⚠️ NÃO tem exemplo
+GANHOU campo `ID` visível + `img` em `ID_FIELD_TAGS`; `alt=""` é preservado pela opção explícita
+“só enfeite”, enquanto a ausência de `alt` continua ausente; `id` vazio não vira atributo). Prova:
+`lobstermorphFixture.test.ts` (0 raw, fixpoint textual + de blocos). ⚠️ NÃO tem exemplo
 embutido: os PNGs do jogo somam ~7,6MB (boss8 = 4MB), muito acima da cota de assets.
 - **`super(...)`** → bloco `sz_js_super_ctor` ("chamar o construtor da classe-mãe", args-mutator);
   **`super.metodo(...)`** → `sz_js_super_method`. IR `superCall{args}`/`superMethodCall{method,args}`;

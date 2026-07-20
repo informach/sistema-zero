@@ -1,6 +1,7 @@
 import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
+import { type CSSEntry, KeyframesCSSSchema } from '#ir'
 import { generateCSS } from '../../generators/css'
 import { parseCSS } from '../../parsers/css'
 import { buildIRFromWorkspace } from '../buildIR'
@@ -31,7 +32,7 @@ describe('Fase 3 — keyframes multi-passo + atalhos CSS', () => {
   })
 
   it('keyframes multi-passo sobrevive ao ciclo IR->blocos->IR (sem rawCSS)', () => {
-    const css = [
+    const css: CSSEntry[] = [
       {
         type: 'keyframes',
         name: 'girar',
@@ -69,6 +70,64 @@ describe('Fase 3 — keyframes multi-passo + atalhos CSS', () => {
     const back = parseCSS(code)
     const kf = (back as any[]).find((e) => e.type === 'keyframes')
     expect(kf.steps.length).toBe(3)
+  })
+
+  it('recusa nomes e seletores de passos que não formam keyframes CSS válidos', () => {
+    expect(
+      KeyframesCSSSchema.safeParse({
+        type: 'keyframes',
+        name: 'minha animação',
+        steps: [{ at: 'banana', declarations: { opacity: '1' } }],
+      }).success,
+    ).toBe(false)
+    expect(
+      KeyframesCSSSchema.safeParse({
+        type: 'keyframes',
+        name: 'pulsar',
+        steps: [{ at: '0%, 50%, 100%', declarations: { opacity: '1' } }],
+      }).success,
+    ).toBe(true)
+  })
+
+  it('faz a transição de uma propriedade explícita, nunca de all', () => {
+    const transition = cssFromBlock('sz_css_transition', {
+      SELECTOR: '#caixa',
+      PROPERTY: 'transform',
+      MS: 250,
+    })
+
+    expect(transition[0]?.declarations.transition).toBe('transform 250ms ease')
+    expect(JSON.stringify(transition)).not.toContain('transition":"all ')
+  })
+
+  it('preserva prefers-reduced-motion como media query estruturada', () => {
+    const css: CSSEntry[] = [
+      {
+        type: 'mediaQuery',
+        feature: 'prefers-reduced-motion',
+        rules: [{ selector: '#caixa', declarations: { animation: 'none', transition: 'none' } }],
+      },
+    ]
+
+    expect(parseCSS(generateCSS(css))).toEqual(css)
+  })
+
+  it('leva o atalho de movimento reduzido de bloco para IR e de volta ao bloco', () => {
+    const css = cssFromBlock('sz_css_reduce_motion', { SELECTOR: '#caixa' })
+
+    expect(css).toEqual([
+      expect.objectContaining({
+        type: 'mediaQuery',
+        feature: 'prefers-reduced-motion',
+        rules: [
+          {
+            selector: '#caixa',
+            declarations: { animation: 'none', transition: 'none' },
+          },
+        ],
+      }),
+    ])
+    expect(cssBlockCycle(css)[0]).toEqual(expect.objectContaining(css[0]))
   })
 
   it('atalhos: var, transform, perspective, grade geram o CSS certo', () => {

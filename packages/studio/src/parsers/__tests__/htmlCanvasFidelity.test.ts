@@ -98,4 +98,31 @@ describe('HTML/Canvas — fidelidade e semântica acessível', () => {
       workspace.dispose()
     }
   })
+
+  it('distingue imagem sem alt de imagem decorativa com alt vazio no round-trip Blockly', () => {
+    for (const source of ['<img src="foto.png">', '<img src="foto.png" alt="">']) {
+      const original = { html: parseHTML(source), css: [], js: [], extensions: [] }
+      const state = buildWorkspaceStateFromIR(original)
+      const workspace = new Blockly.Workspace()
+      try {
+        Blockly.serialization.workspaces.load(
+          state as unknown as Record<string, unknown>,
+          workspace,
+        )
+        const rebuilt = stripBlocklyIds(buildIRFromWorkspace(workspace).html)
+        expect(rebuilt, source).toEqual(original.html)
+      } finally {
+        workspace.dispose()
+      }
+    }
+  })
+
+  it('expõe uma escolha explícita para imagem decorativa', () => {
+    const image = HTML_BLOCKS.find((block) => block.type === 'sz_html_image')
+    const args = [image?.args0, image?.args1, image?.args2].flat()
+
+    expect(args).toContainEqual(
+      expect.objectContaining({ type: 'field_checkbox', name: 'DECORATIVE' }),
+    )
+  })
 })

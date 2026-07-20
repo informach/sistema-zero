@@ -67,12 +67,29 @@ test('Programação mantém foco visível e contraste AA no uso por teclado', as
     .toBeGreaterThanOrEqual(4.5)
 
   await page.getByRole('treeitem', { name: '🔎 Pesquisar', exact: true }).click()
-  const search = page.locator('input[placeholder="Pesquisar blocos..."]')
+  const search = page.locator('input[name="block-search"]')
   await expect(search).toBeVisible()
+  await expect(search).toHaveAttribute('type', 'search')
+  await expect(search).toHaveAttribute('autocomplete', 'off')
+  await expect(search).toHaveAttribute('aria-label', 'Pesquisar blocos')
+  await expect(search).toHaveAttribute('placeholder', 'Pesquisar blocos…')
+  await expect(search).toHaveJSProperty('spellcheck', false)
   await search.focus()
   await expect
     .poll(() => search.evaluate((input) => getComputedStyle(input).outlineStyle))
     .toBe('solid')
+
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  const programmingRow = programming.locator(':scope > .blocklyToolboxCategory')
+  await programmingRow.hover()
+  await expect
+    .poll(() =>
+      programmingRow.evaluate((row) => {
+        const style = getComputedStyle(row)
+        return `${style.transitionDuration} ${style.transform}`
+      }),
+    )
+    .toBe('0s none')
 })
 
 test('campos infantis de CSS, Canvas e SVG têm nome, foco e erros acessíveis', async ({ page }) => {

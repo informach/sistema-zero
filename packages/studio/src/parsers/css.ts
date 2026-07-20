@@ -6,6 +6,8 @@ import {
   findCSSLooseBrace,
 } from '#ir'
 import { parseGoogleFontImportRule } from '../css/googleFonts'
+import { isCSSKeyframeSelector, isCSSKeyframesName } from '../css/keyframes'
+import { parseGuidedMediaQueryCondition } from '../css/mediaQueries'
 
 /**
  * Parser CSS parcial baseado em regex (suficiente para regras planas). Qualquer
@@ -138,10 +140,8 @@ function tryParseMediaQuery(
   const open = slice.indexOf('{')
   if (open < 0) return null
   const condition = slice.slice('@media'.length, open).trim()
-  const match = /^\(\s*(max-width|min-width|max-height|min-height)\s*:\s*(\d+)px\s*\)$/.exec(
-    condition,
-  )
-  if (!match) return null
+  const parsedCondition = parseGuidedMediaQueryCondition(condition)
+  if (!parsedCondition) return null
   // Só estrutura se o bloco @media estiver bem-formado (chaves balanceadas);
   // caso contrário o chamador o mantém verbatim como rawCSS avançado.
   const close = findMatchingBrace(slice, open)
@@ -149,8 +149,7 @@ function tryParseMediaQuery(
   const rules = parseCSSAtDepth(slice.slice(open + 1, close), depth + 1)
   return {
     type: 'mediaQuery',
-    feature: match[1] as 'max-width' | 'min-width' | 'max-height' | 'min-height',
-    px: Number(match[2]),
+    ...parsedCondition,
     rules,
   }
 }
@@ -167,7 +166,7 @@ function tryParseKeyframes(source: string, start: number, end: number): CSSEntry
   const open = slice.indexOf('{')
   if (open < 0) return null
   const name = slice.slice('@keyframes'.length, open).trim()
-  if (!/^[A-Za-z_-][\w-]*$/.test(name)) return null
+  if (!isCSSKeyframesName(name)) return null
   const close = findMatchingBrace(slice, open)
   if (close < 0) return null
   const inner = slice.slice(open + 1, close)
@@ -190,7 +189,7 @@ function tryParseKeyframes(source: string, start: number, end: number): CSSEntry
     const parsedDeclarations = parseDeclarations(body)
     const declarationEntries = parsedDeclarations.entries
     if (
-      !isKeyframeSelector(at) ||
+      !isCSSKeyframeSelector(at) ||
       declarationEntries.length === 0 ||
       !parsedDeclarations.complete ||
       hasUnrepresentedDeclarationComment(body)
@@ -202,11 +201,6 @@ function tryParseKeyframes(source: string, start: number, end: number): CSSEntry
   }
   if (steps.length === 0) return null
   return { type: 'keyframes', name, steps }
-}
-
-function isKeyframeSelector(value: string): boolean {
-  const part = '(?:from|to|(?:\\d+(?:\\.\\d+)?)%)'
-  return new RegExp(`^${part}(?:\\s*,\\s*${part})*$`).test(value)
 }
 
 function skipWhitespaceAndComments(source: string, start: number): number {
