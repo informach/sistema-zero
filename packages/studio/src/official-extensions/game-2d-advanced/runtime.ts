@@ -7552,6 +7552,7 @@ ${towerDefenseRuntime}
           heroCellY: hero ? Math.round(num(hero.y, 0) / s) : null,
           destinationCellX: hero && hero._gridDest ? Math.round(num(hero._gridDest.x, 0) / s) : null,
           destinationCellY: hero && hero._gridDest ? Math.round(num(hero._gridDest.y, 0) / s) : null,
+          facingDirection: hero ? hero._facingDir || 'down' : null,
           dialogOpen: !!rpg.dialog,
           sceneOpen: !!rpg.scene,
           doorCells: Object.keys(rpg.doors)

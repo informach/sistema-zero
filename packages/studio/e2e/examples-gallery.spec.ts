@@ -405,6 +405,7 @@ interface RpgBrowserSnapshot {
   heroCellY: number | null
   destinationCellX: number | null
   destinationCellY: number | null
+  facingDirection: string | null
   dialogOpen: boolean
   sceneOpen: boolean
   doorCells: string[]
@@ -438,6 +439,7 @@ async function rpgSnapshot(preview: FrameLocator): Promise<RpgBrowserSnapshot> {
             heroCellY: number | null
             destinationCellX: number | null
             destinationCellY: number | null
+            facingDirection: string | null
             dialogOpen: boolean
             sceneOpen: boolean
             doorCells: string[]
@@ -458,6 +460,7 @@ async function rpgSnapshot(preview: FrameLocator): Promise<RpgBrowserSnapshot> {
       heroCellY: rpg?.heroCellY ?? null,
       destinationCellX: rpg?.destinationCellX ?? null,
       destinationCellY: rpg?.destinationCellY ?? null,
+      facingDirection: rpg?.facingDirection ?? null,
       dialogOpen: rpg?.dialogOpen ?? false,
       sceneOpen: rpg?.sceneOpen ?? false,
       doorCells: rpg?.doorCells ?? [],
@@ -561,6 +564,20 @@ test('Vila do Dragão — fluxo visual completo no Chromium', async ({ page }) =
       )
       .toBe(true)
   }
+  const faceDirection = async (key: string, direction: string) => {
+    await gameBody.focus()
+    await page.keyboard.down(key)
+    try {
+      await expect
+        .poll(async () => (await rpgSnapshot(preview)).facingDirection, {
+          intervals: [16, 32, 64],
+          timeout: 2_000,
+        })
+        .toBe(direction)
+    } finally {
+      await page.keyboard.up(key)
+    }
+  }
   for (let i = 0; i < 4; i++) await moveCell('ArrowDown')
   for (let i = 0; i < 7; i++) await moveCell('ArrowRight')
   try {
@@ -569,16 +586,15 @@ test('Vila do Dragão — fluxo visual completo no Chromium', async ({ page }) =
       .toMatchObject({ apiPresent: true, state: 'jogando', map: 'caverna' })
   } catch (error) {
     const snapshot = await rpgSnapshot(preview)
-    throw new Error(
-      `a porta não levou à caverna: ${JSON.stringify(snapshot)}\n${String(error)}`,
-    )
+    throw new Error(`a porta não levou à caverna: ${JSON.stringify(snapshot)}\n${String(error)}`)
   }
   await page.waitForTimeout(1_100)
   const caveFrame = await canvas.evaluate((element) => (element as HTMLCanvasElement).toDataURL())
   expect(caveFrame).not.toBe(villageFrame)
 
   for (let i = 0; i < 3; i++) await moveCell('ArrowUp')
-  for (let i = 0; i < 7; i++) await moveCell('ArrowRight')
+  for (let i = 0; i < 6; i++) await moveCell('ArrowRight')
+  await faceDirection('ArrowRight', 'right')
   await gameBody.press('Space')
   await expect.poll(async () => (await rpgSnapshot(preview)).state).toBe('batalha')
 

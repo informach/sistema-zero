@@ -965,6 +965,7 @@ describe('SZGameKit — API e personagens (sem DOM)', () => {
     expect(Object.keys(api).length).toBe(expected.length)
     expect((api as unknown as Record<string, unknown>)._battle).toBeUndefined()
     expect(typeof inspectors['game-2d-advanced:battle']).toBe('function')
+    expect(typeof inspectors['game-2d-advanced:rpg']).toBe('function')
   })
 
   it('setup muda a resolução interna e o personagem nasce centrado nela', () => {
