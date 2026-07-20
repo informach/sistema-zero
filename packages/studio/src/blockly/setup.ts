@@ -14,6 +14,7 @@ import { registerIfElseMutator } from './blocks/ifElseMutator'
 import { registerObjectMutator } from './blocks/objectMutator'
 import { registerParamsMutator } from './blocks/paramsMutator'
 import { registerSafeDomAttributeExtension } from './blocks/safeDomAttributeExtension'
+import { registerSafeDomElementExtensions } from './blocks/safeDomElementExtension'
 import {
   FRAME_APPEARANCE,
   FRAME_BEHAVIOR,
@@ -309,6 +310,7 @@ export function ensureBlocklyInitialized(): void {
   // O atributo livre do bloco de DOM precisa ser validado antes de o bloco ser
   // instanciado. A categoria guiada não aceita eventos nem URLs executáveis.
   registerSafeDomAttributeExtension()
+  registerSafeDomElementExtensions()
   registerProjectAreaSafeDeleteExtension()
   // Os mutators precisam estar registrados antes de qualquer instância dos
   // blocos que os usam ser criada (init aplica o mutator pelo nome).

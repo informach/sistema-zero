@@ -205,7 +205,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_val_canvas_width',
     message0: 'largura do canvas %1',
-    args0: [{ type: 'field_input', name: 'CTX', text: 'ctx' }],
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
     output: 'JSValue',
     colour: C,
     tooltip: 'A largura da tela de desenho ligada ao pincel.',
@@ -213,7 +213,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_val_canvas_height',
     message0: 'altura do canvas %1',
-    args0: [{ type: 'field_input', name: 'CTX', text: 'ctx' }],
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
     output: 'JSValue',
     colour: C,
     tooltip: 'A altura da tela de desenho ligada ao pincel.',
@@ -436,14 +436,14 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'lista', kind: 'group' }],
     output: 'JSValue',
     colour: C,
-    tooltip: 'Devolve a lista com os itens em ordem aleatória.',
+    tooltip: 'Cria uma nova lista embaralhada sem mudar a lista original.',
   },
   {
     type: 'sz_val_dataset',
     message0: 'dado %1 da variável %2',
     args0: [
       { type: 'field_input', name: 'KEY', text: 'chave' },
-      { type: 'field_input', name: 'OBJ', text: 'elemento' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'elemento', kind: 'variable' },
     ],
     output: 'JSValue',
     colour: C,
@@ -480,7 +480,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
           ['atual', 'this'],
         ],
       },
-      { type: 'field_input', name: 'TARGET', text: 'elemento' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'elemento', kind: 'dom-target' },
       { type: 'field_input', name: 'CLASS', text: 'ativo' },
     ],
     output: 'JSValue',
@@ -489,9 +489,10 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_val_this',
-    message0: 'elemento atual',
+    message0: 'contexto atual (this)',
     output: 'JSValue',
     colour: C,
-    tooltip: 'O elemento que disparou o evento atual. Use dentro de uma função ligada a um evento.',
+    tooltip:
+      'O contexto atual da função. Numa função ligada a um evento, é o elemento que disparou; num método, é o próprio objeto.',
   },
 ]

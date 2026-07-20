@@ -309,6 +309,53 @@ interface CompileMapContext {
   startLine: number
 }
 
+function treeUsesThreeNamespace(value: unknown): boolean {
+  const pending: unknown[] = [value]
+  while (pending.length > 0) {
+    const current = pending.pop()
+    if (Array.isArray(current)) {
+      pending.push(...current)
+      continue
+    }
+    if (!current || typeof current !== 'object') continue
+    const record = current as Record<string, unknown>
+    if (record.namespace === 'THREE') return true
+    pending.push(...Object.values(record))
+  }
+  return false
+}
+
+/** Imports que os facilitadores Canvas 3D exigem, deduplicados contra os explícitos. */
+function injectedCanvas3DImports(statements: JSStatement[]): JSStatement[] {
+  const existingNamedModules = new Set(
+    statements.filter((statement) => statement.type === 'importNamed').map((s) => s.module),
+  )
+  const injected: JSStatement[] = []
+  const needsCore =
+    treeUsesThreeNamespace(statements) ||
+    CANVAS3D_SEMANTIC_STATEMENT_TYPES.some((type) =>
+      treeHasStatementType(statements, type as JSStatement['type']),
+    )
+  const hasCore = statements.some(
+    (statement) =>
+      statement.type === 'importStar' && statement.module === 'three' && statement.name === 'THREE',
+  )
+  if (needsCore && !hasCore) {
+    injected.push({ type: 'importStar', name: 'THREE', module: 'three' })
+  }
+
+  const seenModules = new Set<string>()
+  for (const [macroType, needed] of Object.entries(MACRO_ADDON_IMPORTS)) {
+    if (!needed || !treeHasStatementType(statements, macroType as JSStatement['type'])) continue
+    for (const entry of needed) {
+      if (existingNamedModules.has(entry.module) || seenModules.has(entry.module)) continue
+      seenModules.add(entry.module)
+      injected.push({ type: 'importNamed', names: [entry.name], module: entry.module })
+    }
+  }
+  return injected
+}
+
 export function generateJS(opts: GenerateJSOptions): string {
   return generateJSWithMap(opts).code
 }
@@ -333,21 +380,7 @@ export function generateJSWithMap(opts: GenerateJSOptions): GenerateJSWithMapRes
   // JS). Os blocos de import são top-level (no frame de Comportamento); movê-los à
   // frente garante o código válido mesmo se a criança os arrastar para baixo.
   const isImport = (s: JSStatement): boolean => s.type === 'importStar' || s.type === 'importNamed'
-  // Macros de efeito (Brilho/Água): trazem sozinhos os imports de `three/addons/…`,
-  // deduplicados por módulo contra o que a criança já importou.
-  const existingModules = new Set(
-    hoistedLoops.filter((s) => s.type === 'importNamed').map((s) => s.module),
-  )
-  const injectedImports: JSStatement[] = []
-  const seenInjected = new Set<string>()
-  for (const [macroType, needed] of Object.entries(MACRO_ADDON_IMPORTS)) {
-    if (!needed || !treeHasStatementType(hoistedLoops, macroType as JSStatement['type'])) continue
-    for (const imp of needed) {
-      if (existingModules.has(imp.module) || seenInjected.has(imp.module)) continue
-      seenInjected.add(imp.module)
-      injectedImports.push({ type: 'importNamed', names: [imp.name], module: imp.module })
-    }
-  }
+  const injectedImports = injectedCanvas3DImports(hoistedLoops)
   const imports = [...hoistedLoops.filter(isImport), ...injectedImports]
   const statements = imports.length
     ? [...imports, ...hoistedLoops.filter((s) => !isImport(s))]
@@ -406,21 +439,7 @@ function generateBehaviorJSWithMap(
 
   const isImport = (statement: JSStatement): boolean =>
     statement.type === 'importStar' || statement.type === 'importNamed'
-  const existingModules = new Set(
-    ordered
-      .filter((statement) => statement.type === 'importNamed')
-      .map((statement) => statement.module),
-  )
-  const injectedImports: JSStatement[] = []
-  const seenInjected = new Set<string>()
-  for (const [macroType, needed] of Object.entries(MACRO_ADDON_IMPORTS)) {
-    if (!needed || !treeHasStatementType(ordered, macroType as JSStatement['type'])) continue
-    for (const entry of needed) {
-      if (existingModules.has(entry.module) || seenInjected.has(entry.module)) continue
-      seenInjected.add(entry.module)
-      injectedImports.push({ type: 'importNamed', names: [entry.name], module: entry.module })
-    }
-  }
+  const injectedImports = injectedCanvas3DImports(ordered)
 
   const imports = [...ordered.filter(isImport), ...injectedImports]
   const sections: Array<{ marker: string; statements: JSStatement[] }> = [
@@ -776,7 +795,8 @@ function compileStatementCode(
       )
       const times = compileExpr(stmt.times, 0, identifiers, recAt(base))
       const loopVar = identifiers.reserveInternal('i')
-      return `${pad}for (let ${loopVar} = 0; ${loopVar} < ${times}; ${loopVar}++) {\n${body}\n${pad}}`
+      const limitVar = identifiers.reserveInternal('limite')
+      return `${pad}for (let ${loopVar} = 0, ${limitVar} = ${times}; ${loopVar} < ${limitVar}; ${loopVar}++) {\n${body}\n${pad}}`
     }
     case 'while': {
       const body = compileStatements(
@@ -829,11 +849,11 @@ function compileStatementCode(
       const v = identifiers.get(stmt.varName)
       const from = compileExpr(stmt.from, 0, identifiers, recAt(base))
       const to = compileExpr(stmt.to, 0, identifiers, recAt(base))
-      const stepIsOne = stmt.step.type === 'num' && stmt.step.value === 1
-      const update = stepIsOne
-        ? `${v}++`
-        : `${v} += ${compileExpr(stmt.step, 0, identifiers, recAt(base))}`
-      return `${pad}for (let ${v} = ${from}; ${v} < ${to}; ${update}) {\n${body}\n${pad}}`
+      const step = compileExpr(stmt.step, 0, identifiers, recAt(base))
+      const limitVar = identifiers.reserveInternal('fim')
+      const stepVar = identifiers.reserveInternal('passo')
+      const condition = `${stepVar} > 0 ? ${v} < ${limitVar} : ${stepVar} < 0 ? ${v} > ${limitVar} : false`
+      return `${pad}for (let ${v} = ${from}, ${limitVar} = ${to}, ${stepVar} = ${step}; ${condition}; ${v} += ${stepVar}) {\n${body}\n${pad}}`
     }
     case 'tryCatch': {
       const startLine = mapContext?.startLine ?? 1
@@ -870,14 +890,16 @@ function compileStatementCode(
       const url = compileExpr(stmt.url, 0, identifiers, recAt(startLine))
       const resp = identifiers.reserveInternal('resposta')
       const ok = identifiers.get(stmt.okName)
-      // Linhas: fetch(url) | .then(json) | .then((dados) => { | corpo… | })
+      // A resposta HTTP é validada ANTES do JSON: fetch só rejeita em falha de
+      // rede, portanto 4xx/5xx precisam lançar explicitamente para chegar ao
+      // callback de erro do bloco.
       const body = compileStatements(
         stmt.body,
         indent + 2,
         identifiers,
-        childMapContext(mapContext, startLine + 3),
+        childMapContext(mapContext, startLine + 8),
       )
-      let out = `${pad}fetch(${url})\n${pad}  .then((${resp}) => ${resp}.json())\n${pad}  .then((${ok}) => {\n${body}\n${pad}  })`
+      let out = `${pad}fetch(${url})\n${pad}  .then((${resp}) => {\n${pad}    if (!${resp}.ok) {\n${pad}      throw new Error("Falha HTTP " + ${resp}.status);\n${pad}    }\n${pad}    return ${resp}.json();\n${pad}  })\n${pad}  .then((${ok}) => {\n${body}\n${pad}  })`
       if (stmt.catchBody) {
         const catchVar = stmt.catchName
           ? identifiers.get(stmt.catchName)
@@ -886,7 +908,7 @@ function compileStatementCode(
           stmt.catchBody,
           indent + 2,
           identifiers,
-          childMapContext(mapContext, startLine + 3 + countLines(body) + 2),
+          childMapContext(mapContext, startLine + 10 + countLines(body)),
         )
         out += `\n${pad}  .catch((${catchVar}) => {\n${catchBody}\n${pad}  })`
       }
@@ -1617,9 +1639,9 @@ function compileStatementCode(
     case 'g2d:fitScreen':
       return `${pad}SZGame2D.fitScreen(${compileExpr(valueToExpr(stmt.percent), 0, identifiers, recAt(base))});`
     case 'g2d:setupStage':
-      return `${pad}SZGame2D.setupStage(${compileExpr(valueToExpr(stmt.width), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.height), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.bg)});`
+      return `${pad}SZGame2D.setupStage(${compileExpr(valueToExpr(stmt.width), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.height), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.bg)}${stmt.description ? `, ${JSON.stringify(stmt.description)}` : ''});`
     case 'g2d:setupFull':
-      return `${pad}SZGame2D.setupStageFull(${JSON.stringify(stmt.bg)});`
+      return `${pad}SZGame2D.setupStageFull(${JSON.stringify(stmt.bg)}${stmt.description ? `, ${JSON.stringify(stmt.description)}` : ''});`
     case 'g2d:createShip':
       return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createShip({ x: ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, y: ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, body: ${JSON.stringify(stmt.bodyColor)}, wings: ${JSON.stringify(stmt.wingColor)} });`
     case 'g2d:spawnAsteroid':

@@ -8,7 +8,8 @@ Cada cartão tem contrato de promessa, classificação e cenário de aceite pró
 A distribuição é **46 jogos, 9 demonstrações e 12 explorações**.
 
 Todos os exemplos foram convertidos diretamente para IR V2, com comportamento
-separado em **Ao iniciar**, **Eventos** e **Loops**. A abertura pela `KitGallery`,
+separado em **⚙️ Ao iniciar**, **⚡ Quando acontecer — Eventos** e
+**🔁 Enquanto estiver rodando — Loops**. A abertura pela `KitGallery`,
 o schema, os assets, as extensões, a geração, a reconstrução Blockly e o
 round-trip sem warnings são guardas obrigatórias do catálogo. As correções não
 alteraram o gate privilegiado da galeria nem a API pública do pacote.
@@ -22,7 +23,8 @@ alteraram o gate privilegiado da galeria nem a API pública do pacote.
    soltos ou vindos de uma área excluída continuam visíveis como rascunho com
    aviso, sem executar silenciosamente.
 3. O motor inicia automaticamente por um `RuntimeLifecycleContract` obrigatório
-   em cada extensão. **Ao iniciar**, **Eventos** e **Loops** formam uma fábrica de
+   em cada extensão. **⚙️ Ao iniciar**, **⚡ Quando acontecer — Eventos** e
+   **🔁 Enquanto estiver rodando — Loops** formam uma fábrica de
    execução; nos motores com novo jogo, reiniciar limpa os registros e executa
    novamente a fábrica. O descarte do preview libera os recursos do motor,
    inclusive GPU nos motores 3D.
@@ -46,6 +48,12 @@ alteraram o gate privilegiado da galeria nem a API pública do pacote.
    eliminando warnings de autoplay sem remover ambiente ou efeitos.
 10. O sanitizador do Canvas 3D passou a aceitar o estado legítimo do loop de
     animação usado pelo Folio procedural.
+11. O canvas do Jogo 2D ganhou descrição configurável, foco por teclado e
+    anúncios de estado. No Canvas 3D, todos os blocos cabem individualmente no
+    carrossel de 390 px e os seletores têm alvo de toque de pelo menos 44 px.
+12. O projeto real do curso em Jogo 2D 0.19.0 migra de forma transparente ao
+    abrir no Estúdio e ao jogar no mural: a área antiga é separada, temporizadores
+    aninhados viram loops-raiz e o código manual da Ponte permanece intocado.
 
 ## Inventário auditado
 
@@ -155,12 +163,13 @@ explorações/demonstrações inclui as interações ou a técnica prometida.
 
 - Guarda do catálogo: 67/67 contratos, sem exemplo ausente ou duplicado.
 - Classificação: 46 jogos, 9 demonstrações e 12 explorações.
-- Suíte unitária do pacote: 3.932 testes e 30.359 asserções aprovadas em 269
+- Suíte unitária do pacote: 4.218 testes e 37.254 asserções aprovadas em 285
   arquivos.
 - TypeScript: `tsc --noEmit` aprovado.
-- Biome: 609 arquivos aprovados, sem correções pendentes.
-- Build de produção do playground: 1.405 módulos transformados e bundle gerado.
-- Chromium: 74 cenários da galeria, incluindo os 67 cartões, a Vila do Dragão
+- Biome: 665 arquivos aprovados, sem correções pendentes.
+- Build de produção do playground: 1.442 módulos transformados e bundle gerado.
+- Chromium: 75 cenários da galeria, incluindo os 67 cartões, a Vila do Dragão
   integral e uma amostra estreita de cada família.
-- E2E completo do Estúdio: 97 cenários aprovados, incluindo galeria, projeto
-  vazio, Ponte, CSS, formatação, reabertura/migração e arrasto do workspace.
+- E2E completo do Estúdio: 116 cenários aprovados, incluindo galeria, projeto
+  vazio, Ponte, CSS, SVG, Canvas 3D, formatação, reabertura/migração, segurança
+  do preview e arrasto do workspace.

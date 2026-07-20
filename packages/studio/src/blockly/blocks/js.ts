@@ -265,8 +265,8 @@ export const JS_BLOCKS: BlockDefinition[] = [
     type: 'sz_js_object_assign',
     message0: 'copiar propriedades de %1 para %2',
     args0: [
-      { type: 'field_input', name: 'SOURCE', text: 'origem' },
-      { type: 'field_input', name: 'TARGET', text: 'destino' },
+      { type: 'field_name_picker', name: 'SOURCE', text: 'origem', kind: 'variable' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'destino', kind: 'variable' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -432,7 +432,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     message0: 'depois de %1 ms, chamar a função %2',
     args0: [
       { type: 'input_value', name: 'MS', check: 'JSValue' },
-      { type: 'field_input', name: 'FN', text: 'resolve' },
+      { type: 'field_name_picker', name: 'FN', text: 'resolve', kind: 'function' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',

@@ -1,4 +1,8 @@
 import type { ExtensionToolboxCategory } from '#extensions'
+import {
+  applyPlacementToBlockTypes,
+  START_ONLY_COMMAND_PLACEMENT,
+} from '../../blockly/blockContracts'
 import { categoryShades } from '../../blockly/colorShades'
 
 // Jogo 3D Avançado = UMA cor da categoria: ÍNDIGO. As sub-categorias são TONS
@@ -1849,6 +1853,34 @@ export const gameKit3DBlocks = [
     tooltip: 'Toca uma notinha: quanto maior o Hz, mais agudo. Junte várias para uma melodia.',
   },
 ]
+
+const GAME_KIT_3D_START_ONLY_BLOCK_TYPES = [
+  'sz_g3k_setup',
+  'sz_g3k_define_mold',
+  'sz_g3k_set_pause_key',
+  'sz_g3k_state_timer',
+  'sz_g3k_define_effect',
+  'sz_g3k_define_emitter',
+  'sz_g3k_add_attractor',
+  'sz_g3k_make_solid',
+  'sz_g3k_state_anim',
+  'sz_g3k_set_physics',
+  'sz_g3k_set_collider',
+  'sz_g3k_make_trigger',
+  'sz_g3k_set_bounce',
+  'sz_g3k_set_friction',
+  'sz_g3k_set_sky_photo',
+  'sz_g3k_set_screen_text',
+  'sz_g3k_create_screen',
+  'sz_g3k_add_button',
+  'sz_g3k_load_sound',
+] as const
+
+applyPlacementToBlockTypes(
+  gameKit3DBlocks,
+  GAME_KIT_3D_START_ONLY_BLOCK_TYPES,
+  START_ONLY_COMMAND_PLACEMENT,
+)
 
 /**
  * Sub-categorias da paleta (a cor de cada uma é um TOM do índigo, derivado

@@ -6,11 +6,12 @@ getContext. Se a página não tiver <canvas>, o runtime cria um. Nos BLOCOS o 'c
 fica escondido; no código gerado ele aparece como argumento (válido e reversível).
 
 API global injetada como window.SZGame2D:
+- setupStage(largura, altura, fundo, descrição): prepara o canvas responsivo com proporção fixa. A descrição informa objetivo e controles para leitores de tela e deve ser específica para o projeto.
 - createSprite({ x, y, w, h, color }) -> { x, y, w, h, color, vx, vy }
 - drawSprite(ctx, sprite): desenha como fillRect.
 - clear(): limpa a tela inteira (use no começo de cada quadro, antes de desenhar).
 - fitScreen(percent): faz o canvas PREENCHER ~percent% da janela mantendo a proporção. As COORDENADAS do jogo (mundo lógico) não mudam, mas o desenho passa a ser feito na resolução REAL da tela — fica grande E nítido (sem borrar) e se reajusta sozinho ao redimensionar. Chame uma vez no começo. Bloco "Fazer a tela preencher N% da janela".
-- setupStageFull(bg): "ocupar a tela toda" — SEM dimensões e SEM proporção fixa: o canvas preenche 100% da viewport e a resolução LÓGICA do jogo acompanha o tamanho real da tela (a área do jogo É a tela; muda com a janela; nítido via devicePixelRatio). Diferente do setupStage/fitScreen (que mantêm a proporção e deixam barras). Centralize por "a largura/altura da tela", não por número fixo. Bloco "Preparar o jogo para ocupar a tela toda".
+- setupStageFull(bg, descrição): "ocupar a tela toda" — SEM dimensões e SEM proporção fixa: o canvas preenche 100% da viewport e a resolução LÓGICA do jogo acompanha o tamanho real da tela (a área do jogo É a tela; muda com a janela; nítido via devicePixelRatio). A descrição informa objetivo e controles para leitores de tela. Diferente do setupStage/fitScreen (que mantêm a proporção e deixam barras). Centralize por "a largura/altura da tela", não por número fixo. Bloco "Preparar o jogo para ocupar a tela toda".
 - spawnBullet(grupo, { x, y, radius, color, vx, vy }): cria um TIRO (bolinha com brilho/glow) no grupo; x/y = centro. Bloco "Criar tiro no grupo".
 - arrowsX(sprite, speed): move o sprite SÓ na horizontal com as setas (combine com clampToScreen). Bloco "Mover o sprite com as setas".
 - blink(sprite, frames): faz o sprite PISCAR por N quadros (invencibilidade ao levar dano). Bloco "Fazer o sprite piscar".
@@ -145,7 +146,7 @@ criar um por um. Um grupo é uma lista gerenciada de sprites:
 - countGroup(grupo): quantidade atual (valor, use em if/conta). clearGroup(grupo): esvazia. removeFromGroup(grupo, sprite): tira um.
 - pruneOffscreen(ctx, grupo, margem, function (sprite) {…}): remove os que saíram da tela e roda o corpo para cada um (ex.: perder vida quando um inimigo escapa).
 - overlapGroups(a, b, function (sa, sb) {…}): para cada par (um de cada grupo) que se encosta, roda o corpo com os dois sprites (use DENTRO do gameLoop). NÃO confundir com onOverlap (que é 1 sprite × 1 sprite).
-- everyFrames("chave", N): true a cada N quadros; everySeconds("chave", S): true a cada S segundos. Use como condição de um if dentro do gameLoop para criar inimigos de tempos em tempos (ex.: a cada 30 quadros, spawn no grupo).
+- everyFrames("chave", N) / everySeconds("chave", S): mecanismos internos usados pelas raízes “A cada N quadros/segundos”. No projeto da criança, essas raízes ficam diretamente em “🔁 Enquanto estiver rodando — Loops”, nunca dentro de outro gameLoop.
 
 Para um jogo de tiro (nave × asteroides): crie 2 grupos (tiros, asteroides); no gameLoop, a cada N quadros spawn um asteroide com x aleatório e vy positivo; updateGroup + drawGroup nos dois; overlapGroups(tiros, asteroides, …) para somar ponto e remover os dois; pruneOffscreen no grupo de asteroides para perder vida quando um escapa.
 
@@ -158,11 +159,11 @@ HUD no canvas (v0.6.0) — desenhe DENTRO do gameLoop, depois de limpar a tela:
 Estado/telas (cenas) — início → jogando → ganhou → perdeu, ou qualquer nome livre
 inventado pela criança (ex.: ganhou1), com UM só gameLoop:
 - setScene("jogando") / sceneIs("jogando") (booleano, use no if) / showScreen(ctx, titulo, subtitulo, dica, fundo) / restart(). O titulo/subtitulo/dica aceitam texto fixo OU expressão (variável, "juntar texto", resultado de função) — ex.: "Destrua " + alvo + " asteroides" mostra a meta vinda de uma variável.
-- IMPORTANTE: variáveis, grupos e sprites ficam em “Ao iniciar”; registros de
-  evento ficam em “Eventos”; raízes gameLoop ficam em “Loop principal”. As três
+- IMPORTANTE: variáveis, grupos e sprites ficam em “⚙️ Ao iniciar”; registros de
+  evento ficam em “⚡ Quando acontecer — Eventos”; raízes gameLoop ficam em “🔁 Enquanto estiver rodando — Loops”. As três
   áreas compartilham o mesmo escopo da partida sem recriar objetos a cada quadro.
-- Padrão: setup + setScene("inicio") em Ao iniciar; Enter em Eventos; um “A cada
-  quadro” em Loop principal limpa a tela e usa “se a tela atual é X” para decidir
+- Padrão: setup + setScene("inicio") em ⚙️ Ao iniciar; Enter em ⚡ Quando acontecer — Eventos; um “A cada
+  quadro” em 🔁 Enquanto estiver rodando — Loops limpa a tela e usa “se a tela atual é X” para decidir
   o que desenhar. No perdeu/ganhou, restart() começa uma execução limpa.
 
 Cenário (v0.6.0): drawStarfield(ctx, velocidade) desenha um céu de estrelas rolando (fundo espacial; chame logo após clear); dragX(sprite) faz o sprite seguir o dedo/mouse só na horizontal (nave no celular). Existe o exemplo pronto "Nave contra Asteroides" mostrando tudo junto.
@@ -181,7 +182,7 @@ Quando ajudar o aluno com jogos 2D:
 - Para imagens, lembre que o aluno precisa ADICIONAR o asset na aba Assets e usar o nome dele.
 - Enquanto a imagem carrega (ou se faltar), o sprite cai num retângulo (placeholder) — nunca quebra.
 - Prefira pequenas iterações didáticas — não despeje o jogo pronto.
-- DESEMPENHO: crie sprites/grupos/objetos UMA vez em Ao iniciar. Criar dentro do
+- DESEMPENHO: crie sprites/grupos/objetos UMA vez em ⚙️ Ao iniciar. Criar dentro do
   loop enche a memória. Dentro do loop, use spawn/createSprite só de propósito
   (ex.: um tiro a cada N quadros) e SEMPRE remova da tela os objetos que já
   saíram, com pruneOffscreen, para o grupo não crescer sem fim e a colisão

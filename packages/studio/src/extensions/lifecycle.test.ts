@@ -43,4 +43,13 @@ describe('contrato interno de ciclo de vida das extensões oficiais', () => {
   it('usa o adapter DOM leve quando não há motor', () => {
     expect(lifecycleContractForExtensions([])).toEqual({ target: 'core' })
   })
+
+  it('recusa IR com mais de um runtime dono do palco', () => {
+    expect(() =>
+      lifecycleContractForExtensions([
+        { extensionId: 'world-3d' },
+        { extensionId: 'game-3d-advanced' },
+      ]),
+    ).toThrow('Extensões de runtime incompatíveis')
+  })
 })

@@ -38,13 +38,15 @@ describe('newExpr/newInstance com namespace — new THREE.X(...)', () => {
   it('const como STATEMENT: const scene = new THREE.Scene() (0 raw, regenera igual)', () => {
     const { code, raws } = roundtrip('const scene = new THREE.Scene();')
     expect(raws).toEqual([])
-    expect(code.trim()).toBe('const scene = new THREE.Scene();')
+    expect(code.trim()).toBe("import * as THREE from 'three';\nconst scene = new THREE.Scene();")
   })
 
   it('com argumentos: new THREE.PerspectiveCamera(60, 1.5, 0.1, 1000)', () => {
     const { code, raws } = roundtrip('const cam = new THREE.PerspectiveCamera(60, 1.5, 0.1, 1000);')
     expect(raws).toEqual([])
-    expect(code.trim()).toBe('const cam = new THREE.PerspectiveCamera(60, 1.5, 0.1, 1000);')
+    expect(code.trim()).toBe(
+      "import * as THREE from 'three';\nconst cam = new THREE.PerspectiveCamera(60, 1.5, 0.1, 1000);",
+    )
   })
 
   it('como VALOR (argumento): scene.add(new THREE.Mesh(geo, mat))', () => {

@@ -236,6 +236,8 @@ const CUSTOM_SOCKETS: Record<string, Record<string, SocketShadow>> = {
   // Canvas 3D "adicionar %1 em cena": o objeto a adicionar vem como uma variável
   // por padrão (substituível por "novo THREE.Mesh(…)" ou qualquer valor).
   sz_t3d_add_to: { OBJ: OBJ_VAR_SHADOW },
+  // "para cada parte": começa apontando para um objeto nomeado, sem tomada vazia.
+  sz_t3d_traverse: { OBJ: OBJ_VAR_SHADOW },
   // Canvas 3D "mover devagar até %1": o alvo é um Vector3 numa variável "alvo"
   // por padrão (substituível por "novo THREE.Vector3(…)" ou membro de outro obj).
   sz_t3d_lerp_position: {

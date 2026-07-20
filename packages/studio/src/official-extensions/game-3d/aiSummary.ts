@@ -5,6 +5,10 @@ canvas sozinho. Use “Criar cena no canvas” somente quando o projeto precisar
 canvas HTML específico. Crie cena, objetos, luzes, modelos e enxames uma única vez,
 fora de “A cada quadro 3D”. Dentro do quadro, mova, anime, aplique física e teste colisões.
 
+ÁREAS: crie os recursos em “⚙️ Ao iniciar”; coloque chapéus de tecla/clique em
+“⚡ Quando acontecer — Eventos”; coloque “A cada quadro 3D” e cadências em
+“🔁 Enquanto estiver rodando — Loops”.
+
 COORDENADAS: os blocos genéricos usam x = direita, y = altura e z = profundidade.
 Movimento no chão e distância usam X-Z. Os kits Travessia e Corrida preservam suas
 coordenadas internas de grade, mas os blocos genéricos continuam seguindo X-Z.

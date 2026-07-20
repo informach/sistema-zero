@@ -583,6 +583,10 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     if (!workspace || !id) return
     const block = workspace.getBlockById(id) as Blockly.BlockSvg | null
     if (!block) return
+    // Fecha o flyout antes de centralizar. Em telas estreitas ele ocupa quase
+    // toda a área útil e deixava o bloco focalizado escondido sob a toolbox.
+    workspace.getToolbox()?.clearSelection()
+    Blockly.svgResize(workspace)
     block.select()
     workspace.centerOnBlock(id, false)
   }, [draftBlockIds, workspace])
@@ -1027,7 +1031,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         </div>
       )}
       {draftBlockIds.length > 0 && (
-        <div className="pointer-events-none absolute inset-x-0 top-3 z-20 flex justify-center px-3">
+        <div className="pointer-events-none absolute inset-x-0 top-3 z-[100] flex justify-center px-3">
           <aside
             aria-live="polite"
             className="pointer-events-auto flex max-w-xl items-center gap-3 rounded-2xl border-2 border-amber-500 bg-sz-panel px-4 py-2.5 text-sm text-sz-fg shadow-lg"

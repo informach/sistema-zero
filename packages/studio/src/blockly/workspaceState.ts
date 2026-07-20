@@ -109,7 +109,8 @@ export function buildWorkspaceStateFromIR(
   const startX = options.startX ?? 32
   const startY = options.startY ?? 32
   // Cada categoria vira uma Área do projeto: Estrutura, Aparência, Ao iniciar,
-  // Eventos ou Loop principal. É o inverso exato de buildIRFromWorkspace.
+  // Quando acontecer — Eventos ou Enquanto estiver rodando — Loops. É o inverso
+  // exato de buildIRFromWorkspace.
   const colGap = options.colGap ?? 420
 
   const htmlChildren = normalized.html.map(htmlNodeToBlock).filter(isBlock)
@@ -2622,10 +2623,21 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       const h = exprToValueBlock(valueToExpr(stmt.height))
       return w === null || h === null
         ? rawJSBlock(stmt)
-        : block('sz_g2d_setup_stage', { BG: stmt.bg }, {}, stmt.__id, { W: w, H: h })
+        : block(
+            'sz_g2d_setup_stage',
+            { BG: stmt.bg, DESCRIPTION: stmt.description ?? '' },
+            {},
+            stmt.__id,
+            { W: w, H: h },
+          )
     }
     case 'g2d:setupFull':
-      return block('sz_g2d_setup_full', { BG: stmt.bg }, {}, stmt.__id)
+      return block(
+        'sz_g2d_setup_full',
+        { BG: stmt.bg, DESCRIPTION: stmt.description ?? '' },
+        {},
+        stmt.__id,
+      )
     case 'g2d:spawnBullet': {
       const x = exprToValueBlock(stmt.x)
       const y = exprToValueBlock(stmt.y)

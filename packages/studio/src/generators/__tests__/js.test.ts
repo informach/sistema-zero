@@ -1,10 +1,30 @@
 import { describe, expect, it } from 'bun:test'
 import type { JSExpr, JSStatement } from '#ir'
 import { num, str, variable } from '#ir'
-import { GeneratorError } from '../expr'
+import { compileExpr, GeneratorError } from '../expr'
 import { GeneratorDepthError, generateJS, MAX_GENERATOR_DEPTH } from '../js'
 
 describe('generateJS', () => {
+  it('embaralha com Fisher-Yates sem alterar a lista original', () => {
+    const expression = compileExpr({ type: 'shuffle', arrayVar: 'cartas' })
+    const original = [1, 2, 3, 4]
+    const random = Math.random
+    let randomCalls = 0
+    Math.random = () => {
+      randomCalls += 1
+      return 0
+    }
+    try {
+      const shuffled = new Function('cartas', `return ${expression};`)(original) as number[]
+      expect(original).toEqual([1, 2, 3, 4])
+      expect(shuffled).not.toBe(original)
+      expect([...shuffled].sort()).toEqual(original)
+      expect(randomCalls).toBe(original.length - 1)
+    } finally {
+      Math.random = random
+    }
+  })
+
   it('emite var/assign/consoleLog', () => {
     const code = generateJS({
       statements: [
@@ -270,7 +290,7 @@ describe('generateJS', () => {
     expect(code).toMatch(/if \(x > 0\) \{/)
     expect(code).toContain('console.log("positivo");')
     expect(code).toContain('} else {')
-    expect(code).toMatch(/for \(let i = 0; i < 3; i\+\+\) \{/)
+    expect(code).toMatch(/for \(let i = 0, limite = 3; i < limite; i\+\+\) \{/)
   })
 
   it('emite event click usando getElementById + addEventListener', () => {
@@ -899,7 +919,7 @@ describe('generateJS', () => {
     })
 
     expect(code).toContain('let i = 0;')
-    expect(code).toMatch(/for \(let i_2 = 0; i_2 < 2; i_2\+\+\)/)
+    expect(code).toMatch(/for \(let i_2 = 0, limite = 2; i_2 < limite; i_2\+\+\)/)
     expect(code).toContain('console.log(i);')
     expect(() => new Function(code)).not.toThrow()
   })

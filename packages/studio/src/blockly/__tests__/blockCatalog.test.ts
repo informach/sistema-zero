@@ -57,7 +57,10 @@ describe('BLOCK_CATALOG (picker da lista de blocos da aula)', () => {
     expect(labelOf('sz_js_set_property_text')).toBe('Alterar uma propriedade (escrever um texto)')
     // Os pares valor/comando ficam DISTINTOS (não colidem mais → sem id ao lado).
     expect(labelOf('sz_val_method_on')).not.toBe(labelOf('sz_js_method_on'))
-    expect(labelOf('sz_js_call_method')).not.toBe(labelOf('sz_val_call_method'))
+    // Consumidores legados continuam registrados para projetos salvos, mas não
+    // aparecem no catálogo da aula (foram substituídos pelos blocos de Objetos).
+    expect(labelOf('sz_js_call_method')).toBeUndefined()
+    expect(labelOf('sz_val_call_method')).toBeUndefined()
   })
 
   it('explica os blocos SVG sem expor uma lista de atributos', () => {

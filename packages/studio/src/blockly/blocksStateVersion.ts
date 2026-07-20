@@ -4,7 +4,7 @@
  * projetos e a migração compartilharem exatamente o mesmo contrato.
  */
 export const BEHAVIOR_AREAS_STATE_KEY = 'szBehaviorAreasVersion'
-export const BEHAVIOR_AREAS_STATE_VERSION = 2
+export const BEHAVIOR_AREAS_STATE_VERSION = 3
 
 export function hasValidBehaviorAreasStateVersion(state: Record<string, unknown>): boolean {
   const value = state[BEHAVIOR_AREAS_STATE_KEY]

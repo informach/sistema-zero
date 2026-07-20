@@ -23,7 +23,7 @@ describe('Canvas 3D — codec semântico dos macros', () => {
     const parsed = parseJS(first)
     const second = generateJS({ statements: parsed })
 
-    expect(parsed.map((statement) => statement.type)).toEqual(['particlesSetup'])
+    expect(parsed.map((statement) => statement.type)).toEqual(['importStar', 'particlesSetup'])
     expect(second).toBe(first)
     expect(first).not.toContain('%22__id%22')
   })
@@ -66,7 +66,7 @@ describe('Canvas 3D — codec semântico dos macros', () => {
     })
     const parsed = parseJS(code)
 
-    expect(parsed.map((statement) => statement.type)).toEqual(['physicsLiteSetup'])
+    expect(parsed.map((statement) => statement.type)).toEqual(['importStar', 'physicsLiteSetup'])
     expect(JSON.stringify(parsed)).not.toContain('createSZPhysicsLite')
   })
 
@@ -91,10 +91,12 @@ describe('Canvas 3D — codec semântico dos macros', () => {
     })
     const consoleLine =
       code.split('\n').findIndex((line) => line.includes('console.log(outro)')) + 1
+    const macroLine =
+      code.split('\n').findIndex((line) => line.includes('__SZ_CANVAS3D_MACRO__')) + 1
 
     const entries = map.build()
     expect(entries.mensagem?.startLine).toBe(consoleLine)
-    expect(entries.evento?.startLine).toBe(1)
+    expect(entries.evento?.startLine).toBe(macroLine)
     expect(entries.evento?.endLine).toBeGreaterThanOrEqual(consoleLine)
   })
 })

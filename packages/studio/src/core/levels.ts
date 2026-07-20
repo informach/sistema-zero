@@ -172,7 +172,7 @@ export const CORE_CATEGORY_LEVELS: Record<string, BlockLevel> = {
   JavaScript: 'iniciante-2d',
   Matemática: 'intermediario-2d',
   Canvas: 'iniciante-2d',
-  'Canvas 3D': 'avancado-3d',
+  'Canvas 3D': 'intermediario-3d',
   Valores: 'iniciante-2d',
   Funções: 'intermediario-2d',
   Classes: 'avancado-2d',

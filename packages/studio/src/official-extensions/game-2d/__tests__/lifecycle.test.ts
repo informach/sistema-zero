@@ -174,13 +174,57 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
     expect(Math.abs(at60Hz - at120Hz)).toBeLessThanOrEqual(1)
   })
 
+  it('não tenta recuperar quadros nem avisa ao voltar de uma aba suspensa', () => {
+    const { api, fire, flushFrame } = runtimeHarness()
+    const original = console.warn
+    const warnings: string[] = []
+    console.warn = (...args: unknown[]) => warnings.push(args.map(String).join(' '))
+    let updates = 0
+    try {
+      api.gameLoop(() => {
+        updates += 1
+      }, 'quadro')
+      flushFrame(0)
+      fire('blur')
+      flushFrame(2_000)
+    } finally {
+      console.warn = original
+    }
+
+    expect(updates).toBe(2)
+    expect(warnings.filter((warning) => warning.includes('atualizações atrasadas'))).toEqual([])
+  })
+
+  it('só diagnostica atraso sustentado, não uma pausa isolada do navegador', () => {
+    const { api, flushFrame } = runtimeHarness()
+    const original = console.warn
+    const warnings: string[] = []
+    console.warn = (...args: unknown[]) => warnings.push(args.map(String).join(' '))
+    try {
+      api.gameLoop(() => {}, 'quadro')
+      flushFrame(0)
+      flushFrame(120)
+      expect(warnings.filter((warning) => warning.includes('atualizações atrasadas'))).toEqual([])
+      flushFrame(240)
+      flushFrame(360)
+    } finally {
+      console.warn = original
+    }
+
+    expect(warnings.filter((warning) => warning.includes('atualizações atrasadas'))).toHaveLength(1)
+  })
+
   it('prepara o canvas para toque e solta o gesto em pointercancel', () => {
     document.body.innerHTML = ''
     const { api, fire } = runtimeHarness()
-    api.setupStage(400, 300, '#000000')
+    api.setupStage(400, 300, '#000000', 'Labirinto: use as setas e encontre a saída.')
     const canvas = document.querySelector('canvas')
 
     expect(canvas?.style.touchAction).toBe('none')
+    expect(canvas?.getAttribute('aria-label')).toBe('Labirinto: use as setas e encontre a saída.')
+    const descriptionId = canvas?.getAttribute('aria-describedby')
+    expect(descriptionId).toBeTruthy()
+    expect(document.getElementById(descriptionId ?? '')?.textContent).toContain('Labirinto')
     fire('pointerdown', { clientX: 10, clientY: 20, target: canvas ?? undefined })
     expect(api.pointer.down).toBe(true)
     fire('pointercancel', { target: canvas ?? undefined })

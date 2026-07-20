@@ -54,16 +54,17 @@ O que o motor já faz por você:
 
 ### Começando (a receita)
 
-1. **Preparar o jogo 3D** — uma vez, no começo: resolução, tamanho do mundo,
-   céu e chão.
-2. **Criar o molde 3D** — um por tipo de coisa (herói, torre, invasor, tiro),
-   com as peças dentro.
-3. **Quando o jogo entrar no estado jogando** — monte a partida: nascer o
-   herói ("chamando de"), espalhar enfeites, ligar as fábricas.
-4. **A cada quadro (dt)** — a mecânica geral: mover pelas teclas, placar,
-   condição de vitória.
-5. **Os cérebros** — "Enquanto ela do molde X estiver no estado Y" para cada
-   estado de cada molde.
+1. Em **⚙️ Ao iniciar**, use **Preparar o jogo 3D** uma vez: resolução, tamanho
+   do mundo, céu e chão.
+2. Ainda em **⚙️ Ao iniciar**, use **Criar o molde 3D** uma vez por tipo de coisa
+   (herói, torre, invasor, tiro), com as peças dentro.
+3. Em **⚡ Quando acontecer — Eventos**, use **Quando o jogo entrar no estado
+   jogando** para montar a partida: nascer o herói ("chamando de"), espalhar
+   enfeites e ligar as fábricas.
+4. Em **🔁 Enquanto estiver rodando — Loops**, use **A cada quadro (dt)** para a
+   mecânica geral: mover pelas teclas, placar e condição de vitória.
+5. Ainda em **🔁 Enquanto estiver rodando — Loops**, monte os cérebros com
+   **Enquanto ela do molde X estiver no estado Y** para cada estado de cada molde.
 6. Pronto: o motor **começa automaticamente**, uma única vez, depois que todos
    os moldes, eventos e telas foram registrados.
 

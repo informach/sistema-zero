@@ -1,4 +1,10 @@
 import type { ExtensionToolboxCategory } from '#extensions'
+import {
+  applyPlacementToBlockTypes,
+  EVENT_BODY_COMMAND_PLACEMENT,
+  EVENT_ROOT_PLACEMENT,
+  START_ONLY_COMMAND_PLACEMENT,
+} from '../../blockly/blockContracts'
 import type { BlockDefinition } from '../../blockly/blocks/types'
 import { categoryShades } from '../../blockly/colorShades'
 
@@ -2019,7 +2025,7 @@ export const world3DBlocks: BlockDefinition[] = [
   },
   {
     type: 'sz_w3d_npc_ask',
-    message0: 'Quando o amigo %1 perguntar: %2',
+    message0: 'O amigo %1 pergunta: %2',
     args0: [
       { type: 'field_name_picker', name: 'NAME', text: 'Lia', kind: 'w3dnpc' },
       { type: 'field_input', name: 'QUESTION', text: 'O que você quer ser?' },
@@ -2039,7 +2045,7 @@ export const world3DBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O amigo faz uma PERGUNTA com dois botões de resposta (clique ou tecla 1/2). Cada resposta roda os próprios blocos — dá para ramificar a conversa, dar missões diferentes, contar segredos… Entra na fila de falas normal (combine com "falar").',
+      'Use dentro de “Quando conversar”. O amigo faz uma PERGUNTA com dois botões de resposta (clique ou tecla 1/2). Cada resposta roda os próprios blocos — dá para ramificar a conversa, dar missões diferentes, contar segredos… Entra na fila de falas normal (combine com "falar").',
   },
   {
     type: 'sz_w3d_traffic',
@@ -2239,7 +2245,7 @@ export const world3DBlocks: BlockDefinition[] = [
  * Ações momentâneas (confete, fala, teleporte, clima, inventário etc.) seguem
  * disponíveis dentro dos corpos de eventos e de "A cada quadro".
  */
-const START_ONLY_WORLD_BUILDERS = new Set([
+const START_ONLY_WORLD_BUILDERS = [
   'sz_w3d_setup',
   'sz_w3d_terrain',
   'sz_w3d_flatten',
@@ -2270,8 +2276,6 @@ const START_ONLY_WORLD_BUILDERS = new Set([
   'sz_w3d_marker',
   'sz_w3d_npc',
   'sz_w3d_npc_wander',
-  'sz_w3d_npc_talk',
-  'sz_w3d_npc_ask',
   'sz_w3d_islands',
   'sz_w3d_boat',
   'sz_w3d_bridge',
@@ -2315,12 +2319,11 @@ const START_ONLY_WORLD_BUILDERS = new Set([
   'sz_w3d_road_grid',
   'sz_w3d_house_row',
   'sz_w3d_quality',
-])
+] as const
 
-for (const block of world3DBlocks) {
-  if (!START_ONLY_WORLD_BUILDERS.has(block.type)) continue
-  block.placement = { root: ['start'], nested: [], role: 'command' }
-}
+applyPlacementToBlockTypes(world3DBlocks, START_ONLY_WORLD_BUILDERS, START_ONLY_COMMAND_PLACEMENT)
+applyPlacementToBlockTypes(world3DBlocks, ['sz_w3d_npc_talk'], EVENT_ROOT_PLACEMENT)
+applyPlacementToBlockTypes(world3DBlocks, ['sz_w3d_npc_ask'], EVENT_BODY_COMMAND_PLACEMENT)
 
 // ---- Sub-categorias da paleta (a ordem é a ordem de leitura da criança) ----
 

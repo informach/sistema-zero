@@ -31,5 +31,10 @@ export const gameTwoDExtension: ExtensionDefinition = {
   },
 }
 
-export type { GameTwoDLifecycleApi } from './runtimeContract'
+export {
+  GAME_TWO_D_API_KEYS,
+  type GameTwoDApiKey,
+  type GameTwoDLifecycleApi,
+  type GameTwoDRuntimeApi,
+} from './runtimeContract'
 export { gameTwoDBlocks, gameTwoDManifest, gameTwoDRuntime, gameTwoDToolboxCategory }

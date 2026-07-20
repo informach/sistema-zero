@@ -36,6 +36,12 @@ export interface BlockDefinition {
   args1?: unknown[]
   message2?: string
   args2?: unknown[]
+  message3?: string
+  args3?: unknown[]
+  message4?: string
+  args4?: unknown[]
+  message5?: string
+  args5?: unknown[]
   previousStatement?: string | string[] | null
   nextStatement?: string | string[] | null
   output?: string | null

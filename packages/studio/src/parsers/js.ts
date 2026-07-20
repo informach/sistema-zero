@@ -7,8 +7,8 @@ import {
   type JSExpr,
   type JSStatement,
 } from '#ir'
-import { isGuidedDomAttributeName, isGuidedDomProperty } from '../blockly/domSafety'
 import { prepareCanvasImageSourceForParse } from '../canvasImagePreloadCodec'
+import { isGuidedDomAttributeName, isGuidedDomElementTag, isGuidedDomProperty } from '../domSafety'
 import {
   canvas3DMacroFromPlaceholder,
   prepareCanvas3DSourceForParse,
@@ -533,7 +533,36 @@ function callbackParam(cb: Node): { param?: string } | null {
   return null
 }
 
-/** Confere se o callback é `(r) => r.json()` ou `(r) => { return r.json(); }`. */
+function isHttpOkGuard(statement: Node, responseName: string): boolean {
+  if (statement?.type !== 'IfStatement' || statement.alternate) return false
+  const test = statement.test
+  if (
+    test?.type !== 'UnaryExpression' ||
+    test.operator !== '!' ||
+    test.argument?.type !== 'MemberExpression' ||
+    test.argument.computed ||
+    test.argument.object?.type !== 'Identifier' ||
+    test.argument.object.name !== responseName ||
+    test.argument.property?.name !== 'ok'
+  ) {
+    return false
+  }
+  const consequent = statement.consequent
+  const thrown = consequent?.type === 'BlockStatement' ? consequent.body?.[0] : consequent
+  return (
+    (consequent?.type !== 'BlockStatement' || consequent.body?.length === 1) &&
+    thrown?.type === 'ThrowStatement' &&
+    thrown.argument?.type === 'NewExpression' &&
+    thrown.argument.callee?.type === 'Identifier' &&
+    thrown.argument.callee.name === 'Error' &&
+    thrown.argument.arguments?.length === 1
+  )
+}
+
+/**
+ * Confere callbacks JSON legados e a forma canônica segura:
+ * `(r) => { if (!r.ok) throw new Error(...); return r.json(); }`.
+ */
 function isJsonCallback(cb: Node): boolean {
   if (cb?.type !== 'ArrowFunctionExpression' && cb?.type !== 'FunctionExpression') return false
   const params = cb.params ?? []
@@ -542,8 +571,14 @@ function isJsonCallback(cb: Node): boolean {
   let expr = cb.body
   if (expr?.type === 'BlockStatement') {
     const stmts = expr.body ?? []
-    if (stmts.length !== 1 || stmts[0]?.type !== 'ReturnStatement') return false
-    expr = stmts[0].argument
+    const returned = stmts.at(-1)
+    if (
+      returned?.type !== 'ReturnStatement' ||
+      (stmts.length !== 1 && !(stmts.length === 2 && isHttpOkGuard(stmts[0], p)))
+    ) {
+      return false
+    }
+    expr = returned.argument
   }
   return (
     expr?.type === 'CallExpression' &&
@@ -556,7 +591,7 @@ function isJsonCallback(cb: Node): boolean {
 }
 
 /**
- * `fetch(url).then(r => r.json()).then((dados) => {…})[.catch((erro) => {…})]`
+ * `fetch(url).then(r => { valida status; return r.json() }).then((dados) => {…})`
  * → `fetchJson`. Desembrulha de fora para dentro: catch (opcional) → then(dados)
  * → then(json) → fetch(url).
  */
@@ -1677,7 +1712,8 @@ function matchCreateElement(node: Node): string | null {
   if (callee?.type !== 'MemberExpression' || callee.computed) return null
   if (callee.object?.name !== 'document' || callee.property?.name !== 'createElement') return null
   if (node.arguments?.length !== 1 || node.arguments[0].type !== 'StringLiteral') return null
-  return node.arguments[0].value as string
+  const tag = node.arguments[0].value as string
+  return isGuidedDomElementTag(tag, 'html') ? tag : null
 }
 
 /** `document.createElementNS(SVG_NS, 'tag')` → nome da tag; outros namespaces ficam raw. */
@@ -1694,7 +1730,8 @@ function matchCreateElementNS(node: Node): string | null {
   ) {
     return null
   }
-  return node.arguments[1].value as string
+  const tag = node.arguments[1].value as string
+  return isGuidedDomElementTag(tag, 'svg') ? tag : null
 }
 
 /** `pai.appendChild(filho)` (ambos identificadores) → `appendChild`. */
@@ -3584,14 +3621,16 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const height = toExpr(args[1], ctx)
       // 3º argumento (cor de fundo) é opcional: código antigo de 2 args cai no padrão.
       const bg = args[2]?.type === 'StringLiteral' ? (args[2].value as string) : '#0b1020'
+      const description = args[3]?.type === 'StringLiteral' ? (args[3].value as string) : undefined
       return isSimpleValue(width) && isSimpleValue(height)
-        ? { type: 'g2d:setupStage', width, height, bg }
+        ? { type: 'g2d:setupStage', width, height, bg, ...(description ? { description } : {}) }
         : null
     }
     case 'setupStageFull': {
       // generator: SZGame2D.setupStageFull("cor") — tela toda, sem dimensões.
       const bg = args[0]?.type === 'StringLiteral' ? (args[0].value as string) : '#0b1020'
-      return { type: 'g2d:setupFull', bg }
+      const description = args[1]?.type === 'StringLiteral' ? (args[1].value as string) : undefined
+      return { type: 'g2d:setupFull', bg, ...(description ? { description } : {}) }
     }
     case 'spawnAsteroid': {
       // generator: SZGame2D.spawnAsteroid(g, { x, y, size, color, vx, vy })
@@ -10567,7 +10606,123 @@ function bodyReferencesVar(body: JSStatement[], name: string): boolean {
   return found
 }
 
+/** Forma canônica gerada para repeat: congela o limite no inicializador do for. */
+function tryMapStableRepeat(node: Node, source: string, ctx: ParseCtx): JSStatement | null {
+  const declarations = node.init?.type === 'VariableDeclaration' ? node.init.declarations : null
+  if (declarations?.length !== 2) return null
+  const [counterDecl, limitDecl] = declarations
+  if (
+    counterDecl?.id?.type !== 'Identifier' ||
+    counterDecl.init?.type !== 'NumericLiteral' ||
+    counterDecl.init.value !== 0 ||
+    limitDecl?.id?.type !== 'Identifier' ||
+    !limitDecl.init
+  ) {
+    return null
+  }
+  const counter = counterDecl.id.name
+  const limit = limitDecl.id.name
+  const test = node.test
+  const update = node.update
+  if (
+    test?.type !== 'BinaryExpression' ||
+    test.operator !== '<' ||
+    test.left?.type !== 'Identifier' ||
+    test.left.name !== counter ||
+    test.right?.type !== 'Identifier' ||
+    test.right.name !== limit ||
+    update?.type !== 'UpdateExpression' ||
+    update.operator !== '++' ||
+    update.argument?.type !== 'Identifier' ||
+    update.argument.name !== counter
+  ) {
+    return null
+  }
+  const times = toExpr(limitDecl.init, ctx)
+  if (!isSimpleValue(times)) return null
+  const body = bodyOfBlock(node.body, source, ctx)
+  if (bodyReferencesVar(body, counter)) return null
+  return { type: 'repeat', times, body }
+}
+
+/**
+ * Forma canônica do intervalo: início, fim e passo são avaliados uma vez, e o
+ * sinal do passo escolhe a comparação crescente ou decrescente.
+ */
+function tryMapStableForRange(node: Node, source: string, ctx: ParseCtx): JSStatement | null {
+  const declarations = node.init?.type === 'VariableDeclaration' ? node.init.declarations : null
+  if (declarations?.length !== 3) return null
+  const [valueDecl, limitDecl, stepDecl] = declarations
+  if (
+    valueDecl?.id?.type !== 'Identifier' ||
+    !valueDecl.init ||
+    limitDecl?.id?.type !== 'Identifier' ||
+    !limitDecl.init ||
+    stepDecl?.id?.type !== 'Identifier' ||
+    !stepDecl.init
+  ) {
+    return null
+  }
+  const valueName = valueDecl.id.name
+  const limitName = limitDecl.id.name
+  const stepName = stepDecl.id.name
+  const isIdentifier = (candidate: Node, name: string) =>
+    candidate?.type === 'Identifier' && candidate.name === name
+  const isComparison = (
+    candidate: Node,
+    operator: string,
+    left: string,
+    right: (candidate: Node) => boolean,
+  ) =>
+    candidate?.type === 'BinaryExpression' &&
+    candidate.operator === operator &&
+    isIdentifier(candidate.left, left) &&
+    right(candidate.right)
+  const isNumber = (value: number) => (candidate: Node) =>
+    candidate?.type === 'NumericLiteral' && candidate.value === value
+  const isNamed = (name: string) => (candidate: Node) => isIdentifier(candidate, name)
+
+  const test = node.test
+  const negativeBranch = test?.alternate
+  if (
+    test?.type !== 'ConditionalExpression' ||
+    !isComparison(test.test, '>', stepName, isNumber(0)) ||
+    !isComparison(test.consequent, '<', valueName, isNamed(limitName)) ||
+    negativeBranch?.type !== 'ConditionalExpression' ||
+    !isComparison(negativeBranch.test, '<', stepName, isNumber(0)) ||
+    !isComparison(negativeBranch.consequent, '>', valueName, isNamed(limitName)) ||
+    negativeBranch.alternate?.type !== 'BooleanLiteral' ||
+    negativeBranch.alternate.value !== false
+  ) {
+    return null
+  }
+  const update = node.update
+  if (
+    update?.type !== 'AssignmentExpression' ||
+    update.operator !== '+=' ||
+    !isIdentifier(update.left, valueName) ||
+    !isIdentifier(update.right, stepName)
+  ) {
+    return null
+  }
+  const from = toExpr(valueDecl.init, ctx)
+  const to = toExpr(limitDecl.init, ctx)
+  const step = toExpr(stepDecl.init, ctx)
+  if (!isSimpleValue(from) || !isSimpleValue(to) || !isSimpleValue(step)) return null
+  return {
+    type: 'forRange',
+    varName: valueName,
+    from,
+    to,
+    step,
+    body: bodyOfBlock(node.body, source, ctx),
+  }
+}
+
 function mapFor(node: Node, source: string, ctx: ParseCtx): JSStatement {
+  const stable = tryMapStableRepeat(node, source, ctx) ?? tryMapStableForRange(node, source, ctx)
+  if (stable) return stable
+
   // for (let v = <de>; v < <ate>; v++ | v += <passo> | v = v + <passo>) { ... }
   const init = node.init
   const test = node.test
@@ -11871,7 +12026,138 @@ function matchDistance(node: Node, ctx?: ParseCtx): JSExpr | null {
   return { type: 'distance', a, b }
 }
 
-/** `Math.random() - 0.5` (corpo do comparador de embaralhamento). */
+function isNamedMember(node: Node, objectName: string, propertyName: string): boolean {
+  return (
+    node?.type === 'MemberExpression' &&
+    !node.computed &&
+    node.object?.type === 'Identifier' &&
+    node.object.name === objectName &&
+    node.property?.type === 'Identifier' &&
+    node.property.name === propertyName
+  )
+}
+
+function isIndexedMember(node: Node, objectName: string, indexName: string): boolean {
+  return (
+    node?.type === 'MemberExpression' &&
+    node.computed &&
+    node.object?.type === 'Identifier' &&
+    node.object.name === objectName &&
+    node.property?.type === 'Identifier' &&
+    node.property.name === indexName
+  )
+}
+
+function isMathRandomCall(node: Node): boolean {
+  return (
+    node?.type === 'CallExpression' &&
+    (node.arguments?.length ?? 0) === 0 &&
+    isNamedMember(node.callee, 'Math', 'random')
+  )
+}
+
+/** IIFE Fisher–Yates gerada pelo bloco, aplicada a `[...lista]`. */
+function matchFisherYatesShuffle(node: Node): JSExpr | null {
+  if (node?.type !== 'CallExpression' || node.arguments?.length !== 1) return null
+  const fn = node.callee
+  const copyArg = node.arguments[0]
+  if (
+    fn?.type !== 'ArrowFunctionExpression' ||
+    fn.params?.length !== 1 ||
+    fn.params[0]?.type !== 'Identifier' ||
+    fn.body?.type !== 'BlockStatement' ||
+    fn.body.body?.length !== 2 ||
+    copyArg?.type !== 'ArrayExpression' ||
+    copyArg.elements?.length !== 1 ||
+    copyArg.elements[0]?.type !== 'SpreadElement' ||
+    copyArg.elements[0].argument?.type !== 'Identifier'
+  ) {
+    return null
+  }
+  const copyName = fn.params[0].name
+  const [loop, returnStmt] = fn.body.body
+  if (
+    loop?.type !== 'ForStatement' ||
+    returnStmt?.type !== 'ReturnStatement' ||
+    returnStmt.argument?.type !== 'Identifier' ||
+    returnStmt.argument.name !== copyName
+  ) {
+    return null
+  }
+
+  const declarations = loop.init?.type === 'VariableDeclaration' ? loop.init.declarations : null
+  const indexDecl = declarations?.length === 1 ? declarations[0] : null
+  const indexName = indexDecl?.id?.type === 'Identifier' ? indexDecl.id.name : null
+  const indexInit = indexDecl?.init
+  if (
+    !indexName ||
+    indexInit?.type !== 'BinaryExpression' ||
+    indexInit.operator !== '-' ||
+    !isNamedMember(indexInit.left, copyName, 'length') ||
+    indexInit.right?.type !== 'NumericLiteral' ||
+    indexInit.right.value !== 1 ||
+    loop.test?.type !== 'BinaryExpression' ||
+    loop.test.operator !== '>' ||
+    loop.test.left?.type !== 'Identifier' ||
+    loop.test.left.name !== indexName ||
+    loop.test.right?.type !== 'NumericLiteral' ||
+    loop.test.right.value !== 0 ||
+    loop.update?.type !== 'UpdateExpression' ||
+    loop.update.operator !== '--' ||
+    loop.update.argument?.type !== 'Identifier' ||
+    loop.update.argument.name !== indexName ||
+    loop.body?.type !== 'BlockStatement' ||
+    loop.body.body?.length !== 2
+  ) {
+    return null
+  }
+
+  const [randomDeclStmt, swapStmt] = loop.body.body
+  const randomDecls =
+    randomDeclStmt?.type === 'VariableDeclaration' ? randomDeclStmt.declarations : null
+  const randomDecl = randomDecls?.length === 1 ? randomDecls[0] : null
+  const randomName = randomDecl?.id?.type === 'Identifier' ? randomDecl.id.name : null
+  const floorCall = randomDecl?.init
+  const product = floorCall?.arguments?.[0]
+  if (
+    !randomName ||
+    floorCall?.type !== 'CallExpression' ||
+    !isNamedMember(floorCall.callee, 'Math', 'floor') ||
+    floorCall.arguments?.length !== 1 ||
+    product?.type !== 'BinaryExpression' ||
+    product.operator !== '*' ||
+    !isMathRandomCall(product.left) ||
+    product.right?.type !== 'BinaryExpression' ||
+    product.right.operator !== '+' ||
+    product.right.left?.type !== 'Identifier' ||
+    product.right.left.name !== indexName ||
+    product.right.right?.type !== 'NumericLiteral' ||
+    product.right.right.value !== 1
+  ) {
+    return null
+  }
+
+  const assignment = swapStmt?.type === 'ExpressionStatement' ? swapStmt.expression : null
+  const left = assignment?.left
+  const right = assignment?.right
+  if (
+    assignment?.type !== 'AssignmentExpression' ||
+    assignment.operator !== '=' ||
+    left?.type !== 'ArrayPattern' ||
+    left.elements?.length !== 2 ||
+    !isIndexedMember(left.elements[0], copyName, indexName) ||
+    !isIndexedMember(left.elements[1], copyName, randomName) ||
+    right?.type !== 'ArrayExpression' ||
+    right.elements?.length !== 2 ||
+    !isIndexedMember(right.elements[0], copyName, randomName) ||
+    !isIndexedMember(right.elements[1], copyName, indexName)
+  ) {
+    return null
+  }
+  return { type: 'shuffle', arrayVar: copyArg.elements[0].argument.name }
+}
+
+/** `Math.random() - 0.5` (forma legada do comparador de embaralhamento). */
 function isRandomMinusHalf(node: Node): boolean {
   if (node?.type !== 'BinaryExpression' || node.operator !== '-') return false
   const left = node.left
@@ -11882,8 +12168,10 @@ function isRandomMinusHalf(node: Node): boolean {
   return node.right?.type === 'NumericLiteral' && node.right.value === 0.5
 }
 
-/** `<lista>.sort(() => Math.random() - 0.5)` → `shuffle`. Corpo direto ou `return`. */
+/** Fisher–Yates atual ou `<lista>.sort(...)` legado → `shuffle`. */
 function matchShuffle(node: Node): JSExpr | null {
+  const fisherYates = matchFisherYatesShuffle(node)
+  if (fisherYates) return fisherYates
   if (node?.type !== 'CallExpression') return null
   const callee = node.callee
   if (callee?.type !== 'MemberExpression' || callee.computed) return null

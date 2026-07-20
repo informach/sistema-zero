@@ -8,6 +8,8 @@ interface AttachOptions {
   expressionHost: string
   expressionInput: string
   loopHost: string
+  eventHost?: string
+  eventInput?: string
 }
 
 const ROOT_FRAME = {
@@ -18,7 +20,16 @@ const ROOT_FRAME = {
 
 /** Monta um bloco no contexto físico que seu contrato permite. */
 export function attachBlockInContractContext(options: AttachOptions): Blockly.Block {
-  const { workspace, type, kind, expressionHost, expressionInput, loopHost } = options
+  const {
+    workspace,
+    type,
+    kind,
+    expressionHost,
+    expressionInput,
+    loopHost,
+    eventHost = 'sz_js_on_click',
+    eventInput = 'DO',
+  } = options
   const statementType = kind === 'expr' ? expressionHost : type
   const contract = requireBlockContract(statementType)
   const root = contract.placement?.root[0]
@@ -32,6 +43,11 @@ export function attachBlockInContractContext(options: AttachOptions): Blockly.Bl
     const host = workspace.newBlock(loopHost)
     frame.getInput('CHILDREN')?.connection?.connect(host.previousConnection as Blockly.Connection)
     slot = host.getInput('BODY')?.connection
+  } else if (contract.placement?.nested.includes('event-body')) {
+    const frame = workspace.newBlock(FRAME_EVENTS)
+    const host = workspace.newBlock(eventHost)
+    frame.getInput('CHILDREN')?.connection?.connect(host.previousConnection as Blockly.Connection)
+    slot = host.getInput(eventInput)?.connection
   } else {
     throw new Error(`${statementType}: o teste não conhece um contexto raiz permitido`)
   }

@@ -28,6 +28,14 @@ Adiciona \`window.SZGame3D\`, um wrapper didático sobre **Three.js**, para mont
 cenas e **jogos** 3D sobre WebGL. O Three.js é carregado de um CDN **fixado**
 (esm.sh) via importmap — a CSP do preview libera SÓ essa origem em \`script-src\`.
 
+### Áreas do projeto
+
+- Em **⚙️ Ao iniciar**, crie a cena, objetos, modelos, luzes e enxames uma vez.
+- Em **⚡ Quando acontecer — Eventos**, coloque chapéus de tecla e clique.
+- Em **🔁 Enquanto estiver rodando — Loops**, coloque **A cada frame 3D** e
+  atualizações periódicas. Dentro do quadro, apenas mova, anime, aplique física
+  e teste colisões.
+
 ### Cena & objetos
 
 - **Criar cena 3D** — cena + câmera + luz + renderizador num \`<canvas>\`.
@@ -101,7 +109,9 @@ cenas e **jogos** 3D sobre WebGL. O Three.js é carregado de um CDN **fixado**
 ### Observações
 
 - Para começar rápido, use **Criar cena 3D em tela cheia** (cria o canvas sozinho). Para mais controle (HUD próprio, layout), crie o \`<canvas>\` no HTML primeiro e use **Criar cena 3D no canvas** (mesmo padrão do Jogo 2D).
-- Crie cena, objetos, modelos, luzes e enxames UMA vez (fora do "A cada frame 3D"); dentro do loop só mova, anime, aplique física e teste colisões. O projeto é validado antes de executar para impedir criação acidental no loop.
+- Crie cena, objetos, modelos, luzes e enxames UMA vez em **⚙️ Ao iniciar**; dentro
+  de **A cada frame 3D**, apenas mova, anime, aplique física e teste colisões. O
+  projeto é validado antes de executar para impedir construções persistentes no loop.
 - Eixos genéricos: x = direita, y = cima, z = profundidade; distância, círculo e grade usam o chão X-Z. Os kits Travessia/Corrida mantêm sua convenção interna sem mudar os blocos genéricos. Rotação em radianos.
 - Movimento e física usam o tempo real do quadro, mantendo a velocidade em telas de 60/120/144 Hz.
 - Há limites didáticos de segurança para objetos, luzes, enxames, linhas e andares; remova ou faça a poda de itens temporários.

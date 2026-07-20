@@ -288,6 +288,15 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
         .join('\n'),
     )
   }
+  if (contract.key.startsWith('game-2d:')) {
+    const canvas = preview.locator('canvas').first()
+    await expect(canvas).toHaveAttribute('aria-label', /\S/)
+    await expect(canvas).toHaveAttribute('aria-describedby', /\S/)
+    await expect(canvas).toHaveAttribute('tabindex', '0')
+    const descriptionId = await canvas.getAttribute('aria-describedby')
+    if (!descriptionId) throw new Error(`canvas sem descrição acessível: ${contract.key}`)
+    await expect(preview.locator(`#${descriptionId}`)).toContainText(/\S/)
+  }
   await focusPreview(page, preview)
   for (const interaction of contract.interactions) {
     await applyInteraction(page, preview, interaction)

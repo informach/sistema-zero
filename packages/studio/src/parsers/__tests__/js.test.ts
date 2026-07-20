@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { parse } from '@babel/parser'
-import { generateJS } from '../../generators/js'
+import type { JSStatement } from '#ir'
+import { compileStatements, generateJS } from '../../generators/js'
 import { parseJS } from '../js'
 
 /** Confere que `code` é JS re-parseável (sem lançar nem erros de recuperação). */
@@ -1182,6 +1183,25 @@ document.addEventListener('keyup', (e) => {
     ])
   })
 
+  it('mantém criação de elementos executáveis como Código avançado', () => {
+    expect(parseJS("const ataque = document.createElement('script');")).toEqual([
+      {
+        type: 'rawJS',
+        code: "const ataque = document.createElement('script');",
+        advanced: true,
+      },
+    ])
+    expect(
+      parseJS("const ataque = document.createElementNS('http://www.w3.org/2000/svg', 'script');"),
+    ).toEqual([
+      {
+        type: 'rawJS',
+        code: "const ataque = document.createElementNS('http://www.w3.org/2000/svg', 'script');",
+        advanced: true,
+      },
+    ])
+  })
+
   it('reconhece appendChild', () => {
     expect(parseJS('board.appendChild(card);')).toEqual([
       { type: 'appendChild', parentVar: 'board', childVar: 'card' },
@@ -1284,6 +1304,15 @@ document.addEventListener('keyup', (e) => {
     expect(parseJS('let r = baralho.sort(() => Math.random() - 0.5);')).toEqual([
       { type: 'var', name: 'r', value: { type: 'shuffle', arrayVar: 'baralho' } },
     ])
+  })
+
+  it('roundtrip do embaralhamento preserva o bloco sem mutar via sort', () => {
+    const input: JSStatement[] = [
+      { type: 'var', name: 'r', value: { type: 'shuffle', arrayVar: 'baralho' } },
+    ]
+    const generated = compileStatements(input, 0)
+    expect(generated).not.toContain('.sort(')
+    expect(parseJS(generated)).toEqual(input)
   })
 
   it('reconhece Math.random() cru como randomFloat', () => {

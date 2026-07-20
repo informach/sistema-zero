@@ -70,9 +70,15 @@ export function lifecycleContractForExtensions(
   extensions: readonly { extensionId: string }[],
 ): RuntimeLifecycleContract {
   const installed = new Set(extensions.map((extension) => extension.extensionId))
-  for (const extensionId of TARGET_PRECEDENCE) {
-    if (!installed.has(extensionId)) continue
-    return CONTRACT_BY_EXTENSION.get(extensionId) as RuntimeLifecycleContract
+  const targets = TARGET_PRECEDENCE.filter((extensionId) => installed.has(extensionId))
+  if (targets.length > 1) {
+    throw new Error(`Extensões de runtime incompatíveis na IR: ${targets.join(', ')}`)
+  }
+  const extensionId = targets[0]
+  if (extensionId) {
+    const contract = CONTRACT_BY_EXTENSION.get(extensionId)
+    if (!contract) throw new Error(`Contrato de runtime ausente: ${extensionId}`)
+    return contract
   }
   return CORE_LIFECYCLE
 }

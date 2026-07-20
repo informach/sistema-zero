@@ -815,7 +815,10 @@ export function compileExpr(
     case 'concatArrays':
       return `[${expr.parts.map((p) => `...${compileExpr(p, 0, identifiers, rec)}`).join(', ')}]`
     case 'shuffle':
-      return `${identifiers.get(expr.arrayVar)}.sort(() => Math.random() - 0.5)`
+      // Fisher–Yates é uniforme e trabalha numa cópia. A lista entra como
+      // argumento da IIFE para que até um nome como "__szLista" seja lido no
+      // escopo externo antes de o parâmetro local passar a existir.
+      return `((__szLista) => { for (let __szI = __szLista.length - 1; __szI > 0; __szI--) { const __szJ = Math.floor(Math.random() * (__szI + 1)); [__szLista[__szI], __szLista[__szJ]] = [__szLista[__szJ], __szLista[__szI]]; } return __szLista; })([...${identifiers.get(expr.arrayVar)}])`
     case 'objectLiteral': {
       if (expr.entries.length === 0) return '{}'
       const parts = expr.entries

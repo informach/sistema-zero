@@ -16,20 +16,22 @@ import {
   CSS_BLOCKS,
   CSS_GROUPS,
   DOM_BLOCKS,
-  FUNCTION_BLOCKS,
   HTML_BLOCKS,
   HTML_GROUPS,
   JS_BLOCKS,
   JS_GROUPS,
   MATH_BLOCKS,
   OBJECT_BLOCKS,
-  OOP_BLOCKS,
   SVG_BLOCKS,
   SVG_GROUPS,
   VALUE_BLOCKS,
 } from './blocks'
 import type { BlockDefinition } from './blocks/types'
 import { type SocketShadow, socketInputsFor } from './blocks/valueSockets'
+import {
+  CLASS_CATEGORY_DEFINITIONS,
+  FUNCTION_CATEGORY_DEFINITIONS,
+} from './programmingOfferability'
 import { CATEGORY_COLORS } from './theme'
 
 /** Shadow anexado a um slot `input_value` (número editável ou seletor de cor). */
@@ -55,6 +57,14 @@ const EVENT_LISTENER_TYPES: ReadonlySet<string> = new Set([
   'sz_js_on_context_menu',
   'sz_js_on_blur',
   'sz_js_element_onclick',
+])
+
+// Estes leitores também aparecem em Valores na paleta completa para facilitar
+// descoberta. Em `allowBlocks` estrito, ficam somente em Eventos: uma aula que
+// libera um único tipo deve receber uma única entrada, não duas cópias.
+const EVENT_CONTEXT_VALUE_TYPES: ReadonlySet<string> = new Set([
+  'sz_val_event_key',
+  'sz_val_event_pos',
 ])
 
 // Ordem dos blocos DENTRO da subcategoria ⚡ Eventos (teclado → mouse/clique →
@@ -361,7 +371,10 @@ export function buildCoreToolbox(
     progSubs.push({ kind: 'category', name, colour, custom })
   }
   pushSub('Matemática', '🔢 Matemática', CATEGORY_COLORS.math, 'intermediario-2d', MATH_BLOCKS)
-  pushSub('Valores', '🔣 Valores', CATEGORY_COLORS.values, 'iniciante-2d', VALUE_BLOCKS)
+  const valueBlocks = restrict
+    ? VALUE_BLOCKS.filter((block) => !EVENT_CONTEXT_VALUE_TYPES.has(block.type))
+    : VALUE_BLOCKS
+  pushSub('Valores', '🔣 Valores', CATEGORY_COLORS.values, 'iniciante-2d', valueBlocks)
   // Página: só os blocos de ELEMENTO (os "Quando…" saem para ⚡ Eventos).
   const paginaBlocks = DOM_BLOCKS.filter((b) => !EVENT_LISTENER_TYPES.has(b.type))
   pushSub('DOM', '🌐 Página', CATEGORY_COLORS.dom, 'iniciante-2d', paginaBlocks)
@@ -381,16 +394,11 @@ export function buildCoreToolbox(
     CATEGORY_COLORS.functions,
     'intermediario-2d',
     'SZ_FUNCTIONS',
-    FUNCTION_BLOCKS,
+    [...FUNCTION_CATEGORY_DEFINITIONS],
   )
-  pushSubCustom(
-    'Classes',
-    '🏛️ Classes',
-    CATEGORY_COLORS.classes,
-    'avancado-2d',
-    'SZ_CLASSES',
-    OOP_BLOCKS,
-  )
+  pushSubCustom('Classes', '🏛️ Classes', CATEGORY_COLORS.classes, 'avancado-2d', 'SZ_CLASSES', [
+    ...CLASS_CATEGORY_DEFINITIONS,
+  ])
   pushSub('Objetos', '📦 Objetos', CATEGORY_COLORS.objects, 'avancado-2d', [
     ...OBJECT_BLOCKS,
     ...JS_BLOCKS.filter((b) => b.type === 'sz_js_object_assign'),
@@ -406,8 +414,8 @@ export function buildCoreToolbox(
 
   // Canvas: categoria PRÓPRIA (fora da Programação) — desenho, será incrementada.
   pushGrouped('Canvas', CATEGORY_COLORS.canvas, CANVAS_BLOCKS, CANVAS_GROUPS)
-  // Canvas 3D: three.js CRU (não é extensão) — a lib de verdade, na unha. Toda
-  // avançada (CORE_CATEGORY_LEVELS) → só aparece p/ quem vê blocos avançados.
+  // Canvas 3D: facilitadores visuais no intermediário 3D e peças técnicas no
+  // avançado 3D. A categoria aparece assim que houver uma peça visível no nível.
   pushGrouped('Canvas 3D', CATEGORY_COLORS.canvas3d, CANVAS3D_BLOCKS, CANVAS3D_GROUPS)
   // Extensões: em modo restritivo (lista de blocos), filtra cada categoria p/ só os blocos
   // LISTADOS; senão filtra por NÍVEL por-bloco (o caller já gateou a categoria por `minLevel`,

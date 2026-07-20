@@ -900,6 +900,17 @@ describe('parseJS — tela responsiva (fitScreen)', () => {
         bg: '#0b1020',
       },
     ])
+    expect(
+      parseJS('SZGame2D.setupStage(800, 480, "#0b1020", "Use as setas para mover.");'),
+    ).toEqual([
+      {
+        type: 'g2d:setupStage',
+        width: { type: 'num', value: 800 },
+        height: { type: 'num', value: 480 },
+        bg: '#0b1020',
+        description: 'Use as setas para mover.',
+      },
+    ])
   })
 })
 

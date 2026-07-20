@@ -3,6 +3,27 @@ import { buildPreviewDoc } from '../bootstrap'
 import { PREVIEW_INTERCEPTOR_SCRIPT } from '../interceptors'
 
 describe('buildPreviewDoc', () => {
+  it('autentica scripts internos com nonce e não libera unsafe-inline', () => {
+    const doc = buildPreviewDoc({
+      html: '<body></body>',
+      css: '',
+      js: 'console.log("ok");',
+      extensionScripts: ['window.__EXT__ = true;'],
+      extensionImports: { pacote: 'https://esm.sh/pacote@1.0.0' },
+    })
+    const nonce = doc.match(/script-src[^;]*'nonce-([^']+)'/)?.[1]
+    expect(nonce).toBeDefined()
+    expect(doc.match(/script-src[^;]*/)?.[0]).not.toContain("'unsafe-inline'")
+
+    const inlineScripts = [...doc.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/gi)].filter(
+      (match) => !/\bsrc=/i.test(match[1] ?? ''),
+    )
+    expect(inlineScripts.length).toBeGreaterThan(0)
+    for (const [, attributes] of inlineScripts) {
+      expect(attributes).toContain(`nonce="${nonce}"`)
+    }
+  })
+
   it('instrumenta <script> inline do HTML do aluno (loopGuard cobre o index.html) — 5º review #9', () => {
     const doc = buildPreviewDoc({
       html: '<body><h1>oi</h1><script>while(true){}</script></body>',
@@ -224,7 +245,8 @@ describe('buildPreviewDoc', () => {
 
   it('sem módulos de extensão, a CSP não libera origens externas em script-src', () => {
     const doc = buildPreviewDoc({ html: '<body></body>', css: '', js: '' })
-    expect(doc).toMatch(/script-src 'unsafe-inline' data: blob:;/)
+    expect(doc).toMatch(/script-src 'nonce-[A-Za-z0-9_-]+' data: blob:;/)
+    expect(doc.match(/script-src[^;]*/)?.[0]).not.toContain("'unsafe-inline'")
   })
 
   it('com módulos de extensão, o bootstrap da extensão é module e o aluno é deferido (ordem deferida)', () => {
@@ -236,7 +258,7 @@ describe('buildPreviewDoc', () => {
       extensionImports: { three: 'https://esm.sh/three@0.180.0' },
     })
     // O bootstrap da extensão (importa three) é module.
-    expect(doc).toContain('<script type="module">')
+    expect(doc).toMatch(/<script type="module" nonce="[A-Za-z0-9_-]+">/)
     // ⚠️ #35: o JS do aluno SEM import/export NÃO vira module (decls do topo não
     // viram globais em module → onclick="..." quebraria). Sai como script
     // CLÁSSICO porém DEFERIDO via data: URL externo (escopo global + ordem após
@@ -252,7 +274,7 @@ describe('buildPreviewDoc', () => {
     // ⚠️ REGRESSÃO: o importmap PRECISA vir antes de QUALQUER script type=module,
     // senão `import ... from 'three'` falha ("Failed to resolve module specifier").
     const importmapIdx = doc.indexOf('type="importmap"')
-    const firstModuleIdx = doc.indexOf('<script type="module">')
+    const firstModuleIdx = doc.search(/<script type="module" nonce=/)
     expect(importmapIdx).toBeGreaterThanOrEqual(0)
     expect(importmapIdx).toBeLessThan(firstModuleIdx)
   })
@@ -382,7 +404,7 @@ describe('buildPreviewDoc', () => {
     expect(doc).not.toContain('</script><script>alert(1)')
     // E o JSON do importmap continua parseável: extraímos o conteúdo do importmap
     // e fazemos JSON.parse depois de desfazer a substituição segura `\/` → `/`.
-    const m = doc.match(/<script type="importmap">([\s\S]*?)<\/script>/)
+    const m = doc.match(/<script type="importmap"[^>]*>([\s\S]*?)<\/script>/)
     expect(m).not.toBeNull()
     const raw = (m?.[1] ?? '').replace(/<\\\/script/gi, '</script')
     const parsed = JSON.parse(raw) as { imports: Record<string, string> }
@@ -470,7 +492,7 @@ describe('buildPreviewDoc', () => {
           { name: 'dados.js', language: 'javascript', content: 'export const v = 2' },
         ],
       })
-      const m = doc.match(/<script type="importmap">([\s\S]*?)<\/script>/)
+      const m = doc.match(/<script type="importmap"[^>]*>([\s\S]*?)<\/script>/)
       const parsed = JSON.parse((m?.[1] ?? '').replace(/<\\\/script/gi, '</script')) as {
         imports: Record<string, string>
       }

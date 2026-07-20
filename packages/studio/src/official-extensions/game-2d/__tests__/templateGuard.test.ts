@@ -54,10 +54,56 @@ function rawTemplateHazardsInside(src: string, openerNeedle: string): number[] {
   return out
 }
 
+function composedTemplateHazards(
+  src: string,
+  openerNeedle: string,
+  expectedBoundaries: number,
+): { interpolations: number[]; boundaryCount: number } {
+  const start = src.indexOf(openerNeedle)
+  if (start < 0) throw new Error(`não achei a composição: ${openerNeedle}`)
+  const content = src.slice(start)
+  const interpolations: number[] = []
+  let inTemplate = false
+  let boundaryCount = 0
+  let line = src.slice(0, start).split('\n').length
+  for (let index = 0; index < content.length; index += 1) {
+    const char = content[index]
+    if (char === '\n') line += 1
+    let slashes = 0
+    for (let cursor = index - 1; cursor >= 0 && content[cursor] === '\\'; cursor -= 1) {
+      slashes += 1
+    }
+    const escaped = slashes % 2 === 1
+    if (char === '`' && !escaped) {
+      inTemplate = !inTemplate
+      boundaryCount += 1
+    } else if (inTemplate && char === '$' && content[index + 1] === '{' && !escaped) {
+      interpolations.push(line)
+    }
+  }
+  expect(boundaryCount).toBe(expectedBoundaries)
+  return { interpolations, boundaryCount }
+}
+
 describe('Guarda dos template literals do Jogo 2D', () => {
-  it('runtime.ts: nenhuma crase/interpolação crua no miolo do literal', () => {
+  it('runtime composto: limites esperados e nenhuma interpolação acidental', () => {
     const src = readFileSync(join(DIR, 'runtime.ts'), 'utf8')
-    expect(rawTemplateHazardsInside(src, 'gameTwoDRuntime =')).toEqual([])
+    expect(composedTemplateHazards(src, 'gameTwoDRuntime =', 4).interpolations).toEqual([])
+    for (const [file, declaration] of [
+      ['runtime/arcadeKits.ts', 'gameTwoDArcadeKitsRuntime ='],
+      ['runtime/audio.ts', 'gameTwoDAudioRuntime ='],
+      ['runtime/casualKits.ts', 'gameTwoDCasualKitsRuntime ='],
+      ['runtime/inputAndMotion.ts', 'gameTwoDInputAndMotionRuntime ='],
+      ['runtime/lifecycle.ts', 'gameTwoDLifecycleRuntime ='],
+      ['runtime/physics.ts', 'gameTwoDPhysicsRuntime ='],
+      ['runtime/sprites.ts', 'gameTwoDSpritesRuntime ='],
+      ['runtime/stage.ts', 'gameTwoDStageRuntime ='],
+      ['runtime/utilities.ts', 'gameTwoDUtilitiesRuntime ='],
+      ['runtime/world.ts', 'gameTwoDWorldRuntime ='],
+    ] as const) {
+      const fragment = readFileSync(join(DIR, file), 'utf8')
+      expect(composedTemplateHazards(fragment, declaration, 2).interpolations).toEqual([])
+    }
   })
 
   it('ai.ts: idem (o contexto da IA também é um literal só)', () => {

@@ -9,7 +9,7 @@ blocos apresentar à criança.
 Os 14 exemplos reais foram revisados no código-fonte, no pipeline
 IR → Blockly → JavaScript → IR, no runtime e no Chromium. Todos possuem uma raiz
 **Ao iniciar** quando precisam preparar a partida, raízes independentes em
-**Eventos** e **Loops**, e abrem com um primeiro frame visível. O motor inicia
+**⚡ Quando acontecer — Eventos** e **🔁 Enquanto estiver rodando — Loops**, e abrem com um primeiro frame visível. O motor inicia
 automaticamente depois do registro dessas áreas. A classificação ficou em nove
 jogos, quatro demonstrações e uma exploração.
 
@@ -17,7 +17,7 @@ jogos, quatro demonstrações e uma exploração.
 
 1. **O comportamento não separava preparação, eventos e repetição.** Os 14
    exemplos foram convertidos diretamente para IR V2. Preparação fica em **Ao
-   iniciar**, ocorrências em **Eventos** e laços contínuos/periódicos em
+   iniciar**, ocorrências em **⚡ Quando acontecer — Eventos** e laços contínuos/periódicos em
    **Loops**. O antigo `g2d:onStart` é aceito apenas pela migração transparente;
    projetos e exemplos novos não dependem dele.
 2. **Reiniciar recarregava a página e deixava estado escapar.** O runtime agora
@@ -61,6 +61,19 @@ jogos, quatro demonstrações e uma exploração.
     reconhecem o começo da partida. O contrato interno é tipado em
     `GameTwoDLifecycleApi`; a auditoria automática percorre todos os blocos e
     compara os helpers gerados com a API real do runtime.
+14. **O canvas não explicava o jogo para tecnologia assistiva.** Cada projeto
+    pode declarar título, objetivo e controles; o runtime expõe essa descrição
+    com nome acessível, texto associado, foco por teclado e anúncios de estado.
+15. **O runtime e o catálogo estavam concentrados em arquivos monolíticos.** O
+    catálogo, os exemplos e os dez domínios do runtime foram separados sem mudar
+    o JavaScript entregue ao preview. Um inventário exato protege os 188 métodos
+    da API interna contra implementação sem tipo ou contrato sem implementação.
+16. **O projeto real do curso na versão 0.19.0 precisava continuar funcionando.**
+    Ao abrir `projeto-da-aula.szproject.json`, o Estúdio converte em memória a IR
+    plana e a área antiga de comportamento para as três áreas atuais, inclusive
+    elevando `A cada N quadros` aninhado. O player público do mural usa a mesma
+    migração leve antes de gerar o preview. Projetos da Ponte não são reescritos,
+    porque neles o código manual da criança continua sendo a fonte da verdade.
 
 ## Inventário dos exemplos
 
@@ -91,11 +104,13 @@ jogos, quatro demonstrações e uma exploração.
   também percorre a derrota.
 - Testes do runtime: começo único, múltiplos laços, passo fixo, pausa, eventos,
   erros isolados e reinício em memória.
-- Suíte completa do pacote: 3.932 testes aprovados em 269 arquivos, com 30.359
+- Projeto legado real do curso: abertura no Estúdio, três áreas, geração atual,
+  vitória, derrota, reinício e renderização pelo player público aprovados.
+- Suíte completa do pacote: 4.218 testes aprovados em 285 arquivos, com 37.254
   asserções e nenhuma falha.
 - TypeScript: `tsc --noEmit` aprovado.
-- Biome no pacote completo: 609 arquivos aprovados, sem correções pendentes.
-- Build de produção do playground: 1.405 módulos transformados e bundle gerado.
+- Biome no pacote completo: 665 arquivos aprovados, sem correções pendentes.
+- Build de produção do playground: 1.442 módulos transformados e bundle gerado.
 - Chromium: os 14 cartões do Jogo 2D e a amostra estreita em 390×844 foram
   aprovados. O fluxo completo da Vila do Dragão também foi aprovado.
-- Suíte E2E completa: 97 cenários aprovados, sem falha.
+- Suíte E2E completa: 116 cenários aprovados, sem falha.

@@ -4,16 +4,11 @@ import { gameThreeDBlocks } from '../official-extensions/game-3d/blocks'
 import { gameKit3DBlocks } from '../official-extensions/game-3d-advanced/blocks'
 import { ADVANCED_BLOCKS } from './blocks/advanced'
 import { CANVAS_BLOCKS } from './blocks/canvas'
+import { CANVAS3D_BLOCKS } from './blocks/canvas3d'
 import { CSS_BLOCKS } from './blocks/css'
-import { DOM_BLOCKS } from './blocks/dom'
-import { FUNCTION_BLOCKS } from './blocks/functions'
 import { HTML_BLOCKS } from './blocks/html'
-import { JS_BLOCKS } from './blocks/js'
-import { MATH_BLOCKS } from './blocks/math'
-import { OBJECT_BLOCKS } from './blocks/objects'
-import { OOP_BLOCKS } from './blocks/oop'
 import { SVG_BLOCKS } from './blocks/svg'
-import { VALUE_BLOCKS } from './blocks/values'
+import { PROGRAMMING_CATALOG_GROUPS } from './programmingContract'
 
 /** Entrada do catálogo de blocos p/ o picker da "lista de blocos" da aula (admin). */
 export interface BlockCatalogEntry {
@@ -102,18 +97,18 @@ function labelOf(b: BlockLike): string {
 
 // Cada array de blocos sob o RÓTULO de categoria que o aluno vê (DOM = Página e Eventos;
 // JS = Programação; extensões = Jogo 2D/3D). A ordem segue a da paleta.
-const GROUPS: readonly [string, readonly BlockLike[]][] = [
+const GROUPS: readonly (readonly [string, readonly BlockLike[]])[] = [
   ['HTML', HTML_BLOCKS],
   ['SVG', SVG_BLOCKS],
   ['CSS', CSS_BLOCKS],
-  ['Página e Eventos', DOM_BLOCKS],
-  ['Programação', JS_BLOCKS],
+  ...PROGRAMMING_CATALOG_GROUPS.slice(0, 2).map(
+    ({ category, definitions }) => [category, definitions] as const,
+  ),
   ['Canvas', CANVAS_BLOCKS],
-  ['Valores', VALUE_BLOCKS],
-  ['Matemática', MATH_BLOCKS],
-  ['Funções', FUNCTION_BLOCKS],
-  ['Objetos', OBJECT_BLOCKS],
-  ['Classes', OOP_BLOCKS],
+  ['Canvas 3D', CANVAS3D_BLOCKS],
+  ...PROGRAMMING_CATALOG_GROUPS.slice(2).map(
+    ({ category, definitions }) => [category, definitions] as const,
+  ),
   ['Avançado', ADVANCED_BLOCKS],
   ['Jogo 2D', gameTwoDBlocks],
   ['Jogo 2D Avançado', gameKitBlocks],

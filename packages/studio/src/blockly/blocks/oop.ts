@@ -74,7 +74,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     placement: { root: [], nested: ['function-body'], role: 'command' },
-    tooltip: 'Devolve um valor de dentro de um método.',
+    tooltip: 'Devolve um valor de dentro da função ou do método atual.',
   },
   {
     type: 'sz_js_return_void',
@@ -102,6 +102,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_call_method',
+    hidden: true,
     message0: 'no objeto %1 chamar método %2',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'pessoa', kind: 'variable' },
@@ -140,6 +141,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_val_call_method',
+    hidden: true,
     message0: 'no objeto %1 chamar método %2',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'pessoa', kind: 'variable' },
@@ -177,6 +179,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_set_prop',
+    hidden: true,
     message0: 'no objeto %1 definir propriedade %2 = %3',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'pessoa', kind: 'variable' },
@@ -199,6 +202,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_val_get_prop',
+    hidden: true,
     message0: 'propriedade %1 do objeto %2',
     args0: [
       { type: 'field_name_picker', name: 'NAME', text: 'nome', kind: 'property' },
@@ -217,6 +221,6 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     args0: [{ type: 'field_input', name: 'NAME', text: 'x' }],
     output: 'JSValue',
     colour: C,
-    tooltip: 'O valor de um parâmetro do construtor ou método atual.',
+    tooltip: 'O valor de um parâmetro da função, do construtor ou do método atual.',
   },
 ]

@@ -1172,27 +1172,6 @@ export const ilhaExample: ExtensionExample = {
           },
         },
         {
-          type: 'w3d:npcTalk',
-          name: 'Lia',
-          body: [
-            {
-              type: 'w3d:npcSay',
-              name: 'Lia',
-              text: 'Oi! Bem-vindo a ilha!',
-            },
-            {
-              type: 'w3d:npcSay',
-              name: 'Lia',
-              text: 'Dizem que o farol guarda um tesouro...',
-            },
-            {
-              type: 'w3d:npcSay',
-              name: 'Lia',
-              text: 'Pegue 15 moedas e va ate la!',
-            },
-          ],
-        },
-        {
           type: 'w3d:coinsScatter',
           n: {
             type: 'num',
@@ -1266,6 +1245,27 @@ export const ilhaExample: ExtensionExample = {
         },
       ],
       events: [
+        {
+          type: 'w3d:npcTalk',
+          name: 'Lia',
+          body: [
+            {
+              type: 'w3d:npcSay',
+              name: 'Lia',
+              text: 'Oi! Bem-vindo a ilha!',
+            },
+            {
+              type: 'w3d:npcSay',
+              name: 'Lia',
+              text: 'Dizem que o farol guarda um tesouro...',
+            },
+            {
+              type: 'w3d:npcSay',
+              name: 'Lia',
+              text: 'Pegue 15 moedas e va ate la!',
+            },
+          ],
+        },
         {
           type: 'w3d:onCollect',
           body: [
@@ -1771,6 +1771,44 @@ export const vilaExample: ExtensionExample = {
           },
         },
         {
+          type: 'w3d:quest',
+          name: 'conhecer',
+          desc: 'Converse com a Guia da vila',
+        },
+        {
+          type: 'w3d:coinsRing',
+          n: {
+            type: 'num',
+            value: 10,
+          },
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+          r: {
+            type: 'num',
+            value: 12,
+          },
+        },
+        {
+          type: 'w3d:minimap',
+          mode: 'teleporte',
+        },
+        {
+          type: 'w3d:hud',
+          text: {
+            type: 'str',
+            value: 'Aperte E nas portas e converse com a Guia!',
+          },
+          corner: 'baixo-esquerda',
+        },
+      ],
+      events: [
+        {
           type: 'w3d:npcTalk',
           name: 'Guia',
           body: [
@@ -1810,44 +1848,6 @@ export const vilaExample: ExtensionExample = {
             },
           ],
         },
-        {
-          type: 'w3d:quest',
-          name: 'conhecer',
-          desc: 'Converse com a Guia da vila',
-        },
-        {
-          type: 'w3d:coinsRing',
-          n: {
-            type: 'num',
-            value: 10,
-          },
-          x: {
-            type: 'num',
-            value: 0,
-          },
-          z: {
-            type: 'num',
-            value: 0,
-          },
-          r: {
-            type: 'num',
-            value: 12,
-          },
-        },
-        {
-          type: 'w3d:minimap',
-          mode: 'teleporte',
-        },
-        {
-          type: 'w3d:hud',
-          text: {
-            type: 'str',
-            value: 'Aperte E nas portas e converse com a Guia!',
-          },
-          corner: 'baixo-esquerda',
-        },
-      ],
-      events: [
         {
           type: 'w3d:onQuestDone',
           name: 'conhecer',
@@ -2229,6 +2229,32 @@ export const fazendinhaExample: ExtensionExample = {
           hat: 'palha',
         },
         {
+          type: 'w3d:wind',
+          force: {
+            type: 'num',
+            value: 3,
+          },
+        },
+        {
+          type: 'w3d:weather',
+          kind: 'folhas',
+        },
+        {
+          type: 'w3d:totemText',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          z: {
+            type: 'num',
+            value: 6,
+          },
+          title: 'Fazendinha',
+          body: 'Visite o celeiro, veja o moinho girar e cuide dos bichinhos!',
+        },
+      ],
+      events: [
+        {
           type: 'w3d:npcTalk',
           name: 'Rosa',
           body: [
@@ -2255,32 +2281,7 @@ export const fazendinhaExample: ExtensionExample = {
             },
           ],
         },
-        {
-          type: 'w3d:wind',
-          force: {
-            type: 'num',
-            value: 3,
-          },
-        },
-        {
-          type: 'w3d:weather',
-          kind: 'folhas',
-        },
-        {
-          type: 'w3d:totemText',
-          x: {
-            type: 'num',
-            value: 0,
-          },
-          z: {
-            type: 'num',
-            value: 6,
-          },
-          title: 'Fazendinha',
-          body: 'Visite o celeiro, veja o moinho girar e cuide dos bichinhos!',
-        },
       ],
-      events: [],
       loops: [],
     },
   },

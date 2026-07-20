@@ -1,11 +1,21 @@
 import * as Blockly from 'blockly/core'
 import {
+  CANVAS3D_FUNCTION_DECLARATION_FIELDS,
+  CANVAS3D_OBJECT_BRANCH_BINDERS,
+  CANVAS3D_VARIABLE_BRANCH_BINDERS,
+  CANVAS3D_VARIABLE_DECLARATION_FIELDS,
+} from '../../three/canvas3dContract'
+import {
   type BlockScanner,
   classMethodNames,
   classOfInstance,
   classPropertyNames,
   enclosingClass,
 } from '../blocks/classIntrospection'
+
+type NameFieldRegistry = Readonly<Record<string, readonly string[]>>
+type ScopedBinder = readonly string[] | Readonly<Record<string, readonly string[]>>
+type ScopedBinderRegistry = Readonly<Record<string, ScopedBinder>>
 
 /**
  * Campo Blockly de NOME: mostra o NOME (string) e, ao clicar, abre um DropDownDiv com
@@ -52,6 +62,7 @@ export type NameKind =
   | 'property'
   | 'method'
   | 'canvas'
+  | 'dom-target'
   | 'selector'
   | 'svg-reference'
   | 'font'
@@ -111,6 +122,7 @@ const NAME_KINDS: readonly NameKind[] = [
   'property',
   'method',
   'canvas',
+  'dom-target',
   'selector',
   'svg-reference',
   'font',
@@ -156,24 +168,12 @@ interface FieldNamePickerFromJsonConfig extends Blockly.FieldTextInputFromJsonCo
  * quais campos está o nome. São os blocos que CRIAM o nome — os consumidores (ler/
  * alterar) é que ganham o seletor. ⚠️ Bloco novo que cria variável? Adicione aqui.
  */
-const VARIABLE_DECL_BLOCKS: Record<string, string[]> = {
+const VARIABLE_DECL_BLOCKS: NameFieldRegistry = {
   // Núcleo: criar/declarar variável. Alterar consome um nome existente.
   sz_js_var_declare: ['NAME'],
   sz_js_var_create: ['NAME'],
   sz_js_const_create: ['NAME'],
-  // Canvas 3D: `criar cena = novo THREE.Scene()` declara um objeto do three.js —
-  // os facilitadores (posição/rotação/render/…) o consomem pelo seletor de nomes.
-  sz_t3d_new_var: ['VARNAME'],
-  // Macro Brilho: declara a var do composer (o "desenhar com efeitos" a consome).
-  sz_t3d_bloom_setup: ['COMPOSER'],
-  // Macro Partículas: declara a var do sistema de pontos (pra girar no laço).
-  sz_t3d_particles: ['PARTICLES'],
-  // Macro Água: declara a var do plano d'água (pra ondular no laço).
-  sz_t3d_water: ['WATER'],
-  // Macro Grama: declara a var do campo de grama (pra balançar no laço).
-  sz_t3d_grass: ['GRASS'],
-  // Macro Letreiro: declara a var do plano do letreiro (pra posicionar depois).
-  sz_t3d_sign: ['SIGN'],
+  ...CANVAS3D_VARIABLE_DECLARATION_FIELDS,
   // (Laços/tentar introduzem nomes LOCAIS — ver VARIABLE_LOOP_BINDERS abaixo.)
   // Canvas: teclado, imagem e gradiente guardam numa variável.
   sz_canvas_keyboard: ['NAME'],
@@ -213,7 +213,10 @@ const MUTABLE_VARIABLE_DECL_BLOCKS: Record<string, string[]> = {
 
 /** Blocos que DECLARAM uma classe / uma função (fonte das listas de classe/função). */
 const CLASS_DECL_BLOCKS: Record<string, string[]> = { sz_js_class: ['NAME'] }
-const FUNCTION_DECL_BLOCKS: Record<string, string[]> = { sz_js_function: ['NAME'] }
+const FUNCTION_DECL_BLOCKS: NameFieldRegistry = {
+  sz_js_function: ['NAME'],
+  ...CANVAS3D_FUNCTION_DECLARATION_FIELDS,
+}
 /** Telas de desenho declaradas (`sz_html_canvas` id) — fonte do seletor de canvas. */
 const CANVAS_DECL_BLOCKS: Record<string, string[]> = { sz_html_canvas: ['ID'] }
 
@@ -253,6 +256,22 @@ export function collectCSSSelectors(workspace: Blockly.Workspace | null | undefi
     }
   }
   return ordered
+}
+
+/** IDs crus de elementos HTML/SVG que os blocos de DOM podem referenciar. */
+export function collectDomElementIds(workspace: Blockly.Workspace | null | undefined): string[] {
+  if (!workspace) return []
+  const seen = new Set<string>()
+  const ids: string[] = []
+  for (const block of workspace.getAllBlocks(false)) {
+    if (!block.type.startsWith('sz_html_') && !block.type.startsWith('sz_svg_')) continue
+    if (!block.getField('ID')) continue
+    const id = `${block.getFieldValue('ID') ?? ''}`.trim()
+    if (!id || seen.has(id)) continue
+    seen.add(id)
+    ids.push(id)
+  }
+  return ids
 }
 
 /** IDs disponíveis para o href de “Reutilizar forma”, já no formato `#nome`. */
@@ -582,11 +601,9 @@ const OBJECT3D_DECL_BLOCKS: Record<string, string[]> = {
   sz_g3d_create_model: ['NAME'],
 }
 /** O "item" do "para cada no enxame" e a "parte" do traverse são nomes LOCAIS de objeto 3D. */
-const OBJECT3D_LOOP_BINDERS: Record<string, string[]> = {
+const OBJECT3D_LOOP_BINDERS: ScopedBinderRegistry = {
   sz_g3d_for_each_swarm: ['ITEM'],
-  sz_t3d_traverse: ['PARAM'],
-  // O "modelo" carregado também é um objeto 3D local do corpo do load_model.
-  sz_t3d_load_model: ['PARAM'],
+  ...CANVAS3D_OBJECT_BRANCH_BINDERS,
 }
 /** Grupos/enxames do Jogo 3D (fonte dos seletores GROUP/SWARM). */
 const GROUP3D_DECL_BLOCKS: Record<string, string[]> = {
@@ -612,18 +629,15 @@ const PROPERTY_WRITE_BLOCKS: Record<string, string[]> = {
  * bloco, então entram no seletor apenas quando o campo está dentro dele (escopo por
  * ancestral). Os campos que aqui DECLARAM o nome seguem `field_input`.
  */
-const VARIABLE_LOOP_BINDERS: Record<string, string[]> = {
+const VARIABLE_LOOP_BINDERS: ScopedBinderRegistry = {
   sz_js_for_range: ['VAR'],
   sz_js_for_of: ['ITEM'],
   sz_js_for_each: ['ITEM', 'INDEX'],
   sz_js_try_catch: ['ERR'],
   sz_val_array_map: ['ITEM'],
   sz_val_array_find: ['ITEM'],
-  // Canvas 3D: a "parte" do `objeto.traverse((parte) => { … })`, o "modelo" do
-  // load_model e o "buffer" do load_sound são nomes LOCAIS dos corpos.
-  sz_t3d_traverse: ['PARAM'],
-  sz_t3d_load_model: ['PARAM'],
-  sz_t3d_load_sound: ['PARAM'],
+  sz_val_array_filter: ['ITEM'],
+  ...CANVAS3D_VARIABLE_BRANCH_BINDERS,
   // Ganchos do Jogo 2D Avançado: o tempo (dt), o pincel (ctx) e a posição do
   // clique (px/py) são nomes LOCAIS dos corpos dos ganchos.
   sz_gk_on_update: ['DT'],
@@ -737,6 +751,12 @@ const KIND_UI: Record<NameKind, KindUI> = {
     placeholder: 'id da tela de desenho',
     empty:
       'Nenhuma tela de desenho ainda — crie uma ("Criar tela de desenho") ou digite o id abaixo.',
+  },
+  'dom-target': {
+    icon: '🌐',
+    placeholder: 'id ou variável do elemento',
+    empty:
+      'Nenhum elemento disponível ainda — crie uma parte da página ou guarde um elemento numa variável.',
   },
   selector: {
     icon: '🎯',
@@ -923,7 +943,7 @@ const KIND_UI: Record<NameKind, KindUI> = {
 }
 
 /** Laços que introduzem nomes LOCAIS, por `kind` de seletor (escopo por ancestral). */
-const LOOP_BINDERS_BY_KIND: Partial<Record<NameKind, Record<string, string[]>>> = {
+const LOOP_BINDERS_BY_KIND: Partial<Record<NameKind, ScopedBinderRegistry>> = {
   variable: VARIABLE_LOOP_BINDERS,
   'mutable-variable': VARIABLE_LOOP_BINDERS,
   object3d: OBJECT3D_LOOP_BINDERS,
@@ -934,7 +954,7 @@ const LOOP_BINDERS_BY_KIND: Partial<Record<NameKind, Record<string, string[]>>> 
 /** Anda o workspace e coleta os nomes declarados nos campos do registro, sem repetir. */
 function collectDeclaredNames(
   workspace: Blockly.Workspace | null | undefined,
-  registry: Record<string, string[]>,
+  registry: NameFieldRegistry,
 ): string[] {
   if (!workspace) return []
   const seen = new Set<string>()
@@ -991,7 +1011,7 @@ function variableScopeKeys(block: Blockly.Block | null | undefined): string[] {
 
 function collectVariableDeclarations(
   workspace: Blockly.Workspace,
-  registry: Record<string, string[]>,
+  registry: NameFieldRegistry,
   visibleScopes: ReadonlySet<string>,
 ): string[] {
   const seen = new Set<string>()
@@ -1019,7 +1039,7 @@ export function collectVariables(workspace: Blockly.Workspace | null | undefined
 
 function collectVisibleVariables(
   block: Blockly.Block | null | undefined,
-  registry: Record<string, string[]>,
+  registry: NameFieldRegistry,
 ): string[] {
   const workspace = block?.workspace
   if (!workspace) return []
@@ -1044,24 +1064,32 @@ export function collectMutableVariables(block: Blockly.Block | null | undefined)
  */
 function collectScopedNames(
   block: Blockly.Block | null | undefined,
-  binders: Record<string, string[]>,
+  binders: ScopedBinderRegistry,
 ): string[] {
   const seen = new Set<string>()
   const ordered: string[] = []
-  let cur = block?.getSurroundParent() ?? null
-  while (cur) {
-    const fields = binders[cur.type]
+  let child = block ?? null
+  let parent = child?.getSurroundParent() ?? null
+  while (child && parent) {
+    const binder = binders[parent.type]
+    const inputName = containingInput(parent, child)?.name
+    const fields = Array.isArray(binder)
+      ? binder
+      : inputName && binder
+        ? (binder as Readonly<Record<string, readonly string[]>>)[inputName]
+        : undefined
     if (fields) {
       for (const f of fields) {
-        if (!cur.getField(f)) continue
-        const name = cur.getFieldValue(f)
+        if (!parent.getField(f)) continue
+        const name = parent.getFieldValue(f)
         if (name && !seen.has(name)) {
           seen.add(name)
           ordered.push(name)
         }
       }
     }
-    cur = cur.getSurroundParent() ?? null
+    child = parent
+    parent = parent.getSurroundParent() ?? null
   }
   return ordered
 }
@@ -1250,6 +1278,17 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectFunctionNames(ws)
       case 'canvas':
         return collectCanvasIds(ws)
+      case 'dom-target': {
+        const targetKind = block?.getFieldValue('TARGET_KIND')
+        if (targetKind === 'var') return collectReadableVariables(block)
+        if (targetKind === 'id') return collectDomElementIds(ws)
+        const seen = new Set<string>()
+        return [...collectDomElementIds(ws), ...collectReadableVariables(block)].filter((name) => {
+          if (seen.has(name)) return false
+          seen.add(name)
+          return true
+        })
+      }
       case 'selector':
         return collectCSSSelectors(ws)
       case 'svg-reference':

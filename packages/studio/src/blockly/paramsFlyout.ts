@@ -1,9 +1,9 @@
 import * as Blockly from 'blockly/core'
 import { FULL_LEARNING_PROFILE, isBlockTypeAllowed, type LearningProfile } from '#core'
 import { resolveBlockLevel } from './blockLevels'
-import { FUNCTION_BLOCKS, OOP_BLOCKS } from './blocks'
 import { getParamNames } from './blocks/paramsMutator'
 import { socketInputsFor } from './blocks/valueSockets'
+import { CLASS_CATEGORY_DEFINITIONS, FUNCTION_STATIC_DEFINITIONS } from './programmingOfferability'
 
 /**
  * Conteúdo dinâmico da categoria "Classes". Junta, num só lugar:
@@ -79,18 +79,6 @@ function allParams(workspace: Blockly.Workspace): string[] {
   return params
 }
 
-/**
- * Blocos de propriedade/método POR NOME, substituídos pela categoria "Objetos"
- * (tomada de valor). Continuam registrados para abrir projetos salvos, mas saem
- * da paleta. "Minha propriedade" (`sz_val_this_prop`/`sz_js_set_this_prop`) fica.
- */
-const LEGACY_OOP_TYPES = new Set([
-  'sz_val_get_prop',
-  'sz_js_set_prop',
-  'sz_val_call_method',
-  'sz_js_call_method',
-])
-
 /** Entradas estáticas dos blocos de classe (com sombras nos slots de valor). */
 function dynamicBlockAllowed(
   type: string,
@@ -105,12 +93,8 @@ function dynamicBlockAllowed(
 }
 
 function staticEntries(profile: LearningProfile): FlyoutItem[] {
-  return OOP_BLOCKS.filter(
-    (b) =>
-      !b.hidden &&
-      b.type !== 'sz_val_arg' &&
-      !LEGACY_OOP_TYPES.has(b.type) &&
-      dynamicBlockAllowed(b.type, 'Classes', profile),
+  return CLASS_CATEGORY_DEFINITIONS.filter((b) =>
+    dynamicBlockAllowed(b.type, 'Classes', profile),
   ).map((b) => {
     const inputs = socketInputsFor(b.type)
     if (!inputs) return { kind: 'block', type: b.type }
@@ -185,23 +169,17 @@ function functionsFlyout(workspace: Blockly.WorkspaceSvg, profile: LearningProfi
 export function functionCategoryBlockTypes(
   profile: LearningProfile = FULL_LEARNING_PROFILE,
 ): string[] {
-  return [
-    ...FUNCTION_BLOCKS.filter((b) => !b.hidden).map((b) => b.type),
-    'sz_js_return',
-    'sz_js_return_void',
-  ].filter((type) => dynamicBlockAllowed(type, 'Funções', profile))
+  return [...FUNCTION_STATIC_DEFINITIONS.map((b) => b.type)].filter((type) =>
+    dynamicBlockAllowed(type, 'Funções', profile),
+  )
 }
 
 /** Tipos da categoria "Classes" (sem ocultos/legados/relatores). */
 export function classCategoryBlockTypes(
   profile: LearningProfile = FULL_LEARNING_PROFILE,
 ): string[] {
-  return OOP_BLOCKS.filter(
-    (b) =>
-      !b.hidden &&
-      b.type !== 'sz_val_arg' &&
-      !LEGACY_OOP_TYPES.has(b.type) &&
-      dynamicBlockAllowed(b.type, 'Classes', profile),
+  return CLASS_CATEGORY_DEFINITIONS.filter((b) =>
+    dynamicBlockAllowed(b.type, 'Classes', profile),
   ).map((b) => b.type)
 }
 

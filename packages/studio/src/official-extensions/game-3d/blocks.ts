@@ -1,4 +1,8 @@
 import type { ExtensionToolboxCategory } from '#extensions'
+import {
+  applyPlacementToBlockTypes,
+  START_ONLY_COMMAND_PLACEMENT,
+} from '../../blockly/blockContracts'
 import { categoryShades } from '../../blockly/colorShades'
 
 // Jogo 3D = UMA cor da categoria: AMARELO/dourado. A categoria inteira fica em
@@ -1678,6 +1682,47 @@ export const gameThreeDBlocks = [
     tooltip: 'Toca um efeito sonoro pronto (moeda, pulo, explosão ou acerto).',
   },
 ]
+
+const GAME_3D_START_ONLY_BLOCK_TYPES = [
+  'sz_g3d_create_scene',
+  'sz_g3d_create_fullscreen_scene',
+  'sz_g3d_create_box',
+  'sz_g3d_create_sphere',
+  'sz_g3d_create_block',
+  'sz_g3d_create_group',
+  'sz_g3d_create_crossing_scene',
+  'sz_g3d_create_crosser',
+  'sz_g3d_add_row',
+  'sz_g3d_generate_rows',
+  'sz_g3d_create_race_scene',
+  'sz_g3d_create_race_track',
+  'sz_g3d_create_race_car',
+  'sz_g3d_create_stack_scene',
+  'sz_g3d_create_stack_tower',
+  'sz_g3d_body',
+  'sz_g3d_set_solid',
+  'sz_g3d_create_cylinder',
+  'sz_g3d_create_cone',
+  'sz_g3d_create_plane',
+  'sz_g3d_create_torus',
+  'sz_g3d_create_model',
+  'sz_g3d_add_to_model',
+  'sz_g3d_set_material',
+  'sz_g3d_set_texture',
+  'sz_g3d_add_ambient_light',
+  'sz_g3d_add_sun_light',
+  'sz_g3d_add_point_light',
+  'sz_g3d_set_fog',
+  'sz_g3d_set_sky',
+  'sz_g3d_set_shadows',
+  'sz_g3d_create_swarm',
+] as const
+
+applyPlacementToBlockTypes(
+  gameThreeDBlocks,
+  GAME_3D_START_ONLY_BLOCK_TYPES,
+  START_ONLY_COMMAND_PLACEMENT,
+)
 
 /**
  * Subcategorias da paleta (mesmo padrão do Jogo 2D): agrupa os blocos por tema

@@ -3,7 +3,7 @@
 > Este estudo registra o raciocínio anterior à divisão final do lifecycle. As
 > referências abaixo a três áreas e a um único “Comportamento” são históricas,
 > não o contrato atual. A fonte vigente é `CLAUDE.md` junto de
-> `docs/plans/2026-07-19-project-behavior-lifecycle-design.md`.
+> [`docs/plans/2026-07-19-project-behavior-lifecycle-design.md`](../../../docs/plans/2026-07-19-project-behavior-lifecycle-design.md).
 
 ## 1. Por que isto importa
 

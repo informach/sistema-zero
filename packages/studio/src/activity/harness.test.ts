@@ -46,11 +46,11 @@ describe('buildCheckHarness', () => {
   })
 
   it('roda code/leitura de globais via <script> inline injetado', () => {
-    // 'unsafe-inline' é liberado pela CSP → executar o source num <script>
-    // injetado (textContent) alcança até globais léxicas (let/const de topo).
+    // O nonce do harness autentica o <script> interno sem liberar unsafe-inline.
     const code = buildCheckHarness(CHECKS)
     expect(code).toContain("createElement('script')")
     expect(code).toContain('.textContent')
+    expect(code).toContain('s.nonce = SCRIPT_NONCE')
     expect(code).toContain('readGlobal') // window-first + fallback léxico
   })
 })

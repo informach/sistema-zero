@@ -87,7 +87,10 @@ export class FieldAddonPicker extends Blockly.FieldTextInput {
   /** Escolher um addon: grava o NOME neste campo e o CAMINHO no campo irmão MODULE. */
   private pick(name: string, module: string): void {
     this.setValue(name)
-    this.getSourceBlock()?.setFieldValue(module, 'MODULE')
+    this.getSourceBlock()?.setFieldValue(
+      ADDON_MODULES[name] === module ? 'automático' : module,
+      'MODULE',
+    )
     Blockly.DropDownDiv.hideIfOwner(this)
   }
 
@@ -98,11 +101,11 @@ export class FieldAddonPicker extends Blockly.FieldTextInput {
 
     const wrap = document.createElement('div')
     wrap.style.cssText =
-      'padding:8px;width:280px;background:var(--color-sz-panel);font-family:Inter,system-ui,sans-serif;'
+      'padding:8px;width:min(280px,calc(100vw - 24px));background:var(--color-sz-panel);font-family:Nunito,system-ui,sans-serif;'
 
     const list = document.createElement('div')
     list.style.cssText =
-      'display:flex;flex-direction:column;gap:2px;max-height:230px;overflow:auto;'
+      'display:flex;flex-direction:column;gap:4px;max-height:min(230px,calc(100vh - 150px));overflow:auto;'
     for (const grp of COMMON_ADDONS) {
       const head = document.createElement('div')
       head.textContent = grp.group
@@ -112,17 +115,12 @@ export class FieldAddonPicker extends Blockly.FieldTextInput {
       for (const item of grp.items) {
         const btn = document.createElement('button')
         btn.type = 'button'
-        btn.title = item.module
         btn.style.cssText =
-          'display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:5px 8px;border:1px solid var(--color-sz-border);border-radius:6px;background:var(--color-sz-bg);cursor:pointer;text-align:left;'
+          'display:flex;min-height:45px;flex-direction:column;align-items:flex-start;justify-content:center;gap:1px;padding:7px 8px;border:1px solid var(--color-sz-border);border-radius:8px;background:var(--color-sz-bg);cursor:pointer;text-align:left;'
         const nm = document.createElement('span')
         nm.textContent = item.name
         nm.style.cssText = 'font-size:13px;font-weight:600;color:var(--color-sz-fg);'
-        const mod = document.createElement('span')
-        mod.textContent = item.module.replace('three/addons/', '…/')
-        mod.style.cssText =
-          'font-size:9px;color:var(--color-sz-fg-soft);font-family:"JetBrains Mono",ui-monospace,monospace;'
-        btn.append(nm, mod)
+        btn.append(nm)
         btn.addEventListener('click', () => this.pick(item.name, item.module))
         list.appendChild(btn)
       }
@@ -140,16 +138,16 @@ export class FieldAddonPicker extends Blockly.FieldTextInput {
     input.placeholder = 'outro (nome da classe)'
     input.spellcheck = false
     input.style.cssText =
-      'flex:1;min-width:0;padding:3px 6px;border:1px solid var(--color-sz-border);background:var(--color-sz-bg);color:var(--color-sz-fg);border-radius:4px;font-size:12px;font-family:"JetBrains Mono",ui-monospace,monospace;outline:none;'
+      'flex:1;min-width:0;min-height:44px;padding:8px;border:1px solid var(--color-sz-border);background:var(--color-sz-bg);color:var(--color-sz-fg);border-radius:6px;font-size:12px;font-family:"JetBrains Mono",ui-monospace,monospace;outline:none;'
     const ok = document.createElement('button')
     ok.type = 'button'
     ok.textContent = 'OK'
     ok.style.cssText =
-      'padding:3px 10px;background:var(--color-sz-accent);color:var(--color-sz-bg);border:0;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;'
+      'min-width:44px;min-height:45px;padding:8px 10px;background:var(--color-sz-accent);color:var(--color-sz-bg);border:0;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;'
     const apply = () => {
       const name = input.value.trim()
       // Se casar um addon conhecido, também auto-preenche o módulo.
-      if (ADDON_MODULES[name]) this.getSourceBlock()?.setFieldValue(ADDON_MODULES[name], 'MODULE')
+      if (ADDON_MODULES[name]) this.getSourceBlock()?.setFieldValue('automático', 'MODULE')
       this.setValue(name)
       Blockly.DropDownDiv.hideIfOwner(this)
     }

@@ -283,8 +283,8 @@ com aviso visual, mas não executa.
 | `sz_frame_structure` (🧱 Estrutura) | `HTMLNode` | `ir.html` | index.html |
 | `sz_frame_appearance` (🎨 Aparência) | `CSSEntry` | `ir.css` | style.css |
 | `sz_frame_start` (⚙️ Ao iniciar) | `JSStartRoot` | `behavior.start` | script.js |
-| `sz_frame_events` (🎯 Eventos) | `JSEventRoot` | `behavior.events` | script.js |
-| `sz_frame_loops` (🔁 Loop principal) | `JSLoopRoot` | `behavior.loops` | script.js |
+| `sz_frame_events` (⚡ Quando acontecer — Eventos) | `JSEventRoot` | `behavior.events` | script.js |
+| `sz_frame_loops` (🔁 Enquanto estiver rodando — Loops) | `JSLoopRoot` | `behavior.loops` | script.js |
 
 As áreas são chapéus top-level e existe no máximo uma de cada. **Projeto novo
 nasce sem áreas**; a criança adiciona somente as que a atividade precisa pela

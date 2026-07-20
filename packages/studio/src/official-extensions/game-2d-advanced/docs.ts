@@ -36,9 +36,9 @@ O que o motor já faz por você (cada um tem a sua seção mais abaixo):
    retângulo da cor.
 4. Em **⚙️ Ao iniciar**, declare dados, personagens, mapas e estado inicial. A
    área roda novamente quando uma partida é reiniciada.
-5. Em **🎯 Eventos**, coloque os chapéus de clique, aviso, entrada de estado,
+5. Em **⚡ Quando acontecer — Eventos**, coloque os chapéus de clique, aviso, entrada de estado,
    mapa e demais reações. Cada registro é recriado uma vez por partida.
-6. Em **🔁 Loop principal**, coloque **A cada quadro (dt)**, **Desenhar o jogo
+6. Em **🔁 Enquanto estiver rodando — Loops**, coloque **A cada quadro (dt)**, **Desenhar o jogo
    (ctx)**, **Desenhar o HUD** e loops periódicos independentes.
 
 O Estúdio carrega os assets e liga o motor automaticamente depois de registrar

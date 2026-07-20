@@ -1,4 +1,5 @@
 import {
+  BEHAVIOR_AREA_LABELS,
   FRAME_APPEARANCE,
   FRAME_BEHAVIOR_LEGACY,
   FRAME_EVENTS,
@@ -38,7 +39,7 @@ export const FRAME_BLOCKS: BlockDefinition[] = [
   },
   {
     type: FRAME_START,
-    message0: '⚙️ Ao iniciar',
+    message0: BEHAVIOR_AREA_LABELS.start,
     message1: '%1',
     args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'JSStartRoot' }],
     colour: CATEGORY_COLORS.js,
@@ -47,7 +48,7 @@ export const FRAME_BLOCKS: BlockDefinition[] = [
   },
   {
     type: FRAME_EVENTS,
-    message0: '⚡ Quando acontecer — Eventos',
+    message0: BEHAVIOR_AREA_LABELS.events,
     message1: '%1',
     args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'JSEventRoot' }],
     colour: '#eab308',
@@ -56,7 +57,7 @@ export const FRAME_BLOCKS: BlockDefinition[] = [
   },
   {
     type: FRAME_LOOPS,
-    message0: '🔁 Enquanto estiver rodando — Loops',
+    message0: BEHAVIOR_AREA_LABELS.loops,
     message1: '%1',
     args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'JSLoopRoot' }],
     colour: '#14b8a6',

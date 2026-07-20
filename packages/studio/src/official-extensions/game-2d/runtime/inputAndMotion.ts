@@ -1,0 +1,305 @@
+export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, Pointer Events) ----
+  var pointer = { x: 0, y: 0, down: false };
+  var pointerHandlers = Object.create(null);
+  var pointerHandlerOrder = [];
+  function pointerXY(e) {
+    var c = document.querySelector('canvas');
+    if (!c) return { x: e.clientX || 0, y: e.clientY || 0 };
+    var rect = c.getBoundingClientRect();
+    // Mapeia a posição na TELA para as coordenadas internas do canvas: quando ele
+    // é exibido maior/menor que a resolução (ex.: "preencher a janela"), display ≠
+    // interno, então escalamos — senão o ponteiro (dragX/onPointer) fica torto.
+    var sx = rect.width ? (_logicalW || c.width) / rect.width : 1;
+    var sy = rect.height ? (_logicalH || c.height) / rect.height : 1;
+    return { x: ((e.clientX || 0) - rect.left) * sx, y: ((e.clientY || 0) - rect.top) * sy };
+  }
+  window.addEventListener('pointermove', function (e) {
+    var p = pointerXY(e); pointer.x = p.x; pointer.y = p.y;
+    if (pointer.down && e && typeof e.preventDefault === 'function') e.preventDefault();
+  });
+  function _releasePointer(e) {
+    pointer.down = false;
+    if (e && e.target && typeof e.target.releasePointerCapture === 'function' && e.pointerId !== undefined) {
+      try { e.target.releasePointerCapture(e.pointerId); } catch (ignored) {}
+    }
+  }
+  window.addEventListener('pointerup', _releasePointer);
+  window.addEventListener('pointercancel', _releasePointer);
+  window.addEventListener('pointerdown', function (e) {
+    var p = pointerXY(e); pointer.x = p.x; pointer.y = p.y; pointer.down = true;
+    var target = e && e.target;
+    var isCanvas = target && (target === _stageCanvas || String(target.tagName || '').toLowerCase() === 'canvas');
+    if (isCanvas) {
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+      if (typeof target.focus === 'function') { try { target.focus({ preventScroll: true }); } catch (ignored) {} }
+      if (typeof target.setPointerCapture === 'function' && e.pointerId !== undefined) {
+        try { target.setPointerCapture(e.pointerId); } catch (ignored) {}
+      }
+    }
+    var handlers = pointerHandlerOrder.slice();
+    for (var i = 0; i < handlers.length; i++) {
+      var id = handlers[i];
+      var handler = pointerHandlers[id];
+      if (typeof handler !== 'function') continue;
+      try { handler(p.x, p.y); }
+      catch (error) {
+        _reportHandlerError('“Quando clicar/tocar”', id, error);
+        _removeOrdered(pointerHandlers, pointerHandlerOrder, id);
+      }
+    }
+  });
+  /**
+   * Registra uma função chamada a cada clique/toque. O id vem do bloco Blockly:
+   * reexecutar o mesmo bloco substitui o callback, sem teto artificial e sem
+   * multiplicar disparos. Código manual sem id é deduplicado por referência.
+   */
+  function onPointer(fn, explicitId) {
+    if (typeof fn !== 'function') return;
+    if (_runningLoopId && !explicitId) {
+      warnOnce('evento-clique-no-quadro', '“Quando clicar/tocar” deve ficar no início, fora de “A cada quadro”.');
+      return;
+    }
+    var id = _stableHandlerId('clique', explicitId, fn);
+    if (!pointerHandlers[id]) pointerHandlerOrder.push(id);
+    pointerHandlers[id] = fn;
+  }
+
+  // ---- Movimento (v0.4.0) ----
+  /** Plataforma: esq/dir + pulo (só no chão) + gravidade. O chão é a base do canvas. */
+  function platformer(sprite, ctx, speed, jump) {
+    if (!sprite || !ctx || !ctx.canvas) return;
+    var s = typeof speed === 'number' ? speed : 4;
+    var j = typeof jump === 'number' ? jump : 11;
+    // Grava a velocidade horizontal p/ os getters (vx/velocidade/está se movendo) —
+    // o vy já é real (gravidade/pulo abaixo).
+    sprite.vx = (keys.right ? s : 0) - (keys.left ? s : 0);
+    if (keys.left) sprite.x -= s;
+    if (keys.right) sprite.x += s;
+    sprite.vy = (sprite.vy || 0) + 0.6; // gravidade
+    sprite.y += sprite.vy;
+    var floor = stageH(ctx) - sprite.h;
+    // Persiste "no chão" NO sprite: a animação por estado (autoAnimate) e os
+    // jogos leem s.onGround p/ saber se está pulando/caindo.
+    sprite.onGround = false;
+    if (sprite.y >= floor) { sprite.y = floor; sprite.vy = 0; sprite.onGround = true; }
+    if (keys.up && sprite.onGround) sprite.vy = -j;
+  }
+
+  /** Top-down: 4 direções com diagonal normalizada (diagonal não fica mais rápida). */
+  function topDown(sprite, speed) {
+    if (!sprite) return;
+    var s = typeof speed === 'number' ? speed : 3;
+    var dx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
+    var dy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
+    if (dx && dy) { dx *= 0.7071; dy *= 0.7071; }
+    // Grava a velocidade (o passo real deste quadro) p/ os getters de velocidade;
+    // parado → 0 → "está se movendo?" falso.
+    sprite.vx = dx * s;
+    sprite.vy = dy * s;
+    sprite.x += dx * s;
+    sprite.y += dy * s;
+  }
+
+  /** Faz o sprite andar em direção ao ponteiro (mouse/toque). */
+  function followPointer(sprite, speed) {
+    if (!sprite) return;
+    var s = typeof speed === 'number' ? speed : 3;
+    var cx = sprite.x + sprite.w / 2, cy = sprite.y + sprite.h / 2;
+    var dx = pointer.x - cx, dy = pointer.y - cy;
+    var dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist > s) {
+      // Grava a velocidade (o passo dado) p/ os getters; ao chegar no ponteiro, para (0).
+      sprite.vx = (dx / dist) * s; sprite.vy = (dy / dist) * s;
+      sprite.x += sprite.vx; sprite.y += sprite.vy;
+    }
+    else { sprite.vx = 0; sprite.vy = 0; sprite.x = pointer.x - sprite.w / 2; sprite.y = pointer.y - sprite.h / 2; }
+  }
+
+  /** Gruda o sprite nas bordas do canvas (não deixa sair da tela). */
+  function clampToScreen(sprite, ctx) {
+    if (!sprite || !ctx || !ctx.canvas) return;
+    var w = stageW(ctx), h = stageH(ctx);
+    if (sprite.x < 0) sprite.x = 0;
+    if (sprite.y < 0) sprite.y = 0;
+    if (sprite.x + sprite.w > w) sprite.x = w - sprite.w;
+    if (sprite.y + sprite.h > h) sprite.y = h - sprite.h;
+  }
+
+  // ---- Nave clássica: girar + impulsionar na direção apontada (v0.10.0) ----
+  // Ângulo do sprite em RADIANOS; 0 = apontando pra cima; positivo = horário.
+  // "Pra frente" = (sin a, -cos a). Os blocos falam em GRAUS; convertemos aqui.
+  var DEG = Math.PI / 180;
+  function _ensureAngle(s) { if (typeof s.angle !== 'number') s.angle = 0; return s.angle; }
+  function _forward(s) {
+    var a = (typeof s.angle === 'number') ? s.angle : 0;
+    return { x: Math.sin(a), y: -Math.cos(a) };
+  }
+  /** Gira o sprite em N GRAUS (positivo = horário; negativo = anti-horário). */
+  function rotateSprite(s, deg) {
+    if (!s) return;
+    _ensureAngle(s);
+    s.angle += (typeof deg === 'number' ? deg : 0) * DEG;
+  }
+  /** Aponta o sprite para um ângulo em GRAUS (0 = pra cima, horário). */
+  function pointSprite(s, deg) {
+    if (!s) return;
+    s.angle = (typeof deg === 'number' ? deg : 0) * DEG;
+  }
+  /** Soma força à velocidade na direção apontada (impulso pra frente). */
+  function thrust(s, force) {
+    if (!s) return;
+    var f = (typeof force === 'number') ? force : 0.1;
+    var d = _forward(s);
+    s.vx = (s.vx || 0) + d.x * f;
+    s.vy = (s.vy || 0) + d.y * f;
+  }
+  /** Freia o sprite aos poucos: multiplica a velocidade pelo fator (0..1). */
+  function applyFriction(s, factor) {
+    if (!s) return;
+    var k = (typeof factor === 'number') ? factor : 0.97;
+    s.vx = (s.vx || 0) * k;
+    s.vy = (s.vy || 0) * k;
+  }
+  /**
+   * Controle estilo NAVE (asteroids): vira com esquerda/A e direita/D, acelera
+   * com cima/W na direção apontada e desliza com atrito ao soltar. Integra a
+   * posição (move o sprite pela velocidade). Use a cada quadro.
+   */
+  function steerThrust(sprite, speed, turnDeg) {
+    if (!sprite) return;
+    _ensureAngle(sprite);
+    var sp = (typeof speed === 'number') ? speed : 3;
+    var turn = (typeof turnDeg === 'number') ? turnDeg : 3;
+    if (keys.left) sprite.angle -= turn * DEG;
+    if (keys.right) sprite.angle += turn * DEG;
+    var d = _forward(sprite);
+    if (keys.up) { sprite.vx = d.x * sp; sprite.vy = d.y * sp; }
+    else { sprite.vx = (sprite.vx || 0) * 0.97; sprite.vy = (sprite.vy || 0) * 0.97; }
+    sprite.x += sprite.vx || 0;
+    sprite.y += sprite.vy || 0;
+  }
+  /** Devolve a direção (em GRAUS) que o sprite está apontando. */
+  function spriteAngleDeg(s) {
+    if (!s || typeof s.angle !== 'number') return 0;
+    return s.angle / DEG;
+  }
+  /**
+   * Atira do sprite PARA A FRENTE: cria um tiro na ponta do sprite, com
+   * velocidade na direção apontada. Reusa o tiro brilhante (spawnBullet).
+   */
+  function shootFrom(sprite, group, opts) {
+    if (!sprite || !group) return null;
+    opts = opts || {};
+    var speed = (typeof opts.speed === 'number') ? opts.speed : 6;
+    var d = _forward(sprite);
+    var cx = sprite.x + (sprite.w || 0) / 2, cy = sprite.y + (sprite.h || 0) / 2;
+    var nose = Math.max(sprite.w || 0, sprite.h || 0) / 2 + 4;
+    return spawnBullet(group, {
+      x: cx + d.x * nose, y: cy + d.y * nose,
+      radius: opts.radius, color: opts.color,
+      vx: d.x * speed, vy: d.y * speed
+    });
+  }
+  /**
+   * Solta um asteroide vindo de uma BORDA aleatória da tela, rumo ao centro.
+   * Sorteia um dos 4 lados, nasce logo fora dele e ganha velocidade pra dentro.
+   * Reusa o asteroide desenhado (spawnAsteroid).
+   */
+  function spawnAsteroidFromEdge(group, opts) {
+    if (!group) return null;
+    opts = opts || {};
+    var ctx = ensureStage();
+    var W = stageW(ctx) || 360;
+    var H = stageH(ctx) || 360;
+    var speed = (typeof opts.speed === 'number') ? opts.speed : 1.5;
+    var base = (typeof opts.size === 'number' && opts.size > 0) ? opts.size : 40;
+    var m = base;
+    var side = Math.floor(Math.random() * 4);
+    var x, y, vx, vy;
+    if (side === 0) { x = -m; y = Math.random() * H; vx = speed; vy = 0; }
+    else if (side === 1) { x = Math.random() * W; y = H + m; vx = 0; vy = -speed; }
+    else if (side === 2) { x = W + m; y = Math.random() * H; vx = -speed; vy = 0; }
+    else { x = Math.random() * W; y = -m; vx = 0; vy = speed; }
+    return spawnAsteroid(group, { x: x, y: y, size: base, color: opts.color, vx: vx, vy: vy });
+  }
+
+  // ---- Efeitos visuais (v0.4.0) ----
+  /** Clarão: pinta a tela inteira com uma cor translúcida (use num frame). */
+  function flash(ctx, color) {
+    if (!ctx || !ctx.canvas) return;
+    ctx.save();
+    ctx.globalAlpha = 0.4;
+    ctx.fillStyle = color || '#ffffff';
+    ctx.fillRect(0, 0, stageW(ctx), stageH(ctx));
+    ctx.restore();
+  }
+
+  /**
+   * Tremor de tela: sacode o ELEMENTO canvas via CSS transform e PARA SOZINHO (o
+   * tremor decai num RAF próprio). Chamar de novo renova a intensidade. Usar o
+   * transform do elemento (não o ctx.translate) evita conflito com clear/draw.
+   */
+  var shakeAmount = 0;
+  var shakeActive = false;
+  function shake(ctx, intensity) {
+    if (!ctx || !ctx.canvas) return;
+    var inten = typeof intensity === 'number' ? intensity : 8;
+    if (inten > shakeAmount) shakeAmount = inten;
+    if (shakeActive) return;
+    shakeActive = true;
+    var canvas = ctx.canvas;
+    function tick() {
+      if (shakeAmount > 0.3) {
+        var dx = (Math.random() * 2 - 1) * shakeAmount;
+        var dy = (Math.random() * 2 - 1) * shakeAmount;
+        canvas.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+        shakeAmount *= 0.88;
+        requestAnimationFrame(tick);
+      } else {
+        canvas.style.transform = '';
+        shakeAmount = 0;
+        shakeActive = false;
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // Partículas: estado + emitir + (atualizar e desenhar). Teto rígido p/ não vazar.
+  var particles = [];
+  var MAX_PARTICLES = 400;
+  // Marca se o aluno já desenhou as partículas NESTE quadro (bloco "atualizar e
+  // desenhar as partículas"). Se NÃO, o gameLoop as desenha sozinho no fim do
+  // quadro — assim "soltar explosão" funciona sem precisar de bloco extra. Ver tick().
+  var _particlesDrawnThisFrame = false;
+  /** Explosão de N partículas no ponto x/y, espalhando em todas as direções. */
+  function emitParticles(x, y, count, color) {
+    var n = Math.min(typeof count === 'number' ? count : 12, 80);
+    for (var i = 0; i < n; i++) {
+      if (particles.length >= MAX_PARTICLES) break;
+      var angle = Math.random() * Math.PI * 2;
+      var speed = Math.random() * 3 + 1;
+      particles.push({
+        x: x || 0, y: y || 0,
+        vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+        life: 1, size: Math.random() * 3 + 2, color: color || '#fbbf24'
+      });
+    }
+  }
+  /** Move E desenha as partículas (uma chamada por frame); elas somem sozinhas. */
+  function drawParticles(ctx) {
+    if (!ctx) return;
+    _particlesDrawnThisFrame = true;
+    for (var i = particles.length - 1; i >= 0; i--) {
+      var p = particles[i];
+      p.x += p.vx; p.y += p.vy; p.vy += 0.06;
+      p.life -= 0.02;
+      if (p.life <= 0) { particles.splice(i, 1); continue; }
+      ctx.save();
+      ctx.globalAlpha = p.life;
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x, p.y, p.size, p.size);
+      ctx.restore();
+    }
+  }
+
+`

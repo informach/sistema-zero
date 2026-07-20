@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import type { LearningProfile } from '#core'
+import { BLOCK_CATALOG } from '../blockCatalog'
 import { classCategoryBlockTypes, functionCategoryBlockTypes } from '../paramsFlyout'
 import { buildCoreToolbox, type ToolboxCategory } from '../toolbox'
 
@@ -130,5 +131,34 @@ describe('buildCoreToolbox — lista de blocos da aula (allowBlocks restritivo)'
       allowBlocks: ['sz_js_constructor'],
     }
     expect(classCategoryBlockTypes(onlyConstructor)).toEqual(['sz_js_constructor'])
+  })
+
+  it('não cria Classes fantasma para blocos legados que já saíram da oferta', () => {
+    const profile: LearningProfile = {
+      level: 'avancado-3d',
+      allowBlocks: ['sz_js_call_method'],
+    }
+    const names = categoryNames(buildCoreToolbox([], profile).contents)
+    expect(names).not.toContain('🏛️ Classes')
+    expect(BLOCK_CATALOG.some((entry) => entry.type === 'sz_js_call_method')).toBe(false)
+  })
+
+  it('oferece retorno e parâmetro somente em Funções, sem duplicar Classes', () => {
+    const profile: LearningProfile = {
+      level: 'avancado-3d',
+      allowBlocks: ['sz_js_function', 'sz_js_return', 'sz_val_arg'],
+    }
+    const names = categoryNames(buildCoreToolbox([], profile).contents)
+    expect(names).toContain('🧩 Funções')
+    expect(names).not.toContain('🏛️ Classes')
+    expect(functionCategoryBlockTypes(profile)).toEqual(['sz_js_function', 'sz_js_return'])
+    expect(classCategoryBlockTypes(profile)).toEqual([])
+
+    expect(BLOCK_CATALOG.filter((entry) => entry.type === 'sz_js_return')).toEqual([
+      expect.objectContaining({ category: 'Funções' }),
+    ])
+    expect(BLOCK_CATALOG.filter((entry) => entry.type === 'sz_val_arg')).toEqual([
+      expect.objectContaining({ category: 'Funções' }),
+    ])
   })
 })

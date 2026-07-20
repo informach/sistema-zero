@@ -1,3 +1,4 @@
+import { applyPlacementToBlockTypes, START_ONLY_COMMAND_PLACEMENT } from '../blockContracts'
 import { CATEGORY_COLORS, categoryShades } from '../theme'
 import type { BlockDefinition } from './types'
 
@@ -939,3 +940,5 @@ for (const b of CANVAS_BLOCKS) {
   const colour = CANVAS_COLOUR_BY_TYPE.get(b.type)
   if (colour) b.colour = colour
 }
+
+applyPlacementToBlockTypes(CANVAS_BLOCKS, ['sz_canvas_setup'], START_ONLY_COMMAND_PLACEMENT)

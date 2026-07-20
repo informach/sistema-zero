@@ -65,6 +65,9 @@ describe('game-2d — todos os exemplos da vitrine (manifest.examples)', () => {
     for (const example of gameTwoDManifest.examples) {
       expect(example.ir.html.some((node) => node.type === 'canvas')).toBe(false)
       expect(example.ir.behavior.start[0]?.type).toBe('g2d:setupStage')
+      expect(
+        (example.ir.behavior.start[0] as { description?: string } | undefined)?.description,
+      ).toBe(example.description)
       expect(collectTypes(example.ir).has('g2d:onStart')).toBe(false)
     }
   })
@@ -169,6 +172,32 @@ describe('game-2d — exemplos com imagem são autossuficientes', () => {
       expect(asset.dataUrl.startsWith('data:image/')).toBe(true)
     }
   })
+
+  it('Aventura com câmera mostra casas e árvores reconhecíveis, não retângulos genéricos', () => {
+    expect(cameraAdventureExample.assets?.map((asset) => asset.name)).toEqual([
+      'casa-aventura',
+      'arvore-aventura',
+    ])
+    const code = compileStatements(behaviorStatements(cameraAdventureExample.ir), 0)
+    expect(code).toContain('image: "casa-aventura"')
+    expect(code).toContain('image: "arvore-aventura"')
+  })
+})
+
+describe('game-2d — demonstrações explicam os controles no próprio palco', () => {
+  for (const example of [
+    animatedHeroExample,
+    gameTwoDManifest.examples.find((candidate) => candidate.name === 'Mini plataforma'),
+    tilemapExample,
+    codeDrawnExample,
+  ]) {
+    it(example?.name ?? 'exemplo ausente', () => {
+      expect(example).toBeDefined()
+      const labels = JSON.stringify(example?.ir).match(/"type":"g2d:drawLabel"/g) ?? []
+      expect(labels.length).toBeGreaterThan(0)
+      expect(JSON.stringify(example?.ir).toLocaleLowerCase('pt-BR')).toContain('setas')
+    })
+  }
 })
 
 describe('pongExample (game-2d)', () => {

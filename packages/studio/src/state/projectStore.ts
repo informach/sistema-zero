@@ -44,7 +44,13 @@ import {
   hasValidBehaviorAreasStateVersion,
 } from '../blockly/blocksStateVersion'
 import { createProProject as createProProjectFromTemplate } from '../components/code/pro-templates'
+import {
+  type ExtensionCompatibilityEntry,
+  findExtensionConflict,
+} from '../extensions/compatibility'
 import { STUDENT_BASELINE_PERMISSIONS } from '../preview/permissionGuard'
+import { migrateLegacyBlockProjectSnapshot } from '../projects/compatibility'
+import { CANVAS3D_BLOCK_TYPES } from '../three/canvas3dContract'
 import {
   deleteProject as deleteProjectFromDB,
   loadProjectBlocksById,
@@ -262,6 +268,7 @@ export const PROJECT_FILE_LIMITS = {
 // blocos ocultos da paleta. Um tipo ausente faz o blocksState salvo inteiro ser
 // descartado no load. O teste blockAllowlist.test garante que fica em sincronia.
 export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
+  ...CANVAS3D_BLOCK_TYPES,
   'sz_adv_raw_css',
   'sz_adv_raw_html',
   'sz_adv_raw_js',
@@ -312,35 +319,6 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_canvas_font',
   'sz_canvas_text_align',
   'sz_canvas_text_baseline',
-  // Canvas 3D procedural e física leve própria.
-  'sz_t3d_primitive',
-  'sz_t3d_terrain',
-  'sz_t3d_road',
-  'sz_t3d_building',
-  'sz_t3d_city',
-  'sz_t3d_physics_setup',
-  'sz_t3d_physics_static_box',
-  'sz_t3d_physics_static_sphere',
-  'sz_t3d_physics_static_object',
-  'sz_t3d_physics_static_city',
-  'sz_t3d_physics_body',
-  'sz_t3d_physics_move',
-  'sz_t3d_physics_jump',
-  'sz_t3d_physics_trigger',
-  'sz_t3d_physics_step',
-  'sz_t3d_physics_velocity',
-  'sz_t3d_physics_impulse',
-  'sz_t3d_physics_teleport',
-  'sz_t3d_physics_remove',
-  'sz_t3d_physics_clear',
-  'sz_t3d_physics_on_collision',
-  'sz_t3d_physics_on_trigger',
-  'sz_t3d_physics_raycast',
-  'sz_t3d_physics_body_state',
-  'sz_t3d_physics_stats',
-  'sz_t3d_renderer_responsive',
-  'sz_t3d_load_environment',
-  'sz_t3d_dispose_object',
   'sz_input_key_pressed',
   'sz_input_pointer_x',
   'sz_input_pointer_y',
@@ -592,42 +570,6 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_val_get_prop',
   'sz_val_call_method',
   'sz_val_new',
-  'sz_t3d_import',
-  'sz_t3d_import_named',
-  'sz_t3d_new_var',
-  'sz_t3d_new',
-  'sz_t3d_load_model',
-  'sz_t3d_load_sound',
-  'sz_t3d_traverse',
-  // Canvas 3D — facilitadores (rótulo amigável sobre memberCall/memberSet).
-  'sz_t3d_set_position',
-  'sz_t3d_set_rotation',
-  'sz_t3d_rotate_axis',
-  'sz_t3d_set_scale',
-  'sz_t3d_look_at',
-  'sz_t3d_lerp_position',
-  'sz_t3d_set_visible',
-  'sz_t3d_add_to',
-  'sz_t3d_set_color',
-  'sz_t3d_set_background',
-  'sz_t3d_set_fog',
-  'sz_t3d_set_shadow',
-  'sz_t3d_set_intensity',
-  'sz_t3d_set_matrix_at',
-  'sz_t3d_instances_dirty',
-  'sz_t3d_renderer_size',
-  'sz_t3d_renderer_config',
-  'sz_t3d_enable_shadows',
-  'sz_t3d_mount_renderer',
-  'sz_t3d_render',
-  'sz_t3d_bloom_setup',
-  'sz_t3d_render_effects',
-  'sz_t3d_particles',
-  'sz_t3d_water',
-  'sz_t3d_water_wave',
-  'sz_t3d_sign',
-  'sz_t3d_grass',
-  'sz_t3d_grass_wave',
   'sz_val_array_filter',
   'sz_val_object',
   'sz_val_object_op',
@@ -1722,15 +1664,14 @@ const BASELINE_PERMISSIONS = new Set<string>(STUDENT_BASELINE_PERMISSIONS)
 
 /**
  * Uma extensão (resolvida pelo id no catálogo oficial) declara SÓ permissões da
- * baseline? Uma extensão desconhecida (sem manifesto) não declara nada — o
- * preview a ignora —, então passa. Uma extensão cujo manifesto declare `network`
- * (ou qualquer permissão fora da baseline) NÃO passa: ao importar um projeto de
- * um estranho, o aluno não pode habilitar silenciosamente uma capacidade
- * sensível sem consentimento (hoje game-2d/3d só declaram baseline → no-op).
+ * baseline? Extensões desconhecidas e extensões cujo manifesto declare `network`
+ * (ou qualquer permissão fora da baseline) NÃO passam: ao importar um projeto de
+ * um estranho, o aluno não pode habilitar silenciosamente código sem catálogo ou
+ * uma capacidade sensível sem consentimento (hoje as oficiais só usam a baseline).
  */
 function declaresOnlyBaselinePermissions(id: string): boolean {
   const ext = findExtension(id)
-  if (!ext) return true
+  if (!ext) return false
   return ext.manifest.permissions.every((p) => BASELINE_PERMISSIONS.has(p))
 }
 
@@ -1738,15 +1679,24 @@ function declaresOnlyBaselinePermissions(id: string): boolean {
 function sanitizeImportedExtensions(raw: unknown): InstalledExtension[] {
   if (!Array.isArray(raw)) return []
   const out: InstalledExtension[] = []
+  const accepted: ExtensionCompatibilityEntry[] = []
+  const seen = new Set<string>()
   for (const item of raw) {
     if (out.length >= MAX_INSTALLED_EXTENSIONS) break
     if (!item || typeof item !== 'object') continue
     const e = item as Record<string, unknown>
     if (typeof e.id !== 'string' || typeof e.version !== 'string') continue
+    if (seen.has(e.id)) continue
+    const extension = findExtension(e.id)
+    if (!extension) continue
     // Fail-closed do consentimento: descarta extensões que declarem permissão
     // fora da baseline (ex.: uma futura extensão `network`). Abrir o .json de um
     // estranho não pode conceder capacidades sensíveis sem o aluno consentir.
     if (!declaresOnlyBaselinePermissions(e.id)) continue
+    const compatibility = { id: e.id, conflictsWith: extension.conflictsWith }
+    if (findExtensionConflict(compatibility, accepted)) continue
+    seen.add(e.id)
+    accepted.push(compatibility)
     out.push({
       id: e.id,
       version: e.version,
@@ -1757,6 +1707,20 @@ function sanitizeImportedExtensions(raw: unknown): InstalledExtension[] {
     })
   }
   return out
+}
+
+function importedIRMatchesInstalledExtensions(
+  ir: SZIRInput | null,
+  installedExtensions: readonly InstalledExtension[],
+): boolean {
+  if (!ir) return true
+  const installed = new Set(installedExtensions.map((extension) => extension.id))
+  const seen = new Set<string>()
+  for (const extension of normalizeSZIR(ir).extensions) {
+    if (seen.has(extension.extensionId) || !installed.has(extension.extensionId)) return false
+    seen.add(extension.extensionId)
+  }
+  return true
 }
 
 interface JsonShapeLimits {
@@ -2185,6 +2149,8 @@ function sanitizeStoredProject(raw: unknown, requestedId?: string): Project | nu
   const name = sanitizeProjectName(r.name)
   const base = createEmptyProject(id, name)
   const installedExtensions = sanitizeImportedExtensions(r.installedExtensions)
+  const storedIR = sanitizeStoredIR(r.ir)
+  const ir = importedIRMatchesInstalledExtensions(storedIR, installedExtensions) ? storedIR : null
   const createdAt = sanitizeTimestamp(r.createdAt, base.createdAt)
   const updatedAt = sanitizeTimestamp(r.updatedAt, createdAt)
 
@@ -2210,7 +2176,7 @@ function sanitizeStoredProject(raw: unknown, requestedId?: string): Project | nu
   }
   const isPro = tree != null && proMeta != null
 
-  return {
+  return migrateLegacyBlockProjectSnapshot({
     ...base,
     id,
     name,
@@ -2219,14 +2185,14 @@ function sanitizeStoredProject(raw: unknown, requestedId?: string): Project | nu
     // Pro vive sempre no modo 'code'; básico vive em Blocos/Ponte ('code' legado
     // cai em 'bridge') — separação D2.
     mode: isPro ? 'code' : normalizeClassicMode(r.mode),
-    ir: sanitizeStoredIR(r.ir),
+    ir,
     blocksState: sanitizeStoredBlocksState(r.blocksState, installedExtensions),
     installedExtensions,
     assets: sanitizeProjectAssets(r.assets),
     createdAt,
     updatedAt,
     ...(isPro ? { kind: 'pro' as const, tree, proMeta } : {}),
-  }
+  })
 }
 
 export async function loadSanitizedProjectById(id: string): Promise<Project | null> {
@@ -3005,6 +2971,11 @@ export function createProjectStore(
       const ir = sanitizeImportedIR(r.ir)
 
       const installedExtensions = sanitizeImportedExtensions(r.installedExtensions)
+      if (!importedIRMatchesInstalledExtensions(ir, installedExtensions)) {
+        throw new Error(
+          'Arquivo inválido: a IR usa extensões ausentes, duplicadas ou incompatíveis.',
+        )
+      }
       const blocksState = sanitizeImportedBlocksState(r.blocksState, installedExtensions)
 
       // Modo profissional: reconstrói kind/tree/proMeta com os MESMOS sanitizers
@@ -3029,7 +3000,7 @@ export function createProjectStore(
       const mode: IDEMode = isPro ? 'code' : normalizeClassicMode(r.mode)
       const extraFiles = limitCombinedExtraFiles(files, sanitizeImportedExtraFiles(r.extraFiles))
       const assets = sanitizeProjectAssets(r.assets)
-      const imported: Project = {
+      const imported = migrateLegacyBlockProjectSnapshot({
         ...base,
         files,
         // Espelha o teto COMBINADO do load (canônicos + extras ≤ MAX_TOTAL_CHARS):
@@ -3045,7 +3016,7 @@ export function createProjectStore(
         updatedAt: now,
         // Pro vive sempre no modo 'code' (mode já é 'code' acima).
         ...(isPro ? { kind: 'pro' as const, tree, proMeta } : {}),
-      }
+      })
       await persistProject(imported)
 
       // Avisos não-fatais: o projeto FOI importado, mas alguns sanitizers cortaram

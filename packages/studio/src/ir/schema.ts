@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { isGuidedDomElementTag } from '../domSafety'
 import { HTML_TAGS, isHTMLElementChildAllowed } from '../html/catalog'
 import { CANVAS3D_RESOURCE_CREATOR_TYPES } from '../three/canvas3dContract'
 import { GAME3D_RESOURCE_CREATOR_TYPES } from '../three/game3dContract'
@@ -7,6 +8,10 @@ import { isLifecycleRootAllowed, type LifecycleArea, validateLifecycleSemantics 
 export const MAX_IR_TEXT_CHARS = 2_000_000
 
 const irText = () => z.string().max(MAX_IR_TEXT_CHARS)
+const guidedDomTag = (namespace: 'html' | 'svg') =>
+  irText().refine((tag) => isGuidedDomElementTag(tag, namespace), {
+    message: `Tag ${namespace.toUpperCase()} não permitida no DOM guiado`,
+  })
 
 // ---------- Source mapping ----------
 
@@ -2299,9 +2304,10 @@ export type JSStatement =
       width: number | JSExpr
       height: number | JSExpr
       bg: string
+      description?: string
     })
   // "Ocupar a tela toda": palco SEM dimensões — a resolução acompanha a viewport.
-  | (JSStatementCommon & { type: 'g2d:setupFull'; bg: string })
+  | (JSStatementCommon & { type: 'g2d:setupFull'; bg: string; description?: string })
   // Tiro redondo com brilho num grupo; mover com setas; piscar (invencibilidade).
   | (JSStatementCommon & {
       type: 'g2d:spawnBullet'
@@ -5037,13 +5043,13 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     }),
     z.object({
       type: z.literal('createElement'),
-      tag: irText(),
+      tag: guidedDomTag('html'),
       varName: irText(),
       ...idField,
     }),
     z.object({
       type: z.literal('createElementNS'),
-      tag: irText(),
+      tag: guidedDomTag('svg'),
       varName: irText(),
       ...idField,
     }),
@@ -6076,9 +6082,15 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       width: z.union([JSExprSchema, z.number()]),
       height: z.union([JSExprSchema, z.number()]),
       bg: irText(),
+      description: irText().optional(),
       ...idField,
     }),
-    z.object({ type: z.literal('g2d:setupFull'), bg: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:setupFull'),
+      bg: irText(),
+      description: irText().optional(),
+      ...idField,
+    }),
     z.object({
       type: z.literal('g2d:spawnBullet'),
       groupVar: irText(),

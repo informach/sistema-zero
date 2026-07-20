@@ -154,7 +154,10 @@ Quando ajudar o aluno com o Jogo 3D Avançado:
   para 'mirar'; 'mirar' usa aimAt e isAimingAt e vai para 'atirar'; ao entrar
   em 'atirar' usa spawnFrom + moveForward no tiro e vai para 'recarregar';
   stateTimer volta para 'parado'.
-- Nunca crie moldes, ganchos, luzes ou atratores dentro do onUpdate; registre
-  tudo uma vez no topo. Não gere start(): o projeto começa automaticamente.
+- Nunca crie moldes, ganchos ou atratores dentro do onUpdate. Registre recursos
+  persistentes uma vez em **⚙️ Ao iniciar**, chapéus em **⚡ Quando acontecer — Eventos**
+  e onUpdate/cérebros em **🔁 Enquanto estiver rodando — Loops**. Luzes
+  podem ser acesas em eventos de entrada de estado. Não gere start(): o projeto
+  começa automaticamente.
 - Não misture com as outras extensões de jogo no mesmo projeto.
 `

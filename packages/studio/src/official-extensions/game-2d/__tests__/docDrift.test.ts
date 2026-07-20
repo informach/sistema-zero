@@ -3,6 +3,8 @@ import type { ExtensionToolboxCategory } from '#extensions'
 import { gameTwoDPromptContext } from '../ai'
 import { gameTwoDBlocks, gameTwoDToolboxCategory } from '../blocks'
 import { gameTwoDManifest } from '../manifest'
+import { GAME_TWO_D_AREAS } from '../pedagogy'
+import { gameTwoDRuntime } from '../runtime'
 
 /**
  * MATA A CLASSE, não o caso (clone do docDrift do gk).
@@ -32,13 +34,22 @@ function tiposNaToolbox(cat: ExtensionToolboxCategory, acc: string[] = []): stri
   return acc
 }
 
+function tiposDaCategoria(name: string): string[] {
+  const category = gameTwoDToolboxCategory.contents.find(
+    (content): content is ExtensionToolboxCategory =>
+      content.kind === 'category' && content.name === name,
+  )
+  if (!category) throw new Error(`Categoria ausente: ${name}`)
+  return tiposNaToolbox(category)
+}
+
 const COM_EMOJI = /^(\p{Extended_Pictographic}|\p{Emoji_Presentation})/u
 
 /**
  * Categorias do NÚCLEO (não da extensão) que a doc cita de propósito na seção
  * "fazer na mão" — não são sub-categorias do Jogo 2D e não devem falhar o drift.
  */
-const EXTERNAS_OK = new Set(['🎨 SVG', '⚙️ Ao iniciar', '🎯 Eventos', '🔁 Loop principal'])
+const EXTERNAS_OK = new Set(['🎨 SVG', ...Object.values(GAME_TWO_D_AREAS)])
 
 /** Spans em negrito `**🎯 Nome**` cujo conteúdo começa com emoji = citação de chip. */
 function chipsCitadosNasDocs(texto: string): string[] {
@@ -88,5 +99,44 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
 
   it('a contagem de blocos está travada (remoção acidental salta aqui)', () => {
     expect(gameTwoDBlocks.length).toBe(190)
+  })
+
+  it('separa eventos, loops-raiz e contatos contínuos como as Áreas do projeto', () => {
+    expect(tiposDaCategoria(GAME_TWO_D_AREAS.events)).toEqual([
+      'sz_g2d_on_key',
+      'sz_g2d_on_overlap',
+      'sz_g2d_on_pointer',
+    ])
+    expect(tiposDaCategoria(GAME_TWO_D_AREAS.loop)).toEqual([
+      'sz_g2d_update_each_frame',
+      'sz_g2d_every_frames',
+      'sz_g2d_every_seconds',
+    ])
+    expect(tiposDaCategoria('📦 Muitos')).toContain('sz_g2d_on_group_overlap')
+    expect(tiposDaCategoria('🚀 Kit espaço')).toContain('sz_g2d_on_sprite_group_overlap')
+  })
+
+  it('não ensina mais a arquitetura legada de início e loops periódicos', () => {
+    const docs = gameTwoDManifest.docs ?? ''
+    expect(docs).not.toContain('fica dentro de **Quando o jogo começar**')
+    expect(docs).not.toContain('executa novamente o bloco de começo')
+    expect(gameTwoDPromptContext).not.toContain(
+      'Use como condição de um if dentro do gameLoop para criar inimigos',
+    )
+    expect(gameTwoDRuntime).not.toContain('O aluno chama dentro do "a cada quadro"')
+
+    for (const type of ['sz_g2d_every_frames', 'sz_g2d_every_seconds']) {
+      const block = gameTwoDBlocks.find((candidate) => candidate.type === type)
+      expect(block?.tooltip).toContain(GAME_TWO_D_AREAS.loop)
+      expect(block?.tooltip).not.toContain('dentro do "a cada quadro"')
+    }
+  })
+
+  it('todo bloco visível explica sua finalidade em um tooltip', () => {
+    expect(
+      gameTwoDBlocks
+        .filter((block) => !block.hidden && !String(block.tooltip ?? '').trim())
+        .map((block) => block.type),
+    ).toEqual([])
   })
 })

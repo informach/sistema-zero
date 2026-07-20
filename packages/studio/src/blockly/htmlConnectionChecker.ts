@@ -63,9 +63,10 @@ function programmingRequirement(block: Blockly.Block): ProgrammingRequirement | 
       return 'derived-method'
     case 'sz_val_arg':
       return 'parameter'
+    case 'sz_val_this':
+      return 'function'
     case 'sz_js_set_this_prop':
     case 'sz_val_this_prop':
-    case 'sz_val_this':
       return 'class-body'
     default:
       return null
@@ -144,7 +145,14 @@ function requirementFits(
       )
     case 'parameter': {
       const scope = ancestors.find((ancestor) => FUNCTION_BODY_TYPES.has(ancestor.type))
-      return Boolean(scope && getParamNames(scope).includes(block.getFieldValue('NAME') ?? ''))
+      if (!scope) return false
+      // O Blockly conecta cada filho ANTES de restaurar seus campos. Durante a
+      // desserialização, o relator ainda contém o nome padrão (`x`), embora o
+      // mutator da função pai já tenha recuperado os parâmetros corretos. Nesse
+      // estágio, valide apenas a existência do escopo; assim que os eventos são
+      // reativados, edições e encaixes manuais continuam exigindo nome válido.
+      if (!Blockly.Events.isEnabled()) return true
+      return getParamNames(scope).includes(block.getFieldValue('NAME') ?? '')
     }
     case 'class-body':
       return ancestors.some(

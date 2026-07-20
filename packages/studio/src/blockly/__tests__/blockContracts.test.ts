@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
-import { SZIRV2Schema } from '#ir'
+import { START_ONLY_STATEMENT_TYPES, SZIRV2Schema } from '#ir'
 import { OFFICIAL_CATALOG } from '#official-extensions'
+import { CANVAS3D_RESOURCE_CREATOR_BLOCK_TYPES } from '../../three/canvas3dContract'
 import {
+  BEHAVIOR_AREA_LABELS,
   getBlockContract,
   inferBlockContract,
   materializeBlockDefinition,
@@ -21,6 +23,17 @@ function definition(type: string) {
 }
 
 describe('contrato central de posicionamento', () => {
+  it('mantém documentação e contexto da IA alinhados aos nomes canônicos das áreas', () => {
+    for (const extension of OFFICIAL_CATALOG) {
+      const docs = extension.manifest.docs ?? ''
+      const ai = extension.ai?.promptContext ?? extension.ai?.promptSummary ?? ''
+      for (const label of Object.values(BEHAVIOR_AREA_LABELS)) {
+        expect(docs).toContain(label)
+        expect(ai).toContain(label)
+      }
+    }
+  })
+
   it('classifica todos os blocos core e das extensões oficiais', () => {
     const all = [
       ...CORE_BLOCKS,
@@ -38,6 +51,7 @@ describe('contrato central de posicionamento', () => {
     ).toEqual(['JSStartRoot', ...NESTED_STATEMENT_CHECKS])
     expect(materializeBlockDefinition(definition('sz_js_on_click')).previousStatement).toEqual([
       'JSEventRoot',
+      'JSFunctionStmt',
     ])
     expect(materializeBlockDefinition(definition('sz_canvas_anim_loop')).previousStatement).toEqual(
       ['JSLoopRoot'],
@@ -54,7 +68,12 @@ describe('contrato central de posicionamento', () => {
       if (contract.domain !== 'behavior') continue
       const materialized = materializeBlockDefinition(definition)
       expect(materialized.placement, `${definition.type}: placement`).toEqual(contract.placement)
-      for (const args of [materialized.args0, materialized.args1, materialized.args2]) {
+      for (const args of [
+        materialized.args0,
+        materialized.args1,
+        materialized.args2,
+        materialized.args3,
+      ]) {
         for (const arg of args ?? []) {
           if (typeof arg !== 'object' || arg === null) continue
           const input = arg as { type?: unknown; check?: unknown }
@@ -118,6 +137,76 @@ describe('contrato central de posicionamento', () => {
     }
   })
 
+  it('impede fisicamente e na IR que preparações exclusivas de Ao iniciar sejam aninhadas', () => {
+    ensureBlocklyInitialized()
+    for (const extension of OFFICIAL_CATALOG) {
+      registerExtensionBlocks(extension.blockly.blocks)
+    }
+    const all = [
+      ...CORE_BLOCKS,
+      ...OFFICIAL_CATALOG.flatMap((extension) => extension.blockly.blocks),
+    ]
+    const derivedStatementTypes = new Set<string>()
+
+    for (const definition of all) {
+      const contract = inferBlockContract(definition)
+      const placement = contract.placement
+      if (
+        definition.hidden ||
+        contract.domain !== 'behavior' ||
+        placement?.role !== 'command' ||
+        placement.root.length !== 1 ||
+        placement.root[0] !== 'start' ||
+        placement.nested.length !== 0
+      ) {
+        continue
+      }
+
+      expect(materializeBlockDefinition(definition).previousStatement, definition.type).toEqual([
+        'JSStartRoot',
+      ])
+
+      const workspace = new Blockly.Workspace()
+      try {
+        const frame = workspace.newBlock('sz_frame_start')
+        const block = workspace.newBlock(definition.type)
+        const frameConnection = frame.getInput('CHILDREN')?.connection
+        const blockConnection = block.previousConnection
+        if (!frameConnection || !blockConnection) {
+          throw new Error(`${definition.type}: conexões do bloco inicial ausentes`)
+        }
+        frameConnection.connect(blockConnection)
+        const ir = buildIRFromWorkspace(workspace)
+        const statement = ir.behavior.start[0]
+        if (!statement) throw new Error(`${definition.type}: não gerou statement`)
+        derivedStatementTypes.add(statement.type)
+
+        const nestedInEvent = {
+          ...ir,
+          behavior: {
+            start: [],
+            events: [{ type: 'event', target: 'window', event: 'click', body: [statement] }],
+            loops: [],
+          },
+        }
+        const nestedInLoop = {
+          ...ir,
+          behavior: {
+            start: [],
+            events: [],
+            loops: [{ type: 'animationLoop', body: [statement] }],
+          },
+        }
+        expect(SZIRV2Schema.safeParse(nestedInEvent).success, definition.type).toBe(false)
+        expect(SZIRV2Schema.safeParse(nestedInLoop).success, definition.type).toBe(false)
+      } finally {
+        workspace.dispose()
+      }
+    }
+
+    expect(derivedStatementTypes).toEqual(START_ONLY_STATEMENT_TYPES)
+  })
+
   it('repara um bloco que foi registrado externamente sem o contrato físico', () => {
     const raw = {
       type: 'sz_test_external_registration',
@@ -162,6 +251,28 @@ describe('contrato central de posicionamento', () => {
     const contract = inferBlockContract(definition('sz_js_event_method'))
     expect(contract.placement?.root).toEqual([])
     expect(contract.placement?.nested).toEqual(['event-body'])
+  })
+
+  it('mantém imports do Canvas 3D somente em Ao iniciar', () => {
+    for (const type of ['sz_t3d_import', 'sz_t3d_import_named']) {
+      const contract = inferBlockContract(definition(type))
+      expect(contract.placement?.root, type).toEqual(['start'])
+      expect(contract.placement?.nested, type).toEqual([])
+      expect(contract.placement?.role, type).toBe('declaration')
+      expect(materializeBlockDefinition(definition(type)).previousStatement, type).toEqual([
+        'JSStartRoot',
+      ])
+    }
+  })
+
+  it('não encaixa criadores de recursos Canvas 3D diretamente em um laço', () => {
+    for (const type of CANVAS3D_RESOURCE_CREATOR_BLOCK_TYPES) {
+      const contract = inferBlockContract(definition(type))
+      expect(contract.placement?.nested, type).not.toContain('loop-body')
+      expect(materializeBlockDefinition(definition(type)).previousStatement, type).not.toContain(
+        'JSLoopStmt',
+      )
+    }
   })
 
   it('aceita inscrições de evento encapsuladas em funções e classes', () => {

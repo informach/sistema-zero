@@ -7,8 +7,15 @@ describe('buildPreviewCSP', () => {
     expect(csp).toContain("default-src 'none'")
     expect(csp).toContain("connect-src 'none'")
     // script-src NÃO pode liberar https: (sem <script src=remoto>)
-    expect(csp).toContain("script-src 'unsafe-inline' data: blob:")
+    expect(csp).toContain('script-src data: blob:')
+    expect(csp.match(/script-src[^;]*/)?.[0]).not.toContain("'unsafe-inline'")
     expect(csp).not.toMatch(/script-src[^;]*https:/)
+  })
+
+  it('libera somente scripts inline autenticados pelo nonce do documento', () => {
+    const csp = buildPreviewCSP({ scriptNonce: 'nonce-seguro-123456' })
+    expect(csp).toContain("'nonce-nonce-seguro-123456'")
+    expect(csp.match(/script-src[^;]*/)?.[0]).not.toContain("'unsafe-inline'")
   })
 
   it('libera subrecursos passivos https (img/font/media)', () => {
@@ -44,7 +51,7 @@ describe('buildPreviewCSP', () => {
 
   it('scriptAllowedOrigins libera origens em script-src (módulos de extensão)', () => {
     const csp = buildPreviewCSP({ scriptAllowedOrigins: ['https://esm.sh'] })
-    expect(csp).toContain("script-src 'unsafe-inline' data: blob: https://esm.sh")
+    expect(csp).toContain('script-src data: blob: https://esm.sh')
     // não afeta connect-src (rede do aluno continua bloqueada)
     expect(csp).toContain("connect-src 'none'")
   })

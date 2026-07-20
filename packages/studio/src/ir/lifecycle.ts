@@ -33,6 +33,200 @@ const LOOP_BODY_ONLY_TYPES = new Set([
   'gk:overlapGroups',
 ])
 
+/**
+ * Statements que constroem recursos persistentes ou registram configurações de
+ * uma partida. Eles só podem existir diretamente em `behavior.start`; executar
+ * qualquer um dentro de evento, loop ou função duplicaria recursos/listeners.
+ *
+ * Esta lista espelha os contratos `START_ONLY_COMMAND_PLACEMENT` do catálogo
+ * Blockly. O teste de contratos deriva a IR real de cada bloco e impede drift.
+ */
+export const START_ONLY_STATEMENT_TYPES = new Set([
+  'canvasSetup',
+
+  'g2d:setupStage',
+  'g2d:setupFull',
+  'g2d:fitScreen',
+  'g2d:createSprite',
+  'g2d:createImageSprite',
+  'g2d:createShapeSprite',
+  'g2d:createShip',
+  'g2d:createDino',
+  'g2d:createCity',
+  'g2d:createStickHero',
+  'g2d:createBalloon',
+  'g2d:createGroup',
+  'g2d:score',
+  'g2d:loadSpritesheet',
+  'g2d:setStateAnim',
+  'g2d:defineEnemyType',
+  'g2d:enemyStateAnim',
+  'g2d:createTileMapFromAsset',
+  'g2d:createTileMap',
+  'g2d:defineShape',
+
+  'gk:setup',
+  'gk:setupFull',
+  'gk:loadImage',
+  'gk:createScreen',
+  'gk:addButton',
+  'gk:setScreenBg',
+  'gk:setPauseKey',
+  'gk:defineMold',
+  'gk:defineLook',
+  'gk:setSheet',
+  'gk:rpgSetStartMap',
+  'gk:rpgCreateMap',
+  'gk:rpgDefineBattler',
+  'gk:defineEffect',
+  'gk:loadSound',
+  'gk:loadTilemap',
+  'gk:tilemapSolid',
+  'gk:boardCreate',
+  'gk:defineRegion',
+  'gk:createEmptyTilemap',
+  'gk:pkmCreature',
+  'gk:pkmMove',
+  'gk:pkmTypeChart',
+  'gk:pkmEvolve',
+  'gk:pkmCatchDifficulty',
+  'gk:pkmEncounterRate',
+  'gk:cardsEnergyPerTurn',
+  'gk:stateAnim',
+  'gk:definePath',
+  'gk:playersSetup',
+  'gk:tdSlot',
+
+  'g3d:createScene',
+  'g3d:createFullscreenScene',
+  'g3d:createBox',
+  'g3d:createSphere',
+  'g3d:createBlock',
+  'g3d:createGroup',
+  'g3d:createCrossingScene',
+  'g3d:createCrosser',
+  'g3d:addRow',
+  'g3d:generateRows',
+  'g3d:createRaceScene',
+  'g3d:createRaceTrack',
+  'g3d:createRaceCar',
+  'g3d:createStackScene',
+  'g3d:createStackTower',
+  'g3d:body',
+  'g3d:setSolid',
+  'g3d:createCylinder',
+  'g3d:createCone',
+  'g3d:createPlane',
+  'g3d:createTorus',
+  'g3d:createModel',
+  'g3d:addToModel',
+  'g3d:setMaterial',
+  'g3d:setTexture',
+  'g3d:addAmbientLight',
+  'g3d:addSunLight',
+  'g3d:addPointLight',
+  'g3d:setFog',
+  'g3d:setSky',
+  'g3d:setShadows',
+  'g3d:createSwarm',
+
+  'g3k:setup',
+  'g3k:defineMold',
+  'g3k:setPauseKey',
+  'g3k:stateTimer',
+  'g3k:defineEffect',
+  'g3k:defineEmitter',
+  'g3k:addAttractor',
+  'g3k:makeSolid',
+  'g3k:setStateAnim',
+  'g3k:setPhysics',
+  'g3k:setCollider',
+  'g3k:makeTrigger',
+  'g3k:setBounce',
+  'g3k:setFriction',
+  'g3k:setSkyPhoto',
+  'g3k:setScreenText',
+  'g3k:createScreen',
+  'g3k:addButton',
+  'g3k:loadSound',
+
+  'w3d:setup',
+  'w3d:terrain',
+  'w3d:flatten',
+  'w3d:path',
+  'w3d:water',
+  'w3d:skyPhoto',
+  'w3d:car',
+  'w3d:carStats',
+  'w3d:carBoost',
+  'w3d:engineSound',
+  'w3d:grass',
+  'w3d:scatter',
+  'w3d:scatterModel',
+  'w3d:placeThing',
+  'w3d:placeModel',
+  'w3d:clearArea',
+  'w3d:horn',
+  'w3d:carLights',
+  'w3d:tireMarks',
+  'w3d:minimap',
+  'w3d:racePodium',
+  'w3d:whisperCorner',
+  'w3d:flameNote',
+  'w3d:coinsScatter',
+  'w3d:coinsRing',
+  'w3d:coinsLine',
+  'w3d:quest',
+  'w3d:marker',
+  'w3d:npc',
+  'w3d:npcWander',
+  'w3d:islands',
+  'w3d:boat',
+  'w3d:bridge',
+  'w3d:lighthouse',
+  'w3d:person',
+  'w3d:personStats',
+  'w3d:personAccessory',
+  'w3d:waterfall',
+  'w3d:lamp',
+  'w3d:fireflies',
+  'w3d:campfire',
+  'w3d:pushPlace',
+  'w3d:pushScatter',
+  'w3d:letters',
+  'w3d:explosive',
+  'w3d:point',
+  'w3d:zone',
+  'w3d:totemText',
+  'w3d:totemImage',
+  'w3d:galleryCreate',
+  'w3d:galleryAdd',
+  'w3d:raceCreate',
+  'w3d:raceCheckpoint',
+  'w3d:bowlingCreate',
+  'w3d:stack',
+  'w3d:effects',
+  'w3d:loadSound',
+  'w3d:city',
+  'w3d:crops',
+  'w3d:barn',
+  'w3d:windmill',
+  'w3d:fence',
+  'w3d:animals',
+  'w3d:crater',
+  'w3d:flag',
+  'w3d:rocket',
+  'w3d:door',
+  'w3d:traffic',
+  'w3d:stringLights',
+  'w3d:district',
+  'w3d:roadGrid',
+  'w3d:houseRow',
+  'w3d:quality',
+])
+
+const EVENT_BODY_ONLY_TYPES = new Set(['w3d:npcAsk'])
+
 const CORE_EVENT_TYPES = new Set([
   'eventHandler',
   'imageOnLoad',
@@ -59,6 +253,7 @@ export function isEventStatement(statement: JSStatement): boolean {
   }
   return (
     CORE_EVENT_TYPES.has(statement.type) ||
+    statement.type === 'w3d:npcTalk' ||
     /^(?:g2d|gk|g3k|w3d):on[A-Z]/.test(statement.type) ||
     /^gk:(?:rpg|cards|td)On[A-Z]/.test(statement.type) ||
     /^w3d:(?:race|bowling)On[A-Z]/.test(statement.type)
@@ -87,7 +282,8 @@ export function isLifecycleRootAllowed(statement: JSStatement, area: LifecycleAr
     LEGACY_START_WRAPPER_TYPES.has(statement.type) ||
     LEGACY_ENGINE_BOOT_TYPES.has(statement.type) ||
     isLegacyLoadEvent(statement) ||
-    LOOP_BODY_ONLY_TYPES.has(statement.type)
+    LOOP_BODY_ONLY_TYPES.has(statement.type) ||
+    EVENT_BODY_ONLY_TYPES.has(statement.type)
   ) {
     return false
   }
@@ -165,6 +361,7 @@ function validateContextDependentNode(
       break
     case 'eventMethod':
     case 'eventProp':
+    case 'w3d:npcAsk':
       if (!context.eventBody) {
         issue(issues, path, 'Este valor ou comando só existe dentro do corpo de um evento')
       }
@@ -172,6 +369,11 @@ function validateContextDependentNode(
     case 'thisProp':
       if (!context.classBody) {
         issue(issues, path, '“this” só pode acessar propriedades dentro de uma classe')
+      }
+      break
+    case 'thisRef':
+      if (!context.functionBody) {
+        issue(issues, path, '“this” só pode ser usado dentro de uma função ou método')
       }
       break
   }
@@ -221,6 +423,9 @@ function visitStatement(
     isLoopRootStatement(statement) || (isEventStatement(statement) && !context.functionBody)
   if (context.nested && nestedLifecycleRoot) {
     issue(issues, path, `A raiz “${statement.type}” deve ficar diretamente na sua Área do projeto`)
+  }
+  if (context.nested && START_ONLY_STATEMENT_TYPES.has(statement.type)) {
+    issue(issues, path, `“${statement.type}” só pode ser usado diretamente em Ao iniciar`)
   }
   validateContextDependentNode(
     statement as unknown as Record<string, unknown>,

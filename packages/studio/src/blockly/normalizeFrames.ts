@@ -1,5 +1,5 @@
 import * as Blockly from 'blockly/core'
-import { areaForBlockType } from './blockContracts'
+import { areaForBlockType, getBlockContract } from './blockContracts'
 import { BEHAVIOR_AREAS_STATE_KEY, BEHAVIOR_AREAS_STATE_VERSION } from './blocksStateVersion'
 import {
   collectFlatFromWorkspace,
@@ -196,6 +196,102 @@ function appendChildrenToArea(
     : existing.inputs
 }
 
+type BehaviorArea = 'start' | 'events' | 'loops'
+
+const BEHAVIOR_AREA_FOR_FRAME: Readonly<Record<string, BehaviorArea>> = {
+  [FRAME_START]: 'start',
+  [FRAME_EVENTS]: 'events',
+  [FRAME_LOOPS]: 'loops',
+}
+
+function extractStrictLifecycleRoots(
+  block: SerializedBlock,
+  collected: Record<BehaviorArea, SerializedBlock[]>,
+): boolean {
+  let changed = false
+  for (const input of Object.values(block.inputs ?? {})) {
+    if (!input.block) continue
+    const kept: SerializedBlock[] = []
+    for (const child of unlinkChain(input.block)) {
+      if (extractStrictLifecycleRoots(child, collected)) changed = true
+      const placement = getBlockContract(child.type)?.placement
+      const target =
+        placement?.root.length === 1 && placement.nested.length === 0
+          ? placement.root[0]
+          : undefined
+      if (target) {
+        collected[target].push(child)
+        changed = true
+      } else {
+        kept.push(child)
+      }
+    }
+    const head = linkChain(kept)
+    if (head) input.block = head
+    else delete input.block
+  }
+  return changed
+}
+
+/**
+ * Versão 3: reencaminha raízes cujo contrato mudou e ergue construtores
+ * persistentes que projetos antigos permitiam salvar dentro de eventos/laços.
+ * Nada é apagado: o bloco estrito vai para o fim da sua área canônica.
+ */
+function migrateCurrentLifecyclePlacements(state: unknown, force = false): unknown {
+  if (!force && hasCurrentLifecycleVersion(state)) return state
+  const original = serializedTopBlocks(state)
+  if (!original?.some((block) => BEHAVIOR_AREA_FOR_FRAME[block.type])) return state
+  const previousVersion =
+    typeof state === 'object' && state !== null && !Array.isArray(state)
+      ? (state as Record<string, unknown>)[BEHAVIOR_AREAS_STATE_KEY]
+      : undefined
+
+  const cloned = structuredClone(state)
+  const tops = serializedTopBlocks(cloned)
+  if (!tops) return state
+  const collected: Record<BehaviorArea, SerializedBlock[]> = {
+    start: [],
+    events: [],
+    loops: [],
+  }
+  let changed = false
+
+  for (const top of tops) {
+    const currentArea = BEHAVIOR_AREA_FOR_FRAME[top.type]
+    if (!currentArea) continue
+    const kept: SerializedBlock[] = []
+    for (const child of unlinkChain(top.inputs?.CHILDREN?.block)) {
+      if (extractStrictLifecycleRoots(child, collected)) changed = true
+      const target = areaForBlockType(child.type)
+      if (target === 'start' || target === 'events' || target === 'loops') {
+        if (target !== currentArea) {
+          collected[target].push(child)
+          changed = true
+          continue
+        }
+      }
+      kept.push(child)
+    }
+    const head = linkChain(kept)
+    if (head) {
+      top.inputs = { ...(top.inputs ?? {}), CHILDREN: { block: head } }
+    } else if (top.inputs?.CHILDREN) {
+      const inputs = { ...top.inputs }
+      delete inputs.CHILDREN
+      if (Object.keys(inputs).length > 0) top.inputs = inputs
+      else delete top.inputs
+    }
+  }
+
+  if (!changed && previousVersion !== 2) return state
+
+  appendChildrenToArea(tops, 'start', collected.start)
+  appendChildrenToArea(tops, 'events', collected.events)
+  appendChildrenToArea(tops, 'loops', collected.loops)
+  return markLifecycleBlocksState(cloned)
+}
+
 function migrateLooseTopBlocks(state: unknown): unknown {
   const original = serializedTopBlocks(state)
   if (!original || original.length === 0) return state
@@ -214,7 +310,7 @@ function migrateLooseTopBlocks(state: unknown): unknown {
   let changed = false
 
   for (const top of tops) {
-    if (CURRENT_FRAME_TYPES.has(top.type)) {
+    if (FRAME_TYPES.has(top.type)) {
       kept.push(top)
       continue
     }
@@ -284,7 +380,8 @@ function migrateLegacyBehaviorFrame(state: unknown): unknown {
 /**
  * MIGRAÇÃO transparente para o modelo CONTAINER (frames). Um projeto LEGADO
  * (blocos soltos, sem Áreas do projeto) é re-emitido nas áreas necessárias —
- * 🧱 Estrutura, 🎨 Aparência, ⚙️ Ao iniciar, 🎯 Eventos e 🔁 Loop principal —
+ * 🧱 Estrutura, 🎨 Aparência, ⚙️ Ao iniciar, ⚡ Quando acontecer — Eventos e
+ * 🔁 Enquanto estiver rodando — Loops —
  * **preservando a saída**. Áreas antigas duplicadas viram rascunhos soltos para
  * não executar duas vezes nem apagar o trabalho da criança.
  *
@@ -313,18 +410,22 @@ export function normalizeBlocksStateToFrames(state: unknown): unknown {
   )
   if (!migrated) return migrated
   ensureBlocklyInitialized()
-  const withLifecycleAreas = migrateLegacyBehaviorFrame(migrated)
-  if (hasCurrentLifecycleVersion(withLifecycleAreas)) return withLifecycleAreas
-  const partiallyMigrated = migrateLooseTopBlocks(withLifecycleAreas)
-  if (partiallyMigrated !== withLifecycleAreas) return partiallyMigrated
-  if (withLifecycleAreas !== migrated) return markLifecycleBlocksState(withLifecycleAreas)
-  const topBlocks = serializedTopBlocks(withLifecycleAreas)
-  if (topBlocks?.some((block) => CURRENT_FRAME_TYPES.has(block.type))) return withLifecycleAreas
-  const blocks = (withLifecycleAreas as { blocks?: { blocks?: unknown[] } }).blocks?.blocks
+  if (hasCurrentLifecycleVersion(migrated)) return migrated
+  // Encaminha primeiro somente os blocos que já estavam soltos. A conversão da
+  // área legada pode criar rascunhos a partir de áreas duplicadas; eles devem
+  // continuar soltos, não ser recolhidos por esta mesma migração.
+  const withLooseTopBlocks = migrateLooseTopBlocks(migrated)
+  const withLifecycleAreas = migrateLegacyBehaviorFrame(withLooseTopBlocks)
+  const withCurrentPlacements = migrateCurrentLifecyclePlacements(withLifecycleAreas, true)
+  if (hasCurrentLifecycleVersion(withCurrentPlacements)) return withCurrentPlacements
+  if (withCurrentPlacements !== migrated) return markLifecycleBlocksState(withCurrentPlacements)
+  const topBlocks = serializedTopBlocks(withCurrentPlacements)
+  if (topBlocks?.some((block) => CURRENT_FRAME_TYPES.has(block.type))) return withCurrentPlacements
+  const blocks = (withCurrentPlacements as { blocks?: { blocks?: unknown[] } }).blocks?.blocks
   if (!Array.isArray(blocks) || blocks.length === 0) return migrated
   const scratch = new Blockly.Workspace()
   try {
-    Blockly.serialization.workspaces.load(withLifecycleAreas as Record<string, unknown>, scratch)
+    Blockly.serialization.workspaces.load(withCurrentPlacements as Record<string, unknown>, scratch)
     return markLifecycleBlocksState(buildWorkspaceStateFromIR(collectFlatFromWorkspace(scratch)))
   } catch (e) {
     console.warn('Migração de blocos para frames falhou; mantendo o estado original:', e)

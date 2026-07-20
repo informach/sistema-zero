@@ -1,16 +1,12 @@
 import { describe, expect, it } from 'bun:test'
-import { DOM_BLOCKS } from '../blocks/dom'
-import { JS_BLOCKS } from '../blocks/js'
-import { OBJECT_BLOCKS } from '../blocks/objects'
-import { OOP_BLOCKS } from '../blocks/oop'
-import { VALUE_BLOCKS } from '../blocks/values'
+import {
+  PROGRAMMING_COMPATIBILITY_DEFINITIONS,
+  PROGRAMMING_VISIBLE_DEFINITIONS,
+} from '../programmingContract'
 
 const PROGRAMMING_BLOCKS = [
-  ...JS_BLOCKS,
-  ...DOM_BLOCKS,
-  ...VALUE_BLOCKS,
-  ...OOP_BLOCKS,
-  ...OBJECT_BLOCKS,
+  ...PROGRAMMING_VISIBLE_DEFINITIONS,
+  ...PROGRAMMING_COMPATIBILITY_DEFINITIONS,
 ]
 
 describe('textos infantis da categoria Programação', () => {
@@ -28,5 +24,14 @@ describe('textos infantis da categoria Programação', () => {
         (block) => block.type,
       ),
     ).toEqual([])
+  })
+
+  it('explica os contextos compartilhados de retorno e parâmetro', () => {
+    const tooltipOf = (type: string) =>
+      String(PROGRAMMING_BLOCKS.find((block) => block.type === type)?.tooltip ?? '')
+    expect(tooltipOf('sz_js_return')).toMatch(/função/i)
+    expect(tooltipOf('sz_js_return')).toMatch(/método/i)
+    expect(tooltipOf('sz_val_arg')).toMatch(/função/i)
+    expect(tooltipOf('sz_val_arg')).toMatch(/construtor|método/i)
   })
 })

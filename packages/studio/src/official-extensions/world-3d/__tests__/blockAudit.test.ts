@@ -83,6 +83,8 @@ function buildIrFor(type: string, kind: 'statement' | 'expr'): JSStatement[] {
       expressionHost: EXPR_HOST,
       expressionInput: 'X',
       loopHost: 'sz_w3d_on_update',
+      eventHost: 'sz_w3d_npc_talk',
+      eventInput: 'BODY',
     })
     return stripIds(behaviorStatements(buildIRFromWorkspace(ws)))
   } finally {

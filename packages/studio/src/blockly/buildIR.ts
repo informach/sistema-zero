@@ -12,6 +12,7 @@ import {
 } from './blockContracts'
 import { getSuperName } from './blocks/extendsMutator'
 import { getParamNames } from './blocks/paramsMutator'
+import { ADDON_MODULES } from './fields/FieldAddonPicker'
 
 /** Tipos das cinco Áreas do projeto e da moldura legada de migração. */
 export {
@@ -25,7 +26,8 @@ export {
 
 /**
  * Percorre o workspace e devolve a SZ-IR V2. Só gera o que está dentro de
- * Estrutura, Aparência, Ao iniciar, Eventos ou Loop principal. **Bloco solto é
+ * Estrutura, Aparência, Ao iniciar, Quando acontecer — Eventos ou Enquanto
+ * estiver rodando — Loops. **Bloco solto é
  * rascunho** e fica fora da geração.
  * A inclusão é por CONTÊINER, não por posição/ordem no canvas.
  *
@@ -3218,18 +3220,25 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: { type: 'importStar', name: f(block, 'NAME') || 'THREE', module: 'three' },
       }
-    case 'sz_t3d_import_named':
+    case 'sz_t3d_import_named': {
+      const names = f(block, 'NAMES')
+        .split(',')
+        .map((name) => name.trim())
+        .filter(Boolean)
+      const selectedModule = f(block, 'MODULE')
+      const module =
+        selectedModule === 'automático' && names.length === 1
+          ? (ADDON_MODULES[names[0] ?? ''] ?? selectedModule)
+          : selectedModule
       return {
         kind: 'js',
         value: {
           type: 'importNamed',
-          names: f(block, 'NAMES')
-            .split(',')
-            .map((n) => n.trim())
-            .filter(Boolean),
-          module: f(block, 'MODULE'),
+          names,
+          module,
         },
       }
+    }
     case 'sz_t3d_new_var': {
       // CLASS = referência completa: `THREE.Scene` (namespace THREE) ou `GLTFLoader`
       // (bare, addon sem namespace). Quebra no 1º ponto.
@@ -5167,11 +5176,19 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           width: exprInput(block, 'W', { type: 'num', value: 800 }),
           height: exprInput(block, 'H', { type: 'num', value: 480 }),
           bg: f(block, 'BG'),
+          description: f(block, 'DESCRIPTION'),
         },
       }
     case 'sz_g2d_setup_full':
       seen.add('game-2d')
-      return { kind: 'js', value: { type: 'g2d:setupFull', bg: f(block, 'BG') } }
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:setupFull',
+          bg: f(block, 'BG'),
+          description: f(block, 'DESCRIPTION'),
+        },
+      }
 
     // ---- Kit Nave & Asteroides (v0.7.0) ----
     case 'sz_g2d_spawn_bullet':

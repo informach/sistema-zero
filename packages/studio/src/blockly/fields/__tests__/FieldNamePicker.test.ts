@@ -163,11 +163,100 @@ describe('FieldNamePicker', () => {
       expect(collectScopedVariableNames(inner)).toEqual(['n'])
     })
 
+    it('vê o item local de map, find e filter com a mesma regra', () => {
+      for (const [type, input] of [
+        ['sz_val_array_map', 'TRANSFORM'],
+        ['sz_val_array_find', 'COND'],
+        ['sz_val_array_filter', 'COND'],
+      ] as const) {
+        const ws = new Blockly.Workspace()
+        const operation = ws.newBlock(type)
+        operation.setFieldValue('inimigo', 'ITEM')
+        const inner = ws.newBlock('sz_val_variable')
+        operation.getInput(input)?.connection?.connect(inner.outputConnection as Blockly.Connection)
+        expect(collectScopedVariableNames(inner), type).toEqual(['inimigo'])
+      }
+    })
+
     it('fora de qualquer laço → nenhuma variável local', () => {
       const ws = new Blockly.Workspace()
       const solto = ws.newBlock('sz_val_variable')
       expect(collectScopedVariableNames(solto)).toEqual([])
       expect(collectScopedVariableNames(null)).toEqual([])
+    })
+  })
+
+  describe('Canvas 3D — declarações e parâmetros locais', () => {
+    it('registra todos os resultados nomeados dos facilitadores', () => {
+      const ws = new Blockly.Workspace()
+      ws.newBlock('sz_t3d_renderer_responsive').setFieldValue('pararResponsivo', 'CLEANUP')
+      ws.newBlock('sz_t3d_load_environment').setFieldValue('ceuHDR', 'TEXTURE')
+      ws.newBlock('sz_t3d_primitive').setFieldValue('objeto', 'MESH')
+      const terrain = ws.newBlock('sz_t3d_terrain')
+      terrain.setFieldValue('terreno', 'TERRAIN')
+      terrain.setFieldValue('alturaChao', 'HEIGHT_FN')
+      ws.newBlock('sz_t3d_road').setFieldValue('estrada', 'ROAD')
+      ws.newBlock('sz_t3d_building').setFieldValue('predio', 'BUILDING')
+      ws.newBlock('sz_t3d_city').setFieldValue('cidade', 'CITY')
+      ws.newBlock('sz_t3d_physics_setup').setFieldValue('fisica', 'WORLD')
+      ws.newBlock('sz_t3d_physics_raycast').setFieldValue('acerto', 'RESULT')
+      ws.newBlock('sz_t3d_physics_body_state').setFieldValue('estadoCorpo', 'RESULT')
+      ws.newBlock('sz_t3d_physics_stats').setFieldValue('estadoFisica', 'RESULT')
+
+      expect(collectVariables(ws)).toEqual([
+        'pararResponsivo',
+        'ceuHDR',
+        'objeto',
+        'terreno',
+        'estrada',
+        'predio',
+        'cidade',
+        'fisica',
+        'acerto',
+        'estadoCorpo',
+        'estadoFisica',
+      ])
+      expect(collectFunctionNames(ws)).toContain('alturaChao')
+    })
+
+    it('separa sucesso e falha dos carregamentos pelo ramo correto', () => {
+      const ws = new Blockly.Workspace()
+      const loader = ws.newBlock('sz_t3d_load_model')
+      loader.setFieldValue('modelo', 'PARAM')
+      loader.setFieldValue('erroModelo', 'ERROR_PARAM')
+      const success = ws.newBlock('sz_js_console_log_text')
+      const failure = ws.newBlock('sz_js_console_log_text')
+      loader.getInput('DO')?.connection?.connect(success.previousConnection as Blockly.Connection)
+      loader
+        .getInput('DO_ERROR')
+        ?.connection?.connect(failure.previousConnection as Blockly.Connection)
+
+      expect(collectScopedVariableNames(success)).toEqual(['modelo'])
+      expect(collectScopedVariableNames(failure)).toEqual(['erroModelo'])
+    })
+
+    it('expõe os dados de colisão e de área somente dentro do evento', () => {
+      const ws = new Blockly.Workspace()
+      const collision = ws.newBlock('sz_t3d_physics_on_collision')
+      collision.setFieldValue('corpoId', 'BODY_PARAM')
+      collision.setFieldValue('obstaculoId', 'COLLIDER_PARAM')
+      const collisionBody = ws.newBlock('sz_js_console_log_text')
+      collision
+        .getInput('DO')
+        ?.connection?.connect(collisionBody.previousConnection as Blockly.Connection)
+
+      const trigger = ws.newBlock('sz_t3d_physics_on_trigger')
+      trigger.setFieldValue('outroCorpo', 'BODY_PARAM')
+      trigger.setFieldValue('areaId', 'TRIGGER_PARAM')
+      trigger.setFieldValue('entrou', 'ENTERING_PARAM')
+      const triggerBody = ws.newBlock('sz_js_console_log_text')
+      trigger
+        .getInput('DO')
+        ?.connection?.connect(triggerBody.previousConnection as Blockly.Connection)
+
+      expect(collectScopedVariableNames(collisionBody)).toEqual(['corpoId', 'obstaculoId'])
+      expect(collectScopedVariableNames(triggerBody)).toEqual(['outroCorpo', 'areaId', 'entrou'])
+      expect(collectScopedVariableNames(ws.newBlock('sz_js_console_log_text'))).toEqual([])
     })
   })
 
@@ -336,6 +425,35 @@ describe('FieldNamePicker', () => {
       }
       cls.addExtends_()
       expect(kindOf(cls, 'SUPER')).toBe('class')
+    })
+  })
+
+  describe('consumidores de nomes da Programação', () => {
+    const kindOf = (type: string, field: string): string | undefined => {
+      const value = new Blockly.Workspace().newBlock(type).getField(field)
+      return value instanceof FieldNamePicker ? value.kind : undefined
+    }
+
+    it.each([
+      ['sz_js_on_event_named', 'HANDLER', 'function'],
+      ['sz_js_set_timeout_call', 'FN', 'function'],
+      ['sz_js_object_assign', 'SOURCE', 'variable'],
+      ['sz_js_object_assign', 'TARGET', 'variable'],
+      ['sz_js_append_child', 'PARENT', 'variable'],
+      ['sz_js_append_child', 'CHILD', 'variable'],
+      ['sz_val_canvas_width', 'CTX', 'variable'],
+      ['sz_val_canvas_height', 'CTX', 'variable'],
+      ['sz_js_on_click', 'TARGET', 'dom-target'],
+    ])('%s.%s usa o picker %s', (type, field, kind) => {
+      expect(kindOf(type, field)).toBe(kind)
+    })
+
+    it('mantém campos declaradores como texto editável', () => {
+      const ws = new Blockly.Workspace()
+      expect(ws.newBlock('sz_js_function').getField('NAME')).not.toBeInstanceOf(FieldNamePicker)
+      expect(ws.newBlock('sz_js_create_element').getField('NAME')).not.toBeInstanceOf(
+        FieldNamePicker,
+      )
     })
   })
 

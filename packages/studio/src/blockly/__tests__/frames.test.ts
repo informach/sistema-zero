@@ -3,6 +3,8 @@ import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
 import { generateProjectFiles } from '#generators'
 import { behaviorStatements } from '#ir'
+import { gameTwoDBlocks } from '../../official-extensions/game-2d/blocks'
+import { registerExtensionBlocks } from '../blocks'
 import { buildIRFromWorkspace, collectFlatFromWorkspace } from '../buildIR'
 import {
   blocksStateHasFrame,
@@ -98,7 +100,10 @@ describe('Blocos-container (frames) — só gera o que está DENTRO', () => {
 })
 
 describe('Migração transparente para frames (normalizeBlocksStateToFrames)', () => {
-  beforeAll(() => ensureBlocklyInitialized())
+  beforeAll(() => {
+    ensureBlocklyInitialized()
+    registerExtensionBlocks(gameTwoDBlocks)
+  })
 
   it('projeto LEGADO (blocos soltos, sem frames) migra para os 3 frames PRESERVANDO a saída', () => {
     // Estado legado: blocos soltos no topo, como antes dos frames.
@@ -287,5 +292,82 @@ describe('Migração transparente para frames (normalizeBlocksStateToFrames)', (
       },
     })
     expect(normalizeBlocksStateToFrames(current)).toBe(current)
+  })
+
+  it('migra a versão 2: reencaminha eventos e ergue preparações salvas dentro de loops', () => {
+    const previousVersion = {
+      szBehaviorAreasVersion: 2,
+      blocks: {
+        languageVersion: 0,
+        blocks: [
+          {
+            type: 'sz_frame_start',
+            id: 'inicio',
+            inputs: {
+              CHILDREN: {
+                block: { type: 'sz_js_on_click', id: 'evento-no-inicio' },
+              },
+            },
+          },
+          { type: 'sz_frame_events', id: 'eventos' },
+          {
+            type: 'sz_frame_loops',
+            id: 'loops',
+            inputs: {
+              CHILDREN: {
+                block: {
+                  type: 'sz_canvas_anim_loop',
+                  id: 'loop',
+                  inputs: {
+                    BODY: {
+                      block: { type: 'sz_canvas_setup', id: 'preparo-no-loop' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        ],
+      },
+    }
+
+    const migrated = normalizeBlocksStateToFrames(previousVersion) as {
+      szBehaviorAreasVersion: number
+      blocks: { blocks: Array<{ type: string; [key: string]: unknown }> }
+    }
+    expect(migrated.szBehaviorAreasVersion).toBe(3)
+    const byType = new Map(migrated.blocks.blocks.map((block) => [block.type, block]))
+    expect(JSON.stringify(byType.get('sz_frame_start'))).toContain('preparo-no-loop')
+    expect(JSON.stringify(byType.get('sz_frame_events'))).toContain('evento-no-inicio')
+    expect(JSON.stringify(byType.get('sz_frame_loops'))).not.toContain('preparo-no-loop')
+    expect(normalizeBlocksStateToFrames(migrated)).toBe(migrated)
+  })
+
+  it('termina a migração v2 parcialmente framada antes de gravar a versão nova', () => {
+    const previousVersion = {
+      szBehaviorAreasVersion: 2,
+      blocks: {
+        languageVersion: 0,
+        blocks: [
+          { type: 'sz_frame_start', id: 'inicio' },
+          { type: 'sz_g2d_on_key', id: 'evento-solto' },
+          { type: 'sz_g2d_update_each_frame', id: 'loop-solto' },
+        ],
+      },
+    }
+
+    const migrated = normalizeBlocksStateToFrames(previousVersion) as {
+      szBehaviorAreasVersion: number
+      blocks: { blocks: Array<{ type: string; [key: string]: unknown }> }
+    }
+    expect(migrated.szBehaviorAreasVersion).toBe(3)
+    expect(migrated.blocks.blocks.map((block) => block.type)).toEqual([
+      'sz_frame_start',
+      'sz_frame_events',
+      'sz_frame_loops',
+    ])
+    expect(JSON.stringify(migrated)).toContain('evento-solto')
+    expect(JSON.stringify(migrated)).toContain('loop-solto')
+    expect(normalizeBlocksStateToFrames(migrated)).toBe(migrated)
   })
 })

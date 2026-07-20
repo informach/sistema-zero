@@ -27,6 +27,38 @@ describe('gramática recursiva do ciclo de vida', () => {
     ).toBe(true)
   })
 
+  it('trata conversa de NPC como evento e pergunta como comando do corpo', () => {
+    const conversation: JSStatement = {
+      type: 'w3d:npcTalk',
+      name: 'Lia',
+      body: [
+        {
+          type: 'w3d:npcAsk',
+          name: 'Lia',
+          question: 'Vamos explorar?',
+          optA: 'Sim',
+          bodyA: [{ type: 'w3d:npcSay', name: 'Lia', text: 'Vamos!' }],
+          optB: 'Depois',
+          bodyB: [],
+        },
+      ],
+    }
+
+    expect(parse('events', conversation).success).toBe(true)
+    expect(parse('start', conversation).success).toBe(false)
+    expect(
+      parse('start', {
+        type: 'w3d:npcAsk',
+        name: 'Lia',
+        question: 'Fora da conversa?',
+        optA: 'A',
+        bodyA: [],
+        optB: 'B',
+        bodyB: [],
+      }).success,
+    ).toBe(false)
+  })
+
   it('recusa eventos fora de função e loops de motor aninhados', () => {
     expect(
       parse('start', {

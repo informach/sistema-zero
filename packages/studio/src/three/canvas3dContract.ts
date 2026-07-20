@@ -1,8 +1,215 @@
 /**
- * Contrato pequeno e sem dependências da categoria Canvas 3D. As camadas de IR,
- * geração e validação importam estas listas para que um macro novo não dependa
- * de copiar classificações privadas em vários arquivos.
+ * Contrato sem dependências da categoria Canvas 3D. Definições, curadoria,
+ * seletores, allowlist, geração e validação leem estes metadados para que um
+ * bloco novo não precise ser classificado à mão em cada camada.
  */
+export const CANVAS3D_BLOCK_TYPES = [
+  'sz_t3d_import',
+  'sz_t3d_new_var',
+  'sz_t3d_new',
+  'sz_t3d_import_named',
+  'sz_t3d_set_position',
+  'sz_t3d_set_rotation',
+  'sz_t3d_rotate_axis',
+  'sz_t3d_set_scale',
+  'sz_t3d_look_at',
+  'sz_t3d_set_visible',
+  'sz_t3d_add_to',
+  'sz_t3d_set_color',
+  'sz_t3d_set_background',
+  'sz_t3d_set_fog',
+  'sz_t3d_lerp_position',
+  'sz_t3d_set_shadow',
+  'sz_t3d_set_intensity',
+  'sz_t3d_renderer_size',
+  'sz_t3d_enable_shadows',
+  'sz_t3d_render',
+  'sz_t3d_mount_renderer',
+  'sz_t3d_set_matrix_at',
+  'sz_t3d_instances_dirty',
+  'sz_t3d_load_model',
+  'sz_t3d_load_sound',
+  'sz_t3d_traverse',
+  'sz_t3d_renderer_config',
+  'sz_t3d_renderer_responsive',
+  'sz_t3d_load_environment',
+  'sz_t3d_dispose_object',
+  'sz_t3d_bloom_setup',
+  'sz_t3d_render_effects',
+  'sz_t3d_particles',
+  'sz_t3d_water',
+  'sz_t3d_water_wave',
+  'sz_t3d_grass',
+  'sz_t3d_sign',
+  'sz_t3d_grass_wave',
+  'sz_t3d_primitive',
+  'sz_t3d_terrain',
+  'sz_t3d_road',
+  'sz_t3d_building',
+  'sz_t3d_city',
+  'sz_t3d_physics_setup',
+  'sz_t3d_physics_static_box',
+  'sz_t3d_physics_body',
+  'sz_t3d_physics_static_sphere',
+  'sz_t3d_physics_static_object',
+  'sz_t3d_physics_static_city',
+  'sz_t3d_physics_move',
+  'sz_t3d_physics_jump',
+  'sz_t3d_physics_trigger',
+  'sz_t3d_physics_step',
+  'sz_t3d_physics_velocity',
+  'sz_t3d_physics_impulse',
+  'sz_t3d_physics_teleport',
+  'sz_t3d_physics_remove',
+  'sz_t3d_physics_clear',
+  'sz_t3d_physics_on_collision',
+  'sz_t3d_physics_on_trigger',
+  'sz_t3d_physics_raycast',
+  'sz_t3d_physics_body_state',
+  'sz_t3d_physics_stats',
+] as const
+
+export type Canvas3DBlockType = (typeof CANVAS3D_BLOCK_TYPES)[number]
+
+/** Facilitadores oferecidos a partir do intermediário 3D. */
+export const CANVAS3D_INTERMEDIATE_BLOCK_TYPES: readonly Canvas3DBlockType[] = [
+  'sz_t3d_set_position',
+  'sz_t3d_set_rotation',
+  'sz_t3d_rotate_axis',
+  'sz_t3d_set_scale',
+  'sz_t3d_look_at',
+  'sz_t3d_lerp_position',
+  'sz_t3d_set_visible',
+  'sz_t3d_add_to',
+  'sz_t3d_set_color',
+  'sz_t3d_set_background',
+  'sz_t3d_set_fog',
+  'sz_t3d_set_shadow',
+  'sz_t3d_set_intensity',
+  'sz_t3d_renderer_size',
+  'sz_t3d_renderer_config',
+  'sz_t3d_renderer_responsive',
+  'sz_t3d_enable_shadows',
+  'sz_t3d_mount_renderer',
+  'sz_t3d_render',
+  'sz_t3d_load_model',
+  'sz_t3d_load_environment',
+  'sz_t3d_load_sound',
+  'sz_t3d_traverse',
+  'sz_t3d_dispose_object',
+  'sz_t3d_particles',
+  'sz_t3d_water',
+  'sz_t3d_water_wave',
+  'sz_t3d_grass',
+  'sz_t3d_grass_wave',
+  'sz_t3d_sign',
+  'sz_t3d_primitive',
+  'sz_t3d_terrain',
+  'sz_t3d_road',
+  'sz_t3d_building',
+  'sz_t3d_city',
+  'sz_t3d_physics_setup',
+  'sz_t3d_physics_static_box',
+  'sz_t3d_physics_static_sphere',
+  'sz_t3d_physics_static_object',
+  'sz_t3d_physics_static_city',
+  'sz_t3d_physics_body',
+  'sz_t3d_physics_move',
+  'sz_t3d_physics_jump',
+  'sz_t3d_physics_trigger',
+  'sz_t3d_physics_step',
+  'sz_t3d_physics_velocity',
+  'sz_t3d_physics_impulse',
+  'sz_t3d_physics_teleport',
+  'sz_t3d_physics_remove',
+  'sz_t3d_physics_clear',
+  'sz_t3d_physics_on_collision',
+  'sz_t3d_physics_on_trigger',
+  'sz_t3d_physics_raycast',
+  'sz_t3d_physics_body_state',
+  'sz_t3d_physics_stats',
+]
+
+export const CANVAS3D_START_ONLY_BLOCK_TYPES: readonly Canvas3DBlockType[] = [
+  'sz_t3d_import',
+  'sz_t3d_import_named',
+]
+
+/** Blocos que mantêm recursos e, portanto, não podem ser recriados por quadro. */
+export const CANVAS3D_RESOURCE_CREATOR_BLOCK_TYPES: readonly Canvas3DBlockType[] = [
+  'sz_t3d_renderer_responsive',
+  'sz_t3d_load_environment',
+  'sz_t3d_load_model',
+  'sz_t3d_load_sound',
+  'sz_t3d_bloom_setup',
+  'sz_t3d_particles',
+  'sz_t3d_water',
+  'sz_t3d_grass',
+  'sz_t3d_sign',
+  'sz_t3d_primitive',
+  'sz_t3d_terrain',
+  'sz_t3d_road',
+  'sz_t3d_building',
+  'sz_t3d_city',
+  'sz_t3d_physics_setup',
+  'sz_t3d_physics_static_box',
+  'sz_t3d_physics_static_sphere',
+  'sz_t3d_physics_static_object',
+  'sz_t3d_physics_static_city',
+  'sz_t3d_physics_body',
+  'sz_t3d_physics_trigger',
+]
+
+/** Campos que introduzem nomes globais visíveis nos seletores. */
+export const CANVAS3D_VARIABLE_DECLARATION_FIELDS: Readonly<
+  Partial<Record<Canvas3DBlockType, readonly string[]>>
+> = {
+  sz_t3d_new_var: ['VARNAME'],
+  sz_t3d_renderer_responsive: ['CLEANUP'],
+  sz_t3d_load_environment: ['TEXTURE'],
+  sz_t3d_bloom_setup: ['COMPOSER'],
+  sz_t3d_particles: ['PARTICLES'],
+  sz_t3d_water: ['WATER'],
+  sz_t3d_grass: ['GRASS'],
+  sz_t3d_sign: ['SIGN'],
+  sz_t3d_primitive: ['MESH'],
+  sz_t3d_terrain: ['TERRAIN'],
+  sz_t3d_road: ['ROAD'],
+  sz_t3d_building: ['BUILDING'],
+  sz_t3d_city: ['CITY'],
+  sz_t3d_physics_setup: ['WORLD'],
+  sz_t3d_physics_raycast: ['RESULT'],
+  sz_t3d_physics_body_state: ['RESULT'],
+  sz_t3d_physics_stats: ['RESULT'],
+}
+
+export const CANVAS3D_FUNCTION_DECLARATION_FIELDS: Readonly<
+  Partial<Record<Canvas3DBlockType, readonly string[]>>
+> = {
+  sz_t3d_terrain: ['HEIGHT_FN'],
+}
+
+export type Canvas3DBranchBinders = Readonly<Record<string, readonly string[]>>
+
+/** Parâmetros locais de valor, separados pela boca que define seu escopo. */
+export const CANVAS3D_VARIABLE_BRANCH_BINDERS: Readonly<
+  Partial<Record<Canvas3DBlockType, Canvas3DBranchBinders>>
+> = {
+  sz_t3d_traverse: { DO: ['PARAM'] },
+  sz_t3d_load_model: { DO: ['PARAM'], DO_ERROR: ['ERROR_PARAM'] },
+  sz_t3d_load_sound: { DO: ['PARAM'], DO_ERROR: ['ERROR_PARAM'] },
+  sz_t3d_physics_on_collision: { DO: ['BODY_PARAM', 'COLLIDER_PARAM'] },
+  sz_t3d_physics_on_trigger: { DO: ['BODY_PARAM', 'TRIGGER_PARAM', 'ENTERING_PARAM'] },
+}
+
+/** Parâmetros que também representam um objeto 3D dentro do ramo. */
+export const CANVAS3D_OBJECT_BRANCH_BINDERS: Readonly<
+  Partial<Record<Canvas3DBlockType, Canvas3DBranchBinders>>
+> = {
+  sz_t3d_traverse: { DO: ['PARAM'] },
+  sz_t3d_load_model: { DO: ['PARAM'] },
+}
+
 export const CANVAS3D_SEMANTIC_STATEMENT_TYPES = [
   'rendererConfig',
   'rendererResponsive',
@@ -44,6 +251,7 @@ export const CANVAS3D_SEMANTIC_STATEMENT_TYPES = [
 ] as const
 
 export const CANVAS3D_RESOURCE_CREATOR_TYPES: ReadonlySet<string> = new Set([
+  'rendererResponsive',
   'bloomSetup',
   'particlesSetup',
   'waterSetup',
@@ -56,4 +264,11 @@ export const CANVAS3D_RESOURCE_CREATOR_TYPES: ReadonlySet<string> = new Set([
   'citySetup',
   'environmentLoad',
   'loaderLoad',
+  'physicsLiteSetup',
+  'physicsLiteStaticBox',
+  'physicsLiteStaticSphere',
+  'physicsLiteStaticObject',
+  'physicsLiteStaticCity',
+  'physicsLiteBody',
+  'physicsLiteTrigger',
 ])

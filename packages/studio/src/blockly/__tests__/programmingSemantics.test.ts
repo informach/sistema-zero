@@ -75,6 +75,64 @@ describe('contextos semânticos de Programação', () => {
     valid.dispose()
   })
 
+  it('restaura relatores de parâmetros não padrão sem desconectar a árvore', () => {
+    const restored = workspace()
+    Blockly.serialization.workspaces.load(
+      {
+        blocks: {
+          languageVersion: 0,
+          blocks: [
+            {
+              type: 'sz_frame_start',
+              inputs: {
+                CHILDREN: {
+                  block: {
+                    type: 'sz_js_function',
+                    fields: { NAME: 'calcular' },
+                    extraState: { params: [{ name: 'total', id: 'param-total' }] },
+                    inputs: {
+                      BODY: {
+                        block: {
+                          type: 'sz_js_console_log_value',
+                          inputs: {
+                            VALUE: {
+                              block: { type: 'sz_val_arg', fields: { NAME: 'total' } },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      },
+      restored,
+    )
+
+    const [argument] = restored.getBlocksByType('sz_val_arg', false)
+    expect(argument).toBeDefined()
+    expect(argument?.getFieldValue('NAME')).toBe('total')
+    expect(argument?.getSurroundParent()?.type).toBe('sz_js_console_log_value')
+    restored.dispose()
+  })
+
+  it('continua rejeitando interativamente um relator que não pertence à função', () => {
+    const invalid = workspace()
+    const fn = invalid.newBlock('sz_js_function')
+    fn.loadExtraState?.({ params: [{ name: 'total', id: 'param-total' }] })
+    const log = invalid.newBlock('sz_js_console_log_value')
+    const argument = invalid.newBlock('sz_val_arg')
+    argument.setFieldValue('outro', 'NAME')
+
+    expect(connectValue(log, 'VALUE', argument)).toBe(true)
+    expect(connectStatement(fn, 'BODY', log)).toBe(true)
+    expect(connectStatement(invalid.newBlock('sz_frame_start'), 'CHILDREN', fn)).toBe(false)
+    invalid.dispose()
+  })
+
   it('método do evento entra em listener, nunca numa árvore ancorada no início', () => {
     const valid = workspace()
     const click = valid.newBlock('sz_js_on_click')
@@ -126,16 +184,39 @@ describe('contextos semânticos de Programação', () => {
     eventInsideLoop.dispose()
   })
 
-  it('mantém inscrições de evento fora de funções e laços', () => {
+  it('aceita inscrições encapsuladas em funções, mas não dentro de laços', () => {
     const insideFunction = workspace()
     const fn = insideFunction.newBlock('sz_js_function')
-    expect(connectStatement(fn, 'BODY', insideFunction.newBlock('sz_js_on_click'))).toBe(false)
+    expect(connectStatement(fn, 'BODY', insideFunction.newBlock('sz_js_on_click'))).toBe(true)
     insideFunction.dispose()
 
     const insideLoop = workspace()
     const repeat = insideLoop.newBlock('sz_js_repeat')
     expect(connectStatement(repeat, 'DO', insideLoop.newBlock('sz_js_on_click'))).toBe(false)
     insideLoop.dispose()
+  })
+
+  it('permite this em função usada como handler e o recusa fora de função', () => {
+    const valid = workspace()
+    const fn = valid.newBlock('sz_js_function')
+    fn.setFieldValue('tratarClique', 'NAME')
+    const log = valid.newBlock('sz_js_console_log_value')
+    expect(connectValue(log, 'VALUE', valid.newBlock('sz_val_this'))).toBe(true)
+    expect(connectStatement(fn, 'BODY', log)).toBe(true)
+    expect(connectStatement(valid.newBlock('sz_frame_start'), 'CHILDREN', fn)).toBe(true)
+
+    const registration = valid.newBlock('sz_js_on_event_named')
+    registration.setFieldValue('tratarClique', 'HANDLER')
+    expect(connectStatement(valid.newBlock('sz_frame_events'), 'CHILDREN', registration)).toBe(true)
+    valid.dispose()
+
+    const invalid = workspace()
+    const topLevelLog = invalid.newBlock('sz_js_console_log_value')
+    expect(connectValue(topLevelLog, 'VALUE', invalid.newBlock('sz_val_this'))).toBe(true)
+    expect(connectStatement(invalid.newBlock('sz_frame_start'), 'CHILDREN', topLevelLog)).toBe(
+      false,
+    )
+    invalid.dispose()
   })
 
   it('await só entra em método assíncrono', () => {

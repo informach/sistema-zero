@@ -112,7 +112,11 @@ Enxames & som (Fase 8 — grupos genéricos de cópias + áudio):
 - forEachInSwarm(enxame, (item) => {...}): repete os blocos p/ cada cópia (a da vez é "item"); itera ao contrário, então pode remover dentro. countSwarm(enxame): quantas cópias tem.
 - removeFromSwarm(enxame, item): tira uma cópia. pruneSwarm(enxame, "x"|"y"|"z", min, max): limpa as cópias que saíram dos limites (higiene de GPU).
 - playNote(freqHz, ms): um bip (mais Hz = mais agudo). playEffect("coin"|"jump"|"explosion"|"hit"): efeito pronto. Som só toca DEPOIS de um clique/tecla (exigência do navegador).
-- Eventos: use os blocos ⚡ Eventos do NÚCLEO (quando apertar tecla / a cada N segundos); p/ colisão, "se collides(a, b)" dentro do "A cada frame" — a extensão 3D não tem blocos de evento próprios.
+- Áreas: crie cena e recursos em **⚙️ Ao iniciar**; use os chapéus de tecla/clique
+  do núcleo em **⚡ Quando acontecer — Eventos**; coloque “A cada frame 3D” e “A
+  cada N segundos” em **🔁 Enquanto estiver rodando — Loops**. Para colisão, use
+  "se collides(a, b)" dentro do "A cada frame" — a extensão 3D não tem chapéus
+  de evento próprios.
 
 Kit "Empilhar" (torre de blocos / Stack — mundo y-up):
 - createStackScene(canvasId) -> world: cena + câmera isométrica que sobe com a torre + luz.

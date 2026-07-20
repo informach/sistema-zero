@@ -169,10 +169,10 @@ export class FieldClassPicker extends Blockly.FieldTextInput {
 
     const wrap = document.createElement('div')
     wrap.style.cssText =
-      'padding:8px;width:250px;background:var(--color-sz-panel);font-family:Inter,system-ui,sans-serif;'
+      'padding:8px;width:min(250px,calc(100vw - 24px));background:var(--color-sz-panel);font-family:Nunito,system-ui,sans-serif;'
 
     const listBox = document.createElement('div')
-    listBox.style.cssText = 'max-height:260px;overflow:auto;'
+    listBox.style.cssText = 'max-height:min(260px,calc(100vh - 150px));overflow:auto;'
     for (const grp of COMMON_CLASSES) {
       const head = document.createElement('div')
       head.textContent = grp.group
@@ -186,7 +186,7 @@ export class FieldClassPicker extends Blockly.FieldTextInput {
         btn.type = 'button'
         btn.textContent = item.name
         btn.style.cssText =
-          'padding:4px 8px;border:1px solid var(--color-sz-border);border-radius:6px;background:var(--color-sz-bg);color:var(--color-sz-fg);cursor:pointer;font-size:11px;'
+          'min-width:44px;min-height:45px;padding:8px;border:1px solid var(--color-sz-border);border-radius:8px;background:var(--color-sz-bg);color:var(--color-sz-fg);cursor:pointer;font-size:12px;'
         btn.addEventListener('click', () => this.pick(item.name, item.ns))
         grid.appendChild(btn)
       }
@@ -205,12 +205,12 @@ export class FieldClassPicker extends Blockly.FieldTextInput {
     input.placeholder = 'outra classe'
     input.spellcheck = false
     input.style.cssText =
-      'flex:1;min-width:0;padding:3px 6px;border:1px solid var(--color-sz-border);background:var(--color-sz-bg);color:var(--color-sz-fg);border-radius:4px;font-size:12px;font-family:"JetBrains Mono",ui-monospace,monospace;outline:none;'
+      'flex:1;min-width:0;min-height:44px;padding:8px;border:1px solid var(--color-sz-border);background:var(--color-sz-bg);color:var(--color-sz-fg);border-radius:6px;font-size:12px;font-family:"JetBrains Mono",ui-monospace,monospace;outline:none;'
     const ok = document.createElement('button')
     ok.type = 'button'
     ok.textContent = 'OK'
     ok.style.cssText =
-      'padding:3px 10px;background:var(--color-sz-accent);color:var(--color-sz-bg);border:0;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;'
+      'min-width:44px;min-height:45px;padding:8px 10px;background:var(--color-sz-accent);color:var(--color-sz-bg);border:0;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;'
     const apply = () => {
       // Texto livre: a criança pode escrever só o nome de uma classe conhecida
       // (`Scene`) — completamos com o namespace certo; senão vale como digitado

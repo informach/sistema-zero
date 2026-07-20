@@ -94,6 +94,9 @@ export interface BuildPreviewDocInput {
  *   sem allow-same-origin (data: URLs são opacas e self-contained).
  */
 export function buildPreviewDoc(input: BuildPreviewDocInput): string {
+  const scriptNonce = createScriptNonce()
+  const trustedScriptTag = (code: string, attrs: Record<string, string> = {}): string =>
+    scriptTag(code, { ...attrs, nonce: scriptNonce })
   const userHtml = input.html.trim()
   const split = splitHtml(userHtml)
   // `<script>` INLINE no HTML do aluno (index.html) também passa pela guarda de
@@ -111,7 +114,7 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   // aluno roda durante o parse, antes do module da extensão → SZGame3D undefined.)
   const needsModules = Object.keys(input.extensionImports ?? {}).length > 0
   const extScripts = (input.extensionScripts ?? [])
-    .map((s) => scriptTag(s, needsModules ? { type: 'module' } : {}))
+    .map((s) => trustedScriptTag(s, needsModules ? { type: 'module' } : {}))
     .join('\n')
   const safeExtraFiles = (input.extraFiles ?? [])
     .map((file) => {
@@ -174,7 +177,12 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   // válido (`\/` ≡ `/`) e o tokenizer HTML não fecha o <script>.
   const importmapTag =
     Object.keys(importmap).length > 0
-      ? `<script type="importmap">${JSON.stringify({ imports: importmap }).replace(/<\/script/gi, '<\\/script')}</script>`
+      ? trustedScriptTag(
+          JSON.stringify({ imports: importmap }).replace(/<\/script/gi, '<\\/script'),
+          {
+            type: 'importmap',
+          },
+        )
       : ''
 
   // O CSS canônico entra como <style> inline para não depender de fetch
@@ -219,7 +227,9 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
     // Console apontar o BLOCO culpado só para erro do código dele (a linha do
     // onerror é relativa ao script externo, e o instrumentLoops não insere
     // quebras de linha — o número de linha bate com o script.js exibido).
-    const tagTail = scriptTag(`window.__SZ_USER_JS_TAIL=${JSON.stringify(dataUrl.slice(-64))};`)
+    const tagTail = trustedScriptTag(
+      `window.__SZ_USER_JS_TAIL=${JSON.stringify(dataUrl.slice(-64))};`,
+    )
     if (jsNeedsModule) {
       userScript = `${tagTail}\n${scriptTag('', { type: 'module', src: dataUrl })}`
     } else if (jsNeedsDeferredClassic) {
@@ -242,25 +252,26 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   const cspMeta = buildPreviewCSPMetaTag({
     fetchAllowedOrigins: input.fetchAllowedOrigins,
     scriptAllowedOrigins: extensionImportOrigins(input.extensionImports),
+    scriptNonce,
   })
   const permissionGuard = buildPermissionGuardRuntime({
     granted: input.installedPermissions,
     fetchAllowedOrigins: input.fetchAllowedOrigins,
   })
-  const permissionGuardTag = permissionGuard ? scriptTag(permissionGuard) : ''
-  const loopGuardTag = scriptTag(buildLoopGuardRuntime(input.loopBudgetMs))
+  const permissionGuardTag = permissionGuard ? trustedScriptTag(permissionGuard) : ''
+  const loopGuardTag = trustedScriptTag(buildLoopGuardRuntime(input.loopBudgetMs))
   // Guarda de modais (1st-party): limita a taxa de alert/confirm/prompt para uma
   // enxurrada não travar a aba — sem REMOVER a permissão (`alert` é bloco ensinado,
   // o `allow-modals` continua). Vem DEPOIS do loopGuard e ANTES de extensões/aluno.
-  const modalGuardTag = scriptTag(buildModalGuardRuntime())
+  const modalGuardTag = trustedScriptTag(buildModalGuardRuntime())
   // Bridge de entrada: window.__szInput (teclado + ponteiro) — sempre presente,
   // para os blocos "a tecla … está apertada?" e "x/y do mouse/dedo" do caminho
   // "na mão" funcionarem em qualquer projeto, sem a extensão Jogo 2D.
-  const inputBridgeTag = scriptTag(buildInputBridgeRuntime())
+  const inputBridgeTag = trustedScriptTag(buildInputBridgeRuntime())
   // Bridge de armazenamento: shima localStorage/sessionStorage (a origem opaca do
   // sandbox os faria LANÇAR) e espelha o store `local` ao parent. Vem antes do
   // importmap/extensões/aluno para que `localStorage` já exista quando rodarem.
-  const storageBridgeTag = scriptTag(
+  const storageBridgeTag = trustedScriptTag(
     buildStorageBridgeRuntime({
       localSnapshot: input.localStorageSnapshot,
       parentOrigin: input.parentOrigin,
@@ -276,7 +287,9 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   const has3D = input.models3d && Object.keys(input.models3d).length > 0
   const assetsBridgeTag =
     hasAssets || hasSounds || has3D
-      ? scriptTag(buildAssetsRuntime(input.assets, input.assetsMeta, input.sounds, input.models3d))
+      ? trustedScriptTag(
+          buildAssetsRuntime(input.assets, input.assetsMeta, input.sounds, input.models3d),
+        )
       : ''
 
   return `<!doctype html>
@@ -284,7 +297,7 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
 <head>
 ${cspMeta}
 <meta charset="UTF-8" />
-${scriptTag(buildInterceptorScript(input.parentOrigin))}
+${trustedScriptTag(buildInterceptorScript(input.parentOrigin))}
 ${permissionGuardTag}
 ${loopGuardTag}
 ${modalGuardTag}
@@ -412,6 +425,12 @@ function scriptTag(code: string, attrs: Record<string, string> = {}): string {
     .map(([name, value]) => ` ${name}="${escapeAttr(value)}"`)
     .join('')
   return `<script${attrText}>${escapeScriptContent(code)}</script>`
+}
+
+function createScriptNonce(): string {
+  const bytes = new Uint8Array(18)
+  globalThis.crypto.getRandomValues(bytes)
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')
 }
 
 function base64Encode(s: string): string {

@@ -100,6 +100,17 @@ describe('resolveBlockLevel — amostras representativas', () => {
     expect(resolveBlockLevel('sz_js_event_method')).toBe('avancado-2d')
   })
 
+  it('oferece cada evento iniciante junto do valor que seu texto ensina a usar', () => {
+    for (const [eventType, companionType] of [
+      ['sz_js_on_key', 'sz_val_event_key'],
+      ['sz_js_on_click_anywhere', 'sz_val_event_pos'],
+      ['sz_js_on_fullscreen_change', 'sz_val_is_fullscreen'],
+    ] as const) {
+      expect(resolveBlockLevel(eventType)).toBe('iniciante-2d')
+      expect(resolveBlockLevel(companionType)).toBe(resolveBlockLevel(eventType))
+    }
+  })
+
   it('Mundo 3D = intermediario-3d (prefixo inteiro)', () => {
     expect(resolveBlockLevel('sz_w3d_spawn_car')).toBe('intermediario-3d')
     expect(resolveBlockLevel('sz_w3d_qualquer')).toBe('intermediario-3d')

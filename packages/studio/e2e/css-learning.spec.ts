@@ -66,11 +66,11 @@ test.describe('Aprender CSS — resultado visual e Ponte', () => {
     await expect(backgroundBlock).toBeVisible({ timeout: 15_000 })
 
     await backgroundBlock.locator('text.blocklyText', { hasText: '#caixa' }).first().click()
-    const picker = page.locator('.blocklyDropDownDiv').filter({ hasText: '#caixa' })
-    await expect(picker.getByRole('button', { name: '🎯 body', exact: true })).toBeVisible()
-    await expect(picker.getByRole('button', { name: '🎯 #caixa', exact: true })).toBeVisible()
-    await expect(picker.getByRole('button', { name: '🎯 .cartao', exact: true })).toBeVisible()
-    await picker.getByRole('button', { name: '🎯 #caixa', exact: true }).click()
+    const picker = page.getByRole('group', { name: 'Escolher body, #caixa ou .cartao' })
+    await expect(picker.getByRole('button', { name: 'body', exact: true })).toBeVisible()
+    await expect(picker.getByRole('button', { name: '#caixa', exact: true })).toBeVisible()
+    await expect(picker.getByRole('button', { name: '.cartao', exact: true })).toBeVisible()
+    await picker.getByRole('button', { name: '#caixa', exact: true }).click()
 
     await page.getByRole('button', { name: 'Ponte' }).click()
     await page.getByRole('button', { name: 'style.css' }).first().click()

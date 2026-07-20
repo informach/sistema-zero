@@ -9,6 +9,7 @@ import {
   statementIsExtension,
 } from '#ir'
 import { findExtension, OFFICIAL_CATALOG } from '#official-extensions'
+import { findExtensionConflict } from '../extensions/compatibility'
 import { type ProjectStoreApi, useProjectStore } from './projectStore'
 
 export { findExtension, OFFICIAL_CATALOG }
@@ -26,10 +27,13 @@ export function installExtension(
   store: ProjectStoreApi = useProjectStore,
 ): { ok: true } | { ok: false; conflictId: string } {
   const installed = store.getState().project?.installedExtensions ?? []
-  const conflictId = installed.find((entry) => {
-    if (ext.conflictsWith?.includes(entry.id)) return true
-    return findExtension(entry.id)?.conflictsWith?.includes(ext.manifest.id) === true
-  })?.id
+  const conflictId = findExtensionConflict(
+    { id: ext.manifest.id, conflictsWith: ext.conflictsWith },
+    installed.map((entry) => ({
+      id: entry.id,
+      conflictsWith: findExtension(entry.id)?.conflictsWith,
+    })),
+  )
   if (conflictId) return { ok: false, conflictId }
   registerExtension(ext)
   store.getState().installExtension(ext.manifest.id, ext.manifest.version)

@@ -21,12 +21,86 @@ export interface BlockContract {
   migration: BlockMigration
 }
 
+/**
+ * Posicionamentos explícitos reutilizados pelas categorias oficiais. Manter
+ * estes objetos aqui evita que cada extensão invente uma variação incompatível
+ * do mesmo contrato pedagógico.
+ */
+export const START_ONLY_COMMAND_PLACEMENT: BlockPlacement = Object.freeze({
+  root: ['start'] as const,
+  nested: [] as const,
+  role: 'command',
+})
+
+export const START_ONLY_DECLARATION_PLACEMENT: BlockPlacement = Object.freeze({
+  root: ['start'] as const,
+  nested: [] as const,
+  role: 'declaration',
+})
+
+/**
+ * Recursos podem nascer no início, em eventos ou em funções, mas não diretamente
+ * no corpo executado a cada quadro. O schema mantém a mesma regra em profundidade.
+ */
+export const RESOURCE_CREATOR_PLACEMENT: BlockPlacement = Object.freeze({
+  root: ['start'] as const,
+  nested: [
+    'statement',
+    'event-body',
+    'function-body',
+    'async-function-body',
+    'derived-constructor-body',
+    'derived-method-body',
+  ] as const,
+  role: 'command',
+})
+
+export const EVENT_ROOT_PLACEMENT: BlockPlacement = Object.freeze({
+  root: ['events'] as const,
+  nested: ['function-body'] as const,
+  role: 'event',
+})
+
+export const EVENT_BODY_COMMAND_PLACEMENT: BlockPlacement = Object.freeze({
+  root: [] as const,
+  nested: ['event-body'] as const,
+  role: 'command',
+})
+
+/**
+ * Aplica um contrato explícito e falha cedo quando a lista contiver um typo.
+ * Os arrays de blocos são a fonte da verdade; esta função só evita repetir o
+ * mesmo objeto `placement` dezenas de vezes em catálogos grandes.
+ */
+export function applyPlacementToBlockTypes(
+  definitions: readonly BlockDefinition[],
+  blockTypes: readonly string[],
+  placement: BlockPlacement,
+): void {
+  const pending = new Set(blockTypes)
+  for (const definition of definitions) {
+    if (!pending.delete(definition.type)) continue
+    definition.placement = placement
+  }
+  if (pending.size > 0) {
+    throw new Error(
+      `Contrato de posicionamento referencia blocos ausentes: ${[...pending].join(', ')}`,
+    )
+  }
+}
+
 export const FRAME_STRUCTURE = 'sz_frame_structure'
 export const FRAME_APPEARANCE = 'sz_frame_appearance'
 export const FRAME_BEHAVIOR_LEGACY = 'sz_frame_behavior'
 export const FRAME_START = 'sz_frame_start'
 export const FRAME_EVENTS = 'sz_frame_events'
 export const FRAME_LOOPS = 'sz_frame_loops'
+
+export const BEHAVIOR_AREA_LABELS = Object.freeze({
+  start: '⚙️ Ao iniciar',
+  events: '⚡ Quando acontecer — Eventos',
+  loops: '🔁 Enquanto estiver rodando — Loops',
+})
 
 export const PROJECT_AREA_TYPES = new Set<string>([
   FRAME_STRUCTURE,
@@ -186,6 +260,9 @@ function materializeStatementInputs(definition: BlockDefinition): BlockDefinitio
     ...(definition.args0 ? { args0: rewrite(definition.args0) } : {}),
     ...(definition.args1 ? { args1: rewrite(definition.args1) } : {}),
     ...(definition.args2 ? { args2: rewrite(definition.args2) } : {}),
+    ...(definition.args3 ? { args3: rewrite(definition.args3) } : {}),
+    ...(definition.args4 ? { args4: rewrite(definition.args4) } : {}),
+    ...(definition.args5 ? { args5: rewrite(definition.args5) } : {}),
   }
 }
 
@@ -247,7 +324,7 @@ export function inferBlockContract(definition: BlockDefinition): BlockContract {
   } else if (!placement && LOOP_BODY_ONLY_BLOCK_TYPES.has(type)) {
     placement = { root: [], nested: ['loop-body'], role: 'loop', phase: 'update' }
   } else if (!placement && isEventBlockType(type)) {
-    placement = { root: ['events'], nested: [], role: 'event' }
+    placement = EVENT_ROOT_PLACEMENT
   } else if (!placement && START_DECLARATION_BLOCK_TYPES.has(type)) {
     placement = { root: ['start'], nested: [], role: 'declaration' }
   } else if (!placement && EVENT_BODY_ONLY_BLOCK_TYPES.has(type)) {

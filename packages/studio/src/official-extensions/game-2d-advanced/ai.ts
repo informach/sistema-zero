@@ -522,9 +522,11 @@ API global injetada como window.SZGameKit:
 REGRAS DE OURO ao gerar código:
 - Velocidade SEMPRE × dt (px/segundo), nunca px/quadro.
 - onDraw: começar com drawBackground e desenhar TUDO de novo (o quadro zera).
-- Preparação de partida vive em Ao iniciar. Botões "Jogar"/"Jogar de novo"
+- Preparação de partida vive em **⚙️ Ao iniciar**. Chapéus ficam em **⚡ Quando acontecer — Eventos**;
+  onUpdate, onDraw, onDrawHud e cadências ficam em **🔁 Enquanto estiver rodando — Loops**.
+  Botões "Jogar"/"Jogar de novo"
   chamam restartGame(); onEnterState serve para reagir à entrada sem apagar dados.
-- setup vem antes das demais declarações em Ao iniciar. O boot é automático.
+- setup vem antes das demais declarações em **⚙️ Ao iniciar**. O boot é automático.
 - Posição aleatória: Math.random() * (SZGameKit.width() - larguraDoPersonagem).
 - Dano no jogador: gatear com isInvincible (senão empurrão+som repetem 60x/s
   durante o piscar). Morte de inimigo: "se isDead(item): burst + recycle +

@@ -1,5 +1,6 @@
 import type { BlockLevel } from '#core'
 import { HTML_ADVANCED_BLOCK_TYPES, HTML_INTERMEDIATE_BLOCK_TYPES } from '../html/catalog'
+import { CANVAS3D_INTERMEDIATE_BLOCK_TYPES } from '../three/canvas3dContract'
 
 /**
  * Nível de dificuldade POR BLOCO (curadoria da paleta do Estúdio) — a fonte da
@@ -17,8 +18,8 @@ import { HTML_ADVANCED_BLOCK_TYPES, HTML_INTERMEDIATE_BLOCK_TYPES } from '../htm
  * - **Intermediário 3D** = Mundo 3D (mundo aberto dirigível, blocos "mágicos").
  * - **Avançado 2D** = baixo nível / expert em 2D (classes/OOP, objetos, código
  *   cru, física manual, trigonometria, vetores, dados e peças internas de motor).
- * - **Avançado 3D** = Jogo 3D Avançado (`sz_g3k_*`) e Canvas 3D three.js cru
- *   (`sz_t3d_*`).
+ * - **Avançado 3D** = Jogo 3D Avançado (`sz_g3k_*`) e as peças técnicas do
+ *   Canvas 3D; seus facilitadores visuais entram no Intermediário 3D.
  *
  * É CUMULATIVO na escada (cada degrau inclui os anteriores — o gate usa
  * `isLevelWithin`; note que os degraus "2D" a partir do int-2d INCLUEM o
@@ -29,8 +30,8 @@ import { HTML_ADVANCED_BLOCK_TYPES, HTML_INTERMEDIATE_BLOCK_TYPES } from '../htm
  * ⚠️ Os frames (🗂️ Áreas do projeto) NÃO entram aqui — são sempre visíveis.
  * ⚠️ Adicionou um bloco? Decida o degrau: core/g2d intermediário → `INTERMEDIARIO_2D`;
  * core/g2d avançado → `AVANCADO_2D`; senão os
- * defaults por prefixo decidem (g3d→ini-3d, gk→int-2d, w3d→int-3d, g3k/t3d→av-3d,
- * resto→ini-2d) — o teste de conformidade cobra.
+ * defaults por prefixo decidem (g3d→ini-3d, gk→int-2d, w3d→int-3d,
+ * g3k/t3d→av-3d, resto→ini-2d) — o teste de conformidade cobra.
  */
 
 const INTERMEDIARIO_2D: ReadonlySet<string> = new Set<string>([
@@ -77,7 +78,6 @@ const INTERMEDIARIO_2D: ReadonlySet<string> = new Set<string>([
   'sz_css_background_image',
   // DOM — evento por nome + busca/leitura/escrita de elementos (getters/setters)
   'sz_js_on_event_named',
-  'sz_val_is_fullscreen',
   'sz_js_get_element_by_id',
   'sz_val_get_element',
   'sz_val_query_select',
@@ -120,8 +120,6 @@ const INTERMEDIARIO_2D: ReadonlySet<string> = new Set<string>([
   'sz_val_canvas_height',
   'sz_val_random_float',
   'sz_val_date_part',
-  'sz_val_event_pos',
-  'sz_val_event_key',
   'sz_val_math_pi',
   'sz_val_color_hsl',
   'sz_val_this',
@@ -290,15 +288,11 @@ const AVANCADO_2D: ReadonlySet<string> = new Set<string>([
   'sz_js_constructor',
   'sz_js_class_method',
   'sz_js_new_var',
-  'sz_js_call_method',
-  'sz_val_call_method',
   'sz_val_new',
   'sz_js_super_ctor',
   'sz_js_super_method',
   'sz_js_set_this_prop',
-  'sz_js_set_prop',
   'sz_val_this_prop',
-  'sz_val_get_prop',
   // Objetos — todos
   'sz_val_object',
   'sz_val_object_op',
@@ -415,63 +409,7 @@ const AVANCADO_3D: ReadonlySet<string> = new Set<string>()
 
 // Canvas 3D de alto nível: receitas completas e verbos visuais podem aparecer
 // junto do Mundo 3D. Construtores/imports/matrizes continuam no avançado-3d.
-const INTERMEDIARIO_3D: ReadonlySet<string> = new Set<string>([
-  'sz_t3d_set_position',
-  'sz_t3d_set_rotation',
-  'sz_t3d_rotate_axis',
-  'sz_t3d_set_scale',
-  'sz_t3d_look_at',
-  'sz_t3d_lerp_position',
-  'sz_t3d_set_visible',
-  'sz_t3d_add_to',
-  'sz_t3d_set_color',
-  'sz_t3d_set_background',
-  'sz_t3d_set_fog',
-  'sz_t3d_set_shadow',
-  'sz_t3d_set_intensity',
-  'sz_t3d_renderer_size',
-  'sz_t3d_renderer_config',
-  'sz_t3d_renderer_responsive',
-  'sz_t3d_enable_shadows',
-  'sz_t3d_mount_renderer',
-  'sz_t3d_render',
-  'sz_t3d_load_model',
-  'sz_t3d_load_environment',
-  'sz_t3d_load_sound',
-  'sz_t3d_traverse',
-  'sz_t3d_dispose_object',
-  'sz_t3d_particles',
-  'sz_t3d_water',
-  'sz_t3d_water_wave',
-  'sz_t3d_grass',
-  'sz_t3d_grass_wave',
-  'sz_t3d_sign',
-  'sz_t3d_primitive',
-  'sz_t3d_terrain',
-  'sz_t3d_road',
-  'sz_t3d_building',
-  'sz_t3d_city',
-  'sz_t3d_physics_setup',
-  'sz_t3d_physics_static_box',
-  'sz_t3d_physics_static_sphere',
-  'sz_t3d_physics_static_object',
-  'sz_t3d_physics_static_city',
-  'sz_t3d_physics_body',
-  'sz_t3d_physics_move',
-  'sz_t3d_physics_jump',
-  'sz_t3d_physics_trigger',
-  'sz_t3d_physics_step',
-  'sz_t3d_physics_velocity',
-  'sz_t3d_physics_impulse',
-  'sz_t3d_physics_teleport',
-  'sz_t3d_physics_remove',
-  'sz_t3d_physics_clear',
-  'sz_t3d_physics_on_collision',
-  'sz_t3d_physics_on_trigger',
-  'sz_t3d_physics_raycast',
-  'sz_t3d_physics_body_state',
-  'sz_t3d_physics_stats',
-])
+const INTERMEDIARIO_3D: ReadonlySet<string> = new Set(CANVAS3D_INTERMEDIATE_BLOCK_TYPES)
 
 // Posição dos kits 3D dirigíveis na escada (decisão da usuária 17/07) — parâmetros
 // de 1 linha p/ ajuste fino futuro.
@@ -497,8 +435,8 @@ export function resolveBlockLevel(type: string): BlockLevel {
   // Jogo 3D Avançado: TODOS avançado-3d (decisão de produto — é a base de
   // engine profissional: FSM por entidade, pooling, grade espacial).
   if (type.startsWith('sz_g3k_')) return 'avancado-3d'
-  // Canvas 3D (three.js cru, núcleo): TODOS avançado-3d — é programar a lib de
-  // verdade na unha (construtores, cadeias de método, matemática de vetores).
+  // Canvas 3D (three.js cru, núcleo): o fallback guarda as peças técnicas no
+  // avançado; os facilitadores visuais foram listados no intermediário 3D.
   if (type.startsWith('sz_t3d_')) return 'avancado-3d'
   // Mundo 3D: TODOS intermediário-3d (decisão de produto — blocos "mágicos" de
   // alto nível, 1 bloco = 1 resultado; um degrau acima da entrada do 3D).

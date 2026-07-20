@@ -1,4 +1,8 @@
 import type { ExtensionToolboxCategory } from '#extensions'
+import {
+  applyPlacementToBlockTypes,
+  START_ONLY_COMMAND_PLACEMENT,
+} from '../../blockly/blockContracts'
 import { categoryShades } from '../../blockly/colorShades'
 
 // Jogo 2D Avançado = UMA cor da categoria: TEAL (verde-água). As sub-categorias
@@ -4552,6 +4556,46 @@ export const gameKitBlocks = [
       'Quantas moedas a criança tem agora. Mostre no placar e teste antes de deixar comprar.',
   },
 ]
+
+const GAME_KIT_START_ONLY_BLOCK_TYPES = [
+  'sz_gk_setup',
+  'sz_gk_setup_full',
+  'sz_gk_load_image',
+  'sz_gk_create_screen',
+  'sz_gk_add_button',
+  'sz_gk_set_screen_bg',
+  'sz_gk_set_pause_key',
+  'sz_gk_define_mold',
+  'sz_gk_define_look',
+  'sz_gk_set_sheet',
+  'sz_gk_rpg_set_start_map',
+  'sz_gk_rpg_create_map',
+  'sz_gk_rpg_define_battler',
+  'sz_gk_define_effect',
+  'sz_gk_load_sound',
+  'sz_gk_load_tilemap',
+  'sz_gk_tilemap_solid',
+  'sz_gk_board_create',
+  'sz_gk_define_region',
+  'sz_gk_create_empty_tilemap',
+  'sz_gk_pkm_creature',
+  'sz_gk_pkm_move',
+  'sz_gk_pkm_type_chart',
+  'sz_gk_pkm_evolve',
+  'sz_gk_pkm_catch_difficulty',
+  'sz_gk_pkm_encounter_rate',
+  'sz_gk_cards_energy_per_turn',
+  'sz_gk_state_anim',
+  'sz_gk_define_path',
+  'sz_gk_players_setup',
+  'sz_gk_td_slot',
+] as const
+
+applyPlacementToBlockTypes(
+  gameKitBlocks,
+  GAME_KIT_START_ONLY_BLOCK_TYPES,
+  START_ONLY_COMMAND_PLACEMENT,
+)
 
 /**
  * Sub-categorias da paleta (a cor de cada uma é um TOM do teal, derivado abaixo).

@@ -43,10 +43,12 @@ O que o motor já faz por você:
 
 ### Começando (a receita)
 
-1. **Criar o mundo 3D** — uma vez, no comecinho: o estilo e o tamanho.
-2. **Deixar o chão com morros** — altura 4, suavidade 5 é um ótimo passeio.
-3. **Criar o carrinho dirigível** — escolha o jeitão e a cor.
-4. **A cada quadro (dt)** — a SUA mecânica extra (opcional).
+1. Em **⚙️ Ao iniciar**, use **Criar o mundo 3D** uma vez: escolha o estilo e o tamanho.
+2. Ainda em **⚙️ Ao iniciar**, use **Deixar o chão com morros** — altura 4,
+   suavidade 5 é um ótimo passeio.
+3. Ainda em **⚙️ Ao iniciar**, use **Criar o carrinho dirigível** e escolha o jeitão e a cor.
+4. Em **🔁 Enquanto estiver rodando — Loops**, use **A cada quadro (dt)** para a
+   SUA mecânica extra (opcional).
 
 Ao executar o projeto, o Studio monta e começa o passeio automaticamente.
 
@@ -57,8 +59,8 @@ Ao executar o projeto, o Studio monta e começa o passeio automaticamente.
   tamanho é o lado do mundo em metros (160 dá um passeio bom; 400 é ENORME).
 - **Deixar o chão com morros: altura …, suavidade …** — altura em metros dos
   morros (4 = colinas; 10 = montanha-russa); suavidade é o tamanho de cada
-  morro (maior = largos e calmos). Pode usar até DEPOIS do começar: o chão se
-  reconstrói na hora.
+  morro (maior = largos e calmos). Use depois de **Criar o mundo 3D**, ainda em
+  **⚙️ Ao iniciar**.
 - **Aplainar o chão perto de x … z …** — deixa um pedaço bem plano (a praça,
   o quintal, o pátio da corrida). Use antes de pôr as coisas em cima.
 - **Desenhar uma trilha de … até …** — abre um caminho plano de um ponto a
@@ -231,7 +233,8 @@ Ao executar o projeto, o Studio monta e começa o passeio automaticamente.
   Ponha vários **O amigo fala** dentro: as falas entram numa FILA e cada E
   mostra a próxima, letra por letra, com biplinhos de voz (cada letra tem o
   seu som — o "idioma" dos jogos profissionais).
-- **Quando o amigo … perguntar** — a PERGUNTA com dois botões de resposta
+- **O amigo … pergunta** — use dentro de **Quando conversar** para mostrar uma
+  PERGUNTA com dois botões de resposta
   (clique neles ou aperte 1/2). Cada resposta roda os próprios blocos: dá
   para ramificar a conversa, dar missões diferentes para cada escolha,
   contar segredos… Entra na mesma fila das falas.
@@ -381,8 +384,9 @@ Ao executar o projeto, o Studio monta e começa o passeio automaticamente.
 
 - **Um mundo por projeto**: use APENAS UMA extensão de jogo/mundo por projeto
   (cada uma cria a própria tela — juntas elas brigam pelo canvas).
-- Coloque "Criar o mundo 3D" em **Ao iniciar**. O Estúdio começa o passeio
-  automaticamente depois de registrar Eventos e Loop principal.
+- Coloque "Criar o mundo 3D" em **⚙️ Ao iniciar**. O Estúdio começa o passeio
+  automaticamente depois de registrar **⚡ Quando acontecer — Eventos** e
+  **🔁 Enquanto estiver rodando — Loops**.
 - Tudo em METROS: o carrinho tem ~3 m; pense as distâncias de verdade.
 - O mundo é sempre O MESMO mundo: os morros não mudam de lugar entre uma
   jogada e outra — dá para decorar o caminho como o seu quintal.

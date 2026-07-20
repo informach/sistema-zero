@@ -147,9 +147,9 @@ antes de o código do aluno rodar). Regras:
       `blockly/blockContracts.ts`: áreas-raiz (`start`, `events`, `loops`),
       contextos aninhados, papel e fase. Não crie checks ou classificadores
       paralelos no toolbox, builder ou schema.
-- [ ] Comandos de preparo entram em **Ao iniciar**; chapéus “Quando…” entram em
-      **Eventos**; atualizações contínuas e periódicas entram em **Loop
-      principal**. Eventos e loops-raiz não podem ser aninhados. Corpos internos
+- [ ] Comandos de preparo entram em **⚙️ Ao iniciar**; chapéus “Quando…” entram em
+      **⚡ Quando acontecer — Eventos**; atualizações contínuas e periódicas entram
+      em **🔁 Enquanto estiver rodando — Loops**. Eventos e loops-raiz não podem ser aninhados. Corpos internos
       usam os checks de contexto (`event-body`, `loop-body`, `function-body`,
       etc.) materializados pelo contrato.
 - [ ] Blocos de compatibilidade com migração `unwrap-*` ou

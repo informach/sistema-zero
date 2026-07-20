@@ -287,8 +287,10 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
       expect(types.has(t)).toBe(true)
     }
     for (const n of ['🏛️ Classes', '📦 Objetos', 'Avançado']) expect(names.has(n)).toBe(true)
-    // O que fica SÓ para o topo: Jogo 3D Avançado + three.js cru.
+    // A categoria Canvas 3D já aparece porque os facilitadores são intermediários;
+    // somente as peças técnicas internas ficam reservadas ao topo.
     expect(types.has('sz_g3k_setup')).toBe(false)
-    expect(names.has('Canvas 3D')).toBe(false)
+    expect(names.has('Canvas 3D')).toBe(true)
+    expect(types.has('sz_t3d_import')).toBe(false)
   })
 })

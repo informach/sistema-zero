@@ -7,6 +7,7 @@ import {
 } from '#core'
 import type { ExtensionPermission } from '#extensions'
 import { findExtension } from '#official-extensions'
+import { migrateLegacyBlockProjectSnapshot } from '../projects/compatibility'
 import { buildPreviewDoc } from './bootstrap'
 import { withCoreImports } from './coreImports'
 
@@ -34,12 +35,15 @@ export function renderProjectToPreviewDoc(
   project: Project,
   opts: RenderProjectOptions = {},
 ): string {
-  const files = project.files ?? { 'index.html': '', 'style.css': '', 'script.js': '' }
-  const installedExtensions = Array.isArray(project.installedExtensions)
-    ? project.installedExtensions
+  const playableProject = migrateLegacyBlockProjectSnapshot(project)
+  const files = playableProject.files ?? { 'index.html': '', 'style.css': '', 'script.js': '' }
+  const installedExtensions = Array.isArray(playableProject.installedExtensions)
+    ? playableProject.installedExtensions
     : []
-  const extraFiles = Array.isArray(project.extraFiles) ? project.extraFiles : undefined
-  const assets = Array.isArray(project.assets) ? project.assets : undefined
+  const extraFiles = Array.isArray(playableProject.extraFiles)
+    ? playableProject.extraFiles
+    : undefined
+  const assets = Array.isArray(playableProject.assets) ? playableProject.assets : undefined
   const ids = installedExtensions.flatMap((e) => (e && typeof e.id === 'string' ? [e.id] : []))
   const extensionScripts: string[] = []
   const extensionImports: Record<string, string> = {}

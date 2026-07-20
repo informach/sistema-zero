@@ -91,6 +91,120 @@ describe('Canvas 3D — limites, lifecycle e carregamento', () => {
     if (!result.success) expect(result.error.issues[0]?.message).toContain('fora do laço')
   })
 
+  it('rejeita toda preparação persistente que ainda podia ser recriada a cada quadro', () => {
+    const creators: JSStatement[] = [
+      {
+        type: 'rendererResponsive',
+        renderer: 'renderizador',
+        camera: 'camera',
+        cleanup: 'pararResponsivo',
+      },
+      {
+        type: 'physicsLiteSetup',
+        world: 'fisica',
+        heightFunction: 'alturaChao',
+        gravity: n(-22),
+        maxSubSteps: n(3),
+      },
+      {
+        type: 'physicsLiteStaticBox',
+        world: 'fisica',
+        id: 'parede',
+        x: n(0),
+        y: n(1),
+        z: n(0),
+        width: n(2),
+        height: n(2),
+        depth: n(2),
+      },
+      {
+        type: 'physicsLiteStaticSphere',
+        world: 'fisica',
+        id: 'rocha',
+        x: n(0),
+        y: n(1),
+        z: n(0),
+        radius: n(1),
+      },
+      { type: 'physicsLiteStaticObject', world: 'fisica', id: 'predio', object: 'predio' },
+      { type: 'physicsLiteStaticCity', world: 'fisica', city: 'cidade', prefix: 'cidade' },
+      {
+        type: 'physicsLiteBody',
+        world: 'fisica',
+        object: 'jogador',
+        id: 'jogador',
+        kind: 'character',
+        width: n(1),
+        height: n(2),
+        depth: n(1),
+        friction: n(0.8),
+        bounce: n(0),
+      },
+      {
+        type: 'physicsLiteTrigger',
+        world: 'fisica',
+        id: 'praca',
+        x: n(0),
+        y: n(1),
+        z: n(0),
+        width: n(6),
+        height: n(2),
+        depth: n(6),
+      },
+    ]
+
+    for (const creator of creators) {
+      const result = SZIRSchema.safeParse({
+        html: [],
+        css: [],
+        extensions: [],
+        js: [{ type: 'animationLoop', body: [creator] }],
+      })
+      expect(result.success, creator.type).toBe(false)
+    }
+  })
+
+  it('inclui a biblioteca 3D quando um facilitador gera código que depende dela', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'primitiveSetup',
+          mesh: 'cubo',
+          scene: 'cena',
+          shape: 'box',
+          width: n(1),
+          height: n(1),
+          depth: n(1),
+          color: color('#38bdf8'),
+        },
+      ],
+    })
+
+    expect(code.startsWith("import * as THREE from 'three';\n")).toBe(true)
+    expect(code.match(/from 'three'/g)).toHaveLength(1)
+    expect(() => parse(code, { sourceType: 'module' })).not.toThrow()
+
+    const behaviorCode = generateJS({
+      behavior: {
+        start: [
+          {
+            type: 'primitiveSetup',
+            mesh: 'cubo',
+            scene: 'cena',
+            shape: 'box',
+            width: n(1),
+            height: n(1),
+            depth: n(1),
+            color: color('#38bdf8'),
+          },
+        ],
+        events: [],
+        loops: [],
+      },
+    })
+    expect(behaviorCode.startsWith("import * as THREE from 'three';\n")).toBe(true)
+  })
+
   it('gera callback de erro para loaders e o parser o preserva', () => {
     const statement: JSStatement = {
       type: 'loaderLoad',

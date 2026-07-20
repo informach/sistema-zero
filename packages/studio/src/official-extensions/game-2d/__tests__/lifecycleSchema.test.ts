@@ -14,12 +14,21 @@ describe('game-2d — contrato de ciclo de vida', () => {
     const start = {
       type: 'g2d:onStart',
       __id: 'inicio-1',
-      body: [{ type: 'g2d:setupStage', width: 400, height: 300, bg: '#101827' }],
+      body: [
+        {
+          type: 'g2d:setupStage',
+          width: 400,
+          height: 300,
+          bg: '#101827',
+          description: 'Use as setas para mover o herói.',
+        },
+      ],
     }
     const parsed = SZIRSchema.safeParse(project([start]))
     expect(parsed.success).toBe(true)
     expect(compileStatements([start] as never[], 0)).toContain('SZGame2D.onStart(function')
     expect(compileStatements([start] as never[], 0)).toContain('"inicio-1"')
+    expect(compileStatements([start] as never[], 0)).toContain('"Use as setas para mover o herói."')
   })
 
   it('recusa evento registrado dentro de “a cada quadro”', () => {

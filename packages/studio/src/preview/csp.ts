@@ -11,10 +11,9 @@
  *   professor libere origens (`fetchAllowedOrigins`); reforçado pelo
  *   permissionGuard em runtime (defesa dupla).
  *
- * `script-src 'unsafe-inline'` é inevitável: o srcdoc é montado por scripts
- * inline + importmap com data: URLs. Não há nonce real sem reescrever o
- * pipeline — por isso a CSP reduz REDE/SCRIPTS REMOTOS, e o sandbox segue como
- * barreira principal.
+ * Scripts internos inline e o importmap recebem um nonce aleatório por
+ * documento. HTML/JS do aluno não conhece esse nonce e permanece externo em
+ * data: URLs instrumentadas pelo loopGuard.
  *
  * ⚠️ CANAL RESIDUAL DE EXFILTRAÇÃO (GET de mão única, ACEITO por design): como
  * `img-src`/`media-src`/`font-src`/`frame-src` liberam `https:` (subrecursos
@@ -45,11 +44,14 @@ export interface PreviewCSPOptions {
    * pinado do Three.js). Carregamento de lib de mão única — NÃO é vetor de exfil.
    */
   scriptAllowedOrigins?: readonly string[]
+  /** Nonce aleatório dos scripts internos criados por buildPreviewDoc. */
+  scriptNonce?: string
 }
 
 // Aceita só origens bem-formadas (esquema + host + porta opcional), sem path,
 // query ou caracteres que permitiriam injeção de diretiva na string da CSP.
 const ORIGIN_RE = /^https?:\/\/[a-z0-9.-]+(?::\d+)?$/i
+const NONCE_RE = /^[A-Za-z0-9_-]{16,128}$/
 
 export function sanitizeFetchOrigins(origins: readonly string[] | undefined): string[] {
   if (!origins) return []
@@ -66,7 +68,13 @@ export function buildPreviewCSP(options: PreviewCSPOptions = {}): string {
   const origins = sanitizeFetchOrigins(options.fetchAllowedOrigins)
   const connectSrc = origins.length > 0 ? origins.join(' ') : "'none'"
   const scriptOrigins = sanitizeFetchOrigins(options.scriptAllowedOrigins)
-  const scriptSrc = ["'unsafe-inline'", 'data:', 'blob:', ...scriptOrigins].join(' ')
+  const nonce = options.scriptNonce?.trim()
+  const scriptSrc = [
+    ...(nonce && NONCE_RE.test(nonce) ? [`'nonce-${nonce}'`] : []),
+    'data:',
+    'blob:',
+    ...scriptOrigins,
+  ].join(' ')
   return [
     "default-src 'none'",
     `script-src ${scriptSrc}`,
