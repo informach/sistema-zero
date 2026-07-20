@@ -2217,6 +2217,10 @@ function matchGame2DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     const spriteVar = identifierName(args[0])
     if (spriteVar) return { type: 'g2d:getHealth', spriteVar }
   }
+  if (method === 'getMaxHealth') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:getMaxHealth', spriteVar }
+  }
   if (method === 'enemyDamage') {
     const spriteVar = identifierName(args[0])
     if (spriteVar) return { type: 'g2d:enemyDamage', spriteVar }
@@ -2284,10 +2288,22 @@ function matchGame2DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
     const spriteVar = identifierName(args[0])
     if (spriteVar) return { type: 'g2d:hasHealth', spriteVar }
   }
+  if (method === 'healthDepleted') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:healthDepleted', spriteVar }
+  }
   if (method === 'cooldownReady') {
     const spriteVar = identifierName(args[0])
     const frames = toExpr(args[1], ctx)
-    if (spriteVar && isSimpleValue(frames)) return { type: 'g2d:cooldownReady', spriteVar, frames }
+    const stableKey = args[2]?.type === 'StringLiteral' ? (args[2].value as string) : undefined
+    if (spriteVar && isSimpleValue(frames)) {
+      return {
+        type: 'g2d:cooldownReady',
+        spriteVar,
+        frames,
+        ...(stableKey ? { __id: stableKey } : {}),
+      }
+    }
   }
   if (method === 'isPaused') return { type: 'g2d:isPaused' }
   if (method === 'cameraX') return { type: 'g2d:cameraX' }
@@ -2961,6 +2977,14 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         ? { type: 'g2d:changeHealth', spriteVar, delta }
         : null
     }
+    case 'damageSprite': {
+      const spriteVar = identifierName(args[0])
+      const amount = toExpr(args[1], ctx)
+      const invincibilityFrames = toExpr(args[2], ctx)
+      return spriteVar && isSimpleValue(amount) && isSimpleValue(invincibilityFrames)
+        ? { type: 'g2d:damageSprite', spriteVar, amount, invincibilityFrames }
+        : null
+    }
     case 'flipSprite': {
       const spriteVar = identifierName(args[0])
       if (!spriteVar || args[1]?.type !== 'StringLiteral') return null
@@ -3593,6 +3617,35 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       }
       return { type: 'g2d:drawHearts', ctxVar, count, x, y, size, color: args[5].value as string }
     }
+    case 'drawSpriteHealth': {
+      const ctxVar = identifierName(args[0])
+      const spriteVar = identifierName(args[1])
+      const x = toExpr(args[3], ctx)
+      const y = toExpr(args[4], ctx)
+      const size = toExpr(args[5], ctx)
+      const style = args[2]?.type === 'StringLiteral' ? (args[2].value as string) : ''
+      if (
+        !ctxVar ||
+        !spriteVar ||
+        (style !== 'hearts' && style !== 'bar') ||
+        !isSimpleValue(x) ||
+        !isSimpleValue(y) ||
+        !isSimpleValue(size) ||
+        args[6]?.type !== 'StringLiteral'
+      ) {
+        return null
+      }
+      return {
+        type: 'g2d:drawSpriteHealth',
+        ctxVar,
+        spriteVar,
+        style,
+        x,
+        y,
+        size,
+        color: args[6].value as string,
+      }
+    }
     case 'drawBar': {
       // generator: SZGame2D.drawBar(ctx, value, max, x, y, w, h, "color")
       const ctxVar = identifierName(args[0])
@@ -3615,6 +3668,10 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         return null
       }
       return { type: 'g2d:drawBar', ctxVar, value, max, x, y, w, h, color: args[7].value as string }
+    }
+    case 'setStageDescription': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:setStageDescription', description: args[0].value as string }
     }
     case 'setScene': {
       if (args[0]?.type !== 'StringLiteral') return null
@@ -3661,16 +3718,14 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const height = toExpr(args[1], ctx)
       // 3º argumento (cor de fundo) é opcional: código antigo de 2 args cai no padrão.
       const bg = args[2]?.type === 'StringLiteral' ? (args[2].value as string) : '#0b1020'
-      const description = args[3]?.type === 'StringLiteral' ? (args[3].value as string) : undefined
       return isSimpleValue(width) && isSimpleValue(height)
-        ? { type: 'g2d:setupStage', width, height, bg, ...(description ? { description } : {}) }
+        ? { type: 'g2d:setupStage', width, height, bg }
         : null
     }
     case 'setupStageFull': {
       // generator: SZGame2D.setupStageFull("cor") — tela toda, sem dimensões.
       const bg = args[0]?.type === 'StringLiteral' ? (args[0].value as string) : '#0b1020'
-      const description = args[1]?.type === 'StringLiteral' ? (args[1].value as string) : undefined
-      return { type: 'g2d:setupFull', bg, ...(description ? { description } : {}) }
+      return { type: 'g2d:setupFull', bg }
     }
     case 'spawnAsteroid': {
       // generator: SZGame2D.spawnAsteroid(g, { x, y, size, color, vx, vy })
@@ -10332,6 +10387,34 @@ function rafAssignmentHandle(node: Node, name: string): string | null {
 }
 
 /**
+ * Cleanup exato emitido pelo lifecycle:
+ * `contexto.registerResource(() => cancelAnimationFrame(id))`.
+ */
+function projectRunFrameCleanupHandle(node: Node): string | null {
+  if (node?.type !== 'ExpressionStatement') return null
+  const call = node.expression
+  if (call?.type !== 'CallExpression' || call.arguments?.length !== 1) return null
+  const callee = call.callee
+  if (callee?.type !== 'MemberExpression' || callee.computed) return null
+  if (callee.property?.name !== 'registerResource' || callee.object?.type !== 'Identifier') {
+    return null
+  }
+  if (!/^__szProjectRunContext(?:_\d+)?$/.test(callee.object.name)) return null
+  const callback = call.arguments[0]
+  if (callback?.type !== 'ArrowFunctionExpression' || callback.params?.length !== 0) return null
+  const cancelCall = callback.body
+  if (cancelCall?.type !== 'CallExpression' || cancelCall.arguments?.length !== 1) return null
+  if (
+    cancelCall.callee?.type !== 'Identifier' ||
+    cancelCall.callee.name !== 'cancelAnimationFrame'
+  ) {
+    return null
+  }
+  const handle = cancelCall.arguments[0]
+  return handle?.type === 'Identifier' ? handle.name : null
+}
+
+/**
  * `function F() { ...corpo...; requestAnimationFrame(F); }` seguido do pontapé
  * externo `F();` (ou, em projetos antigos, `requestAnimationFrame(F);`) →
  * `animationLoop` (corpo sem o RAF final).
@@ -10363,7 +10446,17 @@ function tryFuseAnimationLoop(
         if (firstIsRaf || lastIsRaf) {
           const inner = firstIsRaf ? bodyNodes.slice(1) : bodyNodes.slice(0, -1)
           const body = mapStatementList(inner, source, ctx)
-          return { stmt: { type: 'animationLoop', handle: declName, body }, consumed: 3 }
+          const hasManagedCleanup = projectRunFrameCleanupHandle(nodes[i + 3]) === declName
+          const generatedHandle =
+            hasManagedCleanup && /^__szProjectRunFrame(?:_\d+)?$/.test(declName)
+          return {
+            stmt: {
+              type: 'animationLoop',
+              ...(!generatedHandle ? { handle: declName } : {}),
+              body,
+            },
+            consumed: hasManagedCleanup ? 4 : 3,
+          }
         }
       }
     }
@@ -11621,6 +11714,7 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g2d:distance':
     case 'g2d:angleTo':
     case 'g2d:getHealth':
+    case 'g2d:getMaxHealth':
     case 'g2d:enemyDamage':
     case 'g2d:spriteX':
     case 'g2d:spriteY':
@@ -11639,6 +11733,7 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g2d:randomBetween':
     case 'g2d:randomChance':
     case 'g2d:hasHealth':
+    case 'g2d:healthDepleted':
     case 'g2d:cooldownReady':
     case 'g2d:isPaused':
     case 'g2d:cameraX':
@@ -12349,7 +12444,9 @@ function tryMatchEventListener(expr: Node, ctx: ParseCtx): MatchedListener | nul
     return null
   }
   if (callee.property?.name !== 'addEventListener') return null
-  if (expr.arguments?.length !== 2) return null
+  const argumentCount = expr.arguments?.length ?? 0
+  if (argumentCount !== 2 && argumentCount !== 3) return null
+  if (argumentCount === 3 && !isGeneratedProjectRunSignalOptions(expr.arguments[2])) return null
   const eventArg = expr.arguments[0]
   const cbArg = expr.arguments[1]
   if (eventArg.type !== 'StringLiteral') return null
@@ -12395,6 +12492,19 @@ function tryMatchEventListener(expr: Node, ctx: ParseCtx): MatchedListener | nul
     event: eventArg.value as EventKind,
     ...handler,
   }
+}
+
+/** Opção exata que o gerador acrescenta para o restart descartar o listener. */
+function isGeneratedProjectRunSignalOptions(node: Node): boolean {
+  if (node?.type !== 'ObjectExpression' || node.properties?.length !== 1) return false
+  const property = node.properties[0]
+  if (property?.type !== 'ObjectProperty' || property.computed) return false
+  const key = property.key?.name ?? property.key?.value
+  if (key !== 'signal') return false
+  const value = property.value
+  if (value?.type !== 'MemberExpression' || value.computed) return false
+  if (value.property?.name !== 'signal' || value.object?.type !== 'Identifier') return false
+  return /^__szProjectRunContext(?:_\d+)?$/.test(value.object.name)
 }
 
 /**

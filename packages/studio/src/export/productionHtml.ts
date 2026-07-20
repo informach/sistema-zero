@@ -42,6 +42,8 @@ export interface BuildProductionHtmlInput {
    * extensão (module ou clássico) e do código do aluno, que o consomem.
    */
   assetsScriptSrc?: string
+  /** Runtime core de teclado/ponteiro, carregado antes do código do aluno. */
+  inputScriptSrc?: string
 }
 
 /**
@@ -84,6 +86,11 @@ export function buildProductionIndexHtml(input: BuildProductionHtmlInput): strin
     ? `<script src="${escapeAttr(input.assetsScriptSrc)}"></script>`
     : ''
 
+  const inputScriptTag = input.inputScriptSrc
+    ? `<script src="${escapeAttr(input.inputScriptSrc)}"></script>`
+    : ''
+
+  const earlyHeadBlock = [HARDENING_META, inputScriptTag].filter(Boolean).join('\n')
   const headBlock = [PWA_HEAD_TAGS, assetsScriptTag, importmapTag, extScriptsTag, extraCssTags]
     .filter(Boolean)
     .join('\n')
@@ -92,9 +99,10 @@ export function buildProductionIndexHtml(input: BuildProductionHtmlInput): strin
   )
 
   let out = input.html
-  // Endurecimento mínimo PRIMEIRO, perto do topo do <head> (logo após a abertura),
-  // para valer cedo no parse. Não quebra nada que um site de criança use.
-  out = injectAfterHeadStart(out, HARDENING_META)
+  // Endurecimento e entrada vêm logo após `<head>`. Isso também cobre projetos
+  // de arquivo único cujo código do aluno está inline no próprio cabeçalho: o
+  // runtime precisa executar antes da primeira leitura de `__szInput`.
+  out = injectAfterHeadStart(out, earlyHeadBlock)
   if (headBlock) out = injectBeforeHeadEnd(out, headBlock)
   if (bodyBlock) out = injectBeforeBodyEnd(out, bodyBlock)
 

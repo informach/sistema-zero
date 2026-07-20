@@ -22,7 +22,7 @@ function connectInto(parent: Blockly.Block, input: string, child: Blockly.Block)
 describe('Blocos-container (frames) — só gera o que está DENTRO', () => {
   beforeAll(() => ensureBlocklyInitialized())
 
-  it('bloco DENTRO do Comportamento gera; bloco SOLTO fora de qualquer frame é rascunho (ignorado)', () => {
+  it('bloco DENTRO de Ao iniciar gera; bloco SOLTO fora de qualquer área é rascunho (ignorado)', () => {
     const ws = new Blockly.Workspace()
     const behavior = ws.newBlock('sz_frame_start')
     connectInto(behavior, 'CHILDREN', ws.newBlock('sz_js_console_log_text'))
@@ -200,6 +200,88 @@ describe('Migração transparente para frames (normalizeBlocksStateToFrames)', (
     expect(JSON.stringify(migrated)).toContain('"id":"tecla"')
     expect(JSON.stringify(migrated)).toContain('"id":"quadro"')
     expect(JSON.stringify(migrated)).not.toContain('"id":"boot"')
+    expect(normalizeBlocksStateToFrames(migrated)).toBe(migrated)
+  })
+
+  it('mescla uma área antiga nos três frames atuais sem duplicar nem perder execução', () => {
+    const hybrid = {
+      blocks: {
+        languageVersion: 0,
+        blocks: [
+          {
+            type: 'sz_frame_start',
+            id: 'inicio-atual',
+            inputs: {
+              CHILDREN: {
+                block: {
+                  type: 'sz_js_console_log_text',
+                  id: 'comando-atual',
+                  fields: { VALUE: 'atual' },
+                },
+              },
+            },
+          },
+          {
+            type: 'sz_frame_events',
+            id: 'eventos-atual',
+            inputs: { CHILDREN: { block: { type: 'sz_js_on_resize', id: 'evento-atual' } } },
+          },
+          {
+            type: 'sz_frame_loops',
+            id: 'loops-atual',
+            inputs: { CHILDREN: { block: { type: 'sz_canvas_anim_loop', id: 'loop-atual' } } },
+          },
+          {
+            type: 'sz_frame_behavior',
+            id: 'area-antiga',
+            inputs: {
+              CHILDREN: {
+                block: {
+                  type: 'sz_js_console_log_text',
+                  id: 'comando-antigo',
+                  fields: { VALUE: 'antigo' },
+                  next: {
+                    block: {
+                      type: 'sz_js_on_click_anywhere',
+                      id: 'evento-antigo',
+                      next: {
+                        block: { type: 'sz_canvas_anim_loop', id: 'loop-antigo' },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        ],
+      },
+    }
+
+    const migrated = normalizeBlocksStateToFrames(hybrid) as typeof hybrid
+    for (const type of ['sz_frame_start', 'sz_frame_events', 'sz_frame_loops']) {
+      expect(
+        migrated.blocks.blocks.filter((block) => block.type === type),
+        type,
+      ).toHaveLength(1)
+    }
+    for (const id of [
+      'comando-atual',
+      'comando-antigo',
+      'evento-atual',
+      'evento-antigo',
+      'loop-atual',
+      'loop-antigo',
+    ]) {
+      expect(JSON.stringify(migrated), id).toContain(`"id":"${id}"`)
+    }
+
+    const workspace = new Blockly.Workspace()
+    Blockly.serialization.workspaces.load(migrated, workspace)
+    const ir = buildIRFromWorkspace(workspace)
+    expect(ir.behavior.start).toHaveLength(2)
+    expect(ir.behavior.events).toHaveLength(2)
+    expect(ir.behavior.loops).toHaveLength(2)
+    workspace.dispose()
     expect(normalizeBlocksStateToFrames(migrated)).toBe(migrated)
   })
 

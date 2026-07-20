@@ -402,7 +402,7 @@ export const gameTwoDBlocks = [
   // ---- Tier 1: Vida e tempo ----
   {
     type: 'sz_g2d_set_health',
-    placement: 'command',
+    placement: 'start-only-command',
     message0: 'Dar ao sprite %1 %2 de vida',
     args0: [
       { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
@@ -412,7 +412,8 @@ export const gameTwoDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Define a vida (e a vida máxima) do sprite.',
+    tooltip:
+      'Define a vida atual e a vida máxima do sprite. Coloque em “Ao iniciar” para não restaurar a vida a cada quadro.',
   },
   {
     type: 'sz_g2d_change_health',
@@ -430,6 +431,22 @@ export const gameTwoDBlocks = [
       'Soma à vida do sprite (número negativo tira vida). Não passa do máximo nem fica abaixo de 0.',
   },
   {
+    type: 'sz_g2d_damage_sprite',
+    placement: 'command',
+    message0: 'Machucar o sprite %1 em %2 e deixá-lo invencível por %3 quadros',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
+      { type: 'input_value', name: 'AMOUNT', check: 'JSValue' },
+      { type: 'input_value', name: 'FRAMES', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Tira vida uma vez e ignora novos danos enquanto o sprite pisca. Evita perder todas as vidas num contato contínuo.',
+  },
+  {
     type: 'sz_g2d_get_health',
     message0: 'a vida do sprite %1',
     args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
@@ -438,12 +455,55 @@ export const gameTwoDBlocks = [
     tooltip: 'Quanto de vida o sprite tem agora.',
   },
   {
+    type: 'sz_g2d_get_max_health',
+    message0: 'a vida máxima do sprite %1',
+    args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
+    output: 'JSValue',
+    colour: C,
+    tooltip: 'Quanto de vida o sprite recebeu em “Ao iniciar”.',
+  },
+  {
     type: 'sz_g2d_has_health',
     message0: 'o sprite %1 ainda tem vida?',
     args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
     output: 'JSValue',
     colour: EVENT_C,
     tooltip: 'Verdadeiro enquanto a vida do sprite é maior que zero. Use num "se".',
+  },
+  {
+    type: 'sz_g2d_health_depleted',
+    message0: 'as vidas do sprite %1 acabaram?',
+    args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
+    output: 'JSValue',
+    colour: EVENT_C,
+    tooltip:
+      'Verdadeiro quando a vida foi preparada e chegou a zero. Assim você não precisa usar o bloco “não”.',
+  },
+  {
+    type: 'sz_g2d_draw_sprite_health',
+    placement: 'command',
+    message0: 'Desenhar as vidas do sprite %1 como %2 em x %3 y %4 tamanho %5 cor %6',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
+      {
+        type: 'field_dropdown',
+        name: 'STYLE',
+        options: [
+          ['corações', 'hearts'],
+          ['barra', 'bar'],
+        ],
+      },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#ff5d5d' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Lê a vida do sprite automaticamente. Em corações, tamanho é o diâmetro; em barra, é a largura.',
   },
   {
     type: 'sz_g2d_cooldown_ready',
@@ -1711,6 +1771,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_draw_hearts',
+    hidden: true,
     placement: 'command',
     message0: 'Desenhar %1 vidas (corações) em x %2 y %3 tamanho %4 cor %5',
     args0: [
@@ -1747,6 +1808,23 @@ export const gameTwoDBlocks = [
   },
 
   // ---- Estado / telas (cenas) ----
+  {
+    type: 'sz_g2d_set_stage_description',
+    placement: 'start-only-command',
+    message0: 'Descrever o jogo para leitor de tela %1',
+    args0: [
+      {
+        type: 'field_input',
+        name: 'DESCRIPTION',
+        text: 'Pegue as moedas. Use as setas para andar.',
+      },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Explica o objetivo e os controles para quem não vê o canvas. Coloque em “Ao iniciar”.',
+  },
   {
     type: 'sz_g2d_set_scene',
     placement: 'command',
@@ -1827,28 +1905,24 @@ export const gameTwoDBlocks = [
       { type: 'input_value', name: 'H', check: 'JSValue' },
       { type: 'field_colour_sz', name: 'BG', colour: '#0b1020' },
     ],
-    message1: 'objetivo e controles %1',
-    args1: [{ type: 'field_input', name: 'DESCRIPTION', text: 'Meu jogo 2D' }],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Atalho para começar: prepara a tela responsiva e centralizada. Escreva uma descrição curta com objetivo e controles para crianças que usam leitor de tela. Use uma vez em “Ao iniciar”.',
+      'Atalho para começar: prepara a tela responsiva e centralizada. Use uma vez em “Ao iniciar”.',
   },
   {
     type: 'sz_g2d_setup_full',
     placement: 'start-only-command',
     message0: 'Preparar o jogo para ocupar a tela toda, fundo %1',
     args0: [{ type: 'field_colour_sz', name: 'BG', colour: '#0b1020' }],
-    message1: 'objetivo e controles %1',
-    args1: [{ type: 'field_input', name: 'DESCRIPTION', text: 'Meu jogo 2D' }],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Prepara um canvas sem dimensões fixas, ocupando toda a janela. Escreva uma descrição curta com objetivo e controles para crianças que usam leitor de tela. Use uma vez em “Ao iniciar”.',
+      'Prepara um canvas sem dimensões fixas, ocupando toda a janela. Use uma vez em “Ao iniciar”.',
   },
 
   // ---- Kit "Nave & Asteroides": desenhos prontos + efeitos (v0.7.0) ----

@@ -9,22 +9,22 @@ export interface ManagedProjectRun extends ProjectRunContext {
   dispose(): void
 }
 
-function browserClock(): ProjectRunClock {
-  return {
-    requestFrame: (callback) => requestAnimationFrame(callback),
-    cancelFrame: (id) => cancelAnimationFrame(id),
-  }
-}
+export const PROJECT_RUN_LIFECYCLE_GLOBAL = '__SZProjectLifecycle'
 
 /**
- * Contexto descartável de uma execução. Um único RAF alimenta todos os loops;
- * pausa não acumula delta e dispose cancela callbacks e recursos em ordem LIFO.
+ * Contexto descartável de uma execução. O scheduler opcional usa um único RAF;
+ * recursos registrados pelo gerador são descartados em ordem LIFO.
  */
 export function createProjectRunContext(options: {
   requestRestart: () => void
   clock?: ProjectRunClock
 }): ManagedProjectRun {
-  const clock = options.clock ?? browserClock()
+  // Esta função é autocontida porque o preview serializa a implementação abaixo
+  // para dentro do iframe. Não mova o clock padrão para um helper externo.
+  const clock = options.clock ?? {
+    requestFrame: (callback: FrameRequestCallback) => requestAnimationFrame(callback),
+    cancelFrame: (id: number) => cancelAnimationFrame(id),
+  }
   const controller = new AbortController()
   const frameCallbacks = new Set<(deltaSeconds: number) => void>()
   const resources: Array<() => void> = []
@@ -126,11 +126,50 @@ export function createProjectRunContext(options: {
       for (const dispose of resources.reverse()) {
         try {
           dispose()
-        } catch {
-          // Um recurso defeituoso não impede a limpeza dos demais.
+        } catch (error) {
+          // Um recurso defeituoso não impede a limpeza dos demais, mas a falha
+          // continua visível no console para não mascarar o defeito original.
+          console.error('Falha ao descartar um recurso da execução do projeto.', error)
         }
       }
       resources.length = 0
     },
   }
+}
+
+/**
+ * Runtime compartilhado pelo preview e pelo site exportado. A factory do projeto
+ * chama `begin()` em toda execução; o manager encerra a execução anterior antes
+ * de entregar o novo contexto.
+ *
+ * `createProjectRunContext` é a fonte única da implementação. Como ela é
+ * autocontida, sua representação JavaScript pode ser executada dentro do iframe
+ * sem manter uma segunda cópia do algoritmo em uma template string.
+ */
+export function buildProjectRunContextRuntime(): string {
+  const createRunSource = createProjectRunContext.toString()
+  return `(function () {
+  const createProjectRunContext = ${createRunSource};
+  let currentRun;
+
+  function disposeCurrentRun() {
+    if (!currentRun) return;
+    currentRun.dispose();
+    currentRun = undefined;
+  }
+
+  function begin(requestRestart) {
+    disposeCurrentRun();
+    currentRun = createProjectRunContext({
+      requestRestart: typeof requestRestart === 'function' ? requestRestart : function () {},
+    });
+    return currentRun;
+  }
+
+  window.addEventListener('pagehide', disposeCurrentRun, { once: true });
+  window[${JSON.stringify(PROJECT_RUN_LIFECYCLE_GLOBAL)}] = Object.freeze({
+    begin: begin,
+    dispose: disposeCurrentRun,
+  });
+})();`
 }

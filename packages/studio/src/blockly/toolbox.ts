@@ -6,7 +6,6 @@ import {
   isCategoryAllowed,
   type LearningProfile,
 } from '#core'
-import { inferBlockContract } from './blockContracts'
 import { resolveBlockLevel } from './blockLevels'
 import {
   ADVANCED_BLOCKS,
@@ -29,6 +28,11 @@ import {
 } from './blocks'
 import type { BlockDefinition } from './blocks/types'
 import { type SocketShadow, socketInputsFor } from './blocks/valueSockets'
+import {
+  isEventProgrammingDefinition,
+  PROGRAMMING_CONDITION_VALUE_TYPES,
+  PROGRAMMING_LIST_VALUE_TYPES,
+} from './programmingContract'
 import {
   CLASS_CATEGORY_DEFINITIONS,
   FUNCTION_CATEGORY_DEFINITIONS,
@@ -69,35 +73,11 @@ const EVENTOS_TYPE_ORDER: readonly string[] = [
 
 const EVENTOS_ORDER_INDEX = new Map(EVENTOS_TYPE_ORDER.map((type, index) => [type, index]))
 
-/** Valores que completam a unidade pedagógica de listas junto dos comandos JS. */
-const LIST_VALUE_TYPES = new Set([
-  'sz_val_array',
-  'sz_val_array_length',
-  'sz_val_array_map',
-  'sz_val_array_index',
-  'sz_val_array_last',
-  'sz_val_array_find',
-  'sz_val_array_filter',
-  'sz_val_concat_arrays',
-  'sz_val_shuffle',
-])
-
 /**
  * A área/contexto declarados no contrato decidem o pertencimento à categoria.
  * `EVENTOS_TYPE_ORDER` apenas ordena os conhecidos; um evento novo nunca some
  * da paleta por faltar em uma segunda lista classificadora.
  */
-function isEventToolboxDefinition(definition: BlockDefinition): boolean {
-  const placement = inferBlockContract(definition).placement
-  if (!placement) return false
-  if (placement.role === 'event') return true
-  return (
-    placement.root.length === 0 &&
-    placement.nested.length === 1 &&
-    placement.nested[0] === 'event-body'
-  )
-}
-
 export interface ToolboxBlockEntry {
   kind: 'block'
   type: string
@@ -109,6 +89,7 @@ export interface ToolboxCategory {
   kind: 'category'
   name: string
   colour: string
+  cssconfig?: { label?: string }
   // Aceita blocos, sub-categorias aninhadas OU sub-categorias dinâmicas (custom,
   // ex.: Funções/Classes dentro de "Programação").
   contents: (ToolboxBlockEntry | ToolboxCategory | ToolboxCustomCategory)[]
@@ -127,6 +108,7 @@ export interface ToolboxCustomCategory {
   kind: 'category'
   name: string
   colour: string
+  cssconfig?: { label?: string }
   custom: string
 }
 
@@ -329,13 +311,15 @@ export function buildCoreToolbox(
           return jsByType.get(t)
         })
         .filter((b): b is BlockDefinition => Boolean(b))
-      const blocks =
+      const relatedValues =
         g.name === '📋 Listas'
-          ? [
-              ...languageBlocks,
-              ...VALUE_BLOCKS.filter((definition) => LIST_VALUE_TYPES.has(definition.type)),
-            ]
-          : languageBlocks
+          ? VALUE_BLOCKS.filter((definition) => PROGRAMMING_LIST_VALUE_TYPES.has(definition.type))
+          : g.name === '❓ Lógica & Se'
+            ? VALUE_BLOCKS.filter((definition) =>
+                PROGRAMMING_CONDITION_VALUE_TYPES.has(definition.type),
+              )
+            : []
+      const blocks = [...languageBlocks, ...relatedValues]
       const entries = toEntries(blocks, 'iniciante-2d', profile)
       if (entries.length > 0)
         progSubs.push({ kind: 'category', name: g.name, colour: g.colour, contents: entries })
@@ -380,18 +364,20 @@ export function buildCoreToolbox(
     progSubs.push({ kind: 'category', name, colour, custom })
   }
   pushSub('Matemática', '🔢 Matemática', CATEGORY_COLORS.math, 'intermediario-2d', MATH_BLOCKS)
-  const valueBlocks = restrict
-    ? VALUE_BLOCKS.filter((block) => !isEventToolboxDefinition(block))
-    : VALUE_BLOCKS
+  const valueBlocks = VALUE_BLOCKS.filter((block) => !isEventProgrammingDefinition(block))
   pushSub(
     'Valores',
     '🔣 Valores',
     CATEGORY_COLORS.values,
     'iniciante-2d',
-    valueBlocks.filter((block) => !LIST_VALUE_TYPES.has(block.type)),
+    valueBlocks.filter(
+      (block) =>
+        !PROGRAMMING_LIST_VALUE_TYPES.has(block.type) &&
+        !PROGRAMMING_CONDITION_VALUE_TYPES.has(block.type),
+    ),
   )
   // Página: só os blocos de ELEMENTO (os "Quando…" saem para ⚡ Eventos).
-  const paginaBlocks = DOM_BLOCKS.filter((block) => !isEventToolboxDefinition(block))
+  const paginaBlocks = DOM_BLOCKS.filter((block) => !isEventProgrammingDefinition(block))
   pushSub('DOM', '🌐 Página', CATEGORY_COLORS.dom, 'iniciante-2d', paginaBlocks)
   // ⚡ Eventos: listeners + leitores do evento, na ordem curada.
   // Gateada por 'DOM' (preserva o allowCategories das aulas). Resolve cada tipo a
@@ -400,7 +386,7 @@ export function buildCoreToolbox(
     [...DOM_BLOCKS, ...JS_BLOCKS, ...VALUE_BLOCKS].map((b) => [b.type, b] as const),
   )
   const eventosBlocks = [...eventosByType.values()]
-    .filter(isEventToolboxDefinition)
+    .filter(isEventProgrammingDefinition)
     .sort(
       (a, b) =>
         (EVENTOS_ORDER_INDEX.get(a.type) ?? Number.MAX_SAFE_INTEGER) -
@@ -423,10 +409,14 @@ export function buildCoreToolbox(
     ...JS_BLOCKS.filter((b) => b.type === 'sz_js_object_assign'),
   ])
   if (progSubs.length > 0) {
+    for (const category of progSubs) {
+      category.cssconfig = { label: 'sz-toolbox-programming-label' }
+    }
     contents.push({
       kind: 'category',
       name: 'Programação',
       colour: CATEGORY_COLORS.js,
+      cssconfig: { label: 'sz-toolbox-programming-label' },
       contents: progSubs,
     })
   }

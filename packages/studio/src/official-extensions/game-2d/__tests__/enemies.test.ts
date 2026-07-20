@@ -62,7 +62,7 @@ interface Api {
   spawnEnemy: (t: EnemyType, x: number, y: number) => Sprite | null
   updateEnemyType: (t: EnemyType, ctx: unknown, target: Sprite | null) => void
   drawEnemyType: (ctx: unknown, t: EnemyType) => void
-  onEnemyDefeated: (t: EnemyType, fn: (s: Sprite) => void) => void
+  onEnemyDefeated: (t: EnemyType, fn: (s: Sprite) => void, id?: string) => void
   overlapEnemyShots: (getSprite: () => Sprite, t: EnemyType, fn: (shot: Sprite) => void) => void
   enemyDamage: (s: unknown) => number
   hurtByEnemy: (s: Sprite, e: Sprite) => void
@@ -73,6 +73,7 @@ interface Api {
   forEachInGroup: (g: unknown, fn: (s: Sprite, i: number) => void) => void
   overlapSpriteGroup: (getSprite: () => Sprite, g: unknown, fn: (s: Sprite) => void) => void
   removeFromGroup: (g: unknown, s: Sprite) => void
+  setCamera: (x: number, y: number) => void
 }
 
 function load(): Api {
@@ -298,6 +299,25 @@ describe('comportamentos', () => {
     api.updateEnemyType(t, ctx, target)
     expect(t.bullets.items.includes(shot)).toBe(false)
   })
+
+  it('usa os limites visíveis do mundo para chão, patrulha e tiros com câmera', () => {
+    const api = load()
+    const ctx = fakeCtx(320, 240)
+    api.setCamera(1000, 500)
+
+    const patrol = api.createEnemyType({ behavior: 'patrulha', speed: 4 })
+    const walker = api.spawnEnemy(patrol, 1050, 708) as Sprite
+    api.updateEnemyType(patrol, ctx, null)
+    expect(walker.vx).toBe(4)
+    expect(walker.y).toBe(500 + 240 - walker.h)
+
+    const shooter = api.createEnemyType({ behavior: 'atirador' })
+    api.setEnemyTypeParam(shooter, 'cadencia', 1)
+    api.spawnEnemy(shooter, 1050, 708)
+    const target = api.createSprite({ x: 1100, y: 700, w: 20, h: 20 })
+    api.updateEnemyType(shooter, ctx, target)
+    expect(shooter.bullets.items).toHaveLength(1)
+  })
 })
 
 describe('morte e dano', () => {
@@ -314,17 +334,41 @@ describe('morte e dano', () => {
     expect(defeated).toEqual([e])
   })
 
-  it('deixa o erro do callback chegar ao controlador do bloco raiz', () => {
+  it('compõe callbacks de derrota e desativa somente o callback defeituoso', () => {
     const api = load()
     const ctx = fakeCtx()
     const t = api.createEnemyType({ hp: 1 })
-    const e = api.spawnEnemy(t, 0, 0) as Sprite
-    api.onEnemyDefeated(t, () => {
-      throw new Error('boom')
-    })
-    api.changeHealth(e, -1)
-    expect(() => api.updateEnemyType(t, ctx, null)).toThrow('boom')
-    expect(t.items.length).toBe(0)
+    const original = console.error
+    const messages: unknown[][] = []
+    let broken = 0
+    const healthy: Sprite[] = []
+    console.error = (...args: unknown[]) => messages.push(args)
+    try {
+      api.onEnemyDefeated(
+        t,
+        () => {
+          broken += 1
+          throw new Error('boom')
+        },
+        'derrota-com-erro',
+      )
+      api.onEnemyDefeated(t, (enemy) => healthy.push(enemy), 'derrota-saudavel')
+
+      const first = api.spawnEnemy(t, 0, 0) as Sprite
+      api.changeHealth(first, -1)
+      expect(() => api.updateEnemyType(t, ctx, null)).not.toThrow()
+
+      const second = api.spawnEnemy(t, 0, 0) as Sprite
+      api.changeHealth(second, -1)
+      expect(() => api.updateEnemyType(t, ctx, null)).not.toThrow()
+    } finally {
+      console.error = original
+    }
+
+    expect(broken).toBe(1)
+    expect(healthy).toHaveLength(2)
+    expect(messages).toHaveLength(1)
+    expect(t.items).toHaveLength(0)
   })
 
   it('hurtByEnemy: tira o dano do inimigo, pisca e dá i-frames', () => {

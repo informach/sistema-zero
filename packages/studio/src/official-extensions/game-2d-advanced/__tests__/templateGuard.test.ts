@@ -31,14 +31,17 @@ function rawTemplateHazardsInside(
   allowedInterpolations: ReadonlySet<string> = new Set(),
 ): number[] {
   const lines = src.split('\n')
-  const opener = lines.findIndex((l) => l.includes(openerNeedle))
+  const declaration = lines.findIndex((line) => line.includes(openerNeedle))
+  if (declaration < 0) throw new Error(`não achei a declaração: ${openerNeedle}`)
+  const opener = lines.findIndex((line, index) => index >= declaration && line.includes('`'))
   if (opener < 0) throw new Error(`não achei a abertura do literal: ${openerNeedle}`)
   const out: number[] = []
-  for (let i = opener + 1; i < lines.length; i++) {
+  for (let i = opener; i < lines.length; i++) {
     const line = lines[i] as string
     // O FECHO pretendido é uma linha que só tem a crase (com ou sem vírgula).
     if (line.trim() === '`' || line.trim() === '`,') return out
-    for (let c = 0; c < line.length; c++) {
+    const startColumn = i === opener ? line.indexOf('`') + 1 : 0
+    for (let c = startColumn; c < line.length; c++) {
       const escaped = c > 0 && line[c - 1] === '\\'
       if (line[c] === '`' && !escaped) out.push(i + 1) // crase CRUA antes do fecho
       if (line[c] === '$' && line[c + 1] === '{' && !escaped) {

@@ -107,6 +107,19 @@ describe('buildCoreToolbox — estrutura e itens sempre válidos', () => {
     expect(all.filter((type) => type === 'sz_js_object_assign')).toHaveLength(1)
   })
 
+  it('oferece cada bloco uma vez e mantém leitores do evento somente em ⚡ Eventos', () => {
+    const toolbox = buildCoreToolbox([])
+    const all = collectTypes(toolbox.contents)
+    const eventos = blockTypesIn(findCategory(toolbox.contents, '⚡ Eventos'))
+    const valores = blockTypesIn(findCategory(toolbox.contents, '🔣 Valores'))
+
+    expect(new Set(all).size).toBe(all.length)
+    for (const type of ['sz_val_event_key', 'sz_val_event_pos']) {
+      expect(eventos, type).toContain(type)
+      expect(valores, type).not.toContain(type)
+    }
+  })
+
   it('reúne comandos e valores de lista em 📋 Listas, sem duplicar em Valores', () => {
     const toolbox = buildCoreToolbox([])
     const programming = findCategory(toolbox.contents, 'Programação')
@@ -130,6 +143,17 @@ describe('buildCoreToolbox — estrutura e itens sempre válidos', () => {
     }
   })
 
+  it('reúne os valores de condição em ❓ Lógica & Se, sem duplicar em Valores', () => {
+    const toolbox = buildCoreToolbox([], { level: 'iniciante-2d' })
+    const programming = findCategory(toolbox.contents, 'Programação')
+    const logic = blockTypesIn(findCategory(programming?.contents ?? [], '❓ Lógica & Se'))
+    const values = blockTypesIn(findCategory(programming?.contents ?? [], '🔣 Valores'))
+    const conditionTypes = ['sz_val_bool', 'sz_val_compare', 'sz_val_logic', 'sz_val_not']
+
+    expect(logic).toEqual(['sz_js_if_else', ...conditionTypes])
+    for (const type of conditionTypes) expect(values, type).not.toContain(type)
+  })
+
   it('a busca está sempre presente', () => {
     const tb = buildCoreToolbox([], { level: 'iniciante-2d' })
     expect(tb.contents.some((c) => c.kind === 'search')).toBe(true)
@@ -148,10 +172,9 @@ describe('buildCoreToolbox — estrutura e itens sempre válidos', () => {
 })
 
 describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
-  // ⚠️ Os 3 primeiros testes são a PROVA DE EQUIVALÊNCIA LEGADA: os degraus em
-  // que os níveis antigos normalizam (iniciante→ini-2d, intermediario→int-3d,
-  // avancado→av-3d) mostram exatamente os conjuntos de antes da reforma.
-  it('INICIANTE-2D (≡ iniciante antigo): facilitadores + kit de lógica; sem programação real, sem 3D', () => {
+  // Os níveis antigos normalizam para estes degraus. Jogo 2D é a exceção
+  // intencional: todos os seus blocos ficam no iniciante para a aula filtrá-los.
+  it('INICIANTE-2D: facilitadores + todo Jogo 2D; sem programação real, sem 3D', () => {
     const { types, names } = paletteAt('iniciante-2d')
     for (const t of [
       'sz_frame_structure',
@@ -176,13 +199,13 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
       'sz_g2d_sprite_y',
       'sz_g2d_random_x',
       'sz_g2d_clear',
+      'sz_g2d_sprite_vx',
+      'sz_g2d_apply_velocity',
     ]) {
       expect(types.has(t)).toBe(true)
     }
     for (const t of [
       'sz_js_while',
-      'sz_g2d_sprite_vx',
-      'sz_g2d_apply_velocity',
       'sz_js_class',
       'sz_val_object',
       'sz_math_arithmetic',
@@ -223,7 +246,7 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
     expect(types.has('sz_html_svg')).toBe(true)
   })
 
-  it('INTERMEDIÁRIO-3D (≡ intermediário antigo): programação real + Jogo 3D + Mundo 3D; sem avançado', () => {
+  it('INTERMEDIÁRIO-3D: programação real + Jogo 2D completo + Jogo 3D + Mundo 3D; sem avançado', () => {
     const { types, names } = paletteAt('intermediario-3d')
     expect(types.has('sz_g2d_create_sprite')).toBe(true) // inclui iniciante
     for (const t of [
@@ -240,7 +263,7 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
       expect(types.has(t)).toBe(true)
     }
     // Funções é flyout DINÂMICO (custom) → conferimos pela categoria, não por bloco.
-    for (const t of ['sz_js_class', 'sz_val_object', 'sz_g2d_apply_velocity', 'sz_svg_path']) {
+    for (const t of ['sz_js_class', 'sz_val_object', 'sz_svg_path']) {
       expect(types.has(t)).toBe(false)
     }
     expect(names.has('🧩 Funções')).toBe(true)
@@ -278,7 +301,6 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
     for (const t of [
       'sz_js_while', // int-2d ainda não
       'sz_math_arithmetic',
-      'sz_g2d_sprite_vx',
       'sz_w3d_setup', // Mundo 3D é int-3d
     ]) {
       expect(types.has(t)).toBe(false)

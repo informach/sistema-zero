@@ -196,6 +196,7 @@ interface Api {
 
 interface Harness {
   api: Api
+  window: Record<string, unknown>
   inspectors: Record<string, () => unknown>
   fire: (name: string, ev?: unknown) => void
   nextFrame: (ts: number) => void
@@ -233,6 +234,7 @@ function loadRuntime(): Harness {
   if (!api) throw new Error('runtime não montou window.SZGameKit')
   return {
     api,
+    window: win,
     inspectors,
     fire: (name, ev = {}) => {
       for (const fn of listeners[name] ?? []) fn(ev)
@@ -1254,7 +1256,7 @@ describe('gk — JOGAR uma aventura inteira do 🧙 Kit RPG', () => {
       behavior: vilaDoDragaoExample.ir.behavior,
       lifecycle: 'game-2d-advanced',
     })
-    new Function('SZGameKit', code)(h.api)
+    new Function('window', 'SZGameKit', code)(h.window, h.api)
     await Promise.resolve()
     await Promise.resolve()
 

@@ -17,7 +17,7 @@ import { world3DRuntime } from '../runtime'
  * Auditoria GENÉRICA de todos os blocos do Mundo 3D (clone do blockAudit do
  * Jogo 3D Avançado) — um caso por def, com os valores DEFAULT:
  *
- *   1. def → IR: o bloco no frame de Comportamento vira um nó w3d: (não é
+ *   1. def → IR: o bloco na área indicada pelo contrato vira um nó w3d: (não é
  *      rascunho nem rawJS) e a IR valida no SZIRSchema (drift do zod).
  *   2. IR → blocos → IR: reconstruir e recoletar devolve a MESMA IR.
  *   3. IR → JS: todo helper `SZWorld3D.x(...)` emitido EXISTE no runtime.
@@ -72,7 +72,7 @@ function loadRuntimeKeys(): Set<string> {
   return new Set(Object.keys(api))
 }
 
-/** Instancia o bloco com defaults dentro do frame de Comportamento e coleta a IR. */
+/** Instancia o bloco com defaults na área indicada pelo contrato e coleta a IR. */
 function buildIrFor(type: string, kind: 'statement' | 'expr'): JSStatement[] {
   const ws = new Blockly.Workspace()
   try {

@@ -23,6 +23,7 @@ import {
 import { getSuperName } from './blocks/extendsMutator'
 import { getParamNames } from './blocks/paramsMutator'
 import { ADDON_MODULES } from './fields/FieldAddonPicker'
+import { PROGRAMMING_VISIBLE_TYPES } from './programmingContract'
 
 /** Tipos das cinco Áreas do projeto e da moldura legada de migração. */
 export {
@@ -441,6 +442,8 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g2d:angleTo', aVar: f(block, 'A'), bVar: f(block, 'B') }
     case 'sz_g2d_get_health':
       return { type: 'g2d:getHealth', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_get_max_health':
+      return { type: 'g2d:getMaxHealth', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_enemy_damage':
       return { type: 'g2d:enemyDamage', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_sprite_x':
@@ -484,6 +487,8 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       }
     case 'sz_g2d_has_health':
       return { type: 'g2d:hasHealth', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_health_depleted':
+      return { type: 'g2d:healthDepleted', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_cooldown_ready':
       return {
         type: 'g2d:cooldownReady',
@@ -4437,6 +4442,17 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           delta: exprInput(block, 'DELTA', { type: 'num', value: -1 }),
         },
       }
+    case 'sz_g2d_damage_sprite':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:damageSprite',
+          spriteVar: f(block, 'SPRITE'),
+          amount: exprInput(block, 'AMOUNT', { type: 'num', value: 1 }),
+          invincibilityFrames: exprInput(block, 'FRAMES', { type: 'num', value: 45 }),
+        },
+      }
     case 'sz_g2d_flip_sprite':
       seen.add('game-2d')
       return {
@@ -5198,6 +5214,21 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           color: f(block, 'COLOR'),
         },
       }
+    case 'sz_g2d_draw_sprite_health':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:drawSpriteHealth',
+          ctxVar: 'ctx',
+          spriteVar: f(block, 'SPRITE'),
+          style: (f(block, 'STYLE') || 'hearts') as 'hearts' | 'bar',
+          x: exprInput(block, 'X', { type: 'num', value: 12 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 48 }),
+          size: exprInput(block, 'SIZE', { type: 'num', value: 22 }),
+          color: f(block, 'COLOR'),
+        },
+      }
     case 'sz_g2d_draw_bar':
       seen.add('game-2d')
       return {
@@ -5212,6 +5243,15 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           w: exprInput(block, 'W', { type: 'num', value: 120 }),
           h: exprInput(block, 'H', { type: 'num', value: 14 }),
           color: f(block, 'COLOR'),
+        },
+      }
+    case 'sz_g2d_set_stage_description':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:setStageDescription',
+          description: f(block, 'DESCRIPTION'),
         },
       }
     case 'sz_g2d_set_scene':
@@ -5264,7 +5304,6 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           width: exprInput(block, 'W', { type: 'num', value: 800 }),
           height: exprInput(block, 'H', { type: 'num', value: 480 }),
           bg: f(block, 'BG'),
-          description: f(block, 'DESCRIPTION'),
         },
       }
     case 'sz_g2d_setup_full':
@@ -5274,7 +5313,6 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         value: {
           type: 'g2d:setupFull',
           bg: f(block, 'BG'),
-          description: f(block, 'DESCRIPTION'),
         },
       }
 
@@ -10593,7 +10631,12 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       }
 
     default:
-      // Bloco desconhecido — não devemos chegar aqui em uso normal. Loga e ignora.
+      // Um bloco ofertado por Programação sem adapter é violação do contrato e
+      // nunca pode virar perda silenciosa de trabalho. Extensões desconhecidas
+      // continuam toleradas para compatibilidade com estados externos.
+      if (PROGRAMMING_VISIBLE_TYPES.has(block.type)) {
+        throw new Error(`Bloco de Programação sem adapter de IR: ${block.type}`)
+      }
       console.warn('Bloco desconhecido ignorado:', block.type)
       return null
   }

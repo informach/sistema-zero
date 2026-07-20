@@ -95,6 +95,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
       spinSpeed: (Math.random() - 0.5) * 0.002
     };
     group.items.push(s);
+    _touchGroup(group);
     return s;
   }
   /** Desenha o asteroide: polígono irregular (com "calombos") girando + crateras. */
@@ -217,7 +218,8 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     }
     return {
       items: [],
-      bullets: { items: [] },
+      _revision: 0,
+      bullets: createGroup(),
       config: {
         behavior: opts.behavior || 'patrulha',
         color: opts.color || '#e4573d',
@@ -235,7 +237,9 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
         shotSpeed: 4,
         animStates: null
       },
-      onDefeat: null
+      onDefeat: null,
+      _defeatHandlers: Object.create(null),
+      _defeatOrder: []
     };
   }
 
@@ -288,6 +292,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     // update/draw (lista vazia DEPOIS disso é derrota legítima, não esquecimento).
     type._spawned = true;
     type.items.push(s);
+    _touchGroup(type);
     return s;
   }
 
@@ -315,11 +320,11 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     warnEnemyTypeEmptyOnce(type);
     if (!type || !type.items || !ctx || !ctx.canvas) return;
     var c = type.config || {};
-    var w = stageW(ctx), h = stageH(ctx);
+    var visible = _visibleWorldRect(ctx);
     var g = world.gravity > 0 ? world.gravity : 0.6;
     for (var i = type.items.length - 1; i >= 0; i--) {
       var s = type.items[i];
-      if (!s) { type.items.splice(i, 1); continue; }
+      if (!s) { type.items.splice(i, 1); _touchGroup(type); continue; }
       // Animações registradas DEPOIS do spawn ainda alcançam este inimigo.
       if (c.animStates && !s.animStates) s.animStates = c.animStates;
       var b = c.behavior;
@@ -352,7 +357,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
         s.vx = 0;
         s.vy = (s.vy || 0) + g;
         s.y += s.vy;
-        var floorJ = h - s.h;
+        var floorJ = visible.bottom - s.h;
         s.onGround = false;
         if (s.y >= floorJ) { s.y = floorJ; s.vy = 0; s.onGround = true; }
         if (typeof s._jcd !== 'number') s._jcd = c.jumpRate;
@@ -365,7 +370,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
         s.vx = 0;
         s.vy = (s.vy || 0) + g;
         s.y += s.vy;
-        var floorS = h - s.h;
+        var floorS = visible.bottom - s.h;
         s.onGround = false;
         if (s.y >= floorS) { s.y = floorS; s.vy = 0; s.onGround = true; }
         if (target) {
@@ -395,13 +400,13 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
         // "Parede" = alguem zerou o vx dele neste meio-tempo (o "Impedir de
         // atravessar os tiles" zera o vx ao bater) — 1 quadro de latencia, ok.
         if (s._moved && (s.vx || 0) === 0) s._dir = -(s._dir || 1);
-        if (s.x <= 0) s._dir = 1;
-        if (s.x + s.w >= w) s._dir = -1;
+        if (s.x <= visible.left) s._dir = 1;
+        if (s.x + s.w >= visible.right) s._dir = -1;
         s.vx = (s._dir || 1) * c.speed;
         s.x += s.vx;
         s.vy = (s.vy || 0) + g;
         s.y += s.vy;
-        var floorP = h - s.h;
+        var floorP = visible.bottom - s.h;
         s.onGround = false;
         if (s.y >= floorP) { s.y = floorP; s.vy = 0; s.onGround = true; }
         s._moved = true;
@@ -410,8 +415,9 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
       // Derrotado: some soltando particulas e avisa o "quando for derrotado".
       if (typeof s.hp === 'number' && s.hp <= 0) {
         type.items.splice(i, 1);
+        _touchGroup(type);
         emitParticles(s.x + s.w / 2, s.y + s.h / 2, 12, s.color || c.color);
-        if (typeof type.onDefeat === 'function') type.onDefeat(s);
+        _runEnemyDefeatHandlers(type, s);
       }
     }
     // Tiros dos atiradores: linha RETA (sem a gravidade do mundo — nao usar
@@ -420,10 +426,10 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     if (bs) {
       for (var k = bs.length - 1; k >= 0; k--) {
         var shot2 = bs[k];
-        if (!shot2) { bs.splice(k, 1); continue; }
+        if (!shot2) { bs.splice(k, 1); _touchGroup(type.bullets); continue; }
         shot2.x += shot2.vx || 0;
         shot2.y += shot2.vy || 0;
-        if (shot2.x < -40 || shot2.y < -40 || shot2.x > w + 40 || shot2.y > h + 40) bs.splice(k, 1);
+        if (shot2.x < visible.left - 40 || shot2.y < visible.top - 40 || shot2.x > visible.right + 40 || shot2.y > visible.bottom + 40) { bs.splice(k, 1); _touchGroup(type.bullets); }
       }
     }
   }
@@ -436,10 +442,32 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     drawGroup(ctx, type.bullets);
   }
 
-  /** Registra "quando um inimigo do tipo for derrotado" (roda com o inimigo). */
-  function onEnemyDefeated(type, fn) {
+  function _runEnemyDefeatHandlers(type, sprite) {
     if (!type) return;
-    type.onDefeat = (typeof fn === 'function') ? fn : null;
+    var order = type._defeatOrder ? type._defeatOrder.slice() : [];
+    // Compatibilidade com código antigo que atribuía type.onDefeat diretamente.
+    if (!order.length && typeof type.onDefeat === 'function') order.push('__legacy__');
+    for (var i = 0; i < order.length; i++) {
+      var id = order[i];
+      var handler = id === '__legacy__' ? type.onDefeat : type._defeatHandlers[id];
+      if (typeof handler !== 'function') continue;
+      try { handler(sprite); }
+      catch (error) {
+        _reportHandlerError('“Quando um inimigo for derrotado”', id, error);
+        if (id === '__legacy__') type.onDefeat = null;
+        else _removeOrdered(type._defeatHandlers, type._defeatOrder, id);
+      }
+    }
+  }
+
+  /** Registra eventos independentes de derrota, identificados pelo bloco. */
+  function onEnemyDefeated(type, fn, explicitId) {
+    if (!type || typeof fn !== 'function') return;
+    if (!type._defeatHandlers) type._defeatHandlers = Object.create(null);
+    if (!type._defeatOrder) type._defeatOrder = [];
+    var id = _stableHandlerId('inimigo-derrotado', explicitId, fn);
+    if (!type._defeatHandlers[id]) type._defeatOrder.push(id);
+    type._defeatHandlers[id] = fn;
   }
 
   /**
@@ -456,6 +484,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
       var shot = items[i];
       if (shot && isColliding(sprite, shot)) {
         items.splice(i, 1);
+        _touchGroup(type.bullets);
         fn(shot);
       }
     }
@@ -473,9 +502,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
    */
   function hurtByEnemy(s, e) {
     if (!s || !e) return;
-    if ((s.blinkFrames || 0) > 0) return;
-    changeHealth(s, -enemyDamage(e));
-    blink(s, 45);
+    damageSprite(s, enemyDamage(e), 45);
   }
 
   // ---- HUD no canvas: placar, texto, vidas (corações) e barra ----
@@ -537,6 +564,19 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     ctx.fillStyle = color || '#9cff57';
     ctx.fillRect(x || 0, y || 0, bw * frac, bh);
     ctx.restore();
+  }
+  /** HUD de vidas ligado ao sprite: corações ou barra, sem variável intermediária. */
+  function drawSpriteHealth(ctx, sprite, style, x, y, size, color) {
+    if (!ctx || !sprite) return;
+    if (!_hasInitializedHealth(sprite)) { _warnHealthNotInitialized(); return; }
+    var visual = style === 'bar' ? 'bar' : 'hearts';
+    if (visual === 'bar') {
+      var width = (typeof size === 'number' && Number.isFinite(size) && size > 0) ? size : 160;
+      var height = Math.max(8, Math.round(width / 10));
+      drawBar(ctx, sprite.hp, sprite.hpMax, x, y, width, height, color);
+      return;
+    }
+    drawHearts(ctx, sprite.hp, x, y, size, color);
   }
 
   // ---- Estado do jogo (cenas): início → jogando → ganhou → perdeu ----
@@ -625,7 +665,10 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
         var start = _startHandlers[id];
         if (typeof start !== 'function') continue;
         try { start(); }
-        catch (error) { _reportHandlerError('“Ao iniciar”', id, error); }
+        catch (error) {
+          _reportHandlerError('“Ao iniciar”', id, error);
+          _removeOrdered(_startHandlers, _startOrder, id);
+        }
       }
     } finally {
       _restarting = false;
@@ -683,7 +726,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
   /** Faz o sprite seguir o dedo/mouse SÓ na horizontal (ótimo p/ nave no celular). */
   function dragX(sprite) {
     if (!sprite) return;
-    sprite.x = pointer.x - sprite.w / 2;
+    sprite.x = pointer.x + camera.x - sprite.w / 2;
   }
 
   // ---- Pulo no chão (genérico) + Kit dino (v0.9.0) ----
@@ -696,7 +739,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     var g = world.gravity > 0 ? world.gravity : 0.6;
     sprite.vy = (sprite.vy || 0) + g;
     sprite.y += sprite.vy;
-    var floor = stageH(ctx) - sprite.h;
+    var floor = _visibleWorldRect(ctx).bottom - sprite.h;
     // Persiste "no chão" NO sprite (mesmo contrato do platformer/autoAnimate).
     sprite.onGround = false;
     if (sprite.y >= floor) { sprite.y = floor; sprite.vy = 0; sprite.onGround = true; }
@@ -709,8 +752,8 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
   // Linha do chão do mundo "corrida": fica um pouco acima da base p/ o dino
   // correr sobre a grama desenhada por drawForest (não colado na borda).
   function dinoGround(ctx) {
-    var h = stageH(ctx);
-    return h - Math.round(h * 0.16);
+    var visible = _visibleWorldRect(ctx);
+    return visible.bottom - Math.round(visible.height * 0.16);
   }
 
   /** Cria um dinossauro desenhado (corre sozinho; pose muda no pulo/agachar). */
@@ -884,6 +927,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     var s = createSprite({ x: opts.x, y: y, w: w, h: h, color: '#3f8f49', vx: opts.vx, vy: 0 });
     s.skin = { kind: 'obstacle', shape: type, flap: Math.random() * Math.PI * 2 };
     group.items.push(s);
+    _touchGroup(group);
     return s;
   }
   /** Desenha o obstáculo conforme a forma (cacto, pedra ou pássaro batendo asas). */
@@ -973,6 +1017,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     var s = createSprite({ x: opts.x, y: opts.y, w: 30, h: 38, color: '#fff3c4', vx: opts.vx, vy: 0 });
     s.skin = { kind: 'egg', bob: Math.random() * Math.PI * 2 };
     group.items.push(s);
+    _touchGroup(group);
     return s;
   }
   /** Desenha o ovo (casca clara com manchinhas e um brilho que pisca). */

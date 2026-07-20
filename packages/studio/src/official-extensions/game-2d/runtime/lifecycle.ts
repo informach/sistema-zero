@@ -23,6 +23,14 @@ export const gameTwoDLifecycleRuntime = `  // ---- Ciclo de vida da partida ----
     _consecutiveDroppedTicks = 0;
   }
 
+  function _suspendDriver() {
+    if (_driverFrame && typeof cancelAnimationFrame === 'function') {
+      cancelAnimationFrame(_driverFrame);
+    }
+    _driverFrame = 0;
+    _resetDriverClock();
+  }
+
   function _stableHandlerId(prefix, explicitId, fn) {
     if (typeof explicitId === 'string' && explicitId) return prefix + ':' + explicitId;
     var known = _handlerIds.get(fn);
@@ -115,11 +123,11 @@ export const gameTwoDLifecycleRuntime = `  // ---- Ciclo de vida da partida ----
         _consecutiveDroppedTicks = 0;
       }
     }
-    if (_driverHasWork()) _driverFrame = requestAnimationFrame(_driverTick);
+    if (!_paused && _driverHasWork()) _driverFrame = requestAnimationFrame(_driverTick);
   }
 
   function _ensureDriver() {
-    if (!_driverFrame && _driverHasWork()) _driverFrame = requestAnimationFrame(_driverTick);
+    if (!_paused && !_driverFrame && _driverHasWork()) _driverFrame = requestAnimationFrame(_driverTick);
   }
 
   /** Registra um comportamento de quadro. Blocos diferentes rodam juntos. */
@@ -151,14 +159,15 @@ export const gameTwoDLifecycleRuntime = `  // ---- Ciclo de vida da partida ----
     if (!_startHandlers[id]) _startOrder.push(id);
     _startHandlers[id] = fn;
     try { fn(); }
-    catch (error) { _reportHandlerError('“Ao iniciar”', id, error); }
+    catch (error) {
+      _reportHandlerError('“Ao iniciar”', id, error);
+      _removeOrdered(_startHandlers, _startOrder, id);
+    }
   }
 
   _registerRuntimeDomain('lifecycle', {
     reset: function () {
-      if (_driverFrame && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(_driverFrame);
-      _driverFrame = 0;
-      _resetDriverClock();
+      _suspendDriver();
       _loopHandlers = Object.create(null);
       _loopOrder = [];
       _runningLoopId = null;

@@ -344,9 +344,20 @@ describe('FieldNamePicker', () => {
       expect(kindOf('sz_js_var_increment')).toBe('mutable-variable')
     })
 
-    it('alteração exige escolher um nome existente; leitura ainda aceita texto livre', () => {
+    it('consumidores de símbolos exigem escolher um nome existente', () => {
       expect(nameKindAllowsFreeText('mutable-variable')).toBe(false)
-      expect(nameKindAllowsFreeText('variable')).toBe(true)
+      expect(nameKindAllowsFreeText('variable')).toBe(false)
+      expect(nameKindAllowsFreeText('dom-target')).toBe(false)
+      expect(nameKindAllowsFreeText('group')).toBe(false)
+      expect(nameKindAllowsFreeText('class')).toBe(false)
+      expect(nameKindAllowsFreeText('function')).toBe(false)
+    })
+
+    it('o bloco iniciante de propriedade consome uma variável declarada', () => {
+      const block = new Blockly.Workspace().newBlock('sz_js_set_property_var')
+      const field = block.getField('NAME')
+      expect(field).toBeInstanceOf(FieldNamePicker)
+      expect((field as FieldNamePicker).kind).toBe('variable')
     })
   })
 
@@ -398,6 +409,58 @@ describe('FieldNamePicker', () => {
 
       expect(collectGroupsAndLists(ws)).toEqual([])
     })
+
+    it('oferece uma lista somente depois da declaração no mesmo encadeamento', () => {
+      const ws = new Blockly.Workspace()
+      const frame = ws.newBlock('sz_frame_start')
+      const before = ws.newBlock('sz_js_console_log_value')
+      const beforeList = ws.newBlock('sz_val_array_length')
+      before
+        .getInput('VALUE')
+        ?.connection?.connect(beforeList.outputConnection as Blockly.Connection)
+      const declaration = ws.newBlock('sz_js_var_create')
+      declaration.setFieldValue('itens', 'NAME')
+      const array = ws.newBlock('sz_val_array')
+      declaration
+        .getInput('VALUE')
+        ?.connection?.connect(array.outputConnection as Blockly.Connection)
+      const after = ws.newBlock('sz_js_console_log_value')
+      const afterList = ws.newBlock('sz_val_array_length')
+      after.getInput('VALUE')?.connection?.connect(afterList.outputConnection as Blockly.Connection)
+
+      frame
+        .getInput('CHILDREN')
+        ?.connection?.connect(before.previousConnection as Blockly.Connection)
+      before.nextConnection?.connect(declaration.previousConnection as Blockly.Connection)
+      declaration.nextConnection?.connect(after.previousConnection as Blockly.Connection)
+
+      expect(collectGroupsAndLists(beforeList)).not.toContain('itens')
+      expect(collectGroupsAndLists(afterList)).toContain('itens')
+    })
+
+    it('não deixa uma lista local escapar do corpo de um evento', () => {
+      const ws = new Blockly.Workspace()
+      const event = ws.newBlock('sz_js_on_click_anywhere')
+      const declaration = ws.newBlock('sz_js_var_create')
+      declaration.setFieldValue('cliques', 'NAME')
+      const array = ws.newBlock('sz_val_array')
+      declaration
+        .getInput('VALUE')
+        ?.connection?.connect(array.outputConnection as Blockly.Connection)
+      const inside = ws.newBlock('sz_js_console_log_value')
+      const insideList = ws.newBlock('sz_val_array_length')
+      inside
+        .getInput('VALUE')
+        ?.connection?.connect(insideList.outputConnection as Blockly.Connection)
+      declaration.nextConnection?.connect(inside.previousConnection as Blockly.Connection)
+      event
+        .getInput('DO')
+        ?.connection?.connect(declaration.previousConnection as Blockly.Connection)
+
+      const outside = ws.newBlock('sz_val_array_length')
+      expect(collectGroupsAndLists(insideList)).toContain('cliques')
+      expect(collectGroupsAndLists(outside)).not.toContain('cliques')
+    })
   })
 
   describe('fiação do campo (kind chega no fromJson; valor continua string)', () => {
@@ -432,6 +495,37 @@ describe('FieldNamePicker', () => {
       const ws = new Blockly.Workspace()
       ws.newBlock('sz_js_function').setFieldValue('fazerAlgo', 'NAME')
       expect(collectFunctionNames(ws)).toEqual(['fazerAlgo'])
+    })
+
+    it('não oferece uma classe antes da declaração, mas oferece depois', () => {
+      const ws = new Blockly.Workspace()
+      const frame = ws.newBlock('sz_frame_start')
+      const before = ws.newBlock('sz_js_new_var')
+      const declaration = ws.newBlock('sz_js_class')
+      declaration.setFieldValue('Heroi', 'NAME')
+      const after = ws.newBlock('sz_js_new_var')
+      frame
+        .getInput('CHILDREN')
+        ?.connection?.connect(before.previousConnection as Blockly.Connection)
+      before.nextConnection?.connect(declaration.previousConnection as Blockly.Connection)
+      declaration.nextConnection?.connect(after.previousConnection as Blockly.Connection)
+
+      expect(collectClassNames(before)).not.toContain('Heroi')
+      expect(collectClassNames(after)).toContain('Heroi')
+    })
+
+    it('mantém funções no escopo léxico, com hoisting dentro do próprio escopo', () => {
+      const ws = new Blockly.Workspace()
+      const event = ws.newBlock('sz_js_on_click_anywhere')
+      const callBefore = ws.newBlock('sz_js_call_function')
+      const declaration = ws.newBlock('sz_js_function')
+      declaration.setFieldValue('local', 'NAME')
+      callBefore.nextConnection?.connect(declaration.previousConnection as Blockly.Connection)
+      event.getInput('DO')?.connection?.connect(callBefore.previousConnection as Blockly.Connection)
+
+      const outside = ws.newBlock('sz_js_call_function')
+      expect(collectFunctionNames(callBefore)).toContain('local')
+      expect(collectFunctionNames(outside)).not.toContain('local')
     })
 
     it('lista os métodos de todas as classes (fallback global)', () => {

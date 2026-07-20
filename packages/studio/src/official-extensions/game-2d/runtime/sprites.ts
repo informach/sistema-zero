@@ -2,8 +2,8 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   // Manifesto semeado pelo assetsBridge (window.__SZGAME_ASSETS = { nome: dataUrl }).
   // Resolvemos nomes de asset OU URLs/dataUrls diretas. As imagens carregam de
   // forma ASSÍNCRONA, mas a API é SÍNCRONA e didática: loadImage devolve um handle
-  // { img, loaded } na hora; drawSprite desenha quando loaded, senão cai no
-  // placeholder (retângulo da cor). Como o gameLoop roda todo frame, a imagem
+  // { img, loaded } na hora; drawSprite desenha quando loaded e preserva o cenário
+  // enquanto carrega. Como o gameLoop roda todo frame, a imagem
   // aparece 1–2 frames depois. Sem await/callback.
   var ASSETS = (window.__SZGAME_ASSETS && typeof window.__SZGAME_ASSETS === 'object')
     ? window.__SZGAME_ASSETS
@@ -72,12 +72,12 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
       warnOnce('img:' + src, 'a imagem "' + src + '" não está no projeto. Confira o nome no painel Imagens (maiúsculas e espaços contam).');
     }
     if (imageCache[url]) return imageCache[url];
-    var handle = { img: null, loaded: false, url: url };
+    var handle = { img: null, loaded: false, failed: false, url: url };
     try {
       var im = new Image();
       handle.img = im;
-      im.onload = function () { handle.loaded = true; };
-      im.onerror = function () { handle.loaded = false; warnOnce('imgerr:' + url, 'não consegui carregar a imagem "' + src + '".'); };
+      im.onload = function () { handle.loaded = true; handle.failed = false; };
+      im.onerror = function () { handle.loaded = false; handle.failed = true; warnOnce('imgerr:' + url, 'não consegui carregar a imagem "' + src + '".'); };
       im.src = url;
     } catch (e) {}
     imageCache[url] = handle;
@@ -118,6 +118,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   /** Troca a imagem fixa do sprite (e cancela a animação atual). */
   function setImage(sprite, name) {
     if (!sprite) return;
+    sprite.skin = null;
     sprite.image = name ? loadImage(name) : null;
     sprite.anim = null;
     sprite._animState = null;
@@ -221,6 +222,9 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    */
   function setAnimation(sprite, sheet, from, to, fps) {
     if (!sprite || !sheet) return;
+    sprite.skin = null;
+    sprite.image = null;
+    sprite._imgHooked = false;
     var f = (typeof from === 'number') ? from : 0;
     var t = (typeof to === 'number') ? to : f;
     sprite.anim = {
@@ -335,8 +339,8 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
 
   /**
    * Desenha o sprite no contexto 2d. Prioridade: animação de spritesheet →
-   * imagem fixa → placeholder (retângulo da cor, enquanto a imagem carrega ou se
-   * não houver imagem). Mantém o comportamento antigo (só fillRect) para sprites
+   * imagem fixa → placeholder (retângulo da cor, se a carga falhar ou se não
+   * houver imagem). Mantém o comportamento antigo (só fillRect) para sprites
    * sem imagem — retrocompatível.
    */
   // Wrapper público: aplica o "piscar" (invencibilidade) e delega o desenho real.
@@ -356,8 +360,8 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     if (op >= 1) { _drawSpriteRaw(ctx, sprite); return; }
     var pa = ctx.globalAlpha;
     ctx.globalAlpha = Math.max(0, op);
-    _drawSpriteRaw(ctx, sprite);
-    ctx.globalAlpha = pa;
+    try { _drawSpriteRaw(ctx, sprite); }
+    finally { ctx.globalAlpha = pa; }
   }
   function _drawSpriteRaw(ctx, sprite) {
     if (!ctx || !sprite) return;
@@ -372,8 +376,8 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     if (ang) ctx.rotate(ang);
     if (flip) ctx.scale(-1, 1);
     ctx.translate(-cx, -cy);
-    _drawSpriteBody(ctx, sprite);
-    ctx.restore();
+    try { _drawSpriteBody(ctx, sprite); }
+    finally { ctx.restore(); }
   }
   function _drawSpriteBody(ctx, sprite) {
     if (!ctx || !sprite) return;
@@ -412,14 +416,30 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     if (fixed && fixed.img && !fixed.loaded && !sprite._imgHooked) {
       sprite._imgHooked = true;
       try {
-        fixed.img.addEventListener('load', function () {
-          try { ctx.clearRect(sprite.x, sprite.y, sprite.w, sprite.h); } catch (e) {}
-          _crispDraw(ctx, fixed.img.naturalWidth || sprite.w, sprite.w, function () {
-            ctx.drawImage(fixed.img, sprite.x, sprite.y, sprite.w, sprite.h);
-          });
-        });
-      } catch (e) {}
+        var redrawFinishedImage = function () {
+          if (fixed.img && typeof fixed.img.removeEventListener === 'function') {
+            fixed.img.removeEventListener('load', redrawFinishedImage);
+            fixed.img.removeEventListener('error', redrawFinishedImage);
+          }
+          // O sprite pode ter trocado de imagem enquanto esta carga estava pendente.
+          if (sprite.image !== fixed) return;
+          try {
+            _camWrap(function (redrawCtx, redrawSprite) {
+              drawSprite(redrawCtx, redrawSprite);
+            })(ctx, sprite);
+          } catch (e) {
+            warnOnce('imgredraw:' + fixed.url, 'não consegui redesenhar a imagem que terminou de carregar.');
+          }
+        };
+        fixed.img.addEventListener('load', redrawFinishedImage, { once: true });
+        fixed.img.addEventListener('error', redrawFinishedImage, { once: true });
+      } catch (e) {
+        warnOnce('imghook:' + fixed.url, 'não consegui acompanhar o carregamento da imagem.');
+      }
     }
+    // Enquanto carrega, não pinta um retângulo por cima do cenário. Se a carga
+    // falhar, o retângulo colorido continua sendo um fallback claro e seguro.
+    if (fixed && !fixed.loaded && !fixed.failed) return;
     ctx.fillStyle = sprite.color;
     ctx.fillRect(sprite.x, sprite.y, sprite.w, sprite.h);
   }

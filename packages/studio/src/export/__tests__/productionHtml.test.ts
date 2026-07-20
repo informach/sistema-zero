@@ -52,6 +52,24 @@ describe('buildProductionIndexHtml', () => {
     expect(out).toMatch(/<head>\s*<meta http-equiv="Content-Security-Policy"/i)
   })
 
+  it('carrega o runtime de entrada antes de JavaScript inline no head', () => {
+    const inlineScript = '<script>window.tecla = __szInput.key("Enter")</script>'
+    const out = buildProductionIndexHtml({
+      html: `<!doctype html><html><head>${inlineScript}</head><body></body></html>`,
+      hasExternalCss: false,
+      hasExternalJs: false,
+      jsIsModule: false,
+      importmap: {},
+      extensionScriptSrcs: [],
+      extraCssHrefs: [],
+      extraHtmlFragments: [],
+      inputScriptSrc: 'sz-input.js',
+    })
+
+    expect(out.indexOf('src="sz-input.js"')).toBeGreaterThan(-1)
+    expect(out.indexOf('src="sz-input.js"')).toBeLessThan(out.indexOf(inlineScript))
+  })
+
   it('injeta importmap, script de extensao (module) e adia o script classico', () => {
     const out = buildProductionIndexHtml({
       html: BASE_HTML,

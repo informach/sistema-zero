@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'bun:test'
-import { createProjectRunContext, type ProjectRunClock } from './projectRunContext'
+import {
+  buildProjectRunContextRuntime,
+  createProjectRunContext,
+  type ManagedProjectRun,
+  type ProjectRunClock,
+} from './projectRunContext'
 
 function fakeClock() {
   let nextId = 1
@@ -77,5 +82,39 @@ describe('ProjectRunContext', () => {
     expect(run.signal.aborted).toBe(true)
     expect(disposed).toEqual(['segundo', 'primeiro'])
     expect(time.pending()).toBe(0)
+  })
+
+  it('executa no iframe a mesma factory e descarta a execução anterior no begin', () => {
+    class RuntimeWindow extends EventTarget {
+      __SZProjectLifecycle?: {
+        begin(requestRestart?: () => void): ManagedProjectRun
+        dispose(): void
+      }
+    }
+
+    const runtimeWindow = new RuntimeWindow()
+    const time = fakeClock()
+    new Function(
+      'window',
+      'requestAnimationFrame',
+      'cancelAnimationFrame',
+      'AbortController',
+      'console',
+      buildProjectRunContextRuntime(),
+    )(runtimeWindow, time.clock.requestFrame, time.clock.cancelFrame, AbortController, console)
+    const lifecycle = runtimeWindow.__SZProjectLifecycle
+    if (!lifecycle) throw new Error('runtime não publicou o manager de execução')
+
+    const disposed: string[] = []
+    const first = lifecycle.begin()
+    first.registerResource(() => disposed.push('primeira'))
+    const second = lifecycle.begin()
+
+    expect(first.signal.aborted).toBe(true)
+    expect(second.signal.aborted).toBe(false)
+    expect(disposed).toEqual(['primeira'])
+
+    runtimeWindow.dispatchEvent(new Event('pagehide'))
+    expect(second.signal.aborted).toBe(true)
   })
 })

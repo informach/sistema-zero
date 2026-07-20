@@ -37,6 +37,18 @@ function liftBeginnerPeriodicLoops(loops: JSStatement[]): JSStatement[] {
   return [...roots, ...lifted]
 }
 
+function accessibleGameDescription(example: ExtensionExample): string {
+  const descriptions: Record<string, string> = {
+    'Aventura com câmera': 'Colete 4 moedas. Use as setas para explorar o caminho.',
+    'Plataforma com inimigos':
+      'Derrote os inimigos e faça pontos. Use as setas para andar e pular; Espaço atira.',
+    'Jogo desenhado por código': 'Pegue as moedas. Use as setas para andar.',
+  }
+  const tailoredDescription = descriptions[example.name]
+  if (tailoredDescription) return tailoredDescription
+  return example.description ?? `Jogo 2D: ${example.name}`
+}
+
 /**
  * Todos os cartões ensinam o mesmo caminho que a criança usa nas aulas: um
  * “Ao iniciar” prepara o palco implícito; eventos e loops ficam nas áreas próprias.
@@ -71,8 +83,12 @@ export function beginnerGameExample(example: ExtensionExample): ExtensionExample
             width: canvas.width,
             height: canvas.height,
             bg: background,
-            description: example.description,
             __id: startId,
+          },
+          {
+            type: 'g2d:setStageDescription',
+            description: accessibleGameDescription(example),
+            __id: `${startId}-descricao`,
           },
           ...example.ir.behavior.start,
         ],

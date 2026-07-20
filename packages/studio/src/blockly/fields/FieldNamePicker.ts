@@ -47,9 +47,9 @@ type ScopedBinderRegistry = Readonly<Record<string, ScopedBinder>>
  *
  * Estende `FieldTextInput` (NÃO `FieldDropdown`), então o VALOR continua sendo uma
  * string — IR, round-trip, serialização e allowlist ficam IDÊNTICOS a um
- * `field_input`; este campo só troca o EDITOR por um seletor visual. Quase todos os
- * tipos mantêm um campo de texto para criar nomes; alterar variável exige escolher
- * uma variável mutável já visível. A coleta lê o PRÓPRIO workspace do bloco.
+ * `field_input`; este campo só troca o EDITOR por um seletor visual. Campos que
+ * consomem um símbolo (`group`, `class`, `function` e `mutable-variable`) exigem uma
+ * declaração visível; campos declaradores continuam sendo `field_input`.
  *
  * ⚠️ `FieldDropdown` não serve: ele valida o valor contra a lista de opções e coage
  * um nome desconhecido para a 1ª opção → perderia o nome do aluno no round-trip.
@@ -103,8 +103,17 @@ export type NameKind =
   | 'w3dquest'
   | 'w3dachieve'
 
+const DECLARED_NAME_KINDS: ReadonlySet<NameKind> = new Set([
+  'variable',
+  'mutable-variable',
+  'group',
+  'class',
+  'function',
+  'dom-target',
+])
+
 export function nameKindAllowsFreeText(kind: NameKind): boolean {
-  return kind !== 'mutable-variable'
+  return !DECLARED_NAME_KINDS.has(kind)
 }
 
 const NAME_KINDS: readonly NameKind[] = [
@@ -1034,6 +1043,20 @@ function collectDeclaredNames(
   return ordered
 }
 
+type NameLookupTarget = Blockly.Workspace | Blockly.Block | null | undefined
+
+function nameLookupContext(target: NameLookupTarget): {
+  workspace: Blockly.Workspace | null
+  useBlock: Blockly.Block | null
+} {
+  if (!target) return { workspace: null, useBlock: null }
+  if (typeof (target as Blockly.Block).getSurroundParent === 'function') {
+    const useBlock = target as Blockly.Block
+    return { workspace: useBlock.workspace ?? null, useBlock }
+  }
+  return { workspace: target as Blockly.Workspace, useBlock: null }
+}
+
 function containingInput(parent: Blockly.Block, child: Blockly.Block): Blockly.Input | null {
   for (const input of parent.inputList) {
     let current = input.connection?.targetBlock() ?? null
@@ -1226,8 +1249,10 @@ export function collectScopedFunctionNames(block: Blockly.Block | null | undefin
  * Grupos de sprites (Jogo 2D) + listas de verdade (variáveis que guardam um
  * `sz_val_array`), na ordem dos blocos, sem repetir. "Grupo ≡ lista".
  */
-export function collectGroupsAndLists(workspace: Blockly.Workspace | null | undefined): string[] {
+export function collectGroupsAndLists(target: NameLookupTarget): string[] {
+  const { workspace, useBlock } = nameLookupContext(target)
   if (!workspace) return []
+  const visibleScopes = useBlock ? new Set(variableScopeKeys(useBlock)) : null
   const seen = new Set<string>()
   const ordered: string[] = []
   const add = (name: string | null): void => {
@@ -1236,6 +1261,11 @@ export function collectGroupsAndLists(workspace: Blockly.Workspace | null | unde
     ordered.push(name)
   }
   for (const block of workspace.getAllBlocks(false)) {
+    if (visibleScopes) {
+      const declarationScope = variableScopeKeys(block)[0] ?? 'global'
+      if (!visibleScopes.has(declarationScope)) continue
+      if (!declarationPrecedesUse(block, useBlock as Blockly.Block, declarationScope)) continue
+    }
     const groupFields = GROUP_DECL_BLOCKS[block.type]
     if (groupFields) {
       for (const f of groupFields) {
@@ -1252,13 +1282,27 @@ export function collectGroupsAndLists(workspace: Blockly.Workspace | null | unde
 }
 
 /** Nomes de classe (`sz_js_class`) declarados no workspace, na ordem, sem repetir. */
-export function collectClassNames(workspace: Blockly.Workspace | null | undefined): string[] {
-  return collectDeclaredNames(workspace, CLASS_DECL_BLOCKS)
+export function collectClassNames(target: NameLookupTarget): string[] {
+  const { workspace, useBlock } = nameLookupContext(target)
+  if (!workspace) return []
+  return collectVariableDeclarations(
+    workspace,
+    CLASS_DECL_BLOCKS,
+    new Set(useBlock ? variableScopeKeys(useBlock) : ['global']),
+    useBlock,
+  )
 }
 
 /** Nomes de função (`sz_js_function`) declarados no workspace, na ordem, sem repetir. */
-export function collectFunctionNames(workspace: Blockly.Workspace | null | undefined): string[] {
-  return collectDeclaredNames(workspace, FUNCTION_DECL_BLOCKS)
+export function collectFunctionNames(target: NameLookupTarget): string[] {
+  const { workspace, useBlock } = nameLookupContext(target)
+  if (!workspace) return []
+  // Declarações de função têm hoisting, mas não atravessam o limite léxico do ramo.
+  return collectVariableDeclarations(
+    workspace,
+    FUNCTION_DECL_BLOCKS,
+    new Set(useBlock ? variableScopeKeys(useBlock) : ['global']),
+  )
 }
 
 /** Nomes de método (`sz_js_class_method`) de TODAS as classes — fallback global. */
@@ -1390,15 +1434,15 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
       case 'mutable-variable':
         return collectMutableVariables(block)
       case 'group':
-        return collectGroupsAndLists(ws)
+        return collectGroupsAndLists(block)
       case 'enemytype':
         return collectEnemyTypes(ws)
       case 'shape':
         return collectShapes(ws)
       case 'class':
-        return collectClassNames(ws)
+        return collectClassNames(block)
       case 'function':
-        return collectFunctionNames(ws)
+        return collectFunctionNames(block)
       case 'canvas':
         return collectCanvasIds(ws)
       case 'form-control':
@@ -1578,8 +1622,8 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
       wrap.appendChild(list)
     }
 
-    // Quem ALTERA uma variável deve escolher um nome mutável que realmente está
-    // em escopo. Os demais seletores mantêm a entrada livre para criar nomes.
+    // Consumidores de símbolos devem escolher uma declaração realmente em escopo.
+    // Os demais seletores mantêm a entrada livre para criar nomes de domínio.
     if (nameKindAllowsFreeText(this.kind)) {
       const row = document.createElement('div')
       row.style.cssText =

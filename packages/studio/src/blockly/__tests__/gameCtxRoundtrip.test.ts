@@ -200,7 +200,7 @@ describe('Ponte — palco implícito (ctx escondido) + "Limpar a tela"', () => {
     expect(out).toContain('SZGame2D.wrapEdges(inimigo);')
     expect(out).toContain('SZGame2D.pruneOld(tiros, 2);')
     expect(out).toContain('SZGame2D.hasHealth(jogador)')
-    expect(out).toContain('SZGame2D.cooldownReady(jogador, 20)')
+    expect(out).toMatch(/SZGame2D\.cooldownReady\(jogador, 20, "[^"]+"\)/)
     expect(out).toContain('SZGame2D.randomChance(30)')
     expect(out).not.toContain('rawJS')
   })

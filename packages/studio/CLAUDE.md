@@ -121,7 +121,9 @@ memória com `loaded:true` em vez de lançar.
 
 Três guardas ortogonais ao sandbox do iframe, todas testadas (`src/preview/__tests__/`):
 - **`csp.ts`** — CSP interna do srcdoc: libera subrecursos PASSIVOS de `https:` (img/font/media/css/
-  frame), mas `script-src` NÃO inclui `https:` (sem `<script src=remoto>` — anti supply-chain),
+  frame), mas `script-src` NÃO inclui `https:` genérico. Scripts gerados são autorizados pelo hash
+  SHA-256 exato; ESM oficial entra só pela URL declarada e, no `esm.sh`, pelo prefixo do pacote com
+  versão pinada (nunca pela origem inteira),
   `connect-src 'none'` por default (sem fetch/XHR/WS a menos que o professor libere origens) e
   `worker-src 'none'`. Trade-off aceito: img/media/font/frame de `https:` = GET passivo de mão única
   (sem resposta legível, sem cookies) — NÃO alterar.
@@ -293,8 +295,13 @@ mesmo grupo de undo, preservando-os como rascunho. Duplicatas recebem o mesmo
 tratamento.
 
 - **Contrato de posicionamento** (`blockly/blockContracts.ts`): é a fonte comum
-  para checks físicos, área-raiz, contexto aninhado, papel e fase. Eventos e
-  loops são raízes e não podem ser aninhados. `break`, `continue`, `return`,
+  para checks físicos, área-raiz, contexto aninhado, exclusões ancestrais
+  (`forbiddenNested`), papel e fase. Criadores de recursos aceitam funções e
+  eventos, mas proíbem `loop-body` em qualquer profundidade. Eventos e
+  loops são raízes e não podem ser aninhados. Imports, funções e classes ficam
+  diretamente em **Ao iniciar**. Loops do motor executam callbacks e NÃO contam
+  como laço sintático para `break`/`continue`; somente `for`/`while`/`repeat`
+  concedem esse contexto. `break`, `continue`, `return`,
   `await`, `super` e valores dependentes de evento só cabem em seu contexto
   sintático. `ir/lifecycle.ts` repete a gramática recursivamente para proteger
   estados importados e a Bridge.
@@ -303,13 +310,22 @@ tratamento.
   migração do modelo anterior.
 - **Migração transparente** (`blockly/normalizeFrames.ts`): migra estados planos,
   parcialmente organizados e a antiga `sz_frame_behavior` por área, preservando
-  IDs e a saída. Wrappers/boots antigos são registrados apenas para carregar
+  IDs e a saída. Se a área antiga coexistir com uma área atual, seus filhos são
+  anexados ao frame atual em vez de criar uma duplicata. Wrappers/boots antigos são registrados apenas para carregar
   projetos salvos, nunca aparecem na paleta. Conteúdo de áreas antigas
   duplicadas vira rascunho. O marcador `szBehaviorAreasVersion` impede que um
-  rascunho criado intencionalmente seja migrado depois.
+  rascunho criado intencionalmente seja migrado depois. O sanitizador aceita a
+  versão 2 conhecida para que ela chegue ao normalizador e vire versão 3;
+  versões futuras continuam rejeitadas até ganharem uma migração explícita.
 - **Execução**: o gerador emite `start` → `events` → `loops` e conversa com o
   runtime pelo `RuntimeLifecycleContract` da extensão. O boot é automático;
-  blocos antigos de “começar” não devem aparecer em projetos novos.
+  blocos antigos de “começar” não devem aparecer em projetos novos. Jogo 2D e
+  Jogo 2D Avançado declaram `managedProjectRun`: seus runtimes incorporam o
+  `ProjectRunContext`, listeners DOM gerados recebem o `AbortSignal` da partida
+  e RAFs genéricos registram cancelamento antes de uma nova factory. Os
+  schedulers e recursos específicos continuam sob responsabilidade do motor. O E2E
+  `behavior-lifecycle.spec.ts` executa início, evento, loop cancelável e reinício
+  no preview real.
 - **Organizar blocos** (`blockly/organize.ts`): dispõe as cinco áreas em duas
   linhas e mantém os rascunhos próximos da família correspondente.
 - **World Composer**: adiciona conteúdo apenas numa área compatível já criada.
@@ -355,7 +371,7 @@ nível/categoria; vazia = curadoria por nível. (`isBlockTypeAllowed`/`isCategor
 (export do índice — `blockly/blockCatalog.ts`: id+rótulo+categoria derivados dos `*_BLOCKS`, sem
 frames/`hidden`; rótulo = `message0` sem os `%N`, com **`LABEL_OVERRIDES`** p/ os blocos cujo texto vive
 nos SOQUETES (senão sobra "de"/"Alterar para" e os pares valor/comando colidem — math função/trig, set-property
-texto/cálculo, método em Objetos/Classes); **inclui Jogo 2D/3D** — a restrição também alcança as
+texto/cálculo, método em Objetos/Classes); **inclui todas as cinco extensões oficiais, inclusive Mundo 3D** — a restrição também alcança as
 EXTENSÕES: `filterToolboxCategory` poda a categoria da extensão p/ só os listados, e `pushSubCustom`
 (Funções/Classes — flyout dinâmico) só entra se a aula listou algum bloco dele; ⚠️ bloco de extensão só
 APARECE se a extensão estiver INSTALADA no projeto inicial). Catálogo + restrição travados por
@@ -371,13 +387,21 @@ bloco visível some (preserva 🔎 Pesquisar e os flyouts dinâmicos `custom`); 
 5. `parsers/{js,html,css}.ts` — código→IR (Ponte). Expr usável em `se`/valor precisa entrar em `isSimpleValue` (senão vira rawJS).
 6. `blockly/workspaceState.ts` — IR→bloco (`statementToBlock`/`exprToValueBlock`/`htmlNodeToBlock`; **5º arg do `block()` = inputs de VALOR**).
 7. `state/projectStore.ts` — type em `CORE_BLOCKLY_BLOCK_TYPES` (drift `blockAllowlist.test.ts`; faltar = `sanitizeImportedBlocksState` zera TODOS os blocos).
-8. **`blockly/blockLevels.ts` — DEGRAU do bloco** (curadoria por bloco; reforma 2D/3D 07/2026 = escada TOTAL de 6: `iniciante-2d` < `iniciante-3d` < `intermediario-2d` < `intermediario-3d` < `avancado-2d` < `avancado-3d`, a MESMA ordem da carreira do aluno): default é **iniciante-2d** (facilitador); core/g2d de programação real → `INTERMEDIARIO_2D`; core/g2d expert → `AVANCADO_2D`; **todo `sz_g3d_*` é iniciante-3d** (a aula filtra quais mostrar); senão os pisos por prefixo decidem (g3d→ini-3d, gk→int-2d, w3d→int-3d, g3k/t3d→av-3d). ⚠️ NUNCA pôr bloco 3D nos sets `*_2D` (o split protege a promessa do eixo — travado no teste). Valores LEGADOS (`iniciante`/`intermediario`/`avancado`) seguem aceitos nas props públicas e normalizam via `normalizeBlockLevel` (`core/levels.ts`: legado→`iniciante-2d`/`intermediario-3d`/`avancado-3d`, preservando os conjuntos antigos; lixo→`iniciante-2d` fail-closed). O teste `__tests__/blockLevels.test.ts` cobra que o tipo é real (sem typo); revise o degrau antes de assumir iniciante por omissão.
+8. **`blockly/blockLevels.ts` — DEGRAU do bloco** (curadoria por bloco; reforma 2D/3D 07/2026 = escada TOTAL de 6: `iniciante-2d` < `iniciante-3d` < `intermediario-2d` < `intermediario-3d` < `avancado-2d` < `avancado-3d`, a MESMA ordem da carreira do aluno): a categoria **Programação** tem progressão própria e exaustiva em `programmingContract.ts` (orçamento iniciante explícito; bloco novo cai no intermediário, nunca no iniciante por omissão); os demais facilitadores core usam o default **iniciante-2d**. **Todo `sz_g3d_*` é iniciante-3d** (a aula filtra quais mostrar); os pisos por prefixo decidem g3d→ini-3d, gk→int-2d, w3d→int-3d, g3k/t3d→av-3d. ⚠️ NUNCA pôr bloco 3D nos sets `*_2D` (o split protege a promessa do eixo — travado no teste). Valores LEGADOS (`iniciante`/`intermediario`/`avancado`) seguem aceitos nas props públicas e normalizam via `normalizeBlockLevel` (`core/levels.ts`: legado→`iniciante-2d`/`intermediario-3d`/`avancado-3d`, preservando os conjuntos antigos; lixo→`iniciante-2d` fail-closed). Os testes cobram tipos reais, tiers exaustivos e ausência de duplicação entre o contrato de Programação e os sets genéricos.
 9. teste de round-trip + `bun run typecheck/test/check`.
+
+**Contratos transversais das categorias web:** não replique invariantes nos
+switches centrais. Conteúdo HTML phrasing vem de `html/catalog.ts`; validação e
+codificação de famílias ficam em `css/googleFonts.ts`; declarações e usos de
+pincel, inclusive em expressões aninhadas, são descobertos por
+`ir/canvasContexts.ts`. Parser, schema, diagnóstico e gerador consomem esses
+contratos puros. Ao acrescentar um caso nessas famílias, estenda primeiro o
+contrato da categoria e prove o caminho inválido e o round-trip nos testes.
 
 **Bloco de EXTENSÃO** (`game-2d`/`game-3d`, prefixo `g2d:`/`g3d:`) vive em `official-extensions/<id>/blocks.ts` (NÃO no CORE); schema/buildIR/generators/parsers/workspaceState valem igual, mas com 3 pontos PRÓPRIOS além dos acima: (a) `state/projectStore.ts` → `EXTENSION_BLOCKLY_BLOCK_TYPES['<id>']` (não o CORE); (b) `ir/schema.ts` → o `type` no Set `G2D_STATEMENT_TYPES`/`G3D_STATEMENT_TYPES` (testado em `official-extensions/*/__tests__`); (c) o `blocks.ts` da extensão → a entrada na subcategoria certa do array `SUBCATS` (que monta o `*ToolboxCategory`), senão o bloco cai no grupo genérico "Mais". O `manifest.ts` traz a `docs` (markdown do aluno; `description` ≤ ~500 chars) + bump de `version`. Checklist de revisão: `docs/EXTENSIONS.md`.
 
 **Padrões já usados** (clone-os):
-- **Seletores de NOME (escolher, não digitar)** — em vez de a criança redigitar a grafia de algo que já nomeou noutro bloco, o campo CONSUMIDOR abre um pop-up com a lista do que já foi criado (à la Scratch/MakeCode) + um input de texto de fallback. Três campos, TODOS `extends Blockly.FieldTextInput` (o VALOR continua string → IR/round-trip/serialização/allowlist IDÊNTICOS a `field_input`; só troca o EDITOR — **nunca `FieldDropdown`**, que coage nome desconhecido p/ a 1ª opção e PERDE o nome no round-trip): `field_name_picker` (`blockly/fields/FieldNamePicker.ts`, nomes puros por `kind`), `field_sprite_picker` (com miniatura/swatch), `field_asset_picker` (IMAGENS do projeto, `__szAssets`). **Regra de ouro: só CONSUMIDORES viram picker; o campo que DECLARA o nome segue `field_input`** (a criança nomeia uma vez). `FieldNamePicker` tem **~39 `kind`** (a união `NameKind`; cresceu muito): além dos de programação (`variable`/`group`(≡lista)/`class`/`function`/`property`/`method`) e 3D (`scene3d`/`object3d`/`group3d`/`entity3d`/`mold3d`/…), os de jogo 2D — `canvas`/`spritesheet`/`tilemap`/`character`/`screen`/`gamestate`/`mold`/`battler`(fichas de inimigo de batalha)/`npc`/`flag`/`item`/`map`/`region`/`path`/`look`/`sound`/`effect`/`event`/`enemytype`/`shape`/`pkmcreature`/`pkmtype`.
+- **Seletores de NOME (escolher, não digitar)** — em vez de a criança redigitar a grafia de algo que já nomeou noutro bloco, o campo CONSUMIDOR abre um pop-up com a lista do que já foi criado (à la Scratch/MakeCode); símbolos de Programação que exigem declaração (`mutable-variable`/`group`≡lista/`class`/`function`) não oferecem texto livre e respeitam escopo, ramo e ordem (funções têm hoisting; classes não). Os demais domínios mantêm o input de fallback. Três campos, TODOS `extends Blockly.FieldTextInput` (o VALOR continua string → IR/round-trip/serialização/allowlist IDÊNTICOS a `field_input`; só troca o EDITOR — **nunca `FieldDropdown`**, que coage nome desconhecido p/ a 1ª opção e PERDE o nome no round-trip): `field_name_picker` (`blockly/fields/FieldNamePicker.ts`, nomes puros por `kind`), `field_sprite_picker` (com miniatura/swatch), `field_asset_picker` (IMAGENS do projeto, `__szAssets`). **Regra de ouro: só CONSUMIDORES viram picker; o campo que DECLARA o nome segue `field_input`** (a criança nomeia uma vez). `FieldNamePicker` tem **~39 `kind`** (a união `NameKind`; cresceu muito): além dos de programação (`variable`/`group`/`class`/`function`/`property`/`method`) e 3D (`scene3d`/`object3d`/`group3d`/`entity3d`/`mold3d`/…), os de jogo 2D — `canvas`/`spritesheet`/`tilemap`/`character`/`screen`/`gamestate`/`mold`/`battler`(fichas de inimigo de batalha)/`npc`/`flag`/`item`/`map`/`region`/`path`/`look`/`sound`/`effect`/`event`/`enemytype`/`shape`/`pkmcreature`/`pkmtype`.
   - **Trocar um campo p/ picker**: `{type:'field_input', name:'X', text:'…'}` → `{type:'field_name_picker', name:'X', text:'…', kind:'…'}` (ou `field_asset_picker`/`field_sprite_picker`). Nada mais muda (nem setup.ts/IR/parser/allowlist).
   - **Miniatura do sprite NO BLOCO (07/2026):** o `FieldSpritePicker` também desenha a miniatura
     (cor OU imagem do asset) AO LADO do nome dentro do bloco — view custom (`initView`/`render_`/
@@ -452,7 +476,7 @@ nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLI
 grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
 (de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.32.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.35.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Colisão PLATAFORMA one-way (lote MapperMate F2, 18/07):** o metadado de tileset/tilemap ganhou
 **`platform?: number[]`** (índices de peça one-way: pisa por cima CAINDO, atravessa por baixo/subindo).
@@ -500,7 +524,7 @@ monta `m.frontRows = parseTileGrid(meta.frontGrid)`; `drawTilemap(name, 'frente'
 parser `parsers/js.ts` (`layer !== 'chão' && … && layer !== 'frente'`) PRECISA listar 'frente' (senão
 a Ponte código→blocos joga p/ rawJS e o `blockAudit` quebra). Bump manifest gk `0.32.0 → 0.33.0` +
 `docs`/`ai.ts`. Testes: `assetMeta.test.ts` (frontGrid preservado/omitido), gk `runtime.test.ts`
-(drawTilemap 'frente' desenha de frontRows; sem frontRows não desenha), `blockAudit`=329 (à época; **hoje 333**, gk `0.34.1` — full review R31 adicionou imagem/ficha/telas + correções).
+(drawTilemap 'frente' desenha de frontRows; sem frontRows não desenha), `blockAudit`=329 (à época; **hoje 337**, gk `0.43.2` — full review R31 adicionou imagem/ficha/telas + correções).
 
 **Re-derivação do ANIM (10/07):** como o campo não serializa, o nome exibido é RECALCULADO de
 FROM/TO/FPS × `asset.sprite.animations` (`deriveAnimationName`/`refreshAnimationNames` +
@@ -611,8 +635,10 @@ preview (o jogo tem fallback de retângulo, seria vitrine fraca) — o fixture �
 - **CSS forward-only reordena**: `justify-content: center`/`align-items: center` viram blocos dedicados
   (flex) que podem REORDENAR as declarações dentro da regra (dedicadas antes) — lossless (mesma
   renderização). O fixture prova a igualdade SEMÂNTICA do CSS (mapa seletor→declarações via `cssDeclMap`),
-  não byte-a-byte; JS e HTML seguem byte-exatos. `image-rendering` duplicado (pixelated+crisp-edges)
-  colapsa p/ pixelated (IR de CSS é `Record`).
+  não byte-a-byte; JS e HTML seguem byte-exatos. Declarações CSS repetidas, como
+  `image-rendering: pixelated` + `image-rendering: crisp-edges`, permanecem em
+  ordem por meio de `CSSDeclaration[]`; regras sem repetição usam o formato
+  compacto `Record` por compatibilidade.
 
 ## Subsistema assíncrono + UI — lote "Starter Kit P9" (10/07/2026)
 

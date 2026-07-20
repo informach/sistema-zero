@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import { START_ONLY_STATEMENT_TYPES, SZIRV2Schema } from '#ir'
 import { OFFICIAL_CATALOG } from '#official-extensions'
+import { PERSISTENT_EXTENSION_COMMANDS } from '../../official-extensions/persistentResourceContract'
 import { CANVAS3D_RESOURCE_CREATOR_BLOCK_TYPES } from '../../three/canvas3dContract'
 import {
   BEHAVIOR_AREA_LABELS,
@@ -13,6 +14,7 @@ import {
 } from '../blockContracts'
 import { CORE_BLOCKS, registerExtensionBlocks } from '../blocks'
 import { buildIRFromWorkspace } from '../buildIR'
+import { HTMLConnectionChecker } from '../htmlConnectionChecker'
 import { ensureBlocklyInitialized } from '../setup'
 
 function definition(type: string) {
@@ -205,7 +207,6 @@ describe('contrato central de posicionamento', () => {
         definition.hidden ||
         contract.domain !== 'behavior' ||
         !placement ||
-        (placement.role !== 'command' && definition.type !== 'sz_canvas_setup') ||
         placement.root.length !== 1 ||
         placement.root[0] !== 'start' ||
         placement.nested.length !== 0
@@ -318,12 +319,129 @@ describe('contrato central de posicionamento', () => {
   })
 
   it('não encaixa criadores de recursos Canvas 3D diretamente em um laço', () => {
+    ensureBlocklyInitialized()
     for (const type of CANVAS3D_RESOURCE_CREATOR_BLOCK_TYPES) {
       const contract = inferBlockContract(definition(type))
       expect(contract.placement?.nested, type).not.toContain('loop-body')
+      expect(contract.placement?.forbiddenNested, type).toContain('loop-body')
       expect(materializeBlockDefinition(definition(type)).previousStatement, type).not.toContain(
         'JSLoopStmt',
       )
+
+      const workspace = new Blockly.Workspace(
+        new Blockly.Options({ plugins: { connectionChecker: HTMLConnectionChecker } }),
+      )
+      try {
+        const frame = workspace.newBlock('sz_frame_loops')
+        const loop = workspace.newBlock('sz_canvas_anim_loop')
+        const resource = workspace.newBlock(type)
+        const frameConnection = frame.getInput('CHILDREN')?.connection
+        const loopConnection = loop.previousConnection
+        const bodyConnection = loop.getInput('BODY')?.connection
+        const resourceConnection = resource.previousConnection
+        if (!frameConnection || !loopConnection || !bodyConnection || !resourceConnection) {
+          throw new Error(`${type}: conexões do cenário de laço ausentes`)
+        }
+        expect(frameConnection.connect(loopConnection), type).toBe(true)
+        expect(bodyConnection.connect(resourceConnection), type).toBe(false)
+        expect(resource.getParent(), type).toBeNull()
+      } finally {
+        workspace.dispose()
+      }
+    }
+  })
+
+  it('impede comandos persistentes das extensões em qualquer laço físico e na IR', () => {
+    ensureBlocklyInitialized()
+    for (const extension of OFFICIAL_CATALOG) {
+      registerExtensionBlocks(extension.blockly.blocks)
+    }
+
+    expect(PERSISTENT_EXTENSION_COMMANDS).toEqual(
+      expect.arrayContaining([
+        { blockType: 'sz_gk_start_spawner', statementType: 'gk:startSpawner' },
+        { blockType: 'sz_g3k_start_spawner', statementType: 'g3k:startSpawner' },
+        { blockType: 'sz_g3k_start_timer', statementType: 'g3k:startTimer' },
+      ]),
+    )
+
+    const declaredPersistentBlocks = OFFICIAL_CATALOG.filter((extension) =>
+      ['game-2d-advanced', 'game-3d-advanced'].includes(extension.manifest.id),
+    )
+      .flatMap((extension) => extension.blockly.blocks)
+      .filter((block) => block.placement === 'resource-creator')
+      .map((block) => block.type)
+      .sort()
+    expect(declaredPersistentBlocks).toEqual(
+      PERSISTENT_EXTENSION_COMMANDS.map(({ blockType }) => blockType).sort(),
+    )
+
+    for (const contractEntry of PERSISTENT_EXTENSION_COMMANDS) {
+      const { blockType, statementType } = contractEntry
+      const gameKit3D = blockType.startsWith('sz_g3k_')
+      const loopType = gameKit3D ? 'g3k:onUpdate' : 'gk:onUpdate'
+      const contract = inferBlockContract(definition(blockType))
+      expect(contract.placement?.forbiddenNested, blockType).toContain('loop-body')
+      expect(
+        materializeBlockDefinition(definition(blockType)).previousStatement,
+        blockType,
+      ).not.toContain('JSLoopStmt')
+
+      const workspace = new Blockly.Workspace(
+        new Blockly.Options({ plugins: { connectionChecker: HTMLConnectionChecker } }),
+      )
+      try {
+        const loopFrame = workspace.newBlock('sz_frame_loops')
+        const loopBlockType = gameKit3D ? 'sz_g3k_on_update' : 'sz_gk_on_update'
+        const loop = workspace.newBlock(loopBlockType)
+        const resource = workspace.newBlock(blockType)
+        const frameConnection = loopFrame.getInput('CHILDREN')?.connection
+        const loopConnection = loop.previousConnection
+        const bodyConnection = loop.getInput('BODY')?.connection
+        const resourceConnection = resource.previousConnection
+        if (!frameConnection || !loopConnection || !bodyConnection || !resourceConnection) {
+          throw new Error(`${blockType}: conexões do cenário de laço ausentes`)
+        }
+        expect(frameConnection.connect(loopConnection), blockType).toBe(true)
+        expect(bodyConnection.connect(resourceConnection), blockType).toBe(false)
+
+        const startFrame = workspace.newBlock('sz_frame_start')
+        const startConnection = startFrame.getInput('CHILDREN')?.connection
+        if (!startConnection) throw new Error(`${blockType}: conexão da área inicial ausente`)
+        expect(startConnection.connect(resourceConnection), blockType).toBe(true)
+        const ir = buildIRFromWorkspace(workspace)
+        const statement = ir.behavior.start[0]
+        if (!statement) throw new Error(`${blockType}: não gerou statement`)
+        expect(statement.type, blockType).toBe(statementType)
+
+        const nestedInNativeLoop = {
+          ...ir,
+          behavior: {
+            start: [],
+            events: [],
+            loops: [{ type: loopType, dtName: 'dt', body: [statement] }],
+          },
+        }
+        expect(SZIRV2Schema.safeParse(nestedInNativeLoop).success, blockType).toBe(false)
+
+        const nestedInSyntacticLoop = {
+          ...ir,
+          behavior: {
+            start: [
+              {
+                type: 'repeat',
+                times: { type: 'num', value: 2 },
+                body: [statement],
+              },
+            ],
+            events: [],
+            loops: [],
+          },
+        }
+        expect(SZIRV2Schema.safeParse(nestedInSyntacticLoop).success, blockType).toBe(false)
+      } finally {
+        workspace.dispose()
+      }
     }
   })
 

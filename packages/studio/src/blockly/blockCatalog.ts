@@ -2,6 +2,7 @@ import { gameTwoDBlocks } from '../official-extensions/game-2d/blocks'
 import { gameKitBlocks } from '../official-extensions/game-2d-advanced/blocks'
 import { gameThreeDBlocks } from '../official-extensions/game-3d/blocks'
 import { gameKit3DBlocks } from '../official-extensions/game-3d-advanced/blocks'
+import { world3DBlocks } from '../official-extensions/world-3d/blocks'
 import { ADVANCED_BLOCKS } from './blocks/advanced'
 import { CANVAS_BLOCKS } from './blocks/canvas'
 import { CANVAS3D_BLOCKS } from './blocks/canvas3d'
@@ -126,11 +127,12 @@ const GROUPS: readonly (readonly [string, readonly BlockLike[]])[] = [
   ['Jogo 2D Avançado', gameKitBlocks],
   ['Jogo 3D', gameThreeDBlocks],
   ['Jogo 3D Avançado', gameKit3DBlocks],
+  ['Mundo 3D', world3DBlocks],
 ]
 
 /**
  * Catálogo dos blocos (id + rótulo + categoria) p/ o admin escolher a "lista de blocos" da
- * aula (`allowBlocks` restritivo). Inclui o CORE + as extensões Jogo 2D/3D (p/ restringir
+ * aula (`allowBlocks` restritivo). Inclui o CORE + todas as extensões oficiais (p/ restringir
  * blocos de jogo também). As 🗂️ Áreas do projeto (frames) ficam de FORA — são sempre
  * visíveis. Blocos `hidden` (legados) também. ⚠️ Bloco de extensão só APARECE pro aluno se a
  * extensão estiver instalada no projeto inicial — o picker oferece, a instalação habilita.

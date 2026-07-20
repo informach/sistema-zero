@@ -1,4 +1,5 @@
 import * as Blockly from 'blockly/core'
+import { PROGRAMMING_CATEGORY_COLORS } from './programmingAppearance'
 
 // O Blockly não lê CSS custom properties nos componentStyles — os valores são
 // hex equivalentes aos tokens oklch de src/styles/studio.css (paleta do
@@ -79,14 +80,7 @@ export const CATEGORY_COLORS = {
   advanced: '#38bdf8', // azul do céu (claro)
   extension: '#ec4899', // rosa (extensão genérica = Jogo 2D)
   // Programação (guarda-chuva) — TUDO em tons de LARANJA, variando por área.
-  js: '#f97316', // laranja (base — Variáveis/Lógica/Repetições…)
-  math: '#ff9a3d', // laranja (Matemática)
-  values: '#f0a52a', // dourado (Valores)
-  dom: '#e08a14', // âmbar-laranja (Página)
-  events: '#ffc266', // dourado-claro (Eventos)
-  objects: '#ff8757', // laranja-pêssego (Objetos)
-  functions: '#fb6e2e', // laranja-forte (Funções)
-  classes: '#e8820c', // âmbar-laranja (Classes)
+  ...PROGRAMMING_CATEGORY_COLORS,
 } as const
 
 // As funções de tonalidade vivem num módulo PURO (sem Blockly) p/ as extensões

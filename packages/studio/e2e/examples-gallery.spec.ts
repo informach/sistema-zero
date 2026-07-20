@@ -295,7 +295,9 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
     await expect(canvas).toHaveAttribute('tabindex', '0')
     const descriptionId = await canvas.getAttribute('aria-describedby')
     if (!descriptionId) throw new Error(`canvas sem descrição acessível: ${contract.key}`)
-    await expect(preview.locator(`#${descriptionId}`)).toContainText(/\S/)
+    await expect(preview.locator(`#${descriptionId}`)).toContainText(
+      /setas|espaço|enter|arraste|segurando|mouse|dedo|toque|↑|←/i,
+    )
   }
   await focusPreview(page, preview)
   for (const interaction of contract.interactions) {

@@ -359,7 +359,7 @@ export const gameKitBlocks = [
   // ---- 🧍 Personagens ----
   {
     type: 'sz_gk_create_character',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Criar o personagem %1 com imagem %2 largura %3 altura %4 velocidade %5 e cor %6',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'heroi' },
@@ -595,7 +595,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_start_spawner',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'A cada %1 s, nascer 1 do molde %2 numa borda da tela',
     args0: [
       { type: 'input_value', name: 'SEC', check: 'JSValue' },
@@ -1392,7 +1392,7 @@ export const gameKitBlocks = [
   // ---- ⚔️ Kit RPG: batalha por turnos ----
   {
     type: 'sz_gk_rpg_battle_stats',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Meus pontos de batalha: vida %1 , força %2 e defesa %3',
     args0: [
       { type: 'input_value', name: 'HP', check: 'JSValue' },
@@ -1426,7 +1426,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_set_special',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Golpe especial %1 com dano %2 e custo de energia %3',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'Bola de fogo' },
@@ -1511,7 +1511,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_add_ally',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Adicionar aliado %1 com vida %2, força %3, defesa %4, cor %5, imagem %6',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'Guerreiro' },
@@ -1549,7 +1549,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_teach_move',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Ensinar o golpe %1 (dano %2, energia %3) para %4',
     args0: [
       { type: 'field_input', name: 'MOVE', text: 'Espadada' },
@@ -1566,7 +1566,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_rpg_teach_heal',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Ensinar o golpe de CURA %1 (cura %2, energia %3) para %4',
     args0: [
       { type: 'field_input', name: 'MOVE', text: 'Curar' },
@@ -4780,7 +4780,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_td_set_coins',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Começar com %1 moedas',
     args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
     inputsInline: true,

@@ -63,6 +63,8 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_g2d_draw_score: { X: 'number', Y: 'number', SIZE: 'number' },
   sz_g2d_draw_label: { X: 'number', Y: 'number', SIZE: 'number' },
   sz_g2d_draw_hearts: { X: 'number', Y: 'number', SIZE: 'number' },
+  sz_g2d_draw_sprite_health: { X: 'number', Y: 'number', SIZE: 'number' },
+  sz_g2d_damage_sprite: { AMOUNT: 'number', FRAMES: 'number' },
   sz_g2d_draw_bar: { X: 'number', Y: 'number', W: 'number', H: 'number' },
   sz_g2d_play_sound: { FREQ: 'number', MS: 'number' },
   sz_g2d_play_note: { MS: 'number' },

@@ -119,8 +119,10 @@ testes de round-trip + `cssBridgeHighlight` espelhado pro jogo.
 
 ## 6. Migração sem perder projeto
 
-Projetos clássicos persistem **arquivos** (html/css/js) + IR + `blocksState`. Bump de versão do schema de
-blocos: ao detectar versão velha/bloco obsoleto, descartar `blocksState` e re-derivar de
+Projetos clássicos persistem **arquivos** (html/css/js) + IR + `blocksState`. Versões antigas conhecidas
+do schema de blocos passam primeiro pelo sanitizador e depois pela migração, preservando layout e IDs;
+a versão 2 das áreas, por exemplo, vira versão 3 no normalizador. Versão futura/desconhecida ou bloco
+obsoleto sem migração segura descarta o `blocksState` e re-deriva por
 `buildWorkspaceStateFromIR(parse(arquivos))`. O JS é a fonte da verdade; o parser aceita as assinaturas
 antigas (`SZGame2D.x(ctx, …)`).
 

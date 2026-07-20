@@ -1,5 +1,5 @@
 import { afterAll, afterEach, describe, expect, it, mock } from 'bun:test'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { createEmptyProject } from '#core'
 import { useProjectStore } from '../../state/projectStore'
 
@@ -48,5 +48,24 @@ describe('BlocksWorkspaceEditor', () => {
     expect(
       screen.getByTestId('world-composer').closest('[role="tabpanel"]')?.hasAttribute('hidden'),
     ).toBe(false)
+  })
+
+  it('preserva a mesma instância do Blockly ao instalar Mundo 3D', () => {
+    const project = createEmptyProject('install-world', 'Instalação')
+    useProjectStore.setState({ project })
+    render(<BlocksWorkspaceEditor />)
+    const workspaceBeforeInstall = screen.getByTestId('blockly-workspace')
+
+    act(() => {
+      useProjectStore.setState({
+        project: {
+          ...project,
+          installedExtensions: [{ id: 'world-3d', version: '4.0.0', installedAt: 0 }],
+        },
+      })
+    })
+
+    expect(screen.getByTestId('blockly-workspace')).toBe(workspaceBeforeInstall)
+    expect(screen.getByRole('tab', { name: 'Editor de mundo 3D' })).toBeDefined()
   })
 })

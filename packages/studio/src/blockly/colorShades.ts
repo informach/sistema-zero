@@ -13,7 +13,7 @@ function mixHex(a: string, b: string, t: number): string {
 }
 
 /** Contraste WCAG da cor com texto branco. */
-function whiteContrast(hex: string): number {
+export function contrastWithWhite(hex: string): number {
   const channels = [1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16) / 255)
   const linear = channels.map((channel) =>
     channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4,
@@ -24,14 +24,14 @@ function whiteContrast(hex: string): number {
 }
 
 /** Escurece só o necessário para o texto branco atingir o contraste pedido. */
-function ensureWhiteContrast(hex: string, minimum: number): string {
-  if (whiteContrast(hex) >= minimum) return hex
+export function ensureWhiteTextContrast(hex: string, minimum: number): string {
+  if (contrastWithWhite(hex) >= minimum) return hex
   let lightestFail = 0
   let darkestPass = 1
   for (let i = 0; i < 16; i += 1) {
     const amount = (lightestFail + darkestPass) / 2
     const candidate = mixHex(hex, '#000000', amount)
-    if (whiteContrast(candidate) >= minimum) darkestPass = amount
+    if (contrastWithWhite(candidate) >= minimum) darkestPass = amount
     else lightestFail = amount
   }
   return mixHex(hex, '#000000', darkestPass)
@@ -51,6 +51,6 @@ export function categoryShades(base: string, count: number): string[] {
     const shade = t >= 0 ? mixHex(base, '#ffffff', t) : mixHex(base, '#000000', -t)
     // Os tons avançam um pouco no contraste para não colapsarem todos na mesma
     // cor quando a base é clara (amarelo, rosa etc.). O primeiro já cumpre AA.
-    return ensureWhiteContrast(shade, 4.5 + i * 0.12)
+    return ensureWhiteTextContrast(shade, 4.5 + i * 0.12)
   })
 }

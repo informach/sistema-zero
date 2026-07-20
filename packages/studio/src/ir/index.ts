@@ -1,5 +1,7 @@
 export * from './behavior'
+export * from './canvasContexts'
 export * from './helpers'
 export * from './ids'
 export * from './lifecycle'
+export * from './outputSafety'
 export * from './schema'

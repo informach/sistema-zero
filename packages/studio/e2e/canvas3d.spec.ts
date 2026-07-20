@@ -1,36 +1,11 @@
 import { expect, type Page, test } from '@playwright/test'
+import { pasteBlocklyBlocks as pasteBlocks } from './helpers/blockly'
 
 async function createProject(page: Page): Promise<void> {
   await page.goto('/')
   await page.getByRole('button', { name: '+ Novo projeto' }).first().click()
   await page.getByRole('button', { name: 'Criar e abrir' }).click()
   await expect(page).toHaveURL(/\/editor\//)
-}
-
-async function pasteBlocks(page: Page, block: Record<string, unknown>): Promise<void> {
-  await page.evaluate(
-    ([payload]) => localStorage.setItem('sz:block-clipboard', payload as string),
-    [JSON.stringify({ version: 1, block, requiredExtensions: [], copiedAt: Date.now() })],
-  )
-  const background = page.locator('.blocklyMainBackground').first()
-  const box = await background.boundingBox()
-  if (!box) throw new Error('Workspace do Blockly sem fundo')
-  const point = await page.evaluate(
-    ({ left, top, width, height }) => {
-      for (let y = top + height - 16; y >= top + 16; y -= 32) {
-        for (let x = left + width - 16; x >= left + 16; x -= 32) {
-          if (document.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground')) {
-            return { x, y }
-          }
-        }
-      }
-      return null
-    },
-    { left: box.x, top: box.y, width: box.width, height: box.height },
-  )
-  if (!point) throw new Error('Workspace do Blockly sem ponto vazio')
-  await page.mouse.click(point.x, point.y, { button: 'right' })
-  await page.getByText('Colar blocos', { exact: true }).click()
 }
 
 async function openCanvas3DGroup(page: Page, group: string): Promise<void> {

@@ -196,6 +196,61 @@ describe('Kit equilibrista / Kit balão — fumaça do runtime', () => {
     expect(() => api.restartBalloon(jogo)).not.toThrow()
   })
 
+  it('Stick Hero acompanha a mudança do palco sem zerar fase, placar ou progresso', () => {
+    const api = loadRuntime()
+    const ctx = mockCtx(360, 480) as { canvas: { width: number; height: number } }
+    const jogo = api.createStickHero(ctx) as {
+      w: number
+      h: number
+      score: number
+      phase: string
+      heroX: number
+      platforms: Array<{ x: number; w: number }>
+    }
+    jogo.score = 7
+    jogo.phase = 'waiting'
+    const oldHeroX = jogo.heroX
+    const oldPlatformX = jogo.platforms[0]?.x ?? 0
+    ctx.canvas.width = 720
+    ctx.canvas.height = 960
+
+    api.updateStickHero(jogo)
+
+    expect([jogo.w, jogo.h]).toEqual([720, 960])
+    expect(jogo.score).toBe(7)
+    expect(jogo.phase).toBe('waiting')
+    expect(jogo.heroX).toBeCloseTo(oldHeroX * 2)
+    expect(jogo.platforms[0]?.x).toBeCloseTo(oldPlatformX * 2)
+  })
+
+  it('Balão acompanha a mudança do palco preservando combustível e distância relativa', () => {
+    const api = loadRuntime()
+    const ctx = mockCtx(560, 360) as { canvas: { width: number; height: number } }
+    const jogo = api.createBalloon(ctx) as {
+      w: number
+      h: number
+      fuel: number
+      dist: number
+      meters: number
+      by: number
+      groundY: number
+    }
+    jogo.fuel = 63
+    jogo.dist = 168
+    jogo.meters = 10
+    jogo.by = jogo.groundY * 0.5
+    ctx.canvas.width = 1_120
+    ctx.canvas.height = 720
+
+    api.updateBalloon(jogo)
+
+    expect([jogo.w, jogo.h]).toEqual([1_120, 720])
+    expect(jogo.fuel).toBe(63)
+    expect(jogo.dist).toBeCloseTo(336)
+    expect(jogo.meters).toBe(10)
+    expect(jogo.by / jogo.groundY).toBeCloseTo(0.5)
+  })
+
   it.each([2, 3])('usa dimensões lógicas no DPR %i', (devicePixelRatio) => {
     document.body.innerHTML = '<canvas id="tela"></canvas>'
     const canvas = document.querySelector('canvas')

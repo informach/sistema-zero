@@ -30,6 +30,27 @@ describe('source map (top-level)', () => {
     expect(sourceMap.strong?.startColumn).toBeGreaterThan(sourceMap.text?.startColumn ?? 0)
   })
 
+  it('avança linha e coluna depois de whitespace inline com quebra', () => {
+    const { files, sourceMap } = generateProjectFilesWithMap({
+      projectName: 'Test',
+      ir: {
+        html: [
+          { __id: 'span-a', type: 'element', tag: 'span', text: 'A' },
+          { __id: 'quebra', type: 'text', text: '\n' },
+          { __id: 'span-b', type: 'element', tag: 'span', text: 'B' },
+        ],
+        css: [],
+        js: [],
+        extensions: [],
+      },
+    })
+
+    expect(sourceMap['span-a']).toMatchObject({ startLine: 9, endLine: 9, startColumn: 5 })
+    expect(sourceMap.quebra).toMatchObject({ startLine: 9, endLine: 10 })
+    expect(sourceMap['span-b']).toMatchObject({ startLine: 10, endLine: 10, startColumn: 1 })
+    expect(files['index.html'].split('\n')[9]).toContain('<span>B</span>')
+  })
+
   it('mapeia cada statement top-level para sua faixa de linhas no script.js', () => {
     const { files, sourceMap } = generateProjectFilesWithMap({
       projectName: 'Test',

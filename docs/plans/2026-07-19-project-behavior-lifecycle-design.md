@@ -46,10 +46,10 @@ Naquele momento, todos ainda usavam `ir.js` e ciclos de vida antigos.
 
 ## Decisão arquitetural
 
-O Estúdio adotará um ciclo de vida universal. Uma divisão apenas visual manteria
-o IR e os runtimes ambíguos. Um ciclo diferente por extensão repetiria a dívida
-atual. O modelo universal oferece uma única gramática para cursos, Bridge,
-preview e motores.
+O Estúdio adota uma gramática universal de ciclo de vida. Uma divisão apenas
+visual manteria o IR e os runtimes ambíguos. A gramática é única para cursos,
+Bridge e geração; cada motor declara sua integração concreta por meio de
+`RuntimeLifecycleContract`.
 
 ```text
 Workspace Blockly
@@ -64,15 +64,15 @@ Workspace Blockly
   start + events + loops
              │
              ▼
-     fábrica de uma partida
+     fábrica do projeto
              │
       ┌──────┴────────┐
       ▼               ▼
- adaptador DOM   adaptador do motor
+ recursos web    contrato do motor
       │               │
       └──────┬────────┘
              ▼
- recursos + scheduler + descarte
+   boot + reinício + descarte
 ```
 
 ## Áreas do projeto
@@ -205,30 +205,41 @@ criar escopo limpo
 → iniciar o motor
 ```
 
-O runtime associa à partida listeners, temporizadores, áudio, callbacks de
-colisão, controles e tarefas. Encerrar ou reiniciar cancela todos os recursos,
-limpa o motor e cria outra fábrica. Uma falha durante o início desfaz recursos
-parciais e impede boot incompleto.
+Nos runtimes que repetem a factory em memória, a execução associa à partida os
+listeners DOM e RAFs genéricos emitidos pelo gerador. Reiniciar descarta esses
+recursos antes de executar a factory novamente; o motor continua responsável
+por limpar áudio, colisões, controles e tarefas próprios. Nos demais targets, o
+descarte acontece junto com o documento do preview ou pelo método declarado no
+contrato do motor.
 
-Extensões oficiais recebem um contrato interno de ciclo de vida:
+Extensões oficiais recebem um contrato interno declarativo de ciclo de vida:
 
 ```ts
-export interface LifecycleAdapter {
-  prepare(run: ProjectRunContext): void
-  boot(run: ProjectRunContext): void
-  pause(run: ProjectRunContext): void
-  resume(run: ProjectRunContext): void
-  dispose(run: ProjectRunContext): void
+export interface RuntimeLifecycleContract {
+  target: ProjectLifecycleTarget
+  globalName?: string
+  runMethod?: string
+  managedProjectRun?: boolean
+  bootMethod?: string
+  restartMethod?: string
+  pauseMethod?: string
+  resumeMethod?: string
+  disposeMethod?: string
 }
 ```
 
-`ProjectRunContext` oferece sinal de cancelamento, registro de recursos,
-scheduler e pedido de nova partida. A API permanece interna ao Estúdio.
+`managedProjectRun` é usado por Jogo 2D e Jogo 2D Avançado, cujas factories
+podem rodar novamente sem recriar o iframe. Nesses dois targets,
+`ProjectRunContext` oferece sinal de cancelamento, registro LIFO de recursos e
+pedido de nova partida. A API permanece interna ao Estúdio.
 
-### Scheduler
+### Agendamento e descarte
 
-Cada motor usa um scheduler por execução. Blocos de loop registram tarefas no
-scheduler, em vez de criarem `requestAnimationFrame` próprios.
+Cada motor conserva seu scheduler de domínio, inclusive a cadência, a pausa e a
+ordem de desenho. Um bloco genérico de animação continua usando
+`requestAnimationFrame`; em targets com `managedProjectRun`, o gerador registra
+o handle no contexto para cancelá-lo no reinício. Listeners DOM genéricos usam o
+`AbortSignal` da mesma execução.
 
 A ordem de cada quadro é:
 
@@ -248,8 +259,8 @@ ordem semântica mesmo quando aparecem em outra posição visual.
 `A cada N quadros` dispara após N quadros ativos. `A cada N segundos` dispara
 após N segundos ativos. Pausa congela ambos; nova partida zera os contadores.
 
-Páginas sem motor usam um adaptador leve. `Ao iniciar` roda uma vez por abertura,
-eventos DOM seguem o navegador e o scheduler só existe quando há animação.
+Páginas sem motor executam `Ao iniciar` uma vez por abertura; eventos DOM e RAFs
+seguem o ciclo de vida do documento do preview.
 
 ## Classificação semântica
 
@@ -287,19 +298,18 @@ migração conserva o comportamento, mas pede a criação do mapa.
 
 ## Reinício e erros
 
-Reiniciar executa uma transação completa:
+Nos targets que reiniciam a factory em memória, reiniciar executa esta sequência:
 
-1. bloquear reinícios concorrentes;
-2. descartar scheduler e recursos da execução anterior;
-3. pedir ao adaptador que limpe o motor;
-4. criar novo escopo e novo contexto;
-5. executar início, registrar eventos e loops;
-6. iniciar o motor;
-7. liberar a trava.
+1. o runtime solicita outra execução da factory;
+2. `ProjectRunContext.begin` descarta o escopo anterior;
+3. o `AbortController` remove listeners DOM e os disposers cancelam RAFs;
+4. a factory cria o novo contexto e registra início, eventos e loops;
+5. o método de reinício do motor limpa e reinicia os recursos do seu domínio.
 
 Se um callback falhar, o Estúdio pausa a execução, mostra o bloco culpado e
 mantém os demais dados inspecionáveis. Reiniciar depois da falha começa limpo.
-O preview nunca acumula listeners, hooks ou RAFs.
+Assim, reinícios de Jogo 2D e Jogo 2D Avançado não acumulam listeners DOM ou
+RAFs genéricos; hooks e loops próprios continuam sob o descarte do motor.
 
 ## Migração
 
@@ -375,7 +385,7 @@ experimentação não contam como erro.
 | Migração | `blockly/normalizeFrames.ts`, sanitizers de estado | classificação estrutural idempotente |
 | Bridge | `parsers/js.ts`, `parsers/project.ts`, `generators/js.ts`, `generators/project.ts`, `generators/sourceMap.ts` | marcadores, fábrica e round-trip |
 | Preview | novo módulo de lifecycle, `preview/*`, `components/preview/*` | contexto, recursos, restart e erro |
-| Motores | `official-extensions/*/blocks.ts`, `runtime.ts`, `index.ts` | adaptadores e classificação completa |
+| Motores | `official-extensions/*/blocks.ts`, `runtime.ts`, `index.ts` | contratos de lifecycle e classificação completa |
 | Exemplos | `examples/core.ts`, `official-extensions/*/examples.ts` | IR versão 2 sem boots antigos |
 | UI | `components/blocks/BlocklyPanel.tsx`, estilos e mensagens | rascunhos, foco e duas linhas |
 
@@ -405,8 +415,8 @@ no formato novo. `showExamples` e o gate de perfil privilegiado não mudam.
 ### Runtime
 
 - Provar escopo compartilhado e novo escopo no restart.
-- Provar um scheduler, um listener e um callback por registro.
-- Provar pausa e reinício de contadores.
+- Provar um listener e um RAF genéricos ativos após reinício da factory.
+- Provar pausa e reinício nos schedulers de domínio dos motores.
 - Provar ordem de fases, contato iniciado e sobreposição contínua.
 - Provar limpeza após exceção e descarte.
 
@@ -435,7 +445,7 @@ fixtures deliberadamente inválidos.
 3. Criar os três frames de comportamento, unicidade, áreas opcionais e layout.
 4. Atualizar Blockly → IR, IR → Blockly, diagnósticos e rascunhos.
 5. Atualizar gerador, parser, marcadores, source maps e Bridge.
-6. Criar o orquestrador de execução e o scheduler universal.
+6. Criar o contrato de execução e o escopo descartável para factories reiniciáveis.
 7. Adaptar Jogo 2D e validar restart, pausa, timers e colisões.
 8. Adaptar Jogo 2D Avançado, inclusive mapas e Vila do Dragão.
 9. Adaptar Jogo 3D, Jogo 3D Avançado e Mundo 3D.

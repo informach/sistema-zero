@@ -20,7 +20,6 @@ describe('game-2d — contrato de ciclo de vida', () => {
           width: 400,
           height: 300,
           bg: '#101827',
-          description: 'Use as setas para mover o herói.',
         },
       ],
     }
@@ -28,7 +27,43 @@ describe('game-2d — contrato de ciclo de vida', () => {
     expect(parsed.success).toBe(true)
     expect(compileStatements([start] as never[], 0)).toContain('SZGame2D.onStart(function')
     expect(compileStatements([start] as never[], 0)).toContain('"inicio-1"')
-    expect(compileStatements([start] as never[], 0)).toContain('"Use as setas para mover o herói."')
+    expect(compileStatements([start] as never[], 0)).toContain(
+      'SZGame2D.setupStage(400, 300, "#101827");',
+    )
+  })
+
+  it('gera id estável para cada evento de inimigo derrotado', () => {
+    const code = compileStatements(
+      [
+        {
+          type: 'g2d:onEnemyDefeated',
+          __id: 'derrota-1',
+          typeVar: 'goomba',
+          itemName: 'inimigo',
+          body: [],
+        },
+      ] as never[],
+      0,
+    )
+    expect(code).toContain('}, "derrota-1");')
+  })
+
+  it('aceita IR legado de preparação e remove a antiga descrição', () => {
+    const parsed = SZIRSchema.safeParse(
+      project([
+        {
+          type: 'g2d:setupStage',
+          width: 400,
+          height: 300,
+          bg: '#101827',
+          description: 'Use as setas.',
+        },
+      ]),
+    )
+    expect(parsed.success).toBe(true)
+    if (parsed.success) {
+      expect(parsed.data.js[0]).not.toHaveProperty('description')
+    }
   })
 
   it('recusa evento registrado dentro de “a cada quadro”', () => {

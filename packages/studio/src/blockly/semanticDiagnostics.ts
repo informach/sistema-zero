@@ -3,9 +3,14 @@ import {
   behaviorStatements,
   type CSSEntry,
   type CSSRule,
+  collectCanvasContextSymbols,
+  collectCanvasNumericIssues,
+  cssCommentRejectionReason,
+  cssDeclarationEntries,
   type HTMLNode,
-  type JSStatement,
+  htmlAttributeRejectionReason,
   normalizeSZIR,
+  prepareCSSDeclaration,
   type SZIRInput,
   SZIRInputSchema,
 } from '#ir'
@@ -91,29 +96,6 @@ function collectHtmlTargets(nodes: HTMLNode[]): {
   return { ids, classes, tags, idSymbols }
 }
 
-function collectCanvasSetups(
-  statements: JSStatement[],
-): Array<Extract<JSStatement, { type: 'canvasSetup' }>> {
-  const setups: Array<Extract<JSStatement, { type: 'canvasSetup' }>> = []
-  const visit = (value: unknown): void => {
-    if (Array.isArray(value)) {
-      for (const child of value) visit(child)
-      return
-    }
-    if (!value || typeof value !== 'object') return
-    const record = value as Record<string, unknown>
-    if (record.type === 'canvasSetup') {
-      setups.push(value as Extract<JSStatement, { type: 'canvasSetup' }>)
-      return
-    }
-    for (const [key, child] of Object.entries(record)) {
-      if (key !== '__id') visit(child)
-    }
-  }
-  visit(statements)
-  return setups
-}
-
 /**
  * Confere os símbolos que o Canvas materializa antes de o gerador substituir o
  * último preview válido. Esses casos seriam ambíguos no DOM ou produziriam uma
@@ -147,10 +129,10 @@ function addCanvasMessages(
     }
   }
 
-  const setups = collectCanvasSetups(behaviorStatements(ir))
+  const { setups, uses } = collectCanvasContextSymbols(behaviorStatements(ir))
   const setupsByContext = new Map<string, typeof setups>()
   for (const setup of setups) {
-    const contextName = setup.varName.trim()
+    const contextName = setup.name
     const sameName = setupsByContext.get(contextName) ?? []
     sameName.push(setup)
     setupsByContext.set(contextName, sameName)
@@ -161,7 +143,7 @@ function addCanvasMessages(
       addBlockMessage(
         workspace,
         messagesByBlock,
-        setup.__id,
+        setup.blockId,
         `Não achei uma tela Canvas com o id “${setup.canvasId}”. Crie a tela no HTML ou escolha o id correto.`,
       )
     } else if (targets.length === 1 && targets[0]?.tag !== 'canvas') {
@@ -169,7 +151,7 @@ function addCanvasMessages(
       addBlockMessage(
         workspace,
         messagesByBlock,
-        setup.__id,
+        setup.blockId,
         `O id “${setup.canvasId}” pertence a <${targets[0]?.tag}>. Escolha uma tela Canvas.`,
       )
     }
@@ -182,10 +164,32 @@ function addCanvasMessages(
       addBlockMessage(
         workspace,
         messagesByBlock,
-        setup.__id,
+        setup.blockId,
         `O pincel “${contextName}” foi preparado ${repeated.length} vezes. Dê um nome diferente a cada pincel.`,
       )
     }
+  }
+
+  const preparedContexts = new Set(setups.map((setup) => setup.name))
+  for (const use of uses) {
+    if (preparedContexts.has(use.name)) continue
+    valid = false
+    addBlockMessage(
+      workspace,
+      messagesByBlock,
+      use.blockId,
+      `O pincel “${use.name}” ainda não foi preparado. Use “Preparar a tela” antes de desenhar.`,
+    )
+  }
+
+  for (const issue of collectCanvasNumericIssues(behaviorStatements(ir))) {
+    valid = false
+    addBlockMessage(
+      workspace,
+      messagesByBlock,
+      issue.blockId,
+      `O ${issue.label} não pode ser negativo. Use 0 ou um número maior.`,
+    )
   }
   return valid
 }
@@ -203,6 +207,79 @@ function collectCssRules(entries: CSSEntry[]): CSSRule[] {
     rules.push(entry)
   }
   return rules
+}
+
+/**
+ * Expõe no bloco o mesmo motivo pelo qual o gerador recusaria uma declaração
+ * CSS ou atributo HTML. Segurança continua fail-closed, mas nunca silenciosa.
+ */
+function addOutputSafetyMessages(
+  workspace: Blockly.Workspace,
+  input: SZIRInput,
+  messagesByBlock: Map<WarnableBlock, Set<string>>,
+): boolean {
+  const ir = normalizeSZIR(input)
+  let valid = true
+
+  const htmlStack = ir.html.map((node) => ({ node, ownerBlockId: node.__id }))
+  while (htmlStack.length > 0) {
+    const current = htmlStack.pop()
+    if (!current) continue
+    const { node } = current
+    const blockId = node.__id ?? current.ownerBlockId
+    if (node.type === 'element' || node.type === 'canvas') {
+      for (const [name, value] of Object.entries(node.attrs ?? {})) {
+        if (name.toLowerCase() === 'id') continue
+        const reason = htmlAttributeRejectionReason(name, value)
+        if (!reason) continue
+        valid = false
+        addBlockMessage(workspace, messagesByBlock, blockId, reason)
+      }
+      for (const child of node.children ?? []) {
+        htmlStack.push({ node: child, ownerBlockId: blockId })
+      }
+    }
+  }
+
+  const cssStack = [...ir.css]
+  while (cssStack.length > 0) {
+    const entry = cssStack.pop()
+    if (!entry) continue
+    if ('type' in entry) {
+      if (entry.type === 'mediaQuery') {
+        cssStack.push(...entry.rules)
+      } else if (entry.type === 'comment') {
+        const reason = cssCommentRejectionReason(entry.text)
+        if (reason) {
+          valid = false
+          addBlockMessage(workspace, messagesByBlock, entry.__id, reason)
+        }
+      } else if (entry.type === 'keyframes') {
+        for (const step of entry.steps) {
+          for (const declaration of cssDeclarationEntries(step.declarations)) {
+            const prepared = prepareCSSDeclaration(declaration.property, declaration.value)
+            if (prepared.accepted) continue
+            valid = false
+            addBlockMessage(
+              workspace,
+              messagesByBlock,
+              declaration.__id ?? entry.__id,
+              prepared.message,
+            )
+          }
+        }
+      }
+      continue
+    }
+    for (const declaration of cssDeclarationEntries(entry.declarations, entry.__declIds)) {
+      const prepared = prepareCSSDeclaration(declaration.property, declaration.value)
+      if (prepared.accepted) continue
+      valid = false
+      addBlockMessage(workspace, messagesByBlock, declaration.__id ?? entry.__id, prepared.message)
+    }
+  }
+
+  return valid
 }
 
 /**
@@ -259,12 +336,18 @@ function addCssSelectorMessages(
 }
 
 const SVG_LENGTH_RE =
-  /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?(?:px|pt|pc|cm|mm|in|em|ex|rem|%)?$/i
+  /^([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?)(?:px|pt|pc|cm|mm|in|em|ex|rem|%)?$/i
 const SVG_NUMBER_RE = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i
 
 function isSvgLength(value: string): boolean {
   const clean = value.trim()
   return SVG_LENGTH_RE.test(clean) || /^(?:calc|var|min|max|clamp)\(.+\)$/.test(clean)
+}
+
+/** Número literal de uma medida; expressões dinâmicas devolvem `null`. */
+function svgLiteralLengthNumber(value: string): number | null {
+  const match = SVG_LENGTH_RE.exec(value.trim())
+  return match?.[1] === undefined ? null : Number(match[1])
 }
 
 function hasValidSvgPoints(value: string): boolean {
@@ -456,7 +539,8 @@ function addSvgMessages(
     }
     for (const attribute of nonNegativeAttributes[node.tag] ?? []) {
       const value = node.attrs?.[attribute]
-      if (value && SVG_NUMBER_RE.test(value) && Number(value) < 0) {
+      const literal = value ? svgLiteralLengthNumber(value) : null
+      if (literal !== null && literal < 0) {
         warn(node.__id, `${attribute} não pode ser negativo. Use zero ou um número maior.`)
       }
     }
@@ -545,6 +629,8 @@ export function applySemanticDiagnostics(workspace: Blockly.Workspace, input: SZ
     addCssSelectorMessages(workspace, parsed.data, messagesByBlock)
     semanticValid = addSvgMessages(workspace, parsed.data, messagesByBlock)
     semanticValid = addCanvasMessages(workspace, parsed.data, messagesByBlock) && semanticValid
+    semanticValid =
+      addOutputSafetyMessages(workspace, parsed.data, messagesByBlock) && semanticValid
   } else {
     for (const issue of parsed.error.issues) {
       addBlockMessage(workspace, messagesByBlock, closestBlockId(input, issue.path), issue.message)

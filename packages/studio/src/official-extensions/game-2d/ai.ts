@@ -1,4 +1,11 @@
-export const gameTwoDPromptContext = `Extensão: Jogo 2D (id: game-2d)
+import { withGameTwoDLifecycleGuidance } from './pedagogy'
+
+export const gameTwoDPromptContext = withGameTwoDLifecycleGuidance(`Extensão: Jogo 2D (id: game-2d)
+
+CICLO DE VIDA:
+- [[G2D_LIFECYCLE_START]]
+- [[G2D_LIFECYCLE_EVENTS]]
+- [[G2D_LIFECYCLE_LOOP]]
 
 PALCO IMPLÍCITO: o runtime é dono do canvas. As globais 'ctx' (contexto 2D) e
 'tela' (o <canvas>) já existem — o aluno NÃO precisa criar canvas nem chamar
@@ -6,12 +13,12 @@ getContext. Se a página não tiver <canvas>, o runtime cria um. Nos BLOCOS o 'c
 fica escondido; no código gerado ele aparece como argumento (válido e reversível).
 
 API global injetada como window.SZGame2D:
-- setupStage(largura, altura, fundo, descrição): prepara o canvas responsivo com proporção fixa. A descrição informa objetivo e controles para leitores de tela e deve ser específica para o projeto.
+- setupStage(largura, altura, fundo): prepara o canvas responsivo com proporção fixa.
 - createSprite({ x, y, w, h, color }) -> { x, y, w, h, color, vx, vy }
 - drawSprite(ctx, sprite): desenha como fillRect.
 - clear(): limpa a tela inteira (use no começo de cada quadro, antes de desenhar).
 - fitScreen(percent): faz o canvas PREENCHER ~percent% da janela mantendo a proporção. As COORDENADAS do jogo (mundo lógico) não mudam, mas o desenho passa a ser feito na resolução REAL da tela — fica grande E nítido (sem borrar) e se reajusta sozinho ao redimensionar. Chame uma vez no começo. Bloco "Fazer a tela preencher N% da janela".
-- setupStageFull(bg, descrição): "ocupar a tela toda" — SEM dimensões e SEM proporção fixa: o canvas preenche 100% da viewport e a resolução LÓGICA do jogo acompanha o tamanho real da tela (a área do jogo É a tela; muda com a janela; nítido via devicePixelRatio). A descrição informa objetivo e controles para leitores de tela. Diferente do setupStage/fitScreen (que mantêm a proporção e deixam barras). Centralize por "a largura/altura da tela", não por número fixo. Bloco "Preparar o jogo para ocupar a tela toda".
+- setupStageFull(bg): "ocupar a tela toda" — SEM dimensões e SEM proporção fixa: o canvas preenche 100% da viewport e a resolução LÓGICA do jogo acompanha o tamanho real da tela (a área do jogo É a tela; muda com a janela; nítido via devicePixelRatio). Diferente do setupStage/fitScreen (que mantêm a proporção e deixam barras). Centralize por "a largura/altura da tela", não por número fixo. Bloco "Preparar o jogo para ocupar a tela toda".
 - spawnBullet(grupo, { x, y, radius, color, vx, vy }): cria um TIRO (bolinha com brilho/glow) no grupo; x/y = centro. Bloco "Criar tiro no grupo".
 - arrowsX(sprite, speed): move o sprite SÓ na horizontal com as setas (combine com clampToScreen). Bloco "Mover o sprite com as setas".
 - blink(sprite, frames): faz o sprite PISCAR por N quadros (invencibilidade ao levar dano). Bloco "Fazer o sprite piscar".
@@ -38,12 +45,15 @@ Eventos "Quando…" e perguntas (booleanos) — o modelo Scratch/MakeCode:
 - keyDown('ArrowRight'): true enquanto a tecla está segurada — use dentro de if/gameLoop.
 - touches(a, b): true enquanto os dois sprites se tocam — use dentro de if.
 
-Tier 1 — mira/contas, vida/tempo, aparência, mundo e pausa (v0.15.0):
+Funções gerais — mira/contas, vida/tempo, aparência, mundo e pausa:
 - distance(a, b) / angleTo(a, b): distância (px) e ângulo (graus, 0=cima, horário) entre dois sprites.
 - aimAt(a, b): gira o sprite a para apontar para b. moveToward(a, b, speed): move a em direção a b (px/quadro).
 - randomBetween(min, max): inteiro sorteado (inclusive). randomChance(percent): true em ~percent% das vezes (use em if).
-- setHealth(s, n)/changeHealth(s, delta)/getHealth(s)/hasHealth(s): vida do sprite (delta negativo = dano; não passa de 0 nem do máximo).
-- cooldownReady(s, frames): true no máximo a cada N quadros, POR sprite (cadência de tiro) — use em if.
+- setHealth(s, n): inicializa vida atual e máxima; use UMA vez em ⚙️ Ao iniciar. Valores viram inteiros >= 0.
+- changeHealth(s, delta)/getHealth(s)/getMaxHealth(s)/hasHealth(s): muda e consulta a vida sem passar de 0 ou do máximo. Sprite não inicializado não é considerado morto e recebe orientação no console.
+- healthDepleted(s): true só quando a vida foi inicializada e chegou a 0. É a pergunta positiva “as vidas acabaram?”.
+- damageSprite(s, amount, frames): tira vida uma vez e dá invencibilidade piscando; prefira para contato contínuo.
+- cooldownReady(s, frames, key): true no máximo a cada N quadros. Cada bloco gerado passa uma chave própria, então duas recargas no mesmo sprite são independentes.
 - spriteX(s)/spriteY(s)/spriteW(s)/spriteH(s): posição (x/y) e tamanho (largura/altura) do sprite, em px.
 - centerX(s)/centerY(s): o MEIO do sprite (x+largura/2, y+altura/2) — atirar/mirar/posicionar pelo centro.
 - spriteVx(s)/spriteVy(s)/spriteSpeed(s): velocidade horizontal/vertical e a total (magnitude) do sprite.
@@ -54,7 +64,7 @@ Tier 1 — mira/contas, vida/tempo, aparência, mundo e pausa (v0.15.0):
 - wrapEdges(s): dá a volta na tela (sai de um lado, reaparece no outro).
 - pauseGame()/resumeGame()/isPaused(): pausa congela os loops e contatos; teclas/cliques continuam ativos para permitir retomar.
 
-Tier 2 — câmera, mapa destrutível, ordem de desenho e depuração (v0.16.0):
+Funções para mundos maiores — câmera, mapa destrutível, ordem de desenho e depuração:
 - cameraFollow(s, worldW, worldH): centraliza a câmera no sprite (mundo maior que a tela), preso às bordas.
   setCamera(x, y) posiciona na mão; cameraX()/cameraY() leem a posição (útil p/ parallax). A câmera rola
   só o MUNDO (drawSprite/drawGroup/drawTileMap/drawParticles) — desenhe o HUD DEPOIS, que ele fica fixo.
@@ -101,7 +111,7 @@ Tipos de inimigo (v0.22.0) — classes com comportamento pronto; o TIPO é um gr
 - onEnemyDefeated(tipo, function (inimigo) {...}): registrar UMA vez, fora do gameLoop.
 - overlapEnemyShots(() => sprite, tipo, function (tiro) {...}): DENTRO do gameLoop; remove o
   tiro ao acertar.
-- hurtByEnemy(sprite, inimigoOuTiro): tira enemyDamage() da vida + blink(45); piscando =
+- hurtByEnemy(sprite, inimigoOuTiro): usa damageSprite com enemyDamage() e 45 quadros; piscando =
   invencivel (nao drena no contato continuo).
 - enemyDamage(inimigoOuTiro): o dano de contato (default 1).
 - setEnemyStateAnimation(tipo, 'estado', sheet, from, to, fps): animação por estado do TIPO.
@@ -153,11 +163,13 @@ Para um jogo de tiro (nave × asteroides): crie 2 grupos (tiros, asteroides); no
 HUD no canvas (v0.6.0) — desenhe DENTRO do gameLoop, depois de limpar a tela:
 - drawScore(ctx, "Pontos:", valor, x, y, "cor", tamanho): escreve "rótulo valor".
 - drawLabel(ctx, "texto", x, y, "cor", tamanho, "left|center|right"): texto fixo (títulos).
-- drawHearts(ctx, vidas, x, y, tamanho, "cor"): fileira de corações (vidas). Teto de 20.
+- drawSpriteHealth(ctx, sprite, "hearts|bar", x, y, tamanho, "cor"): HUD recomendado. Lê hp/hpMax do sprite; em hearts, tamanho é o diâmetro; em bar, é a largura e a altura é automática.
+- drawHearts(ctx, vidas, x, y, tamanho, "cor"): API legada para projetos salvos e contadores que não pertencem a um sprite. Teto de 20.
 - drawBar(ctx, valor, max, x, y, w, h, "cor"): barra de progresso/vida (fração valor/max).
 
 Estado/telas (cenas) — início → jogando → ganhou → perdeu, ou qualquer nome livre
 inventado pela criança (ex.: ganhou1), com UM só gameLoop:
+- setStageDescription("objetivo e controles"): use em ⚙️ Ao iniciar para descrever o canvas a leitores de tela.
 - setScene("jogando") / sceneIs("jogando") (booleano, use no if) / showScreen(ctx, titulo, subtitulo, dica, fundo) / restart(). O titulo/subtitulo/dica aceitam texto fixo OU expressão (variável, "juntar texto", resultado de função) — ex.: "Destrua " + alvo + " asteroides" mostra a meta vinda de uma variável.
 - IMPORTANTE: variáveis, grupos e sprites ficam em “⚙️ Ao iniciar”; registros de
   evento ficam em “⚡ Quando acontecer”; raízes gameLoop ficam em “🔁 Enquanto estiver rodando”. As três
@@ -180,7 +192,7 @@ Quando ajudar o aluno com jogos 2D:
   ficar lendo o estado das teclas na mão — é mais próximo de como a criança pensa.
 - Mostre que sprites são apenas objetos JS com x/y/w/h.
 - Para imagens, lembre que o aluno precisa ADICIONAR o asset na aba Assets e usar o nome dele.
-- Enquanto a imagem carrega (ou se faltar), o sprite cai num retângulo (placeholder) — nunca quebra.
+- Enquanto a imagem carrega, o cenário permanece visível; se a carga falhar, o sprite cai num retângulo (placeholder) — nunca quebra.
 - Prefira pequenas iterações didáticas — não despeje o jogo pronto.
 - DESEMPENHO: crie sprites/grupos/objetos UMA vez em ⚙️ Ao iniciar. Criar dentro do
   loop enche a memória. Dentro do loop, use spawn/createSprite só de propósito
@@ -236,4 +248,4 @@ KIT BALÃO (v0.13.0) — categoria "🎈 Kit balão" com atalhos PRONTOS para um
 - balloonScore(jogo): valor — metros voados. balloonFuel(jogo): valor — combustível 0..100. balloonOver(jogo): valor (booleano) — bateu numa árvore ou acabou o combustível? restartBalloon(jogo): zera o jogo. Exemplo pronto "Balão".
 
 CANVAS NA MÃO (genérico) — novos blocos de ✏️ Traçado úteis para crateras/máscaras: ctx.rect(x,y,w,h) adiciona um retângulo ao traçado; ctx.clip() recorta o desenho pelo traçado atual; ctx.isPointInPath(x,y)/ctx.isPointInStroke(x,y) são perguntas (o ponto está dentro/na linha do traçado?). Para "furar" um buraco: traçado com o retângulo da tela inteira + um arco no sentido anti-horário, depois clip. Há também os eventos "apertar o mouse"/"soltar o mouse" (mousedown/mouseup) na programação normal, para mira por arrastar.
-`
+`)

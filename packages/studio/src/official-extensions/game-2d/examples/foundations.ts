@@ -612,7 +612,7 @@ export const platformerExample: ExtensionExample = beginnerGameExample({
             {
               type: 'g2d:drawLabel',
               ctxVar: 'ctx',
-              text: '← → para andar · ↑ para pular',
+              text: 'Use as setas ← → para andar · ↑ para pular',
               x: 160,
               y: 190,
               color: '#e2e8f0',

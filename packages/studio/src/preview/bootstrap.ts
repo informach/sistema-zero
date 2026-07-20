@@ -4,11 +4,13 @@ import { escapeScriptContent, escapeStyleContent } from '../generators/escape'
 import { buildAssetsRuntime } from './assetsBridge'
 import { buildPreviewCSPMetaTag } from './csp'
 import { rewriteCssAssetUrls } from './cssAssets'
+import { prepareHtmlEventHandlers } from './htmlEventHandlers'
 import { buildInputBridgeRuntime } from './inputBridge'
 import { buildInterceptorScript } from './interceptors'
 import { buildLoopGuardRuntime, instrumentLoops } from './loopGuard'
 import { buildModalGuardRuntime } from './modalGuard'
 import { buildPermissionGuardRuntime } from './permissionGuard'
+import { scriptIntegrity } from './scriptIntegrity'
 import { buildStorageBridgeRuntime } from './storageBridge'
 import { transpileExtra } from './transpile'
 
@@ -76,7 +78,8 @@ export interface BuildPreviewDocInput {
   /**
    * Módulos ESM de extensões instaladas (`specifier → URL`, ex.:
    * `{ three: 'https://esm.sh/three@0.180.0' }`). Entram no importmap e suas
-   * origens são liberadas no `script-src` da CSP.
+   * URLs (e, no esm.sh, o prefixo do pacote pinado) são liberadas no
+   * `script-src` da CSP.
    */
   extensionImports?: Record<string, string>
 }
@@ -94,17 +97,34 @@ export interface BuildPreviewDocInput {
  *   sem allow-same-origin (data: URLs são opacas e self-contained).
  */
 export function buildPreviewDoc(input: BuildPreviewDocInput): string {
-  const scriptNonce = createScriptNonce()
-  const trustedScriptTag = (code: string, attrs: Record<string, string> = {}): string =>
-    scriptTag(code, { ...attrs, nonce: scriptNonce })
+  const scriptHashes = new Set<string>()
+  const eventHandlerHashes = new Set<string>()
+  const trustedScriptTag = (code: string, attrs: Record<string, string> = {}): string => {
+    const content = inlineScriptContent(code)
+    scriptHashes.add(scriptIntegrity(content))
+    return scriptTagContent(content, attrs)
+  }
+  const authorizeDataScript = (code: string): AuthorizedDataScript => {
+    const integrity = scriptIntegrity(code)
+    scriptHashes.add(integrity)
+    return {
+      url: `data:text/javascript;base64,${base64Encode(code)}`,
+      integrity,
+    }
+  }
   const userHtml = input.html.trim()
   const split = splitHtml(userHtml)
   // `<script>` INLINE no HTML do aluno (index.html) também passa pela guarda de
   // loop: sem isto, `<script>while(true){}</script>` colado no index escapava o
   // loopGuard (que só instrumentava o JS canônico) e congelava a aba — o mesmo
   // que a Camada A promete cortar. Ver instrumentInlineScripts.
-  const headInner = instrumentInlineScripts(split.headInner)
-  const bodyInner = instrumentInlineScripts(split.bodyInner)
+  const prepareHandlers = (html: string): string => {
+    const prepared = prepareHtmlEventHandlers(html)
+    for (const hash of prepared.hashes) eventHandlerHashes.add(hash)
+    return prepared.html
+  }
+  const headInner = prepareHandlers(instrumentInlineScripts(split.headInner, authorizeDataScript))
+  const bodyInner = prepareHandlers(instrumentInlineScripts(split.bodyInner, authorizeDataScript))
 
   // Quando há módulos ESM de extensão (ex.: three), os scripts que os usam
   // PRECISAM ser `type="module"` (importmap). Módulos são DEFERIDOS e rodam em
@@ -126,7 +146,9 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
 
   const extraHtml = safeExtraFiles
     .filter((f) => f.language === 'html')
-    .map((f) => instrumentInlineScripts(splitHtml(f.content).bodyInner))
+    .map((f) =>
+      prepareHandlers(instrumentInlineScripts(splitHtml(f.content).bodyInner, authorizeDataScript)),
+    )
     .filter(Boolean)
     .join('\n')
 
@@ -150,13 +172,15 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
     (f) => f.language === 'javascript' || f.language === 'typescript',
   )
   const importmap: Record<string, string> = {}
+  const importmapIntegrity: Record<string, string> = {}
   // Módulos ESM de extensões (specifier → URL pinada, ex.: three via CDN).
   for (const [spec, url] of Object.entries(input.extensionImports ?? {})) {
     if (spec && typeof url === 'string') importmap[spec] = url
   }
   for (const file of extraJsFiles) {
     const transpiled = transpileExtra(file.name, file.content)
-    const dataUrl = `data:text/javascript;base64,${base64Encode(instrumentLoops(transpiled))}`
+    const asset = authorizeDataScript(instrumentLoops(transpiled))
+    importmapIntegrity[asset.url] = asset.integrity
     for (const key of importmapKeysFor(file.name)) {
       // Skip-on-conflict: o PRIMEIRO specifier (módulo de extensão ou extra
       // anterior, ex.: `utils.ts` vs `utils.js` que ambos mapeiam `./utils`)
@@ -167,7 +191,7 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
         )
         continue
       }
-      importmap[key] = dataUrl
+      importmap[key] = asset.url
     }
   }
   // Invariante: o JSON do importmap NÃO passa por escapeScriptContent (suas
@@ -178,7 +202,12 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   const importmapTag =
     Object.keys(importmap).length > 0
       ? trustedScriptTag(
-          JSON.stringify({ imports: importmap }).replace(/<\/script/gi, '<\\/script'),
+          JSON.stringify({
+            imports: importmap,
+            ...(Object.keys(importmapIntegrity).length > 0
+              ? { integrity: importmapIntegrity }
+              : {}),
+          }).replace(/<\/script/gi, '<\\/script'),
           {
             type: 'importmap',
           },
@@ -220,7 +249,7 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   const jsNeedsDeferredClassic = !jsNeedsModule && needsModules
   let userScript = ''
   if (instrumentedJs) {
-    const dataUrl = `data:text/javascript;base64,${base64Encode(instrumentedJs)}`
+    const asset = authorizeDataScript(instrumentedJs)
     // Marca o script do ALUNO para o interceptor: o window.onerror recebe o
     // `src` do script que lançou, e comparar a CAUDA da data URL distingue o
     // script.js do aluno dos runtimes de extensão/extras. É o que permite ao
@@ -228,14 +257,25 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
     // onerror é relativa ao script externo, e o instrumentLoops não insere
     // quebras de linha — o número de linha bate com o script.js exibido).
     const tagTail = trustedScriptTag(
-      `window.__SZ_USER_JS_TAIL=${JSON.stringify(dataUrl.slice(-64))};`,
+      `window.__SZ_USER_JS_TAIL=${JSON.stringify(asset.url.slice(-64))};`,
     )
     if (jsNeedsModule) {
-      userScript = `${tagTail}\n${scriptTag('', { type: 'module', src: dataUrl })}`
+      userScript = `${tagTail}\n${scriptTag('', {
+        type: 'module',
+        src: asset.url,
+        integrity: asset.integrity,
+      })}`
     } else if (jsNeedsDeferredClassic) {
-      userScript = `${tagTail}\n${scriptTag('', { defer: '', src: dataUrl })}`
+      userScript = `${tagTail}\n${scriptTag('', {
+        defer: '',
+        src: asset.url,
+        integrity: asset.integrity,
+      })}`
     } else {
-      userScript = `${tagTail}\n${scriptTag('', { src: dataUrl })}`
+      userScript = `${tagTail}\n${scriptTag('', {
+        src: asset.url,
+        integrity: asset.integrity,
+      })}`
     }
   }
 
@@ -249,11 +289,6 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   // de QUALQUER `<script type="module">`
   // (extScripts viram module quando há extensionImports) — senão o `import ...
   // from 'three'` falha com "Failed to resolve module specifier".
-  const cspMeta = buildPreviewCSPMetaTag({
-    fetchAllowedOrigins: input.fetchAllowedOrigins,
-    scriptAllowedOrigins: extensionImportOrigins(input.extensionImports),
-    scriptNonce,
-  })
   const permissionGuard = buildPermissionGuardRuntime({
     granted: input.installedPermissions,
     fetchAllowedOrigins: input.fetchAllowedOrigins,
@@ -291,13 +326,20 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
           buildAssetsRuntime(input.assets, input.assetsMeta, input.sounds, input.models3d),
         )
       : ''
+  const interceptorTag = trustedScriptTag(buildInterceptorScript(input.parentOrigin))
+  const cspMeta = buildPreviewCSPMetaTag({
+    fetchAllowedOrigins: input.fetchAllowedOrigins,
+    scriptAllowedUrls: extensionImportUrls(input.extensionImports),
+    scriptHashes: [...scriptHashes],
+    eventHandlerHashes: [...eventHandlerHashes],
+  })
 
   return `<!doctype html>
 <html lang="pt-BR">
 <head>
 ${cspMeta}
 <meta charset="UTF-8" />
-${trustedScriptTag(buildInterceptorScript(input.parentOrigin))}
+${interceptorTag}
 ${permissionGuardTag}
 ${loopGuardTag}
 ${modalGuardTag}
@@ -332,7 +374,15 @@ ${userScript}
  * Externalizar um clássico preserva o escopo GLOBAL e a ordem de documento (igual
  * ao caminho do JS canônico); module continua deferido.
  */
-function instrumentInlineScripts(html: string): string {
+interface AuthorizedDataScript {
+  url: string
+  integrity: `sha256-${string}`
+}
+
+function instrumentInlineScripts(
+  html: string,
+  authorize: (code: string) => AuthorizedDataScript,
+): string {
   if (!html || !/<script\b/i.test(html)) return html
   // O fechamento casa o que o TOKENIZER de HTML aceita como fim de <script>:
   // `</script` seguido de espaço/tab/quebra, `/` ou `>` (ex.: `</script >`,
@@ -350,15 +400,16 @@ function instrumentInlineScripts(html: string): string {
       if (!isClassic && !isModule) return full
       const code = String(content)
       if (!code.trim()) return full
-      const dataUrl = `data:text/javascript;base64,${base64Encode(instrumentLoops(code))}`
+      const asset = authorize(instrumentLoops(code))
       // Preserva atributos que não sejam `type`/`src`; reemite `type="module"`
       // quando for o caso (mantém o deferimento e o escopo de módulo).
       const keptAttrs = attrs
         .replace(/\btype\s*=\s*["']?[^"'\s>]*["']?/i, '')
+        .replace(/\bintegrity\s*=\s*["']?[^"'\s>]*["']?/i, '')
         .replace(/\s+/g, ' ')
         .trim()
       const typeAttr = isModule ? ' type="module"' : ''
-      return `<script${typeAttr}${keptAttrs ? ` ${keptAttrs}` : ''} src="${dataUrl}"></script>`
+      return `<script${typeAttr}${keptAttrs ? ` ${keptAttrs}` : ''} src="${asset.url}" integrity="${asset.integrity}"></script>`
     },
   )
 }
@@ -392,18 +443,49 @@ function escapeAttr(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;')
 }
 
-/** Origens (esquema+host) das URLs de módulos de extensão, para liberar na CSP. */
-function extensionImportOrigins(imports?: Record<string, string>): string[] {
+/**
+ * URLs/prefixos mínimos dos módulos oficiais, para a allowlist de script da CSP.
+ *
+ * O esm.sh responde ao entrypoint com imports relativos para arquivos internos.
+ * Por isso, um pacote com versão exata autoriza também o prefixo daquele pacote
+ * (`/three@0.180.0/`), sem autorizar a origem inteira nem outros pacotes.
+ */
+export function extensionImportUrls(imports?: Record<string, string>): string[] {
   if (!imports) return []
-  const origins = new Set<string>()
-  for (const url of Object.values(imports)) {
+  const urls = new Set<string>()
+  for (const value of Object.values(imports)) {
     try {
-      origins.add(new URL(url).origin)
+      const url = new URL(value)
+      if (url.protocol !== 'https:' && url.protocol !== 'http:') continue
+      if (url.username || url.password || url.hash) continue
+
+      // A URL sem query é uma fonte CSP válida. Imports com query continuam
+      // cobertos pelo prefixo pinado abaixo, pois a query não participa do
+      // casamento de path da CSP.
+      if (!url.search) urls.add(url.href)
+
+      const pinnedPrefix = esmShPinnedPackagePrefix(url)
+      if (pinnedPrefix) urls.add(pinnedPrefix)
     } catch {
       // URL inválida → ignora (o importmap também não a usará de forma útil).
     }
   }
-  return Array.from(origins)
+  return Array.from(urls)
+}
+
+function esmShPinnedPackagePrefix(url: URL): string | null {
+  if (url.hostname !== 'esm.sh') return null
+  const parts = url.pathname.split('/').filter(Boolean)
+  const packageParts = parts[0]?.startsWith('@') ? parts.slice(0, 2) : parts.slice(0, 1)
+  if (packageParts.length === 0) return null
+
+  const packagePath = packageParts.join('/')
+  const versionSeparator = packagePath.lastIndexOf('@')
+  const version = packagePath.slice(versionSeparator + 1)
+  if (versionSeparator <= 0 || !/^\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?$/.test(version)) {
+    return null
+  }
+  return `${url.origin}/${packagePath}/`
 }
 
 /**
@@ -420,17 +502,19 @@ function importmapKeysFor(name: string): string[] {
   return keys
 }
 
-function scriptTag(code: string, attrs: Record<string, string> = {}): string {
+function inlineScriptContent(code: string): string {
+  return escapeScriptContent(code).replace(/\r\n?/g, '\n')
+}
+
+function scriptTagContent(content: string, attrs: Record<string, string> = {}): string {
   const attrText = Object.entries(attrs)
     .map(([name, value]) => ` ${name}="${escapeAttr(value)}"`)
     .join('')
-  return `<script${attrText}>${escapeScriptContent(code)}</script>`
+  return `<script${attrText}>${content}</script>`
 }
 
-function createScriptNonce(): string {
-  const bytes = new Uint8Array(18)
-  globalThis.crypto.getRandomValues(bytes)
-  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')
+function scriptTag(code: string, attrs: Record<string, string> = {}): string {
+  return scriptTagContent(inlineScriptContent(code), attrs)
 }
 
 function base64Encode(s: string): string {

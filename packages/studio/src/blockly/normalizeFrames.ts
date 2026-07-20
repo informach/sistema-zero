@@ -355,14 +355,6 @@ function migrateLegacyBehaviorFrame(state: unknown): unknown {
   const sections = splitLegacySerializedBehavior(legacy.inputs?.CHILDREN?.block)
   const baseX = legacy.x ?? 32
   const baseY = legacy.y ?? 392
-  const replacements: SerializedBlock[] = []
-  if (sections.start.length > 0) replacements.push(frame(FRAME_START, sections.start, baseX, baseY))
-  if (sections.events.length > 0) {
-    replacements.push(frame(FRAME_EVENTS, sections.events, baseX + 420, baseY))
-  }
-  if (sections.loops.length > 0) {
-    replacements.push(frame(FRAME_LOOPS, sections.loops, baseX + 840, baseY))
-  }
   const duplicateDrafts = legacyIndexes.slice(1).flatMap((index, duplicateIndex) => {
     const duplicate = tops[index]
     if (!duplicate) return []
@@ -373,6 +365,22 @@ function migrateLegacyBehaviorFrame(state: unknown): unknown {
     }))
   })
   for (const index of [...legacyIndexes].reverse()) tops.splice(index, 1)
+
+  // Um salvamento interrompido pode conter a área legada ao lado de uma ou
+  // mais áreas atuais. Nesse caso, preserve o frame atual e acrescente nele os
+  // filhos migrados; criar outro frame faria o build consumir apenas o primeiro.
+  const replacements: SerializedBlock[] = []
+  const mergeOrReplace = (area: BehaviorArea, children: SerializedBlock[], x: number): void => {
+    if (children.length === 0) return
+    if (tops.some((block) => block.type === FRAME_FOR_AREA[area])) {
+      appendChildrenToArea(tops, area, children)
+      return
+    }
+    replacements.push(frame(FRAME_FOR_AREA[area], children, x, baseY))
+  }
+  mergeOrReplace('start', sections.start, baseX)
+  mergeOrReplace('events', sections.events, baseX + 420)
+  mergeOrReplace('loops', sections.loops, baseX + 840)
   tops.splice(legacyIndex, 0, ...replacements, ...duplicateDrafts)
   return markLifecycleBlocksState(cloned)
 }

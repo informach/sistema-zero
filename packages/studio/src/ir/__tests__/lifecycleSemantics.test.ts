@@ -1,13 +1,17 @@
 import { describe, expect, it } from 'bun:test'
 import { type JSStatement, SZIRV2Schema } from '../schema'
 
-function parse(area: 'start' | 'events' | 'loops', statement: JSStatement) {
+function parse(
+  area: 'start' | 'events' | 'loops',
+  statement: JSStatement,
+  prerequisites: JSStatement[] = [],
+) {
   return SZIRV2Schema.safeParse({
     version: 2,
     html: [],
     css: [],
     behavior: {
-      start: area === 'start' ? [statement] : [],
+      start: area === 'start' ? [...prerequisites, statement] : prerequisites,
       events: area === 'events' ? [statement] : [],
       loops: area === 'loops' ? [statement] : [],
     },
@@ -18,12 +22,16 @@ function parse(area: 'start' | 'events' | 'loops', statement: JSStatement) {
 describe('gramática recursiva do ciclo de vida', () => {
   it('aceita o evento nomeado na área de Eventos', () => {
     expect(
-      parse('events', {
-        type: 'eventHandler',
-        target: 'botao',
-        event: 'click',
-        handlerName: 'responder',
-      }).success,
+      parse(
+        'events',
+        {
+          type: 'eventHandler',
+          target: 'botao',
+          event: 'click',
+          handlerName: 'responder',
+        },
+        [{ type: 'funcDecl', name: 'responder', params: [], body: [] }],
+      ).success,
     ).toBe(true)
   })
 
@@ -138,24 +146,54 @@ describe('gramática recursiva do ciclo de vida', () => {
     ).toBe(true)
 
     expect(
-      parse('start', {
-        type: 'classDecl',
-        name: 'Filha',
-        superClass: 'Base',
-        ctorBody: [{ type: 'superCall', args: [] }],
-        methods: [
-          {
-            name: 'carregar',
-            params: [],
-            async: true,
-            body: [
-              { type: 'awaitStmt', value: { type: 'num', value: 1 } },
-              { type: 'superMethodCall', method: 'carregar', args: [] },
-            ],
-          },
-        ],
-      }).success,
+      parse(
+        'start',
+        {
+          type: 'classDecl',
+          name: 'Filha',
+          superClass: 'Base',
+          ctorBody: [{ type: 'superCall', args: [] }],
+          methods: [
+            {
+              name: 'carregar',
+              params: [],
+              async: true,
+              body: [
+                { type: 'awaitStmt', value: { type: 'num', value: 1 } },
+                { type: 'superMethodCall', method: 'carregar', args: [] },
+              ],
+            },
+          ],
+        },
+        [{ type: 'classDecl', name: 'Base', ctorBody: [], methods: [] }],
+      ).success,
     ).toBe(true)
+  })
+
+  it('não confunde loops do motor com laços sintáticos para break e continue', () => {
+    for (const statement of [{ type: 'break' }, { type: 'continue' }] as JSStatement[]) {
+      expect(
+        parse('loops', {
+          type: 'animationLoop',
+          body: [statement],
+        }).success,
+        statement.type,
+      ).toBe(false)
+
+      expect(
+        parse('loops', {
+          type: 'animationLoop',
+          body: [
+            {
+              type: 'repeat',
+              times: { type: 'num', value: 2 },
+              body: [statement],
+            },
+          ],
+        }).success,
+        statement.type,
+      ).toBe(true)
+    }
   })
 
   it('valida capacidades específicas de teclado e ponteiro em eventos', () => {
@@ -204,6 +242,7 @@ describe('gramática recursiva do ciclo de vida', () => {
   })
 
   it('exige super único e primeiro em construtor derivado explícito', () => {
+    const base: JSStatement = { type: 'classDecl', name: 'Base', ctorBody: [], methods: [] }
     const derived = (ctorBody: JSStatement[]): JSStatement => ({
       type: 'classDecl',
       name: 'Filha',
@@ -213,7 +252,7 @@ describe('gramática recursiva do ciclo de vida', () => {
       methods: [],
     })
 
-    expect(parse('start', derived([])).success).toBe(false)
+    expect(parse('start', derived([]), [base]).success).toBe(false)
     expect(
       parse(
         'start',
@@ -221,6 +260,7 @@ describe('gramática recursiva do ciclo de vida', () => {
           { type: 'setThisProp', name: 'x', value: { type: 'num', value: 1 } },
           { type: 'superCall', args: [] },
         ]),
+        [base],
       ).success,
     ).toBe(false)
     expect(
@@ -230,8 +270,9 @@ describe('gramática recursiva do ciclo de vida', () => {
           { type: 'superCall', args: [] },
           { type: 'superCall', args: [] },
         ]),
+        [base],
       ).success,
     ).toBe(false)
-    expect(parse('start', derived([{ type: 'superCall', args: [] }])).success).toBe(true)
+    expect(parse('start', derived([{ type: 'superCall', args: [] }]), [base]).success).toBe(true)
   })
 })

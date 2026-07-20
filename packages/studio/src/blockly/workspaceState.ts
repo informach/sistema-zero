@@ -2022,6 +2022,16 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block('sz_g2d_change_health', { SPRITE: stmt.spriteVar }, {}, stmt.__id, { DELTA: delta })
     }
+    case 'g2d:damageSprite': {
+      const amount = exprToValueBlock(valueToExpr(stmt.amount))
+      const frames = exprToValueBlock(valueToExpr(stmt.invincibilityFrames))
+      return amount === null || frames === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_damage_sprite', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
+            AMOUNT: amount,
+            FRAMES: frames,
+          })
+    }
     case 'g2d:flipSprite':
       return block('sz_g2d_flip_sprite', { SPRITE: stmt.spriteVar, DIR: stmt.dir }, {}, stmt.__id)
     case 'g2d:setOpacity': {
@@ -2625,6 +2635,19 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         SIZE: size,
       })
     }
+    case 'g2d:drawSpriteHealth': {
+      const x = exprToValueBlock(valueToExpr(stmt.x))
+      const y = exprToValueBlock(valueToExpr(stmt.y))
+      const size = exprToValueBlock(valueToExpr(stmt.size))
+      if (!x || !y || !size) return rawJSBlock(stmt)
+      return block(
+        'sz_g2d_draw_sprite_health',
+        { SPRITE: stmt.spriteVar, STYLE: stmt.style, COLOR: stmt.color },
+        {},
+        stmt.__id,
+        { X: x, Y: y, SIZE: size },
+      )
+    }
     case 'g2d:drawBar': {
       const value = exprToValueBlock(stmt.value)
       const max = exprToValueBlock(stmt.max)
@@ -2642,6 +2665,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         H: h,
       })
     }
+    case 'g2d:setStageDescription':
+      return block('sz_g2d_set_stage_description', { DESCRIPTION: stmt.description }, {}, stmt.__id)
     case 'g2d:setScene':
       return block('sz_g2d_set_scene', { SCENE: stmt.name }, {}, stmt.__id)
     case 'g2d:showScreen': {
@@ -2676,21 +2701,10 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       const h = exprToValueBlock(valueToExpr(stmt.height))
       return w === null || h === null
         ? rawJSBlock(stmt)
-        : block(
-            'sz_g2d_setup_stage',
-            { BG: stmt.bg, DESCRIPTION: stmt.description ?? '' },
-            {},
-            stmt.__id,
-            { W: w, H: h },
-          )
+        : block('sz_g2d_setup_stage', { BG: stmt.bg }, {}, stmt.__id, { W: w, H: h })
     }
     case 'g2d:setupFull':
-      return block(
-        'sz_g2d_setup_full',
-        { BG: stmt.bg, DESCRIPTION: stmt.description ?? '' },
-        {},
-        stmt.__id,
-      )
+      return block('sz_g2d_setup_full', { BG: stmt.bg }, {}, stmt.__id)
     case 'g2d:spawnBullet': {
       const x = exprToValueBlock(stmt.x)
       const y = exprToValueBlock(stmt.y)
@@ -7511,6 +7525,8 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_g2d_angle_to', { A: expr.aVar, B: expr.bVar })
     case 'g2d:getHealth':
       return block('sz_g2d_get_health', { SPRITE: expr.spriteVar })
+    case 'g2d:getMaxHealth':
+      return block('sz_g2d_get_max_health', { SPRITE: expr.spriteVar })
     case 'g2d:enemyDamage':
       return block('sz_g2d_enemy_damage', { SPRITE: expr.spriteVar })
     case 'g2d:spriteX':
@@ -7551,6 +7567,8 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
     }
     case 'g2d:hasHealth':
       return block('sz_g2d_has_health', { SPRITE: expr.spriteVar })
+    case 'g2d:healthDepleted':
+      return block('sz_g2d_health_depleted', { SPRITE: expr.spriteVar })
     case 'g2d:cooldownReady': {
       const f = exprToValueBlock(valueToExpr(expr.frames))
       return f === null

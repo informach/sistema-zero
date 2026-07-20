@@ -164,16 +164,21 @@ const GENERATED_ENGINE_BOOTS = new Set([
   'SZWorld3D.start();',
 ])
 
+const GENERATED_PROJECT_RUN_CONTEXT =
+  /^const __szProjectRunContext(?:_\d+)? = window\.__SZProjectLifecycle\.begin\((?:\(\) => (?:SZGame2D\.restart|SZGameKit\.restartGame)\(\))?\);$/
+
 /** Remove somente a casca exata emitida pelo gerador; código do aluno fica intacto. */
 function stripGeneratedLifecycleEnvelope(sourceLines: string[]): string[] {
   const lines = [...sourceLines]
   const startMarker = lines.findIndex((line) => line.trim() === BEHAVIOR_SECTION_MARKERS.start)
   if (startMarker < 1) return lines
-  const openerIndex = startMarker - 1
+  const hasManagedRun = GENERATED_PROJECT_RUN_CONTEXT.test(lines[startMarker - 1]?.trim() ?? '')
+  const openerIndex = startMarker - (hasManagedRun ? 2 : 1)
+  if (openerIndex < 0) return lines
   const opener = lines[openerIndex]?.trim() ?? ''
   if (!GENERATED_LIFECYCLE_OPENERS.has(opener)) return lines
 
-  lines.splice(openerIndex, 1)
+  lines.splice(openerIndex, hasManagedRun ? 2 : 1)
   while (lines.length > 0 && lines.at(-1)?.trim() === '') lines.pop()
   if (GENERATED_ENGINE_BOOTS.has(lines.at(-1)?.trim() ?? '')) lines.pop()
   while (lines.length > 0 && lines.at(-1)?.trim() === '') lines.pop()

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { buildInputBridgeRuntime } from '../inputBridge'
+import { buildInputBridgeRuntime, buildInputRuntime } from '../inputBridge'
 
 interface InputApi {
   key: (name: string) => boolean
@@ -9,15 +9,39 @@ interface InputApi {
 }
 
 /** Carrega o bridge num escopo controlado e devolve __szInput + disparadores. */
-function load(opts: { canvas?: unknown; onQuery?: () => void } = {}) {
+function load(opts: { canvas?: unknown; onQuery?: () => void; runtime?: string } = {}) {
   type Listener = (ev: unknown) => void
   const listeners: Record<string, Listener[]> = {}
   const options: Record<string, unknown> = {}
+  const sent: Array<{ message: unknown; targetOrigin: string }> = []
+  const dispatched: Array<{ type: string; key?: string; code?: string }> = []
+  class FakeAudio {
+    muted = false
+  }
+  class FakeKeyboardEvent {
+    type: string
+    key?: string
+    code?: string
+
+    constructor(type: string, init: { key?: string; code?: string }) {
+      this.type = type
+      this.key = init.key
+      this.code = init.code
+    }
+  }
+  const parent = {
+    postMessage(message: unknown, targetOrigin: string) {
+      sent.push({ message, targetOrigin })
+    },
+  }
   const win = {
     addEventListener(name: string, fn: Listener, opt?: unknown) {
       listeners[name] ??= []
       listeners[name].push(fn)
       if (opt !== undefined) options[name] = opt
+    },
+    dispatchEvent(event: { type: string; key?: string; code?: string }) {
+      dispatched.push(event)
     },
     document: {
       querySelector: () => {
@@ -25,17 +49,40 @@ function load(opts: { canvas?: unknown; onQuery?: () => void } = {}) {
         return opts.canvas ?? null
       },
     },
+    Audio: FakeAudio,
+    parent,
     __szInput: undefined,
   } as unknown as Record<string, unknown>
   // O bridge usa `window`, `document` (globais). Passamos como argumentos.
-  new Function('window', 'document', buildInputBridgeRuntime())(win, win.document)
+  new Function('window', 'document', 'KeyboardEvent', opts.runtime ?? buildInputBridgeRuntime())(
+    win,
+    win.document,
+    FakeKeyboardEvent,
+  )
   const fire = (name: string, ev: unknown) => {
     for (const fn of listeners[name] ?? []) fn(ev)
   }
-  return { input: (win as { __szInput: InputApi }).__szInput, fire, options }
+  return {
+    input: (win as { __szInput: InputApi }).__szInput,
+    fire,
+    options,
+    parent,
+    sent,
+    dispatched,
+    createAudio: () => new (win.Audio as typeof FakeAudio)(),
+  }
 }
 
 describe('inputBridge — window.__szInput', () => {
+  it('o runtime de produção mantém a entrada e exclui controles exclusivos do preview', () => {
+    const runtime = buildInputRuntime()
+    const { input, fire } = load({ runtime })
+    fire('keydown', { key: 'ArrowRight', code: 'ArrowRight' })
+    expect(input.key('ArrowRight')).toBe(true)
+    expect(runtime).not.toContain('sz:screenshot')
+    expect(runtime).not.toContain('sz:audio')
+  })
+
   it('key() é true enquanto a tecla está apertada e false após soltar', () => {
     const { input, fire } = load()
     expect(input.key('ArrowRight')).toBe(false)
@@ -127,5 +174,63 @@ describe('inputBridge — window.__szInput', () => {
     expect((options.pointermove as { passive?: boolean })?.passive).toBe(true)
     expect((options.pointerdown as { passive?: boolean })?.passive).toBe(true)
     expect((options.pointerup as { passive?: boolean })?.passive).toBe(true)
+  })
+
+  it('ignora screenshot pedido por um subframe e responde somente ao parent autenticado', () => {
+    const canvas = { isConnected: true, toDataURL: () => 'data:image/png;base64,SEGREDO' }
+    const { fire, parent, sent } = load({ canvas })
+    const attackerSent: unknown[] = []
+
+    fire('message', {
+      data: { type: 'sz:screenshot' },
+      source: { postMessage: (message: unknown) => attackerSent.push(message) },
+      origin: 'https://atacante.invalid',
+    })
+    expect(attackerSent).toEqual([])
+    expect(sent).toEqual([])
+
+    fire('message', {
+      data: { type: 'sz:screenshot' },
+      source: parent,
+      origin: 'https://comunidade.sistemazero.com.br',
+    })
+    expect(sent).toEqual([
+      {
+        message: { type: 'sz:screenshot:result', dataUrl: 'data:image/png;base64,SEGREDO' },
+        targetOrigin: 'https://comunidade.sistemazero.com.br',
+      },
+    ])
+  })
+
+  it('aceita gamepad e áudio somente quando a mensagem vem do parent', () => {
+    const { createAudio, dispatched, fire, parent } = load()
+    const audio = createAudio()
+    const attacker = {}
+
+    fire('message', {
+      data: { type: 'sz:gamepad', action: 'keydown', key: 'ArrowRight' },
+      source: attacker,
+      origin: 'https://atacante.invalid',
+    })
+    fire('message', {
+      data: { type: 'sz:audio', muted: true },
+      source: attacker,
+      origin: 'https://atacante.invalid',
+    })
+    expect(dispatched).toEqual([])
+    expect(audio.muted).toBe(false)
+
+    fire('message', {
+      data: { type: 'sz:gamepad', action: 'keydown', key: 'ArrowRight' },
+      source: parent,
+      origin: 'https://comunidade.sistemazero.com.br',
+    })
+    fire('message', {
+      data: { type: 'sz:audio', muted: true },
+      source: parent,
+      origin: 'https://comunidade.sistemazero.com.br',
+    })
+    expect(dispatched).toEqual([{ type: 'keydown', key: 'ArrowRight', code: 'ArrowRight' }])
+    expect(audio.muted).toBe(true)
   })
 })

@@ -1,45 +1,11 @@
 import { expect, type Page, test } from '@playwright/test'
+import { pasteBlocklyBlocks as pasteBlocks } from './helpers/blockly'
 
 async function createProject(page: Page): Promise<void> {
   await page.goto('/')
   await page.getByRole('button', { name: '+ Novo projeto' }).first().click()
   await page.getByRole('button', { name: 'Criar e abrir' }).click()
   await expect(page).toHaveURL(/\/editor\//)
-}
-
-/** Cola pelo mesmo clipboard durável usado pela interface. */
-async function pasteBlocks(
-  page: Page,
-  block: Record<string, unknown>,
-  requiredExtensions: string[] = [],
-): Promise<void> {
-  await page.evaluate(
-    ([payload]) => localStorage.setItem('sz:block-clipboard', payload as string),
-    [JSON.stringify({ version: 1, block, requiredExtensions, copiedAt: Date.now() })],
-  )
-  await openWorkspaceContextMenu(page)
-  await page.getByText('Colar blocos', { exact: true }).click()
-}
-
-async function openWorkspaceContextMenu(page: Page): Promise<void> {
-  const background = page.locator('.blocklyMainBackground').first()
-  const box = await background.boundingBox()
-  if (!box) throw new Error('Workspace do Blockly sem fundo')
-  const point = await page.evaluate(
-    ({ left, top, width, height }) => {
-      for (let y = top + height - 16; y >= top + 16; y -= 32) {
-        for (let x = left + width - 16; x >= left + 16; x -= 32) {
-          if (document.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground')) {
-            return { x, y }
-          }
-        }
-      }
-      return null
-    },
-    { left: box.x, top: box.y, width: box.width, height: box.height },
-  )
-  if (!point) throw new Error('Workspace do Blockly sem ponto vazio')
-  await page.mouse.click(point.x, point.y, { button: 'right' })
 }
 
 const startArea = (text: string) => ({
@@ -54,7 +20,97 @@ const startArea = (text: string) => ({
   },
 })
 
+const logBlock = (text: string) => ({
+  type: 'sz_js_console_log_text',
+  fields: { VALUE: text },
+})
+
+const eventArea = (text: string) => ({
+  type: 'sz_frame_events',
+  inputs: {
+    CHILDREN: {
+      block: {
+        type: 'sz_js_on_click_anywhere',
+        inputs: { DO: { block: logBlock(text) } },
+      },
+    },
+  },
+})
+
+const oneFrameLoopArea = (text: string) => ({
+  type: 'sz_frame_loops',
+  inputs: {
+    CHILDREN: {
+      block: {
+        type: 'sz_canvas_anim_loop',
+        extraState: { handle: 'cicloE2E' },
+        inputs: {
+          BODY: {
+            block: {
+              ...logBlock(text),
+              next: {
+                block: {
+                  type: 'sz_canvas_cancel_anim',
+                  inputs: {
+                    HANDLE: {
+                      shadow: { type: 'sz_val_variable', fields: { NAME: 'cicloE2E' } },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+})
+
 test.describe('Áreas de comportamento — lifecycle completo', () => {
+  test('executa início, registra eventos e reinicia loops no preview real', async ({ page }) => {
+    await createProject(page)
+    await pasteBlocks(page, startArea('lifecycle:start'))
+    await pasteBlocks(page, eventArea('lifecycle:event'))
+    await pasteBlocks(page, oneFrameLoopArea('lifecycle:loop'))
+
+    const logMessages = page.locator('span.whitespace-pre-wrap.break-all')
+    const previewFrame = page.locator('iframe[title="Pré-visualização"]')
+    await expect
+      .poll(
+        async () => {
+          const srcdoc = (await previewFrame.getAttribute('srcdoc')) ?? ''
+          const scripts = [...srcdoc.matchAll(/src="data:text\/javascript;base64,([^"]+)"/gi)]
+            .map((match) => Buffer.from(match[1] ?? '', 'base64').toString('utf8'))
+            .join('\n')
+          return ['lifecycle:start', 'lifecycle:event', 'lifecycle:loop'].map((text) =>
+            scripts.includes(text),
+          )
+        },
+        { timeout: 15_000 },
+      )
+      .toEqual([true, true, true])
+
+    await page.getByRole('button', { name: 'Limpar' }).click()
+    await page.getByRole('button', { name: 'Atualizar o preview' }).click()
+    await expect
+      .poll(() => logMessages.allTextContents(), { timeout: 15_000 })
+      .toEqual(['lifecycle:start', 'lifecycle:loop'])
+
+    await page
+      .frameLocator('iframe[title="Pré-visualização"]')
+      .locator('html')
+      .dispatchEvent('click')
+    await expect
+      .poll(() => logMessages.allTextContents())
+      .toEqual(['lifecycle:start', 'lifecycle:loop', 'lifecycle:event'])
+
+    await page.getByRole('button', { name: 'Limpar' }).click()
+    await page.getByRole('button', { name: 'Atualizar o preview' }).click()
+    await expect
+      .poll(() => logMessages.allTextContents())
+      .toEqual(['lifecycle:start', 'lifecycle:loop'])
+  })
+
   test('excluir uma área preserva o filho como rascunho e desfazer reconecta', async ({ page }) => {
     await createProject(page)
     await pasteBlocks(page, startArea('não apagar'))
@@ -91,11 +147,15 @@ test.describe('Áreas de comportamento — lifecycle completo', () => {
       .locator('.blocklyToolboxCategory')
       .filter({ hasText: 'Pesquisar' })
       .first()
-    for (let attempt = 0; attempt < 3 && !(await input.isVisible()); attempt += 1) {
-      await searchCategory.click()
-      await page.waitForTimeout(200)
-    }
-    await expect(input).toBeVisible()
+    await expect
+      .poll(
+        async () => {
+          if (!(await input.isVisible())) await searchCategory.click()
+          return input.isVisible()
+        },
+        { timeout: 5_000, message: 'A categoria Pesquisar não abriu o campo de busca' },
+      )
+      .toBe(true)
     await input.fill('Quando a página carregar')
 
     await expect(page.locator('.blocklyToolboxFlyout')).not.toContainText(

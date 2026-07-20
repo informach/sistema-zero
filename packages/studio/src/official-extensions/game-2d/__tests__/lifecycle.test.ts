@@ -158,6 +158,31 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
     expect(healthy).toBe(3)
   })
 
+  it('desativa um “Ao iniciar” defeituoso sem repeti-lo no reinício', () => {
+    const { api } = runtimeHarness()
+    const original = console.error
+    const messages: unknown[][] = []
+    let broken = 0
+    let healthy = 0
+    console.error = (...args: unknown[]) => messages.push(args)
+    try {
+      api.onStart(() => {
+        broken += 1
+        throw new Error('erro no começo')
+      }, 'inicio-com-erro')
+      api.onStart(() => {
+        healthy += 1
+      }, 'inicio-saudavel')
+      api.restart()
+    } finally {
+      console.error = original
+    }
+
+    expect(broken).toBe(1)
+    expect(healthy).toBe(2)
+    expect(messages).toHaveLength(1)
+  })
+
   it('erro dentro de um bloco composto sobe até o driver e desativa a raiz culpada', () => {
     const { api, flushFrame } = runtimeHarness()
     const composed = api as GameTwoDLifecycleApi & {
@@ -259,8 +284,10 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
 
   it('prepara o canvas para toque e solta o gesto em pointercancel', () => {
     document.body.innerHTML = ''
+    const originalTitle = document.title
+    document.title = 'Labirinto'
     const { api, fire } = runtimeHarness()
-    api.setupStage(400, 300, '#000000', 'Labirinto: use as setas e encontre a saída.')
+    api.setupStage(400, 300, '#000000')
     const canvas = document.querySelector('canvas')
 
     expect(canvas?.style.touchAction).toBe('none')
@@ -269,7 +296,7 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
     expect(focusStyle?.textContent).toContain(':focus-visible')
     expect(focusStyle?.textContent).toContain('outline: none')
     expect(focusStyle?.textContent).toContain('box-shadow: inset')
-    expect(canvas?.getAttribute('aria-label')).toBe('Labirinto: use as setas e encontre a saída.')
+    expect(canvas?.getAttribute('aria-label')).toBe('Jogo 2D: Labirinto')
     const descriptionId = canvas?.getAttribute('aria-describedby')
     expect(descriptionId).toBeTruthy()
     expect(document.getElementById(descriptionId ?? '')?.textContent).toContain('Labirinto')
@@ -277,5 +304,24 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
     expect(api.pointer.down).toBe(true)
     fire('pointercancel', { target: canvas ?? undefined })
     expect(api.pointer.down).toBe(false)
+    document.title = originalTitle
+  })
+
+  it('permite descrever objetivo e controles do jogo para leitores de tela', () => {
+    document.body.innerHTML = ''
+    const { api } = runtimeHarness()
+    api.setupStage(400, 300, '#000000')
+    const accessibleApi = api as GameTwoDLifecycleApi & {
+      setStageDescription: (description: string) => void
+    }
+
+    accessibleApi.setStageDescription('Pegue as moedas. Use as setas para andar.')
+
+    const canvas = document.querySelector('canvas')
+    const descriptionId = canvas?.getAttribute('aria-describedby') ?? ''
+    expect(canvas?.getAttribute('aria-label')).toBe('Pegue as moedas. Use as setas para andar.')
+    expect(document.getElementById(descriptionId)?.textContent).toBe(
+      'Pegue as moedas. Use as setas para andar.',
+    )
   })
 })

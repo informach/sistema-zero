@@ -1,5 +1,5 @@
 import type { AssetPlacement, HTMLNode, HTMLShell } from '#ir'
-import { htmlElementForTag } from '../html/catalog'
+import { htmlElementForTag, isPhrasingHTMLTag } from '../html/catalog'
 import { pointsToCanonicalHTMLAsset } from '../html/wiring'
 
 /**
@@ -51,12 +51,7 @@ export function parseHTML(source: string): HTMLNode[] {
 function parseBodyNodes(doc: Document): HTMLNode[] {
   const body = doc.body
   if (!body) return []
-  const out: HTMLNode[] = []
-  for (const child of Array.from(body.childNodes)) {
-    const node = mapNode(child, 0)
-    if (node) out.push(node)
-  }
-  return out
+  return mapChildren(body, -1)
 }
 
 /**
@@ -284,15 +279,17 @@ export function extractInlineAssets(
 /**
  * Mapeia os filhos de um elemento preservando a intercalação texto↔elemento.
  * Nós de texto não-vazios viram `{ type:'text' }` (mantendo os espaços ao redor
- * para fidelidade); espaços-em-branco puros são descartados; elementos são
- * mapeados recursivamente.
+ * para fidelidade). Whitespace puro entre elementos de texto corrido também é
+ * significativo (`<strong>A</strong> <em>B</em>`) e precisa sobreviver; a
+ * indentação entre elementos estruturais continua descartada.
  */
 function mapChildren(el: Element, depth: number): HTMLNode[] {
   const children: HTMLNode[] = []
-  for (const child of Array.from(el.childNodes)) {
+  const domChildren = Array.from(el.childNodes)
+  for (const [index, child] of domChildren.entries()) {
     if (child.nodeType === Node.TEXT_NODE) {
       const raw = child.textContent ?? ''
-      if (raw.trim() === '') continue
+      if (raw.trim() === '' && !isPhrasingSeparator(domChildren, index)) continue
       children.push({ type: 'text', text: raw })
       continue
     }
@@ -300,6 +297,20 @@ function mapChildren(el: Element, depth: number): HTMLNode[] {
     if (c) children.push(c)
   }
   return children
+}
+
+function isPhrasingSeparator(nodes: Node[], index: number): boolean {
+  const previous = nodes[index - 1]
+  const next = nodes[index + 1]
+  return isPhrasingDomNode(previous) && isPhrasingDomNode(next)
+}
+
+function isPhrasingDomNode(node: Node | undefined): boolean {
+  if (!node) return false
+  if (node.nodeType === Node.TEXT_NODE || node.nodeType === Node.COMMENT_NODE) return true
+  if (node.nodeType !== Node.ELEMENT_NODE) return false
+  const tag = (node as Element).tagName.toLowerCase()
+  return tag === 'canvas' || isPhrasingHTMLTag(tag)
 }
 
 function mapNode(node: Node, depth: number): HTMLNode | null {
@@ -387,12 +398,20 @@ function mapNode(node: Node, depth: number): HTMLNode | null {
     // Tag de texto com filhos-elemento (ex.: <p>© <span></span> texto</p> ou
     // <h2>Título <strong>!</strong></h2>) → decompõe em blocos aninhados: cada
     // pedaço de texto vira um nó `text` e cada elemento é mapeado recursivamente.
-    // Espaços-em-branco puros são descartados.
+    // Whitespace entre filhos phrasing é preservado por `mapChildren`.
     if ((hasElementChild || hasCommentChild) && descriptor.parserShape === 'inline-text') {
+      const children = mapChildren(el, depth)
+      // Um fragmento avançado não informa se é phrasing nem se o whitespace ao
+      // redor participa do texto. Preservar o pai inteiro evita que a
+      // formatação do gerador transforme `<abbr>A</abbr><abbr>B</abbr>` em
+      // `A B` ao inserir indentação entre dois filhos desconhecidos.
+      if (children.some((child) => child.type === 'rawHTML')) {
+        return { type: 'rawHTML', html: el.outerHTML, advanced: true }
+      }
       const node: Extract<HTMLNode, { type: 'element' }> = {
         type: 'element',
         tag: t,
-        children: mapChildren(el, depth),
+        children,
       }
       if (id) node.id = id
       if (attrs) node.attrs = attrs

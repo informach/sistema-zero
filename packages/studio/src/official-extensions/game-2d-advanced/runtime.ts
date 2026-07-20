@@ -1,3 +1,4 @@
+import { buildProjectRunContextRuntime } from '#extensions'
 import { towerDefenseRuntime } from './runtime/towerDefense'
 
 /**
@@ -20,7 +21,10 @@ import { towerDefenseRuntime } from './runtime/towerDefense'
  * - Nunca quebrar o jogo do aluno: API pública embrulhada em try/catch com
  *   console.warn (padrão do SZGame2D).
  */
-export const gameKitRuntime = `(function () {
+export const gameKitRuntime =
+  buildProjectRunContextRuntime() +
+  '\n' +
+  `(function () {
   // ---- Config (do bloco "Preparar o jogo profissional") ----
   var config = {
     w: 1280,

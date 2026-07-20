@@ -39,6 +39,7 @@ import {
 } from '#ir'
 import { findExtension } from '#official-extensions'
 import {
+  BEHAVIOR_AREAS_MIN_MIGRATABLE_STATE_VERSION,
   BEHAVIOR_AREAS_STATE_KEY,
   BEHAVIOR_AREAS_STATE_VERSION,
   hasValidBehaviorAreasStateVersion,
@@ -624,7 +625,9 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_g2d_random_chance',
     'sz_g2d_set_health',
     'sz_g2d_change_health',
+    'sz_g2d_damage_sprite',
     'sz_g2d_get_health',
+    'sz_g2d_get_max_health',
     'sz_g2d_sprite_x',
     'sz_g2d_sprite_y',
     'sz_g2d_sprite_w',
@@ -638,6 +641,7 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_g2d_is_moving_h',
     'sz_g2d_is_moving_v',
     'sz_g2d_has_health',
+    'sz_g2d_health_depleted',
     'sz_g2d_cooldown_ready',
     'sz_g2d_prune_old',
     'sz_g2d_flip_sprite',
@@ -724,7 +728,9 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_g2d_draw_score',
     'sz_g2d_draw_label',
     'sz_g2d_draw_hearts',
+    'sz_g2d_draw_sprite_health',
     'sz_g2d_draw_bar',
+    'sz_g2d_set_stage_description',
     'sz_g2d_set_scene',
     'sz_g2d_scene_is',
     'sz_g2d_show_screen',
@@ -1901,7 +1907,7 @@ function describeBlocklyValidationFailure(
   )
   if (extraRoot) return `chave de raiz inesperada: "${extraRoot}"`
   if (!hasValidBehaviorAreasStateVersion(raw)) {
-    return `versão das áreas de comportamento inesperada: ${JSON.stringify(raw[BEHAVIOR_AREAS_STATE_KEY])} (esperada ${BEHAVIOR_AREAS_STATE_VERSION})`
+    return `versão das áreas de comportamento inesperada: ${JSON.stringify(raw[BEHAVIOR_AREAS_STATE_KEY])} (suportadas ${BEHAVIOR_AREAS_MIN_MIGRATABLE_STATE_VERSION}–${BEHAVIOR_AREAS_STATE_VERSION})`
   }
 
   const blocksSection = (raw as { blocks?: unknown }).blocks
@@ -2754,6 +2760,12 @@ function countJSStatement(statement: JSStatement): number {
     case 'g2d:drawScore':
     case 'g2d:drawHearts':
       return 1 + countJSExpr(statement.type === 'g2d:drawScore' ? statement.value : statement.count)
+    case 'g2d:damageSprite':
+      return 1 + countJSValue(statement.amount) + countJSValue(statement.invincibilityFrames)
+    case 'g2d:drawSpriteHealth':
+      return (
+        1 + countJSValue(statement.x) + countJSValue(statement.y) + countJSValue(statement.size)
+      )
     case 'g2d:drawBar':
       return 1 + countJSExpr(statement.value) + countJSExpr(statement.max)
     case 'var':
@@ -2812,6 +2824,10 @@ function countJSStatement(statement: JSStatement): number {
     default:
       return 1
   }
+}
+
+function countJSValue(value: number | JSExpr): number {
+  return typeof value === 'number' ? 1 : countJSExpr(value)
 }
 
 function countJSExpr(expr: JSExpr): number {

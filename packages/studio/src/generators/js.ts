@@ -480,13 +480,28 @@ function generateBehaviorJSWithMap(
     currentLine += countLines(open)
   }
 
-  const envelope = lifecycle ? lifecycleEnvelope(lifecycle) : undefined
+  const lifecycleContract = lifecycle
+    ? typeof lifecycle === 'string'
+      ? lifecycleContractForTarget(lifecycle)
+      : lifecycle
+    : undefined
+  const projectRunContext = lifecycleContract?.managedProjectRun
+    ? identifiers.prepareProjectRunContextIdentifier()
+    : undefined
+  const envelope = lifecycleContract
+    ? lifecycleEnvelope(lifecycleContract, projectRunContext)
+    : undefined
   const canvasIndent = canvasImages ? 1 : 0
   const indent = canvasIndent + (envelope ? 1 : 0)
   const markerIndent = '  '.repeat(indent)
   if (envelope) {
-    pieces.push(`${'  '.repeat(canvasIndent)}${envelope.open}`)
-    currentLine += 1
+    const canvasPad = '  '.repeat(canvasIndent)
+    const open = envelope.open
+      .split('\n')
+      .map((line) => `${canvasPad}${line}`)
+      .join('\n')
+    pieces.push(open)
+    currentLine += countLines(open)
   }
 
   for (const section of sections) {
@@ -543,16 +558,23 @@ interface LifecycleEnvelope {
 }
 
 function lifecycleEnvelope(
-  lifecycle: ProjectLifecycleTarget | RuntimeLifecycleContract,
+  contract: RuntimeLifecycleContract,
+  projectRunContext?: string,
 ): LifecycleEnvelope {
-  const contract = typeof lifecycle === 'string' ? lifecycleContractForTarget(lifecycle) : lifecycle
   if (!contract.globalName || !contract.runMethod) {
     return { open: '(function __szProjectRun() {', close: '})();' }
   }
   const call = `${contract.globalName}.${contract.runMethod}`
   const close = contract.runId ? `}, ${JSON.stringify(contract.runId)});` : '});'
+  const restart =
+    projectRunContext && contract.restartMethod
+      ? `() => ${contract.globalName}.${contract.restartMethod}()`
+      : undefined
+  const beginRun = projectRunContext
+    ? `\n  const ${projectRunContext} = window.__SZProjectLifecycle.begin(${restart ?? ''});`
+    : ''
   return {
-    open: `${call}(function __szProjectRun() {`,
+    open: `${call}(function __szProjectRun() {${beginRun}`,
     close,
     ...(contract.bootMethod ? { boot: `${contract.globalName}.${contract.bootMethod}();` } : {}),
   }
@@ -916,6 +938,8 @@ function compileStatementCode(
     }
     case 'event': {
       const protectsForm = stmt.event === 'submit'
+      const projectRunContext = identifiers.getProjectRunContextIdentifier()
+      const listenerOptions = projectRunContext ? `, { signal: ${projectRunContext}.signal }` : ''
       const body = compileStatements(
         stmt.body,
         indent + 1,
@@ -928,7 +952,7 @@ function compileStatementCode(
       // Escuta global na JANELA: eventos da página inteira (load/resize) — ou
       // qualquer evento marcado explicitamente como targetKind 'window'.
       if (stmt.targetKind === 'window' || stmt.event === 'load' || stmt.event === 'resize') {
-        return `${pad}window.addEventListener(${JSON.stringify(stmt.event)}, (event) => {\n${protectedBody}\n${pad}});`
+        return `${pad}window.addEventListener(${JSON.stringify(stmt.event)}, (event) => {\n${protectedBody}\n${pad}}${listenerOptions});`
       }
       // Eventos que pegam um alvo (target) — vão para o elemento:
       const elementBound: ReadonlySet<string> = new Set([
@@ -942,9 +966,9 @@ function compileStatementCode(
       // Escuta global no documento: clique em qualquer lugar (targetKind
       // 'document'), eventos de teclado (keydown/keyup) ou mover o mouse.
       if (stmt.targetKind === 'document' || !elementBound.has(stmt.event)) {
-        return `${pad}document.addEventListener(${JSON.stringify(stmt.event)}, (event) => {\n${protectedBody}\n${pad}});`
+        return `${pad}document.addEventListener(${JSON.stringify(stmt.event)}, (event) => {\n${protectedBody}\n${pad}}${listenerOptions});`
       }
-      return `${pad}${elementExpr(stmt.target, stmt.targetKind, identifiers)}?.addEventListener(${JSON.stringify(stmt.event)}, (event) => {\n${protectedBody}\n${pad}});`
+      return `${pad}${elementExpr(stmt.target, stmt.targetKind, identifiers)}?.addEventListener(${JSON.stringify(stmt.event)}, (event) => {\n${protectedBody}\n${pad}}${listenerOptions});`
     }
     case 'consoleLog':
       return `${pad}console.log(${compileExpr(stmt.value, 0, identifiers, recAt(base))});`
@@ -1139,6 +1163,11 @@ function compileStatementCode(
     case 'animationLoop': {
       const frame = identifiers.reserveInternal('frame')
       const startLine = mapContext?.startLine ?? 1
+      const projectRunContext = identifiers.getProjectRunContextIdentifier()
+      const managedHandle =
+        projectRunContext && !stmt.handle
+          ? identifiers.reserveInternal('__szProjectRunFrame')
+          : undefined
       // Forma com TEMPO: expõe o relógio do requestAnimationFrame (ms) e o tempo
       // desde o quadro anterior em SEGUNDOS, para APIs de movimento/física
       // movimento independente de FPS. O loop é iniciado com requestAnimationFrame
@@ -1149,12 +1178,13 @@ function compileStatementCode(
           : identifiers.reserveInternal('frameTime')
         const dVar = stmt.deltaVar ? identifiers.get(stmt.deltaVar) : null
         const lastT = dVar ? identifiers.reserveInternal('lastFrameTime') : null
+        const handle = stmt.handle ? identifiers.get(stmt.handle) : managedHandle
         const pre: string[] = []
-        if (stmt.handle) pre.push(`${pad}let ${identifiers.get(stmt.handle)};`)
+        if (handle) pre.push(`${pad}let ${handle};`)
         if (lastT) pre.push(`${pad}let ${lastT};`)
         pre.push(`${pad}function ${frame}(${tVar}) {`)
-        if (stmt.handle) {
-          pre.push(`${pad}  ${identifiers.get(stmt.handle)} = requestAnimationFrame(${frame});`)
+        if (stmt.handle && handle) {
+          pre.push(`${pad}  ${handle} = requestAnimationFrame(${frame});`)
         }
         if (dVar && lastT) {
           pre.push(
@@ -1169,9 +1199,16 @@ function compileStatementCode(
           childMapContext(mapContext, startLine + pre.length),
         )
         const post: string[] = []
-        if (!stmt.handle) post.push(`${pad}  requestAnimationFrame(${frame});`)
+        if (!stmt.handle) {
+          post.push(`${pad}  ${handle ? `${handle} = ` : ''}requestAnimationFrame(${frame});`)
+        }
         post.push(`${pad}}`)
-        post.push(`${pad}requestAnimationFrame(${frame});`)
+        post.push(`${pad}${handle ? `${handle} = ` : ''}requestAnimationFrame(${frame});`)
+        if (projectRunContext && handle) {
+          post.push(
+            `${pad}${projectRunContext}.registerResource(() => cancelAnimationFrame(${handle}));`,
+          )
+        }
         return [...pre, body, ...post].join('\n')
       }
       // Forma cancelável: guarda o id do requestAnimationFrame numa variável do
@@ -1196,6 +1233,28 @@ function compileStatementCode(
           body,
           `${pad}}`,
           `${pad}${frame}();`,
+          ...(projectRunContext
+            ? [
+                `${pad}${projectRunContext}.registerResource(() => cancelAnimationFrame(${handle}));`,
+              ]
+            : []),
+        ].join('\n')
+      }
+      if (projectRunContext && managedHandle) {
+        const body = compileStatements(
+          stmt.body,
+          indent + 1,
+          identifiers,
+          childMapContext(mapContext, startLine + 2),
+        )
+        return [
+          `${pad}let ${managedHandle};`,
+          `${pad}function ${frame}() {`,
+          body,
+          `${pad}  ${managedHandle} = requestAnimationFrame(${frame});`,
+          `${pad}}`,
+          `${pad}${frame}();`,
+          `${pad}${projectRunContext}.registerResource(() => cancelAnimationFrame(${managedHandle}));`,
         ].join('\n')
       }
       const body = compileStatements(
@@ -1370,6 +1429,8 @@ function compileStatementCode(
       return `${pad}SZGame2D.setHealth(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.amount), 0, identifiers, recAt(base))});`
     case 'g2d:changeHealth':
       return `${pad}SZGame2D.changeHealth(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.delta), 0, identifiers, recAt(base))});`
+    case 'g2d:damageSprite':
+      return `${pad}SZGame2D.damageSprite(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.amount), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.invincibilityFrames), 0, identifiers, recAt(base))});`
     case 'g2d:flipSprite':
       return `${pad}SZGame2D.flipSprite(${identifiers.get(stmt.spriteVar)}, ${JSON.stringify(stmt.dir)});`
     case 'g2d:setOpacity':
@@ -1496,7 +1557,8 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGame2D.onEnemyDefeated(${identifiers.get(stmt.typeVar)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+      const id = stmt.__id ?? identifiers.reserveInternal('eventoDeInimigoDerrotado')
+      return `${pad}SZGame2D.onEnemyDefeated(${identifiers.get(stmt.typeVar)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}}, ${JSON.stringify(id)});`
     }
     case 'g2d:onEnemyShotHit': {
       const body = compileStatements(
@@ -1628,8 +1690,12 @@ function compileStatementCode(
       return `${pad}SZGame2D.drawLabel(${identifiers.get(stmt.ctxVar)}, ${JSON.stringify(stmt.text)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.align)});`
     case 'g2d:drawHearts':
       return `${pad}SZGame2D.drawHearts(${identifiers.get(stmt.ctxVar)}, ${compileExpr(stmt.count, 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
+    case 'g2d:drawSpriteHealth':
+      return `${pad}SZGame2D.drawSpriteHealth(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.spriteVar)}, ${JSON.stringify(stmt.style)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
     case 'g2d:drawBar':
       return `${pad}SZGame2D.drawBar(${identifiers.get(stmt.ctxVar)}, ${compileExpr(stmt.value, 0, identifiers, recAt(base))}, ${compileExpr(stmt.max, 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
+    case 'g2d:setStageDescription':
+      return `${pad}SZGame2D.setStageDescription(${JSON.stringify(stmt.description)});`
     case 'g2d:setScene':
       return `${pad}SZGame2D.setScene(${JSON.stringify(stmt.name)});`
     case 'g2d:showScreen':
@@ -1643,9 +1709,9 @@ function compileStatementCode(
     case 'g2d:fitScreen':
       return `${pad}SZGame2D.fitScreen(${compileExpr(valueToExpr(stmt.percent), 0, identifiers, recAt(base))});`
     case 'g2d:setupStage':
-      return `${pad}SZGame2D.setupStage(${compileExpr(valueToExpr(stmt.width), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.height), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.bg)}${stmt.description ? `, ${JSON.stringify(stmt.description)}` : ''});`
+      return `${pad}SZGame2D.setupStage(${compileExpr(valueToExpr(stmt.width), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.height), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.bg)});`
     case 'g2d:setupFull':
-      return `${pad}SZGame2D.setupStageFull(${JSON.stringify(stmt.bg)}${stmt.description ? `, ${JSON.stringify(stmt.description)}` : ''});`
+      return `${pad}SZGame2D.setupStageFull(${JSON.stringify(stmt.bg)});`
     case 'g2d:createShip':
       return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createShip({ x: ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, y: ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, body: ${JSON.stringify(stmt.bodyColor)}, wings: ${JSON.stringify(stmt.wingColor)} });`
     case 'g2d:spawnAsteroid':
@@ -4964,6 +5030,11 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       names.add(stmt.spriteVar)
       collectExprIdentifiers(valueToExpr(stmt.delta), names)
       return
+    case 'g2d:damageSprite':
+      names.add(stmt.spriteVar)
+      collectExprIdentifiers(valueToExpr(stmt.amount), names)
+      collectExprIdentifiers(valueToExpr(stmt.invincibilityFrames), names)
+      return
     case 'g2d:setSize':
       names.add(stmt.spriteVar)
       collectExprIdentifiers(valueToExpr(stmt.w), names)
@@ -5074,6 +5145,13 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g2d:drawHearts':
       names.add(stmt.ctxVar)
       collectExprIdentifiers(stmt.count, names)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      collectExprIdentifiers(valueToExpr(stmt.size), names)
+      return
+    case 'g2d:drawSpriteHealth':
+      names.add(stmt.ctxVar)
+      names.add(stmt.spriteVar)
       collectExprIdentifiers(valueToExpr(stmt.x), names)
       collectExprIdentifiers(valueToExpr(stmt.y), names)
       collectExprIdentifiers(valueToExpr(stmt.size), names)
@@ -5215,6 +5293,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       names.add(stmt.throwerVar)
       names.add(stmt.cityVar)
       return
+    case 'g2d:setStageDescription':
     case 'g2d:setScene':
     case 'g2d:restart':
     case 'g2d:playShoot':
@@ -7780,6 +7859,7 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
       names.add(expr.bVar)
       return
     case 'g2d:getHealth':
+    case 'g2d:getMaxHealth':
     case 'g2d:enemyDamage':
     case 'g2d:spriteX':
     case 'g2d:spriteY':
@@ -7794,6 +7874,7 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'g2d:isMovingH':
     case 'g2d:isMovingV':
     case 'g2d:hasHealth':
+    case 'g2d:healthDepleted':
       names.add(expr.spriteVar)
       return
     case 'g2d:cooldownReady':

@@ -1,8 +1,20 @@
 import { describe, expect, it } from 'bun:test'
-import { CSSRuleSchema, KeyframesCSSSchema } from '#ir'
+import { CommentCSSSchema, CSSRuleSchema, GoogleFontCSSSchema, KeyframesCSSSchema } from '#ir'
 import { generateCSS } from '../css'
 
 describe('generateCSS — defesa contra injeção (#18)', () => {
+  it('aceita um único ponto e vírgula terminal digitado pela criança', () => {
+    const css = generateCSS([
+      {
+        selector: '.alvo',
+        declarations: { color: 'red;' },
+      },
+    ])
+
+    expect(css).toContain('color: red;')
+    expect(css).not.toContain('color: red;;')
+  })
+
   it('descarta valor de declaração com chaves/; (não emenda uma 2ª regra)', () => {
     const css = generateCSS([
       {
@@ -21,15 +33,14 @@ describe('generateCSS — defesa contra injeção (#18)', () => {
     expect(css).toContain('font-size: 14px;')
   })
 
-  it('remove chaves de um seletor malicioso (não quebra a estrutura)', () => {
+  it('recusa por inteiro um seletor malicioso (não quebra nem mutila a estrutura)', () => {
     const css = generateCSS([
       {
         selector: '.x { } body',
         declarations: { color: 'red' },
       },
     ])
-    expect(css).not.toContain('{ } body')
-    expect(css).toContain('color: red;')
+    expect(css).toBe('')
   })
 
   it('descarta declaração cuja CHAVE traz : ou ; (declaração-fantasma)', () => {
@@ -96,6 +107,37 @@ describe('generateCSS — defesa contra injeção (#18)', () => {
     expect(css).not.toContain('color:red')
     expect(css).not.toContain('opacity: 1')
   })
+
+  it('não deixa o nome de uma fonte escapar do @import', () => {
+    const css = generateCSS([
+      {
+        type: 'googleFont',
+        family: 'x");body{background-image:url(https://attacker/leak)}/*',
+      },
+    ])
+
+    expect(css).toBe('')
+    expect(css).not.toContain('body{')
+    expect(css).not.toContain('attacker')
+  })
+
+  it('não deixa o texto de um comentário encerrar o comentário CSS', () => {
+    const css = generateCSS([
+      {
+        type: 'comment',
+        text: '*/ body { background: url(https://attacker.example/x); } /*',
+      },
+    ])
+
+    expect(css).toBe('')
+    expect(css).not.toContain('attacker')
+  })
+
+  it('mantém comentários legítimos, inclusive em várias linhas', () => {
+    expect(generateCSS([{ type: 'comment', text: 'linha 1\nlinha 2' }])).toContain(
+      '/*linha 1\nlinha 2*/',
+    )
+  })
 })
 
 describe('CSSRuleSchema — bloqueio durável de injeção (#18)', () => {
@@ -137,5 +179,36 @@ describe('CSSRuleSchema — bloqueio durável de injeção (#18)', () => {
       steps: [{ at: '0% } body {', declarations: { opacity: '1' } }],
     })
     expect(step.success).toBe(false)
+  })
+
+  it('aceita nomes humanos e rejeita sintaxe estrutural em Google Fonts', () => {
+    expect(
+      GoogleFontCSSSchema.safeParse({ type: 'googleFont', family: 'Press Start 2P' }).success,
+    ).toBe(true)
+    expect(
+      GoogleFontCSSSchema.safeParse({
+        type: 'googleFont',
+        family: 'x");body{background:url(https://attacker/leak)}/*',
+      }).success,
+    ).toBe(false)
+  })
+
+  it('rejeita fechamento dentro do texto de comentário CSS', () => {
+    const parsed = CommentCSSSchema.safeParse({
+      type: 'comment',
+      text: '*/ body { color: red } /*',
+    })
+
+    expect(parsed.success).toBe(false)
+    if (!parsed.success) expect(parsed.error.issues[0]?.message).toContain('fechar o comentário')
+  })
+
+  it('aceita chave entre aspas em um seletor', () => {
+    expect(
+      CSSRuleSchema.safeParse({
+        selector: '[data-x="}"]',
+        declarations: { color: 'red' },
+      }).success,
+    ).toBe(true)
   })
 })

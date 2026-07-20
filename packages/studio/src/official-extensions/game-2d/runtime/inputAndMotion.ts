@@ -77,7 +77,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     if (keys.right) sprite.x += s;
     sprite.vy = (sprite.vy || 0) + 0.6; // gravidade
     sprite.y += sprite.vy;
-    var floor = stageH(ctx) - sprite.h;
+    var floor = _visibleWorldRect(ctx).bottom - sprite.h;
     // Persiste "no chão" NO sprite: a animação por estado (autoAnimate) e os
     // jogos leem s.onGround p/ saber se está pulando/caindo.
     sprite.onGround = false;
@@ -105,24 +105,25 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     if (!sprite) return;
     var s = typeof speed === 'number' ? speed : 3;
     var cx = sprite.x + sprite.w / 2, cy = sprite.y + sprite.h / 2;
-    var dx = pointer.x - cx, dy = pointer.y - cy;
+    var pointerWorldX = pointer.x + camera.x, pointerWorldY = pointer.y + camera.y;
+    var dx = pointerWorldX - cx, dy = pointerWorldY - cy;
     var dist = Math.sqrt(dx * dx + dy * dy);
     if (dist > s) {
       // Grava a velocidade (o passo dado) p/ os getters; ao chegar no ponteiro, para (0).
       sprite.vx = (dx / dist) * s; sprite.vy = (dy / dist) * s;
       sprite.x += sprite.vx; sprite.y += sprite.vy;
     }
-    else { sprite.vx = 0; sprite.vy = 0; sprite.x = pointer.x - sprite.w / 2; sprite.y = pointer.y - sprite.h / 2; }
+    else { sprite.vx = 0; sprite.vy = 0; sprite.x = pointerWorldX - sprite.w / 2; sprite.y = pointerWorldY - sprite.h / 2; }
   }
 
   /** Gruda o sprite nas bordas do canvas (não deixa sair da tela). */
   function clampToScreen(sprite, ctx) {
     if (!sprite || !ctx || !ctx.canvas) return;
-    var w = stageW(ctx), h = stageH(ctx);
-    if (sprite.x < 0) sprite.x = 0;
-    if (sprite.y < 0) sprite.y = 0;
-    if (sprite.x + sprite.w > w) sprite.x = w - sprite.w;
-    if (sprite.y + sprite.h > h) sprite.y = h - sprite.h;
+    var visible = _visibleWorldRect(ctx);
+    if (sprite.x < visible.left) sprite.x = visible.left;
+    if (sprite.y < visible.top) sprite.y = visible.top;
+    if (sprite.x + sprite.w > visible.right) sprite.x = visible.right - sprite.w;
+    if (sprite.y + sprite.h > visible.bottom) sprite.y = visible.bottom - sprite.h;
   }
 
   // ---- Nave clássica: girar + impulsionar na direção apontada (v0.10.0) ----
@@ -209,21 +210,24 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     if (!group) return null;
     opts = opts || {};
     var ctx = ensureStage();
-    var W = stageW(ctx) || 360;
-    var H = stageH(ctx) || 360;
+    var visible = _visibleWorldRect(ctx);
+    var W = visible.width || 360;
+    var H = visible.height || 360;
+    var left = visible.left, top = visible.top;
+    var right = left + W, bottom = top + H;
     var speed = (typeof opts.speed === 'number') ? opts.speed : 1.5;
     var base = (typeof opts.size === 'number' && opts.size > 0) ? opts.size : 40;
     var m = base;
     var side = Math.floor(Math.random() * 4);
     var x, y;
-    if (side === 0) { x = -m; y = Math.random() * H; }
-    else if (side === 1) { x = Math.random() * W; y = H + m; }
-    else if (side === 2) { x = W + m; y = Math.random() * H; }
-    else { x = Math.random() * W; y = -m; }
+    if (side === 0) { x = left - m; y = top + Math.random() * H; }
+    else if (side === 1) { x = left + Math.random() * W; y = bottom + m; }
+    else if (side === 2) { x = right + m; y = top + Math.random() * H; }
+    else { x = left + Math.random() * W; y = top - m; }
     var asteroid = spawnAsteroid(group, { x: x, y: y, size: base, color: opts.color, vx: 0, vy: 0 });
     if (!asteroid) return null;
-    var dx = W / 2 - (asteroid.x + asteroid.w / 2);
-    var dy = H / 2 - (asteroid.y + asteroid.h / 2);
+    var dx = left + W / 2 - (asteroid.x + asteroid.w / 2);
+    var dy = top + H / 2 - (asteroid.y + asteroid.h / 2);
     var distanceToCenter = Math.sqrt(dx * dx + dy * dy) || 1;
     asteroid.vx = dx / distanceToCenter * speed;
     asteroid.vy = dy / distanceToCenter * speed;

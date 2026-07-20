@@ -42,11 +42,16 @@ const LOOP_BODY_ONLY_TYPES = new Set([
  * de cada bloco com placement exclusivo de início e impede divergência.
  */
 export const START_ONLY_STATEMENT_TYPES = new Set([
+  'importStar',
+  'importNamed',
+  'funcDecl',
+  'classDecl',
   'canvasSetup',
 
   'g2d:setupStage',
   'g2d:setupFull',
   'g2d:fitScreen',
+  'g2d:setStageDescription',
   'g2d:createSprite',
   'g2d:createImageSprite',
   'g2d:createShapeSprite',
@@ -57,6 +62,7 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'g2d:createBalloon',
   'g2d:createGroup',
   'g2d:score',
+  'g2d:setHealth',
   'g2d:loadSpritesheet',
   'g2d:setStateAnim',
   'g2d:defineEnemyType',
@@ -324,6 +330,11 @@ const STATEMENT_ARRAY_KEYS = new Set([
 
 const SYNTACTIC_LOOP_TYPES = new Set(['repeat', 'while', 'doWhile', 'forOf', 'forRange', 'forEach'])
 
+/** Verdadeiro para raízes contínuas e para laços sintáticos aninháveis. */
+export function isLoopStatement(statement: JSStatement): boolean {
+  return isLoopRootStatement(statement) || SYNTACTIC_LOOP_TYPES.has(statement.type)
+}
+
 function issue(issues: LifecycleSemanticIssue[], path: PropertyKey[], message: string): void {
   issues.push({ path, message })
 }
@@ -443,6 +454,8 @@ function childContext(statement: JSStatement, context: SemanticContext): Semanti
   return {
     ...context,
     nested: true,
+    // Loops do motor executam o corpo dentro de callbacks; eles não criam um
+    // laço sintático JavaScript onde `break`/`continue` possam atuar.
     loopDepth: context.loopDepth + (SYNTACTIC_LOOP_TYPES.has(statement.type) ? 1 : 0),
     eventBody: context.eventBody || isEventStatement(statement),
     keyboardEventBody: context.keyboardEventBody || capabilities.keyboard,

@@ -52,6 +52,7 @@ export const RESOURCE_CREATOR_PLACEMENT: BlockPlacement = Object.freeze({
     'derived-constructor-body',
     'derived-method-body',
   ] as const,
+  forbiddenNested: ['loop-body'] as const,
   role: 'command',
 })
 

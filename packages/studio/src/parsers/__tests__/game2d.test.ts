@@ -801,7 +801,9 @@ describe('roundtrip do asteroidsExample (jogo de tiro completo)', () => {
       'g2d:playExplosion',
       'g2d:pruneOffscreen',
       'g2d:drawScore',
-      'g2d:drawHearts',
+      'g2d:damageSprite',
+      'g2d:drawSpriteHealth',
+      'g2d:healthDepleted',
       'g2d:starfield',
       'g2d:dragX',
       'g2d:setScene',
@@ -900,6 +902,8 @@ describe('parseJS — tela responsiva (fitScreen)', () => {
         bg: '#0b1020',
       },
     ])
+    // Código legado com a antiga descrição continua importando, mas o campo
+    // removido é descartado na representação canônica.
     expect(
       parseJS('SZGame2D.setupStage(800, 480, "#0b1020", "Use as setas para mover.");'),
     ).toEqual([
@@ -908,7 +912,6 @@ describe('parseJS — tela responsiva (fitScreen)', () => {
         width: { type: 'num', value: 800 },
         height: { type: 'num', value: 480 },
         bg: '#0b1020',
-        description: 'Use as setas para mover.',
       },
     ])
   })
@@ -1118,7 +1121,9 @@ describe('roundtrip do dinoRunExample (jogo de corrida completo)', () => {
       'g2d:playCollect',
       'g2d:pruneOffscreen',
       'g2d:drawScore',
-      'g2d:drawHearts',
+      'g2d:damageSprite',
+      'g2d:drawSpriteHealth',
+      'g2d:healthDepleted',
       'g2d:forest',
       'g2d:setScene',
       'g2d:sceneIs',

@@ -17,7 +17,7 @@ interface IfApi extends Blockly.Block {
 
 type IfStmt = Extract<JSStatement, { type: 'if' }>
 
-/** IR do (único) "Se" no workspace, embrulhado no frame de Comportamento. */
+/** IR do único "Se" no workspace, embrulhado na área ⚙️ Ao iniciar. */
 function ifOf(ws: Blockly.Workspace): IfStmt {
   const stmt = behaviorStatements(irInFrame(ws)).find((s) => s.type === 'if')
   if (stmt?.type !== 'if') throw new Error('sem if')

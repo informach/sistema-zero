@@ -1,3 +1,4 @@
+import { buildProjectRunContextRuntime } from '#extensions'
 import { gameTwoDArcadeKitsRuntime } from './runtime/arcadeKits'
 import { gameTwoDAudioRuntime } from './runtime/audio'
 import { gameTwoDCasualKitsRuntime } from './runtime/casualKits'
@@ -18,6 +19,8 @@ import { gameTwoDWorldRuntime } from './runtime/world'
  * função.
  */
 export const gameTwoDRuntime =
+  buildProjectRunContextRuntime() +
+  '\n' +
   `(function () {
   // Estado interno: lista de teclas pressionadas.
   var keys = { left: false, right: false, up: false, down: false };
@@ -126,6 +129,9 @@ export const gameTwoDRuntime =
     setHealth: setHealth,
     changeHealth: changeHealth,
     getHealth: getHealth,
+    getMaxHealth: getMaxHealth,
+    healthDepleted: healthDepleted,
+    damageSprite: damageSprite,
     spriteX: spriteX,
     spriteY: spriteY,
     spriteW: spriteW,
@@ -225,6 +231,8 @@ export const gameTwoDRuntime =
     drawLabel: drawLabel,
     drawHearts: drawHearts,
     drawBar: drawBar,
+    drawSpriteHealth: drawSpriteHealth,
+    setStageDescription: setStageDescription,
     setScene: setScene,
     getScene: getScene,
     sceneIs: sceneIs,

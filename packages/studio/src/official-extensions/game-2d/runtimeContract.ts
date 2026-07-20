@@ -14,12 +14,14 @@ export interface GameTwoDPointer {
 }
 
 export interface GameTwoDImageHandle {
-  img: HTMLImageElement
+  img: HTMLImageElement | null
   loaded: boolean
+  failed: boolean
+  url: string
 }
 
 export interface GameTwoDSpriteSheet {
-  image: GameTwoDImageHandle
+  image: GameTwoDImageHandle | null
   frameW: number
   frameH: number
 }
@@ -75,10 +77,13 @@ export interface GameTwoDSprite {
   dmg?: number
   onGround?: boolean
   blinkFrames?: number
+  _cooldowns?: Record<string, number>
 }
 
 export interface GameTwoDGroup<TSprite extends GameTwoDSprite = GameTwoDSprite> {
   items: TSprite[]
+  /** Versão interna de pertencimento/ordem usada pelas varreduras com snapshot. */
+  _revision?: number
 }
 
 export interface GameTwoDTileMapOptions {
@@ -161,21 +166,22 @@ export interface GameTwoDLifecycleApi {
   onKey(key: string, fn: () => void, id?: string): void
   pointer: GameTwoDPointer
   restart(): void
-  setupStage(width: number, height: number, background: string, description?: string): void
+  setupStage(width: number, height: number, background: string): void
+  setStageDescription(description: string): void
   sceneIs(name: string): boolean
 }
 
 export interface GameTwoDStageApi {
   clear(): void
   fitScreen(percent: number): void
-  setupStageFull(background: string, description?: string): void
+  setupStageFull(background: string): void
 }
 
 export interface GameTwoDSpriteApi {
   createSprite(options?: GameTwoDSpriteOptions): GameTwoDSprite
   drawSprite(ctx: GameTwoDContext, sprite: GameTwoDSprite): void
   isColliding(a: GameTwoDSprite, b: GameTwoDSprite): boolean
-  loadImage(source: string): GameTwoDImageHandle
+  loadImage(source: string): GameTwoDImageHandle | null
   loadSpriteSheet(name: string, frameWidth: number, frameHeight: number): GameTwoDSpriteSheet
   setImage(sprite: GameTwoDSprite, name: string | null): void
   setAnimation(
@@ -277,7 +283,10 @@ export interface GameTwoDMathAndStateApi {
   setHealth(sprite: GameTwoDSprite, health: number): void
   changeHealth(sprite: GameTwoDSprite, delta: number): void
   getHealth(sprite: GameTwoDSprite): number
+  getMaxHealth(sprite: GameTwoDSprite): number
   hasHealth(sprite: GameTwoDSprite): boolean
+  healthDepleted(sprite: GameTwoDSprite): boolean
+  damageSprite(sprite: GameTwoDSprite, amount: number, invincibilityFrames: number): void
   spriteX(sprite: GameTwoDSprite): number
   spriteY(sprite: GameTwoDSprite): number
   spriteW(sprite: GameTwoDSprite): number
@@ -292,7 +301,7 @@ export interface GameTwoDMathAndStateApi {
   isMovingV(sprite: GameTwoDSprite): boolean
   randomX(): number
   randomY(): number
-  cooldownReady(sprite: GameTwoDSprite, frames: number): boolean
+  cooldownReady(sprite: GameTwoDSprite, frames: number, key?: string): boolean
   pruneOld(group: GameTwoDGroup, seconds: number): void
   flipSprite(sprite: GameTwoDSprite, direction: 'left' | 'right'): void
   setOpacity(sprite: GameTwoDSprite, percent: number): void
@@ -431,6 +440,15 @@ export interface GameTwoDHudAndSceneApi {
     height: number,
     color: string,
   ): void
+  drawSpriteHealth(
+    ctx: GameTwoDContext,
+    sprite: GameTwoDSprite,
+    style: 'hearts' | 'bar',
+    x: number,
+    y: number,
+    size: number,
+    color: string,
+  ): void
   setScene(name: string): void
   getScene(): string
   showScreen(
@@ -473,7 +491,7 @@ export interface GameTwoDArcadeApi {
     target?: GameTwoDSprite | null,
   ): void
   drawEnemyType(ctx: GameTwoDContext, type: GameTwoDEnemyType): void
-  onEnemyDefeated(type: GameTwoDEnemyType, fn: (sprite: GameTwoDSprite) => void): void
+  onEnemyDefeated(type: GameTwoDEnemyType, fn: (sprite: GameTwoDSprite) => void, id?: string): void
   overlapEnemyShots(
     getSprite: () => GameTwoDSprite | null,
     type: GameTwoDEnemyType,
@@ -569,6 +587,9 @@ export const GAME_TWO_D_API_KEYS = [
   'setHealth',
   'changeHealth',
   'getHealth',
+  'getMaxHealth',
+  'healthDepleted',
+  'damageSprite',
   'spriteX',
   'spriteY',
   'spriteW',
@@ -660,6 +681,8 @@ export const GAME_TWO_D_API_KEYS = [
   'drawLabel',
   'drawHearts',
   'drawBar',
+  'drawSpriteHealth',
+  'setStageDescription',
   'setScene',
   'getScene',
   'sceneIs',

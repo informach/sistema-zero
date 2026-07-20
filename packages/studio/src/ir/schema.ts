@@ -1,9 +1,18 @@
 import { z } from 'zod'
+import { normalizeGoogleFontFamily } from '../css/googleFonts'
 import { isGuidedDomElementTag } from '../domSafety'
 import { HTML_TAGS, isHTMLElementChildAllowed } from '../html/catalog'
+import { PERSISTENT_EXTENSION_STATEMENT_TYPES } from '../official-extensions/persistentResourceContract'
 import { CANVAS3D_RESOURCE_CREATOR_TYPES } from '../three/canvas3dContract'
 import { GAME3D_RESOURCE_CREATOR_TYPES } from '../three/game3dContract'
-import { isLifecycleRootAllowed, type LifecycleArea, validateLifecycleSemantics } from './lifecycle'
+import {
+  isLifecycleRootAllowed,
+  isLoopStatement,
+  type LifecycleArea,
+  validateLifecycleSemantics,
+} from './lifecycle'
+import { cssCommentRejectionReason, cssSelectorRejectionReason } from './outputSafety'
+import { validateProgrammingReferences as collectProgrammingReferenceIssues } from './programmingReferences'
 
 export const MAX_IR_TEXT_CHARS = 2_000_000
 
@@ -118,6 +127,7 @@ export type JSExpr =
   | (JSExprCommon & { type: 'g2d:distance'; aVar: string; bVar: string })
   | (JSExprCommon & { type: 'g2d:angleTo'; aVar: string; bVar: string })
   | (JSExprCommon & { type: 'g2d:getHealth'; spriteVar: string })
+  | (JSExprCommon & { type: 'g2d:getMaxHealth'; spriteVar: string })
   | (JSExprCommon & { type: 'g2d:enemyDamage'; spriteVar: string })
   | (JSExprCommon & { type: 'g2d:spriteX'; spriteVar: string })
   | (JSExprCommon & { type: 'g2d:spriteY'; spriteVar: string })
@@ -137,6 +147,7 @@ export type JSExpr =
   | (JSExprCommon & { type: 'g2d:randomBetween'; min: number | JSExpr; max: number | JSExpr })
   | (JSExprCommon & { type: 'g2d:randomChance'; percent: number | JSExpr })
   | (JSExprCommon & { type: 'g2d:hasHealth'; spriteVar: string })
+  | (JSExprCommon & { type: 'g2d:healthDepleted'; spriteVar: string })
   | (JSExprCommon & { type: 'g2d:cooldownReady'; spriteVar: string; frames: number | JSExpr })
   | (JSExprCommon & { type: 'g2d:isPaused' })
   // Tier 2 — posição da câmera e leitura de tile (valores).
@@ -588,6 +599,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('g2d:distance'), aVar: irText(), bVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:angleTo'), aVar: irText(), bVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:getHealth'), spriteVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:getMaxHealth'), spriteVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:enemyDamage'), spriteVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:spriteX'), spriteVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:spriteY'), spriteVar: irText(), ...idField }),
@@ -615,6 +627,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('g2d:hasHealth'), spriteVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:healthDepleted'), spriteVar: irText(), ...idField }),
     z.object({
       type: z.literal('g2d:cooldownReady'),
       spriteVar: irText(),
@@ -1357,6 +1370,11 @@ export interface CSSRule {
  */
 const cssNameText = () => irText().regex(/^[^{}]*$/, 'CSS não pode conter chaves { }')
 
+const cssSelectorText = () =>
+  irText().refine((selector) => cssSelectorRejectionReason(selector) === null, {
+    message: 'O seletor contém uma chave solta ou uma parte incompleta.',
+  })
+
 /**
  * Uma chave `{`/`}` em PROFUNDIDADE 0 (fora de aspas e de comentários) rompe a
  * estrutura `selector { … }` e é a vetor de injeção. DENTRO de uma string
@@ -1419,7 +1437,7 @@ const CSSDeclarationsSchema: z.ZodType<CSSDeclarations> = z.union([
 ])
 
 export const CSSRuleSchema: z.ZodType<CSSRule> = z.object({
-  selector: cssNameText().min(1),
+  selector: cssSelectorText().min(1),
   declarations: CSSDeclarationsSchema,
   __declIds: z.record(z.string(), z.string()).optional(),
   ...idField,
@@ -1448,7 +1466,9 @@ export interface CommentCSS {
 
 export const CommentCSSSchema: z.ZodType<CommentCSS> = z.object({
   type: z.literal('comment'),
-  text: irText(),
+  text: irText().refine((text) => cssCommentRejectionReason(text) === null, {
+    message: 'O texto contém “*/”, que tentaria fechar o comentário CSS antes da hora.',
+  }),
   ...idField,
 })
 
@@ -1512,7 +1532,9 @@ export interface GoogleFontCSS {
 
 export const GoogleFontCSSSchema: z.ZodType<GoogleFontCSS> = z.object({
   type: z.literal('googleFont'),
-  family: irText(),
+  family: irText().refine((family) => normalizeGoogleFontFamily(family) !== null, {
+    message: 'Nome de fonte inválido. Use apenas o nome da família, como “Press Start 2P”.',
+  }),
   ...idField,
 })
 
@@ -1995,6 +2017,12 @@ export type JSStatement =
     })
   | (JSStatementCommon & { type: 'g2d:setHealth'; spriteVar: string; amount: number | JSExpr })
   | (JSStatementCommon & { type: 'g2d:changeHealth'; spriteVar: string; delta: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'g2d:damageSprite'
+      spriteVar: string
+      amount: number | JSExpr
+      invincibilityFrames: number | JSExpr
+    })
   | (JSStatementCommon & { type: 'g2d:flipSprite'; spriteVar: string; dir: string })
   | (JSStatementCommon & { type: 'g2d:setOpacity'; spriteVar: string; percent: number | JSExpr })
   | (JSStatementCommon & {
@@ -2337,6 +2365,16 @@ export type JSStatement =
       color: string
     })
   | (JSStatementCommon & {
+      type: 'g2d:drawSpriteHealth'
+      ctxVar: string
+      spriteVar: string
+      style: 'hearts' | 'bar'
+      x: number | JSExpr
+      y: number | JSExpr
+      size: number | JSExpr
+      color: string
+    })
+  | (JSStatementCommon & {
       type: 'g2d:drawBar'
       ctxVar: string
       value: JSExpr
@@ -2348,6 +2386,7 @@ export type JSStatement =
       color: string
     })
   // Estado/telas (cenas): trocar de tela, overlay de tela cheia e reiniciar.
+  | (JSStatementCommon & { type: 'g2d:setStageDescription'; description: string })
   | (JSStatementCommon & { type: 'g2d:setScene'; name: string })
   | (JSStatementCommon & {
       type: 'g2d:showScreen'
@@ -2366,10 +2405,9 @@ export type JSStatement =
       width: number | JSExpr
       height: number | JSExpr
       bg: string
-      description?: string
     })
   // "Ocupar a tela toda": palco SEM dimensões — a resolução acompanha a viewport.
-  | (JSStatementCommon & { type: 'g2d:setupFull'; bg: string; description?: string })
+  | (JSStatementCommon & { type: 'g2d:setupFull'; bg: string })
   // Tiro redondo com brilho num grupo; mover com setas; piscar (invencibilidade).
   | (JSStatementCommon & {
       type: 'g2d:spawnBullet'
@@ -5623,6 +5661,13 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('g2d:damageSprite'),
+      spriteVar: irText(),
+      amount: z.union([JSExprSchema, z.number()]),
+      invincibilityFrames: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('g2d:flipSprite'),
       spriteVar: irText(),
       dir: irText(),
@@ -6111,6 +6156,17 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('g2d:drawSpriteHealth'),
+      ctxVar: irText(),
+      spriteVar: irText(),
+      style: z.enum(['hearts', 'bar']),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      size: z.union([JSExprSchema, z.number()]),
+      color: irText(),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('g2d:drawBar'),
       ctxVar: irText(),
       value: JSExprSchema,
@@ -6120,6 +6176,11 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       w: z.union([JSExprSchema, z.number()]),
       h: z.union([JSExprSchema, z.number()]),
       color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:setStageDescription'),
+      description: irText(),
       ...idField,
     }),
     z.object({ type: z.literal('g2d:setScene'), name: irText(), ...idField }),
@@ -6150,13 +6211,11 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       width: z.union([JSExprSchema, z.number()]),
       height: z.union([JSExprSchema, z.number()]),
       bg: irText(),
-      description: irText().optional(),
       ...idField,
     }),
     z.object({
       type: z.literal('g2d:setupFull'),
       bg: irText(),
-      description: irText().optional(),
       ...idField,
     }),
     z.object({
@@ -10054,52 +10113,6 @@ const G2D_DECLARATION_FIELDS: Readonly<Record<string, string>> = {
   'g2d:createBalloon': 'varName',
 }
 
-/**
- * Declarações que materializam identificadores JavaScript usados pelos blocos
- * genéricos de variável. Diferente dos nomes de domínio (sprite, cena, missão),
- * estes participam do escopo léxico real emitido pelo gerador.
- */
-const PROGRAMMING_DECLARATION_FIELDS: Readonly<Record<string, string>> = {
-  ...G2D_DECLARATION_FIELDS,
-  declareVar: 'name',
-  getProperty: 'varName',
-  getAttribute: 'varName',
-  querySelector: 'varName',
-  querySelectorAll: 'varName',
-  getElementById: 'varName',
-  createElement: 'varName',
-  createElementNS: 'varName',
-  canvasSetup: 'varName',
-  canvasGradient: 'varName',
-  keyboardSimple: 'varName',
-  newInstance: 'varName',
-  newImage: 'varName',
-  rendererResponsive: 'cleanup',
-  environmentLoad: 'texture',
-  bloomSetup: 'composer',
-  particlesSetup: 'particles',
-  waterSetup: 'water',
-  grassSetup: 'grass',
-  signSetup: 'sign',
-  primitiveSetup: 'mesh',
-  terrainSetup: 'terrain',
-  roadSetup: 'road',
-  buildingSetup: 'building',
-  citySetup: 'city',
-  physicsLiteSetup: 'world',
-  physicsLiteRaycast: 'result',
-  physicsLiteBodyState: 'result',
-  physicsLiteStats: 'result',
-  'g3d:createScene': 'varName',
-  'g3d:createFullscreenScene': 'varName',
-  'g3d:createGroup': 'varName',
-  'g3d:createCrossingScene': 'varName',
-  'g3d:createRaceScene': 'varName',
-  'g3d:createStackScene': 'varName',
-  'g3d:createModel': 'varName',
-  'g3d:createSwarm': 'varName',
-}
-
 const G2D_REFERENCE_FIELDS = new Set([
   'spriteVar',
   'targetVar',
@@ -10190,10 +10203,6 @@ function childStatementEntries(statement: JSStatement): ChildStatementEntry[] {
   return bodies
 }
 
-function childStatementArrays(statement: JSStatement): JSStatement[][] {
-  return childStatementEntries(statement).map((entry) => entry.body)
-}
-
 function validateG2DDeclarations(
   statements: JSStatement[],
   ctx: z.RefinementCtx,
@@ -10226,30 +10235,31 @@ function validateG2DDeclarations(
   }
 }
 
-function validateCanvas3DLifecycle(
+const LOOP_FORBIDDEN_RESOURCE_TYPES: ReadonlySet<string> = new Set([
+  ...CANVAS3D_RESOURCE_CREATOR_TYPES,
+  ...GAME3D_RESOURCE_CREATOR_TYPES,
+  ...PERSISTENT_EXTENSION_STATEMENT_TYPES,
+])
+
+function validateResourceLifecycle(
   statements: JSStatement[],
   ctx: z.RefinementCtx,
   path: (string | number)[],
-  insideFrame = false,
+  insideLoop = false,
 ): void {
   for (let index = 0; index < statements.length; index += 1) {
     const statement = statements[index]
     if (!statement) continue
-    if (
-      insideFrame &&
-      (CANVAS3D_RESOURCE_CREATOR_TYPES.has(statement.type) ||
-        GAME3D_RESOURCE_CREATOR_TYPES.has(statement.type))
-    ) {
+    if (insideLoop && LOOP_FORBIDDEN_RESOURCE_TYPES.has(statement.type)) {
       ctx.addIssue({
         code: 'custom',
         path: [...path, index],
-        message: `Mova ${statement.type} para fora do laço de animação; recursos 3D devem ser criados uma vez`,
+        message: `Mova ${statement.type} para fora do laço; este recurso ou configuração deve ser criado uma vez`,
       })
     }
-    const childInsideFrame =
-      insideFrame || statement.type === 'animationLoop' || statement.type === 'g3d:animate'
-    for (const body of childStatementArrays(statement)) {
-      validateCanvas3DLifecycle(body, ctx, [...path, index, 'body'], childInsideFrame)
+    const childInsideLoop = insideLoop || isLoopStatement(statement)
+    for (const child of childStatementEntries(statement)) {
+      validateResourceLifecycle(child.body, ctx, [...path, index, ...child.path], childInsideLoop)
     }
   }
 }
@@ -10269,257 +10279,6 @@ function g2dLocalNames(statement: JSStatement): string[] {
       return typeof record.itemName === 'string' ? [record.itemName] : []
     default:
       return []
-  }
-}
-
-const PROGRAMMING_IMPLICIT_NAMES = new Set([
-  'ctx',
-  'event',
-  'window',
-  'document',
-  'Math',
-  'JSON',
-  'Object',
-  'Array',
-  'Date',
-  'Promise',
-  'console',
-  'performance',
-  // Facades oficiais injetados pelas extensões habilitadas. São globais de
-  // runtime, não declarações do programa do aluno.
-  'SZGame2D',
-  'SZGame3D',
-  'SZGameKit',
-  'SZGameKit3D',
-  'SZWorld3D',
-  'THREE',
-])
-
-const STATEMENT_BODY_KEYS = new Set([
-  'body',
-  'then',
-  'else',
-  'handler',
-  'finalizer',
-  'catchBody',
-  'ctorBody',
-  'default',
-  'bodyA',
-  'bodyB',
-  'methods',
-])
-
-function programmingDeclarationNames(statement: JSStatement): string[] {
-  const record = statement as unknown as Record<string, unknown>
-  const field = PROGRAMMING_DECLARATION_FIELDS[statement.type]
-  const names: string[] = []
-  if (field && typeof record[field] === 'string') names.push(record[field])
-  if (statement.type === 'importNamed') names.push(...statement.names)
-  if (statement.type === 'importStar') {
-    names.push(statement.name)
-  }
-  // canvasSetup materializa dois identificadores no JavaScript: o contexto
-  // escolhido e o elemento reservado como `canvas` pelo IdentifierScope.
-  if (statement.type === 'canvasSetup') names.push('canvas')
-  return names.map((name) => name.trim()).filter(Boolean)
-}
-
-function programmingLocalsForChild(statement: JSStatement, path: readonly PropertyKey[]): string[] {
-  const first = path[0]
-  switch (statement.type) {
-    case 'funcDecl':
-      return first === 'body' ? statement.params : []
-    case 'forRange':
-      return first === 'body' ? [statement.varName] : []
-    case 'forOf':
-      return first === 'body' ? [statement.itemName] : []
-    case 'forEach':
-      return first === 'body'
-        ? [statement.itemName, statement.indexName].filter(
-            (name): name is string => typeof name === 'string' && name.length > 0,
-          )
-        : []
-    case 'tryCatch':
-      return first === 'handler' && statement.errorName ? [statement.errorName] : []
-    case 'fetchJson':
-      if (first === 'body') return [statement.okName]
-      return first === 'catchBody' && statement.catchName ? [statement.catchName] : []
-    case 'classDecl': {
-      if (first === 'ctorBody') return statement.ctorParams ?? []
-      if (first === 'methods' && typeof path[1] === 'number') {
-        return statement.methods[path[1]]?.params ?? []
-      }
-      return []
-    }
-    case 'requestFrameDo':
-      return first === 'body' && statement.param ? [statement.param] : []
-    case 'loaderLoad':
-      if (first === 'body') return [statement.param]
-      return first === 'errorBody' && statement.errorParam ? [statement.errorParam] : []
-    case 'traverseEach':
-      return first === 'body' ? [statement.param] : []
-    case 'physicsLiteCollisionEvent':
-      return first === 'body' ? [statement.bodyParam, statement.colliderParam] : []
-    case 'physicsLiteTriggerEvent':
-      return first === 'body'
-        ? [statement.bodyParam, statement.triggerParam, statement.enteringParam]
-        : []
-    case 'animationLoop':
-      return first === 'body' && statement.deltaVar ? [statement.deltaVar] : []
-    case 'g3d:forEachInSwarm':
-      return first === 'body' ? [statement.itemName] : []
-    case 'gk:onUpdate':
-    case 'g3k:onUpdate':
-    case 'w3d:onUpdate':
-      return first === 'body' ? [statement.dtName] : []
-    case 'gk:onDraw':
-    case 'gk:onDrawHud':
-      return first === 'body' ? [statement.ctxName] : []
-    case 'gk:onGameClick':
-    case 'gk:tdOnBuy':
-      return first === 'body' ? [statement.xName, statement.yName] : []
-    case 'gk:rpgCreateMap':
-    case 'gk:defineLook':
-      return first === 'body' ? [statement.ctxName] : []
-    case 'gk:forEachActive':
-    case 'g3k:forEachAlive':
-    case 'g3k:forEachNear':
-    case 'g3k:onEnterEntityState':
-    case 'g3k:onExitEntityState':
-    case 'g3k:onEntityDeath':
-      return first === 'body' ? [statement.itemName] : []
-    case 'gk:overlapGroups':
-      return first === 'body' ? [statement.aName, statement.bName] : []
-    case 'g3k:onEntityStateUpdate':
-      return first === 'body' ? [statement.itemName, statement.dtName] : []
-    case 'g3k:onOverlap':
-      return first === 'body' ? [statement.zoneName, statement.whoName] : []
-    default:
-      return g2dLocalNames(statement)
-  }
-}
-
-function validateProgrammingValue(
-  value: unknown,
-  symbols: ReadonlySet<string>,
-  ctx: z.RefinementCtx,
-  path: (string | number)[],
-): void {
-  if (Array.isArray(value)) {
-    value.forEach((child, index) => {
-      validateProgrammingValue(child, symbols, ctx, [...path, index])
-    })
-    return
-  }
-  if (typeof value !== 'object' || value === null) return
-  const record = value as Record<string, unknown>
-  const type = typeof record.type === 'string' ? record.type : ''
-
-  if (type === 'var' && !Object.hasOwn(record, 'value') && typeof record.name === 'string') {
-    const name = record.name.trim()
-    if (name && !symbols.has(name) && !PROGRAMMING_IMPLICIT_NAMES.has(name)) {
-      ctx.addIssue({
-        code: 'custom',
-        path: [...path, 'name'],
-        message: `A variável “${name}” ainda não foi declarada neste ponto`,
-      })
-    }
-    return
-  }
-
-  if (
-    (type === 'arrayMap' || type === 'arrayFind' || type === 'arrayFilter') &&
-    typeof record.itemName === 'string'
-  ) {
-    const nested = new Set(symbols)
-    nested.add(record.itemName)
-    for (const [key, child] of Object.entries(record)) {
-      if (key === 'transform' || key === 'cond') {
-        validateProgrammingValue(child, nested, ctx, [...path, key])
-      } else if (key !== '__id' && key !== 'type' && key !== 'itemName') {
-        validateProgrammingValue(child, symbols, ctx, [...path, key])
-      }
-    }
-    return
-  }
-
-  if (type === 'newPromise' && typeof record.param === 'string' && Array.isArray(record.body)) {
-    const nested = new Set(symbols)
-    nested.add(record.param)
-    validateProgrammingReferences(record.body as JSStatement[], ctx, [...path, 'body'], nested)
-    return
-  }
-
-  for (const [key, child] of Object.entries(record)) {
-    if (key === '__id' || key === 'type' || STATEMENT_BODY_KEYS.has(key)) continue
-    if (key === 'elseif' && Array.isArray(child)) {
-      child.forEach((branch, index) => {
-        if (branch && typeof branch === 'object') {
-          validateProgrammingValue((branch as Record<string, unknown>).cond, symbols, ctx, [
-            ...path,
-            'elseif',
-            index,
-            'cond',
-          ])
-        }
-      })
-      continue
-    }
-    if (key === 'cases' && Array.isArray(child)) {
-      child.forEach((branch, index) => {
-        if (branch && typeof branch === 'object') {
-          validateProgrammingValue((branch as Record<string, unknown>).match, symbols, ctx, [
-            ...path,
-            'cases',
-            index,
-            'match',
-          ])
-        }
-      })
-      continue
-    }
-    validateProgrammingValue(child, symbols, ctx, [...path, key])
-  }
-}
-
-function validateProgrammingReferences(
-  statements: JSStatement[],
-  ctx: z.RefinementCtx,
-  path: (string | number)[],
-  inherited: ReadonlySet<string> = PROGRAMMING_IMPLICIT_NAMES,
-): void {
-  const symbols = new Set(inherited)
-  for (let index = 0; index < statements.length; index += 1) {
-    const statement = statements[index]
-    if (!statement) continue
-    const statementPath = [...path, index]
-
-    validateProgrammingValue(statement, symbols, ctx, statementPath)
-    if (statement.type === 'assign') {
-      const name = statement.name.trim()
-      if (name && !symbols.has(name) && !PROGRAMMING_IMPLICIT_NAMES.has(name)) {
-        ctx.addIssue({
-          code: 'custom',
-          path: [...statementPath, 'name'],
-          message: `A variável “${name}” ainda não foi declarada neste ponto`,
-        })
-      }
-    }
-
-    for (const child of childStatementEntries(statement)) {
-      const childSymbols = new Set(symbols)
-      for (const local of programmingLocalsForChild(statement, child.path)) {
-        if (local.trim()) childSymbols.add(local.trim())
-      }
-      validateProgrammingReferences(
-        child.body,
-        ctx,
-        [...statementPath, ...child.path],
-        childSymbols,
-      )
-    }
-
-    for (const name of programmingDeclarationNames(statement)) symbols.add(name)
   }
 }
 
@@ -10597,8 +10356,10 @@ export const SZIRSchema = z
   })
 
   .superRefine((ir, ctx) => {
-    validateCanvas3DLifecycle(ir.js, ctx, ['js'])
-    validateProgrammingReferences(ir.js, ctx, ['js'])
+    validateResourceLifecycle(ir.js, ctx, ['js'])
+    for (const issue of collectProgrammingReferenceIssues(ir.js, ['js'])) {
+      ctx.addIssue({ code: 'custom', path: issue.path, message: issue.message })
+    }
     const starts = ir.js
       .map((statement, index) => ({ statement, index }))
       .filter(({ statement }) => statement.type === 'g2d:onStart')
@@ -10792,6 +10553,7 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:moveToward',
   'g2d:setHealth',
   'g2d:changeHealth',
+  'g2d:damageSprite',
   'g2d:flipSprite',
   'g2d:setOpacity',
   'g2d:setSize',
@@ -10863,7 +10625,9 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:drawScore',
   'g2d:drawLabel',
   'g2d:drawHearts',
+  'g2d:drawSpriteHealth',
   'g2d:drawBar',
+  'g2d:setStageDescription',
   'g2d:setScene',
   'g2d:showScreen',
   'g2d:restart',

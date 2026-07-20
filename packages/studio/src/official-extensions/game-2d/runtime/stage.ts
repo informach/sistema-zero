@@ -65,6 +65,11 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     _announcedScreen = '';
   }
 
+  /** Explica objetivo e controles do jogo para tecnologias assistivas. */
+  function setStageDescription(description) {
+    _setStageDescription(description);
+  }
+
   function _announceScreen(title, subtitle, hint) {
     var screen = [title, subtitle, hint]
       .filter(function (part) { return part !== undefined && part !== null && String(part).trim(); })
@@ -176,7 +181,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
   // Facilitador: prepara o palco em tela cheia (responsivo) num passo só. Define o
   // tamanho do "mundo" do jogo (w x h) e chama fitScreen para o canvas ocupar a
   // janela mantendo a proporção. É o bloco "preparar o jogo em tela cheia".
-  function setupStage(w, h, bg, description) {
+  function setupStage(w, h, bg) {
     ensureStage();
     var c = _stageCanvas;
     if (!c) { try { c = document.querySelector('canvas'); } catch (e) {} }
@@ -209,7 +214,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
       document.body.style.alignItems = 'center';
       document.body.style.justifyContent = 'center';
     }
-    _setStageDescription(description);
+    _setStageDescription();
     fitScreen(100);
   }
   // Facilitador: prepara o palco para OCUPAR A TELA TODA, sem dimensões. Diferente
@@ -217,7 +222,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
   // resolução do jogo ACOMPANHA a janela: o canvas preenche 100% da viewport e as
   // coordenadas do jogo passam a valer o tamanho real da tela (via _resizeBacking em
   // _fillMode). É o bloco "preparar o jogo para ocupar a tela toda".
-  function setupStageFull(bg, description) {
+  function setupStageFull(bg) {
     ensureStage();
     var c = _stageCanvas;
     if (!c) { try { c = document.querySelector('canvas'); } catch (e) {} }
@@ -240,7 +245,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
       document.body.style.margin = '0';
       document.body.style.background = color;
     }
-    _setStageDescription(description);
+    _setStageDescription();
     _resizeBacking();
     try { requestAnimationFrame(_resizeBacking); } catch (e) {}
     if (!_resizeHooked) {

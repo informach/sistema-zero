@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import type * as Blockly from 'blockly/core'
+import type { JSStatement } from '#ir'
 import { applySemanticDiagnostics } from '../semanticDiagnostics'
 
 function warningWorkspace(blockId: string) {
@@ -150,6 +151,62 @@ describe('diagnósticos semânticos nos blocos', () => {
     expect(warnings.at(-1)).toContain('pontos')
   })
 
+  it.each([
+    '-1px',
+    '-1%',
+    '-0.5rem',
+  ])('avisa sobre comprimento SVG negativo mesmo quando há unidade: %s', (radius) => {
+    const { workspace, warnings } = warningWorkspace('forma-1')
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [
+        {
+          type: 'element',
+          tag: 'svg',
+          children: [
+            {
+              type: 'element',
+              tag: 'circle',
+              attrs: { r: radius },
+              __id: 'forma-1',
+            },
+          ],
+        },
+      ],
+      css: [],
+      js: [],
+      extensions: [],
+    })
+
+    expect(valid).toBe(false)
+    expect(warnings.at(-1)).toContain('r não pode ser negativo')
+  })
+
+  it('mantém expressões SVG dinâmicas fora da validação estática de sinal', () => {
+    const { workspace, warnings } = warningWorkspace('forma-1')
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [
+        {
+          type: 'element',
+          tag: 'svg',
+          children: [
+            {
+              type: 'element',
+              tag: 'circle',
+              attrs: { r: 'var(--raio)' },
+              __id: 'forma-1',
+            },
+          ],
+        },
+      ],
+      css: [],
+      js: [],
+      extensions: [],
+    })
+
+    expect(valid).toBe(true)
+    expect(warnings).toEqual([null])
+  })
+
   it('bloqueia viewBox, caminho e transformação incompletos com exemplos acionáveis', () => {
     const ids = ['svg-1', 'path-1', 'group-1']
     const { workspace, warnings } = warningWorkspaceFor(ids)
@@ -263,6 +320,80 @@ describe('diagnósticos semânticos nos blocos', () => {
     expect(warnings.at(-1)).toContain('Não achei uma tela Canvas')
   })
 
+  it('impede uma operação Canvas cujo pincel ainda não foi preparado', () => {
+    const { workspace, warnings } = warningWorkspace('rect-1')
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [{ type: 'canvas', id: 'jogo', __id: 'canvas-1' }],
+      css: [],
+      js: [
+        {
+          type: 'canvasFillRect',
+          ctxVar: 'ctx',
+          x: { type: 'num', value: 0 },
+          y: { type: 'num', value: 0 },
+          w: { type: 'num', value: 10 },
+          h: { type: 'num', value: 10 },
+          __id: 'rect-1',
+        },
+      ],
+      extensions: [],
+    })
+
+    expect(valid).toBe(false)
+    expect(warnings.at(-1)).toContain('pincel “ctx”')
+    expect(warnings.at(-1)).toContain('Preparar a tela')
+  })
+
+  it('não aceita um preparo Canvas que aparece somente depois do desenho', () => {
+    const { workspace, warnings } = warningWorkspaceFor(['rect-1', 'setup-1'])
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [{ type: 'canvas', id: 'jogo', __id: 'canvas-1' }],
+      css: [],
+      js: [
+        {
+          type: 'canvasFillRect',
+          ctxVar: 'ctx',
+          x: { type: 'num', value: 0 },
+          y: { type: 'num', value: 0 },
+          w: { type: 'num', value: 10 },
+          h: { type: 'num', value: 10 },
+          __id: 'rect-1',
+        },
+        { type: 'canvasSetup', canvasId: 'jogo', varName: 'ctx', __id: 'setup-1' },
+      ],
+      extensions: [],
+    })
+
+    expect(valid).toBe(false)
+    expect(warnings.get('rect-1')?.at(-1)).toContain('ainda não foi preparado')
+  })
+
+  it('encontra pincéis ausentes dentro de expressões Canvas aninhadas', () => {
+    const { workspace, warnings } = warningWorkspace('medida-1')
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [{ type: 'canvas', id: 'jogo', __id: 'canvas-1' }],
+      css: [],
+      js: [
+        { type: 'canvasSetup', canvasId: 'jogo', varName: 'ctx', __id: 'setup-1' },
+        {
+          type: 'var',
+          kind: 'const',
+          name: 'largura',
+          __id: 'medida-1',
+          value: {
+            type: 'canvasMeasureText',
+            ctxVar: 'outroPincel',
+            text: { type: 'str', value: 'oi' },
+          },
+        },
+      ],
+      extensions: [],
+    })
+
+    expect(valid).toBe(false)
+    expect(warnings.at(-1)).toContain('pincel “outroPincel”')
+  })
+
   it('impede o preview quando o id escolhido pertence a outro elemento', () => {
     const { workspace, warnings } = warningWorkspace('setup-1')
     const valid = applySemanticDiagnostics(workspace, {
@@ -310,5 +441,147 @@ describe('diagnósticos semânticos nos blocos', () => {
 
     expect(valid).toBe(true)
     expect(warnings).toEqual([null])
+  })
+
+  const negativeRadiusStatements: Array<readonly [string, JSStatement]> = [
+    [
+      'canvasArc',
+      {
+        type: 'canvasArc',
+        ctxVar: 'ctx',
+        x: { type: 'num', value: 10 },
+        y: { type: 'num', value: 10 },
+        r: { type: 'num', value: -1 },
+        __id: 'forma-1',
+      },
+    ],
+    [
+      'canvasRoundRect',
+      {
+        type: 'canvasRoundRect',
+        ctxVar: 'ctx',
+        x: { type: 'num', value: 10 },
+        y: { type: 'num', value: 10 },
+        w: { type: 'num', value: 20 },
+        h: { type: 'num', value: 20 },
+        r: { type: 'num', value: -2 },
+        __id: 'forma-1',
+      },
+    ],
+    [
+      'canvasEllipse',
+      {
+        type: 'canvasEllipse',
+        ctxVar: 'ctx',
+        x: { type: 'num', value: 10 },
+        y: { type: 'num', value: 10 },
+        rx: { type: 'num', value: -3 },
+        ry: { type: 'num', value: 4 },
+        __id: 'forma-1',
+      },
+    ],
+    [
+      'canvasArcSlice',
+      {
+        type: 'canvasArcSlice',
+        ctxVar: 'ctx',
+        x: { type: 'num', value: 10 },
+        y: { type: 'num', value: 10 },
+        r: { type: 'num', value: -5 },
+        start: { type: 'num', value: 0 },
+        end: { type: 'num', value: Math.PI },
+        __id: 'forma-1',
+      },
+    ],
+    [
+      'canvasArcTo',
+      {
+        type: 'canvasArcTo',
+        ctxVar: 'ctx',
+        x1: { type: 'num', value: 10 },
+        y1: { type: 'num', value: 10 },
+        x2: { type: 'num', value: 20 },
+        y2: { type: 'num', value: 20 },
+        r: { type: 'num', value: -6 },
+        __id: 'forma-1',
+      },
+    ],
+  ]
+
+  it.each(negativeRadiusStatements)('impede %s com raio literal negativo', (_name, statement) => {
+    const { workspace, warnings } = warningWorkspace('forma-1')
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [{ type: 'canvas', id: 'jogo', __id: 'canvas-1' }],
+      css: [],
+      js: [{ type: 'canvasSetup', canvasId: 'jogo', varName: 'ctx', __id: 'setup-1' }, statement],
+      extensions: [],
+    })
+
+    expect(valid).toBe(false)
+    expect(warnings.at(-1)).toContain('não pode ser negativo')
+  })
+
+  it('bloqueia declaração CSS que o gerador recusaria, no bloco da declaração', () => {
+    const { workspace, warnings } = warningWorkspace('decl-1')
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [{ type: 'element', tag: 'div', attrs: { class: 'alvo' } }],
+      css: [
+        {
+          selector: '.alvo',
+          declarations: [
+            {
+              property: 'color',
+              value: 'red; background-image: url(https://attacker.invalid/leak)',
+              __id: 'decl-1',
+            },
+          ],
+        },
+      ],
+      js: [],
+      extensions: [],
+    })
+
+    expect(valid).toBe(false)
+    expect(warnings.at(-1)).toContain('mais de uma declaração')
+  })
+
+  it('bloqueia fechamento injetado em comentário CSS no próprio bloco', () => {
+    const { workspace, warnings } = warningWorkspace('comentario-1')
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [],
+      css: [
+        {
+          type: 'comment',
+          text: '*/ body { background: url(https://attacker.example/x); } /*',
+          __id: 'comentario-1',
+        },
+      ],
+      js: [],
+      extensions: [],
+    })
+
+    expect(valid).toBe(false)
+    expect(warnings.at(-1)).toContain('fechar o comentário')
+  })
+
+  it('bloqueia URL HTML perigosa no bloco do link', () => {
+    const { workspace, warnings } = warningWorkspace('link-1')
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [
+        {
+          type: 'element',
+          tag: 'a',
+          text: 'Clique',
+          attrs: { href: 'javascript:alert(1)' },
+          __id: 'link-1',
+        },
+      ],
+      css: [],
+      js: [],
+      extensions: [],
+    })
+
+    expect(valid).toBe(false)
+    expect(warnings.at(-1)).toContain('endereço não é permitido')
   })
 })

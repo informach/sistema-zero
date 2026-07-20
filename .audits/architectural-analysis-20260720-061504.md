@@ -1,5 +1,10 @@
 # Full review — divisão de Comportamento em três áreas
 
+> **Registro histórico.** Este arquivo preserva o diagnóstico levantado no
+> início da revisão. Os achados foram corrigidos e a situação vigente está em
+> [behavior-lifecycle-review/fixes-report.md](behavior-lifecycle-review/fixes-report.md),
+> incluindo a revisão de consistência de 20/07/2026.
+
 Data: 20/07/2026  
 Escopo: `packages/studio`, todas as categorias do núcleo, as cinco extensões oficiais, IR, Blockly, Bridge, runtime, migração, IA, exemplos e documentação.
 

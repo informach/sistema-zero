@@ -48,4 +48,14 @@ describe('CSS — declarações ordenadas e sem perda', () => {
     expect(entry).toEqual({ type: 'rawCSS', code: css, advanced: true })
     expect(generateCSS([entry]).trim()).toBe(css)
   })
+
+  it('preserva o keyframe inteiro quando há comentário entre os passos', () => {
+    const css =
+      '@keyframes aparecer { /* começo */ 0% { opacity: 0; } /* meio */ 100% { opacity: 1; } /* fim */ }'
+    const [entry] = parseCSS(css)
+    if (!entry) throw new Error('o CSS deveria ser preservado')
+
+    expect(entry).toEqual({ type: 'rawCSS', code: css, advanced: true })
+    expect(generateCSS([entry]).trim()).toBe(css)
+  })
 })

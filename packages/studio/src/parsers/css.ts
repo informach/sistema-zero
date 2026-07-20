@@ -1,4 +1,11 @@
-import type { CSSDeclaration, CSSDeclarations, CSSEntry } from '#ir'
+import {
+  type CSSDeclaration,
+  type CSSDeclarations,
+  type CSSEntry,
+  cssCommentRejectionReason,
+  findCSSLooseBrace,
+} from '#ir'
+import { parseGoogleFontImportRule } from '../css/googleFonts'
 
 /**
  * Parser CSS parcial baseado em regex (suficiente para regras planas). Qualquer
@@ -45,8 +52,9 @@ function parseCSSAtDepth(source: string, depth: number): CSSEntry[] {
       const code = source.slice(beforeSkip, index).trim()
       if (code.includes('/*')) {
         const inner = code.match(/^\/\*([\s\S]*)\*\/$/)
-        if (inner) entries.push({ type: 'comment', text: inner[1] ?? '' })
-        else entries.push({ type: 'rawCSS', code, advanced: true })
+        if (inner && cssCommentRejectionReason(inner[1] ?? '') === null) {
+          entries.push({ type: 'comment', text: inner[1] ?? '' })
+        } else entries.push({ type: 'rawCSS', code, advanced: true })
       }
     }
     if (index >= source.length) break
@@ -58,24 +66,28 @@ function parseCSSAtDepth(source: string, depth: number): CSSEntry[] {
       // continua como rawCSS avançado, preservada verbatim.
       const media = tryParseMediaQuery(source, index, end, depth)
       const keyframes = media ? null : tryParseKeyframes(source, index, end)
+      const code = source.slice(index, end).trim()
+      const googleFont = media || keyframes ? null : parseGoogleFontImportRule(code)
       if (media) {
         entries.push(media)
       } else if (keyframes) {
         entries.push(keyframes)
+      } else if (googleFont) {
+        entries.push({ type: 'googleFont', family: googleFont })
       } else {
-        const code = source.slice(index, end).trim()
         if (code) entries.push({ type: 'rawCSS', code, advanced: true })
       }
       index = end
       continue
     }
 
-    const open = source.indexOf('{', index)
-    if (open < 0) {
+    const delimiter = findCSSLooseBrace(source, index)
+    if (delimiter?.brace !== '{') {
       const code = source.slice(index).trim()
       if (code) entries.push({ type: 'rawCSS', code, advanced: true })
       break
     }
+    const open = delimiter.index
 
     const close = findMatchingBrace(source, open)
     if (close < 0) {
@@ -86,12 +98,17 @@ function parseCSSAtDepth(source: string, depth: number): CSSEntry[] {
 
     const selector = source.slice(index, open).trim()
     const declBlock = source.slice(open + 1, close)
-    const declarationEntries = parseDeclarations(declBlock)
+    const parsedDeclarations = parseDeclarations(declBlock)
+    const declarationEntries = parsedDeclarations.entries
     if (selector) {
       // Regra vazia ou com comentário posicionado antes/entre declarações ainda
       // não cabe nos blocos de declaração. Preservamos a regra inteira; já as
       // propriedades repetidas cabem no array ordenado e continuam editáveis.
-      if (declarationEntries.length === 0 || hasUnrepresentedDeclarationComment(declBlock)) {
+      if (
+        declarationEntries.length === 0 ||
+        !parsedDeclarations.complete ||
+        hasUnrepresentedDeclarationComment(declBlock)
+      ) {
         const code = source.slice(index, close + 1).trim()
         if (code) entries.push({ type: 'rawCSS', code, advanced: true })
       } else {
@@ -158,18 +175,24 @@ function tryParseKeyframes(source: string, start: number, end: number): CSSEntry
   const steps: Array<{ at: string; declarations: CSSDeclarations }> = []
   let i = 0
   while (i < inner.length) {
-    i = skipWhitespaceAndComments(inner, i)
+    i = skipWhitespace(inner, i)
     if (i >= inner.length) break
+    // A IR estruturada não representa comentários entre passos. Consumir esse
+    // comentário aqui perderia código no round-trip; o chamador preserva então
+    // o @keyframes inteiro como rawCSS.
+    if (inner[i] === '/' && inner[i + 1] === '*') return null
     const stepOpen = inner.indexOf('{', i)
     if (stepOpen < 0) return null
     const stepClose = findMatchingBrace(inner, stepOpen)
     if (stepClose < 0) return null
     const at = inner.slice(i, stepOpen).trim().toLowerCase()
     const body = inner.slice(stepOpen + 1, stepClose)
-    const declarationEntries = parseDeclarations(body)
+    const parsedDeclarations = parseDeclarations(body)
+    const declarationEntries = parsedDeclarations.entries
     if (
       !isKeyframeSelector(at) ||
       declarationEntries.length === 0 ||
+      !parsedDeclarations.complete ||
       hasUnrepresentedDeclarationComment(body)
     ) {
       return null
@@ -178,7 +201,6 @@ function tryParseKeyframes(source: string, start: number, end: number): CSSEntry
     i = stepClose + 1
   }
   if (steps.length === 0) return null
-  if (skipWhitespaceAndComments(inner, i) !== inner.length) return null
   return { type: 'keyframes', name, steps }
 }
 
@@ -201,6 +223,12 @@ function skipWhitespaceAndComments(source: string, start: number): number {
     }
     break
   }
+  return index
+}
+
+function skipWhitespace(source: string, start: number): number {
+  let index = start
+  while (index < source.length && /\s/.test(source[index] ?? '')) index += 1
   return index
 }
 
@@ -423,18 +451,30 @@ function hasUnrepresentedDeclarationComment(block: string): boolean {
  * posições — `;`/`:` dentro de `url(data:…;base64,…)`, `calc()` ou strings não
  * truncam mais o valor. O array preserva ordem e propriedades repetidas.
  */
-function parseDeclarations(raw: string): CSSDeclaration[] {
+interface ParsedDeclarations {
+  entries: CSSDeclaration[]
+  complete: boolean
+}
+
+function parseDeclarations(raw: string): ParsedDeclarations {
   const out: CSSDeclaration[] = []
+  let complete = true
   for (const { segStart, segEnd, colon } of scanDeclarationSegments(raw, 0, raw.length)) {
-    if (colon < 0) continue
+    const segment = raw.slice(segStart, segEnd)
+    if (!segment.trim()) continue
+    if (colon < 0) {
+      complete = false
+      continue
+    }
     // Mascara comentários no NOME da prop (mesma fonte da verdade dos spans) — sem
     // isto a chave do IR virava `/* nota */ color` e divergia do span `color`,
     // quebrando o realce bloco↔código de toda declaração precedida de comentário.
     const key = normalizeDeclKey(maskPropComments(raw.slice(segStart, colon)).trim())
     const value = raw.slice(colon + 1, segEnd).trim()
     if (key && value) out.push({ property: key, value })
+    else complete = false
   }
-  return out
+  return { entries: out, complete }
 }
 
 /** Usa o formato compacto legado quando não há repetição; fallbacks ficam em array. */
@@ -582,8 +622,9 @@ export function parseCSSWithSpans(source: string): ParseCssSpansResult {
       continue
     }
 
-    const open = source.indexOf('{', index)
-    if (open < 0) break
+    const delimiter = findCSSLooseBrace(source, index)
+    if (delimiter?.brace !== '{') break
+    const open = delimiter.index
     const close = findMatchingBrace(source, open)
     if (close < 0) break
 

@@ -10,8 +10,9 @@ A paleta permanece extensa por decisão de produto: são 190 definições de blo
 (189 visíveis e uma legada oculta). A seleção do conteúdo apresentado continua
 sendo responsabilidade do perfil de aprendizagem e de cada aula.
 
-A correção técnica foi publicada no manifesto como **Jogo 2D 0.32.0**. Não há
-achados abertos no escopo desta revisão.
+A correção técnica desta auditoria foi publicada como **Jogo 2D 0.34.0**. O
+manifesto vigente está em **0.35.0** após as correções posteriores de lifecycle.
+Não há achados abertos no escopo desta revisão.
 
 ## Escopo revisado
 
@@ -45,6 +46,23 @@ achados abertos no escopo desta revisão.
 | P2 | Texto acessível tornava o bloco de preparação pesado | Corrigido |
 | P3 | Sorteio “inteiro” aceitava limites fracionários | Corrigido |
 | P3 | Guia interno continha versão e limite de docs antigos | Corrigido |
+
+### Revisão de combinações — 0.34.0
+
+Uma segunda passagem sobre combinações do runtime corrigiu mais oito pontos:
+
+- todos os helpers de borda, chão, ponteiro e sorteio usam o viewport da câmera;
+- imagem e animação substituem corretamente uma figura anterior do sprite;
+- eventos de inimigo derrotado coexistem e isolam apenas o callback defeituoso;
+- imagens assíncronas não apagam nem cobrem o cenário enquanto carregam;
+- colisão grupo × grupo mantém custo O(N×M), inclusive com remoções no callback;
+- o contrato de imagem representa `img` nulo, falha, URL e fonte vazia;
+- um bloco `Ao iniciar` defeituoso é removido também antes de um reinício;
+- a recarga de N quadros volta a ficar pronta exatamente após N chamadas.
+
+O campo infantil `objetivo e controles` foi removido dos dois blocos
+`Preparar`. O runtime continua atribuindo ao canvas uma descrição interna
+automática, sem exigir que a criança aprenda acessibilidade nesta etapa.
 
 ## Correções técnicas
 
@@ -142,7 +160,7 @@ próximo do ponto médio. Tooltip e manual descrevem o mesmo contrato.
 ### P3 — Fonte de verdade da documentação interna
 
 A seção de Jogo 2D 0.23.0 em `CLAUDE.md` está identificada como registro
-histórico. A versão vigente aparece como 0.32.0, e o limite de documentação é
+histórico. A versão vigente aparece como 0.35.0, e o limite de documentação é
 obtido do schema em `src/extensions/manifest.ts` (`MAX_DOCS_CHARS = 60_000`), sem
 manter um segundo teto divergente no guia.
 
@@ -156,8 +174,8 @@ mascarar um bloco visualmente incompleto.
 
 ### Taxonomia por assunto
 
-As áreas estruturais continuam sendo `Quando acontecer` e `Enquanto estiver
-rodando` no workspace. Na toolbox, os blocos foram distribuídos pelos assuntos
+As três áreas de comportamento continuam sendo `Ao iniciar`, `Quando acontecer`
+e `Enquanto estiver rodando` no workspace. Na toolbox, os blocos foram distribuídos pelos assuntos
 `Controles`, `Colisões` e `Tempo e repetição`, coerentes com as demais categorias.
 
 ### Rótulos curtos e semânticos
@@ -177,11 +195,12 @@ O palco usa um seletor próprio: remove o outline externo padrão e mostra um
 indicador interno em `:focus-visible`. O canvas continua focável e acessível por
 teclado sem alterar tamanho ou criar barras.
 
-### Texto acessível dos blocos de preparação
+### Metadados automáticos dos blocos de preparação
 
-Os facilitadores usam o rótulo curto `objetivo e controles`. A descrição continua
-alimentando `aria-label`, `aria-describedby` e os anúncios de cenas, mas a face
-do bloco não expõe jargão sobre quem vê ou não vê a tela.
+Os facilitadores não pedem mais `objetivo e controles`. O runtime cria uma
+descrição interna a partir do título do projeto e continua alimentando
+`aria-label`, `aria-describedby` e os anúncios de cenas sem expor esse conceito
+à criança iniciante.
 
 ## Pontos aprovados e preservados
 
@@ -209,14 +228,16 @@ arquiteturais de reset. Depois das alterações, os mesmos cenários passaram.
 
 ### Resultado após todas as correções
 
-- **Suíte completa da extensão:** 585 aprovados, 0 falhas, 3.337 asserções, 18
-  arquivos;
+- **Regressões focadas desta revisão:** 301 aprovados, 0 falhas, 1.172
+  asserções, nove arquivos;
+- **Suíte completa do Studio:** 4.331 aprovados, 0 falhas, 41.833 asserções,
+  293 arquivos;
 - **Contrato público:** compilação TypeScript isolada aprovada e inventário
   exato das 188 chaves aprovado;
 - **TypeScript global:** `tsc --noEmit` aprovado;
-- **Biome global:** 673 arquivos aprovados, sem correções pendentes;
-- **Chromium DPR:** nove cenários aprovados — mapa, Equilibrista e Balão em DPR
-  1, 2 e 3.
+- **Biome global:** 682 arquivos aprovados, sem correções pendentes;
+- **Chromium:** 25 cenários aprovados — todos os exemplos introdutórios,
+  geometria em DPR 1, 2 e 3, viewport estreito e reabertura do projeto.
 
 ## Conclusão
 

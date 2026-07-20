@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'bun:test'
 import type { ExtensionToolboxCategory } from '#extensions'
 import { gameTwoDPromptContext } from '../ai'
+import { gameTwoDPromptSummary } from '../aiSummary'
 import { G2D_SOCKET_SHADOW_TYPES, gameTwoDBlocks, gameTwoDToolboxCategory } from '../blocks'
 import { gameTwoDManifest } from '../manifest'
-import { GAME_TWO_D_AREAS } from '../pedagogy'
+import { GAME_TWO_D_AREAS, GAME_TWO_D_LIFECYCLE_GUIDANCE } from '../pedagogy'
 import { gameTwoDRuntime } from '../runtime'
 
 /**
@@ -109,7 +110,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   it('a contagem de blocos está travada (remoção acidental salta aqui)', () => {
-    expect(gameTwoDBlocks.length).toBe(190)
+    expect(gameTwoDBlocks.length).toBe(195)
   })
 
   it('organiza controles, colisões e tempo por assunto, não pela Área do projeto', () => {
@@ -140,6 +141,30 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
       'sz_g2d_prune_old',
     ])
     expect(tiposDaCategoria('🚀 Kit espaço')).toContain('sz_g2d_on_sprite_group_overlap')
+  })
+
+  it('Vida oferece o fluxo automático por sprite sem apagar projetos antigos', () => {
+    expect(tiposDaCategoria('❤️ Vida')).toEqual([
+      'sz_g2d_set_health',
+      'sz_g2d_change_health',
+      'sz_g2d_damage_sprite',
+      'sz_g2d_get_health',
+      'sz_g2d_get_max_health',
+      'sz_g2d_has_health',
+      'sz_g2d_health_depleted',
+      'sz_g2d_draw_sprite_health',
+    ])
+    const legacyHearts = gameTwoDBlocks.find((block) => block.type === 'sz_g2d_draw_hearts')
+    expect(legacyHearts?.hidden).toBe(true)
+    expect(blocoNaToolbox('sz_g2d_draw_hearts')).toBeUndefined()
+    expect(blocoNaToolbox('sz_g2d_draw_sprite_health')).toBeDefined()
+    expect(gameTwoDBlocks.find((block) => block.type === 'sz_g2d_set_health')?.placement).toBe(
+      'start-only-command',
+    )
+  })
+
+  it('Telas e cenas contém a descrição acessível do jogo', () => {
+    expect(tiposDaCategoria('📺 Telas e cenas')).toContain('sz_g2d_set_stage_description')
   })
 
   it('mantém instruções de posicionamento fora da face dos blocos', () => {
@@ -173,7 +198,9 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
 
     for (const type of ['sz_g2d_setup_stage', 'sz_g2d_setup_full']) {
       const block = gameTwoDBlocks.find((candidate) => candidate.type === type)
-      expect(block?.message1).toBe('objetivo e controles %1')
+      expect(block?.message1).toBeUndefined()
+      expect(block?.args1).toBeUndefined()
+      expect(block?.tooltip).not.toContain('leitor de tela')
     }
   })
 
@@ -191,6 +218,26 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
       expect(block?.tooltip).toContain(GAME_TWO_D_AREAS.loop)
       expect(block?.tooltip).not.toContain('dentro do "a cada quadro"')
     }
+  })
+
+  it('usa a orientação canônica de ciclo de vida nas docs e nos dois prompts da IA', () => {
+    for (const guidance of Object.values(GAME_TWO_D_LIFECYCLE_GUIDANCE)) {
+      expect(gameTwoDManifest.docs).toContain(guidance)
+      expect(gameTwoDPromptSummary).toContain(guidance)
+      expect(gameTwoDPromptContext).toContain(guidance)
+    }
+  })
+
+  it('organiza o guia por tarefas e documenta o fluxo automático de vidas', () => {
+    const docs = gameTwoDManifest.docs ?? ''
+    expect(docs).not.toMatch(/^###.*(?:Tier|v0\.)/m)
+    expect(docs).toContain('### Comece um projeto')
+    expect(docs).toContain('### Faça o jogo reagir')
+    expect(docs).toContain('Desenhar as vidas do sprite')
+    expect(docs).toContain('corações')
+    expect(docs).toContain('barra')
+    expect(docs).toContain('as vidas acabaram?')
+    expect(docs).toContain('Descrever o jogo para leitor de tela')
   })
 
   it('todo bloco visível explica sua finalidade em um tooltip', () => {

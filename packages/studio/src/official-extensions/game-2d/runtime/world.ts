@@ -429,7 +429,12 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
   // criar sprites sem parar (ex.: um tiro por quadro).
   var MAX_GROUP = 400;
   /** Cria um grupo vazio. */
-  function createGroup() { return { items: [] }; }
+  function createGroup() { return { items: [], _revision: 0 }; }
+  /** Marca uma mudança de pertencimento/ordem para varreduras com snapshot. */
+  function _touchGroup(group) {
+    if (!group) return;
+    group._revision = (typeof group._revision === 'number' ? group._revision : 0) + 1;
+  }
   /**
    * Cria um sprite (colorido OU com imagem, conforme opts) e o coloca no grupo.
    * Devolve o sprite. Acima do teto, descarta silenciosamente (nunca lança).
@@ -439,6 +444,7 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
     if (group.items.length >= MAX_GROUP) return null;
     var s = createSprite(opts);
     group.items.push(s);
+    _touchGroup(group);
     return s;
   }
   // Cria um TIRO (bolinha brilhante) no grupo. x/y = CENTRO; raio em px.
@@ -458,6 +464,7 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
     });
     s.skin = { kind: 'bullet', color: opts.color || '#9cff57' };
     group.items.push(s);
+    _touchGroup(group);
     return s;
   }
   /** Desenha o tiro: bolinha com brilho (glow). */
@@ -528,12 +535,17 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
   /** Quantos sprites o grupo tem agora. */
   function countGroup(group) { return (group && group.items) ? group.items.length : 0; }
   /** Esvazia o grupo (tira todos os sprites). */
-  function clearGroup(group) { if (group && group.items) group.items.length = 0; }
+  function clearGroup(group) {
+    if (group && group.items && group.items.length) {
+      group.items.length = 0;
+      _touchGroup(group);
+    }
+  }
   /** Tira um sprite específico do grupo (por referência). */
   function removeFromGroup(group, sprite) {
     if (!group || !group.items) return;
     var idx = group.items.indexOf(sprite);
-    if (idx !== -1) group.items.splice(idx, 1);
+    if (idx !== -1) { group.items.splice(idx, 1); _touchGroup(group); }
   }
   /**
    * Remove do grupo os sprites que saíram da tela (com uma margem). Para cada
@@ -543,14 +555,13 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
   function pruneOffscreen(ctx, group, margin, onLeave) {
     if (!ctx || !ctx.canvas || !group || !group.items) return;
     var m = typeof margin === 'number' ? margin : 40;
-    var w = stageW(ctx), h = stageH(ctx);
-    var left = camera.x, top = camera.y;
-    var right = left + w, bottom = top + h;
+    var visible = _visibleWorldRect(ctx);
     for (var i = group.items.length - 1; i >= 0; i--) {
       var s = group.items[i];
-      if (!s) { group.items.splice(i, 1); continue; }
-      if (s.x + s.w < left - m || s.x > right + m || s.y + s.h < top - m || s.y > bottom + m) {
+      if (!s) { group.items.splice(i, 1); _touchGroup(group); continue; }
+      if (s.x + s.w < visible.left - m || s.x > visible.right + m || s.y + s.h < visible.top - m || s.y > visible.bottom + m) {
         group.items.splice(i, 1);
+        _touchGroup(group);
         if (typeof onLeave === 'function') onLeave(s);
       }
     }
@@ -560,26 +571,86 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
    * fn(a, b). Varredura por quadro (NÃO registra handler como onOverlap — sem
    * teto de 32 e sem edge-trigger): use dentro do "a cada quadro". Itera em
    * ordem reversa p/ tolerar remoção dos sprites no corpo (tiro some, inimigo
-   * explode). Custo O(N×M) por quadro — os tetos de grupo seguram o tamanho.
+   * explode). Grupos grandes usam uma fase ampla por eixo X antes do teste AABB.
    */
+  function _overlapBroadPhase(firstItems, secondItems, sameGroup) {
+    if (firstItems.length * secondItems.length < 2048) return null;
+    var sortedSecond = [];
+    for (var j = 0; j < secondItems.length; j++) {
+      var second = secondItems[j];
+      if (!second) continue;
+      var sx = second.x, sy = second.y, sw = second.w, sh = second.h;
+      if (![sx, sy, sw, sh].every(Number.isFinite)) return null;
+      sortedSecond.push({ index: j, left: sx, right: sx + sw, top: sy, bottom: sy + sh });
+    }
+    sortedSecond.sort(function (left, right) {
+      return left.left - right.left || left.index - right.index;
+    });
+    var candidates = new Array(firstItems.length);
+    for (var i = 0; i < firstItems.length; i++) {
+      var first = firstItems[i];
+      if (!first) { candidates[i] = []; continue; }
+      var ax = first.x, ay = first.y, aw = first.w, ah = first.h;
+      if (![ax, ay, aw, ah].every(Number.isFinite)) return null;
+      var rightEdge = ax + aw;
+      var lo = 0, hi = sortedSecond.length;
+      while (lo < hi) {
+        var mid = (lo + hi) >> 1;
+        if (sortedSecond[mid].left < rightEdge) lo = mid + 1;
+        else hi = mid;
+      }
+      var js = [];
+      for (var k = 0; k < lo; k++) {
+        var bound = sortedSecond[k];
+        if (sameGroup && bound.index >= i) continue;
+        if (bound.right > ax && ay < bound.bottom && ay + ah > bound.top) js.push(bound.index);
+      }
+      js.sort(function (left, right) { return right - left; });
+      candidates[i] = js;
+    }
+    return candidates;
+  }
   function overlapGroups(a, b, fn) {
     if (!a || !a.items || !b || !b.items || typeof fn !== 'function') return;
     var sameGroup = a === b;
     var firstItems = a.items.slice();
     var secondItems = sameGroup ? firstItems : b.items.slice();
+    var firstMembers = new Set(firstItems);
+    var secondMembers = sameGroup ? firstMembers : new Set(secondItems);
+    var firstRevision = a._revision, secondRevision = b._revision;
+    var firstLength = a.items.length, secondLength = b.items.length;
+    var broadCandidates = _overlapBroadPhase(firstItems, secondItems, sameGroup);
+    function refreshMembership() {
+      if (a._revision !== firstRevision || a.items.length !== firstLength) {
+        firstMembers = new Set(a.items);
+        firstRevision = a._revision;
+        firstLength = a.items.length;
+        if (sameGroup) secondMembers = firstMembers;
+      }
+      if (!sameGroup && (b._revision !== secondRevision || b.items.length !== secondLength)) {
+        secondMembers = new Set(b.items);
+        secondRevision = b._revision;
+        secondLength = b.items.length;
+      }
+    }
     for (var i = firstItems.length - 1; i >= 0; i--) {
       var ai = firstItems[i];
-      if (!ai || a.items.indexOf(ai) === -1) continue;
+      refreshMembership();
+      if (!ai || !firstMembers.has(ai)) continue;
       var lastJ = sameGroup ? i - 1 : secondItems.length - 1;
-      for (var j = lastJ; j >= 0; j--) {
+      var candidateJs = broadCandidates ? broadCandidates[i] : null;
+      var cursor = candidateJs ? 0 : lastJ;
+      while (candidateJs ? cursor < candidateJs.length : cursor >= 0) {
+        var j = candidateJs ? candidateJs[cursor++] : cursor--;
         var bj = secondItems[j];
-        if (!bj || b.items.indexOf(bj) === -1) continue;
+        if (!bj || !secondMembers.has(bj)) continue;
         if (isColliding(ai, bj)) {
           fn(ai, bj);
+          refreshMembership();
           // Se o corpo REMOVEU ai (ex.: "remova o tiro"), ele não deve acertar mais
           // ninguém neste quadro — senão um tiro só derrubaria TODOS os inimigos
           // encostados. Se NÃO removeu, o laço segue (o tiro "perfura" de propósito).
-          if (a.items.indexOf(ai) === -1) break;
+          if (!firstMembers.has(ai)) break;
         }
       }
     }
@@ -590,7 +661,9 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
   // estável. everyFrames conta quadros; everySeconds usa o relógio compartilhado.
   var frameCounters = Object.create(null);
   function everyFrames(key, n) {
-    var step = (typeof n === 'number' && n > 0) ? Math.floor(n) : 1;
+    var step = (typeof n === 'number' && Number.isFinite(n) && n > 0)
+      ? Math.max(1, Math.floor(n))
+      : 1;
     var c = (frameCounters[key] || 0) + 1;
     frameCounters[key] = c;
     return c % step === 0;

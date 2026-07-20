@@ -591,7 +591,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
         ],
       },
       { type: 'field_name_picker', name: 'TARGET', text: 'saida', kind: 'dom-target' },
-      { type: 'field_input', name: 'NAME', text: 'conteudo' },
+      { type: 'field_name_picker', name: 'NAME', text: 'conteudo', kind: 'variable' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',

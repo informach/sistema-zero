@@ -60,4 +60,39 @@ describe('parseCSS — fidelidade do round-trip (5º review)', () => {
     const ir = parseCSS('.box { width: 200px; color: #3b82f6; }')
     expect(ir).toEqual([{ selector: '.box', declarations: { width: '200px', color: '#3b82f6' } }])
   })
+
+  it.each([
+    '.a { color: red; width:; }',
+    '.a { color: red; width }',
+    '.a { color:red; --x:; }',
+  ])('preserva uma regra inteira enquanto há uma declaração incompleta: %s', (css) => {
+    expect(parseCSS(css)).toEqual([{ type: 'rawCSS', code: css, advanced: true }])
+    expect(generateCSS(parseCSS(css)).trim()).toBe(css)
+  })
+
+  it('preserva o keyframe inteiro quando uma declaração está incompleta', () => {
+    const css = '@keyframes pulso { from { opacity: 0; width:; } to { opacity: 1; } }'
+    expect(parseCSS(css)).toEqual([{ type: 'rawCSS', code: css, advanced: true }])
+  })
+
+  it('mantém uma chave entre aspas como parte legítima do seletor', () => {
+    const css = '[data-x="}"] { color: red; }'
+    const ir = parseCSS(css)
+
+    expect(ir).toEqual([{ selector: '[data-x="}"]', declarations: { color: 'red' } }])
+    expect(generateCSS(ir)).toContain('[data-x="}"] {')
+  })
+
+  it('não agrega comentários CSS adjacentes em um comentário estruturado ambíguo', () => {
+    const css = '/* um *//* dois */'
+    expect(parseCSS(css)).toEqual([{ type: 'rawCSS', code: css, advanced: true }])
+    expect(generateCSS(parseCSS(css)).trim()).toBe(css)
+  })
+
+  it('reconhece o import canônico gerado pelo bloco Google Font', () => {
+    const original = [{ type: 'googleFont' as const, family: 'Press Start 2P' }]
+    const css = generateCSS(original)
+
+    expect(parseCSS(css)).toEqual(original)
+  })
 })

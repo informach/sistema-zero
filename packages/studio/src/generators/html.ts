@@ -1,5 +1,5 @@
-import type { HTMLNode, HTMLShell } from '#ir'
-import { HTML_ELEMENT_CATALOG } from '../html/catalog'
+import { type HTMLNode, type HTMLShell, htmlAttributeRejectionReason } from '#ir'
+import { HTML_ELEMENT_CATALOG, isPhrasingHTMLTag } from '../html/catalog'
 import { headContainsCanonicalScript } from '../html/wiring'
 import { escapeScriptContent, escapeStyleContent } from './escape'
 import { assertGeneratorDepth } from './js'
@@ -112,16 +112,8 @@ export function generateHTMLWithMap(opts: GenerateHTMLOptions): GenerateHTMLWith
     ? buildHeadFromShell(opts.shell, headExtraText)
     : buildDefaultHead(title, cssHref, cssPlacement, headExtraText)
 
-  let line = countLines(head) + 1 // primeira linha disponível para body
-  const pieces: string[] = []
-  for (const node of opts.body) {
-    const rendered = renderNode(node, 4, map, line)
-    const lines = countLines(rendered)
-    pieces.push(rendered)
-    // Join por '\n' (separador, não linha adicional).
-    line += lines
-  }
-  const bodyHtml = pieces.join('\n')
+  const bodyStartLine = countLines(head) + 1
+  const bodyHtml = renderNodesWithMap(opts.body, 4, map, bodyStartLine).code
 
   // Assets/wiring que vão no FIM do <body>.
   const bodyEnd: string[] = []
@@ -254,7 +246,30 @@ function renderNodesWithMap(
 ): { code: string; lines: number } {
   const pieces: string[] = []
   let line = startLine ?? 1
-  for (const node of nodes) {
+  for (let index = 0; index < nodes.length; index += 1) {
+    const node = nodes[index]
+    if (!node) continue
+    if (isPhrasingNode(node)) {
+      const run: HTMLNode[] = [node]
+      while (isPhrasingNode(nodes[index + 1])) {
+        index += 1
+        const sibling = nodes[index]
+        if (sibling) run.push(sibling)
+      }
+      const pad = ' '.repeat(indentSpaces)
+      let position = { line, column: indentSpaces + 1 }
+      const inline = run
+        .map((child) => {
+          const rendered = renderInline(child, map, position.line, position.column)
+          position = advanceHTMLPosition(position, rendered)
+          return rendered
+        })
+        .join('')
+      const renderedRun = `${pad}${inline}`
+      pieces.push(renderedRun)
+      line += countLines(renderedRun)
+      continue
+    }
     const rendered = renderNode(node, indentSpaces, map, startLine === undefined ? undefined : line)
     pieces.push(rendered)
     line += countLines(rendered)
@@ -306,14 +321,24 @@ function renderElement(
   // Conteúdo inline/misto (texto intercalado com elementos, ex.:
   // `<p>© <span></span> texto</p>`): renderiza tudo numa só linha para
   // preservar os espaços originais e manter o round-trip estável.
-  const hasTextChild = (node.children ?? []).some((c) => c.type === 'text')
-  if (hasTextChild) {
+  const renderAsInline =
+    (node.children ?? []).some((child) => child.type === 'text') ||
+    (node.children ?? []).every(isPhrasingNode)
+  if (renderAsInline) {
     const text = hasText ? escapeHtml(node.text ?? '') : ''
-    let column = pad.length + open.length + text.length + 1
+    let position = advanceHTMLPosition(
+      { line: startLine ?? 1, column: pad.length + 1 },
+      `${open}${text}`,
+    )
     const inline = (node.children ?? [])
       .map((child) => {
-        const rendered = renderInline(child, map, startLine, column)
-        column += rendered.length
+        const rendered = renderInline(
+          child,
+          map,
+          startLine === undefined ? undefined : position.line,
+          startLine === undefined ? undefined : position.column,
+        )
+        position = advanceHTMLPosition(position, rendered)
         return rendered
       })
       .join('')
@@ -327,6 +352,33 @@ function renderElement(
   ).code
   const textLine = hasText ? `${pad}  ${escapeHtml(node.text ?? '')}\n` : ''
   return `${pad}${open}\n${textLine}${inner}\n${pad}${close}`
+}
+
+function isPhrasingNode(node: HTMLNode | undefined): node is HTMLNode {
+  if (!node) return false
+  if (node.type === 'text' || node.type === 'comment' || node.type === 'canvas') return true
+  if (node.type !== 'element') return false
+  return isPhrasingHTMLTag(node.tag)
+}
+
+interface HTMLPosition {
+  line: number
+  column: number
+}
+
+/** Avança uma posição 1-indexed pelo texto exato que acabou de ser emitido. */
+function advanceHTMLPosition(position: HTMLPosition, rendered: string): HTMLPosition {
+  const lastBreak = rendered.lastIndexOf('\n')
+  if (lastBreak < 0) return { line: position.line, column: position.column + rendered.length }
+
+  let breaks = 0
+  for (let index = rendered.indexOf('\n'); index >= 0; index = rendered.indexOf('\n', index + 1)) {
+    breaks += 1
+  }
+  return {
+    line: position.line + breaks,
+    column: rendered.length - lastBreak,
+  }
 }
 
 function recordHTMLNode(
@@ -349,7 +401,7 @@ function recordHTMLNode(
   )
 }
 
-/** Renderiza um nó "inline" (sem quebras de linha nem indentação). */
+/** Renderiza um nó inline, preservando inclusive quebras autoradas no conteúdo. */
 function renderInline(
   node: HTMLNode,
   map?: SourceMapBuilder,
@@ -367,12 +419,14 @@ function renderInline(
     else {
       const open = `<${node.tag}${attrs}>`
       const text = node.text ? escapeHtml(node.text) : ''
-      let childColumn =
-        startColumn === undefined ? undefined : startColumn + open.length + text.length
+      let childPosition =
+        line === undefined || startColumn === undefined
+          ? undefined
+          : advanceHTMLPosition({ line, column: startColumn }, `${open}${text}`)
       const inner = (node.children ?? [])
         .map((child) => {
-          const childRendered = renderInline(child, map, line, childColumn)
-          if (childColumn !== undefined) childColumn += childRendered.length
+          const childRendered = renderInline(child, map, childPosition?.line, childPosition?.column)
+          if (childPosition) childPosition = advanceHTMLPosition(childPosition, childRendered)
           return childRendered
         })
         .join('')
@@ -380,7 +434,8 @@ function renderInline(
     }
   }
   if (map && node.__id && line !== undefined && startColumn !== undefined) {
-    map.record(node.__id, 'index.html', line, line, startColumn, startColumn + rendered.length)
+    const end = advanceHTMLPosition({ line, column: startColumn }, rendered)
+    map.record(node.__id, 'index.html', line, end.line, startColumn, end.column)
   }
   return rendered
 }
@@ -391,63 +446,6 @@ function escapeCommentText(text: string): string {
   return withoutTerminator.endsWith('-') ? `${withoutTerminator} ` : withoutTerminator
 }
 
-// Nome de atributo HTML válido: letra/underscore/dois-pontos inicial, depois
-// letras, dígitos, hífen, ponto, dois-pontos. Atributos com nome fora disso
-// (ex.: vindos de um parse adversário) são descartados — o valor já é escapado,
-// mas um nome não validado poderia injetar tokens fora do par chave="valor".
-const VALID_ATTR_NAME = /^[A-Za-z_:][A-Za-z0-9_:.-]*$/
-
-/**
- * Atributos que carregam URL: o VALOR é navegado/baixado pelo navegador, então
- * um esquema `javascript:`/`vbscript:`/`data:text/html` ali EXECUTA código. O
- * escape de `&"<>` não protege contra isso (a URL é um valor válido), por isso
- * o esquema é filtrado por allowlist em `renderAttrs`. Lista derivada dos
- * atributos URL do HTML (e SVG `xlink:href`/`href`) que disparam navegação,
- * submissão ou fetch de recurso.
- */
-const URL_ATTRS: ReadonlySet<string> = new Set([
-  'href',
-  'src',
-  'xlink:href',
-  'formaction',
-  'action',
-  'poster',
-  'background',
-  'cite',
-  'longdesc',
-  'data',
-  'srcset',
-  'ping',
-  'manifest',
-])
-
-/**
- * Esquema (protocolo) NÃO permitido num valor de URL. `javascript:`/`vbscript:`
- * executam código; `data:text/html`/`data:application/xhtml` renderizam markup
- * com script no contexto do documento. Tudo barrado ANTES de comparar (a URL é
- * só descartada). Aceitamos data: de IMAGEM (`data:image/...`), comum em ícones.
- */
-function isDangerousUrl(value: string): boolean {
-  // Esquema = sequência antes do primeiro ':' SEM '/', '?' ou '#' no caminho —
-  // assim `caminho/arq.png`, `#ancora`, `//cdn/x` e `?q=1` (relativos) passam.
-  // Caracteres de controle (incl. \t \n \r, que o navegador IGNORA dentro do
-  // esquema: `java\tscript:`) são removidos antes de medir o esquema.
-  // biome-ignore lint/suspicious/noControlCharactersInRegex: intencional - remover os caracteres de controle (que o navegador ignora no esquema) e o que fecha o bypass java<TAB>script:
-  const cleaned = value.replace(/[\u0000-\u0020]/g, '').toLowerCase()
-  const schemeMatch = /^([a-z][a-z0-9+.-]*):/.exec(cleaned)
-  if (!schemeMatch) return false // relativo / âncora / protocolo-relativo `//` → ok
-  const scheme = schemeMatch[1]
-  if (scheme === 'http' || scheme === 'https' || scheme === 'mailto' || scheme === 'tel') {
-    return false
-  }
-  if (scheme === 'data') {
-    // Só data: de imagem é aceito (ícone embutido); data:text/html etc. barrado.
-    return !cleaned.startsWith('data:image/')
-  }
-  // Qualquer outro esquema (javascript:, vbscript:, file:, blob:, …) é barrado.
-  return true
-}
-
 /**
  * CHOKEPOINT DE SEGURANÇA: todo atributo de elemento emitido nos arquivos do
  * aluno (preview de origem nula E site exportado para uma origem real) passa por
@@ -455,8 +453,8 @@ function isDangerousUrl(value: string): boolean {
  * estranho). Duas defesas, além do escape de `&"<>` do valor:
  * 1. DESCARTA handlers inline (`on*`: onclick/onerror/onload/…) — eles executam
  *    JS e o escape do valor não os neutraliza (o nome é que é perigoso).
- * 2. Para atributos que carregam URL (ver {@link URL_ATTRS}), REJEITA valores
- *    cujo esquema não esteja na allowlist ({@link isDangerousUrl}) — barra
+ * 2. Para atributos que carregam URL, REJEITA valores cujo esquema não esteja
+ *    na allowlist — barra
  *    `javascript:`/`vbscript:`/`data:text/html`, preservando URLs http(s),
  *    relativas, âncoras (`#x`) e protocolo-relativas (`//cdn`).
  * O escape-hatch AUDITADO para markup avançado continua sendo o nó `rawHTML`
@@ -469,12 +467,7 @@ function renderAttributeValues(id?: string, attrs?: Record<string, string>): str
   if (attrs) {
     for (const [k, v] of Object.entries(attrs)) {
       if (k.toLowerCase() === 'id') continue
-      if (!VALID_ATTR_NAME.test(k)) continue
-      // Handler inline (onclick, onerror, onload, …): descartado sempre.
-      if (/^on/i.test(k)) continue
-      // Atributo de URL com esquema perigoso (javascript:, data:text/html, …):
-      // descartado. Comparação case-insensitive no nome (HTML não diferencia).
-      if (URL_ATTRS.has(k.toLowerCase()) && isDangerousUrl(v)) continue
+      if (htmlAttributeRejectionReason(k, v)) continue
       parts.push(`${k}="${escapeAttr(v)}"`)
     }
   }

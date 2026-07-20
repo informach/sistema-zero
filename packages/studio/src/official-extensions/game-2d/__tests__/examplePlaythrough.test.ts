@@ -28,6 +28,7 @@ interface CapturedSprite {
   w: number
   h: number
   hp?: number
+  blinkFrames?: number
   angle?: number
   anim?: unknown
   vx?: number
@@ -312,6 +313,11 @@ function exampleHarness(example: ExtensionExample, random: () => number = Math.r
       window.__capturedScores['Vidas:'] = value;
       return originalDrawHearts.apply(window.SZGame2D, arguments);
     };
+    var originalDrawSpriteHealth = window.SZGame2D.drawSpriteHealth;
+    window.SZGame2D.drawSpriteHealth = function (ctx, sprite) {
+      window.__capturedScores['Vidas:'] = window.SZGame2D.getHealth(sprite);
+      return originalDrawSpriteHealth.apply(window.SZGame2D, arguments);
+    };
   `
   const executable = `with (window) { ${gameTwoDRuntime}\n${instrumentation}\n${generated} }`
   new Function('window', 'document', 'requestAnimationFrame', 'cancelAnimationFrame', executable)(
@@ -557,6 +563,7 @@ describe('playthrough dos exemplos exatos do Jogo 2D', () => {
     const restartedAsteroids = game.groups.at(-1)
     for (let impact = 0; impact < 6 && !game.api.sceneIs('perdeu'); impact += 1) {
       if (restartedShip && restartedAsteroids) {
+        restartedShip.blinkFrames = 0
         game.api.spawn(restartedAsteroids, {
           x: restartedShip.x,
           y: restartedShip.y,
@@ -646,6 +653,7 @@ describe('playthrough dos exemplos exatos do Jogo 2D', () => {
 
     for (let life = 0; life < 3; life += 1) {
       if (dino && obstacles) {
+        dino.blinkFrames = 0
         game.api.spawn(obstacles, {
           x: dino.x,
           y: dino.y,

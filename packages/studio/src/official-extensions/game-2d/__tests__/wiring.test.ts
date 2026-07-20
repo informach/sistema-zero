@@ -63,7 +63,10 @@ function spyCtx(rec: Rec) {
 }
 
 /** Compila a IR do statement e RODA o JS resultante no runtime real com o ctx espião. */
-function drawViaGenerator(stmt: JSStatement): Rec {
+function drawViaGenerator(
+  stmt: JSStatement,
+  variables: { jogador?: { hp?: number; hpMax?: number } } = {},
+): Rec {
   const win = {
     addEventListener() {},
     performance: { now: () => 0 },
@@ -74,7 +77,7 @@ function drawViaGenerator(stmt: JSStatement): Rec {
   const api = win.SZGame2D as Record<string, unknown>
   const rec: Rec = { fillText: [], fillRect: [], fill: 0, moveTo: [], fillStyle: [], textAlign: [] }
   const code = compileStatements([stmt], 0)
-  new Function('SZGame2D', 'ctx', code)(api, spyCtx(rec))
+  new Function('SZGame2D', 'ctx', 'jogador', code)(api, spyCtx(rec), variables.jogador)
   return rec
 }
 
@@ -135,6 +138,43 @@ describe('g2d — fiação bloco→gerador→runtime (executa de verdade)', () =
     // O 1º coração começa perto de (20,30): moveTo em (x + s/2, y + s*0.3) = (31, 36.6).
     expect(rec.moveTo[0]?.[0]).toBeCloseTo(31, 5)
     expect(rec.moveTo[0]?.[1]).toBeCloseTo(36.6, 5)
+  })
+
+  it('drawSpriteHealth lê as vidas do sprite e desenha corações automaticamente', () => {
+    const stmt = {
+      type: 'g2d:drawSpriteHealth',
+      ctxVar: 'ctx',
+      spriteVar: 'jogador',
+      style: 'hearts',
+      x: N(20),
+      y: N(30),
+      size: N(22),
+      color: '#ff0000',
+    } as unknown as JSStatement
+    expect(compileStatements([stmt], 0).trim()).toBe(
+      'SZGame2D.drawSpriteHealth(ctx, jogador, "hearts", 20, 30, 22, "#ff0000");',
+    )
+
+    const rec = drawViaGenerator(stmt, { jogador: { hp: 3, hpMax: 5 } })
+    expect(rec.fill).toBe(3)
+    expect(rec.moveTo[0]?.[0]).toBeCloseTo(31, 5)
+  })
+
+  it('drawSpriteHealth usa tamanho como largura e altura proporcional no formato barra', () => {
+    const stmt = {
+      type: 'g2d:drawSpriteHealth',
+      ctxVar: 'ctx',
+      spriteVar: 'jogador',
+      style: 'bar',
+      x: N(11),
+      y: N(22),
+      size: N(160),
+      color: '#00ff00',
+    } as unknown as JSStatement
+
+    const rec = drawViaGenerator(stmt, { jogador: { hp: 3, hpMax: 4 } })
+    expect(rec.fillRect).toContainEqual([11, 22, 160, 16])
+    expect(rec.fillRect).toContainEqual([11, 22, 120, 16])
   })
 
   it('drawBar: valor 3/10 em (11,22) tam 44×8 → fundo cheio + preenchimento 30%', () => {

@@ -18,7 +18,7 @@ import { GAME_TWO_D_API_KEYS } from '../runtimeContract'
  * Auditoria GENÉRICA de todos os blocos da extensão Jogo 2D — um caso por def,
  * sem fixtures à mão. Para cada bloco, com os valores DEFAULT dos campos:
  *
- *   1. def → IR: o bloco instanciado dentro do frame de Comportamento vira um
+ *   1. def → IR: o bloco instanciado na área indicada pelo contrato vira um
  *      nó g2d (não é ignorado como rascunho nem degrada para rawJS) e a IR
  *      valida no schema estrutural do statement (drift do zod). A validação
  *      semântica de referências exige as declarações vizinhas e tem suíte própria.
@@ -92,7 +92,7 @@ function loadRuntimeKeys(): Set<string> {
   return new Set(Object.keys(api))
 }
 
-/** Instancia o bloco com defaults dentro do frame de Comportamento e coleta a IR. */
+/** Instancia o bloco com defaults na área indicada pelo contrato e coleta a IR. */
 function buildIrFor(type: string, kind: 'statement' | 'expr'): JSStatement[] {
   const ws = new Blockly.Workspace()
   try {

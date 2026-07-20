@@ -11,7 +11,7 @@ import {
 export const gameKit3DManifest: ExtensionManifest = {
   id: 'game-3d-advanced',
   name: 'Jogo 3D Avançado',
-  version: '0.8.0',
+  version: '0.8.2',
   description:
     'A base de um jogo 3D profissional, portada de um curso de engine. Um SANDBOX 3D completo. Entidades com máquina de estados que ANIMA o boneco .glb sozinha a cada estado; física por TIPO (bola quica, personagem não, gelo escorrega) com pulo, rampas e plataformas; peças, modelos, luz e névoa; câmera que segue/orbita/1ª pessoa com girar, zoom e tremor, e o WASD sempre relativo a ela; partículas; enxames com pool; vizinhança por grade; combate, fala, cronômetro, sorteio semeado, HUD e música.',
   category: 'games',
@@ -165,7 +165,9 @@ O motor de entidade tem física de verdade. Feita à mão, sem biblioteca:
   no começo; o motor aceita até 8 luzes extras para proteger o desempenho;
   **Luz do ambiente** deixa o mundo mais claro ou escuro (modo noturno/caverna);
   **Névoa** faz o longe sumir numa cor (mistério); **Trocar o céu** muda o
-  degradê em runtime (dia → pôr do sol → noite).
+  degradê em runtime (dia → pôr do sol → noite). Luz, ambiente e névoa são
+  persistentes: use na preparação ou em uma reação que acontece uma vez, nunca
+  dentro de um laço.
 
 ### A câmera (🎥). E por que o WASD sempre acerta
 

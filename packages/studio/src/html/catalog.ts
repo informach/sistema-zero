@@ -413,6 +413,11 @@ export function htmlElementForTag(tag: string): HTMLElementDescriptor | undefine
   return ELEMENT_BY_TAG.get(tag)
 }
 
+/** Verdade única para decidir se um elemento participa de texto corrido. */
+export function isPhrasingHTMLTag(tag: string): boolean {
+  return htmlElementForTag(tag)?.categories.includes('phrasing') === true
+}
+
 export function htmlElementForBlock(blockType: string): HTMLElementDescriptor | undefined {
   return ELEMENT_BY_BLOCK.get(blockType)
 }

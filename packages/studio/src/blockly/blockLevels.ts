@@ -1,15 +1,16 @@
 import type { BlockLevel } from '#core'
 import { HTML_ADVANCED_BLOCK_TYPES, HTML_INTERMEDIATE_BLOCK_TYPES } from '../html/catalog'
 import { CANVAS3D_INTERMEDIATE_BLOCK_TYPES } from '../three/canvas3dContract'
+import { resolveProgrammingBlockLevel } from './programmingContract'
 
 /**
  * Nível de dificuldade POR BLOCO (curadoria da paleta do Estúdio) — a fonte da
  * verdade da progressão. Reforma 2D/3D (07/2026): a escada virou 6 degraus
  * (dificuldade × eixo, na ordem ini-2d < ini-3d < int-2d < int-3d < av-2d <
  * av-3d — a MESMA da carreira do aluno). Filosofia (decisão da usuária):
- * - **Iniciante 2D** = FACILITADORES (blocos "de um toque" com resultado visual) +
- *   um kit essencial de lógica (Se, variáveis, repetir, comparar, valores básicos).
- *   É o DEFAULT: todo bloco NÃO listado abaixo é iniciante-2d.
+ * - **Iniciante 2D** = TODOS os blocos do Jogo 2D (`sz_g2d_*`) + facilitadores
+ *   e um kit essencial de lógica. As aulas filtram o subconjunto de Jogo 2D que
+ *   aparece; o nível não esconde peças da extensão.
  * - **Iniciante 3D** = a PORTA DE ENTRADA do 3D: todos os blocos do Jogo 3D
  *   (`sz_g3d_*`) — a aula continua escolhendo quais deles revelar.
  * - **Intermediário 2D** = programação "real" guiada (variáveis avulsas, laços,
@@ -28,9 +29,9 @@ import { CANVAS3D_INTERMEDIATE_BLOCK_TYPES } from '../three/canvas3dContract'
  * no tier certo) é travada por `blockLevels.test.ts`.
  *
  * ⚠️ Os frames (🗂️ Áreas do projeto) NÃO entram aqui — são sempre visíveis.
- * ⚠️ Adicionou um bloco? Decida o degrau: core/g2d intermediário → `INTERMEDIARIO_2D`;
- * core/g2d avançado → `AVANCADO_2D`; senão os
- * defaults por prefixo decidem (g3d→ini-3d, gk→int-2d, w3d→int-3d,
+ * ⚠️ Adicionou um bloco? Todo `sz_g2d_*` fica no iniciante-2d. Para o core,
+ * decida se entra nos conjuntos intermediário/avançado; senão os defaults por
+ * prefixo decidem (g3d→ini-3d, gk→int-2d, w3d→int-3d,
  * g3k/t3d→av-3d, resto→ini-2d) — o teste de conformidade cobra.
  */
 
@@ -76,21 +77,6 @@ const INTERMEDIARIO_2D: ReadonlySet<string> = new Set<string>([
   'sz_css_opacity',
   'sz_css_z_index',
   'sz_css_background_image',
-  // DOM — evento por nome + busca/leitura/escrita de elementos (getters/setters)
-  'sz_js_on_event_named',
-  'sz_js_get_element_by_id',
-  'sz_val_get_element',
-  'sz_val_query_select',
-  'sz_js_query_selector',
-  'sz_js_set_property',
-  'sz_js_set_style',
-  'sz_js_set_attribute',
-  'sz_js_set_property_var',
-  'sz_js_get_property',
-  'sz_js_get_attribute',
-  'sz_js_class_op',
-  'sz_js_create_element',
-  'sz_js_append_child',
   // Canvas — ajustes/texto/entrada + laço de animação (desenho guiado).
   // Preparar a tela e escolher a cor ficam no iniciante: sem os dois, as formas
   // prontas daquele degrau não formavam um primeiro projeto executável.
@@ -110,103 +96,12 @@ const INTERMEDIARIO_2D: ReadonlySet<string> = new Set<string>([
   'sz_input_key_pressed',
   'sz_input_pointer_x',
   'sz_input_pointer_y',
-  // Valores — além do kit essencial iniciante
-  'sz_val_color_alpha',
-  'sz_val_null',
-  'sz_val_ternary',
-  'sz_val_window_width',
-  'sz_val_window_height',
-  'sz_val_canvas_width',
-  'sz_val_canvas_height',
-  'sz_val_random_float',
-  'sz_val_date_part',
-  'sz_val_math_pi',
-  'sz_val_color_hsl',
-  'sz_val_this',
-  // Matemática básica
-  'sz_math_arithmetic',
-  'sz_math_function',
-  'sz_math_minmax',
-  // JS — variável avulsa (let vazio) + laços "de verdade" + listas
-  'sz_js_var_declare',
-  'sz_js_while',
-  'sz_js_do_while',
-  'sz_js_break',
-  'sz_js_continue',
-  'sz_js_for_of',
-  'sz_js_for_range',
-  'sz_js_for_each',
-  'sz_js_array_push',
-  'sz_js_array_remove',
-  'sz_js_array_splice',
-  'sz_val_array',
-  'sz_val_array_length',
-  'sz_val_array_index',
-  'sz_val_array_last',
-  'sz_val_join',
-  // Funções
-  'sz_js_function',
-  'sz_js_call_function',
-  'sz_val_call_function',
-  'sz_js_return',
-  'sz_js_return_void',
-  'sz_val_arg',
-  // ── EXTENSÃO Jogo 2D — getters/setters/grupos ──────────────────────────────
-  // NOTA: os grupos básicos (criar/atualizar/desenhar/tirar-da-tela/tirar-do-grupo),
-  // os getters de posição (posição x/y, centro x/y), o aleatório NA TELA (x/y) e o
-  // "Limpar a tela" ficam no INICIANTE — são o que o 1º jogo (Nave contra Asteroides)
-  // usa; sem eles o iniciante não monta um shooter simples de ponta a ponta.
-  // "Mudar a posição/velocidade do sprite" também são INICIANTE (verbos básicos de
-  // "fazer o boneco andar" — moram na 1ª categoria 🎮 Sprites; escondê-los deixava
-  // o iniciante sem os comandos mais elementares).
-  'sz_g2d_sprite_w',
-  'sz_g2d_sprite_h',
-  'sz_g2d_sprite_vx',
-  'sz_g2d_sprite_vy',
-  'sz_g2d_sprite_speed',
-  'sz_g2d_is_moving',
-  'sz_g2d_is_moving_h',
-  'sz_g2d_is_moving_v',
-  'sz_g2d_for_each_in_group',
-  'sz_g2d_count_group',
-  'sz_g2d_clear_group',
-  'sz_g2d_bring_to_front',
-  'sz_g2d_send_to_back',
-  'sz_g2d_sprite_angle',
-  'sz_g2d_point_sprite',
-  // "Girar o sprite N graus" coabita com "Apontar para X graus" (mexer no ângulo
-  // do desenho não é mais difícil que apontar; um sem o outro confundia).
-  'sz_g2d_rotate_sprite',
-  'sz_g2d_set_opacity',
-  'sz_g2d_set_size',
-  'sz_g2d_scale_sprite',
-  'sz_g2d_tile_at',
-  'sz_g2d_set_camera',
-  'sz_g2d_camera_x',
-  'sz_g2d_camera_y',
-  'sz_g2d_get_health',
-  // NOTA: "Carregar folha de quadros" é INICIANTE — é o ÚNICO declarador de folha,
-  // e os blocos de animar (Animar/Estado/Auto-animar) já são iniciante; sem ele a
-  // subcat 🎬 Animação abriria com o seletor de folha vazio no degrau iniciante.
-  'sz_g2d_angle_to',
-  'sz_g2d_distance',
-  'sz_g2d_random_between',
-  'sz_g2d_random_chance',
-  // Inimigos: o ajuste fino por parâmetro é sintonia, não o caminho feliz.
-  'sz_g2d_enemy_type_param',
-  // ...e o dano de contato CRU é um getter (como "a vida do sprite"): o caminho
-  // feliz é "Machucar o sprite com o dano", que já usa o valor por dentro.
-  'sz_g2d_enemy_damage',
+  // A progressão de Programação vive integralmente em programmingContract.ts.
 ])
 
 const AVANCADO_2D: ReadonlySet<string> = new Set<string>([
   // ── CORE ──────────────────────────────────────────────────────────────────
   ...HTML_ADVANCED_BLOCK_TYPES,
-  // ⏳ Assíncrono — promessas/await (concorrência de verdade)
-  'sz_js_await',
-  'sz_val_new_promise',
-  'sz_val_promise_all',
-  'sz_js_set_timeout_call',
   // CSS — recursos avançados (variável, grid, transição, transform, 3D, animação, responsivo)
   'sz_css_var',
   'sz_css_grid',
@@ -220,12 +115,6 @@ const AVANCADO_2D: ReadonlySet<string> = new Set<string>([
   'sz_css_keyframe_step',
   'sz_css_apply_animation',
   'sz_css_media_query',
-  // DOM — baixo nível
-  'sz_js_event_method',
-  'sz_js_query_selector_all',
-  'sz_js_set_style_text',
-  'sz_js_set_dataset',
-  'sz_js_create_element_ns',
   // Canvas — traçado "na mão", transformações, imagem crua, gradiente/sombra/tracejado
   'sz_canvas_gradient',
   'sz_canvas_shadow',
@@ -252,73 +141,11 @@ const AVANCADO_2D: ReadonlySet<string> = new Set<string>([
   // cobre o caminho infantil; estas peças expõem a mecânica de baixo nível.
   'sz_canvas_request_frame',
   'sz_canvas_request_frame_do',
-  'sz_val_image',
-  'sz_js_new_image',
-  'sz_js_image_onload',
-  'sz_js_image_onerror',
-  'sz_js_element_onclick',
-  // Valores — dados/estruturas + baixo nível
-  'sz_val_device_pixel_ratio',
-  'sz_val_system_dark',
-  'sz_val_perf_now',
-  'sz_val_vector2d',
-  'sz_val_vector3d',
-  'sz_val_array_map',
-  'sz_val_array_find',
-  'sz_val_array_filter',
-  'sz_val_concat_arrays',
-  'sz_val_shuffle',
-  'sz_val_dataset',
-  'sz_val_class_contains',
-  // Matemática — trigonometria / vetorial
-  'sz_math_trig',
-  'sz_math_atan2',
-  'sz_val_distance',
-  'sz_math_hypot',
-  'sz_math_angle_convert',
-  // JS — controle de fluxo avançado + dados + web
-  'sz_js_switch',
-  'sz_js_case',
-  'sz_js_try_catch',
-  'sz_js_throw',
-  'sz_js_object_assign',
-  'sz_js_fetch_json',
-  // Classes (OOP) — todos
-  'sz_js_class',
-  'sz_js_constructor',
-  'sz_js_class_method',
-  'sz_js_new_var',
-  'sz_val_new',
-  'sz_js_super_ctor',
-  'sz_js_super_method',
-  'sz_js_set_this_prop',
-  'sz_val_this_prop',
-  // Objetos — todos
-  'sz_val_object',
-  'sz_val_object_op',
-  'sz_val_index_get',
-  'sz_val_member_get',
-  'sz_val_member_get_optional',
-  'sz_js_member_set',
-  'sz_js_index_set',
-  'sz_val_method_on',
-  'sz_js_method_on',
+  // A progressão de Programação vive integralmente em programmingContract.ts.
   // Avançado — código cru
   'sz_adv_raw_html',
   'sz_adv_raw_css',
   'sz_adv_raw_js',
-  // ── EXTENSÃO Jogo 2D — física manual / baixo nível ─────────────────────────
-  'sz_g2d_apply_velocity',
-  'sz_g2d_set_gravity',
-  'sz_g2d_thrust',
-  'sz_g2d_apply_friction',
-  'sz_g2d_collides',
-  'sz_g2d_circle_collides',
-  'sz_g2d_draw_frame',
-  'sz_g2d_prune_old',
-  'sz_g2d_draw_hitbox',
-  'sz_g2d_show_fps',
-  'sz_g2d_play_sound',
   // ── Jogo 2D Avançado — peças de MOTOR, não os kits prontos ───────────────
   // O caminho feliz e os kits de gênero continuam no intermediário. Este
   // recorte evita despejar pooling, estruturas e física manual junto dos
@@ -417,12 +244,16 @@ const G3D_FLOOR: BlockLevel = 'iniciante-3d'
 const W3D_LEVEL: BlockLevel = 'intermediario-3d'
 
 /**
- * Degrau de um bloco pelo `type`. Sets (exceções nomeadas) primeiro, depois os
- * defaults por prefixo de extensão; todo o resto (facilitadores + kit essencial
- * de lógica) é iniciante-2d.
+ * Degrau de um bloco pelo `type`. Regras invariantes por prefixo vêm primeiro,
+ * seguidas dos sets de exceções e dos demais defaults; todo o resto
+ * (facilitadores + kit essencial de lógica) é iniciante-2d.
  */
 export function resolveBlockLevel(type: string): BlockLevel {
+  // A aula, não o nível global, escolhe quais peças do Jogo 2D básico aparecem.
+  if (type.startsWith('sz_g2d_')) return 'iniciante-2d'
   if (type.startsWith('sz_g3d_')) return G3D_FLOOR
+  const programmingLevel = resolveProgrammingBlockLevel(type)
+  if (programmingLevel) return programmingLevel
   if (AVANCADO_3D.has(type)) return 'avancado-3d'
   if (AVANCADO_2D.has(type)) return 'avancado-2d'
   if (INTERMEDIARIO_3D.has(type)) return 'intermediario-3d'

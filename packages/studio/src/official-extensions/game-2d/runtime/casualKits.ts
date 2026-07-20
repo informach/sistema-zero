@@ -81,8 +81,30 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
     }
     return { platform: null, perfect: false };
   }
+  function shSyncStageSize(game) {
+    var nextW = stageW(game.ctx), nextH = stageH(game.ctx);
+    if (!nextW || !nextH || (nextW === game.w && nextH === game.h)) return;
+    var scaleX = nextW / game.w, scaleY = nextH / game.h;
+    for (var i = 0; i < game.platforms.length; i++) {
+      game.platforms[i].x *= scaleX;
+      game.platforms[i].w *= scaleX;
+    }
+    for (var j = 0; j < game.sticks.length; j++) {
+      game.sticks[j].x *= scaleX;
+      game.sticks[j].length *= scaleX;
+    }
+    for (var k = 0; k < game.trees.length; k++) game.trees[k].x *= scaleX;
+    game.heroX *= scaleX;
+    game.heroY *= scaleY;
+    game.sceneOffset *= scaleX;
+    game.paddingX *= scaleX;
+    game.w = nextW;
+    game.h = nextH;
+    game.cfg = shConfig(nextW, nextH);
+  }
   function updateStickHero(game) {
     if (!game) return;
+    shSyncStageSize(game);
     var cfg = game.cfg;
     var down = pointer.down;
     var pressed = down && !game.wasDown;
@@ -294,8 +316,25 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
     return game;
   }
   function blCircle(ctx, x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); }
+  function blSyncStageSize(game) {
+    var nextW = stageW(game.ctx), nextH = stageH(game.ctx);
+    if (!nextW || !nextH || (nextW === game.w && nextH === game.h)) return;
+    var scaleX = nextW / game.w, scaleY = nextH / game.h;
+    for (var i = 0; i < game.trees.length; i++) {
+      game.trees[i].x *= scaleX;
+      game.trees[i].th *= scaleY;
+    }
+    game.dist *= scaleX;
+    game.hVel *= scaleX;
+    game.by *= scaleY;
+    game.groundY *= scaleY;
+    game.vVel *= scaleY;
+    game.w = nextW;
+    game.h = nextH;
+  }
   function updateBalloon(game) {
     if (!game) return;
+    blSyncStageSize(game);
     var w = game.w, h = game.h;
     var down = pointer.down;
     var pressed = down && !game.wasDown;

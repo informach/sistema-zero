@@ -50,7 +50,9 @@ interface Harness {
 
 function loadRuntime(): Harness {
   const listeners: Record<string, Listener[]> = {}
-  const rafQueue: Array<(ts: number) => void> = []
+  const rafQueue: Array<{ id: number; cb: (ts: number) => void }> = []
+  const canceledFrames = new Set<number>()
+  let nextFrameId = 1
   const clock = { value: 0 }
   const win = {
     addEventListener(name: string, fn: Listener) {
@@ -62,10 +64,16 @@ function loadRuntime(): Harness {
     SZGame2D: undefined,
   } as unknown as Record<string, unknown>
   const raf = (cb: (ts: number) => void) => {
-    rafQueue.push(cb)
-    return rafQueue.length
+    const id = nextFrameId++
+    rafQueue.push({ id, cb })
+    return id
   }
-  new Function('window', 'requestAnimationFrame', gameTwoDRuntime)(win, raf)
+  const cancelRaf = (id: number) => canceledFrames.add(id)
+  new Function('window', 'requestAnimationFrame', 'cancelAnimationFrame', gameTwoDRuntime)(
+    win,
+    raf,
+    cancelRaf,
+  )
   const api = win.SZGame2D as unknown as Api
   if (!api) throw new Error('runtime não montou window.SZGame2D')
   return {
@@ -79,8 +87,12 @@ function loadRuntime(): Harness {
     nextFrame: (ts) => {
       clock.value = ts
       const batch = rafQueue.splice(0)
-      if (!batch.length) throw new Error('nenhum quadro agendado')
-      for (const cb of batch) cb(ts)
+      const active = batch.filter((frame) => !canceledFrames.has(frame.id))
+      if (!active.length) {
+        if (api.isPaused()) return
+        throw new Error('nenhum quadro agendado')
+      }
+      for (const frame of active) frame.cb(ts)
     },
   }
 }

@@ -219,7 +219,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_start_spawner',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'A cada %1 s, nascer 1 do molde %2 %3',
     args0: [
       { type: 'input_value', name: 'SEC', check: 'JSValue' },
@@ -1254,7 +1254,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_start_timer',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Começar a contagem de %1 s',
     args0: [{ type: 'input_value', name: 'SECONDS', check: 'JSValue' }],
     inputsInline: true,
@@ -1468,7 +1468,7 @@ export const gameKit3DBlocks = [
   // ---- 💡 Luz & céu ----
   {
     type: 'sz_g3k_add_light',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Pôr uma luz %1 em x %2 y %3 z %4 com força %5',
     args0: [
       { type: 'field_colour_sz', name: 'COLOR', colour: '#fff1b8' },
@@ -1486,7 +1486,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_set_ambient',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Luz do ambiente com força %1 (0 = escuro, 1 = claro)',
     args0: [{ type: 'input_value', name: 'INTENSITY', check: 'JSValue' }],
     inputsInline: true,
@@ -1494,11 +1494,11 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Muda o quanto o mundo inteiro é iluminado. Baixe para modo noturno/caverna (aí as luzes que você põe fazem diferença).',
+      'Muda o quanto o mundo inteiro é iluminado. Baixe para modo noturno/caverna (aí as luzes que você põe fazem diferença). Use na preparação ou em uma reação que acontece uma vez, nunca a cada quadro.',
   },
   {
     type: 'sz_g3k_set_fog',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Névoa %1 de %2 até %3 de distância',
     args0: [
       { type: 'field_colour_sz', name: 'COLOR', colour: '#9ca3af' },
@@ -1510,7 +1510,7 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Enche o ar de névoa: o que está longe some na cor escolhida. Dá mistério e esconde a borda do mundo.',
+      'Enche o ar de névoa: o que está longe some na cor escolhida. Dá mistério e esconde a borda do mundo. Use na preparação ou em uma reação que acontece uma vez, nunca a cada quadro.',
   },
   {
     type: 'sz_g3k_set_sky_photo',

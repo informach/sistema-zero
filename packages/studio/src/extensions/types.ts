@@ -20,15 +20,6 @@ export interface ProjectRunContext {
   requestRestart(): void
 }
 
-export interface LifecycleAdapter {
-  prepare(run: ProjectRunContext): void
-  boot(run: ProjectRunContext): void
-  restart(run: ProjectRunContext): void
-  pause(run: ProjectRunContext): void
-  resume(run: ProjectRunContext): void
-  dispose(run: ProjectRunContext): void
-}
-
 export type ProjectLifecycleTarget =
   | 'core'
   | 'game-2d'
@@ -44,6 +35,8 @@ export interface RuntimeLifecycleContract {
   globalName?: string
   runMethod?: string
   runId?: string
+  /** A factory pode rodar novamente em memória e precisa descartar recursos web. */
+  managedProjectRun?: boolean
   bootMethod?: string
   restartMethod?: string
   pauseMethod?: string

@@ -349,6 +349,7 @@ function placementFits(destinationOwner: Blockly.Block, movedRoot: Blockly.Block
     }
 
     const contexts = nestedStatementContexts(containers)
+    if (placement.forbiddenNested?.some((context) => contexts.has(context))) return false
     if (placement.nested.some((context) => contexts.has(context))) continue
 
     // Eventos e loops de raiz nunca podem ser embrulhados. Para comandos

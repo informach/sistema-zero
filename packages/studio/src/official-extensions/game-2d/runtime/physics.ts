@@ -14,11 +14,11 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
   /** Faz o sprite ricochetear nas bordas do canvas (invertendo a velocidade). */
   function bounceOnEdges(s, ctx) {
     if (!s || !ctx || !ctx.canvas) return;
-    var w = stageW(ctx), h = stageH(ctx);
-    if (s.x < 0) { s.x = 0; s.vx = Math.abs(s.vx || 0); }
-    else if (s.x + s.w > w) { s.x = w - s.w; s.vx = -Math.abs(s.vx || 0); }
-    if (s.y < 0) { s.y = 0; s.vy = Math.abs(s.vy || 0); }
-    else if (s.y + s.h > h) { s.y = h - s.h; s.vy = -Math.abs(s.vy || 0); }
+    var visible = _visibleWorldRect(ctx);
+    if (s.x < visible.left) { s.x = visible.left; s.vx = Math.abs(s.vx || 0); }
+    else if (s.x + s.w > visible.right) { s.x = visible.right - s.w; s.vx = -Math.abs(s.vx || 0); }
+    if (s.y < visible.top) { s.y = visible.top; s.vy = Math.abs(s.vy || 0); }
+    else if (s.y + s.h > visible.bottom) { s.y = visible.bottom - s.h; s.vy = -Math.abs(s.vy || 0); }
   }
 
   /** Colisão por círculo: distância dos centros < soma dos raios (≈ metade do lado). */

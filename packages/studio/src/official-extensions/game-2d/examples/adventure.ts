@@ -630,9 +630,10 @@ export const enemyPlatformerExample: ExtensionExample = beginnerGameExample({
                 { type: 'g2d:drawGroup', ctxVar: 'ctx', groupVar: 'tiros' },
                 { type: 'g2d:drawSprite', spriteVar: 'heroi', ctxVar: 'ctx' },
                 {
-                  type: 'g2d:drawHearts',
+                  type: 'g2d:drawSpriteHealth',
                   ctxVar: 'ctx',
-                  count: { type: 'g2d:getHealth', spriteVar: 'heroi' },
+                  spriteVar: 'heroi',
+                  style: 'hearts',
                   x: 12,
                   y: 12,
                   size: 16,
@@ -650,10 +651,7 @@ export const enemyPlatformerExample: ExtensionExample = beginnerGameExample({
                 },
                 {
                   type: 'if',
-                  cond: {
-                    type: 'logicalNot',
-                    value: { type: 'g2d:hasHealth', spriteVar: 'heroi' },
-                  },
+                  cond: { type: 'g2d:healthDepleted', spriteVar: 'heroi' },
                   then: [{ type: 'g2d:setScene', name: 'derrota' }],
                 },
                 {

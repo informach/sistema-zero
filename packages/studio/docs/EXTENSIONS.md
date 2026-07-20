@@ -61,6 +61,11 @@ projeto que instalar a extensão.
 - [ ] `runtime.lifecycle` usa um dos contratos oficiais de
       `src/extensions/lifecycle.ts`. O `target`, nome global e métodos existem
       no `bootstrapScript`; o gerador nunca escolhe o motor por `switch` local.
+- [ ] Use `managedProjectRun: true` somente quando o runtime pode repetir a
+      factory do projeto no mesmo documento. Nesse caso, incorpore
+      `buildProjectRunContextRuntime()` no `bootstrapScript`: listeners DOM e
+      RAFs genéricos emitidos pelo gerador serão descartados antes do restart.
+      Recursos próprios do motor continuam exigindo teardown no runtime.
 - [ ] O boot é automático. Blocos antigos de “começar o jogo” podem continuar
       registrados como `hidden: true` apenas para desserialização e migração.
 
@@ -118,8 +123,9 @@ algum `esmImports`, promove os scripts de extensão E o script do aluno a
 antes de o código do aluno rodar). Regras:
 
 - [ ] Versão **fixada** (pin exato, ex.: `three@0.180.0`), nunca `latest`/range.
-- [ ] CDN de ESM confiável e estável (usamos `esm.sh`). A origem do `esmImports`
-      é adicionada ao `script-src` do CSP do preview — revise-a.
+- [ ] CDN de ESM confiável e estável (usamos `esm.sh`). O entrypoint declarado
+      entra no `script-src`; para imports transitivos do `esm.sh`, entra somente
+      o prefixo do pacote com versão exata (nunca a origem inteira).
 - [ ] A mesma versão deve existir como dep npm no template profissional
       correspondente (`three-ts`), para o código gerado migrar de Blocos →
       Profissional sem ajuste de versão.
@@ -153,7 +159,12 @@ antes de o código do aluno rodar). Regras:
       **⚡ Quando acontecer**; atualizações contínuas e periódicas entram
       em **🔁 Enquanto estiver rodando**. Eventos e loops-raiz não podem ser aninhados. Corpos internos
       usam os checks de contexto (`event-body`, `loop-body`, `function-body`,
-      etc.) materializados pelo contrato.
+      etc.) materializados pelo contrato. Quando um contexto mais amplo também
+      for permitido, use `forbiddenNested` para registrar exclusões ancestrais;
+      criadores de recursos, por exemplo, proíbem `loop-body` em qualquer profundidade.
+      Imports, classes e funções são declarações diretas de **Ao iniciar**. Um
+      loop do motor chama um callback: ele não torna `break`/`continue` válidos;
+      esses controles pertencem apenas a laços sintáticos (`for`/`while`/`repeat`).
 - [ ] Blocos de compatibilidade com migração `unwrap-*` ou
       `remove-engine-boot` ficam `hidden: true` e ausentes de toda toolbox.
 - [ ] Campo que REFERENCIA um nome já criado noutro bloco (sprite, cena/mundo,

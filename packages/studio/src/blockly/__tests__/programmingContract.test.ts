@@ -4,10 +4,15 @@ import type { LearningProfile } from '#core'
 import { BLOCK_CATALOG } from '../blockCatalog'
 import { classCategoryBlockTypes, functionCategoryBlockTypes } from '../paramsFlyout'
 import {
+  PROGRAMMING_ADVANCED_TYPES,
+  PROGRAMMING_BEGINNER_BUDGET,
+  PROGRAMMING_BEGINNER_TYPES,
   PROGRAMMING_CATALOG_GROUPS,
   PROGRAMMING_COMPATIBILITY_DEFINITIONS,
+  PROGRAMMING_INTERMEDIATE_TYPES,
   PROGRAMMING_VISIBLE_DEFINITIONS,
   PROGRAMMING_VISIBLE_TYPES,
+  resolveProgrammingBlockLevel,
 } from '../programmingContract'
 import { ensureBlocklyInitialized } from '../setup'
 import { buildCoreToolbox } from '../toolbox'
@@ -36,6 +41,55 @@ describe('contrato exaustivo da categoria Programação', () => {
       'objects',
       'classes',
     ])
+  })
+
+  it('mantém um orçamento explícito de 25 peças no primeiro degrau', () => {
+    expect(PROGRAMMING_BEGINNER_TYPES).toHaveLength(PROGRAMMING_BEGINNER_BUDGET)
+    expect(new Set(PROGRAMMING_BEGINNER_TYPES).size).toBe(PROGRAMMING_BEGINNER_BUDGET)
+    expect(PROGRAMMING_BEGINNER_TYPES).toEqual([
+      'sz_js_on_click',
+      'sz_js_on_click_anywhere',
+      'sz_js_on_key',
+      'sz_js_on_pointer_down',
+      'sz_js_set_property_text',
+      'sz_js_set_property_var',
+      'sz_val_event_pos',
+      'sz_val_event_key',
+      'sz_js_console_log_value',
+      'sz_js_var_create',
+      'sz_js_var_assign',
+      'sz_js_var_increment',
+      'sz_js_if_else',
+      'sz_js_repeat',
+      'sz_js_set_timeout_seconds',
+      'sz_js_set_interval_seconds',
+      'sz_val_number',
+      'sz_val_text',
+      'sz_val_color',
+      'sz_val_variable',
+      'sz_val_bool',
+      'sz_val_compare',
+      'sz_val_logic',
+      'sz_val_not',
+      'sz_val_random',
+    ])
+  })
+
+  it('atribui exatamente um nível a todos os blocos visíveis', () => {
+    const tiers = [
+      ...PROGRAMMING_BEGINNER_TYPES,
+      ...PROGRAMMING_INTERMEDIATE_TYPES,
+      ...PROGRAMMING_ADVANCED_TYPES,
+    ]
+    expect(tiers).toHaveLength(PROGRAMMING_VISIBLE_TYPES.size)
+    expect(new Set(tiers)).toEqual(new Set(PROGRAMMING_VISIBLE_TYPES))
+    for (const type of PROGRAMMING_VISIBLE_TYPES) {
+      expect(resolveProgrammingBlockLevel(type), type).toBeDefined()
+    }
+    expect(resolveProgrammingBlockLevel('sz_js_on_context_menu')).toBe('intermediario-2d')
+    expect(resolveProgrammingBlockLevel('sz_js_set_timeout')).toBe('intermediario-2d')
+    expect(resolveProgrammingBlockLevel('sz_js_storage_set')).toBe('intermediario-2d')
+    expect(resolveProgrammingBlockLevel('sz_val_storage_get')).toBe('intermediario-2d')
   })
 
   it('oferece cada allowBlock unitário exatamente uma vez', () => {

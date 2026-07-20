@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+import { generateHTML } from '#generators'
 import { extractHTMLShell, parseHTML } from '../html'
 
 describe('parseHTML', () => {
@@ -126,6 +127,34 @@ describe('parseHTML', () => {
       expect(children[1]).toMatchObject({ type: 'element', tag: 'span', id: 'y' })
       expect(children[2]).toEqual({ type: 'text', text: ' Sistema Zero.' })
     }
+  })
+
+  it('distingue elementos inline colados de elementos separados por espaço no round-trip', () => {
+    const joined = parseHTML('<p><strong>A</strong><em>B</em></p>')
+    const spaced = parseHTML('<p><strong>A</strong> <em>B</em></p>')
+
+    expect(spaced).not.toEqual(joined)
+    expect(generateHTML({ body: joined })).toContain('<p><strong>A</strong><em>B</em></p>')
+    expect(generateHTML({ body: spaced })).toContain('<p><strong>A</strong> <em>B</em></p>')
+  })
+
+  it('preserva o pai inteiro quando filhos inline desconhecidos dependem do whitespace', () => {
+    for (const html of [
+      '<p><abbr>A</abbr><abbr>B</abbr></p>',
+      '<p><abbr>A</abbr> <abbr>B</abbr></p>',
+      '<p><mark>A</mark><code>B</code></p>',
+    ]) {
+      const ir = parseHTML(html)
+      expect(ir).toEqual([{ type: 'rawHTML', html, advanced: true }])
+      expect(generateHTML({ body: ir })).toContain(html)
+    }
+  })
+
+  it('preserva o separador entre elementos phrasing também na raiz da página', () => {
+    const ir = parseHTML('<span>A</span> <span>B</span>')
+
+    expect(ir[1]).toEqual({ type: 'text', text: ' ' })
+    expect(generateHTML({ body: ir })).toContain('<span>A</span> <span>B</span>')
   })
 
   it('extrai strong e em como elementos nativos', () => {

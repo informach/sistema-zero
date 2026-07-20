@@ -24,6 +24,8 @@ export type StatementContext =
 export interface BlockPlacement {
   root: readonly BehaviorArea[]
   nested: readonly StatementContext[]
+  /** Contextos ancestrais que invalidam o bloco mesmo quando outro contexto permitido coincide. */
+  forbiddenNested?: readonly StatementContext[]
   role: 'declaration' | 'command' | 'event' | 'loop' | 'value'
   phase?: 'update' | 'periodic' | 'draw-world' | 'draw-hud'
 }

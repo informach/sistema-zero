@@ -35,6 +35,25 @@ function classicProject(overrides: Partial<Project> = {}): Project {
 }
 
 describe('buildClassicFileMap', () => {
+  it('carrega o runtime de entrada antes do código do aluno no site publicado', async () => {
+    const { files } = await buildClassicFileMap(
+      classicProject({
+        files: {
+          ...classicProject().files,
+          'script.js': 'if (__szInput.key("ArrowRight")) console.log(__szInput.x);',
+        },
+      }),
+      identityMinifiers,
+    )
+
+    expect(String(files['public/sz-input.js'])).toContain('window.__szInput = input')
+    const index = String(files['public/index.html'])
+    const inputRuntime = index.indexOf('src="sz-input.js"')
+    const studentScript = index.indexOf('src="script.js"')
+    expect(inputRuntime).toBeGreaterThan(-1)
+    expect(studentScript).toBeGreaterThan(inputRuntime)
+  })
+
   it('placement external: emite os 3 arquivos sob public/ e mantem as referencias', async () => {
     const { files } = await buildClassicFileMap(classicProject(), identityMinifiers)
     expect(files['public/index.html']).toBeDefined()

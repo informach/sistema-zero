@@ -20,18 +20,22 @@ export function BlocksWorkspaceEditor(): JSX.Element {
     if (!hasWorld3D && active === 'world') setActive('blocks')
   }, [active, hasWorld3D])
 
-  if (!hasWorld3D) return <BlocklyPanel onWorkspaceReady={onWorkspaceReady} />
+  const items = hasWorld3D
+    ? [
+        { id: 'blocks', label: 'Blocos' },
+        { id: 'world', label: 'Editor de mundo 3D' },
+      ]
+    : [{ id: 'blocks', label: 'Blocos' }]
+  const effectiveActive = hasWorld3D ? active : 'blocks'
 
   return (
     <Tabs
-      items={[
-        { id: 'blocks', label: 'Blocos' },
-        { id: 'world', label: 'Editor de mundo 3D' },
-      ]}
-      active={active}
+      items={items}
+      active={effectiveActive}
       onSelect={(id) => setActive(id === 'world' ? 'world' : 'blocks')}
       ariaLabel="Editores do projeto"
       size="md"
+      hideTablistWhenSingle
       renderPanel={(id) =>
         id === 'blocks' ? (
           <BlocklyPanel onWorkspaceReady={onWorkspaceReady} />

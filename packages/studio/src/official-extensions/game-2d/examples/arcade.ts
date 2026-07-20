@@ -47,10 +47,10 @@ export const asteroidsExample: ExtensionExample = beginnerGameExample({
           bodyColor: '#35e8ff',
           wingColor: '#2568ff',
         },
+        { type: 'g2d:setHealth', spriteVar: 'nave', amount: 3 },
         { type: 'g2d:createGroup', varName: 'tiros' },
         { type: 'g2d:createGroup', varName: 'asteroides' },
         { type: 'var', name: 'pontos', value: { type: 'num', value: 0 } },
-        { type: 'var', name: 'vidas', value: { type: 'num', value: 3 } },
         { type: 'g2d:setScene', name: 'inicio' },
       ],
       events: [
@@ -190,14 +190,10 @@ export const asteroidsExample: ExtensionExample = beginnerGameExample({
                     { type: 'g2d:playExplosion' },
                     { type: 'g2d:shake', ctxVar: 'ctx', intensity: 8 },
                     {
-                      type: 'assign',
-                      name: 'vidas',
-                      value: {
-                        type: 'binop',
-                        op: '-',
-                        left: { type: 'var', name: 'vidas' },
-                        right: { type: 'num', value: 1 },
-                      },
+                      type: 'g2d:damageSprite',
+                      spriteVar: 'nave',
+                      amount: 1,
+                      invincibilityFrames: 45,
                     },
                   ],
                 },
@@ -206,18 +202,7 @@ export const asteroidsExample: ExtensionExample = beginnerGameExample({
                   groupVar: 'asteroides',
                   ctxVar: 'ctx',
                   itemName: 'a',
-                  body: [
-                    {
-                      type: 'assign',
-                      name: 'vidas',
-                      value: {
-                        type: 'binop',
-                        op: '-',
-                        left: { type: 'var', name: 'vidas' },
-                        right: { type: 'num', value: 1 },
-                      },
-                    },
-                  ],
+                  body: [{ type: 'g2d:changeHealth', spriteVar: 'nave', delta: -1 }],
                 },
                 {
                   type: 'g2d:drawScore',
@@ -230,9 +215,10 @@ export const asteroidsExample: ExtensionExample = beginnerGameExample({
                   size: 22,
                 },
                 {
-                  type: 'g2d:drawHearts',
+                  type: 'g2d:drawSpriteHealth',
                   ctxVar: 'ctx',
-                  count: { type: 'var', name: 'vidas' },
+                  spriteVar: 'nave',
+                  style: 'hearts',
                   x: 12,
                   y: 40,
                   size: 16,
@@ -250,12 +236,7 @@ export const asteroidsExample: ExtensionExample = beginnerGameExample({
                 },
                 {
                   type: 'if',
-                  cond: {
-                    type: 'binop',
-                    op: '<=',
-                    left: { type: 'var', name: 'vidas' },
-                    right: { type: 'num', value: 0 },
-                  },
+                  cond: { type: 'g2d:healthDepleted', spriteVar: 'nave' },
                   then: [{ type: 'g2d:setScene', name: 'perdeu' }],
                 },
               ],
@@ -336,10 +317,10 @@ export const dinoRunExample: ExtensionExample = beginnerGameExample({
         // --- Setup (no começo: o "a cada quadro" enxerga estas variáveis) ---
         { type: 'g2d:fitScreen', percent: 100 },
         { type: 'g2d:createDino', varName: 'dino', x: 120, y: 150, size: 64, color: '#5fb45f' },
+        { type: 'g2d:setHealth', spriteVar: 'dino', amount: 3 },
         { type: 'g2d:createGroup', varName: 'obstaculos' },
         { type: 'g2d:createGroup', varName: 'ovos' },
         { type: 'var', name: 'pontos', value: { type: 'num', value: 0 } },
-        { type: 'var', name: 'vidas', value: { type: 'num', value: 3 } },
         // recorde salvo no navegador (Math.floor transforma o texto/null em número).
         {
           type: 'var',
@@ -443,16 +424,11 @@ export const dinoRunExample: ExtensionExample = beginnerGameExample({
                     { type: 'g2d:explode', spriteVar: 'obs', color: '#ff5d3d' },
                     { type: 'g2d:playDinoHurt' },
                     { type: 'g2d:shake', ctxVar: 'ctx', intensity: 8 },
-                    { type: 'g2d:blinkSprite', spriteVar: 'dino', frames: 80 },
                     {
-                      type: 'assign',
-                      name: 'vidas',
-                      value: {
-                        type: 'binop',
-                        op: '-',
-                        left: { type: 'var', name: 'vidas' },
-                        right: { type: 'num', value: 1 },
-                      },
+                      type: 'g2d:damageSprite',
+                      spriteVar: 'dino',
+                      amount: 1,
+                      invincibilityFrames: 80,
                     },
                   ],
                 },
@@ -532,9 +508,10 @@ export const dinoRunExample: ExtensionExample = beginnerGameExample({
                   size: 16,
                 },
                 {
-                  type: 'g2d:drawHearts',
+                  type: 'g2d:drawSpriteHealth',
                   ctxVar: 'ctx',
-                  count: { type: 'var', name: 'vidas' },
+                  spriteVar: 'dino',
+                  style: 'hearts',
                   x: 372,
                   y: 22,
                   size: 16,
@@ -543,12 +520,7 @@ export const dinoRunExample: ExtensionExample = beginnerGameExample({
                 // acabaram as vidas: salva o recorde e vai pra tela de fim
                 {
                   type: 'if',
-                  cond: {
-                    type: 'binop',
-                    op: '<=',
-                    left: { type: 'var', name: 'vidas' },
-                    right: { type: 'num', value: 0 },
-                  },
+                  cond: { type: 'g2d:healthDepleted', spriteVar: 'dino' },
                   then: [
                     {
                       type: 'if',

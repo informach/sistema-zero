@@ -97,6 +97,7 @@ export class IdentifierScope implements IdentifierResolver {
   private readonly declaredClasses = new Map<string, string>()
   private readonly classRefs = new Map<string, string>()
   private canvasImageIdentifiers?: { images: string; ready: string }
+  private projectRunContextIdentifier?: string
   // Próximo sufixo a tentar por base, para a sondagem de colisão NÃO recomeçar do
   // 2 a cada nome homônimo: k nomes que normalizam para a MESMA base custavam
   // O(k²) (a k-ésima alocação varria os sufixos 2..k). Como `used` só cresce
@@ -155,6 +156,19 @@ export class IdentifierScope implements IdentifierResolver {
   /** Identificadores presentes somente quando o gerador instalou o pré-carregador. */
   getCanvasImageIdentifiers(): { images: string; ready: string } | undefined {
     return this.canvasImageIdentifiers
+  }
+
+  /** Reserva o contexto descartável usado pelo envelope das três áreas. */
+  prepareProjectRunContextIdentifier(): string {
+    if (!this.projectRunContextIdentifier) {
+      this.projectRunContextIdentifier = this.reserveInternal('__szProjectRunContext')
+    }
+    return this.projectRunContextIdentifier
+  }
+
+  /** Presente somente durante a geração das três áreas com lifecycle. */
+  getProjectRunContextIdentifier(): string | undefined {
+    return this.projectRunContextIdentifier
   }
 
   getCanvasElement(ctxName: string): string {
@@ -268,6 +282,8 @@ export function compileExpr(
       return `SZGame2D.angleTo(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
     case 'g2d:getHealth':
       return `SZGame2D.getHealth(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:getMaxHealth':
+      return `SZGame2D.getMaxHealth(${identifiers.get(expr.spriteVar)})`
     case 'g2d:enemyDamage':
       return `SZGame2D.enemyDamage(${identifiers.get(expr.spriteVar)})`
     case 'g2d:spriteX':
@@ -304,8 +320,12 @@ export function compileExpr(
       return `SZGame2D.randomChance(${compileExpr(valueToExpr(expr.percent), 0, identifiers, rec)})`
     case 'g2d:hasHealth':
       return `SZGame2D.hasHealth(${identifiers.get(expr.spriteVar)})`
-    case 'g2d:cooldownReady':
-      return `SZGame2D.cooldownReady(${identifiers.get(expr.spriteVar)}, ${compileExpr(valueToExpr(expr.frames), 0, identifiers, rec)})`
+    case 'g2d:healthDepleted':
+      return `SZGame2D.healthDepleted(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:cooldownReady': {
+      const stableKey = expr.__id ? `, ${JSON.stringify(expr.__id)}` : ''
+      return `SZGame2D.cooldownReady(${identifiers.get(expr.spriteVar)}, ${compileExpr(valueToExpr(expr.frames), 0, identifiers, rec)}${stableKey})`
+    }
     case 'g2d:isPaused':
       return 'SZGame2D.isPaused()'
     case 'g2d:cameraX':

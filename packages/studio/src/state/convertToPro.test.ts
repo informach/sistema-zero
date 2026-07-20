@@ -19,6 +19,15 @@ function classicProject(overrides: Partial<Project> = {}): Project {
 }
 
 describe('convertClassicToProTree', () => {
+  it('leva o runtime de entrada para public/ e o carrega antes do script do aluno', async () => {
+    const tree = await convertClassicToProTree(classicProject())
+    expect((tree['public/sz-input.js'] as { content: string }).content).toContain(
+      'window.__szInput = input',
+    )
+    const index = (tree['index.html'] as { content: string }).content
+    expect(index.indexOf('src="/sz-input.js"')).toBeLessThan(index.indexOf('src="/script.js"'))
+  })
+
   it('monta uma árvore Vite válida: index.html na raiz, assets em public/, refs absolutas', async () => {
     const tree = await convertClassicToProTree(classicProject())
     expect(tree['package.json']).toBeDefined()

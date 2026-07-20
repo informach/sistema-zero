@@ -347,11 +347,12 @@ export function registerPtSearchCategory(): void {
 }
 
 /**
- * Visual do campo de busca dentro do flyout: sem outline, com padding. Usa os
+ * Visual do campo de busca dentro do flyout. O foco fica no CSS para acompanhar
  * tokens da paleta (o input vive dentro da injection div, que está sob o
  * [data-sz-theme] do root do Studio — claro/escuro acompanham o tema).
  */
 function stylizeSearchField(field: HTMLInputElement): void {
+  field.classList.add('sz-blockly-search-field')
   Object.assign(field.style, {
     position: 'absolute',
     zIndex: '90',
@@ -359,7 +360,6 @@ function stylizeSearchField(field: HTMLInputElement): void {
     margin: '0',
     padding: '8px 12px',
     border: 'none',
-    outline: 'none',
     borderRadius: '8px',
     background: 'var(--color-sz-bg)',
     color: 'var(--color-sz-fg)',

@@ -57,6 +57,14 @@ function buildCase(
       if (!slot || !block.previousConnection)
         throw new Error('tela de desenho sem encaixe estrutural')
       slot.connect(block.previousConnection)
+    } else if (definition.type === 'sz_canvas_request_frame') {
+      const frame = workspace.newBlock(FRAME_START)
+      const fn = workspace.newBlock('sz_js_function')
+      fn.setFieldValue('animar', 'NAME')
+      block = workspace.newBlock(definition.type)
+      block.setFieldValue('animar', 'FN')
+      frame.getInput('CHILDREN')?.connection?.connect(fn.previousConnection as Blockly.Connection)
+      fn.getInput('BODY')?.connection?.connect(block.previousConnection as Blockly.Connection)
     } else {
       block = attachBlockInContractContext({
         workspace,
@@ -80,10 +88,28 @@ function buildCase(
       }
     }
     configure?.(block)
-    return { ir: buildIRFromWorkspace(workspace), targetId: block.id }
+    const ir = buildIRFromWorkspace(workspace)
+    if (usesCanvasContext(behaviorStatements(ir))) {
+      ir.behavior.start.unshift({ type: 'canvasSetup', canvasId: 'tela', varName: 'ctx' })
+    }
+    return { ir, targetId: block.id }
   } finally {
     workspace.dispose()
   }
+}
+
+function usesCanvasContext(value: unknown): boolean {
+  if (Array.isArray(value)) return value.some(usesCanvasContext)
+  if (!value || typeof value !== 'object') return false
+  const record = value as Record<string, unknown>
+  if (
+    typeof record.type === 'string' &&
+    record.type.startsWith('canvas') &&
+    typeof record.ctxVar === 'string'
+  ) {
+    return true
+  }
+  return Object.values(record).some(usesCanvasContext)
 }
 
 function throughBlocks(ir: SZIRV2): SZIRV2 {
@@ -98,7 +124,12 @@ function throughBlocks(ir: SZIRV2): SZIRV2 {
 }
 
 function withCanvasSetup(type: string, statements: JSStatement[]): JSStatement[] {
-  if (type === 'sz_canvas_setup') return statements
+  if (
+    type === 'sz_canvas_setup' ||
+    statements.some((statement) => statement.type === 'canvasSetup')
+  ) {
+    return statements
+  }
   return [{ type: 'canvasSetup', canvasId: 'tela', varName: 'ctx' }, ...statements]
 }
 

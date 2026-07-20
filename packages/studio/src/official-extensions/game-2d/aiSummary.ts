@@ -1,10 +1,13 @@
-export const gameTwoDPromptSummary = `Jogo 2D expõe window.SZGame2D e blocos facilitadores para crianças iniciantes.
+import { withGameTwoDLifecycleGuidance } from './pedagogy'
 
-CICLO DE VIDA: use as Áreas do projeto. “⚙️ Ao iniciar” prepara tela,
-sprites/grupos/variáveis; “⚡ Quando acontecer” recebe somente os chapéus
-“Quando…”; “🔁 Enquanto estiver rodando” recebe “A cada quadro”, “A cada N
-quadros” e “A cada N segundos”. O
-antigo “Quando o jogo começar” corresponde hoje à Área “Ao iniciar”. O Estúdio
+export const gameTwoDPromptSummary =
+  withGameTwoDLifecycleGuidance(`Jogo 2D expõe window.SZGame2D e blocos facilitadores para crianças iniciantes.
+
+CICLO DE VIDA: use as Áreas do projeto.
+[[G2D_LIFECYCLE_START]]
+[[G2D_LIFECYCLE_EVENTS]]
+[[G2D_LIFECYCLE_LOOP]]
+O antigo “Quando o jogo começar” corresponde hoje à Área “Ao iniciar”. O Estúdio
 liga o motor automaticamente. Reiniciar limpa a partida e executa de
 novo as três áreas; não gere onStart nem um bloco manual de boot.
 
@@ -14,6 +17,7 @@ vez em ⚡ Quando acontecer, nunca dentro de “A cada quadro”. Movimento, des
 grupo e HUD ficam dentro do quadro. Um erro interrompe somente o bloco afetado.
 
 ORDEM DIDÁTICA: preparar palco; criar personagens e grupos; definir tela “inicio”;
+descrever objetivo e controles com “Descrever o jogo para leitor de tela”;
 registrar Enter para começar/reiniciar; atualizar e desenhar somente na tela
 “jogando”; mostrar instruções, vitória e derrota nas telas correspondentes.
 Jogos precisam de controles, objetivo alcançável, feedback e novo jogo.
@@ -22,10 +26,14 @@ IMAGENS E MAPAS: use assets do projeto; nomes precisam coincidir. Tilemaps vêm 
 Pinta/upload ou de uma grade declarada pela criança, nunca de cenário inventado
 automaticamente. Sprites sem imagem continuam visíveis por cor.
 
-ACESSIBILIDADE: os blocos “Preparar o jogo…” recebem uma descrição curta e
-específica com objetivo e controles. O runtime associa esse texto ao canvas e
-anuncia as telas de início, vitória e derrota sem repetir a cada quadro.
+O runtime prepara automaticamente os metadados internos do canvas e anuncia as
+telas de início, vitória e derrota sem repetir a cada quadro.
+
+VIDAS: inicialize a vida do sprite uma vez em ⚙️ Ao iniciar. Para contato contínuo,
+use o bloco de machucar com invencibilidade; para perguntar pelo fim, prefira “as
+vidas acabaram?”. O HUD automático recebe o sprite e escolhe corações ou barra.
+Sprite sem vida inicializada não é tratado como morto.
 
 REGRAS: não misture com Jogo 2D Avançado. Não use bibliotecas externas nem JS cru
 quando houver bloco equivalente. A paleta completa permanece disponível; as aulas
-escolhem explicitamente quais blocos apresentar.`
+escolhem explicitamente quais blocos apresentar.`)

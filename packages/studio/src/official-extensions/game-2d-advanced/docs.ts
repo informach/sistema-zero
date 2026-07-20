@@ -33,7 +33,8 @@ O que o motor já faz por você (cada um tem a sua seção mais abaixo):
    carregam o desenho automaticamente. **Carregar a imagem** é opcional: use
    apenas para pré-carregar ou dar um apelido diferente ao asset.
 3. **Criar o personagem**. Quantos quiser. Nasce no centro; sem imagem, vira um
-   retângulo da cor.
+   retângulo da cor. Crie na preparação ou em uma reação que acontece uma vez,
+   nunca dentro de um laço.
 4. Em **⚙️ Ao iniciar**, declare dados, personagens, mapas e estado inicial. A
    área roda novamente quando uma partida é reiniciada.
 5. Em **⚡ Quando acontecer**, coloque os chapéus de clique, aviso, entrada de estado,
@@ -817,7 +818,10 @@ música da praia" e o nome no HUD.
 
 ### ⚔️ Batalha por turnos (em ⚔️ batalha)
 
-- **Meus pontos de batalha** e **Começar a batalha contra…** abrem o combate em
+- **Meus pontos de batalha**, **Golpe especial**, **Adicionar aliado** e os
+  blocos **Ensinar golpe** configuram dados persistentes. Use na preparação ou
+  em uma reação que acontece uma vez, nunca dentro de um laço. **Começar a
+  batalha contra…** abre o combate em
   equipe. No painel, escolha Atacar, um golpe, Defender, Item ou Fugir; depois
   clique no alvo. A defesa reduz dano, e os inimigos agem sozinhos.
 - **Adicionar aliado/inimigo** monta confrontos com vários lutadores. Ensine
@@ -963,7 +967,8 @@ onda? Sai \`onda:limpa\` (o MESMO aviso do Kit Nave, de propósito: vocabulário
 dois). Solte a próxima, maior: *"leva = leva + 2; Invadir de novo"*. A
 dificuldade infinita em dois blocos.
 
-**Começar com … moedas** enche a carteira no "Preparar" (e o "Jogar de novo"
+**Começar com … moedas** enche a carteira no "Preparar" e deve ficar fora dos
+laços (o "Jogar de novo"
 volta a esse valor). **Ganhar … moedas** soma por inimigo derrotado ou onda
 vencida (um número negativo GASTA). **As moedas** é o valor de agora. Mostre no
 placar e teste antes de deixar comprar.

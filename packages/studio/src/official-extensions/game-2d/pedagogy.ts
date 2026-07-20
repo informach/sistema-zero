@@ -18,8 +18,21 @@ export const GAME_TWO_D_PERIODIC_TOOLTIPS = {
 } as const
 
 export const GAME_TWO_D_LIFECYCLE_GUIDANCE = {
-  start:
-    'Prepare tela, personagens, grupos, variáveis e estado inicial em “Ao iniciar”. Essa área roda novamente em cada nova partida.',
+  start: `Prepare tela, personagens, grupos, variáveis e estado inicial em “${GAME_TWO_D_AREAS.start}”. Essa área roda novamente em cada nova partida.`,
   events: `Registre tecla, clique e começo de contato em “${GAME_TWO_D_AREAS.events}”, uma vez por partida.`,
   loop: `Coloque “A cada quadro”, “A cada N quadros” e “A cada N segundos” como raízes independentes em “${GAME_TWO_D_AREAS.loop}”.`,
 } as const
+
+const GAME_TWO_D_LIFECYCLE_TOKENS = {
+  '[[G2D_LIFECYCLE_START]]': GAME_TWO_D_LIFECYCLE_GUIDANCE.start,
+  '[[G2D_LIFECYCLE_EVENTS]]': GAME_TWO_D_LIFECYCLE_GUIDANCE.events,
+  '[[G2D_LIFECYCLE_LOOP]]': GAME_TWO_D_LIFECYCLE_GUIDANCE.loop,
+} as const
+
+export function withGameTwoDLifecycleGuidance(template: string): string {
+  let result = template
+  for (const [token, guidance] of Object.entries(GAME_TWO_D_LIFECYCLE_TOKENS)) {
+    result = result.replaceAll(token, guidance)
+  }
+  return result
+}

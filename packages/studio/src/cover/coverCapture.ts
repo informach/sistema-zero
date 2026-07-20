@@ -98,8 +98,8 @@ function runCapture(
     installedPermissions: ctx.permissions,
     fetchAllowedOrigins: opts.fetchAllowedOrigins,
     loopBudgetMs: opts.loopBudgetMs,
-    // `extraImports` (ex.: html2canvas) entram no importmap E liberam a origem no
-    // `script-src` da CSP do iframe (`buildPreviewDoc` deriva de `extensionImports`).
+    // `extraImports` (ex.: html2canvas) entram no importmap E liberam apenas a
+    // URL/prefixo do pacote pinado no `script-src` da CSP do iframe.
     extensionImports: withCoreImports(
       { ...ctx.extensionImports, ...extraImports },
       project.files['script.js'],

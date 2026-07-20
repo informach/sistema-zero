@@ -67,7 +67,7 @@ describe('game-2d — todos os exemplos da vitrine (manifest.examples)', () => {
       expect(example.ir.behavior.start[0]?.type).toBe('g2d:setupStage')
       expect(
         (example.ir.behavior.start[0] as { description?: string } | undefined)?.description,
-      ).toBe(example.description)
+      ).toBeUndefined()
       expect(collectTypes(example.ir).has('g2d:onStart')).toBe(false)
     }
   })
@@ -195,7 +195,27 @@ describe('game-2d — demonstrações explicam os controles no próprio palco', 
       expect(example).toBeDefined()
       const labels = JSON.stringify(example?.ir).match(/"type":"g2d:drawLabel"/g) ?? []
       expect(labels.length).toBeGreaterThan(0)
-      expect(JSON.stringify(example?.ir).toLocaleLowerCase('pt-BR')).toContain('setas')
+      const serialized = JSON.stringify(example?.ir).toLocaleLowerCase('pt-BR')
+      expect(serialized).toContain('setas')
+      expect(serialized).toContain('"type":"g2d:setstagedescription"')
+      const description = example?.ir.behavior.start.find(
+        (statement) => statement.type === 'g2d:setStageDescription',
+      )
+      expect(description?.type).toBe('g2d:setStageDescription')
+      expect(
+        description?.type === 'g2d:setStageDescription' ? description.description : '',
+      ).toContain('setas')
+    })
+  }
+})
+
+describe('game-2d — exemplos com vidas usam o fluxo automático por sprite', () => {
+  for (const example of [asteroidsExample, dinoRunExample, enemyPlatformerExample]) {
+    it(example.name, () => {
+      const serialized = JSON.stringify(example.ir)
+      expect(serialized).toContain('"type":"g2d:drawSpriteHealth"')
+      expect(serialized).toContain('"type":"g2d:healthDepleted"')
+      expect(serialized).not.toContain('"type":"g2d:drawHearts"')
     })
   }
 })
@@ -273,7 +293,8 @@ describe('enemyPlatformerExample (game-2d) — tipos de inimigo', () => {
 
 describe('codeDrawnExample (game-2d) — sprite desenhado por código', () => {
   it('tem IR válido contra o SZIRSchema', () => {
-    expect(SZIRV2Schema.safeParse(codeDrawnExample.ir).success).toBe(true)
+    const parsed = SZIRV2Schema.safeParse(codeDrawnExample.ir)
+    expect(parsed.success, parsed.success ? '' : JSON.stringify(parsed.error.issues)).toBe(true)
   })
 
   it('NÃO usa bloco de código avançado (rawJS) — tudo vira bloco', () => {

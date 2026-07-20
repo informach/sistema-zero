@@ -5,6 +5,7 @@ import {
   BEHAVIOR_AREAS_STATE_KEY,
   BEHAVIOR_AREAS_STATE_VERSION,
 } from '../blockly/blocksStateVersion'
+import { normalizeBlocksStateToFrames } from '../blockly/normalizeFrames'
 import { invadersNaMaoExample } from '../examples/core'
 import {
   MAX_BLOCKSTATE_BLOCKS,
@@ -26,13 +27,57 @@ describe('sanitizeImportedBlocksState — aceita estado gerado pela Ponte', () =
       ...base,
       [BEHAVIOR_AREAS_STATE_KEY]: BEHAVIOR_AREAS_STATE_VERSION,
     }
+    const previous = {
+      ...base,
+      [BEHAVIOR_AREAS_STATE_KEY]: BEHAVIOR_AREAS_STATE_VERSION - 1,
+    }
     const future = {
       ...base,
       [BEHAVIOR_AREAS_STATE_KEY]: BEHAVIOR_AREAS_STATE_VERSION + 1,
     }
 
     expect(sanitizeImportedBlocksState(current, [])).toEqual(current)
+    expect(sanitizeImportedBlocksState(previous, [])).toEqual(previous)
     expect(sanitizeImportedBlocksState(future, [])).toBeNull()
+  })
+
+  it('mantém a versão 2 no host até a migração preservar layout e IDs na versão 3', () => {
+    const previous = {
+      [BEHAVIOR_AREAS_STATE_KEY]: 2,
+      blocks: {
+        languageVersion: 0,
+        blocks: [
+          {
+            type: 'sz_frame_events',
+            id: 'area-eventos',
+            x: 452,
+            y: 392,
+            inputs: {
+              CHILDREN: {
+                block: { type: 'sz_js_on_click_anywhere', id: 'evento-clique' },
+              },
+            },
+          },
+        ],
+      },
+    }
+    const project = sanitizeProjectForHost({
+      id: 'projeto-v2',
+      name: 'Projeto versão 2',
+      files: { 'index.html': '', 'style.css': '', 'script.js': '' },
+      ir: { html: [], css: [], js: [], extensions: [] },
+      blocksState: previous,
+      installedExtensions: [],
+    })
+
+    expect(project?.blocksState).toEqual(previous)
+    const migrated = normalizeBlocksStateToFrames(project?.blocksState) as {
+      szBehaviorAreasVersion: number
+      blocks: { blocks: Array<{ id?: string; x?: number; y?: number }> }
+    }
+    expect(migrated.szBehaviorAreasVersion).toBe(BEHAVIOR_AREAS_STATE_VERSION)
+    expect(migrated.blocks.blocks[0]).toMatchObject({ id: 'area-eventos', x: 452, y: 392 })
+    expect(JSON.stringify(migrated)).toContain('evento-clique')
   })
 
   it('preserva uma classe completa (extends, construtor com params, método, propriedades)', () => {

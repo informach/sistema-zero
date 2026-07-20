@@ -11,6 +11,7 @@ import { findExtension } from '#official-extensions'
 import { buildAssetsRuntime } from '../preview/assetsBridge'
 import { coreImportsForCode } from '../preview/coreImports'
 import { rewriteCssAssetUrlsToAssetNames } from '../preview/cssAssets'
+import { buildInputRuntime } from '../preview/inputBridge'
 import { transpileExtra } from '../preview/transpile'
 import type { Minifiers } from './minify'
 import { buildProductionIndexHtml } from './productionHtml'
@@ -69,6 +70,12 @@ export async function buildClassicFileMap(
 
   if (hasExternalCss) files['public/style.css'] = await minifiers.css(exportCss(rawCss))
   if (hasExternalJs) files['public/script.js'] = await minifiers.js(rawJs, { module: jsIsModule })
+
+  // Runtime core dos blocos "a tecla está apertada?" e "x/y do mouse/dedo".
+  // O preview instala o MESMO núcleo; o export precisa carregá-lo antes de
+  // qualquer script do aluno, inclusive quando o JS foi escrito inline no HTML.
+  const inputScriptSrc = 'sz-input.js'
+  files[`public/${inputScriptSrc}`] = await minifiers.js(buildInputRuntime(), { module: false })
 
   // Extras → arquivos reais. CSS é linkado no <head>; HTML vira fragmento no
   // <body>; JS/TS é transpilado para `.js` real (import explícito com .js resolve).
@@ -228,6 +235,7 @@ export async function buildClassicFileMap(
     extraCssHrefs,
     extraHtmlFragments,
     assetsScriptSrc,
+    inputScriptSrc,
   })
   files['public/index.html'] = minifiers.html(indexHtml)
   files['public/manifest.webmanifest'] = buildWebAppManifest(project.name)

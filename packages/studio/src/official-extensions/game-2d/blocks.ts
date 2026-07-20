@@ -154,7 +154,16 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '❤️ Vida',
     colour: '#ff5c8d',
-    types: ['sz_g2d_set_health', 'sz_g2d_change_health', 'sz_g2d_get_health', 'sz_g2d_has_health'],
+    types: [
+      'sz_g2d_set_health',
+      'sz_g2d_change_health',
+      'sz_g2d_damage_sprite',
+      'sz_g2d_get_health',
+      'sz_g2d_get_max_health',
+      'sz_g2d_has_health',
+      'sz_g2d_health_depleted',
+      'sz_g2d_draw_sprite_health',
+    ],
   },
   {
     name: '✨ Aparência',
@@ -230,6 +239,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     name: '📺 Telas e cenas',
     colour: '#1098ad',
     types: [
+      'sz_g2d_set_stage_description',
       'sz_g2d_set_scene',
       'sz_g2d_scene_is',
       'sz_g2d_show_screen',
@@ -398,6 +408,7 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g2d_game_over: { TEXT: txtShadow('Fim de jogo') },
   sz_g2d_set_health: { AMOUNT: numShadow(3) },
   sz_g2d_change_health: { DELTA: numShadow(-1) },
+  sz_g2d_damage_sprite: { AMOUNT: numShadow(1), FRAMES: numShadow(45) },
   sz_g2d_top_down: { SPEED: numShadow(3) },
   sz_g2d_follow_pointer: { SPEED: numShadow(3) },
   sz_g2d_arrows_x: { SPEED: numShadow(6) },
@@ -424,6 +435,7 @@ const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g2d_draw_score: { X: numShadow(12), Y: numShadow(30), SIZE: numShadow(24) },
   sz_g2d_draw_label: { X: numShadow(12), Y: numShadow(30), SIZE: numShadow(20) },
   sz_g2d_draw_hearts: { X: numShadow(12), Y: numShadow(48), SIZE: numShadow(22) },
+  sz_g2d_draw_sprite_health: { X: numShadow(12), Y: numShadow(48), SIZE: numShadow(22) },
   sz_g2d_draw_bar: { X: numShadow(12), Y: numShadow(48), W: numShadow(160), H: numShadow(14) },
   sz_g2d_play_sound: { FREQ: numShadow(440), MS: numShadow(200) },
   sz_g2d_play_note: { MS: numShadow(300) },
