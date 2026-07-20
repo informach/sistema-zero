@@ -4,24 +4,24 @@
 **Escopo:** `packages/studio/src/official-extensions/game-2d` e integrações necessárias em Blockly, IR, geradores, catálogo, galeria e CI  
 **Snapshot:** árvore de trabalho local, com alterações não commitadas anteriores a esta auditoria  
 **Método:** revisão arquitetural completa, revisão pedagógica, análise estática, testes Bun e Playwright no Chromium  
-**Alterações de produto feitas pela auditoria:** nenhuma
+**Alterações de produto feitas pela auditoria:** nenhuma durante o review; correções aplicadas depois a pedido do usuário
 
-## Veredito
+## Veredito pós-correção
 
 A extensão está tecnicamente madura, tem uma superfície funcional incomum para um ambiente infantil e apresenta boa engenharia defensiva: contratos explícitos, linguagem em português, erros didáticos, runtime sem rede ou armazenamento, 14 exemplos executáveis e cobertura ponta a ponta real no Chromium.
 
-Eu ainda **não aprovaria este snapshot para merge/release**. Há um teste da própria extensão quebrado e uma regressão funcional de acessibilidade que depende da ordem em que a criança encaixa dois blocos válidos em `Ao iniciar`. Ambos são localizados e de correção pequena, mas o primeiro deixa o gate vermelho e o segundo elimina objetivo e controles para leitores de tela.
+**Aprovado no escopo do Jogo 2D após as correções.** Os quatro achados foram resolvidos: o guard voltou a passar, a descrição explícita sobrevive às duas ordens dos blocos e a novas preparações, o Playwright focado entrou no CI e as métricas documentais ganharam um guard contra drift.
 
-Resumo dos achados abertos:
+Resumo dos achados encontrados e seu estado final:
 
-| Severidade | Quantidade | Síntese |
+| Severidade | Quantidade | Estado final |
 |---|---:|---|
 | Crítica | 0 | Nenhuma |
-| Alta | 1 | A suíte focada falha por um guard de template desatualizado |
-| Média | 2 | Descrição acessível é apagada; E2E de browser não roda no CI |
-| Baixa | 1 | Documento de auditoria contém métricas antigas |
+| Alta | 1 | Resolvido |
+| Média | 2 | Resolvidos |
+| Baixa | 1 | Resolvido |
 
-Após corrigir A1 e M1, o risco residual é baixo. M2 e B1 são importantes para impedir recorrência, mas não indicam falha do runtime atual no Chromium.
+O risco residual do escopo é baixo. A validação com leitor de tela real e sessões observadas com crianças continua sendo recomendação de produto, não um achado de código aberto.
 
 ## Inventário auditado
 
@@ -39,6 +39,8 @@ Não encontrei bloco visível sem tooltip, ID de bloco duplicado, API pública s
 ## Achados altos
 
 ### A1. O guard do runtime composto ficou desatualizado e quebra a suíte da extensão
+
+**Status pós-correção:** resolvido pela composição atual com concatenação comum; o guard passa e a suíte focada ficou verde.
 
 **Evidência**
 
@@ -59,6 +61,8 @@ Atualizar o guard para a composição atual e evitar novo número mágico. O tes
 ## Achados médios
 
 ### M1. `Preparar o jogo` apaga silenciosamente a descrição para leitor de tela
+
+**Status pós-correção:** resolvido em 0.35.1 com estado explícito preservado e duas regressões cobrindo ambas as ordens e novas preparações.
 
 **Evidência**
 
@@ -85,6 +89,8 @@ Preservar uma descrição explícita durante preparações posteriores. Uma solu
 
 ### M2. Os melhores testes de experiência real não estão protegendo o CI
 
+**Status pós-correção:** resolvido; o workflow instala Chromium e executa `examples-gallery.spec.ts --grep "game-2d:"` no check obrigatório.
+
 **Evidência**
 
 - `packages/studio/package.json:31` expõe `e2e: playwright test`.
@@ -102,6 +108,8 @@ Adicionar ao CI pelo menos o subconjunto `examples-gallery.spec.ts --grep "game-
 ## Achados baixos
 
 ### B1. O documento de auditoria vigente já divergiu das fontes reais
+
+**Status pós-correção:** resolvido; métricas atualizadas e teste documental ligado a `gameTwoDBlocks` e `GAME_TWO_D_API_KEYS`.
 
 **Evidência**
 
@@ -192,30 +200,30 @@ Não encontrei achado de segurança no escopo revisado.
 
 | Verificação | Resultado |
 |---|---|
-| Testes focados do Jogo 2D + integrações | **754 passaram, 1 falhou** — A1 |
+| Testes focados do Jogo 2D + integrações | **758/758 passaram**, 18.689 asserções, 25 arquivos |
 | Playwright `examples-gallery` filtrado para `game-2d:` | **24/24 passaram** em Chromium |
 | Biome apenas em `src/official-extensions/game-2d` | **42 arquivos aprovados** |
 | `git diff --check` no escopo | Aprovado |
-| `bun test src` no Studio | 4.517 passaram, 45 falharam; 1 falha pertence ao Jogo 2D, as demais são de áreas externas no snapshot sujo |
-| `bun run typecheck` no Studio | Falhou em `programmingAccessibility.test.ts:28`, fora do Jogo 2D; nenhum erro do módulo foi reportado |
-| `bun run check` no Studio | Falhou em arquivos externos; a checagem Biome focada passou |
-| Reprodução da ordem de descrição acessível | Falhou funcionalmente — M1 |
+| `bun test src` no Studio | **4.571/4.571 passaram**, 43.145 asserções, 296 arquivos |
+| `bun run typecheck` no Studio | Aprovado |
+| `bun run check` no Studio | **692 arquivos aprovados** |
+| Descrição acessível antes/depois da preparação | Aprovada nas duas ordens e após `setupStageFull` |
+| Workflow YAML | Parse aprovado e passo E2E focado confirmado |
 
 O relatório detalhado de QA está em `.audits/game-2d-full-review-2026-07-20/qa/verification-report.md`.
 
-## Ordem recomendada de correção
+## Correções executadas
 
-1. Corrigir o guard de template e restaurar 755/755 testes focados.
-2. Preservar a descrição acessível independentemente da ordem dos blocos e adicionar testes de regressão.
-3. Colocar o subconjunto Playwright do Jogo 2D no CI.
-4. Atualizar/automatizar as métricas do documento de auditoria.
-5. Planejar teste de usabilidade infantil para a paleta completa versus progressiva.
+1. Guard de template restaurado e suíte focada verde.
+2. Descrição acessível preservada independentemente da ordem, com regressões.
+3. Subconjunto Playwright do Jogo 2D adicionado ao CI.
+4. Métricas documentais atualizadas e automatizadas.
+5. Manifest atualizado para 0.35.1.
 
 ## Critério de aprovação sugerido
 
-- 755/755 testes focados verdes ou contagem maior sem regressões.
+- 758/758 testes focados verdes.
 - Testes novos cobrindo descrição antes/depois de ambos os blocos de preparação.
 - 24/24 cenários atuais de Chromium verdes.
 - Biome focado e `git diff --check` verdes.
 - Nenhum novo erro de tipo no escopo.
-

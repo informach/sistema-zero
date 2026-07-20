@@ -229,16 +229,29 @@ arquiteturais de reset. Depois das alterações, os mesmos cenários passaram.
 
 ### Resultado após todas as correções
 
-- **Regressões focadas desta revisão:** 301 aprovados, 0 falhas, 1.172
-  asserções, nove arquivos;
-- **Suíte completa do Studio:** 4.331 aprovados, 0 falhas, 41.833 asserções,
-  293 arquivos;
+- **Gate focado do Jogo 2D e integrações:** 758 aprovados, 0 falhas, 18.689
+  asserções, 25 arquivos;
+- **Suíte completa do Studio:** 4.571 aprovados, 0 falhas, 43.145 asserções,
+  296 arquivos;
 - **Contrato público:** compilação TypeScript isolada aprovada e inventário
   exato das 193 chaves aprovado;
 - **TypeScript global:** `tsc --noEmit` aprovado;
-- **Biome global:** 682 arquivos aprovados, sem correções pendentes;
-- **Chromium:** 25 cenários aprovados — todos os exemplos introdutórios,
-  geometria em DPR 1, 2 e 3, viewport estreito e reabertura do projeto.
+- **Biome global:** 692 arquivos aprovados, sem correções pendentes;
+- **Chromium:** 24 cenários focados aprovados — todos os exemplos introdutórios,
+  geometria em DPR 1, 2 e 3 e viewport estreito;
+- **CI:** o mesmo subconjunto Chromium do Jogo 2D passou a integrar o check
+  obrigatório do monorepo.
+
+### Fechamento do full review subsequente — 0.35.1
+
+- o guard do runtime composto voltou a passar ao concatenar o contexto de projeto
+  sem criar um template literal adicional;
+- uma descrição explícita para leitor de tela sobrevive independentemente da
+  ordem dos blocos e a novas preparações do palco;
+- duas regressões cobrem descrição antes/depois de `setupStage` e
+  `setupStageFull`;
+- o inventário documental de blocos e API ganhou um teste contra as fontes reais;
+- o Playwright focado do Jogo 2D agora roda no CI.
 
 ## Conclusão
 

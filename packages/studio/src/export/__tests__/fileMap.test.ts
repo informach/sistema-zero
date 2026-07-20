@@ -188,6 +188,20 @@ describe('buildClassicFileMap', () => {
     expect(warnings.some((w) => w.includes('esm.sh'))).toBe(true)
   })
 
+  it('extensao game-2d: exporta a fonte das interfaces pronta para uso offline', async () => {
+    const { files } = await buildClassicFileMap(
+      classicProject({
+        installedExtensions: [{ id: 'game-2d', version: '0.35.2', installedAt: 0 }],
+      }),
+      identityMinifiers,
+    )
+
+    const runtime = String(files['public/sz-ext/game-2d.js'])
+    expect(runtime).toContain('data:font/woff2;base64,')
+    expect(runtime).not.toMatch(/https?:\/\/fonts\.(googleapis|gstatic)\.com/)
+    expect(String(files['public/index.html'])).toContain('src="sz-ext/game-2d.js"')
+  })
+
   it('A1: reinjeta o link de style.css quando o aluno tirou a referencia do index', async () => {
     const { files } = await buildClassicFileMap(
       classicProject({

@@ -6,27 +6,28 @@
 
 ## Resultado executivo
 
-**Status: falhou para aprovação**, apesar de todos os cenários de browser terem passado.
+**Status: aprovado no escopo do Jogo 2D.**
 
-Bloqueadores do escopo:
+Os dois bloqueadores originais foram resolvidos:
 
-1. O teste `runtime composto: limites esperados e nenhuma interpolação acidental` espera 4 limites de template e recebe 6.
-2. Uma descrição explícita para leitor de tela é substituída pela descrição genérica quando `setupStage` ou `setupStageFull` roda depois.
+1. O guard do runtime composto voltou a passar com a composição atual.
+2. A descrição explícita para leitor de tela é preservada antes/depois de `setupStage` e após `setupStageFull`.
 
 ## Matriz de execução
 
 | ID | Camada | Cenário | Resultado |
 |---|---|---|---|
-| QA-01 | Unit/contrato | Catálogo, toolbox, pipeline, API e runtime focados | **Falhou: 754 pass, 1 fail** |
+| QA-01 | Unit/contrato | Catálogo, toolbox, pipeline, API e runtime focados | **758/758 pass** |
 | QA-02 | Browser | 14 cartões: criar, renderizar primeiro frame e aceitar controles | **14/14 pass** |
 | QA-03 | Browser | Sala, Equilibrista e Balão em DPR 1, 2 e 3 | **9/9 pass** |
 | QA-04 | Browser | Herói que anda em viewport 390×844 | **Pass** |
 | QA-05 | Acessibilidade/DOM | Preparar palco e depois definir descrição | **Pass** |
-| QA-06 | Acessibilidade/DOM | Definir descrição e depois preparar/repreparar palco | **Fail** |
+| QA-06 | Acessibilidade/DOM | Definir descrição e depois preparar/repreparar palco | **Pass** |
 | QA-07 | Estática | Biome no módulo | **42 arquivos pass** |
 | QA-08 | Estática | `git diff --check` no escopo | **Pass** |
-| QA-09 | Suíte do pacote | `bun test src` | **45 fails; 1 do Jogo 2D** |
-| QA-10 | Tipos do pacote | `tsc --noEmit` | **Fail externo ao escopo** |
+| QA-09 | Suíte do pacote | `bun test src` | **4.571/4.571 pass** |
+| QA-10 | Tipos do pacote | `tsc --noEmit` | **Pass** |
+| QA-11 | CI | Workflow contém Chromium focado do Jogo 2D | **Pass** |
 
 ## Comandos reproduzíveis
 
@@ -48,24 +49,23 @@ bunx biome check src/official-extensions/game-2d
 - Layout estreito/mobile.
 - Contratos exatos de blocos, IR, geração JS e API pública.
 - Playthroughs determinísticos para os 14 exemplos.
-- Foco visível, `aria-label`, `aria-describedby` e descrição customizada na ordem feliz.
+- Foco visível, `aria-label`, `aria-describedby` e descrição customizada nas duas ordens possíveis.
 
 ## Lacunas
 
 - Não foi executado leitor de tela real (NVDA/VoiceOver); a verificação de acessibilidade foi por DOM e contrato.
 - Não houve sessão observada com crianças; a adequação cognitiva da paleta de 193 blocos ainda exige teste de usabilidade.
-- Os cenários Playwright não estão configurados no workflow de CI.
 - Áudio foi coberto por testes de runtime, não por validação auditiva humana.
 
-## Evidência da regressão acessível
+## Evidência da correção acessível
 
 ```text
 custom=Colete 4 moedas. Use as setas.
-afterSecondSetup=Jogo 2D interativo
+afterSecondSetup=Colete 4 moedas. Use as setas.
 ```
 
-Comportamento esperado: `afterSecondSetup` deve conservar a descrição explícita.
+O comportamento é protegido por duas regressões no runtime real em happy-dom.
 
-## Recomendação de reteste
+## Reteste concluído
 
-Após as correções, repetir QA-01, QA-05, QA-06 e os 24 cenários Playwright. Só aprovar quando os testes focados estiverem integralmente verdes e a descrição sobreviver às duas ordens possíveis dos blocos.
+QA-01, QA-05, QA-06 e os 24 cenários Playwright foram repetidos após as correções. Typecheck, Biome global e a suíte completa do Studio também passaram.

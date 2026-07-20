@@ -59,4 +59,24 @@ describe('acessibilidade da categoria Programação', () => {
     expect(search).toContain("field.classList.add('sz-blockly-search-field')")
     expect(search).not.toContain("outline: 'none'")
   })
+
+  it('configura a busca como um controle nomeado e adequado para pesquisa', async () => {
+    const search = await Bun.file(new URL('../searchCategory.ts', import.meta.url)).text()
+    expect(search).toContain("field.type = 'search'")
+    expect(search).toContain("field.name = 'block-search'")
+    expect(search).toContain("field.autocomplete = 'off'")
+    expect(search).toContain('field.spellcheck = false')
+    expect(search).toContain("field.setAttribute('aria-label', 'Pesquisar blocos')")
+    expect(search).toContain("field.placeholder = 'Pesquisar blocos…'")
+    expect(search).not.toContain("field.placeholder = 'Pesquisar blocos...'")
+  })
+
+  it('remove deslocamento e transição da toolbox quando o movimento é reduzido', async () => {
+    const css = await Bun.file(new URL('../../styles/studio.css', import.meta.url)).text()
+    const reducedMotion = css.slice(css.indexOf('@media (prefers-reduced-motion: reduce)'))
+    expect(reducedMotion).toMatch(/\.blocklyToolboxCategory\s*\{[^}]*transition:\s*none/s)
+    expect(reducedMotion).toMatch(
+      /\.blocklyToolboxCategory:not\(\.blocklyToolboxSelected\):hover\s*\{[^}]*transform:\s*none/s,
+    )
+  })
 })

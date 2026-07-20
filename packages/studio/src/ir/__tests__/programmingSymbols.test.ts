@@ -396,6 +396,143 @@ describe('símbolos léxicos da Programação', () => {
     ).toBe(true)
   })
 
+  it('recusa event e ctx fora dos corpos que realmente os declaram', () => {
+    for (const name of ['event', 'ctx']) {
+      const parsed = SZIRSchema.safeParse(
+        legacyProject([{ type: 'consoleLog', value: { type: 'var', name } }]),
+      )
+      expect(parsed.success, name).toBe(false)
+      if (!parsed.success) {
+        expect(parsed.error.issues.some((issue) => issue.message.includes(name))).toBe(true)
+      }
+    }
+  })
+
+  it('libera event no listener e ctx somente no corpo da figura', () => {
+    expect(
+      SZIRSchema.safeParse(
+        legacyProject([
+          {
+            type: 'event',
+            target: '',
+            targetKind: 'document',
+            event: 'click',
+            body: [{ type: 'consoleLog', value: { type: 'var', name: 'event' } }],
+          },
+        ]),
+      ).success,
+    ).toBe(true)
+
+    expect(
+      SZIRSchema.safeParse(
+        legacyProject(
+          [
+            {
+              type: 'g2d:defineShape',
+              shapeName: 'heroi',
+              body: [
+                { type: 'consoleLog', value: { type: 'var', name: 'ctx' } },
+                {
+                  type: 'canvasFillRect',
+                  ctxVar: 'ctx',
+                  x: { type: 'num', value: 0 },
+                  y: { type: 'num', value: 0 },
+                  w: { type: 'num', value: 10 },
+                  h: { type: 'num', value: 10 },
+                },
+              ],
+            },
+          ],
+          true,
+        ),
+      ).success,
+    ).toBe(true)
+  })
+
+  it('promove símbolos futuros somente depois de await em função assíncrona', () => {
+    const afterAwait = SZIRSchema.safeParse(
+      legacyProject([
+        {
+          type: 'funcDecl',
+          name: 'carregar',
+          params: [],
+          async: true,
+          body: [
+            { type: 'awaitStmt', value: { type: 'num', value: 1 } },
+            { type: 'consoleLog', value: { type: 'var', name: 'pontos' } },
+          ],
+        },
+        { type: 'callFunction', name: 'carregar', args: [] },
+        { type: 'var', name: 'pontos', value: { type: 'num', value: 1 } },
+      ]),
+    )
+    expect(afterAwait.success).toBe(true)
+
+    const beforeAwait = SZIRSchema.safeParse(
+      legacyProject([
+        {
+          type: 'funcDecl',
+          name: 'carregar',
+          params: [],
+          async: true,
+          body: [
+            { type: 'consoleLog', value: { type: 'var', name: 'pontos' } },
+            { type: 'awaitStmt', value: { type: 'num', value: 1 } },
+          ],
+        },
+        { type: 'callFunction', name: 'carregar', args: [] },
+        { type: 'var', name: 'pontos', value: { type: 'num', value: 1 } },
+      ]),
+    )
+    expect(beforeAwait.success).toBe(false)
+  })
+
+  it('promove símbolos futuros depois de await em método assíncrono', () => {
+    expect(
+      SZIRSchema.safeParse(
+        legacyProject([
+          {
+            type: 'classDecl',
+            name: 'Painel',
+            ctorBody: [],
+            methods: [
+              {
+                name: 'carregar',
+                params: [],
+                async: true,
+                body: [
+                  { type: 'awaitStmt', value: { type: 'num', value: 1 } },
+                  { type: 'consoleLog', value: { type: 'var', name: 'pontos' } },
+                ],
+              },
+            ],
+          },
+          { type: 'newInstance', varName: 'painel', className: 'Painel', args: [] },
+          { type: 'callMethod', objectVar: 'painel', method: 'carregar', args: [] },
+          { type: 'var', name: 'pontos', value: { type: 'num', value: 1 } },
+        ]),
+      ).success,
+    ).toBe(true)
+  })
+
+  it('trata onclick, onload e onerror como callbacks adiados', () => {
+    for (const type of ['onClickAssign', 'imageOnLoad', 'imageOnError'] as const) {
+      expect(
+        SZIRSchema.safeParse(
+          legacyProject([
+            {
+              type,
+              target: { type: 'objectLiteral', entries: [] },
+              body: [{ type: 'consoleLog', value: { type: 'var', name: 'pontos' } }],
+            },
+            { type: 'var', name: 'pontos', value: { type: 'num', value: 1 } },
+          ]),
+        ).success,
+        type,
+      ).toBe(true)
+    }
+  })
+
   it('valida o corpo de métodos e construtores no ponto em que a instância é usada', () => {
     const classDecl = {
       type: 'classDecl',
