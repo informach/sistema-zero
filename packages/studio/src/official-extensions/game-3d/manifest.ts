@@ -13,7 +13,7 @@ import {
 export const gameThreeDManifest: ExtensionManifest = {
   id: 'game-3d',
   name: 'Jogo 3D',
-  version: '0.12.0',
+  version: '0.12.1',
   description:
     'Blocos e comandos para criar jogos 3D com Three.js: cena/câmera/luz (e cena em tela cheia responsiva), cubos/esferas/caixas, posição/rotação/escala, física (velocidade, gravidade, pulo, colisão), teclado, câmera que segue, genéricos de grade isométrica e de movimento (círculo, distância, cair girando, deslizar, girar) e Kits prontos: "Desvie", "Travessia", "Corrida" e "Empilhar". Three.js carrega de um CDN fixado.',
   category: 'games',
@@ -35,6 +35,10 @@ cenas e **jogos** 3D sobre WebGL. O Three.js é carregado de um CDN **fixado**
 - Em **🔁 Enquanto estiver rodando**, coloque **A cada frame 3D** e
   atualizações periódicas. Dentro do quadro, apenas mova, anime, aplique física
   e teste colisões.
+
+Comandos que representam um passo contínuo cabem no corpo desses loops ou em
+funções/métodos chamados por eles. Eles não entram diretamente em **Ao iniciar**,
+em um evento ou em um construtor.
 
 ### Cena & objetos
 
@@ -110,7 +114,8 @@ cenas e **jogos** 3D sobre WebGL. O Three.js é carregado de um CDN **fixado**
 
 - Para começar rápido, use **Criar cena 3D em tela cheia** (cria o canvas sozinho). Para mais controle (HUD próprio, layout), crie o \`<canvas>\` no HTML primeiro e use **Criar cena 3D no canvas** (mesmo padrão do Jogo 2D).
 - Crie cena, objetos, modelos, luzes e enxames UMA vez em **⚙️ Ao iniciar**; dentro
-  de **A cada frame 3D**, apenas mova, anime, aplique física e teste colisões. O
+  de **A cada frame 3D** ou de uma função/método chamado pelo loop, apenas mova,
+  anime, aplique física e teste colisões. O
   projeto é validado antes de executar para impedir construções persistentes no loop.
 - Eixos genéricos: x = direita, y = cima, z = profundidade; distância, círculo e grade usam o chão X-Z. Os kits Travessia/Corrida mantêm sua convenção interna sem mudar os blocos genéricos. Rotação em radianos.
 - Movimento e física usam o tempo real do quadro, mantendo a velocidade em telas de 60/120/144 Hz.

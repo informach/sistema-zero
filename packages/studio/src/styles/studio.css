@@ -109,6 +109,30 @@
 [data-sz-theme] .blocklyToolboxCategoryGroup {
   padding: 4px 6px;
 }
+/*
+ * No layout horizontal, uma categoria aninhada não pode aumentar a altura da
+ * toolbox: o Blockly posiciona o flyout DEPOIS dela. Programação tem 14 filhos;
+ * em celular, o fluxo vertical empurrava o flyout inteiro para fora da tela.
+ * A faixa segue a hierarquia ARIA do Blockly, mas dispõe pais e filhos na mesma
+ * linha rolável. O seletor expandido precisa vencer `display:block` inline.
+ */
+[data-sz-toolbox-layout="horizontal"] .blocklyToolbox > .blocklyToolboxCategoryGroup {
+  flex-wrap: nowrap;
+}
+[data-sz-toolbox-layout="horizontal"] .blocklyToolboxCategoryContainer {
+  flex: 0 0 auto;
+}
+[data-sz-toolbox-layout="horizontal"] .blocklyToolboxCategoryContainer[aria-expanded="true"] {
+  display: flex;
+  align-items: flex-start;
+}
+[data-sz-toolbox-layout="horizontal"]
+  .blocklyToolboxCategoryContainer[aria-expanded="true"]
+  > .blocklyToolboxCategoryGroup {
+  /* biome-ignore lint/complexity/noImportantStyles: o Blockly escreve display:block inline ao expandir; flex mantém o flyout dentro do workspace compacto. */
+  display: flex !important;
+  flex-flow: row nowrap;
+}
 [data-sz-theme] .blocklyToolboxCategory {
   box-sizing: border-box;
   min-height: 40px;

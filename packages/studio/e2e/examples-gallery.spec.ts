@@ -215,7 +215,7 @@ async function applyInteraction(
   for (const key of keys[interaction]) await page.keyboard.press(key)
 }
 
-async function openAndExercise(page: Page, contract: ExampleQAContract): Promise<void> {
+async function openAndExercise(page: Page, contract: ExampleQAContract): Promise<FrameLocator> {
   const diagnostics: string[] = []
   page.on('pageerror', (error) => diagnostics.push(`pageerror: ${error.message}`))
   page.on('console', (message) => {
@@ -306,6 +306,7 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
   await page.waitForTimeout(300)
   await expectFirstFrame(page)
   expect(diagnostics, diagnostics.join('\n')).toEqual([])
+  return preview
 }
 
 async function expectLogicalCanvasAtDpr(page: Page, expectedDpr: number): Promise<void> {
@@ -356,6 +357,56 @@ for (const dpr of [1, 2, 3]) {
     }
   })
 }
+
+test('Jogo 2D mantém o viewport sem barras durante o tremor da tela', async ({ page }) => {
+  const contract = EXAMPLE_QA_CONTRACTS.find(
+    (item) => item.key === 'game-2d:Nave contra Asteroides',
+  )
+  if (!contract) throw new Error('contrato do exemplo Nave contra Asteroides ausente')
+
+  const preview = await openAndExercise(page, contract)
+  const state = await preview
+    .locator('canvas')
+    .first()
+    .evaluate(async (element) => {
+      const canvas = element as HTMLCanvasElement
+      const api = (
+        window as unknown as {
+          SZGame2D: { shake: (ctx: CanvasRenderingContext2D, intensity: number) => void }
+        }
+      ).SZGame2D
+      const context = canvas.getContext('2d')
+      if (!context) throw new Error('canvas 2D sem contexto durante o teste de tremor')
+
+      const originalRandom = Math.random
+      Math.random = () => 1
+      try {
+        api.shake(context, 48)
+        await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+        return {
+          transform: canvas.style.transform,
+          htmlOverflow: getComputedStyle(document.documentElement).overflow,
+          bodyOverflow: getComputedStyle(document.body).overflow,
+          horizontalScrollbar: window.innerWidth - document.documentElement.clientWidth,
+          verticalScrollbar: window.innerHeight - document.documentElement.clientHeight,
+          scrollX: window.scrollX,
+          scrollY: window.scrollY,
+        }
+      } finally {
+        Math.random = originalRandom
+      }
+    })
+
+  expect(state.transform).toMatch(/^translate\(/)
+  expect(state).toMatchObject({
+    htmlOverflow: 'hidden',
+    bodyOverflow: 'hidden',
+    horizontalScrollbar: 0,
+    verticalScrollbar: 0,
+    scrollX: 0,
+    scrollY: 0,
+  })
+})
 
 test('Defesa do Reino cobra uma compra e cria uma torre após o boot automático', async ({
   page,

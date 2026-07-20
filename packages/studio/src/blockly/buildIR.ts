@@ -4,15 +4,20 @@ import type {
   CSSDeclarations,
   CSSEntry,
   HTMLNode,
-  HTMLTag,
   JSExpr,
   JSStatement,
   SZIR,
   SZIRV2,
 } from '#ir'
-import { cssDeclarationEntries, HTMLNodeSchema, splitLegacyBehavior } from '#ir'
-import { normalizeCSSTransitionProperty } from '../css/motion'
-import { htmlElementForBlock, isSupportedHTMLInputType } from '../html/catalog'
+import { splitLegacyBehavior } from '#ir'
+import {
+  programmingCodecForBlockType,
+  programmingCodecSupports,
+} from '../codecs/programming/registry'
+import { canvasExpressionBlockToIR, canvasStatementBlockToIR } from '../codecs/web/canvasBlockToIR'
+import { cssBlockToIR } from '../codecs/web/cssBlockToIR'
+import { htmlBlockToIR } from '../codecs/web/htmlBlockToIR'
+import { webCodecForBlockType } from '../codecs/web/registry'
 import {
   FRAME_APPEARANCE,
   FRAME_BEHAVIOR_LEGACY,
@@ -24,8 +29,8 @@ import {
 import { getSuperName } from './blocks/extendsMutator'
 import { getParamNames } from './blocks/paramsMutator'
 import { ADDON_MODULES } from './fields/FieldAddonPicker'
-import { PROGRAMMING_VISIBLE_TYPES } from './programmingContract'
 
+export { SHADOW_PRESETS } from '../codecs/web/cssBlockToIR'
 /** Tipos das cinco Áreas do projeto e da moldura legada de migração. */
 export {
   FRAME_APPEARANCE,
@@ -207,58 +212,6 @@ function mergeBlockData(block: Blockly.Block, node: HTMLNode): void {
 }
 
 /**
- * Recupera `width`/`height` guardados no `data` JSON do bloco `sz_html_canvas`
- * (contraparte do stash em `htmlNodeToBlockInner` de workspaceState). Só devolve
- * valores numéricos finitos; `data` ausente/inválido vira `{}`.
- */
-function parseCanvasData(raw: string | null | undefined): {
-  width?: number
-  height?: number
-  attrs?: Record<string, string>
-  children?: HTMLNode[]
-  classSource?: 'legacy'
-} {
-  if (!raw) return {}
-  let parsed: unknown
-  try {
-    parsed = JSON.parse(raw)
-  } catch {
-    return {}
-  }
-  if (typeof parsed !== 'object' || parsed === null) return {}
-  const record = parsed as Record<string, unknown>
-  const { width, height } = record
-  const out: {
-    width?: number
-    height?: number
-    attrs?: Record<string, string>
-    children?: HTMLNode[]
-    classSource?: 'legacy'
-  } = {}
-  if (typeof width === 'number' && Number.isFinite(width)) out.width = width
-  if (typeof height === 'number' && Number.isFinite(height)) out.height = height
-  if (record.attrs && typeof record.attrs === 'object' && !Array.isArray(record.attrs)) {
-    const attrs = Object.fromEntries(
-      Object.entries(record.attrs).filter(
-        (entry): entry is [string, string] => typeof entry[1] === 'string',
-      ),
-    )
-    if (Object.keys(attrs).length > 0) out.attrs = attrs
-  }
-  if (Array.isArray(record.children)) {
-    const children: HTMLNode[] = []
-    for (const child of record.children) {
-      const result = HTMLNodeSchema.safeParse(child)
-      if (!result.success) return out
-      children.push(result.data)
-    }
-    if (children.length > 0) out.children = children
-  }
-  if (record.classSource === 'legacy') out.classSource = 'legacy'
-  return out
-}
-
-/**
  * Mescla o campo `CLASS` do bloco no `attrs.class` da IR. Contraparte de
  * `htmlNodeToBlock` em workspaceState, que preenche o campo a partir de
  * `attrs.class`. Campo vazio é ignorado (round-trip estável).
@@ -414,6 +367,10 @@ function blockToExpr(block: Blockly.Block | null): JSExpr | null {
 }
 
 function blockToExprInner(block: Blockly.Block): JSExpr | null {
+  const webCodec = webCodecForBlockType(block.type)
+  if (webCodec?.category === 'canvas' && webCodec.irKind === 'expression') {
+    return canvasExpressionBlockToIR(block, { field: f, expression: exprInput })
+  }
   switch (block.type) {
     case 'sz_val_number':
       return { type: 'num', value: fn(block, 'NUM') }
@@ -490,6 +447,8 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g2d:hasHealth', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_health_depleted':
       return { type: 'g2d:healthDepleted', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_is_invincible':
+      return { type: 'g2d:isInvincible', spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_cooldown_ready':
       return {
         type: 'g2d:cooldownReady',
@@ -927,12 +886,6 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g3k:stateIs', name: f(block, 'STATE') || 'jogando' }
     case 'sz_g3k_game_state':
       return { type: 'g3k:gameState' }
-    case 'sz_input_key_pressed':
-      return { type: 'inputKeyPressed', key: f(block, 'KEY') || 'ArrowRight' }
-    case 'sz_input_pointer_x':
-      return { type: 'inputPointer', axis: 'x' }
-    case 'sz_input_pointer_y':
-      return { type: 'inputPointer', axis: 'y' }
     case 'sz_val_is_fullscreen':
       return { type: 'isFullscreen' }
     case 'sz_val_device_pixel_ratio':
@@ -962,26 +915,6 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'canvasDim', ctxVar: f(block, 'CTX'), dim: 'width' }
     case 'sz_val_canvas_height':
       return { type: 'canvasDim', ctxVar: f(block, 'CTX'), dim: 'height' }
-    case 'sz_canvas_measure_text':
-      return {
-        type: 'canvasMeasureText',
-        ctxVar: f(block, 'CTX'),
-        text: exprInput(block, 'TEXT', { type: 'str', value: '' }),
-      }
-    case 'sz_canvas_point_in_path':
-      return {
-        type: 'canvasIsPointInPath',
-        ctxVar: f(block, 'CTX'),
-        x: exprInput(block, 'X', { type: 'num', value: 0 }),
-        y: exprInput(block, 'Y', { type: 'num', value: 0 }),
-      }
-    case 'sz_canvas_point_in_stroke':
-      return {
-        type: 'canvasIsPointInStroke',
-        ctxVar: f(block, 'CTX'),
-        x: exprInput(block, 'X', { type: 'num', value: 0 }),
-        y: exprInput(block, 'Y', { type: 'num', value: 0 }),
-      }
     case 'sz_val_random':
       return {
         type: 'random',
@@ -1168,8 +1101,6 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
         object: exprInput(block, 'OBJ', { type: 'var', name: 'lista' }),
         index: exprInput(block, 'INDEX', { type: 'num', value: 0 }),
       }
-    case 'sz_val_image':
-      return { type: 'assetImage', name: f(block, 'ASSET') }
     case 'sz_val_call_function':
       return { type: 'call', name: f(block, 'NAME'), args: getArgs(block) }
     case 'sz_val_join':
@@ -1416,94 +1347,29 @@ function getCssEntryChildren(block: Blockly.Block, name: string, seen: Set<strin
   return out
 }
 
-function htmlContainer(tag: HTMLTag, block: Blockly.Block, seen: Set<string>): RoutedNode {
-  const id = f(block, 'ID')
-  return {
-    kind: 'html',
-    value: {
-      type: 'element',
-      tag,
-      ...(id ? { id } : {}),
-      children: getHtmlChildren(block, 'CHILDREN', seen),
-    },
-  }
-}
-
-/**
- * Elemento de texto que também pode conter filhos inline (h1..h3, p, span,
- * strong, em, li, label). Usa o campo TEXT quando é só texto e o input CHILDREN
- * quando há filhos aninhados.
- */
-function htmlText(tag: HTMLTag, block: Blockly.Block, seen: Set<string>): RoutedNode {
-  const text = f(block, 'TEXT')
-  const children = getHtmlChildren(block, 'CHILDREN', seen)
-  const labelFor = tag === 'label' ? f(block, 'FOR') : ''
-  return {
-    kind: 'html',
-    value: {
-      type: 'element',
-      tag,
-      ...(text ? { text } : {}),
-      ...(labelFor ? { attrs: { for: labelFor } } : {}),
-      ...(children.length > 0 ? { children } : {}),
-    },
-  }
-}
-
-function catalogHTMLBlockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
-  const descriptor = htmlElementForBlock(block.type)
-  if (!descriptor) return null
-  if (descriptor.parserShape === 'inline-text') return htmlText(descriptor.tag, block, seen)
-  if (
-    descriptor.parserShape === 'container' &&
-    descriptor.tag !== 'svg' &&
-    descriptor.tag !== 'g'
-  ) {
-    return htmlContainer(descriptor.tag, block, seen)
-  }
-  return null
-}
-
-function svgAttributes(
-  block: Blockly.Block,
-  fields: ReadonlyArray<readonly [attribute: string, field: string]>,
-): Record<string, string> {
-  const attrs: Record<string, string> = {}
-  for (const [attribute, field] of fields) {
-    const value = f(block, field)
-    if (value) attrs[attribute] = value
-  }
-  return attrs
-}
-
-function svgLeaf(
-  tag: HTMLTag,
-  block: Blockly.Block,
-  fields: ReadonlyArray<readonly [attribute: string, field: string]>,
-): RoutedNode {
-  const id = f(block, 'ID')
-  const attrs = svgAttributes(block, fields)
-  return {
-    kind: 'html',
-    value: {
-      type: 'element',
-      tag,
-      ...(id ? { id } : {}),
-      ...(Object.keys(attrs).length > 0 ? { attrs } : {}),
-    },
-  }
-}
-
-/** Presets de `box-shadow` por intensidade. Compartilhado com o round-trip. */
-export const SHADOW_PRESETS = {
-  sm: '0 1px 3px rgba(0,0,0,0.2)',
-  md: '0 4px 12px rgba(0,0,0,0.25)',
-  lg: '0 10px 30px rgba(0,0,0,0.35)',
-} as const
-
 function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
-  const catalogHTML = catalogHTMLBlockToIR(block, seen)
-  if (catalogHTML) return catalogHTML
+  const webCodec = webCodecForBlockType(block.type)
+  if (webCodec?.irKind === 'html') {
+    const webHTML = htmlBlockToIR(block, seen, { children: getHtmlChildren })
+    if (webHTML) return { kind: 'html', value: webHTML }
+  }
+  if (webCodec?.irKind === 'css') {
+    return cssBlockToIR(block, seen, {
+      field: f,
+      numberField: fn,
+      declarations: getCssDeclarations,
+      entries: getCssEntryChildren,
+      keyframeSteps: getKeyframeSteps,
+    })
+  }
+  if (webCodec?.category === 'canvas' && webCodec.irKind === 'statement') {
+    return canvasStatementBlockToIR(block, seen, {
+      field: f,
+      numberField: fn,
+      expression: exprInput,
+      statements: getStatementChildren,
+    })
+  }
   switch (block.type) {
     case 'sz_legacy_nested_start':
     case 'sz_legacy_nested_event':
@@ -1511,730 +1377,11 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       const [statement] = getStatementChildren(block, 'CHILD', seen)
       return statement ? { kind: 'js', value: statement } : null
     }
-    // ---- HTML ----
-    case 'sz_html_button': {
-      const id = f(block, 'ID')
-      const buttonType = f(block, 'TYPE')
-      return {
-        kind: 'html',
-        value: {
-          type: 'element',
-          tag: 'button',
-          ...(id ? { id } : {}),
-          text: f(block, 'TEXT'),
-          ...(buttonType ? { attrs: { type: buttonType } } : {}),
-        },
-      }
-    }
-    case 'sz_html_link':
-      return {
-        kind: 'html',
-        value: {
-          type: 'element',
-          tag: 'a',
-          text: f(block, 'TEXT'),
-          attrs: { href: f(block, 'HREF') },
-        },
-      }
-    case 'sz_html_image': {
-      const id = f(block, 'ID')
-      const alt = f(block, 'ALT')
-      const decorative = f(block, 'DECORATIVE') === 'TRUE'
-      return {
-        kind: 'html',
-        value: {
-          type: 'element',
-          tag: 'img',
-          ...(id ? { id } : {}),
-          // A presença de `alt=""` é semântica: indica imagem decorativa. O
-          // checkbox separa esse caso de uma imagem importada sem atributo alt.
-          attrs: { src: f(block, 'SRC'), ...(decorative ? { alt: '' } : alt ? { alt } : {}) },
-        },
-      }
-    }
-    case 'sz_html_input': {
-      const id = f(block, 'ID')
-      const inputType = f(block, 'TYPE')
-      const placeholder = f(block, 'PLACEHOLDER')
-      const name = f(block, 'NAME')
-      const value = f(block, 'VALUE')
-      const checked = f(block, 'CHECKED') === 'TRUE'
-      const attrs: Record<string, string> = {}
-      if (inputType && isSupportedHTMLInputType(inputType)) attrs.type = inputType
-      if (placeholder) attrs.placeholder = placeholder
-      if (name) attrs.name = name
-      if (value) attrs.value = value
-      if (checked) attrs.checked = ''
-      return {
-        kind: 'html',
-        value: {
-          type: 'element',
-          tag: 'input',
-          ...(id ? { id } : {}),
-          ...(Object.keys(attrs).length > 0 ? { attrs } : {}),
-        },
-      }
-    }
-    case 'sz_html_textarea': {
-      const id = f(block, 'ID')
-      const placeholder = f(block, 'PLACEHOLDER')
-      const name = f(block, 'NAME')
-      const attrs: Record<string, string> = {}
-      if (placeholder) attrs.placeholder = placeholder
-      if (name) attrs.name = name
-      return {
-        kind: 'html',
-        value: {
-          type: 'element',
-          tag: 'textarea',
-          ...(id ? { id } : {}),
-          text: f(block, 'TEXT'),
-          ...(Object.keys(attrs).length > 0 ? { attrs } : {}),
-        },
-      }
-    }
-    case 'sz_html_canvas': {
-      // Largura/altura saíram do bloco HTML — o tamanho costuma ser definido nos
-      // blocos de Canvas (JS). Quando o canvas veio do HTML com width/height
-      // (ex.: `<canvas width=200 height=100>`), o workspaceState os guardou no
-      // `data` do bloco; recuperamos daqui para o round-trip não os perder.
-      const id = f(block, 'ID')
-      const data = parseCanvasData((block as unknown as { data?: string | null }).data)
-      const node: Extract<HTMLNode, { type: 'canvas' }> = {
-        type: 'canvas',
-        ...(id ? { id } : {}),
-      }
-      const cls = f(block, 'CLASS')
-      const attrs = { ...(data.attrs ?? {}) }
-      if (cls) {
-        if (data.classSource === 'legacy') node.class = cls
-        else attrs.class = cls
-      }
-      if (Object.keys(attrs).length > 0) node.attrs = attrs
-      const description = f(block, 'DESCRIPTION')
-      if (description) node.children = [{ type: 'text', text: description }]
-      else if (data.children) node.children = data.children
-      if (data.width != null) node.width = data.width
-      if (data.height != null) node.height = data.height
-      return { kind: 'html', value: node }
-    }
-    case 'sz_html_text':
-      return { kind: 'html', value: { type: 'text', text: f(block, 'TEXT') } }
-    case 'sz_html_comment':
-      return { kind: 'html', value: { type: 'comment', text: f(block, 'TEXT') } }
-    case 'sz_html_svg': {
-      const id = f(block, 'ID')
-      const attrs: Record<string, string> = {}
-      for (const [k, field] of [
-        ['width', 'WIDTH'],
-        ['height', 'HEIGHT'],
-        ['viewBox', 'VIEWBOX'],
-      ] as const) {
-        const v = f(block, field)
-        if (v) attrs[k] = v
-      }
-      return {
-        kind: 'html',
-        value: {
-          type: 'element',
-          tag: 'svg',
-          ...(id ? { id } : {}),
-          ...(Object.keys(attrs).length ? { attrs } : {}),
-          children: getHtmlChildren(block, 'CHILDREN', seen),
-        },
-      }
-    }
-    case 'sz_svg_group': {
-      const id = f(block, 'ID')
-      const tr = f(block, 'TRANSFORM')
-      return {
-        kind: 'html',
-        value: {
-          type: 'element',
-          tag: 'g',
-          ...(id ? { id } : {}),
-          ...(tr ? { attrs: { transform: tr } } : {}),
-          children: getHtmlChildren(block, 'CHILDREN', seen),
-        },
-      }
-    }
-    case 'sz_svg_path': {
-      return svgLeaf('path', block, [
-        ['d', 'D'],
-        ['fill', 'FILL'],
-        ['stroke', 'STROKE'],
-        ['transform', 'TRANSFORM'],
-      ])
-    }
-    case 'sz_svg_circle': {
-      return svgLeaf('circle', block, [
-        ['cx', 'CX'],
-        ['cy', 'CY'],
-        ['r', 'R'],
-        ['fill', 'FILL'],
-      ])
-    }
-    case 'sz_svg_rect': {
-      return svgLeaf('rect', block, [
-        ['x', 'X'],
-        ['y', 'Y'],
-        ['width', 'WIDTH'],
-        ['height', 'HEIGHT'],
-        ['fill', 'FILL'],
-      ])
-    }
-    case 'sz_svg_line': {
-      return svgLeaf('line', block, [
-        ['x1', 'X1'],
-        ['y1', 'Y1'],
-        ['x2', 'X2'],
-        ['y2', 'Y2'],
-        ['stroke', 'STROKE'],
-      ])
-    }
-    case 'sz_svg_use': {
-      const attrs: Record<string, string> = {}
-      const href = f(block, 'HREF')
-      const data = readBlockData(block)
-      if (href) attrs['xlink:href' in data ? 'xlink:href' : 'href'] = href
-      const tr = f(block, 'TRANSFORM')
-      if (tr) attrs.transform = tr
-      const id = f(block, 'ID')
-      return {
-        kind: 'html',
-        value: {
-          type: 'element',
-          tag: 'use',
-          ...(id ? { id } : {}),
-          ...(Object.keys(attrs).length > 0 ? { attrs } : {}),
-        },
-      }
-    }
-    case 'sz_svg_ellipse': {
-      return svgLeaf('ellipse', block, [
-        ['cx', 'CX'],
-        ['cy', 'CY'],
-        ['rx', 'RX'],
-        ['ry', 'RY'],
-        ['fill', 'FILL'],
-      ])
-    }
-    case 'sz_svg_polyline': {
-      return svgLeaf('polyline', block, [
-        ['points', 'POINTS'],
-        ['fill', 'FILL'],
-        ['stroke', 'STROKE'],
-      ])
-    }
-    case 'sz_svg_polygon': {
-      return svgLeaf('polygon', block, [
-        ['points', 'POINTS'],
-        ['fill', 'FILL'],
-        ['stroke', 'STROKE'],
-      ])
-    }
-    case 'sz_svg_text': {
-      const id = f(block, 'ID')
-      const attrs = svgAttributes(block, [
-        ['x', 'X'],
-        ['y', 'Y'],
-        ['fill', 'FILL'],
-      ])
-      const text = f(block, 'TEXT')
-      return {
-        kind: 'html',
-        value: {
-          type: 'element',
-          tag: 'text',
-          ...(id ? { id } : {}),
-          ...(text ? { text } : {}),
-          ...(Object.keys(attrs).length ? { attrs } : {}),
-        },
-      }
-    }
     case 'sz_adv_raw_html':
       return { kind: 'html', value: { type: 'rawHTML', html: f(block, 'CODE'), advanced: true } }
 
-    // ---- CSS ----
-    case 'sz_css_body_background':
-      return {
-        kind: 'css',
-        value: { selector: 'body', declarations: { background: f(block, 'COLOR') } },
-      }
-    case 'sz_css_body_text_color':
-      return {
-        kind: 'css',
-        value: { selector: 'body', declarations: { color: f(block, 'COLOR') } },
-      }
-    case 'sz_css_body_center':
-      return {
-        kind: 'css',
-        value: {
-          selector: 'body',
-          declarations: {
-            display: 'flex',
-            'flex-direction': 'column',
-            'align-items': 'center',
-            'justify-content': 'center',
-            'min-height': '100vh',
-            margin: '0',
-          },
-        },
-      }
-    case 'sz_css_width':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { width: `${fn(block, 'VALUE')}px` },
-        },
-      }
-    case 'sz_css_height':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { height: `${fn(block, 'VALUE')}px` },
-        },
-      }
-    case 'sz_css_fill':
-      return {
-        kind: 'css',
-        value: { selector: f(block, 'SELECTOR'), declarations: { fill: f(block, 'VALUE') } },
-      }
-    case 'sz_css_stroke':
-      return {
-        kind: 'css',
-        value: { selector: f(block, 'SELECTOR'), declarations: { stroke: f(block, 'VALUE') } },
-      }
-    case 'sz_css_stroke_width':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { 'stroke-width': `${fn(block, 'VALUE')}` },
-        },
-      }
-    case 'sz_css_stroke_dasharray':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { 'stroke-dasharray': f(block, 'VALUE') },
-        },
-      }
-    case 'sz_css_stroke_linecap':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { 'stroke-linecap': f(block, 'VALUE') },
-        },
-      }
-    case 'sz_css_text_anchor':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { 'text-anchor': f(block, 'VALUE') },
-        },
-      }
-    case 'sz_css_border':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { border: `${fn(block, 'WIDTH')}px solid ${f(block, 'COLOR')}` },
-        },
-      }
-    case 'sz_css_padding':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { padding: `${fn(block, 'VALUE')}px` },
-        },
-      }
-    case 'sz_css_margin':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { margin: `${fn(block, 'VALUE')}px` },
-        },
-      }
-    case 'sz_css_display_flex':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { display: 'flex', 'flex-direction': f(block, 'DIR') },
-        },
-      }
-    case 'sz_css_gap':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { gap: `${fn(block, 'VALUE')}px` },
-        },
-      }
-    case 'sz_css_justify':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { 'justify-content': f(block, 'VALUE') },
-        },
-      }
-    case 'sz_css_align':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { 'align-items': f(block, 'VALUE') },
-        },
-      }
-    case 'sz_css_font_size':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { 'font-size': `${fn(block, 'VALUE')}px` },
-        },
-      }
-    case 'sz_css_font_weight':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { 'font-weight': f(block, 'VALUE') },
-        },
-      }
-    case 'sz_css_text_align':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { 'text-align': f(block, 'VALUE') },
-        },
-      }
-    case 'sz_css_text_color':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { color: f(block, 'COLOR') },
-        },
-      }
-    case 'sz_css_text_transform':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { 'text-transform': f(block, 'VALUE') },
-        },
-      }
-    case 'sz_css_text_decoration':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { 'text-decoration': f(block, 'VALUE') },
-        },
-      }
-    case 'sz_css_letter_spacing':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { 'letter-spacing': `${fn(block, 'VALUE')}px` },
-        },
-      }
-    case 'sz_css_background_color':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { 'background-color': f(block, 'COLOR') },
-        },
-      }
-    case 'sz_css_gradient':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: {
-            background: `linear-gradient(135deg, ${f(block, 'C1')}, ${f(block, 'C2')})`,
-          },
-        },
-      }
-    case 'sz_css_border_radius':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { 'border-radius': `${fn(block, 'VALUE')}px` },
-        },
-      }
-    case 'sz_css_shadow':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: {
-            'box-shadow':
-              SHADOW_PRESETS[f(block, 'LEVEL') as keyof typeof SHADOW_PRESETS] ?? SHADOW_PRESETS.md,
-          },
-        },
-      }
-    case 'sz_css_max_width':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { 'max-width': `${fn(block, 'VALUE')}px` },
-        },
-      }
-    case 'sz_css_width_percent':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { width: `${fn(block, 'VALUE')}%` },
-        },
-      }
-    case 'sz_css_rule': {
-      const { declarations, declIds } = getCssDeclarations(block, 'CHILDREN')
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations,
-          ...(Array.isArray(declarations) || Object.keys(declIds).length === 0
-            ? {}
-            : { __declIds: declIds }),
-        },
-      }
-    }
-    case 'sz_css_google_font':
-      return { kind: 'css', value: { type: 'googleFont', family: f(block, 'FONT') || 'Roboto' } }
-    case 'sz_css_use_font': {
-      const family = f(block, 'FONT').trim() || 'Roboto'
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { 'font-family': `${JSON.stringify(family)}, sans-serif` },
-        },
-      }
-    }
-    case 'sz_css_media_query':
-      return {
-        kind: 'css',
-        value: {
-          type: 'mediaQuery',
-          feature:
-            f(block, 'DIR') === 'min-width' ||
-            f(block, 'DIR') === 'max-height' ||
-            f(block, 'DIR') === 'min-height'
-              ? (f(block, 'DIR') as 'min-width' | 'max-height' | 'min-height')
-              : 'max-width',
-          px: fn(block, 'PX', 768),
-          rules: getCssEntryChildren(block, 'RULES', seen),
-        },
-      }
-    case 'sz_css_transition':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: {
-            transition: `${normalizeCSSTransitionProperty(f(block, 'PROPERTY'))} ${fn(block, 'MS', 300)}ms ease`,
-          },
-        },
-      }
-    case 'sz_css_reduce_motion':
-      return {
-        kind: 'css',
-        value: {
-          type: 'mediaQuery',
-          feature: 'prefers-reduced-motion',
-          rules: [
-            {
-              selector: f(block, 'SELECTOR'),
-              declarations: { animation: 'none', transition: 'none' },
-            },
-          ],
-        },
-      }
-    case 'sz_css_hover': {
-      const { declarations, declIds } = getCssDeclarations(block, 'CHILDREN')
-      return {
-        kind: 'css',
-        value: {
-          selector: `${f(block, 'SELECTOR')}:hover`,
-          declarations,
-          ...(Array.isArray(declarations) || Object.keys(declIds).length === 0
-            ? {}
-            : { __declIds: declIds }),
-        },
-      }
-    }
-    case 'sz_css_grid':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: {
-            display: 'grid',
-            'grid-template-columns': `repeat(${fn(block, 'COLS', 3)}, 1fr)`,
-            gap: `${fn(block, 'GAP', 16)}px`,
-          },
-        },
-      }
-    case 'sz_css_keyframes': {
-      const from = getCssDeclarations(block, 'FROM').declarations
-      const to = getCssDeclarations(block, 'TO').declarations
-      const steps: Array<{ at: string; declarations: CSSDeclarations }> = []
-      if (cssDeclarationEntries(from).length > 0) steps.push({ at: 'from', declarations: from })
-      if (cssDeclarationEntries(to).length > 0) steps.push({ at: 'to', declarations: to })
-      return {
-        kind: 'css',
-        value: { type: 'keyframes', name: f(block, 'NAME') || 'animacao', steps },
-      }
-    }
-    case 'sz_css_keyframes_steps':
-      return {
-        kind: 'css',
-        value: {
-          type: 'keyframes',
-          name: f(block, 'NAME') || 'animacao',
-          steps: getKeyframeSteps(block, 'STEPS'),
-        },
-      }
-    case 'sz_css_apply_animation': {
-      const seconds = Math.max(0.1, fn(block, 'SECONDS', 1))
-      const repeat = f(block, 'REPEAT') === 'infinite' ? 'infinite' : '1'
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: {
-            animation: `${f(block, 'NAME').trim() || 'pulsar'} ${seconds}s ease-in-out ${repeat}`,
-          },
-        },
-      }
-    }
-    case 'sz_css_keyframe_step':
-      // Só faz sentido dentro de "animação (vários passos)" (coletado por getKeyframeSteps).
-      return null
-    case 'sz_css_var':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR') || ':root',
-          declarations: {
-            [`--${f(block, 'VARNAME').replace(/^-+/, '') || 'cor'}`]: f(block, 'VALUE'),
-          },
-        },
-      }
-    case 'sz_css_transform':
-      return {
-        kind: 'css',
-        value: { selector: f(block, 'SELECTOR'), declarations: { transform: f(block, 'VALUE') } },
-      }
-    case 'sz_css_perspective':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { perspective: `${fn(block, 'VALUE')}px` },
-        },
-      }
-    case 'sz_css_grid_template': {
-      const cols = f(block, 'COLS')
-      const rows = f(block, 'ROWS')
-      const declarations: Record<string, string> = { display: 'grid' }
-      if (cols) declarations['grid-template-columns'] = cols
-      if (rows) declarations['grid-template-rows'] = rows
-      return { kind: 'css', value: { selector: f(block, 'SELECTOR'), declarations } }
-    }
-    // ---- 🎮 Posição & jogo (IR genérica de CSSRule; o round-trip volta ao bloco
-    // dedicado pelo cssEntryToBlocks do workspaceState) ----
-    case 'sz_css_position':
-      return {
-        kind: 'css',
-        value: { selector: f(block, 'SELECTOR'), declarations: { position: f(block, 'VALUE') } },
-      }
-    case 'sz_css_offset':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { [f(block, 'SIDE')]: f(block, 'VALUE') },
-        },
-      }
-    case 'sz_css_display':
-      return {
-        kind: 'css',
-        value: { selector: f(block, 'SELECTOR'), declarations: { display: f(block, 'VALUE') } },
-      }
-    case 'sz_css_overflow':
-      return {
-        kind: 'css',
-        value: { selector: f(block, 'SELECTOR'), declarations: { overflow: f(block, 'VALUE') } },
-      }
-    case 'sz_css_cursor':
-      return {
-        kind: 'css',
-        value: { selector: f(block, 'SELECTOR'), declarations: { cursor: f(block, 'VALUE') } },
-      }
-    case 'sz_css_image_rendering':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { 'image-rendering': f(block, 'VALUE') },
-        },
-      }
-    case 'sz_css_object_fit':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { 'object-fit': f(block, 'VALUE') },
-        },
-      }
-    case 'sz_css_opacity':
-      return {
-        kind: 'css',
-        value: { selector: f(block, 'SELECTOR'), declarations: { opacity: f(block, 'VALUE') } },
-      }
-    case 'sz_css_z_index':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { 'z-index': `${fn(block, 'VALUE')}` },
-        },
-      }
-    case 'sz_css_background_image':
-      return {
-        kind: 'css',
-        value: {
-          selector: f(block, 'SELECTOR'),
-          declarations: { 'background-image': `url('${f(block, 'URL')}')` },
-        },
-      }
-    case 'sz_css_decl':
-      // Só faz sentido como filho de uma "Regra CSS" (coletado por
-      // getCssDeclarations); solto no topo é ignorado.
-      return null
     case 'sz_adv_raw_css':
       return { kind: 'css', value: { type: 'rawCSS', code: f(block, 'CODE'), advanced: true } }
-    case 'sz_css_comment':
-      return { kind: 'css', value: { type: 'comment', text: f(block, 'TEXT') } }
 
     // ---- JS ----
     case 'sz_js_on_click':
@@ -2904,398 +2051,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       }
 
     // ---- Canvas ----
-    case 'sz_canvas_setup':
-      return {
-        kind: 'js',
-        value: { type: 'canvasSetup', canvasId: f(block, 'CANVAS_ID'), varName: f(block, 'CTX') },
-      }
-    case 'sz_canvas_set_size':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasSetSize',
-          ctxVar: f(block, 'CTX'),
-          w: exprInput(block, 'W', { type: 'num', value: 400 }),
-          h: exprInput(block, 'H', { type: 'num', value: 300 }),
-        },
-      }
-    case 'sz_canvas_clear':
-      return { kind: 'js', value: { type: 'canvasClear', ctxVar: f(block, 'CTX') } }
-    case 'sz_canvas_fill_style':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasFillStyle',
-          ctxVar: f(block, 'CTX'),
-          color: exprInput(block, 'COLOR', { type: 'color', value: '#22d3ee' }),
-        },
-      }
-    case 'sz_canvas_fill_rect':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasFillRect',
-          ctxVar: f(block, 'CTX'),
-          x: exprInput(block, 'X', { type: 'num', value: 10 }),
-          y: exprInput(block, 'Y', { type: 'num', value: 10 }),
-          w: exprInput(block, 'W', { type: 'num', value: 50 }),
-          h: exprInput(block, 'H', { type: 'num', value: 50 }),
-        },
-      }
-    case 'sz_canvas_arc':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasArc',
-          ctxVar: f(block, 'CTX'),
-          x: exprInput(block, 'X', { type: 'num', value: 100 }),
-          y: exprInput(block, 'Y', { type: 'num', value: 100 }),
-          r: exprInput(block, 'R', { type: 'num', value: 20 }),
-        },
-      }
-    case 'sz_canvas_stroke_rect':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasStrokeRect',
-          ctxVar: f(block, 'CTX'),
-          x: exprInput(block, 'X', { type: 'num', value: 0 }),
-          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
-          w: exprInput(block, 'W', { type: 'num', value: 0 }),
-          h: exprInput(block, 'H', { type: 'num', value: 0 }),
-        },
-      }
-    case 'sz_canvas_clear_rect':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasClearRect',
-          ctxVar: f(block, 'CTX'),
-          x: exprInput(block, 'X', { type: 'num', value: 0 }),
-          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
-          w: exprInput(block, 'W', { type: 'num', value: 0 }),
-          h: exprInput(block, 'H', { type: 'num', value: 0 }),
-        },
-      }
-    case 'sz_canvas_round_rect':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasRoundRect',
-          ctxVar: f(block, 'CTX'),
-          x: exprInput(block, 'X', { type: 'num', value: 0 }),
-          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
-          w: exprInput(block, 'W', { type: 'num', value: 0 }),
-          h: exprInput(block, 'H', { type: 'num', value: 0 }),
-          r: exprInput(block, 'R', { type: 'num', value: 0 }),
-        },
-      }
-    case 'sz_canvas_ellipse':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasEllipse',
-          ctxVar: f(block, 'CTX'),
-          x: exprInput(block, 'X', { type: 'num', value: 0 }),
-          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
-          rx: exprInput(block, 'RX', { type: 'num', value: 0 }),
-          ry: exprInput(block, 'RY', { type: 'num', value: 0 }),
-        },
-      }
-    case 'sz_canvas_arc_slice':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasArcSlice',
-          ctxVar: f(block, 'CTX'),
-          x: exprInput(block, 'X', { type: 'num', value: 0 }),
-          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
-          r: exprInput(block, 'R', { type: 'num', value: 0 }),
-          start: exprInput(block, 'START', { type: 'num', value: 0 }),
-          end: exprInput(block, 'END', { type: 'num', value: 0 }),
-        },
-      }
-    case 'sz_canvas_quadratic_curve':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasQuadraticCurve',
-          ctxVar: f(block, 'CTX'),
-          cpx: exprInput(block, 'CPX', { type: 'num', value: 0 }),
-          cpy: exprInput(block, 'CPY', { type: 'num', value: 0 }),
-          x: exprInput(block, 'X', { type: 'num', value: 0 }),
-          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
-        },
-      }
-    case 'sz_canvas_arc_to':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasArcTo',
-          ctxVar: f(block, 'CTX'),
-          x1: exprInput(block, 'X1', { type: 'num', value: 0 }),
-          y1: exprInput(block, 'Y1', { type: 'num', value: 0 }),
-          x2: exprInput(block, 'X2', { type: 'num', value: 0 }),
-          y2: exprInput(block, 'Y2', { type: 'num', value: 0 }),
-          r: exprInput(block, 'R', { type: 'num', value: 10 }),
-        },
-      }
-    case 'sz_canvas_bezier_curve':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasBezierCurve',
-          ctxVar: f(block, 'CTX'),
-          cp1x: exprInput(block, 'CP1X', { type: 'num', value: 0 }),
-          cp1y: exprInput(block, 'CP1Y', { type: 'num', value: 0 }),
-          cp2x: exprInput(block, 'CP2X', { type: 'num', value: 0 }),
-          cp2y: exprInput(block, 'CP2Y', { type: 'num', value: 0 }),
-          x: exprInput(block, 'X', { type: 'num', value: 0 }),
-          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
-        },
-      }
-    case 'sz_canvas_shadow':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasShadow',
-          ctxVar: f(block, 'CTX'),
-          color: exprInput(block, 'COLOR', { type: 'color', value: '#000000' }),
-          blur: exprInput(block, 'BLUR', { type: 'num', value: 0 }),
-        },
-      }
-    case 'sz_canvas_stroke_text':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasStrokeText',
-          ctxVar: f(block, 'CTX'),
-          text: exprInput(block, 'TEXT', { type: 'str', value: '' }),
-          x: exprInput(block, 'X', { type: 'num', value: 0 }),
-          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
-        },
-      }
-    case 'sz_canvas_line_dash':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasLineDash',
-          ctxVar: f(block, 'CTX'),
-          segment: exprInput(block, 'SEGMENT', { type: 'num', value: 8 }),
-        },
-      }
 
-    case 'sz_canvas_fill_text':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasFillText',
-          ctxVar: f(block, 'CTX'),
-          text: exprInput(block, 'TEXT', { type: 'str', value: 'Olá' }),
-          x: exprInput(block, 'X', { type: 'num', value: 10 }),
-          y: exprInput(block, 'Y', { type: 'num', value: 30 }),
-        },
-      }
-    case 'sz_canvas_anim_loop': {
-      // Os campos HANDLE / TIME_VAR / DELTA_VAR só existem quando o mutator
-      // revelou o respectivo slot (botões +). Ausentes/vazios → loop padrão.
-      const handle = f(block, 'HANDLE').trim()
-      const timeVar = f(block, 'TIME_VAR').trim()
-      const deltaVar = f(block, 'DELTA_VAR').trim()
-      return {
-        kind: 'js',
-        value: {
-          type: 'animationLoop',
-          body: getStatementChildren(block, 'BODY', seen),
-          ...(handle ? { handle } : {}),
-          ...(timeVar ? { timeVar } : {}),
-          ...(deltaVar ? { deltaVar } : {}),
-        },
-      }
-    }
-    case 'sz_canvas_cancel_anim':
-      return {
-        kind: 'js',
-        value: {
-          type: 'cancelAnimationFrame',
-          // Um encaixe ainda vazio precisa continuar gerando IR válido e um
-          // no-op seguro; `cancelAnimationFrame(0)` não cancela outro quadro.
-          handle: exprInput(block, 'HANDLE', { type: 'num', value: 0 }),
-        },
-      }
-    case 'sz_canvas_keyboard':
-      return { kind: 'js', value: { type: 'keyboardSimple', varName: f(block, 'NAME') } }
-    case 'sz_canvas_draw_image':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasDrawImage',
-          ctxVar: f(block, 'CTX'),
-          src: f(block, 'SRC'),
-          x: exprInput(block, 'X', { type: 'num', value: 0 }),
-          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
-          w: exprInput(block, 'W', { type: 'num', value: 100 }),
-          h: exprInput(block, 'H', { type: 'num', value: 100 }),
-        },
-      }
-    case 'sz_canvas_save':
-      return { kind: 'js', value: { type: 'canvasSave', ctxVar: f(block, 'CTX') } }
-    case 'sz_canvas_restore':
-      return { kind: 'js', value: { type: 'canvasRestore', ctxVar: f(block, 'CTX') } }
-    case 'sz_canvas_translate':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasTranslate',
-          ctxVar: f(block, 'CTX'),
-          x: exprInput(block, 'X', { type: 'num', value: 0 }),
-          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
-        },
-      }
-    case 'sz_canvas_rotate':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasRotate',
-          ctxVar: f(block, 'CTX'),
-          angle: exprInput(block, 'ANGLE', { type: 'num', value: 0 }),
-        },
-      }
-    case 'sz_canvas_scale':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasScale',
-          ctxVar: f(block, 'CTX'),
-          sx: exprInput(block, 'SX', { type: 'num', value: 1 }),
-          sy: exprInput(block, 'SY', { type: 'num', value: 1 }),
-        },
-      }
-    case 'sz_canvas_gradient':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasGradient',
-          ctxVar: f(block, 'CTX'),
-          varName: f(block, 'NAME'),
-          x0: exprInput(block, 'X0', { type: 'num', value: 0 }),
-          y0: exprInput(block, 'Y0', { type: 'num', value: 0 }),
-          x1: exprInput(block, 'X1', { type: 'num', value: 200 }),
-          y1: exprInput(block, 'Y1', { type: 'num', value: 0 }),
-          stops: [
-            { offset: 0, color: f(block, 'C0') },
-            { offset: 1, color: f(block, 'C1') },
-          ],
-        },
-      }
-
-    // ---- Canvas: traçado/contorno, fonte e transparência (caminho "na mão") ----
-    case 'sz_canvas_begin_path':
-      return { kind: 'js', value: { type: 'canvasBeginPath', ctxVar: f(block, 'CTX') } }
-    case 'sz_canvas_close_path':
-      return { kind: 'js', value: { type: 'canvasClosePath', ctxVar: f(block, 'CTX') } }
-    case 'sz_canvas_stroke':
-      return { kind: 'js', value: { type: 'canvasStroke', ctxVar: f(block, 'CTX') } }
-    case 'sz_canvas_fill':
-      return { kind: 'js', value: { type: 'canvasFill', ctxVar: f(block, 'CTX') } }
-    case 'sz_canvas_rect':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasRect',
-          ctxVar: f(block, 'CTX'),
-          x: exprInput(block, 'X', { type: 'num', value: 0 }),
-          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
-          w: exprInput(block, 'W', { type: 'num', value: 100 }),
-          h: exprInput(block, 'H', { type: 'num', value: 100 }),
-        },
-      }
-    case 'sz_canvas_clip':
-      return { kind: 'js', value: { type: 'canvasClip', ctxVar: f(block, 'CTX') } }
-    case 'sz_canvas_move_to':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasMoveTo',
-          ctxVar: f(block, 'CTX'),
-          x: exprInput(block, 'X', { type: 'num', value: 0 }),
-          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
-        },
-      }
-    case 'sz_canvas_line_to':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasLineTo',
-          ctxVar: f(block, 'CTX'),
-          x: exprInput(block, 'X', { type: 'num', value: 0 }),
-          y: exprInput(block, 'Y', { type: 'num', value: 0 }),
-        },
-      }
-    case 'sz_canvas_stroke_style':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasStrokeStyle',
-          ctxVar: f(block, 'CTX'),
-          color: exprInput(block, 'COLOR', { type: 'color', value: '#000000' }),
-        },
-      }
-    case 'sz_canvas_line_width':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasLineWidth',
-          ctxVar: f(block, 'CTX'),
-          width: exprInput(block, 'WIDTH', { type: 'num', value: 1 }),
-        },
-      }
-    case 'sz_canvas_global_alpha':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasGlobalAlpha',
-          ctxVar: f(block, 'CTX'),
-          alpha: exprInput(block, 'ALPHA', { type: 'num', value: 1 }),
-        },
-      }
-    case 'sz_canvas_font': {
-      const weight = f(block, 'WEIGHT')
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasFont',
-          ctxVar: f(block, 'CTX'),
-          size: fn(block, 'SIZE', 20),
-          family: f(block, 'FAMILY') || 'sans-serif',
-          ...(weight ? { weight: weight as 'bold' | 'italic' | 'italic bold' } : {}),
-        },
-      }
-    }
-    case 'sz_canvas_text_align':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasTextAlign',
-          ctxVar: f(block, 'CTX'),
-          align: (f(block, 'ALIGN') || 'left') as 'left' | 'center' | 'right',
-        },
-      }
-    case 'sz_canvas_text_baseline':
-      return {
-        kind: 'js',
-        value: {
-          type: 'canvasTextBaseline',
-          ctxVar: f(block, 'CTX'),
-          baseline: (f(block, 'BASELINE') || 'alphabetic') as
-            | 'top'
-            | 'middle'
-            | 'bottom'
-            | 'alphabetic',
-        },
-      }
-
-    // ---- Orientação a objetos ----
     case 'sz_js_class': {
       const members = getClassMembers(block, seen)
       const superClass = getSuperName(block)
@@ -4138,35 +2894,6 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           value: exprInput(block, 'VALUE', { type: 'num', value: 0 }),
         },
       }
-    case 'sz_js_new_image':
-      return {
-        kind: 'js',
-        value: {
-          type: 'newImage',
-          varName: f(block, 'VAR'),
-          src: exprInput(block, 'SRC', { type: 'str', value: '' }),
-        },
-      }
-    case 'sz_js_image_onload':
-      return {
-        kind: 'js',
-        value: {
-          type: 'imageOnLoad',
-          // O objeto vazio mantém o projeto executável enquanto a criança
-          // ainda não encaixou uma imagem, sem inventar uma variável global.
-          target: exprInput(block, 'TARGET', { type: 'objectLiteral', entries: [] }),
-          body: getStatementChildren(block, 'DO', seen),
-        },
-      }
-    case 'sz_js_image_onerror':
-      return {
-        kind: 'js',
-        value: {
-          type: 'imageOnError',
-          target: exprInput(block, 'TARGET', { type: 'objectLiteral', entries: [] }),
-          body: getStatementChildren(block, 'DO', seen),
-        },
-      }
     case 'sz_js_element_onclick':
       return {
         kind: 'js',
@@ -4188,15 +2915,6 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'setTimeoutCall',
           fn: f(block, 'FN'),
           delay: exprInput(block, 'MS', { type: 'num', value: 1000 }),
-        },
-      }
-    case 'sz_canvas_request_frame_do':
-      return {
-        kind: 'js',
-        value: {
-          type: 'requestFrameDo',
-          ...(f(block, 'PARAM') ? { param: f(block, 'PARAM') } : {}),
-          body: getStatementChildren(block, 'DO', seen),
         },
       }
     case 'sz_js_index_set':
@@ -4226,8 +2944,6 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: { type: 'superMethodCall', method: f(block, 'METHOD'), args: getArgs(block) },
       }
-    case 'sz_canvas_request_frame':
-      return { kind: 'js', value: { type: 'requestFrame', fn: f(block, 'FN') } }
     case 'sz_js_expr_statement':
       return {
         kind: 'js',
@@ -10648,14 +9364,16 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         },
       }
 
-    default:
+    default: {
       // Um bloco ofertado por Programação sem adapter é violação do contrato e
       // nunca pode virar perda silenciosa de trabalho. Extensões desconhecidas
       // continuam toleradas para compatibilidade com estados externos.
-      if (PROGRAMMING_VISIBLE_TYPES.has(block.type)) {
+      const programmingCodec = programmingCodecForBlockType(block.type)
+      if (programmingCodec && programmingCodecSupports(programmingCodec, 'block-to-ir')) {
         throw new Error(`Bloco de Programação sem adapter de IR: ${block.type}`)
       }
       console.warn('Bloco desconhecido ignorado:', block.type)
       return null
+    }
   }
 }

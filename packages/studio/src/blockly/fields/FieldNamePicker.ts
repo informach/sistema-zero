@@ -33,6 +33,7 @@ type ScopedBinderRegistry = Readonly<Record<string, ScopedBinder>>
  *                 global de propriedades quando não dá para resolver a classe;
  *  - `method`   → métodos de classe, mesma lógica de escopo do `property`;
  *  - `canvas`   → id de uma tela de desenho (`sz_html_canvas`);
+ *  - `canvas-context` → pincéis Canvas 2D declarados ou recebidos pelo corpo atual;
  *  - `form-control` → ids de campos que podem receber um rótulo HTML;
  *  - `selector` → partes da página já criadas (`body`, `#id` e `.classe`);
  *  - `svg-reference` → ids de formas SVG reutilizáveis, já com o prefixo `#`;
@@ -63,6 +64,7 @@ export type NameKind =
   | 'property'
   | 'method'
   | 'canvas'
+  | 'canvas-context'
   | 'form-control'
   | 'dom-target'
   | 'selector'
@@ -110,6 +112,7 @@ const DECLARED_NAME_KINDS: ReadonlySet<NameKind> = new Set([
   'class',
   'function',
   'dom-target',
+  'canvas-context',
 ])
 
 export function nameKindAllowsFreeText(kind: NameKind): boolean {
@@ -133,6 +136,7 @@ const NAME_KINDS: readonly NameKind[] = [
   'property',
   'method',
   'canvas',
+  'canvas-context',
   'form-control',
   'dom-target',
   'selector',
@@ -211,8 +215,13 @@ const VARIABLE_DECL_BLOCKS: NameFieldRegistry = {
   // OOP: `criar pessoa = novo Pessoa` guarda a instância numa variável — os campos
   // OBJ que a referenciam (chamar método, definir/ler propriedade) ganham o seletor.
   sz_js_new_var: ['VARNAME'],
-  // Canvas: "Pegar canvas … e guardar contexto em CTX" — o ctx é uma variável e os
-  // ~40 blocos de desenho que o consomem (campo CTX) ganham o seletor.
+  // O contexto Canvas continua sendo uma variável JavaScript legível em blocos
+  // genéricos. Consumidores de desenho usam o registro mais estreito abaixo.
+  sz_canvas_setup: ['CTX'],
+}
+
+/** Contextos Canvas 2D declarados explicitamente no fluxo do programa. */
+const CANVAS_CONTEXT_DECL_BLOCKS: NameFieldRegistry = {
   sz_canvas_setup: ['CTX'],
 }
 
@@ -709,6 +718,19 @@ const VARIABLE_LOOP_BINDERS: ScopedBinderRegistry = {
   sz_g3k_on_entity_state_update: ['DT'],
 }
 
+/** Pincéis Canvas 2D recebidos pelos corpos dos blocos de jogo. */
+const CANVAS_CONTEXT_LOCAL_BINDERS: ScopedBinderRegistry = {
+  sz_gk_on_draw: { BODY: ['PARAM'] },
+  sz_gk_on_draw_hud: { BODY: ['PARAM'] },
+  sz_gk_rpg_create_map: { BODY: ['PARAM'] },
+  sz_gk_define_look: { BODY: ['CTX'] },
+}
+
+/** A figura 2D usa um contexto implícito, sem campo declarador no bloco. */
+const CANVAS_CONTEXT_LITERAL_BINDERS: ScopedBinderRegistry = {
+  sz_g2d_define_shape: { BODY: ['ctx'] },
+}
+
 /** Funções locais introduzidas por valores com corpo de comandos. */
 const FUNCTION_LOCAL_BINDERS: ScopedBinderRegistry = {
   sz_val_new_promise: { DO: ['PARAM'] },
@@ -815,6 +837,12 @@ const KIND_UI: Record<NameKind, KindUI> = {
     placeholder: 'id da tela de desenho',
     empty:
       'Nenhuma tela de desenho ainda — crie uma ("Criar tela de desenho") ou digite o id abaixo.',
+  },
+  'canvas-context': {
+    icon: '🖌️',
+    placeholder: 'pincel da tela',
+    empty:
+      'Nenhum pincel disponível aqui — pegue o contexto de uma tela antes deste bloco ou desenhe dentro de um corpo que fornece um pincel.',
   },
   'form-control': {
     icon: '🏷️',
@@ -1206,19 +1234,21 @@ export function collectMutableVariables(block: Blockly.Block | null | undefined)
 function collectScopedNames(
   block: Blockly.Block | null | undefined,
   binders: ScopedBinderRegistry,
+  literalBinders: ScopedBinderRegistry = {},
 ): string[] {
   const seen = new Set<string>()
   const ordered: string[] = []
   let child = block ?? null
   let parent = child?.getSurroundParent() ?? null
   while (child && parent) {
-    const binder = binders[parent.type]
     const inputName = containingInput(parent, child)?.name
-    const fields = Array.isArray(binder)
-      ? binder
-      : inputName && binder
-        ? (binder as Readonly<Record<string, readonly string[]>>)[inputName]
-        : undefined
+    const namesForInput = (binder: ScopedBinder | undefined): readonly string[] | undefined =>
+      Array.isArray(binder)
+        ? binder
+        : inputName && binder
+          ? (binder as Readonly<Record<string, readonly string[]>>)[inputName]
+          : undefined
+    const fields = namesForInput(binders[parent.type])
     if (fields) {
       for (const f of fields) {
         if (!parent.getField(f)) continue
@@ -1227,6 +1257,14 @@ function collectScopedNames(
           seen.add(name)
           ordered.push(name)
         }
+      }
+    }
+    const literals = namesForInput(literalBinders[parent.type])
+    if (literals) {
+      for (const name of literals) {
+        if (!name || seen.has(name)) continue
+        seen.add(name)
+        ordered.push(name)
       }
     }
     child = parent
@@ -1243,6 +1281,18 @@ export function collectScopedVariableNames(block: Blockly.Block | null | undefin
 /** Funções locais disponíveis no ponto atual (ex.: `resolve` de uma Promise). */
 export function collectScopedFunctionNames(block: Blockly.Block | null | undefined): string[] {
   return collectScopedNames(block, FUNCTION_LOCAL_BINDERS)
+}
+
+/** Pincéis Canvas 2D locais disponíveis dentro do corpo atual. */
+export function collectScopedCanvasContexts(block: Blockly.Block | null | undefined): string[] {
+  return collectScopedNames(block, CANVAS_CONTEXT_LOCAL_BINDERS, CANVAS_CONTEXT_LITERAL_BINDERS)
+}
+
+/** Contextos Canvas 2D visíveis no ponto atual, globais e locais, sem misturar variáveis comuns. */
+export function collectCanvasContexts(block: Blockly.Block | null | undefined): string[] {
+  const globals = collectVisibleVariables(block, CANVAS_CONTEXT_DECL_BLOCKS)
+  const seen = new Set(globals)
+  return [...globals, ...collectScopedCanvasContexts(block).filter((name) => !seen.has(name))]
 }
 
 /**
@@ -1445,6 +1495,8 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectFunctionNames(block)
       case 'canvas':
         return collectCanvasIds(ws)
+      case 'canvas-context':
+        return collectVisibleVariables(block, CANVAS_CONTEXT_DECL_BLOCKS)
       case 'form-control':
         return collectFormControlIds(ws)
       case 'dom-target': {
@@ -1554,9 +1606,13 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
     // Nomes LOCAIS em escopo (dados por um laço que ENVOLVE este campo). Só os kinds
     // com binder de laço têm locais (variável e objeto 3D — ver LOOP_BINDERS_BY_KIND).
     const binders = LOOP_BINDERS_BY_KIND[this.kind]
-    const locals = binders
-      ? collectScopedNames(block, binders).filter((n) => !globalSet.has(n))
-      : []
+    const scopedNames =
+      this.kind === 'canvas-context'
+        ? collectScopedCanvasContexts(block)
+        : binders
+          ? collectScopedNames(block, binders)
+          : []
+    const locals = scopedNames.filter((name) => !globalSet.has(name))
     const ui = KIND_UI[this.kind]
 
     const content = Blockly.DropDownDiv.getContentDiv()
@@ -1631,6 +1687,8 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
       const input = document.createElement('input')
       input.type = 'text'
       input.className = 'sz-name-picker__input'
+      input.name = `blockly-name-${this.kind}`
+      input.autocomplete = 'off'
       input.value = `${this.getValue() ?? ''}`
       input.placeholder = ui.placeholder
       input.setAttribute('aria-label', ui.placeholder)

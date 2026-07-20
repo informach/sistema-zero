@@ -10,6 +10,7 @@ import { gameTwoDSpritesRuntime } from './runtime/sprites'
 import { gameTwoDStageRuntime } from './runtime/stage'
 import { gameTwoDUtilitiesRuntime } from './runtime/utilities'
 import { gameTwoDWorldRuntime } from './runtime/world'
+import { buildGameTwoDRuntimeApiSource } from './runtimeContract'
 
 /**
  * Runtime didático injetado no <head> do iframe quando a extensão "game-2d"
@@ -26,17 +27,32 @@ export const gameTwoDRuntime = withGameUIFontRuntime(
   var _szGameUIFont = window.SZGameUIFont.family;
   // Estado interno: lista de teclas pressionadas.
   var keys = { left: false, right: false, up: false, down: false };
+  function _normalizeGameKey(value) {
+    if (typeof value !== 'string') return '';
+    if (value === ' ') return 'Space';
+    if (/^Key[A-Z]$/.test(value)) return value.slice(3).toLowerCase();
+    return value.length === 1 ? value.toLowerCase() : value;
+  }
+  function _eventGameKey(e) {
+    var code = _normalizeGameKey(e && e.code);
+    return code || _normalizeGameKey(e && e.key);
+  }
+  function _eventMatchesGameKey(e, wanted) {
+    var normalized = _normalizeGameKey(wanted);
+    return normalized === _normalizeGameKey(e && e.key) || normalized === _normalizeGameKey(e && e.code);
+  }
+  function _setDirectionalKey(e, down) {
+    var key = _eventGameKey(e);
+    if (key === 'ArrowLeft' || key === 'a') keys.left = down;
+    if (key === 'ArrowRight' || key === 'd') keys.right = down;
+    if (key === 'ArrowUp' || key === 'w') keys.up = down;
+    if (key === 'ArrowDown' || key === 's') keys.down = down;
+  }
   window.addEventListener('keydown', function (e) {
-    if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = true;
-    if (e.key === 'ArrowRight' || e.key === 'd') keys.right = true;
-    if (e.key === 'ArrowUp' || e.key === 'w') keys.up = true;
-    if (e.key === 'ArrowDown' || e.key === 's') keys.down = true;
+    _setDirectionalKey(e, true);
   });
   window.addEventListener('keyup', function (e) {
-    if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = false;
-    if (e.key === 'ArrowRight' || e.key === 'd') keys.right = false;
-    if (e.key === 'ArrowUp' || e.key === 'w') keys.up = false;
-    if (e.key === 'ArrowDown' || e.key === 's') keys.down = false;
+    _setDirectionalKey(e, false);
   });
 
   // Cada domínio é dono do próprio estado de partida. O restart e a pausa apenas
@@ -98,216 +114,7 @@ export const gameTwoDRuntime = withGameUIFontRuntime(
     gameTwoDStageRuntime +
     gameTwoDCasualKitsRuntime +
     gameTwoDUtilitiesRuntime +
-    `  window.SZGame2D = {
-    createSprite: createSprite,
-    drawSprite: _camWrap(drawSprite),
-    clear: clear,
-    fitScreen: fitScreen,
-    setupStage: setupStage,
-    setupStageFull: setupStageFull,
-    spawnBullet: spawnBullet,
-    arrowsX: arrowsX,
-    blink: blink,
-    isColliding: isColliding,
-    onStart: onStart,
-    gameLoop: gameLoop,
-    keys: keys,
-    setGravity: setGravity,
-    applyVelocity: applyVelocity,
-    bounceOnEdges: bounceOnEdges,
-    circleCollides: circleCollides,
-    playSound: playSound,
-    playFx: playFx,
-    playMusic: playMusic,
-    stopMusic: stopMusic,
-    playNote: playNote,
-    // Genéricos Tier 1 (v0.15.0): mira/contas, vida/tempo, aparência, mundo, pausa.
-    distance: distance,
-    angleTo: angleTo,
-    aimAt: aimAt,
-    moveToward: moveToward,
-    randomBetween: randomBetween,
-    randomChance: randomChance,
-    setHealth: setHealth,
-    changeHealth: changeHealth,
-    getHealth: getHealth,
-    getMaxHealth: getMaxHealth,
-    healthDepleted: healthDepleted,
-    damageSprite: damageSprite,
-    spriteX: spriteX,
-    spriteY: spriteY,
-    spriteW: spriteW,
-    spriteH: spriteH,
-    centerX: centerX,
-    centerY: centerY,
-    spriteVx: spriteVx,
-    spriteVy: spriteVy,
-    spriteSpeed: spriteSpeed,
-    isMoving: isMoving,
-    isMovingH: isMovingH,
-    isMovingV: isMovingV,
-    randomX: randomX,
-    randomY: randomY,
-    hasHealth: hasHealth,
-    cooldownReady: cooldownReady,
-    pruneOld: pruneOld,
-    flipSprite: flipSprite,
-    setOpacity: setOpacity,
-    setSize: setSize,
-    scaleSprite: scaleSprite,
-    wrapEdges: wrapEdges,
-    pauseGame: pauseGame,
-    resumeGame: resumeGame,
-    isPaused: isPaused,
-    // Genéricos Tier 2 (v0.16.0): câmera, mapa destrutível, ordem de desenho, depuração.
-    cameraFollow: cameraFollow,
-    setCamera: setCamera,
-    cameraX: cameraX,
-    cameraY: cameraY,
-    setTileAtSprite: setTileAtSprite,
-    breakTileAtSprite: breakTileAtSprite,
-    tileAtSprite: tileAtSprite,
-    bringToFront: bringToFront,
-    sendToBack: sendToBack,
-    drawHitbox: drawHitbox,
-    showFps: showFps,
-    onPointer: onPointer,
-    onKey: onKey,
-    onOverlap: onOverlap,
-    keyDown: keyDown,
-    touches: touches,
-    pointer: pointer,
-    // Imagens / spritesheet / animação (v0.3.0).
-    loadImage: loadImage,
-    loadSpriteSheet: loadSpriteSheet,
-    setImage: setImage,
-    setAnimation: setAnimation,
-    drawFrame: drawFrame,
-    // Animação por estado + flip automático (v0.22.0).
-    setStateAnimation: setStateAnimation,
-    autoAnimate: autoAnimate,
-    // Figuras: sprite desenhado por código (v0.23.0).
-    defineShape: defineShape,
-    setShape: setShape,
-    createShapeSprite: createShapeSprite,
-    shapeW: shapeW,
-    shapeH: shapeH,
-    paintRect: paintRect,
-    paintCircle: paintCircle,
-    paintEllipse: paintEllipse,
-    paintTriangle: paintTriangle,
-    paintLine: paintLine,
-    // Movimento + efeitos (v0.4.0).
-    platformer: platformer,
-    topDown: topDown,
-    followPointer: followPointer,
-    clampToScreen: clampToScreen,
-    flash: flash,
-    shake: shake,
-    emitParticles: emitParticles,
-    drawParticles: _camWrap(drawParticles),
-    // Tiles / tilemaps (v0.5.0).
-    createTileMap: createTileMap,
-    createTileMapFromAsset: createTileMapFromAsset,
-    drawTileMap: _camWrap(drawTileMap),
-    collideTileMap: collideTileMap,
-    collideGroup: collideGroup,
-    collideSprite: collideSprite,
-    tileAt: tileAt,
-    // Grupos de sprites + temporizadores (v0.6.0).
-    createGroup: createGroup,
-    spawn: spawn,
-    updateGroup: updateGroup,
-    updateGroupNoGravity: updateGroupNoGravity,
-    drawGroup: _camWrap(drawGroup),
-    forEachInGroup: forEachInGroup,
-    countGroup: countGroup,
-    clearGroup: clearGroup,
-    removeFromGroup: removeFromGroup,
-    pruneOffscreen: pruneOffscreen,
-    overlapGroups: overlapGroups,
-    everyFrames: everyFrames,
-    everySeconds: everySeconds,
-    // HUD + estado/cenas (v0.6.0).
-    drawScore: drawScore,
-    drawLabel: drawLabel,
-    drawHearts: drawHearts,
-    drawBar: drawBar,
-    drawSpriteHealth: drawSpriteHealth,
-    setStageDescription: setStageDescription,
-    setScene: setScene,
-    getScene: getScene,
-    sceneIs: sceneIs,
-    showScreen: showScreen,
-    restart: restart,
-    drawStarfield: drawStarfield,
-    dragX: dragX,
-    // Kit Nave & Asteroides (v0.7.0).
-    createShip: createShip,
-    spawnAsteroid: spawnAsteroid,
-    explodeSprite: explodeSprite,
-    playShoot: playShoot,
-    playExplosion: playExplosion,
-    overlapSpriteGroup: overlapSpriteGroup,
-    // Tipos de inimigo (v0.22.0).
-    createEnemyType: createEnemyType,
-    setEnemyStateAnimation: setEnemyStateAnimation,
-    setEnemyTypeParam: setEnemyTypeParam,
-    spawnEnemy: spawnEnemy,
-    updateEnemyType: updateEnemyType,
-    drawEnemyType: _camWrap(drawEnemyType),
-    onEnemyDefeated: onEnemyDefeated,
-    overlapEnemyShots: overlapEnemyShots,
-    enemyDamage: enemyDamage,
-    hurtByEnemy: hurtByEnemy,
-    // Nave clássica: girar + impulsionar na direção apontada (v0.10.0).
-    rotateSprite: rotateSprite,
-    pointSprite: pointSprite,
-    thrust: thrust,
-    applyFriction: applyFriction,
-    steerThrust: steerThrust,
-    spriteAngleDeg: spriteAngleDeg,
-    shootFrom: shootFrom,
-    spawnAsteroidFromEdge: spawnAsteroidFromEdge,
-    // Pulo genérico + Kit dino (v0.9.0).
-    jumpOnGround: jumpOnGround,
-    createDino: createDino,
-    controlDino: controlDino,
-    spawnObstacle: spawnObstacle,
-    spawnEgg: spawnEgg,
-    drawForest: drawForest,
-    playJump: playJump,
-    playDinoHurt: playDinoHurt,
-    playCollect: playCollect,
-    // Kit gorilas: batalha de bananas (v0.11.0).
-    createCity: createCity,
-    drawCity: drawCity,
-    placeThrower: placeThrower,
-    newWind: newWind,
-    drawWind: drawWind,
-    aimDrag: aimDrag,
-    aimReleased: aimReleased,
-    throwBanana: throwBanana,
-    updateBanana: updateBanana,
-    drawBanana: drawBanana,
-    bananaHitThrower: bananaHitThrower,
-    bananaHitCity: bananaHitCity,
-    playWhistle: playWhistle,
-    computerTurn: computerTurn,
-    drawAimReadout: drawAimReadout,
-    // Kit equilibrista (Stick Hero) (v0.13.0).
-    createStickHero: createStickHero,
-    updateStickHero: updateStickHero,
-    stickHeroScore: stickHeroScore,
-    stickHeroOver: stickHeroOver,
-    restartStickHero: restartStickHero,
-    // Kit balão (Hot-Air-Balloon) (v0.13.0).
-    createBalloon: createBalloon,
-    updateBalloon: updateBalloon,
-    balloonScore: balloonScore,
-    balloonFuel: balloonFuel,
-    balloonOver: balloonOver,
-    restartBalloon: restartBalloon
-  };
+    buildGameTwoDRuntimeApiSource() +
+    `
 })();`,
 )

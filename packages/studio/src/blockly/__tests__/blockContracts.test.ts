@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import { START_ONLY_STATEMENT_TYPES, SZIRV2Schema } from '#ir'
 import { OFFICIAL_CATALOG } from '#official-extensions'
+import { CONTINUOUS_EXTENSION_COMMANDS } from '../../official-extensions/continuousCommandContract'
 import { PERSISTENT_EXTENSION_COMMANDS } from '../../official-extensions/persistentResourceContract'
 import { CANVAS3D_RESOURCE_CREATOR_BLOCK_TYPES } from '../../three/canvas3dContract'
 import {
@@ -287,16 +288,208 @@ describe('contrato central de posicionamento', () => {
     }
   })
 
-  it('não chama varreduras contínuas de evento', () => {
+  it('não chama varreduras contínuas de evento nem as limita só ao loop', () => {
     for (const type of [
       'sz_g2d_on_enemy_shot_hit',
       'sz_g2d_on_group_overlap',
       'sz_g2d_on_sprite_group_overlap',
     ]) {
       const contract = inferBlockContract(definition(type))
-      expect(contract.placement?.role, type).toBe('loop')
+      expect(contract.placement?.role, type).toBe('command')
       expect(contract.placement?.root, type).toEqual([])
-      expect(contract.placement?.nested, type).toEqual(['loop-body'])
+      expect(contract.placement?.nested, type).toContain('loop-body')
+      expect(contract.placement?.nested, type).toContain('function-body')
+      expect(contract.placement?.nested, type).not.toContain('event-body')
+      expect(contract.placement?.forbiddenDirectNested, type).toContain('event-body')
+    }
+  })
+
+  it('mantém todos os comandos contínuos apenas em loops e funções ou métodos', () => {
+    const declaredContinuousBlocks = OFFICIAL_CATALOG.flatMap(
+      (extension) => extension.blockly.blocks,
+    )
+      .filter((block) => block.placement === 'loop-command')
+      .map((block) => block.type)
+      .sort()
+
+    expect(declaredContinuousBlocks).toEqual(
+      CONTINUOUS_EXTENSION_COMMANDS.map(({ blockType }) => blockType).sort(),
+    )
+
+    for (const { blockType } of CONTINUOUS_EXTENSION_COMMANDS) {
+      const contract = inferBlockContract(definition(blockType))
+      expect(contract.placement?.root, blockType).toEqual([])
+      expect(contract.placement?.nested, blockType).toEqual([
+        'loop-body',
+        'function-body',
+        'async-function-body',
+        'derived-method-body',
+      ])
+      expect(contract.placement?.forbiddenNested, blockType).toBeUndefined()
+      expect(contract.placement?.forbiddenDirectNested, blockType).toEqual([
+        'event-body',
+        'constructor-body',
+      ])
+      expect(
+        materializeBlockDefinition(definition(blockType)).previousStatement,
+        blockType,
+      ).toEqual(['JSLoopStmt', 'JSFunctionStmt', 'JSAsyncStmt', 'JSDerivedMethodStmt'])
+    }
+  })
+
+  it('aplica fisicamente o contexto de comando contínuo', () => {
+    ensureBlocklyInitialized()
+    for (const extension of OFFICIAL_CATALOG) {
+      registerExtensionBlocks(extension.blockly.blocks)
+    }
+
+    const connectInside = (
+      areaType: 'sz_frame_events' | 'sz_frame_loops' | 'sz_frame_start',
+      containerType: 'sz_g3d_animate' | 'sz_js_function' | 'sz_js_on_click',
+      inputName: 'BODY' | 'DO',
+      expected: boolean,
+    ): void => {
+      const workspace = new Blockly.Workspace(
+        new Blockly.Options({ plugins: { connectionChecker: HTMLConnectionChecker } }),
+      )
+      try {
+        const frame = workspace.newBlock(areaType)
+        const container = workspace.newBlock(containerType)
+        const command = workspace.newBlock('sz_g3d_control_keys')
+        const frameConnection = frame.getInput('CHILDREN')?.connection
+        const containerConnection = container.previousConnection
+        const bodyConnection = container.getInput(inputName)?.connection
+        const commandConnection = command.previousConnection
+        if (!frameConnection || !containerConnection || !bodyConnection || !commandConnection) {
+          throw new Error(`${containerType}: conexões do cenário ausentes`)
+        }
+        expect(frameConnection.connect(containerConnection), containerType).toBe(true)
+        expect(bodyConnection.connect(commandConnection), containerType).toBe(expected)
+      } finally {
+        workspace.dispose()
+      }
+    }
+
+    connectInside('sz_frame_loops', 'sz_g3d_animate', 'BODY', true)
+    connectInside('sz_frame_start', 'sz_js_function', 'BODY', true)
+    connectInside('sz_frame_events', 'sz_js_on_click', 'DO', false)
+
+    const nestedEventWorkspace = new Blockly.Workspace(
+      new Blockly.Options({ plugins: { connectionChecker: HTMLConnectionChecker } }),
+    )
+    try {
+      const frame = nestedEventWorkspace.newBlock('sz_frame_events')
+      const event = nestedEventWorkspace.newBlock('sz_js_on_click')
+      const loop = nestedEventWorkspace.newBlock('sz_js_repeat')
+      const command = nestedEventWorkspace.newBlock('sz_g3d_control_keys')
+      const frameConnection = frame.getInput('CHILDREN')?.connection
+      const eventConnection = event.previousConnection
+      const eventBodyConnection = event.getInput('DO')?.connection
+      const loopConnection = loop.previousConnection
+      const loopBodyConnection = loop.getInput('DO')?.connection
+      const commandConnection = command.previousConnection
+      if (
+        !frameConnection ||
+        !eventConnection ||
+        !eventBodyConnection ||
+        !loopConnection ||
+        !loopBodyConnection ||
+        !commandConnection
+      ) {
+        throw new Error('Conexões do cenário de loop dentro de evento ausentes')
+      }
+      expect(frameConnection.connect(eventConnection)).toBe(true)
+      expect(eventBodyConnection.connect(loopConnection)).toBe(true)
+      expect(loopBodyConnection.connect(commandConnection)).toBe(true)
+    } finally {
+      nestedEventWorkspace.dispose()
+    }
+
+    const workspace = new Blockly.Workspace(
+      new Blockly.Options({ plugins: { connectionChecker: HTMLConnectionChecker } }),
+    )
+    try {
+      const frame = workspace.newBlock('sz_frame_start')
+      const command = workspace.newBlock('sz_g3d_control_keys')
+      const frameConnection = frame.getInput('CHILDREN')?.connection
+      const commandConnection = command.previousConnection
+      if (!frameConnection || !commandConnection) throw new Error('Conexões da raiz ausentes')
+      expect(frameConnection.connect(commandConnection)).toBe(false)
+    } finally {
+      workspace.dispose()
+    }
+
+    for (const [memberType, expected] of [
+      ['sz_js_class_method', true],
+      ['sz_js_constructor', false],
+    ] as const) {
+      const classWorkspace = new Blockly.Workspace(
+        new Blockly.Options({ plugins: { connectionChecker: HTMLConnectionChecker } }),
+      )
+      try {
+        const frame = classWorkspace.newBlock('sz_frame_start')
+        const classBlock = classWorkspace.newBlock('sz_js_class')
+        const member = classWorkspace.newBlock(memberType)
+        const command = classWorkspace.newBlock('sz_g3d_control_keys')
+        const frameConnection = frame.getInput('CHILDREN')?.connection
+        const classConnection = classBlock.previousConnection
+        const membersConnection = classBlock.getInput('MEMBERS')?.connection
+        const memberConnection = member.previousConnection
+        const bodyConnection = member.getInput('BODY')?.connection
+        const commandConnection = command.previousConnection
+        if (
+          !frameConnection ||
+          !classConnection ||
+          !membersConnection ||
+          !memberConnection ||
+          !bodyConnection ||
+          !commandConnection
+        ) {
+          throw new Error(`${memberType}: conexões do cenário de classe ausentes`)
+        }
+        expect(frameConnection.connect(classConnection), memberType).toBe(true)
+        expect(membersConnection.connect(memberConnection), memberType).toBe(true)
+        expect(bodyConnection.connect(commandConnection), memberType).toBe(expected)
+      } finally {
+        classWorkspace.dispose()
+      }
+    }
+
+    const nestedConstructorWorkspace = new Blockly.Workspace(
+      new Blockly.Options({ plugins: { connectionChecker: HTMLConnectionChecker } }),
+    )
+    try {
+      const frame = nestedConstructorWorkspace.newBlock('sz_frame_start')
+      const classBlock = nestedConstructorWorkspace.newBlock('sz_js_class')
+      const constructorBlock = nestedConstructorWorkspace.newBlock('sz_js_constructor')
+      const loop = nestedConstructorWorkspace.newBlock('sz_js_repeat')
+      const command = nestedConstructorWorkspace.newBlock('sz_g3d_control_keys')
+      const frameConnection = frame.getInput('CHILDREN')?.connection
+      const classConnection = classBlock.previousConnection
+      const membersConnection = classBlock.getInput('MEMBERS')?.connection
+      const constructorConnection = constructorBlock.previousConnection
+      const constructorBodyConnection = constructorBlock.getInput('BODY')?.connection
+      const loopConnection = loop.previousConnection
+      const loopBodyConnection = loop.getInput('DO')?.connection
+      const commandConnection = command.previousConnection
+      if (
+        !frameConnection ||
+        !classConnection ||
+        !membersConnection ||
+        !constructorConnection ||
+        !constructorBodyConnection ||
+        !loopConnection ||
+        !loopBodyConnection ||
+        !commandConnection
+      ) {
+        throw new Error('Conexões do cenário de loop dentro de construtor ausentes')
+      }
+      expect(frameConnection.connect(classConnection)).toBe(true)
+      expect(membersConnection.connect(constructorConnection)).toBe(true)
+      expect(constructorBodyConnection.connect(loopConnection)).toBe(true)
+      expect(loopBodyConnection.connect(commandConnection)).toBe(true)
+    } finally {
+      nestedConstructorWorkspace.dispose()
     }
   })
 

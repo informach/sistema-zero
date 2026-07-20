@@ -67,7 +67,9 @@ const oneFrameLoopArea = (text: string) => ({
 })
 
 test.describe('Áreas de comportamento — lifecycle completo', () => {
-  test('executa início, registra eventos e reinicia loops no preview real', async ({ page }) => {
+  test('executa início, registra eventos e remonta loops ao atualizar o preview', async ({
+    page,
+  }) => {
     await createProject(page)
     await pasteBlocks(page, startArea('lifecycle:start'))
     await pasteBlocks(page, eventArea('lifecycle:event'))

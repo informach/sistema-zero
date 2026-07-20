@@ -117,9 +117,9 @@ cenas:
     emocao: calmo
     audio: AudioParte03.mp3
     narracao: >-
-      Vai para a tela início; envolve todo o jogo num Se a tela atual é jogando;
-      e decide o fim: se pontos maior ou igual a alvo vai para ganhou, se vidas
-      menor ou igual a zero vai para perdeu.
+      Vai para a tela início; protege com Se a tela atual é jogando tanto o quadro
+      do jogo quanto o gerador de asteroides; e decide o fim: se pontos maior ou
+      igual a alvo vai para ganhou, se vidas menor ou igual a zero vai para perdeu.
     acoes:
       - tipo: abrirCategoria
         categoria: "Jogo 2D"
@@ -140,6 +140,18 @@ cenas:
       - tipo: preencherSoquete
         bloco: sz_g2d_scene_is
         emBloco: "@seJogando"
+        input: COND
+        campo: SCENE
+        valor: jogando
+      - tipo: envolver
+        container: sz_js_if_else
+        corpo: THEN
+        deDentroDe: sz_g2d_every_frames
+        inputPai: BODY
+        ref: seJogandoGerador
+      - tipo: preencherSoquete
+        bloco: sz_g2d_scene_is
+        emBloco: "@seJogandoGerador"
         input: COND
         campo: SCENE
         valor: jogando

@@ -5,8 +5,11 @@ import { gameTwoDBlocks } from '../../../official-extensions/game-2d/blocks'
 import { gameKitBlocks } from '../../../official-extensions/game-2d-advanced/blocks'
 import { gameThreeDBlocks } from '../../../official-extensions/game-3d/blocks'
 import { registerExtensionBlocks } from '../../blocks'
+import { CANVAS_BLOCKS } from '../../blocks/canvas'
+import { VALUE_BLOCKS } from '../../blocks/values'
 import { ensureBlocklyInitialized } from '../../setup'
 import {
+  collectCanvasContexts,
   collectCanvasIds,
   collectClassNames,
   collectCSSAnimations,
@@ -351,6 +354,7 @@ describe('FieldNamePicker', () => {
       expect(nameKindAllowsFreeText('group')).toBe(false)
       expect(nameKindAllowsFreeText('class')).toBe(false)
       expect(nameKindAllowsFreeText('function')).toBe(false)
+      expect(nameKindAllowsFreeText('canvas-context')).toBe(false)
     })
 
     it('o bloco iniciante de propriedade consome uma variável declarada', () => {
@@ -606,8 +610,8 @@ describe('FieldNamePicker', () => {
       ['sz_js_object_assign', 'TARGET', 'variable'],
       ['sz_js_append_child', 'PARENT', 'variable'],
       ['sz_js_append_child', 'CHILD', 'variable'],
-      ['sz_val_canvas_width', 'CTX', 'variable'],
-      ['sz_val_canvas_height', 'CTX', 'variable'],
+      ['sz_val_canvas_width', 'CTX', 'canvas-context'],
+      ['sz_val_canvas_height', 'CTX', 'canvas-context'],
       ['sz_js_on_click', 'TARGET', 'dom-target'],
     ])('%s.%s usa o picker %s', (type, field, kind) => {
       expect(kindOf(type, field)).toBe(kind)
@@ -647,9 +651,75 @@ describe('FieldNamePicker', () => {
       expect(b.getField('CTX')).not.toBeInstanceOf(FieldNamePicker)
     })
 
-    it('um bloco de desenho consome o ctx via seletor de variável', () => {
+    it('um bloco de desenho consome o ctx via seletor de contexto', () => {
       const b = new Blockly.Workspace().newBlock('sz_canvas_clear')
-      expect(kindOf(b, 'CTX')).toBe('variable')
+      expect(kindOf(b, 'CTX')).toBe('canvas-context')
+    })
+
+    it('oferece somente contextos declarados antes do uso, sem misturar variáveis comuns', () => {
+      const ws = new Blockly.Workspace()
+      const frame = ws.newBlock('sz_frame_start')
+      const variable = ws.newBlock('sz_js_var_create')
+      variable.setFieldValue('pontos', 'NAME')
+      const before = ws.newBlock('sz_canvas_clear')
+      const setup = ws.newBlock('sz_canvas_setup')
+      setup.setFieldValue('pincel', 'CTX')
+      const after = ws.newBlock('sz_canvas_clear')
+
+      frame
+        .getInput('CHILDREN')
+        ?.connection?.connect(variable.previousConnection as Blockly.Connection)
+      variable.nextConnection?.connect(before.previousConnection as Blockly.Connection)
+      before.nextConnection?.connect(setup.previousConnection as Blockly.Connection)
+      setup.nextConnection?.connect(after.previousConnection as Blockly.Connection)
+
+      expect(collectCanvasContexts(before)).toEqual([])
+      expect(collectCanvasContexts(after)).toEqual(['pincel'])
+      expect(collectReadableVariables(after)).toEqual(['pontos', 'pincel'])
+    })
+
+    it.each([
+      ['sz_g2d_define_shape', null, null, 'ctx'],
+      ['sz_gk_on_draw', 'PARAM', 'pincelMundo', 'pincelMundo'],
+      ['sz_gk_on_draw_hud', 'PARAM', 'pincelHud', 'pincelHud'],
+      ['sz_gk_rpg_create_map', 'PARAM', 'pincelMapa', 'pincelMapa'],
+      ['sz_gk_define_look', 'CTX', 'pincelAparencia', 'pincelAparencia'],
+    ])('reconhece o contexto local fornecido por %s', (type, field, value, expectedContext) => {
+      const ws = new Blockly.Workspace()
+      const provider = ws.newBlock(type)
+      if (field && value) provider.setFieldValue(value, field)
+      const drawing = ws.newBlock('sz_canvas_clear')
+      provider
+        .getInput('BODY')
+        ?.connection?.connect(drawing.previousConnection as Blockly.Connection)
+
+      expect(collectCanvasContexts(drawing)).toEqual([expectedContext])
+    })
+
+    it('todo consumidor CTX do núcleo usa o seletor de contexto', () => {
+      const definitions = [...CANVAS_BLOCKS, ...VALUE_BLOCKS]
+      const consumers = definitions.filter((definition) =>
+        Object.values(definition).some(
+          (value) =>
+            Array.isArray(value) &&
+            value.some(
+              (entry) =>
+                typeof entry === 'object' &&
+                entry !== null &&
+                'type' in entry &&
+                entry.type === 'field_name_picker' &&
+                'name' in entry &&
+                entry.name === 'CTX',
+            ),
+        ),
+      )
+
+      expect(consumers).toHaveLength(43)
+      for (const definition of consumers) {
+        expect(kindOf(new Blockly.Workspace().newBlock(definition.type), 'CTX')).toBe(
+          'canvas-context',
+        )
+      }
     })
   })
 

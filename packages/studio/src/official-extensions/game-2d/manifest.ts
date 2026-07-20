@@ -20,7 +20,7 @@ import { withGameTwoDLifecycleGuidance } from './pedagogy'
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.35.2',
+  version: '0.37.0',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, vidas automáticas em corações ou barra, colisões, mapas, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
@@ -97,7 +97,7 @@ Use estes blocos dentro do **"A cada quadro do jogo"**:
 - **Seguir o ponteiro**. O sprite persegue o mouse/dedo.
 - **Manter dentro da tela**. Gruda nas bordas em vez de sumir.
 - **Clarão**. Pinta a tela com uma cor translúcida (ex.: ao levar dano).
-- **Tremer a tela**. Sacode e para sozinho (chame uma vez, ex.: numa explosão).
+- **Tremer a tela**. Sacode e para sozinho, sem criar barras de rolagem (chame uma vez, ex.: numa explosão).
 - **Soltar partículas** + **Atualizar e desenhar as partículas**. Uma explosão de
   partículas no ponto x/y; lembre de desenhá-las a cada quadro (somem sozinhas).
 
@@ -133,9 +133,11 @@ Para jogos com MUITOS sprites (tiros, inimigos, estrelas) e telas de início/vit
   sprites tem no grupo\`, \`Esvaziar/Tirar do grupo\`, \`Tirar do grupo quem sair da tela\`.
   Há também \`Mover o grupo sem gravidade\`. Para os TIROS do jogador num jogo COM
   gravidade (senão os tiros arqueiam para baixo em vez de ir reto).
-- **Colisão de grupo**. \`Quando um sprite do grupo A encostar num do grupo B\` roda o
-  "fazer" com os dois sprites (use dentro do "a cada quadro").
-- **Temporizadores**. \`A cada N quadros/segundos fazer\` (ótimo para criar inimigos).
+- **Colisões com grupos**. \`Quando um sprite do grupo A encostar num do grupo B\` roda o
+  "fazer" com os dois sprites; \`Para cada sprite do grupo que encostar no sprite\`
+  compara um sprite com qualquer grupo. Os dois ficam em **💥 Colisões** e são usados dentro
+  do "a cada quadro".
+- **Temporizadores**. \`A cada N quadros/segundos fazer\` (ótimo para criar inimigos). Essas raízes rodam em todas as telas; coloque \`se a tela atual é jogando?\` dentro delas quando o comando só deve acontecer durante a partida.
 - **HUD no canvas**. \`Mostrar placar\`, \`Escrever\` e \`Barra de … / …\`. Para vidas, prefira **Desenhar as vidas do sprite** em **❤️ Vida**: escolha corações ou barra e o bloco lê o sprite sozinho.
 - **Telas/cenas**. \`Ir para a tela\` e \`a tela atual é … ?\` aceitam tanto os
   nomes prontos quanto nomes inventados (como \`ganhou1\`); \`Mostrar tela (título/subtítulo/dica)\`,
@@ -278,7 +280,7 @@ Tijolinhos que faltavam para montar mais tipos de jogo, em categorias novas e ex
 - **🎯 Mira e contas**: **Apontar para** e **Mover na direção de** (perseguição/IA), **a distância entre** e
   **o ângulo até** dois sprites, **um número de … a …** (sorteia sempre um inteiro, incluindo as pontas) e
   **tem chance de … %?** (evento aleatório).
-- **❤️ Vida**: use **Dar ao sprite … de vida** uma vez em **⚙️ Ao iniciar**. Durante a partida, **Mudar a vida** cura ou tira pontos; **Machucar o sprite … e deixá-lo invencível** é a opção segura para contatos repetidos. Pergunte **a vida do sprite**, **a vida máxima**, **ainda tem vida?** ou **as vidas acabaram?**. Para o HUD, **Desenhar as vidas do sprite** lê a vida automaticamente e oferece **corações** ou **barra**. Uma vida nunca fica negativa nem passa do máximo.
+- **❤️ Vida**: use **Dar ao sprite … de vida** uma vez em **⚙️ Ao iniciar**. Durante a partida, **Mudar a vida** cura ou tira pontos; **Machucar o sprite … e deixá-lo invencível** é a opção segura para contatos repetidos. Pergunte **a vida do sprite**, **a vida máxima**, **ainda tem vida?**, **as vidas acabaram?** ou **o sprite está invencível?**. Combine a última pergunta com **não** para disparar tremor, explosão ou som somente quando o dano puder acontecer. Para o HUD, **Desenhar as vidas do sprite** lê a vida automaticamente e oferece **corações** ou **barra**. Uma vida nunca fica negativa nem passa do máximo.
 - **⏱️ Tempo e repetição**: **pode agir? (recarga de N quadros)** (cadência de tiro por sprite) e
   **Tirar do grupo quem viveu mais de N segundos** (tiros somem sozinhos), junto dos blocos **A cada…**.
 - **✨ Aparência**: **Virar** (espelhar esquerda/direita), **Mudar a transparência**, **Mudar o tamanho** e

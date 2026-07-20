@@ -68,6 +68,19 @@ export const EVENT_BODY_COMMAND_PLACEMENT: BlockPlacement = Object.freeze({
   role: 'command',
 })
 
+/**
+ * Um passo de simulação pode ser reutilizado por uma função, mas não deve ser
+ * executado uma única vez na raiz ou no corpo direto de um evento/construtor.
+ * Um loop aninhado continua sendo um contexto contínuo válido, mesmo quando o
+ * loop foi disparado por um desses contêineres.
+ */
+export const LOOP_COMMAND_PLACEMENT: BlockPlacement = Object.freeze({
+  root: [] as const,
+  nested: ['loop-body', 'function-body', 'async-function-body', 'derived-method-body'] as const,
+  forbiddenDirectNested: ['event-body', 'constructor-body'] as const,
+  role: 'command',
+})
+
 export const FRAME_STRUCTURE = 'sz_frame_structure'
 export const FRAME_APPEARANCE = 'sz_frame_appearance'
 export const FRAME_BEHAVIOR_LEGACY = 'sz_frame_behavior'
@@ -94,6 +107,7 @@ const BODY_CONTEXTS: readonly StatementContext[] = [
   'loop-body',
   'function-body',
   'async-function-body',
+  'constructor-body',
   'derived-constructor-body',
   'derived-method-body',
   'draw-world',
@@ -137,6 +151,7 @@ const PLACEMENT_PRESETS: Readonly<Record<BlockPlacementPreset, BlockPlacement>> 
     role: 'loop',
     phase: 'update',
   }),
+  'loop-command': LOOP_COMMAND_PLACEMENT,
   'legacy-start': Object.freeze({
     root: ['start'] as const,
     nested: [] as const,
@@ -169,6 +184,7 @@ const CHECK_BY_CONTEXT: Readonly<Record<StatementContext, string>> = {
   'loop-body': 'JSLoopStmt',
   'function-body': 'JSFunctionStmt',
   'async-function-body': 'JSAsyncStmt',
+  'constructor-body': 'JSConstructorStmt',
   'derived-constructor-body': 'JSDerivedConstructorStmt',
   'derived-method-body': 'JSDerivedMethodStmt',
   'class-member': 'ClassMember',

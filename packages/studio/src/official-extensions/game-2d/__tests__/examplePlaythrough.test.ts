@@ -524,6 +524,11 @@ describe('playthrough dos exemplos exatos do Jogo 2D', () => {
 
   it('Nave contra Asteroides atira, alcança a vitória, reinicia e também pode perder', () => {
     const game = exampleHarness(asteroidsExample)
+    const asteroidsBeforeStart = game.groups[1]
+    expect(asteroidsBeforeStart).toBeDefined()
+    for (let frame = 0; frame < 80; frame += 1) game.nextFrame()
+    expect(asteroidsBeforeStart?.items).toHaveLength(0)
+
     game.fireKey('Enter')
     expect(game.api.sceneIs('jogando')).toBe(true)
     const shots = game.groups[0]
@@ -557,6 +562,10 @@ describe('playthrough dos exemplos exatos do Jogo 2D', () => {
     game.fireKey('Enter')
     game.nextFrame()
     expect(game.api.sceneIs('inicio')).toBe(true)
+    const waitingAsteroids = game.groups.at(-1)
+    for (let frame = 0; frame < 80; frame += 1) game.nextFrame()
+    expect(waitingAsteroids?.items).toHaveLength(0)
+
     game.fireKey('Enter', 'keyup')
     game.fireKey('Enter')
     const restartedShip = game.sprites.at(-1)

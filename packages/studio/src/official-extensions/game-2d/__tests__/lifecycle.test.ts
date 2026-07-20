@@ -9,12 +9,13 @@ function runtimeHarness() {
   const frames: Array<{ id: number; callback: (time?: number) => void }> = []
   const canceled = new Set<number>()
   let nextFrameId = 1
+  let time = 0
   const windowObject = {
     addEventListener(name: string, listener: Listener) {
       listeners[name] ??= []
       listeners[name].push(listener)
     },
-    performance: { now: () => 0 },
+    performance: { now: () => time },
     devicePixelRatio: 1,
     SZGame2D: undefined,
   } as unknown as Record<string, unknown>
@@ -47,6 +48,9 @@ function runtimeHarness() {
     api: (windowObject as unknown as { SZGame2D: GameTwoDRuntimeApi }).SZGame2D,
     fire,
     flushFrame,
+    setTime(nextTime: number) {
+      time = nextTime
+    },
   }
 }
 
@@ -104,6 +108,20 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
 
     expect(first.value).toBe(1)
     expect(second.value).toBe(1)
+  })
+
+  it('normaliza WASD com Caps Lock e e.code', () => {
+    const { api, fire } = runtimeHarness()
+
+    fire('keydown', { key: 'A', code: 'KeyA', repeat: false })
+    expect(api.keys.left).toBe(true)
+    fire('keyup', { key: 'A', code: 'KeyA' })
+    expect(api.keys.left).toBe(false)
+
+    fire('keydown', { key: 'W', code: 'KeyW', repeat: false })
+    expect(api.keys.up).toBe(true)
+    fire('keyup', { key: 'w', code: 'KeyW' })
+    expect(api.keys.up).toBe(false)
   })
 
   it('reinicia em memória, executa o início novamente e não duplica eventos', () => {
@@ -343,5 +361,79 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
     expect(document.querySelector('canvas')?.getAttribute('aria-label')).toBe(
       'Colete 4 moedas. Use as setas.',
     )
+  })
+
+  it('anuncia HUD em região própria, somente por mudança e com frequência limitada', () => {
+    document.body.innerHTML = ''
+    const { api, setTime } = runtimeHarness()
+    api.setupStage(320, 200, '#000000')
+    const hudApi = api as unknown as {
+      drawScore: (
+        ctx: unknown,
+        label: string,
+        value: number,
+        x: number,
+        y: number,
+        color: string,
+        size: number,
+      ) => void
+      drawSpriteHealth: (
+        ctx: unknown,
+        sprite: ReturnType<GameTwoDRuntimeApi['createSprite']>,
+        style: 'hearts' | 'bar',
+        x: number,
+        y: number,
+        size: number,
+        color: string,
+      ) => void
+    }
+    const ctx = {
+      canvas: { width: 320, height: 200 },
+      save() {},
+      restore() {},
+      fillText() {},
+      fillRect() {},
+    }
+
+    setTime(0)
+    hudApi.drawScore(ctx, 'Pontos:', 5, 10, 20, '#fff', 20)
+    const hud = document.getElementById('sz-game-hud-status')
+    expect(hud).not.toBeNull()
+    expect(hud?.textContent).toContain('Pontos: 5')
+
+    setTime(100)
+    hudApi.drawScore(ctx, 'Pontos:', 6, 10, 20, '#fff', 20)
+    expect(hud?.textContent).toContain('Pontos: 5')
+
+    setTime(500)
+    hudApi.drawScore(ctx, 'Pontos:', 6, 10, 20, '#fff', 20)
+    expect(hud?.textContent).toContain('Pontos: 6')
+
+    const sprite = api.createSprite({ x: 0, y: 0 })
+    api.setHealth(sprite, 3)
+    setTime(1_000)
+    hudApi.drawSpriteHealth(ctx, sprite, 'bar', 10, 30, 100, '#f00')
+    expect(hud?.textContent).toContain('Vidas: 3 de 3')
+
+    api.onStart(() => {}, 'hud-test')
+    api.restart()
+    expect(hud?.textContent).toBe('')
+  })
+
+  it('bloqueia o overflow da viewport nos dois modos de palco responsivo', () => {
+    document.body.innerHTML = ''
+    document.documentElement.style.overflow = 'auto'
+    document.body.style.overflow = 'auto'
+    const { api } = runtimeHarness()
+
+    api.setupStage(800, 480, '#111111')
+    expect(document.documentElement.style.overflow).toBe('hidden')
+    expect(document.body.style.overflow).toBe('hidden')
+
+    document.documentElement.style.overflow = 'auto'
+    document.body.style.overflow = 'auto'
+    api.setupStageFull('#111111')
+    expect(document.documentElement.style.overflow).toBe('hidden')
+    expect(document.body.style.overflow).toBe('hidden')
   })
 })

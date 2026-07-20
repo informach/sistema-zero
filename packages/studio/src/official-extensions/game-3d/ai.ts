@@ -117,6 +117,8 @@ Enxames & som (Fase 8 — grupos genéricos de cópias + áudio):
   cada N segundos” em **🔁 Enquanto estiver rodando**. Para colisão, use
   "se collides(a, b)" dentro do "A cada frame" — a extensão 3D não tem chapéus
   de evento próprios.
+- Comandos contínuos podem ficar no corpo do frame ou em funções/métodos chamados
+  pelo loop; nunca os coloque diretamente em Ao iniciar, eventos ou construtores.
 
 Kit "Empilhar" (torre de blocos / Stack — mundo y-up):
 - createStackScene(canvasId) -> world: cena + câmera isométrica que sobe com a torre + luz.

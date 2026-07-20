@@ -79,8 +79,9 @@ Problemas de usabilidade infantil identificados:
 ## 4. Diretrizes adotadas no redesenho
 
 1. **Esconder o `ctx`**: o runtime é dono de um canvas/contexto único; nenhum bloco de jogo mostra "pincel".
-2. **Eventos em chapéu**: "Quando o jogo começar", "A cada quadro", "Quando apertar a tecla [▾]",
-   "Quando [sprite] encostar em [sprite]" — substituem o plumbing de variável de colisão.
+2. **Ciclo de vida visível**: preparações ficam em **⚙️ Ao iniciar**, chapéus de
+   reação em **⚡ Quando acontecer** e raízes “A cada…” em **🔁 Enquanto estiver
+   rodando**. O antigo “Quando o jogo começar” existe só para migração.
 3. **Escolher, não digitar — para TUDO que já foi nomeado** (generaliza o §2.5 de sprite p/ todo o editor):
    o campo que REFERENCIA algo já criado noutro bloco vira um pop-up com a lista do que existe + um
    texto de fallback. `field_sprite_picker` (sprite, com miniatura), `field_asset_picker` (imagem/textura)
@@ -102,6 +103,10 @@ Problemas de usabilidade infantil identificados:
    🔁 Enquanto estiver rodando (as três últimas→script.js). Início contém definições e preparações que
    rodam ao abrir e a cada nova partida; Eventos contém chapéus como clique/tecla/colisão; Loops contém
    atualização por quadro e tarefas periódicas. Os encaixes especializados impedem misturar esses papéis.
+   Comandos contínuos cabem em loops e em funções/métodos chamados por eles, mas
+   nunca diretamente no início nem no corpo direto de eventos ou construtores;
+   um loop aninhado nesses fluxos continua válido. Configurações
+   persistentes seguem a regra inversa: ligue uma vez fora dos loops.
    O que fica SOLTO é RASCUNHO: permanece salvo com aviso visual, mas não roda. Projetos novos nascem
    completamente vazios; a criança adiciona somente as áreas que usar. “Organizar blocos” dispõe as áreas
    existentes em duas linhas. Impl.: `blockly/blocks/frames.ts`, `blockContracts.ts`, `behaviorAreas.ts` e

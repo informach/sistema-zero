@@ -25,11 +25,20 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
   }
   window.addEventListener('pointerup', _releasePointer);
   window.addEventListener('pointercancel', _releasePointer);
+  /**
+   * @param {EventTarget | null} target
+   * @returns {HTMLCanvasElement | null}
+   */
+  function _canvasEventTarget(target) {
+    if (target === _stageCanvas) return _stageCanvas;
+    return (typeof HTMLCanvasElement !== 'undefined' && target instanceof HTMLCanvasElement)
+      ? target
+      : null;
+  }
   window.addEventListener('pointerdown', function (e) {
     var p = pointerXY(e); pointer.x = p.x; pointer.y = p.y; pointer.down = true;
-    var target = e && e.target;
-    var isCanvas = target && (target === _stageCanvas || String(target.tagName || '').toLowerCase() === 'canvas');
-    if (isCanvas) {
+    var target = _canvasEventTarget(e && e.target);
+    if (target) {
       if (typeof e.preventDefault === 'function') e.preventDefault();
       if (typeof target.focus === 'function') { try { target.focus({ preventScroll: true }); } catch (ignored) {} }
       if (typeof target.setPointerCapture === 'function' && e.pointerId !== undefined) {

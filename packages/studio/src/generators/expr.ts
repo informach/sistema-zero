@@ -1,4 +1,5 @@
 import { type JSExpr, valueToExpr } from '#ir'
+import { canvasExpressionToCode, isCanvasExpression } from '../codecs/web/canvasExpressionToCode'
 import { normalizeIdentifier, safeIdent } from './identifier'
 import type { SourceMapBuilder } from './sourceMap'
 
@@ -213,6 +214,13 @@ export function compileExpr(
   // Registra a (sub)expressão no source map (linha única). Filhos registram a si
   // mesmos no topo da própria chamada recursiva — por isso `rec` é repassado.
   if (rec && expr.__id) rec.map.record(expr.__id, 'script.js', rec.line, rec.line)
+  if (isCanvasExpression(expr)) {
+    const canvasCode = canvasExpressionToCode(expr, identifiers, rec, {
+      compileExpression: compileExpr,
+    })
+    if (canvasCode !== undefined) return canvasCode
+    throw new GeneratorError(`Expressão Canvas sem codec: ${expr.type}`)
+  }
   switch (expr.type) {
     case 'num':
       return formatNumber(expr.value)
@@ -322,6 +330,8 @@ export function compileExpr(
       return `SZGame2D.hasHealth(${identifiers.get(expr.spriteVar)})`
     case 'g2d:healthDepleted':
       return `SZGame2D.healthDepleted(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:isInvincible':
+      return `SZGame2D.isInvincible(${identifiers.get(expr.spriteVar)})`
     case 'g2d:cooldownReady': {
       const stableKey = expr.__id ? `, ${JSON.stringify(expr.__id)}` : ''
       return `SZGame2D.cooldownReady(${identifiers.get(expr.spriteVar)}, ${compileExpr(valueToExpr(expr.frames), 0, identifiers, rec)}${stableKey})`
@@ -668,10 +678,6 @@ export function compileExpr(
       return `SZGameKit3D.stateIs(${JSON.stringify(expr.name)})`
     case 'g3k:gameState':
       return 'SZGameKit3D.state()'
-    case 'inputKeyPressed':
-      return `__szInput.key(${JSON.stringify(expr.key)})`
-    case 'inputPointer':
-      return `__szInput.${expr.axis}`
     case 'isFullscreen':
       return 'document.fullscreenElement != null'
     case 'now':
@@ -713,12 +719,6 @@ export function compileExpr(
       return 'performance.now()'
     case 'canvasDim':
       return `${identifiers.getCanvasElement(expr.ctxVar)}.${expr.dim}`
-    case 'canvasMeasureText':
-      return `${identifiers.get(expr.ctxVar)}.measureText(${compileExpr(expr.text, 0, identifiers, rec)}).width`
-    case 'canvasIsPointInPath':
-      return `${identifiers.get(expr.ctxVar)}.isPointInPath(${compileExpr(expr.x, 0, identifiers, rec)}, ${compileExpr(expr.y, 0, identifiers, rec)})`
-    case 'canvasIsPointInStroke':
-      return `${identifiers.get(expr.ctxVar)}.isPointInStroke(${compileExpr(expr.x, 0, identifiers, rec)}, ${compileExpr(expr.y, 0, identifiers, rec)})`
     case 'random': {
       const min = compileExpr(expr.min, 0, identifiers, rec)
       const max = compileExpr(expr.max, 0, identifiers, rec)
@@ -871,10 +871,6 @@ export function compileExpr(
     }
     case 'objectOp':
       return `Object.${expr.op}(${compileExpr(expr.object, 0, identifiers, rec)})`
-    case 'assetImage':
-      // Fonte RESOLVIDA do asset: o dataURL semeado em __SZGAME_ASSETS (ver
-      // preview/assetsBridge), com fallback pro nome cru. Usável direto em img.src.
-      return `(window.__SZGAME_ASSETS?.[${JSON.stringify(expr.name)}] ?? ${JSON.stringify(expr.name)})`
     case 'getElement':
       return `document.getElementById(${JSON.stringify(expr.id)})`
     case 'querySelectorValue':

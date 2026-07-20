@@ -873,11 +873,10 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     const initialToolbox = initialToolboxRef.current
     if (!initialToolbox) return
 
+    const horizontalToolbox = container.clientWidth < STUDIO_COMPACT_MAX_PX
+    container.dataset.szToolboxLayout = horizontalToolbox ? 'horizontal' : 'vertical'
     const injected = Blockly.inject(container, {
-      ...blocklyWorkspaceConfiguration(
-        studioThemeRef.current,
-        container.clientWidth < STUDIO_COMPACT_MAX_PX,
-      ),
+      ...blocklyWorkspaceConfiguration(studioThemeRef.current, horizontalToolbox),
       toolbox: initialToolbox,
     })
     appliedToolboxRef.current = initialToolbox

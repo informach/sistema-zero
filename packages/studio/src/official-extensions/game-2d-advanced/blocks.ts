@@ -2644,7 +2644,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_overlap_groups',
-    placement: 'loop-body',
+    placement: 'loop-command',
     message0: 'Para cada %1 do molde %2 que encostar em %3 do molde %4, fazer %5',
     args0: [
       { type: 'field_input', name: 'A_NAME', text: 'tiro' },
@@ -2834,7 +2834,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_tween_to',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Mover %1 suavemente até x %2 y %3 em %4 s',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -3249,7 +3249,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_fade_to',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Fazer %1 sumir até %2 % em %3 s',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'inimigo', kind: 'character' },
@@ -3265,7 +3265,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_tween_property',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Deslizar a propriedade %2 de %1 até %3 em %4 s',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
@@ -4076,7 +4076,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_trail_on',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Ligar o rastro de %1: cor %2, tamanho %3, %4 por segundo, dura %5 s',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'nave', kind: 'character' },
@@ -4134,7 +4134,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_lean_on_move',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Inclinar %1 ao andar de lado (até %2 graus)',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'nave', kind: 'character' },
@@ -4455,7 +4455,7 @@ export const gameKitBlocks = [
   },
   {
     type: 'sz_gk_nave_wave_shooter',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'A cada %1 s, um invasor do molde %2 atira 1 do molde %3 para baixo a %4 px/s',
     args0: [
       { type: 'input_value', name: 'SECS', check: 'JSValue' },

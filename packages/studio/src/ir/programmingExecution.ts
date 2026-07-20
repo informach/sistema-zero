@@ -54,7 +54,7 @@ export function isProgrammingStatementBodyKey(key: string): boolean {
  * Loops/condições são imediatos; callbacks observam declarações posteriores;
  * funções e classes são revalidadas no ponto de chamada/instanciação.
  */
-export function programmingBodyTiming(statement: JSStatement): ProgrammingBodyTiming {
+function programmingBodyTiming(statement: JSStatement): ProgrammingBodyTiming {
   if (statement.type === 'funcDecl' || statement.type === 'classDecl') return 'invocable'
   if (
     DEFERRED_CALLBACK_STATEMENTS.has(statement.type) ||

@@ -524,6 +524,10 @@ REGRAS DE OURO ao gerar código:
 - onDraw: começar com drawBackground e desenhar TUDO de novo (o quadro zera).
 - Preparação de partida vive em **⚙️ Ao iniciar**. Chapéus ficam em **⚡ Quando acontecer**;
   onUpdate, onDraw, onDrawHud e cadências ficam em **🔁 Enquanto estiver rodando**.
+  Comandos contínuos podem ficar no corpo dessas raízes ou em funções/métodos
+  chamados por elas, nunca diretamente em Ao iniciar, eventos ou construtores.
+  tweenTo/fadeTo/tweenProperty, trailOn, leanOnMove e naveWaveShooter são
+  configurações de uma chamada: use fora de loops.
   Botões "Jogar"/"Jogar de novo"
   chamam restartGame(); onEnterState serve para reagir à entrada sem apagar dados.
 - setup vem antes das demais declarações em **⚙️ Ao iniciar**. O boot é automático.

@@ -286,6 +286,7 @@ export interface GameTwoDMathAndStateApi {
   getMaxHealth(sprite: GameTwoDSprite): number
   hasHealth(sprite: GameTwoDSprite): boolean
   healthDepleted(sprite: GameTwoDSprite): boolean
+  isInvincible(sprite: GameTwoDSprite): boolean
   damageSprite(sprite: GameTwoDSprite, amount: number, invincibilityFrames: number): void
   spriteX(sprite: GameTwoDSprite): number
   spriteY(sprite: GameTwoDSprite): number
@@ -589,6 +590,7 @@ export const GAME_TWO_D_API_KEYS = [
   'getHealth',
   'getMaxHealth',
   'healthDepleted',
+  'isInvincible',
   'damageSprite',
   'spriteX',
   'spriteY',
@@ -758,3 +760,21 @@ export const GAME_TWO_D_API_CONTRACT_COVERAGE: Record<
   Exclude<keyof GameTwoDRuntimeApi, GameTwoDApiKey>,
   never
 > = {}
+
+const GAME_TWO_D_API_EXPRESSION_OVERRIDES: Partial<Record<GameTwoDApiKey, string>> = {
+  drawSprite: '_camWrap(drawSprite)',
+  drawParticles: '_camWrap(drawParticles)',
+  drawTileMap: '_camWrap(drawTileMap)',
+  drawGroup: '_camWrap(drawGroup)',
+  drawEnemyType: '_camWrap(drawEnemyType)',
+}
+
+/** Gera a montagem pública do runtime a partir do inventário tipado da API. */
+export function buildGameTwoDRuntimeApiSource(): string {
+  const properties = GAME_TWO_D_API_KEYS.map((key) => {
+    const expression = GAME_TWO_D_API_EXPRESSION_OVERRIDES[key] ?? key
+    return `    ${key}: ${expression}`
+  }).join(',\n')
+
+  return `  window.SZGame2D = {\n${properties}\n  };`
+}

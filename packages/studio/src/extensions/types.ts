@@ -13,9 +13,16 @@ export interface ProjectRunScheduler {
   dispose(): void
 }
 
+/** Handles são números no iframe do navegador e objetos no ambiente Bun/Node. */
+export type ProjectRunTimeoutHandle = number | ReturnType<typeof setTimeout>
+export type ProjectRunIntervalHandle = number | ReturnType<typeof setInterval>
+
 export interface ProjectRunContext {
   signal: AbortSignal
   scheduler: ProjectRunScheduler
+  setTimeout(callback: () => void, delayMs: number): ProjectRunTimeoutHandle
+  setInterval(callback: () => void, delayMs: number): ProjectRunIntervalHandle
+  requestFrame(callback: FrameRequestCallback): number
   registerResource(dispose: () => void): void
   requestRestart(): void
 }

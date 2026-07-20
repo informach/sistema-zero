@@ -6,6 +6,9 @@ export const gameKitPromptSummary = `Jogo 2D Avançado expõe window.SZGameKit e
 contém onUpdate, onDraw, onDrawHud e cadências periódicas. O Estúdio registra as
 áreas e chama o boot automaticamente: não gere start() nem onGameStart().
 Movimento e física usam dt em segundos.
+Comandos contínuos ficam dentro dessas raízes ou em funções/métodos chamados por
+elas, nunca diretamente em Ao iniciar ou eventos. Tween/fade, rastro, inclinação
+e o atirador automático da onda são configurados uma vez e nunca dentro de loop.
 
 PARTIDA E ESTADOS: setState(nome) apenas troca o estado e nunca apaga progresso.
 restartGame() começa uma partida limpa e executa novamente as três áreas.

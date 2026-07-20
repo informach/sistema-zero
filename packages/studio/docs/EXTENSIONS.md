@@ -67,9 +67,10 @@ projeto que instalar a extensão.
       no `bootstrapScript`; o gerador nunca escolhe o motor por `switch` local.
 - [ ] Use `managedProjectRun: true` somente quando o runtime pode repetir a
       factory do projeto no mesmo documento. Nesse caso, incorpore
-      `buildProjectRunContextRuntime()` no `bootstrapScript`: listeners DOM e
-      RAFs genéricos emitidos pelo gerador serão descartados antes do restart.
-      Recursos próprios do motor continuam exigindo teardown no runtime.
+      `buildProjectRunContextRuntime()` no `bootstrapScript`: listeners DOM
+      inline ou nomeados, timeouts, intervalos e RAFs avulsos emitidos pelo
+      gerador serão descartados antes do restart. Recursos próprios do motor
+      continuam exigindo teardown no runtime.
 - [ ] O boot é automático. Blocos antigos de “começar o jogo” podem continuar
       registrados como `hidden: true` apenas para desserialização e migração.
 
@@ -161,11 +162,17 @@ antes de o código do aluno rodar). Regras:
       teste cruzado prove que catálogo e IR continuam alinhados.
 - [ ] Comandos de preparo entram em **⚙️ Ao iniciar**; chapéus “Quando…” entram em
       **⚡ Quando acontecer**; atualizações contínuas e periódicas entram
-      em **🔁 Enquanto estiver rodando**. Eventos e loops-raiz não podem ser aninhados. Corpos internos
+      em **🔁 Enquanto estiver rodando**. Um passo contínuo usa `loop-command`:
+      pode ficar no corpo de um loop ou de uma função/método, nunca diretamente
+      em **Ao iniciar** nem no corpo direto de um evento ou construtor. Um loop
+      aninhado nesses fluxos continua válido. Eventos e loops-raiz não podem ser aninhados. Corpos internos
       usam os checks de contexto (`event-body`, `loop-body`, `function-body`,
       etc.) materializados pelo contrato. Quando um contexto mais amplo também
       for permitido, use `forbiddenNested` para registrar exclusões ancestrais;
       criadores de recursos, por exemplo, proíbem `loop-body` em qualquer profundidade.
+      Use `resource-creator` também para comandos que ligam uma configuração
+      persistente uma única vez; eles podem nascer em início/evento/função, mas
+      nunca dentro de loop.
       Imports, classes e funções são declarações diretas de **Ao iniciar**. Um
       loop do motor chama um callback: ele não torna `break`/`continue` válidos;
       esses controles pertencem apenas a laços sintáticos (`for`/`while`/`repeat`).

@@ -196,6 +196,86 @@ describe('gramática recursiva do ciclo de vida', () => {
     }
   })
 
+  it('aceita comandos contínuos em loops e funções, mas não em início, eventos ou construtores', () => {
+    const continuous: JSStatement = {
+      type: 'g3d:controlWithKeys',
+      objVar: 'jogador',
+      speed: { type: 'num', value: 0.05 },
+    }
+
+    expect(parse('start', continuous).success).toBe(false)
+    expect(
+      parse('events', {
+        type: 'event',
+        target: 'botao',
+        event: 'click',
+        body: [continuous],
+      }).success,
+    ).toBe(false)
+    expect(
+      parse('events', {
+        type: 'event',
+        target: 'botao',
+        event: 'click',
+        body: [
+          {
+            type: 'repeat',
+            times: { type: 'num', value: 2 },
+            body: [continuous],
+          },
+        ],
+      }).success,
+    ).toBe(true)
+    expect(
+      parse('loops', { type: 'g3d:animate', worldVar: 'cena', body: [continuous] }).success,
+    ).toBe(true)
+    expect(
+      parse('start', {
+        type: 'repeat',
+        times: { type: 'num', value: 2 },
+        body: [continuous],
+      }).success,
+    ).toBe(true)
+    expect(
+      parse('start', {
+        type: 'funcDecl',
+        name: 'atualizar',
+        params: [],
+        body: [continuous],
+      }).success,
+    ).toBe(true)
+    expect(
+      parse('start', {
+        type: 'classDecl',
+        name: 'Jogo',
+        ctorBody: [continuous],
+        methods: [{ name: 'atualizar', params: [], body: [continuous] }],
+      }).success,
+    ).toBe(false)
+    expect(
+      parse('start', {
+        type: 'classDecl',
+        name: 'Jogo',
+        ctorBody: [],
+        methods: [{ name: 'atualizar', params: [], body: [continuous] }],
+      }).success,
+    ).toBe(true)
+    expect(
+      parse('start', {
+        type: 'classDecl',
+        name: 'Jogo',
+        ctorBody: [
+          {
+            type: 'repeat',
+            times: { type: 'num', value: 2 },
+            body: [continuous],
+          },
+        ],
+        methods: [],
+      }).success,
+    ).toBe(true)
+  })
+
   it('valida capacidades específicas de teclado e ponteiro em eventos', () => {
     const eventWithValue = (event: 'click' | 'keydown', prop: 'key' | 'clientX'): JSStatement => ({
       type: 'event',

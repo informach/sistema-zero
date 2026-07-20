@@ -1,8 +1,20 @@
-import type { ProjectRunContext, ProjectRunScheduler } from './types'
+import type {
+  ProjectRunContext,
+  ProjectRunIntervalHandle,
+  ProjectRunScheduler,
+  ProjectRunTimeoutHandle,
+} from './types'
 
 export interface ProjectRunClock {
   requestFrame(callback: FrameRequestCallback): number
   cancelFrame(id: number): void
+}
+
+export interface ProjectRunTimers {
+  setTimeout(callback: () => void, delayMs: number): ProjectRunTimeoutHandle
+  clearTimeout(id: ProjectRunTimeoutHandle): void
+  setInterval(callback: () => void, delayMs: number): ProjectRunIntervalHandle
+  clearInterval(id: ProjectRunIntervalHandle): void
 }
 
 export interface ManagedProjectRun extends ProjectRunContext {
@@ -18,6 +30,7 @@ export const PROJECT_RUN_LIFECYCLE_GLOBAL = '__SZProjectLifecycle'
 export function createProjectRunContext(options: {
   requestRestart: () => void
   clock?: ProjectRunClock
+  timers?: ProjectRunTimers
 }): ManagedProjectRun {
   // Esta função é autocontida porque o preview serializa a implementação abaixo
   // para dentro do iframe. Não mova o clock padrão para um helper externo.
@@ -25,8 +38,19 @@ export function createProjectRunContext(options: {
     requestFrame: (callback: FrameRequestCallback) => requestAnimationFrame(callback),
     cancelFrame: (id: number) => cancelAnimationFrame(id),
   }
+  const timers: ProjectRunTimers = options.timers ?? {
+    setTimeout: (callback: () => void, delayMs: number) => setTimeout(callback, delayMs),
+    clearTimeout: (id: ProjectRunTimeoutHandle) =>
+      clearTimeout(id as ReturnType<typeof setTimeout>),
+    setInterval: (callback: () => void, delayMs: number) => setInterval(callback, delayMs),
+    clearInterval: (id: ProjectRunIntervalHandle) =>
+      clearInterval(id as ReturnType<typeof setInterval>),
+  }
   const controller = new AbortController()
   const frameCallbacks = new Set<(deltaSeconds: number) => void>()
+  const pendingFrames = new Set<number>()
+  const pendingTimeouts = new Set<ProjectRunTimeoutHandle>()
+  const activeIntervals = new Set<ProjectRunIntervalHandle>()
   const resources: Array<() => void> = []
   let frameId: number | null = null
   let previousTime: number | null = null
@@ -108,6 +132,34 @@ export function createProjectRunContext(options: {
   return {
     signal: controller.signal,
     scheduler,
+    setTimeout(callback, delayMs) {
+      if (disposed) return -1
+      let id: ProjectRunTimeoutHandle = -1
+      id = timers.setTimeout(() => {
+        pendingTimeouts.delete(id)
+        if (!disposed) callback()
+      }, delayMs)
+      pendingTimeouts.add(id)
+      return id
+    },
+    setInterval(callback, delayMs) {
+      if (disposed) return -1
+      const id = timers.setInterval(() => {
+        if (!disposed) callback()
+      }, delayMs)
+      activeIntervals.add(id)
+      return id
+    },
+    requestFrame(callback) {
+      if (disposed) return -1
+      let id = -1
+      id = clock.requestFrame((time) => {
+        pendingFrames.delete(id)
+        if (!disposed) callback(time)
+      })
+      pendingFrames.add(id)
+      return id
+    },
     registerResource(dispose) {
       if (disposed) {
         dispose()
@@ -123,6 +175,12 @@ export function createProjectRunContext(options: {
       disposed = true
       scheduler.dispose()
       controller.abort()
+      for (const id of pendingFrames) clock.cancelFrame(id)
+      pendingFrames.clear()
+      for (const id of pendingTimeouts) timers.clearTimeout(id)
+      pendingTimeouts.clear()
+      for (const id of activeIntervals) timers.clearInterval(id)
+      activeIntervals.clear()
       for (const dispose of resources.reverse()) {
         try {
           dispose()

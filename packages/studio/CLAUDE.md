@@ -298,7 +298,10 @@ tratamento.
   para checks físicos, área-raiz, contexto aninhado, exclusões ancestrais
   (`forbiddenNested`), papel e fase. Criadores de recursos aceitam funções e
   eventos, mas proíbem `loop-body` em qualquer profundidade. Eventos e
-  loops são raízes e não podem ser aninhados. Imports, funções e classes ficam
+  loops são raízes e não podem ser aninhados. Comandos contínuos usam o preset
+  `loop-command`: cabem em loops e em funções/métodos, nunca diretamente em
+  **Ao iniciar** nem no corpo direto de eventos ou construtores; um loop
+  aninhado nesses fluxos continua válido. Imports, funções e classes ficam
   diretamente em **Ao iniciar**. Loops do motor executam callbacks e NÃO contam
   como laço sintático para `break`/`continue`; somente `for`/`while`/`repeat`
   concedem esse contexto. `break`, `continue`, `return`,
@@ -321,11 +324,13 @@ tratamento.
   runtime pelo `RuntimeLifecycleContract` da extensão. O boot é automático;
   blocos antigos de “começar” não devem aparecer em projetos novos. Jogo 2D e
   Jogo 2D Avançado declaram `managedProjectRun`: seus runtimes incorporam o
-  `ProjectRunContext`, listeners DOM gerados recebem o `AbortSignal` da partida
-  e RAFs genéricos registram cancelamento antes de uma nova factory. Os
-  schedulers e recursos específicos continuam sob responsabilidade do motor. O E2E
-  `behavior-lifecycle.spec.ts` executa início, evento, loop cancelável e reinício
-  no preview real.
+  `ProjectRunContext`; listeners DOM inline ou nomeados recebem o `AbortSignal`
+  da partida, e timeouts, intervalos e RAFs avulsos passam pelo contexto para
+  serem cancelados antes de uma nova factory. Os schedulers e recursos específicos
+  continuam sob responsabilidade do motor. O teste de integração
+  `projectRunResources.test.ts` cobre o restart no mesmo documento; o E2E
+  `behavior-lifecycle.spec.ts` cobre início, evento, loop cancelável e remontagem
+  pelo botão de atualizar o preview.
 - **Organizar blocos** (`blockly/organize.ts`): dispõe as cinco áreas em duas
   linhas e mantém os rascunhos próximos da família correspondente.
 - **World Composer**: adiciona conteúdo apenas numa área compatível já criada.
@@ -478,7 +483,7 @@ nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLI
 grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
 (de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.35.2`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.37.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Colisão PLATAFORMA one-way (lote MapperMate F2, 18/07):** o metadado de tileset/tilemap ganhou
 **`platform?: number[]`** (índices de peça one-way: pisa por cima CAINDO, atravessa por baixo/subindo).
@@ -526,7 +531,7 @@ monta `m.frontRows = parseTileGrid(meta.frontGrid)`; `drawTilemap(name, 'frente'
 parser `parsers/js.ts` (`layer !== 'chão' && … && layer !== 'frente'`) PRECISA listar 'frente' (senão
 a Ponte código→blocos joga p/ rawJS e o `blockAudit` quebra). Bump manifest gk `0.32.0 → 0.33.0` +
 `docs`/`ai.ts`. Testes: `assetMeta.test.ts` (frontGrid preservado/omitido), gk `runtime.test.ts`
-(drawTilemap 'frente' desenha de frontRows; sem frontRows não desenha), `blockAudit`=329 (à época; **hoje 337**, gk `0.43.3` — full review R31 adicionou imagem/ficha/telas + correções; a revisão atual incorporou Baloo 2 às telas automáticas).
+(drawTilemap 'frente' desenha de frontRows; sem frontRows não desenha), `blockAudit`=329 (à época; **hoje 337**, gk `0.43.4` — full review R31 adicionou imagem/ficha/telas + correções; a revisão atual incorporou Baloo 2 às telas automáticas).
 
 **Re-derivação do ANIM (10/07):** como o campo não serializa, o nome exibido é RECALCULADO de
 FROM/TO/FPS × `asset.sprite.animations` (`deriveAnimationName`/`refreshAnimationNames` +

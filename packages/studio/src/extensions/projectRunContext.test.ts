@@ -4,7 +4,9 @@ import {
   createProjectRunContext,
   type ManagedProjectRun,
   type ProjectRunClock,
+  type ProjectRunTimers,
 } from './projectRunContext'
+import type { ProjectRunIntervalHandle, ProjectRunTimeoutHandle } from './types'
 
 function fakeClock() {
   let nextId = 1
@@ -28,6 +30,42 @@ function fakeClock() {
       for (const callback of pending) callback(time)
     },
     pending: () => callbacks.size,
+  }
+}
+
+function fakeTimers() {
+  let nextId = 1
+  const timeouts = new Map<ProjectRunTimeoutHandle, () => void>()
+  const intervals = new Map<ProjectRunIntervalHandle, () => void>()
+  const timers: ProjectRunTimers = {
+    setTimeout(callback) {
+      const id = nextId++
+      timeouts.set(id, callback)
+      return id
+    },
+    clearTimeout(id) {
+      timeouts.delete(id)
+    },
+    setInterval(callback) {
+      const id = nextId++
+      intervals.set(id, callback)
+      return id
+    },
+    clearInterval(id) {
+      intervals.delete(id)
+    },
+  }
+  return {
+    timers,
+    fireTimeout(id: ProjectRunTimeoutHandle) {
+      const callback = timeouts.get(id)
+      timeouts.delete(id)
+      callback?.()
+    },
+    fireInterval(id: ProjectRunIntervalHandle) {
+      intervals.get(id)?.()
+    },
+    pending: () => ({ timeouts: timeouts.size, intervals: intervals.size }),
   }
 }
 
@@ -82,6 +120,32 @@ describe('ProjectRunContext', () => {
     expect(run.signal.aborted).toBe(true)
     expect(disposed).toEqual(['segundo', 'primeiro'])
     expect(time.pending()).toBe(0)
+  })
+
+  it('acompanha timers e RAFs avulsos e remove os que já terminaram', () => {
+    const time = fakeClock()
+    const timer = fakeTimers()
+    const calls: string[] = []
+    const run = createProjectRunContext({
+      requestRestart: () => undefined,
+      clock: time.clock,
+      timers: timer.timers,
+    })
+    const timeoutId = run.setTimeout(() => calls.push('timeout'), 10)
+    const intervalId = run.setInterval(() => calls.push('intervalo'), 10)
+    run.requestFrame(() => calls.push('quadro'))
+
+    expect(timer.pending()).toEqual({ timeouts: 1, intervals: 1 })
+    expect(time.pending()).toBe(1)
+    timer.fireTimeout(timeoutId)
+    time.tick(16)
+    expect(calls).toEqual(['timeout', 'quadro'])
+
+    run.dispose()
+    timer.fireInterval(intervalId)
+    expect(timer.pending()).toEqual({ timeouts: 0, intervals: 0 })
+    expect(time.pending()).toBe(0)
+    expect(calls).toEqual(['timeout', 'quadro'])
   })
 
   it('executa no iframe a mesma factory e descarta a execução anterior no begin', () => {

@@ -52,6 +52,7 @@ Funções gerais — mira/contas, vida/tempo, aparência, mundo e pausa:
 - setHealth(s, n): inicializa vida atual e máxima; use UMA vez em ⚙️ Ao iniciar. Valores viram inteiros >= 0.
 - changeHealth(s, delta)/getHealth(s)/getMaxHealth(s)/hasHealth(s): muda e consulta a vida sem passar de 0 ou do máximo. Sprite não inicializado não é considerado morto e recebe orientação no console.
 - healthDepleted(s): true só quando a vida foi inicializada e chegou a 0. É a pergunta positiva “as vidas acabaram?”.
+- isInvincible(s): true enquanto o sprite pisca e damageSprite ignora novos danos. Use com “não” para disparar efeitos apenas quando o dano puder acontecer.
 - damageSprite(s, amount, frames): tira vida uma vez e dá invencibilidade piscando; prefira para contato contínuo.
 - cooldownReady(s, frames, key): true no máximo a cada N quadros. Cada bloco gerado passa uma chave própria, então duas recargas no mesmo sprite são independentes.
 - spriteX(s)/spriteY(s)/spriteW(s)/spriteH(s): posição (x/y) e tamanho (largura/altura) do sprite, em px.
@@ -156,9 +157,10 @@ criar um por um. Um grupo é uma lista gerenciada de sprites:
 - countGroup(grupo): quantidade atual (valor, use em if/conta). clearGroup(grupo): esvazia. removeFromGroup(grupo, sprite): tira um.
 - pruneOffscreen(ctx, grupo, margem, function (sprite) {…}): remove os que saíram da tela e roda o corpo para cada um (ex.: perder vida quando um inimigo escapa).
 - overlapGroups(a, b, function (sa, sb) {…}): para cada par (um de cada grupo) que se encosta, roda o corpo com os dois sprites (use DENTRO do gameLoop). NÃO confundir com onOverlap (que é 1 sprite × 1 sprite).
-- everyFrames("chave", N) / everySeconds("chave", S): mecanismos internos usados pelas raízes “A cada N quadros/segundos”. No projeto da criança, essas raízes ficam diretamente em “🔁 Enquanto estiver rodando”, nunca dentro de outro gameLoop.
+- overlapSpriteGroup(() => sprite, grupo, (item) => {…}): genérico — para cada item do grupo que encosta no sprite, roda o corpo (ex.: coletar moeda ou tirar vida). Fica em “💥 Colisões” e deve ser usado no gameLoop.
+- everyFrames("chave", N) / everySeconds("chave", S): mecanismos internos usados pelas raízes “A cada N quadros/segundos”. No projeto da criança, essas raízes ficam diretamente em “🔁 Enquanto estiver rodando”, nunca dentro de outro gameLoop. Elas continuam rodando nas telas de início, vitória e derrota; para criar objetos apenas durante a partida, coloque um “se a tela atual é jogando?” dentro da raiz periódica.
 
-Para um jogo de tiro (nave × asteroides): crie 2 grupos (tiros, asteroides); no gameLoop, a cada N quadros spawn um asteroide com x aleatório e vy positivo; updateGroup + drawGroup nos dois; overlapGroups(tiros, asteroides, …) para somar ponto e remover os dois; pruneOffscreen no grupo de asteroides para perder vida quando um escapa.
+Para um jogo de tiro (nave × asteroides): crie 2 grupos (tiros, asteroides); numa raiz “A cada N quadros”, teste se a tela atual é “jogando” e só então crie um asteroide com x aleatório e vy positivo. No “A cada quadro” da partida, use updateGroup + drawGroup nos dois; overlapGroups(tiros, asteroides, …) para somar ponto e remover os dois; pruneOffscreen no grupo de asteroides para perder vida quando um escapa.
 
 HUD no canvas (v0.6.0) — desenhe DENTRO do gameLoop, depois de limpar a tela:
 - drawScore(ctx, "Pontos:", valor, x, y, "cor", tamanho): escreve "rótulo valor".
@@ -174,6 +176,9 @@ inventado pela criança (ex.: ganhou1), com UM só gameLoop:
 - IMPORTANTE: variáveis, grupos e sprites ficam em “⚙️ Ao iniciar”; registros de
   evento ficam em “⚡ Quando acontecer”; raízes gameLoop ficam em “🔁 Enquanto estiver rodando”. As três
   áreas compartilham o mesmo escopo da partida sem recriar objetos a cada quadro.
+- Comandos contínuos, inclusive as varreduras de colisão entre grupos, ficam no
+  corpo do gameLoop ou em funções/métodos chamados por ele; nunca diretamente em
+  Ao iniciar, eventos ou construtores.
 - Padrão: setup + setScene("inicio") em ⚙️ Ao iniciar; Enter em ⚡ Quando acontecer; um “A cada
   quadro” em 🔁 Enquanto estiver rodando limpa a tela e usa “se a tela atual é X” para decidir
   o que desenhar. No perdeu/ganhou, restart() começa uma execução limpa.
@@ -205,7 +210,6 @@ KIT ESPAÇO (v0.7.0) — categoria "🚀 Kit espaço" com atalhos PRONTOS (não 
 - spawnAsteroid(grupo, { x, y, size, color, vx, vy }): coloca no grupo um asteroide desenhado (polígono irregular que gira, cada um único). updateGroup/drawGroup tratam ele como qualquer sprite.
 - drawStarfield(ctx, velocidade): fundo espacial (gradiente + estrelas que cintilam/rolam) — chame logo após clear().
 - explodeSprite(sprite, "cor"): explosão de partículas no centro do sprite. playShoot()/playExplosion(): sons de tiro e explosão.
-- overlapSpriteGroup(() => nave, grupo, (item) => {…}): genérico — para cada sprite do grupo que encosta na nave, roda o corpo (ex.: tirar vida). Use no gameLoop.
 
 NAVE CLÁSSICA — girar + impulsionar na direção apontada (v0.10.0), para o Asteroids clássico (a nave gira e acelera pra onde aponta). Os sprites ganham um ÂNGULO em GRAUS (0 = pra cima, horário) que o desenho passa a respeitar (a nave/sprite aparece girada):
 - steerThrust(sprite, velocidade, giro): controle pronto de nave — vira com ←/A e →/D, acelera com ↑/W na direção apontada e desliza com atrito ao soltar; já move o sprite. Bloco "Controlar o sprite como nave". É o atalho recomendado para a criança.

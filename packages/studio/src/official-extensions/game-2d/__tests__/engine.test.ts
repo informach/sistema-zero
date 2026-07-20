@@ -37,7 +37,9 @@ interface Engine {
   getMaxHealth: (s: Sprite) => number
   hasHealth: (s: Sprite) => boolean
   healthDepleted: (s: Sprite) => boolean
+  isInvincible: (s: Sprite) => boolean
   damageSprite: (s: Sprite, amount: number, invincibilityFrames: number) => void
+  blink: (s: Sprite, frames: number) => void
   cooldownReady: (s: Sprite, frames: number, key?: string) => boolean
   randomBetween: (min: number, max: number) => number
   isPaused: () => boolean
@@ -188,6 +190,12 @@ describe('game-2d — gerador dos novos statements', () => {
         value: { type: 'g2d:healthDepleted', spriteVar: 'jogador' },
       } as unknown as JSStatement),
     ).toBe('SZGame2D.setGravity(SZGame2D.healthDepleted(jogador));')
+    expect(
+      gen({
+        type: 'g2d:setGravity',
+        value: { type: 'g2d:isInvincible', spriteVar: 'jogador' },
+      } as unknown as JSStatement),
+    ).toBe('SZGame2D.setGravity(SZGame2D.isInvincible(jogador));')
     expect(gen({ type: 'g2d:flipSprite', spriteVar: 'jogador', dir: 'left' })).toBe(
       'SZGame2D.flipSprite(jogador, "left");',
     )
@@ -283,6 +291,26 @@ describe('game-2d — gerador dos novos statements', () => {
     api.damageSprite(sprite, 2, 12)
     expect(api.getHealth(sprite)).toBe(1)
     expect(sprite.blinkFrames).toBe(12)
+  })
+
+  it('isInvincible espelha exatamente quando damageSprite ignora o próximo dano', () => {
+    const api = loadRuntime()
+    const sprite = api.createSprite({})
+    api.setHealth(sprite, 3)
+    expect(api.isInvincible(sprite)).toBe(false)
+
+    api.damageSprite(sprite, 1, 45)
+    expect(api.getHealth(sprite)).toBe(2)
+    expect(api.isInvincible(sprite)).toBe(true)
+
+    api.damageSprite(sprite, 1, 45)
+    expect(api.getHealth(sprite)).toBe(2)
+
+    sprite.blinkFrames = 0
+    expect(api.isInvincible(sprite)).toBe(false)
+
+    api.blink(sprite, 12)
+    expect(api.isInvincible(sprite)).toBe(true)
   })
 
   it('cada bloco de recarga mantém seu próprio contador no mesmo sprite', () => {

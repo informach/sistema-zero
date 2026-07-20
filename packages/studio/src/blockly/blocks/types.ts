@@ -13,6 +13,7 @@ export type StatementContext =
   | 'loop-body'
   | 'function-body'
   | 'async-function-body'
+  | 'constructor-body'
   | 'derived-constructor-body'
   | 'derived-method-body'
   | 'class-member'
@@ -26,6 +27,8 @@ export interface BlockPlacement {
   nested: readonly StatementContext[]
   /** Contextos ancestrais que invalidam o bloco mesmo quando outro contexto permitido coincide. */
   forbiddenNested?: readonly StatementContext[]
+  /** Contextos que invalidam apenas quando são o contêiner direto do bloco. */
+  forbiddenDirectNested?: readonly StatementContext[]
   role: 'declaration' | 'command' | 'event' | 'loop' | 'value'
   phase?: 'update' | 'periodic' | 'draw-world' | 'draw-hud'
 }
@@ -45,6 +48,7 @@ export type BlockPlacementPreset =
   | 'loop-draw-world'
   | 'loop-draw-hud'
   | 'loop-body'
+  | 'loop-command'
   | 'legacy-start'
   | 'start-only-command'
   | 'resource-creator'

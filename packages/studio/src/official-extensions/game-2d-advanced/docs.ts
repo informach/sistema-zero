@@ -45,6 +45,12 @@ O que o motor já faz por você (cada um tem a sua seção mais abaixo):
 6. Em **🔁 Enquanto estiver rodando**, coloque **A cada quadro (dt)**, **Desenhar o jogo
    (ctx)**, **Desenhar o HUD** e loops periódicos independentes.
 
+Comandos que fazem um passo contínuo podem ficar no corpo desses loops ou em uma
+função/método chamado por eles, mas nunca diretamente em **Ao iniciar** ou num
+evento. Já **Mover suavemente**, **Sumir**, **Deslizar propriedade**, **Ligar o
+rastro**, **Inclinar ao andar** e **A cada N s, um invasor atira** são ligados uma
+vez em **Ao iniciar**, numa reação ou numa função; não os coloque dentro de loops.
+
 O Estúdio carrega os assets e liga o motor automaticamente depois de registrar
 as três áreas. Os antigos blocos “Começar o jogo” e “Quando começar uma
 partida” existem apenas para migrar projetos salvos e não aparecem na paleta.

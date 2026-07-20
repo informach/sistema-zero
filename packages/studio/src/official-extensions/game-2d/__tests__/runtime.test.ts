@@ -126,13 +126,42 @@ describe('gameTwoDRuntime', () => {
     expect(sz.spriteVx(s)).toBe(0)
     expect(sz.isMoving(s)).toBe(false)
 
-    // "Mover com as setas ← →" p/ a esquerda → vx negativo, vy zerado.
+    // "Mover com as setas ← →" p/ a esquerda → vx negativo e preserva a queda/pulo.
+    s.vy = 7
     api.keys.left = true
     sz.arrowsX(s, 5)
     expect(sz.spriteVx(s)).toBe(-5)
-    expect(sz.spriteVy(s)).toBe(0)
+    expect(sz.spriteVy(s)).toBe(7)
     expect(sz.isMoving(s)).toBe(true)
     api.keys.left = false
+  })
+
+  it('moveToward para exatamente no alvo e registra o deslocamento real', () => {
+    const sz = api as unknown as {
+      moveToward: (
+        sprite: { x: number; y: number; w: number; h: number; vx: number; vy: number },
+        target: { x: number; y: number; w: number; h: number },
+        speed: number,
+      ) => void
+    }
+    const sprite = api.createSprite({ x: 0, y: 0, w: 10, h: 10 })
+    const target = api.createSprite({ x: 3, y: 4, w: 10, h: 10 })
+
+    sz.moveToward(sprite, target, 10)
+    expect({ x: sprite.x, y: sprite.y, vx: sprite.vx, vy: sprite.vy }).toEqual({
+      x: 3,
+      y: 4,
+      vx: 3,
+      vy: 4,
+    })
+
+    sz.moveToward(sprite, target, 10)
+    expect({ x: sprite.x, y: sprite.y, vx: sprite.vx, vy: sprite.vy }).toEqual({
+      x: 3,
+      y: 4,
+      vx: 0,
+      vy: 0,
+    })
   })
 
   it('mapa de tiles ENCAIXA no canvas (tamanho na tela ≠ tamanho da arte)', () => {
@@ -172,6 +201,35 @@ describe('gameTwoDRuntime', () => {
     // tileAt usa o tamanho NA TELA + offset: pixel (210,250) → col 1, linha 1.
     expect(sz.tileAt(map, 210, 250)).toBe(0)
     expect(sz.tileAt(map, -5, -5)).toBe(-1) // fora do mapa
+  })
+
+  it('tilemap grande desenha somente as células que cruzam a viewport', () => {
+    const sz = api as unknown as {
+      createTileMap: (o: unknown) => unknown
+      drawTileMap: (ctx: unknown, map: unknown, x: number, y: number, size: number) => void
+    }
+    const grid = Array.from({ length: 128 }, () => Array(128).fill('0').join(' ')).join(';')
+    const map = sz.createTileMap({ image: 'tiles', tile: 16, grid, solid: '' })
+    const draws: Array<[number, number, number, number]> = []
+    const canvas = { width: 320, height: 192 }
+    const ctx = new Proxy({ canvas } as Record<string, unknown>, {
+      get(target, property) {
+        if (property === 'fillRect') {
+          return (x: number, y: number, w: number, h: number) => draws.push([x, y, w, h])
+        }
+        if (property in target) return target[property as string]
+        return () => {}
+      },
+      set(target, property, value) {
+        target[property as string] = value
+        return true
+      },
+    })
+
+    sz.drawTileMap(ctx, map, 0, 0, 16)
+
+    expect(draws).toHaveLength(20 * 12)
+    expect(draws.every(([x, y, w, h]) => x < 320 && x + w > 0 && y < 192 && y + h > 0)).toBe(true)
   })
 
   it('isColliding detecta sobreposição AABB', () => {

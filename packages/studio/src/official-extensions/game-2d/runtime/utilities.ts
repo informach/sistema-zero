@@ -23,12 +23,18 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   // Move o sprite A na direção do sprite B (px por quadro). Move a posição direto.
   function moveToward(a, b, speed) {
     if (!a || !b) return;
-    var sp = (typeof speed === 'number') ? speed : 3;
+    var sp = (typeof speed === 'number' && Number.isFinite(speed)) ? Math.max(0, speed) : 3;
     var dx = (b.x + (b.w || 0) / 2) - (a.x + (a.w || 0) / 2);
     var dy = (b.y + (b.h || 0) / 2) - (a.y + (a.h || 0) / 2);
-    var len = Math.sqrt(dx * dx + dy * dy) || 1;
-    a.x += dx / len * sp;
-    a.y += dy / len * sp;
+    var len = Math.sqrt(dx * dx + dy * dy);
+    if (!len || !sp) { a.vx = 0; a.vy = 0; return; }
+    var step = Math.min(sp, len);
+    var stepX = dx / len * step;
+    var stepY = dy / len * step;
+    a.x += stepX;
+    a.y += stepY;
+    a.vx = stepX;
+    a.vy = stepY;
   }
   // Sorteia um número inteiro de min a max (inclusive).
   function randomBetween(min, max) {
@@ -87,8 +93,9 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
     if (!_hasInitializedHealth(s)) { _warnHealthNotInitialized(); return false; }
     return s.hp <= 0;
   }
+  function isInvincible(s) { return !!s && (s.blinkFrames || 0) > 0; }
   function damageSprite(s, amount, invincibilityFrames) {
-    if (!s || (s.blinkFrames || 0) > 0) return;
+    if (!s || isInvincible(s)) return;
     if (!_hasInitializedHealth(s)) { _warnHealthNotInitialized(); return; }
     if (typeof amount !== 'number' || !Number.isFinite(amount)) {
       warnOnce('dano-invalido', 'o dano precisa ser um número.');

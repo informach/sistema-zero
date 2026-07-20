@@ -38,7 +38,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     type: 'sz_canvas_set_size',
     placement: 'command',
     message0: 'Definir tamanho da tela %1',
-    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' }],
     message1: 'largura %1 altura %2',
     args1: [
       { type: 'input_value', name: 'W', check: 'JSValue' },
@@ -54,7 +54,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     type: 'sz_canvas_clear',
     placement: 'command',
     message0: 'Limpar tela %1',
-    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -65,7 +65,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'Definir cor do pincel %1 como %2',
     args0: [
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' },
       { type: 'input_value', name: 'COLOR', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -78,7 +78,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     type: 'sz_canvas_fill_rect',
     placement: 'command',
     message0: 'Desenhar retângulo com pincel %1',
-    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' }],
     message1: 'em x %1 y %2',
     args1: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -99,7 +99,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'Desenhar círculo %1 em x %2 y %3 raio %4',
     args0: [
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'R', check: 'JSValue' },
@@ -116,7 +116,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     message0: 'Desenhar texto %1 com pincel %2 em x %3 y %4',
     args0: [
       { type: 'input_value', name: 'TEXT', check: 'JSValue' },
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
     ],
@@ -196,7 +196,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     message0: 'Desenhar imagem %1 com pincel %2',
     args0: [
       { type: 'field_asset_picker', name: 'SRC', text: 'foto' },
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' },
     ],
     message1: 'em x %1 y %2',
     args1: [
@@ -274,7 +274,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     type: 'sz_canvas_save',
     placement: 'command',
     message0: 'Salvar estado do pincel %1',
-    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -284,7 +284,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     type: 'sz_canvas_restore',
     placement: 'command',
     message0: 'Restaurar estado do pincel %1',
-    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -295,7 +295,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'Mover pincel %1 em x %2 y %3',
     args0: [
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
     ],
@@ -310,7 +310,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'Girar pincel %1 em %2 radianos',
     args0: [
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' },
       { type: 'input_value', name: 'ANGLE', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -324,7 +324,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'Escalar pincel %1 em x %2 y %3',
     args0: [
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' },
       { type: 'input_value', name: 'SX', check: 'JSValue' },
       { type: 'input_value', name: 'SY', check: 'JSValue' },
     ],
@@ -339,7 +339,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'Criar degradê com pincel %1 e chamar de %2',
     args0: [
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' },
       { type: 'field_input', name: 'NAME', text: 'g' },
     ],
     message1: 'de x %1 y %2 até x %3 y %4',
@@ -365,7 +365,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     type: 'sz_canvas_begin_path',
     placement: 'command',
     message0: 'Começar um traçado no pincel %1',
-    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -377,7 +377,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'Levar a caneta do pincel %1 para x %2 y %3',
     args0: [
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
     ],
@@ -392,7 +392,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'Traçar linha no pincel %1 até x %2 y %3',
     args0: [
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
     ],
@@ -407,7 +407,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     type: 'sz_canvas_close_path',
     placement: 'command',
     message0: 'Fechar o traçado do pincel %1',
-    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -417,7 +417,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     type: 'sz_canvas_stroke',
     placement: 'command',
     message0: 'Desenhar o contorno do traçado (pincel %1)',
-    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -427,7 +427,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     type: 'sz_canvas_fill',
     placement: 'command',
     message0: 'Preencher o traçado (pincel %1)',
-    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -437,7 +437,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     type: 'sz_canvas_rect',
     placement: 'command',
     message0: 'Adicionar retângulo ao traçado do pincel %1',
-    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' }],
     message1: 'em x %1 y %2',
     args1: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -458,7 +458,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     type: 'sz_canvas_clip',
     placement: 'command',
     message0: 'Recortar o desenho pelo traçado (pincel %1)',
-    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -470,7 +470,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'Definir cor do contorno do pincel %1 como %2',
     args0: [
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' },
       { type: 'input_value', name: 'COLOR', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -484,7 +484,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'Definir espessura da linha do pincel %1 como %2',
     args0: [
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' },
       { type: 'input_value', name: 'WIDTH', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -498,7 +498,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'Definir transparência do pincel %1 como %2',
     args0: [
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' },
       { type: 'input_value', name: 'ALPHA', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -512,7 +512,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'Definir fonte do pincel %1 tamanho %2 px família %3 estilo %4',
     args0: [
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' },
       { type: 'field_number', name: 'SIZE', value: 20, min: 1 },
       { type: 'field_input', name: 'FAMILY', text: 'sans-serif' },
       {
@@ -536,7 +536,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'Alinhar texto do pincel %1 %2',
     args0: [
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' },
       {
         type: 'field_dropdown',
         name: 'ALIGN',
@@ -557,7 +557,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'Alinhar texto na vertical do pincel %1 %2',
     args0: [
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' },
       {
         type: 'field_dropdown',
         name: 'BASELINE',
@@ -590,7 +590,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
       { type: 'input_value', name: 'R', check: 'JSValue' },
     ],
     message2: 'usando pincel %1',
-    args2: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    args2: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -603,7 +603,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     type: 'sz_canvas_stroke_rect',
     placement: 'command',
     message0: 'Desenhar contorno de retângulo com pincel %1',
-    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' }],
     message1: 'em x %1 y %2',
     args1: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -623,7 +623,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     type: 'sz_canvas_clear_rect',
     placement: 'command',
     message0: 'Limpar uma área com pincel %1',
-    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' }],
     message1: 'em x %1 y %2',
     args1: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -643,7 +643,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     type: 'sz_canvas_round_rect',
     placement: 'command',
     message0: 'Desenhar retângulo arredondado com pincel %1',
-    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' }],
     message1: 'em x %1 y %2 com largura %3 altura %4',
     args1: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -663,7 +663,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     type: 'sz_canvas_ellipse',
     placement: 'command',
     message0: 'Desenhar elipse com pincel %1',
-    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' }],
     message1: 'no centro x %1 y %2',
     args1: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -683,7 +683,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     type: 'sz_canvas_arc_slice',
     placement: 'command',
     message0: 'Desenhar fatia com pincel %1',
-    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' }],
     message1: 'no centro x %1 y %2 com raio %3',
     args1: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
@@ -704,7 +704,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     type: 'sz_canvas_quadratic_curve',
     placement: 'command',
     message0: 'Curva no pincel %1',
-    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' }],
     message1: 'puxada pelo ponto x %1 y %2',
     args1: [
       { type: 'input_value', name: 'CPX', check: 'JSValue' },
@@ -725,7 +725,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     type: 'sz_canvas_bezier_curve',
     placement: 'command',
     message0: 'Curva dupla no pincel %1',
-    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' }],
     message1: 'puxada por x %1 y %2 e x %3 y %4',
     args1: [
       { type: 'input_value', name: 'CP1X', check: 'JSValue' },
@@ -748,7 +748,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'Brilho/sombra do pincel %1 cor %2 desfoque %3',
     args0: [
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' },
       { type: 'input_value', name: 'COLOR', check: 'JSValue' },
       { type: 'input_value', name: 'BLUR', check: 'JSValue' },
     ],
@@ -765,7 +765,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     message0: 'Escrever contorno %1 com pincel %2 em x %3 y %4',
     args0: [
       { type: 'input_value', name: 'TEXT', check: 'JSValue' },
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
     ],
@@ -780,7 +780,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'Traço tracejado do pincel %1 tamanho %2',
     args0: [
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' },
       { type: 'input_value', name: 'SEGMENT', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -794,7 +794,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     message0: 'largura do texto %1 no pincel %2',
     args0: [
       { type: 'input_value', name: 'TEXT', check: 'JSValue' },
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' },
     ],
     inputsInline: true,
     output: 'JSValue',
@@ -807,7 +807,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' },
     ],
     inputsInline: true,
     output: 'JSValue',
@@ -821,7 +821,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' },
     ],
     inputsInline: true,
     output: 'JSValue',

@@ -8,6 +8,8 @@ fora de “A cada quadro 3D”. Dentro do quadro, mova, anime, aplique física e
 ÁREAS: crie os recursos em “⚙️ Ao iniciar”; coloque chapéus de tecla/clique em
 “⚡ Quando acontecer”; coloque “A cada quadro 3D” e cadências em
 “🔁 Enquanto estiver rodando”.
+Comandos contínuos ficam no corpo do quadro ou em funções/métodos chamados por
+ele, nunca diretamente em Ao iniciar, eventos ou construtores.
 
 COORDENADAS: os blocos genéricos usam x = direita, y = altura e z = profundidade.
 Movimento no chão e distância usam X-Z. Os kits Travessia e Corrida preservam suas

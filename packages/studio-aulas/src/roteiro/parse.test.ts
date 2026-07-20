@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test'
-import { parseRoteiro } from './parse'
+import { join } from 'node:path'
+import { loadRoteiroFile, parseRoteiro } from './parse'
 
 const VALIDO = `
 meta:
@@ -47,4 +48,34 @@ test('rejeita ids de cena repetidos', () => {
 
 test('rejeita YAML quebrado', () => {
   expect(() => parseRoteiro('meta: [::')).toThrow(/YAML/)
+})
+
+test.each([
+  'dia-3-tela-sincronizada',
+  'dia-3-jogo-completo',
+])('%s pausa o gerador de asteroides fora da tela jogando', (aula) => {
+  const roteiro = loadRoteiroFile(join(import.meta.dir, '../../aulas', aula, 'roteiro.yaml'))
+  const acoes = roteiro.cenas.flatMap((cena) => cena.acoes ?? [])
+  const protecao = acoes.find(
+    (acao) =>
+      acao.tipo === 'envolver' &&
+      acao.container === 'sz_js_if_else' &&
+      acao.corpo === 'THEN' &&
+      acao.deDentroDe === 'sz_g2d_every_frames' &&
+      acao.inputPai === 'BODY',
+  )
+
+  expect(protecao?.tipo).toBe('envolver')
+  if (protecao?.tipo !== 'envolver') return
+
+  expect(acoes).toContainEqual(
+    expect.objectContaining({
+      tipo: 'preencherSoquete',
+      bloco: 'sz_g2d_scene_is',
+      emBloco: `@${protecao.ref}`,
+      input: 'COND',
+      campo: 'SCENE',
+      valor: 'jogando',
+    }),
+  )
 })

@@ -1,6 +1,9 @@
-const SIMPLE_KEYFRAMES_NAME = /^[A-Za-z_-][\w-]*$/
+// Subconjunto intencional de <custom-ident>: nomes legíveis, sem escapes,
+// sem dígito inicial, sem "-" seguido de dígito e sem o prefixo reservado "--".
+const SIMPLE_KEYFRAMES_NAME = /^-?[A-Za-z_][A-Za-z0-9_-]*$/
 const RESERVED_KEYFRAMES_NAMES = new Set([
   'none',
+  'default',
   'initial',
   'inherit',
   'unset',
@@ -16,9 +19,8 @@ export function isCSSKeyframesName(value: string): boolean {
 
 function isSingleKeyframeSelector(value: string): boolean {
   if (value === 'from' || value === 'to') return true
-  const match = /^(\d+(?:\.\d+)?)%$/.exec(value)
-  if (!match) return false
-  const percentage = Number(match[1])
+  if (!/^(?:\d+(?:\.\d+)?|\.\d+)%$/.test(value)) return false
+  const percentage = Number(value.slice(0, -1))
   return Number.isFinite(percentage) && percentage >= 0 && percentage <= 100
 }
 

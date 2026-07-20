@@ -477,3 +477,11 @@ O conjunto Chromium dirigido terminou com 8/8 cenários verdes. Uma primeira exe
 | S-08 — Canvas aceitava tracejado negativo e escapava da guarda de profundidade HTML | Segmentos negativos entram no contrato numérico não negativo; a guarda HTML agora percorre filhos do nó Canvas como percorre elementos comuns. | Diagnóstico de `canvasLineDash` e árvore profunda sob Canvas. |
 
 Além das correções pontuais, os contratos puros `html/accessibility.ts`, `css/keyframes.ts`, `css/mediaQueries.ts` e `css/motion.ts` reduzem o drift entre parser, schema, Blockly, diagnóstico e gerador. Isso trata a causa arquitetural das oito lacunas sem exigir migração de projetos existentes; a evolução para codecs completos por família continua sendo uma melhoria estrutural futura, não um defeito funcional aberto deste lote.
+
+### Evidência final da segunda reabertura
+
+- `bun test src`: **4.595 passaram, 0 falharam, 43.223 asserções**, em 297 arquivos.
+- `bun run typecheck`: **passou**.
+- `bun run check`: **697 arquivos verificados, sem correções**.
+- Chromium dirigido a HTML/CSS/SVG/Canvas: **8 passaram, 0 falharam**.
+- Inventário atual: **153 definições**, **152 visíveis**; o único bloco oculto continua sendo o legado `sz_canvas_keyboard`.

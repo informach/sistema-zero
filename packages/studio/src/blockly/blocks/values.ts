@@ -205,7 +205,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_val_canvas_width',
     message0: 'largura do canvas %1',
-    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' }],
     output: 'JSValue',
     colour: C,
     tooltip: 'A largura da tela de desenho ligada ao pincel.',
@@ -213,7 +213,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_val_canvas_height',
     message0: 'altura do canvas %1',
-    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'canvas-context' }],
     output: 'JSValue',
     colour: C,
     tooltip: 'A altura da tela de desenho ligada ao pincel.',

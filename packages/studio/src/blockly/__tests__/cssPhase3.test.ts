@@ -83,8 +83,15 @@ describe('Fase 3 — keyframes multi-passo + atalhos CSS', () => {
     expect(
       KeyframesCSSSchema.safeParse({
         type: 'keyframes',
+        name: '-1pulsar',
+        steps: [{ at: '50%', declarations: { opacity: '1' } }],
+      }).success,
+    ).toBe(false)
+    expect(
+      KeyframesCSSSchema.safeParse({
+        type: 'keyframes',
         name: 'pulsar',
-        steps: [{ at: '0%, 50%, 100%', declarations: { opacity: '1' } }],
+        steps: [{ at: '0%, .5%, 50%, 100%', declarations: { opacity: '1' } }],
       }).success,
     ).toBe(true)
   })

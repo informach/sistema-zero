@@ -480,6 +480,15 @@ export const gameTwoDBlocks = [
       'Verdadeiro quando a vida foi preparada e chegou a zero. Assim você não precisa usar o bloco “não”.',
   },
   {
+    type: 'sz_g2d_is_invincible',
+    message0: 'o sprite %1 está invencível?',
+    args0: [{ type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' }],
+    output: 'JSValue',
+    colour: EVENT_C,
+    tooltip:
+      'Verdadeiro enquanto o sprite está piscando e não pode receber outro dano. Use com “não” para fazer um efeito só quando o dano puder acontecer.',
+  },
+  {
     type: 'sz_g2d_draw_sprite_health',
     placement: 'command',
     message0: 'Desenhar as vidas do sprite %1 como %2 em x %3 y %4 tamanho %5 cor %6',
@@ -1252,7 +1261,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_on_enemy_shot_hit',
-    placement: 'loop-body',
+    placement: 'loop-command',
     message0: 'Para cada tiro do tipo %1 que acertar o sprite %2',
     args0: [
       { type: 'field_name_picker', name: 'TYPE', text: 'zumbi', kind: 'enemytype' },
@@ -1675,7 +1684,7 @@ export const gameTwoDBlocks = [
   // ---- Colisão de grupo + temporizadores (hats/eventos) ----
   {
     type: 'sz_g2d_on_group_overlap',
-    placement: 'loop-body',
+    placement: 'loop-command',
     message0: 'Para cada colisão entre os grupos %1 e %2',
     args0: [
       { type: 'field_name_picker', name: 'A', text: 'tiros', kind: 'group' },
@@ -2216,7 +2225,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_on_sprite_group_overlap',
-    placement: 'loop-body',
+    placement: 'loop-command',
     message0: 'Para cada sprite do grupo %1 que colidir com o sprite %2',
     args0: [
       { type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' },

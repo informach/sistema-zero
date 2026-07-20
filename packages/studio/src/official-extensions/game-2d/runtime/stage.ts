@@ -9,7 +9,13 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
   var _explicitStageDescription = '';
   var _announcedScreen = '';
   var STAGE_DESCRIPTION_ID = 'sz-game-2d-description';
+  var HUD_STATUS_ID = 'sz-game-hud-status';
   var STAGE_FOCUS_STYLE_ID = 'sz-game-2d-focus-style';
+  var HUD_ANNOUNCE_INTERVAL_MS = 500;
+  var _hudValues = Object.create(null);
+  var _hudDirty = false;
+  var _lastHudSignature = '';
+  var _lastHudAnnouncementAt = -HUD_ANNOUNCE_INTERVAL_MS;
 
   function _defaultStageDescription() {
     var title = '';
@@ -38,6 +44,68 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
       document.body.appendChild(node);
     }
     return node;
+  }
+
+  function _visuallyHide(node) {
+    node.style.position = 'absolute';
+    node.style.width = '1px';
+    node.style.height = '1px';
+    node.style.padding = '0';
+    node.style.margin = '-1px';
+    node.style.overflow = 'hidden';
+    node.style.clip = 'rect(0, 0, 0, 0)';
+    node.style.whiteSpace = 'nowrap';
+    node.style.border = '0';
+  }
+
+  function _ensureHudStatusNode() {
+    var node = null;
+    try { node = document.getElementById(HUD_STATUS_ID); } catch (e) {}
+    if (!node && document.body) {
+      node = document.createElement('p');
+      node.id = HUD_STATUS_ID;
+      node.setAttribute('role', 'status');
+      node.setAttribute('aria-live', 'polite');
+      node.setAttribute('aria-atomic', 'true');
+      _visuallyHide(node);
+      document.body.appendChild(node);
+    }
+    return node;
+  }
+
+  function _flushAccessibleHudIfDue() {
+    if (!_hudDirty) return;
+    var current = now();
+    if (current - _lastHudAnnouncementAt < HUD_ANNOUNCE_INTERVAL_MS) return;
+    var keys = Object.keys(_hudValues).sort();
+    var signature = keys.map(function (key) { return _hudValues[key]; }).filter(Boolean).join('. ');
+    if (signature && signature !== _lastHudSignature) {
+      var node = _ensureHudStatusNode();
+      if (node) node.textContent = signature;
+      _lastHudSignature = signature;
+    }
+    _hudDirty = false;
+    _lastHudAnnouncementAt = current;
+  }
+
+  function _updateAccessibleHud(key, text) {
+    var value = String(text || '').trim();
+    if (!key || !value) return;
+    if (_hudValues[key] !== value) {
+      _hudValues[key] = value;
+      _hudDirty = true;
+    }
+    _flushAccessibleHudIfDue();
+  }
+
+  function _resetAccessibleHud() {
+    _hudValues = Object.create(null);
+    _hudDirty = false;
+    _lastHudSignature = '';
+    _lastHudAnnouncementAt = -HUD_ANNOUNCE_INTERVAL_MS;
+    var node = null;
+    try { node = document.getElementById(HUD_STATUS_ID); } catch (e) {}
+    if (node) node.textContent = '';
   }
 
   function _ensureStageFocusStyle() {
@@ -150,6 +218,11 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
       c.clearRect(0, 0, c.canvas.width, c.canvas.height);
     }
   }
+  /** O palco responsivo ocupa a viewport; o tremor não deve ampliar a área rolável. */
+  function _lockStageViewportOverflow() {
+    if (document.documentElement) document.documentElement.style.overflow = 'hidden';
+    if (document.body) document.body.style.overflow = 'hidden';
+  }
   /**
    * Faz o canvas PREENCHER ~percent% da janela, MANTENDO a proporção do jogo. A
    * resolução interna (coordenadas do jogo) NÃO muda — só o tamanho de exibição
@@ -161,6 +234,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
    */
   function fitScreen(percent) {
     ensureStage();
+    _lockStageViewportOverflow();
     var c = _stageCanvas;
     if (!c) { try { c = document.querySelector('canvas'); } catch (e) {} }
     if (!c) return;
@@ -226,6 +300,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
   // _fillMode). É o bloco "preparar o jogo para ocupar a tela toda".
   function setupStageFull(bg) {
     ensureStage();
+    _lockStageViewportOverflow();
     var c = _stageCanvas;
     if (!c) { try { c = document.querySelector('canvas'); } catch (e) {} }
     if (!c) return;
@@ -271,5 +346,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
   }
   defineLazyGlobal('ctx', function () { return ensureStage(); });
   defineLazyGlobal('tela', function () { ensureStage(); return _stageCanvas; });
+
+  _registerRuntimeDomain('stage-accessibility', { reset: _resetAccessibleHud });
 
 `

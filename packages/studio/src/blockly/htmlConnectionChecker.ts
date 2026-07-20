@@ -319,6 +319,7 @@ function nestedStatementContexts(ancestors: readonly Blockly.Block[]): Set<State
     }
     if (ancestor.type === 'sz_js_constructor') {
       contexts.add('function-body')
+      contexts.add('constructor-body')
       if (getSuperName(enclosingClass(ancestors)).length > 0) {
         contexts.add('derived-constructor-body')
       }
@@ -350,6 +351,10 @@ function placementFits(destinationOwner: Blockly.Block, movedRoot: Blockly.Block
 
     const contexts = nestedStatementContexts(containers)
     if (placement.forbiddenNested?.some((context) => contexts.has(context))) return false
+    const directContexts = nestedStatementContexts(containers.slice(0, 1))
+    if (placement.forbiddenDirectNested?.some((context) => directContexts.has(context))) {
+      return false
+    }
     if (placement.nested.some((context) => contexts.has(context))) continue
 
     // Eventos e loops de raiz nunca podem ser embrulhados. Para comandos

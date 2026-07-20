@@ -185,7 +185,7 @@ export const gameThreeDBlocks = [
   // ---- Física & controles ----
   {
     type: 'sz_g3d_control_keys',
-    placement: 'command',
+    placement: 'loop-command',
     message0: 'Mover %1 com o teclado (WASD/setas), velocidade %2',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -231,7 +231,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_apply_gravity',
-    placement: 'command',
+    placement: 'loop-command',
     message0: 'Mover %1 com gravidade (chão: %2)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -245,7 +245,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_camera_follow',
-    placement: 'command',
+    placement: 'loop-command',
     message0: 'A câmera da cena %1 segue o objeto %2',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
@@ -320,7 +320,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_run_enemies',
-    placement: 'command',
+    placement: 'loop-command',
     message0: 'Na cena %1, soltar inimigos no grupo %2 (chão %3) a cada %4 quadros, velocidade %5',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
@@ -379,7 +379,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_grid_step',
-    placement: 'command',
+    placement: 'loop-command',
     message0: 'Mover %1 em grade com as setas (a cada frame)',
     args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' }],
     previousStatement: 'JSStmt',
@@ -412,7 +412,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_move_across',
-    placement: 'command',
+    placement: 'loop-command',
     message0: 'Mover os objetos do grupo %1 (velocidade %2, dando a volta de x %3 até %4)',
     args0: [
       { type: 'field_name_picker', name: 'GROUP', text: 'carros', kind: 'group3d' },
@@ -494,7 +494,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_crosser_step',
-    placement: 'command',
+    placement: 'loop-command',
     message0: 'Atualizar o personagem %1 no mundo %2 (a cada frame)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -570,7 +570,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_move_traffic',
-    placement: 'command',
+    placement: 'loop-command',
     message0: 'Mover os veículos do mundo %1 (a cada frame)',
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'scene3d' }],
     previousStatement: 'JSStmt',
@@ -617,7 +617,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_move_in_circle',
-    placement: 'command',
+    placement: 'loop-command',
     message0: 'Mover %1 em círculo: raio %2 velocidade %3',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'carro', kind: 'object3d' },
@@ -697,7 +697,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_race_step',
-    placement: 'command',
+    placement: 'loop-command',
     message0: 'Dirigir o carro %1 no mundo %2 (a cada frame)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'carro', kind: 'object3d' },
@@ -732,7 +732,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_run_rivals',
-    placement: 'command',
+    placement: 'loop-command',
     message0: 'No mundo %1, soltar e mover os carros rivais',
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'scene3d' }],
     previousStatement: 'JSStmt',
@@ -778,7 +778,7 @@ export const gameThreeDBlocks = [
   // ---- GENÉRICOS: cair (com tombo), deslizar e girar (sem lib de física) ----
   {
     type: 'sz_g3d_fall',
-    placement: 'command',
+    placement: 'loop-command',
     message0: 'fazer %1 cair girando',
     args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'peca', kind: 'object3d' }],
     previousStatement: 'JSStmt',
@@ -789,7 +789,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_slide_between',
-    placement: 'command',
+    placement: 'loop-command',
     message0: 'Mover %1 no eixo %2 de %3 até %4 e voltar (velocidade %5)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'plataforma', kind: 'object3d' },
@@ -815,7 +815,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_spin',
-    placement: 'command',
+    placement: 'loop-command',
     message0: 'Girar %1 no eixo %2 velocidade %3',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
@@ -876,7 +876,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_stack_step',
-    placement: 'command',
+    placement: 'loop-command',
     message0: 'Atualizar a torre %1 (a cada frame)',
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'torre', kind: 'scene3d' }],
     previousStatement: 'JSStmt',
@@ -1008,7 +1008,7 @@ export const gameThreeDBlocks = [
   // ---- GENÉRICOS: mover/girar relativo + suavizar (lerp) ----
   {
     type: 'sz_g3d_move_by',
-    placement: 'command',
+    placement: 'loop-command',
     message0: 'mover %1 em x %2 y %3 z %4 (relativo)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -1025,7 +1025,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_rotate_by',
-    placement: 'command',
+    placement: 'loop-command',
     message0: 'girar %1 no eixo %2 em %3 (relativo)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -1097,7 +1097,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_move_forward',
-    placement: 'command',
+    placement: 'loop-command',
     message0: 'andar %1 para frente %2 (na direção que olha)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -1208,7 +1208,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_step_body',
-    placement: 'command',
+    placement: 'loop-command',
     message0: 'mover %1 com física no mundo %2',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -1232,7 +1232,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_platformer_controls',
-    placement: 'command',
+    placement: 'loop-command',
     message0: 'controle de plataforma para %1 no mundo %2 (velocidade %3, pulo %4)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -1249,7 +1249,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_fps_controls',
-    placement: 'command',
+    placement: 'loop-command',
     message0: 'controle de primeira pessoa para %1 no mundo %2 (velocidade %3)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },

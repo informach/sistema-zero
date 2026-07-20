@@ -150,6 +150,7 @@ export type JSExpr =
   | (JSExprCommon & { type: 'g2d:randomChance'; percent: number | JSExpr })
   | (JSExprCommon & { type: 'g2d:hasHealth'; spriteVar: string })
   | (JSExprCommon & { type: 'g2d:healthDepleted'; spriteVar: string })
+  | (JSExprCommon & { type: 'g2d:isInvincible'; spriteVar: string })
   | (JSExprCommon & { type: 'g2d:cooldownReady'; spriteVar: string; frames: number | JSExpr })
   | (JSExprCommon & { type: 'g2d:isPaused' })
   // Tier 2 — posição da câmera e leitura de tile (valores).
@@ -630,6 +631,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     }),
     z.object({ type: z.literal('g2d:hasHealth'), spriteVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:healthDepleted'), spriteVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:isInvincible'), spriteVar: irText(), ...idField }),
     z.object({
       type: z.literal('g2d:cooldownReady'),
       spriteVar: irText(),

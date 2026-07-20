@@ -6,7 +6,11 @@ import { gameTwoDPromptContext } from '../ai'
 import { gameTwoDPromptSummary } from '../aiSummary'
 import { G2D_SOCKET_SHADOW_TYPES, gameTwoDBlocks, gameTwoDToolboxCategory } from '../blocks'
 import { gameTwoDManifest } from '../manifest'
-import { GAME_TWO_D_AREAS, GAME_TWO_D_LIFECYCLE_GUIDANCE } from '../pedagogy'
+import {
+  GAME_TWO_D_AREAS,
+  GAME_TWO_D_LIFECYCLE_GUIDANCE,
+  GAME_TWO_D_PERIODIC_TOOLTIPS,
+} from '../pedagogy'
 import { gameTwoDRuntime } from '../runtime'
 import { GAME_TWO_D_API_KEYS } from '../runtimeContract'
 
@@ -113,7 +117,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   it('a contagem de blocos está travada (remoção acidental salta aqui)', () => {
-    expect(gameTwoDBlocks.length).toBe(195)
+    expect(gameTwoDBlocks.length).toBe(196)
   })
 
   it('mantém o inventário da auditoria sincronizado com blocos e API reais', () => {
@@ -148,6 +152,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
       'sz_g2d_collide_group',
       'sz_g2d_collide_sprite',
       'sz_g2d_on_group_overlap',
+      'sz_g2d_on_sprite_group_overlap',
     ])
     expect(tiposDaCategoria('⏱️ Tempo e repetição')).toEqual([
       'sz_g2d_update_each_frame',
@@ -156,7 +161,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
       'sz_g2d_cooldown_ready',
       'sz_g2d_prune_old',
     ])
-    expect(tiposDaCategoria('🚀 Kit espaço')).toContain('sz_g2d_on_sprite_group_overlap')
+    expect(tiposDaCategoria('🚀 Kit espaço')).not.toContain('sz_g2d_on_sprite_group_overlap')
   })
 
   it('Vida oferece o fluxo automático por sprite sem apagar projetos antigos', () => {
@@ -168,6 +173,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
       'sz_g2d_get_max_health',
       'sz_g2d_has_health',
       'sz_g2d_health_depleted',
+      'sz_g2d_is_invincible',
       'sz_g2d_draw_sprite_health',
     ])
     const legacyHearts = gameTwoDBlocks.find((block) => block.type === 'sz_g2d_draw_hearts')
@@ -181,6 +187,21 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
 
   it('Telas e cenas contém a descrição acessível do jogo', () => {
     expect(tiposDaCategoria('📺 Telas e cenas')).toContain('sz_g2d_set_stage_description')
+  })
+
+  it('preenche todos os soquetes de valor visíveis de Placar e HUD com sombras', () => {
+    const missing = tiposDaCategoria('🏆 Placar e HUD').flatMap((type) => {
+      const definition = gameTwoDBlocks.find((block) => block.type === type)
+      const valueInputs = (definition?.args0 ?? [])
+        .filter((arg) => arg.type === 'input_value')
+        .map((arg) => arg.name)
+      const shadowedInputs = G2D_SOCKET_SHADOW_TYPES[type] ?? {}
+      return valueInputs
+        .filter((input) => !shadowedInputs[input])
+        .map((input) => `${type}.${input}`)
+    })
+
+    expect(missing).toEqual([])
   })
 
   it('mantém instruções de posicionamento fora da face dos blocos', () => {
@@ -211,6 +232,8 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
       type: 'sz_val_number',
       fields: { NUM: 30 },
     })
+    expect(GAME_TWO_D_PERIODIC_TOOLTIPS.frames).toContain('roda em todas as telas')
+    expect(GAME_TWO_D_PERIODIC_TOOLTIPS.seconds).toContain('tela atual é jogando')
 
     for (const type of ['sz_g2d_setup_stage', 'sz_g2d_setup_full']) {
       const block = gameTwoDBlocks.find((candidate) => candidate.type === type)

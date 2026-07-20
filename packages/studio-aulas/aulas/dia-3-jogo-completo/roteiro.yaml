@@ -167,9 +167,9 @@ cenas:
     tipo: pratica
     emocao: calmo
     narracao: >-
-      Lá em cima, Ir para a tela início. Depois pega um Se e envolve TODO o jogo dentro
-      dele, e a pergunta vai ser: a tela atual é jogando? É como guardar o jogo inteiro
-      numa caixa que só funciona quando a tela é jogando.
+      Lá em cima, Ir para a tela início. Depois protege com Se a tela atual é jogando
+      cada parte que roda sozinha: o quadro e o gerador de asteroides. É como guardar
+      o jogo em caixas que só funcionam quando a tela é jogando.
     acoes:
       - tipo: abrirCategoria
         categoria: "Jogo 2D"
@@ -196,9 +196,24 @@ cenas:
         input: COND
         campo: SCENE
         valor: jogando
+      - tipo: envolver
+        container: sz_js_if_else
+        corpo: THEN
+        deDentroDe: sz_g2d_every_frames
+        inputPai: BODY
+        ref: seJogandoGerador
+      - tipo: preencherSoquete
+        bloco: sz_g2d_scene_is
+        emBloco: "@seJogandoGerador"
+        input: COND
+        campo: SCENE
+        valor: jogando
       - tipo: balao
         ancora: { bloco: "@seJogando" }
-        texto: "o jogo todo, só quando a tela é jogando"
+        texto: "o quadro só roda quando a tela é jogando"
+      - tipo: balao
+        ancora: { bloco: "@seJogandoGerador" }
+        texto: "o gerador também pausa fora do jogo"
       - tipo: zoom
         nivel: ajustar
 

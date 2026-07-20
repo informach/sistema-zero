@@ -197,10 +197,10 @@ export function generateCSSWithMap(entries: CSSEntry[]): GenerateCSSWithMapResul
 }
 
 /**
- * Renderiza `@media (feature: Npx) { ...regras indentadas... }`. As regras
- * internas são geradas reaproveitando {@link generateCSSWithMap} e indentadas em
- * 2 espaços; o source map interno é deslocado para as linhas absolutas dentro do
- * documento. O próprio bloco @media é registrado na faixa completa.
+ * Renderiza a consulta guiada de tamanho ou movimento reduzido. As regras
+ * internas são geradas reaproveitando {@link generateCSSWithMap} e indentadas
+ * em 2 espaços; o source map interno é deslocado para as linhas absolutas dentro
+ * do documento. O próprio bloco @media é registrado na faixa completa.
  */
 function renderMediaQuery(entry: MediaQueryCSS, startLine: number, map: SourceMapBuilder): string {
   const condition = formatGuidedMediaQueryCondition(entry.feature, entry.px)

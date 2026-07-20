@@ -12,7 +12,7 @@ import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import { parseJS } from '../../../parsers/js'
 import { gameTwoDBlocks } from '../blocks'
 import { gameTwoDRuntime } from '../runtime'
-import { GAME_TWO_D_API_KEYS } from '../runtimeContract'
+import { buildGameTwoDRuntimeApiSource, GAME_TWO_D_API_KEYS } from '../runtimeContract'
 
 /**
  * Auditoria GENÉRICA de todos os blocos da extensão Jogo 2D — um caso por def,
@@ -155,6 +155,10 @@ beforeAll(() => {
 })
 
 describe('Auditoria Jogo 2D — inventário', () => {
+  it('monta o objeto público a partir do mesmo inventário do contrato', () => {
+    expect(gameTwoDRuntime).toContain(buildGameTwoDRuntimeApiSource())
+  })
+
   it('o contrato compilável descreve exatamente a API montada pelo runtime', () => {
     expect([...runtimeKeys].sort()).toEqual([...GAME_TWO_D_API_KEYS].sort())
   })

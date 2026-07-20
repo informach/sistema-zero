@@ -92,6 +92,63 @@ test('Programação mantém foco visível e contraste AA no uso por teclado', as
     .toBe('0s none')
 })
 
+test('Programação mantém o flyout interativo em celular', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 })
+  await createProject(page)
+
+  await page.getByRole('treeitem', { name: 'Programação', exact: true }).click()
+  await page.getByRole('treeitem', { name: '⚡ Eventos', exact: true }).click()
+
+  const flyout = page.locator('.blocklyToolboxFlyout')
+  const firstBlock = flyout.locator('.blocklyDraggable').first()
+  await expect(flyout).toBeVisible()
+  await expect(firstBlock).toBeVisible()
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const injection = document.querySelector('.injectionDiv')?.getBoundingClientRect()
+        const flyoutRect = document.querySelector('.blocklyToolboxFlyout')?.getBoundingClientRect()
+        if (!injection || !flyoutRect) return false
+        return (
+          flyoutRect.top >= injection.top &&
+          flyoutRect.bottom <= Math.min(injection.bottom, window.innerHeight)
+        )
+      }),
+    )
+    .toBe(true)
+
+  const countWorkspaceBlocks = (): Promise<number> =>
+    page.evaluate(
+      () =>
+        [...document.querySelectorAll('.blocklyBlockCanvas .blocklyDraggable')].filter(
+          (block) => !block.closest('.blocklyFlyout'),
+        ).length,
+    )
+  const countBefore = await countWorkspaceBlocks()
+  const source = await firstBlock.boundingBox()
+  const target = await page.evaluate(() => {
+    const background = document.querySelector('.blocklyMainBackground')?.getBoundingClientRect()
+    if (!background) return null
+    for (let y = background.top + 48; y < background.bottom - 48; y += 32) {
+      for (let x = background.right - 48; x > background.left + 48; x -= 32) {
+        if (document.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground')) {
+          return { x, y }
+        }
+      }
+    }
+    return null
+  })
+  if (!source || !target) throw new Error('Flyout ou workspace sem ponto interativo no celular')
+
+  // Blocos de evento têm uma cavidade central; o centro geométrico cai no
+  // fundo do flyout e não inicia o gesto. A quina sólida exercita o arraste real.
+  await page.mouse.move(source.x + 5, source.y + 5)
+  await page.mouse.down()
+  await page.mouse.move(target.x, target.y, { steps: 8 })
+  await page.mouse.up()
+  await expect.poll(countWorkspaceBlocks).toBeGreaterThan(countBefore)
+})
+
 test('campos infantis de CSS, Canvas e SVG têm nome, foco e erros acessíveis', async ({ page }) => {
   await createProject(page)
   await pasteBlocklyBlocks(page, {
@@ -167,4 +224,26 @@ test('campos infantis de CSS, Canvas e SVG têm nome, foco e erros acessíveis',
   await page.locator('.sz-svg-paint-picker__confirm').click()
   await expect(svgInput).toHaveAttribute('aria-invalid', 'true')
   await expect(page.locator('.sz-field-picker__error')).toContainText('Escolha uma cor')
+})
+
+test('entrada livre do seletor de nomes desativa o preenchimento automático', async ({ page }) => {
+  await createProject(page)
+  await pasteBlocklyBlocks(page, {
+    type: 'sz_frame_start',
+    inputs: {
+      CHILDREN: {
+        block: {
+          type: 'sz_canvas_setup',
+          fields: { CANVAS_ID: 'tela', CTX: 'pincel' },
+        },
+      },
+    },
+  })
+
+  const setup = page.locator('.blocklyBlockCanvas .sz_canvas_setup').first()
+  await setup.getByText('tela', { exact: true }).click()
+  const input = page.locator('.sz-name-picker__input')
+  await expect(input).toBeVisible()
+  await expect(input).toHaveAttribute('name', 'blockly-name-canvas')
+  await expect(input).toHaveAttribute('autocomplete', 'off')
 })

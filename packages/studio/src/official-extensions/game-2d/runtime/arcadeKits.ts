@@ -517,6 +517,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
       : String(label) + ' ' + String(value);
     ctx.fillText(text, x || 0, y || 0);
     ctx.restore();
+    _updateAccessibleHud('score:' + String(label || '') + ':' + String(x || 0) + ':' + String(y || 0), text);
   }
   /** Escreve um texto na tela (com alinhamento esquerda/centro/direita). */
   function drawLabel(ctx, text, x, y, color, size, align) {
@@ -551,7 +552,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     ctx.restore();
   }
   /** Barra de progresso/vida: fundo + preenchimento proporcional a value/max. */
-  function drawBar(ctx, value, max, x, y, w, h, color) {
+  function _drawBarVisual(ctx, value, max, x, y, w, h, color) {
     if (!ctx) return;
     var m = (typeof max === 'number' && max > 0) ? max : 1;
     var v = (typeof value === 'number') ? value : 0;
@@ -565,6 +566,12 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     ctx.fillRect(x || 0, y || 0, bw * frac, bh);
     ctx.restore();
   }
+  function drawBar(ctx, value, max, x, y, w, h, color) {
+    _drawBarVisual(ctx, value, max, x, y, w, h, color);
+    var v = (typeof value === 'number') ? value : 0;
+    var m = (typeof max === 'number' && max > 0) ? max : 1;
+    _updateAccessibleHud('bar:' + String(x || 0) + ':' + String(y || 0), 'Progresso: ' + v + ' de ' + m);
+  }
   /** HUD de vidas ligado ao sprite: corações ou barra, sem variável intermediária. */
   function drawSpriteHealth(ctx, sprite, style, x, y, size, color) {
     if (!ctx || !sprite) return;
@@ -573,10 +580,11 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     if (visual === 'bar') {
       var width = (typeof size === 'number' && Number.isFinite(size) && size > 0) ? size : 160;
       var height = Math.max(8, Math.round(width / 10));
-      drawBar(ctx, sprite.hp, sprite.hpMax, x, y, width, height, color);
-      return;
+      _drawBarVisual(ctx, sprite.hp, sprite.hpMax, x, y, width, height, color);
+    } else {
+      drawHearts(ctx, sprite.hp, x, y, size, color);
     }
-    drawHearts(ctx, sprite.hp, x, y, size, color);
+    _updateAccessibleHud('health:' + String(x || 0) + ':' + String(y || 0), 'Vidas: ' + sprite.hp + ' de ' + sprite.hpMax);
   }
 
   // ---- Estado do jogo (cenas): início → jogando → ganhou → perdeu ----

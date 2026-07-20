@@ -220,6 +220,25 @@ describe('game-2d — exemplos com vidas usam o fluxo automático por sprite', (
   }
 })
 
+describe('game-2d — Nave contra Asteroides respeita a cena ativa', () => {
+  it('mantém o gerador periódico na raiz e protege o spawn pela cena jogando', () => {
+    const periodicSpawner = asteroidsExample.ir.behavior.loops.find(
+      (statement) => statement.type === 'g2d:everyFrames',
+    )
+
+    expect(periodicSpawner).toMatchObject({
+      type: 'g2d:everyFrames',
+      body: [
+        {
+          type: 'if',
+          cond: { type: 'g2d:sceneIs', name: 'jogando' },
+          then: [{ type: 'g2d:spawnAsteroid', groupVar: 'asteroides' }],
+        },
+      ],
+    })
+  })
+})
+
 describe('pongExample (game-2d)', () => {
   it('tem IR válido contra o SZIRSchema', () => {
     expect(SZIRV2Schema.safeParse(pongExample.ir).success).toBe(true)

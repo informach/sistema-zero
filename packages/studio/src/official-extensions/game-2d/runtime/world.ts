@@ -211,9 +211,21 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
     map.ox = ox;
     map.oy = oy;
     map._drawn = true;
-    for (var r = 0; r < rowsN; r++) {
+    // Só visita as células que cruzam a viewport. O wrapper de câmera traduz o
+    // contexto, então o recorte é calculado nas mesmas coordenadas de mundo de
+    // ox/oy. Sem canvas mensurável, preserva o comportamento antigo e desenha tudo.
+    var firstRow = 0, lastRow = rowsN - 1, firstCol = 0, lastCol = cols - 1;
+    if (hasCanvas) {
+      var visible = _visibleWorldRect(ctx);
+      firstCol = Math.max(0, Math.floor((visible.left - ox) / cell));
+      lastCol = Math.min(cols - 1, Math.ceil((visible.right - ox) / cell) - 1);
+      firstRow = Math.max(0, Math.floor((visible.top - oy) / cell));
+      lastRow = Math.min(rowsN - 1, Math.ceil((visible.bottom - oy) / cell) - 1);
+    }
+    for (var r = firstRow; r <= lastRow; r++) {
       var row = map.rows[r];
-      for (var c = 0; c < row.length; c++) {
+      var rowLastCol = Math.min(lastCol, row.length - 1);
+      for (var c = firstCol; c <= rowLastCol; c++) {
         var idx = row[c];
         if (idx < 0) continue;
         drawFrame(ctx, map.tileset, idx, ox + c * cell, oy + r * cell, cell, cell);
@@ -325,8 +337,7 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
       var id = handlers[i];
       var h = keyHandlers[id];
       if (!h) continue;
-      var hit = e.key === h.key || e.code === h.key ||
-        (h.key === 'Space' && (e.key === ' ' || e.code === 'Space'));
+      var hit = _eventMatchesGameKey(e, h.key);
       if (!hit) continue;
       try { h.fn(); }
       catch (error) {
@@ -396,8 +407,14 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
   // ---- Perguntas (booleanos): "tecla apertada?" e "sprites se tocando?" ----
   // Estado de TODAS as teclas seguradas (o "keys" lá de cima só cobre as setas).
   var pressedKeys = Object.create(null);
-  window.addEventListener('keydown', function (e) { pressedKeys[e.key] = true; pressedKeys[e.code] = true; });
-  window.addEventListener('keyup', function (e) { pressedKeys[e.key] = false; pressedKeys[e.code] = false; });
+  window.addEventListener('keydown', function (e) {
+    pressedKeys[_normalizeGameKey(e.key)] = true;
+    pressedKeys[_normalizeGameKey(e.code)] = true;
+  });
+  window.addEventListener('keyup', function (e) {
+    pressedKeys[_normalizeGameKey(e.key)] = false;
+    pressedKeys[_normalizeGameKey(e.code)] = false;
+  });
   // Ao trocar de aba/janela (alt-tab), o "keyup"/"pointerup" não chega ao jogo e a
   // tecla/dedo ficaria "grudado" (o herói anda sozinho para sempre). Ao perder o
   // foco, soltamos tudo: setas, todas as teclas seguradas e o clique.
@@ -416,8 +433,7 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
   });
   /** Verdadeiro enquanto a tecla está segurada (compara e.key e e.code). */
   function keyDown(key) {
-    if (key === 'Space') return !!(pressedKeys[' '] || pressedKeys['Space']);
-    return !!pressedKeys[key];
+    return !!pressedKeys[_normalizeGameKey(key)];
   }
   /** Verdadeiro enquanto os dois sprites se tocam (alias de isColliding). */
   function touches(a, b) { return isColliding(a, b); }
@@ -490,7 +506,6 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
     var sp = (typeof speed === 'number') ? speed : 5;
     // Grava a velocidade horizontal p/ os getters (parado → 0); só mexe no eixo X.
     sprite.vx = (keys.right ? sp : 0) - (keys.left ? sp : 0);
-    sprite.vy = 0;
     if (keys.left) sprite.x -= sp;
     if (keys.right) sprite.x += sp;
   }

@@ -6,6 +6,7 @@ import {
 import type { BehaviorIR, JSExpr, JSStatement } from '#ir'
 import { BEHAVIOR_SECTION_MARKERS, screenTextToExpr, valueToExpr } from '#ir'
 import { CANVAS_IMAGE_PRELOAD_MARKERS } from '../canvasImagePreloadCodec'
+import { canvasStatementToCode, isCanvasStatement } from '../codecs/web/canvasStatementToCode'
 import { programmingChildBodyEntries } from '../ir/programmingExecution'
 import { CANVAS3D_SEMANTIC_STATEMENT_TYPES } from '../three/canvas3dContract'
 import { wrapCanvas3DMacro, wrapCanvas3DRuntime } from '../three/canvas3dMacroCodec'
@@ -622,6 +623,16 @@ function elementExpr(
     : `document.getElementById(${JSON.stringify(target)})`
 }
 
+function lifecycleResourceFunction(
+  identifiers: IdentifierScope,
+  globalName: 'requestAnimationFrame' | 'setInterval' | 'setTimeout',
+): string {
+  const projectRunContext = identifiers.getProjectRunContextIdentifier()
+  if (!projectRunContext) return globalName
+  const method = globalName === 'requestAnimationFrame' ? 'requestFrame' : globalName
+  return `${projectRunContext}.${method}`
+}
+
 function compileStatement(
   stmt: JSStatement,
   indent: number,
@@ -669,6 +680,18 @@ function compileStatementCode(
   const base = mapContext?.startLine ?? 1
   const recAt = (line: number): ExprMapContext | undefined =>
     mapContext ? { map: mapContext.map, line, indent } : undefined
+  if (isCanvasStatement(stmt)) {
+    const canvasCode = canvasStatementToCode(stmt, indent, identifiers, {
+      mapContext,
+      recAt,
+      compileExpression: compileExpr,
+      compileStatements,
+      childMapContext,
+      lifecycleResourceFunction,
+    })
+    if (canvasCode !== undefined) return canvasCode
+    throw new GeneratorError(`Statement Canvas sem codec: ${stmt.type}`)
+  }
   switch (stmt.type) {
     case 'var': {
       const keyword = stmt.kind === 'const' ? 'const' : 'let'
@@ -965,306 +988,6 @@ function compileStatementCode(
       return `${pad}${datasetAccess(target, stmt.key)} = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
     }
     // Canvas
-    case 'canvasSetup': {
-      const v = identifiers.get(stmt.varName)
-      const canvas = identifiers.getCanvasElement(stmt.varName)
-      const message = `Não foi possível preparar a tela Canvas “${stmt.canvasId}”. Confira se o id existe e pertence a uma tela Canvas.`
-      return [
-        `${pad}const ${canvas} = document.getElementById(${JSON.stringify(stmt.canvasId)});`,
-        `${pad}const ${v} = ${canvas}?.getContext?.('2d');`,
-        `${pad}if (!${v}) {`,
-        `${pad}  throw new Error(${JSON.stringify(message)});`,
-        `${pad}}`,
-      ].join('\n')
-    }
-    case 'canvasSetSize': {
-      const canvas = identifiers.getCanvasElement(stmt.ctxVar)
-      return [
-        `${pad}${canvas}.width = ${compileExpr(stmt.w, 0, identifiers, recAt(base))};`,
-        `${pad}${canvas}.height = ${compileExpr(stmt.h, 0, identifiers, recAt(base + 1))};`,
-      ].join('\n')
-    }
-    case 'canvasClear': {
-      const ctx = identifiers.get(stmt.ctxVar)
-      // ⚠️ Chavear pelo CTX (igual a canvasSetup/canvasSetSize/canvasDim), NUNCA
-      // por `stmt.canvasVar`: o mapa ctx→elemento já tem a entrada do setup e a
-      // chave divergente criava uma SEGUNDA alocação — o corpo do loop saía
-      // `canvas_2.width` (ReferenceError) e o nome derivava a cada round-trip.
-      const canvas = identifiers.getCanvasElement(stmt.ctxVar)
-      return `${pad}${ctx}.clearRect(0, 0, ${canvas}.width, ${canvas}.height);`
-    }
-    case 'canvasFillStyle':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.fillStyle = ${compileExpr(stmt.color, 0, identifiers, recAt(base))};`
-    case 'canvasFillRect':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.fillRect(${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))}, ${compileExpr(stmt.w, 0, identifiers, recAt(base))}, ${compileExpr(stmt.h, 0, identifiers, recAt(base))});`
-    case 'canvasArc': {
-      const ctx = identifiers.get(stmt.ctxVar)
-      // beginPath na 1ª linha; o arc(x, y, r, …) fica na 2ª linha (base+1).
-      return [
-        `${pad}${ctx}.beginPath();`,
-        `${pad}${ctx}.arc(${compileExpr(stmt.x, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.r, 0, identifiers, recAt(base + 1))}, 0, Math.PI * 2);`,
-        `${pad}${ctx}.fill();`,
-      ].join('\n')
-    }
-    case 'canvasStrokeRect':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.strokeRect(${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))}, ${compileExpr(stmt.w, 0, identifiers, recAt(base))}, ${compileExpr(stmt.h, 0, identifiers, recAt(base))});`
-    case 'canvasClearRect':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.clearRect(${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))}, ${compileExpr(stmt.w, 0, identifiers, recAt(base))}, ${compileExpr(stmt.h, 0, identifiers, recAt(base))});`
-    case 'canvasRoundRect': {
-      const ctxRR = identifiers.get(stmt.ctxVar)
-      return [
-        `${pad}${ctxRR}.beginPath();`,
-        `${pad}${ctxRR}.roundRect(${compileExpr(stmt.x, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.w, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.h, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.r, 0, identifiers, recAt(base + 1))});`,
-        `${pad}${ctxRR}.fill();`,
-      ].join('\n')
-    }
-    case 'canvasEllipse': {
-      const ctxEl = identifiers.get(stmt.ctxVar)
-      return [
-        `${pad}${ctxEl}.beginPath();`,
-        `${pad}${ctxEl}.ellipse(${compileExpr(stmt.x, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.rx, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.ry, 0, identifiers, recAt(base + 1))}, 0, 0, Math.PI * 2);`,
-        `${pad}${ctxEl}.fill();`,
-      ].join('\n')
-    }
-    case 'canvasArcSlice': {
-      const ctxAs = identifiers.get(stmt.ctxVar)
-      return [
-        `${pad}${ctxAs}.beginPath();`,
-        `${pad}${ctxAs}.moveTo(${compileExpr(stmt.x, 0, identifiers, recAt(base + 1))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base + 1))});`,
-        `${pad}${ctxAs}.arc(${compileExpr(stmt.x, 0, identifiers, recAt(base + 2))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base + 2))}, ${compileExpr(stmt.r, 0, identifiers, recAt(base + 2))}, ${compileExpr(stmt.start, 0, identifiers, recAt(base + 2))}, ${compileExpr(stmt.end, 0, identifiers, recAt(base + 2))});`,
-        `${pad}${ctxAs}.closePath();`,
-        `${pad}${ctxAs}.fill();`,
-      ].join('\n')
-    }
-    case 'canvasQuadraticCurve':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.quadraticCurveTo(${compileExpr(stmt.cpx, 0, identifiers, recAt(base))}, ${compileExpr(stmt.cpy, 0, identifiers, recAt(base))}, ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))});`
-    case 'canvasBezierCurve':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.bezierCurveTo(${compileExpr(stmt.cp1x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.cp1y, 0, identifiers, recAt(base))}, ${compileExpr(stmt.cp2x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.cp2y, 0, identifiers, recAt(base))}, ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))});`
-    case 'canvasArcTo':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.arcTo(${compileExpr(stmt.x1, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y1, 0, identifiers, recAt(base))}, ${compileExpr(stmt.x2, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y2, 0, identifiers, recAt(base))}, ${compileExpr(stmt.r, 0, identifiers, recAt(base))});`
-    case 'canvasShadow': {
-      const ctxSh = identifiers.get(stmt.ctxVar)
-      return [
-        `${pad}${ctxSh}.shadowColor = ${compileExpr(stmt.color, 0, identifiers, recAt(base))};`,
-        `${pad}${ctxSh}.shadowBlur = ${compileExpr(stmt.blur, 0, identifiers, recAt(base + 1))};`,
-      ].join('\n')
-    }
-    case 'canvasStrokeText':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.strokeText(${compileExpr(stmt.text, 0, identifiers, recAt(base))}, ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))});`
-    case 'canvasLineDash': {
-      // Um único valor de traço (traço = espaço). Emite [seg], não [seg, seg]: o
-      // canvas DUPLICA arrays de tamanho ímpar (então [seg] já é traço=espaço=seg)
-      // e, se `seg` for impuro (ex.: número aleatório / medida de texto), não é
-      // avaliado DUAS vezes nem com valores divergentes. O parser lê elements[0],
-      // então o round-trip continua estável.
-      const seg = compileExpr(stmt.segment, 0, identifiers, recAt(base))
-      return `${pad}${identifiers.get(stmt.ctxVar)}.setLineDash([${seg}]);`
-    }
-    case 'canvasFillText':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.fillText(${compileExpr(stmt.text, 0, identifiers, recAt(base))}, ${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))});`
-    case 'animationLoop': {
-      const frame = identifiers.reserveInternal('frame')
-      const startLine = mapContext?.startLine ?? 1
-      const projectRunContext = identifiers.getProjectRunContextIdentifier()
-      const managedHandle =
-        projectRunContext && !stmt.handle
-          ? identifiers.reserveInternal('__szProjectRunFrame')
-          : undefined
-      // Forma com TEMPO: expõe o relógio do requestAnimationFrame (ms) e o tempo
-      // desde o quadro anterior em SEGUNDOS, para APIs de movimento/física
-      // movimento independente de FPS. O loop é iniciado com requestAnimationFrame
-      // (não com frame()) para que o 1º quadro já receba um tempo real.
-      if (stmt.timeVar || stmt.deltaVar) {
-        const tVar = stmt.timeVar
-          ? identifiers.get(stmt.timeVar)
-          : identifiers.reserveInternal('frameTime')
-        const dVar = stmt.deltaVar ? identifiers.get(stmt.deltaVar) : null
-        const lastT = dVar ? identifiers.reserveInternal('lastFrameTime') : null
-        const handle = stmt.handle ? identifiers.get(stmt.handle) : managedHandle
-        const pre: string[] = []
-        if (handle) pre.push(`${pad}let ${handle};`)
-        if (lastT) pre.push(`${pad}let ${lastT};`)
-        pre.push(`${pad}function ${frame}(${tVar}) {`)
-        if (stmt.handle && handle) {
-          pre.push(`${pad}  ${handle} = requestAnimationFrame(${frame});`)
-        }
-        if (dVar && lastT) {
-          pre.push(
-            `${pad}  const ${dVar} = ${lastT} === undefined ? 0 : (${tVar} - ${lastT}) / 1000;`,
-          )
-          pre.push(`${pad}  ${lastT} = ${tVar};`)
-        }
-        const body = compileStatements(
-          stmt.body,
-          indent + 1,
-          identifiers,
-          childMapContext(mapContext, startLine + pre.length),
-        )
-        const post: string[] = []
-        if (!stmt.handle) {
-          post.push(`${pad}  ${handle ? `${handle} = ` : ''}requestAnimationFrame(${frame});`)
-        }
-        post.push(`${pad}}`)
-        post.push(`${pad}${handle ? `${handle} = ` : ''}requestAnimationFrame(${frame});`)
-        if (projectRunContext && handle) {
-          post.push(
-            `${pad}${projectRunContext}.registerResource(() => cancelAnimationFrame(${handle}));`,
-          )
-        }
-        return [...pre, body, ...post].join('\n')
-      }
-      // Forma cancelável: guarda o id do requestAnimationFrame numa variável do
-      // aluno para poder pará-lo depois com cancelAnimationFrame.
-      if (stmt.handle) {
-        const handle = identifiers.get(stmt.handle)
-        // Reagenda o próximo quadro NO TOPO da função (padrão MDN). Assim, se o
-        // corpo chamar cancelAnimationFrame(<handle>), ele cancela o quadro JÁ
-        // agendado e o loop realmente para — inclusive quando o cancelamento
-        // acontece de dentro do próprio corpo (ex.: colisão). Cabeçalho de 3
-        // linhas (let / function / requestAnimationFrame) antes do corpo.
-        const body = compileStatements(
-          stmt.body,
-          indent + 1,
-          identifiers,
-          childMapContext(mapContext, startLine + 3),
-        )
-        return [
-          `${pad}let ${handle};`,
-          `${pad}function ${frame}() {`,
-          `${pad}  ${handle} = requestAnimationFrame(${frame});`,
-          body,
-          `${pad}}`,
-          `${pad}${frame}();`,
-          ...(projectRunContext
-            ? [
-                `${pad}${projectRunContext}.registerResource(() => cancelAnimationFrame(${handle}));`,
-              ]
-            : []),
-        ].join('\n')
-      }
-      if (projectRunContext && managedHandle) {
-        const body = compileStatements(
-          stmt.body,
-          indent + 1,
-          identifiers,
-          childMapContext(mapContext, startLine + 2),
-        )
-        return [
-          `${pad}let ${managedHandle};`,
-          `${pad}function ${frame}() {`,
-          body,
-          `${pad}  ${managedHandle} = requestAnimationFrame(${frame});`,
-          `${pad}}`,
-          `${pad}${frame}();`,
-          `${pad}${projectRunContext}.registerResource(() => cancelAnimationFrame(${managedHandle}));`,
-        ].join('\n')
-      }
-      const body = compileStatements(
-        stmt.body,
-        indent + 1,
-        identifiers,
-        childMapContext(mapContext, startLine + 1),
-      )
-      return [
-        `${pad}function ${frame}() {`,
-        body,
-        `${pad}  requestAnimationFrame(${frame});`,
-        `${pad}}`,
-        // Pontapé inicial: chama a própria função (sem parâmetros) para iniciar o
-        // loop. Dentro dela, requestAnimationFrame reagenda o próximo quadro.
-        `${pad}${frame}();`,
-      ].join('\n')
-    }
-    case 'cancelAnimationFrame':
-      return `${pad}cancelAnimationFrame(${compileExpr(stmt.handle, 0, identifiers, recAt(base))});`
-    case 'canvasDrawImage': {
-      const ctx = identifiers.get(stmt.ctxVar)
-      const cached = identifiers.getCanvasImageIdentifiers()
-      if (cached) {
-        const image = identifiers.reserveInternal(`${ctx}Imagem`)
-        return [
-          `${pad}{`,
-          `${pad}  const ${image} = ${cached.images}.get(${JSON.stringify(stmt.src)});`,
-          `${pad}  if (${image}) ${ctx}.drawImage(${image}, ${compileExpr(stmt.x, 0, identifiers, recAt(base + 2))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base + 2))}, ${compileExpr(stmt.w, 0, identifiers, recAt(base + 2))}, ${compileExpr(stmt.h, 0, identifiers, recAt(base + 2))});`,
-          `${pad}}`,
-        ].join('\n')
-      }
-      const image = identifiers.reserveInternal(`${ctx}Img`)
-      return [
-        `${pad}{`,
-        `${pad}  const ${image} = new Image();`,
-        `${pad}  ${image}.src = window.__SZGAME_ASSETS?.[${JSON.stringify(stmt.src)}] ?? ${JSON.stringify(stmt.src)};`,
-        `${pad}  ${image}.onload = () => ${ctx}.drawImage(${image}, ${compileExpr(stmt.x, 0, identifiers, recAt(base + 3))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base + 3))}, ${compileExpr(stmt.w, 0, identifiers, recAt(base + 3))}, ${compileExpr(stmt.h, 0, identifiers, recAt(base + 3))});`,
-        `${pad}}`,
-      ].join('\n')
-    }
-    case 'canvasSave':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.save();`
-    case 'canvasRestore':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.restore();`
-    case 'canvasTranslate':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.translate(${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))});`
-    case 'canvasRotate':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.rotate(${compileExpr(stmt.angle, 0, identifiers, recAt(base))});`
-    case 'canvasScale':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.scale(${compileExpr(stmt.sx, 0, identifiers, recAt(base))}, ${compileExpr(stmt.sy, 0, identifiers, recAt(base))});`
-    case 'canvasGradient': {
-      const ctx = identifiers.get(stmt.ctxVar)
-      const v = identifiers.get(stmt.varName)
-      const stops = stmt.stops
-        .map((s) => `${pad}${v}.addColorStop(${s.offset}, ${JSON.stringify(s.color)});`)
-        .join('\n')
-      return [
-        `${pad}const ${v} = ${ctx}.createLinearGradient(${compileExpr(stmt.x0, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y0, 0, identifiers, recAt(base))}, ${compileExpr(stmt.x1, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y1, 0, identifiers, recAt(base))});`,
-        stops,
-      ].join('\n')
-    }
-    case 'canvasBeginPath':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.beginPath();`
-    case 'canvasClosePath':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.closePath();`
-    case 'canvasStroke':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.stroke();`
-    case 'canvasFill':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.fill();`
-    case 'canvasMoveTo':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.moveTo(${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))});`
-    case 'canvasLineTo':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.lineTo(${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))});`
-    case 'canvasRect':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.rect(${compileExpr(stmt.x, 0, identifiers, recAt(base))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base))}, ${compileExpr(stmt.w, 0, identifiers, recAt(base))}, ${compileExpr(stmt.h, 0, identifiers, recAt(base))});`
-    case 'canvasClip':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.clip();`
-    case 'canvasStrokeStyle':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.strokeStyle = ${compileExpr(stmt.color, 0, identifiers, recAt(base))};`
-    case 'canvasLineWidth':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.lineWidth = ${compileExpr(stmt.width, 0, identifiers, recAt(base))};`
-    case 'canvasGlobalAlpha':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.globalAlpha = ${compileExpr(stmt.alpha, 0, identifiers, recAt(base))};`
-    case 'canvasFont':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.font = ${JSON.stringify(`${stmt.weight ? `${stmt.weight} ` : ''}${stmt.size}px ${stmt.family}`)};`
-    case 'canvasTextAlign':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.textAlign = ${JSON.stringify(stmt.align)};`
-    case 'canvasTextBaseline':
-      return `${pad}${identifiers.get(stmt.ctxVar)}.textBaseline = ${JSON.stringify(stmt.baseline)};`
-    case 'keyboardSimple': {
-      const v = identifiers.get(stmt.varName)
-      return [
-        `${pad}const ${v} = { left: false, right: false, up: false, down: false };`,
-        `${pad}document.addEventListener('keydown', (e) => {`,
-        `${pad}  if (e.key === 'ArrowLeft') ${v}.left = true;`,
-        `${pad}  if (e.key === 'ArrowRight') ${v}.right = true;`,
-        `${pad}  if (e.key === 'ArrowUp') ${v}.up = true;`,
-        `${pad}  if (e.key === 'ArrowDown') ${v}.down = true;`,
-        `${pad}});`,
-        `${pad}document.addEventListener('keyup', (e) => {`,
-        `${pad}  if (e.key === 'ArrowLeft') ${v}.left = false;`,
-        `${pad}  if (e.key === 'ArrowRight') ${v}.right = false;`,
-        `${pad}  if (e.key === 'ArrowUp') ${v}.up = false;`,
-        `${pad}  if (e.key === 'ArrowDown') ${v}.down = false;`,
-        `${pad}});`,
-      ].join('\n')
-    }
     case 'arrayPush':
       return `${pad}${identifiers.get(stmt.arrayVar)}.push(${compileExpr(stmt.value, 0, identifiers, recAt(base))});`
     case 'arrayRemove':
@@ -3404,13 +3127,15 @@ ${pad}});`
     }
     case 'eventHandler': {
       const handler = identifiers.get(stmt.handlerName)
+      const projectRunContext = identifiers.getProjectRunContextIdentifier()
+      const listenerOptions = projectRunContext ? `, { signal: ${projectRunContext}.signal }` : ''
       if (stmt.targetKind === 'window') {
-        return `${pad}window.addEventListener(${JSON.stringify(stmt.event)}, ${handler});`
+        return `${pad}window.addEventListener(${JSON.stringify(stmt.event)}, ${handler}${listenerOptions});`
       }
       if (stmt.targetKind === 'document') {
-        return `${pad}document.addEventListener(${JSON.stringify(stmt.event)}, ${handler});`
+        return `${pad}document.addEventListener(${JSON.stringify(stmt.event)}, ${handler}${listenerOptions});`
       }
-      return `${pad}${elementExpr(stmt.target, stmt.targetKind, identifiers)}?.addEventListener(${JSON.stringify(stmt.event)}, ${handler});`
+      return `${pad}${elementExpr(stmt.target, stmt.targetKind, identifiers)}?.addEventListener(${JSON.stringify(stmt.event)}, ${handler}${listenerOptions});`
     }
     case 'setThisProp':
       return `${pad}this.${normalizeIdentifier(stmt.name)} = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
@@ -3418,11 +3143,6 @@ ${pad}});`
       return `${pad}${identifiers.get(stmt.objectVar)}.${normalizeIdentifier(stmt.name)} = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
     case 'memberSet':
       return `${pad}${compileExpr(stmt.object, 20, identifiers, recAt(base))}.${normalizeIdentifier(stmt.name)} = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
-    case 'newImage': {
-      const imgVar = identifiers.get(stmt.varName)
-      const src = compileExpr(stmt.src, 0, identifiers, recAt(base))
-      return `${pad}const ${imgVar} = new Image();\n${pad}${imgVar}.src = ${src};`
-    }
     case 'memberCall': {
       const args = stmt.args.map((a) => compileExpr(a, 0, identifiers, recAt(base))).join(', ')
       return `${pad}${compileExpr(stmt.object, 20, identifiers, recAt(base))}.${normalizeIdentifier(stmt.method)}(${args});`
@@ -3439,34 +3159,10 @@ ${pad}});`
     case 'exprStatement':
       return `${pad}${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
     // `requestAnimationFrame(nome)` — a função é uma REFERÊNCIA (nome), não uma chamada.
-    case 'requestFrame':
-      return `${pad}requestAnimationFrame(${identifiers.get(stmt.fn)});`
     case 'mountRenderer':
       return `${pad}document.body.appendChild(${identifiers.get(stmt.renderer)}.domElement);`
     case 'indexSet':
       return `${pad}${compileExpr(stmt.object, 20, identifiers, recAt(base))}[${compileExpr(stmt.index, 0, identifiers, recAt(base))}] = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
-    case 'imageOnLoad': {
-      const body = compileStatements(
-        stmt.body,
-        indent + 1,
-        identifiers,
-        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
-      )
-      const compiledTarget = compileExpr(stmt.target, 20, identifiers, recAt(base))
-      const target = stmt.target.type === 'objectLiteral' ? `(${compiledTarget})` : compiledTarget
-      return `${pad}${target}.onload = () => {\n${body}\n${pad}};`
-    }
-    case 'imageOnError': {
-      const body = compileStatements(
-        stmt.body,
-        indent + 1,
-        identifiers,
-        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
-      )
-      const compiledTarget = compileExpr(stmt.target, 20, identifiers, recAt(base))
-      const target = stmt.target.type === 'objectLiteral' ? `(${compiledTarget})` : compiledTarget
-      return `${pad}${target}.onerror = () => {\n${body}\n${pad}};`
-    }
     case 'onClickAssign': {
       const body = compileStatements(
         stmt.body,
@@ -3477,16 +3173,6 @@ ${pad}});`
       const compiledTarget = compileExpr(stmt.target, 20, identifiers, recAt(base))
       const target = stmt.target.type === 'objectLiteral' ? `(${compiledTarget})` : compiledTarget
       return `${pad}${target}.onclick = () => {\n${body}\n${pad}};`
-    }
-    case 'requestFrameDo': {
-      const body = compileStatements(
-        stmt.body,
-        indent + 1,
-        identifiers,
-        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
-      )
-      const param = stmt.param ? identifiers.get(stmt.param) : ''
-      return `${pad}requestAnimationFrame((${param}) => {\n${body}\n${pad}});`
     }
     case 'loaderLoad': {
       const body = compileStatements(
@@ -4259,7 +3945,7 @@ ${pad}});`
     case 'awaitStmt':
       return `${pad}await ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
     case 'setTimeoutCall':
-      return `${pad}setTimeout(${identifiers.get(stmt.fn)}, ${compileExpr(stmt.delay, 0, identifiers, recAt(base))});`
+      return `${pad}${lifecycleResourceFunction(identifiers, 'setTimeout')}(${identifiers.get(stmt.fn)}, ${compileExpr(stmt.delay, 0, identifiers, recAt(base))});`
     case 'forEach': {
       const body = compileStatements(
         stmt.body,
@@ -4281,7 +3967,7 @@ ${pad}});`
       )
       // `}, <delay>);` é a última linha: base + 1 (abertura) + linhas do corpo.
       const delayLine = base + 1 + countLines(body)
-      return `${pad}setTimeout(() => {\n${body}\n${pad}}, ${compileExpr(stmt.delay, 0, identifiers, recAt(delayLine))});`
+      return `${pad}${lifecycleResourceFunction(identifiers, 'setTimeout')}(() => {\n${body}\n${pad}}, ${compileExpr(stmt.delay, 0, identifiers, recAt(delayLine))});`
     }
     case 'setInterval': {
       const body = compileStatements(
@@ -4292,7 +3978,7 @@ ${pad}});`
       )
       // `}, <delay>);` é a última linha: base + 1 (abertura) + linhas do corpo.
       const delayLine = base + 1 + countLines(body)
-      return `${pad}setInterval(() => {\n${body}\n${pad}}, ${compileExpr(stmt.delay, 0, identifiers, recAt(delayLine))});`
+      return `${pad}${lifecycleResourceFunction(identifiers, 'setInterval')}(() => {\n${body}\n${pad}}, ${compileExpr(stmt.delay, 0, identifiers, recAt(delayLine))});`
     }
     case 'setTimeoutSeconds': {
       const body = compileStatements(
@@ -4304,7 +3990,7 @@ ${pad}});`
       // Segundos → milissegundos no código: `<delay> * 1000`. A precedência 6 (`*`)
       // garante que um delay composto (ex.: `a + b`) saia parentizado: `(a + b) * 1000`.
       const delayLine = base + 1 + countLines(body)
-      return `${pad}setTimeout(() => {\n${body}\n${pad}}, ${compileExpr(stmt.delay, 6, identifiers, recAt(delayLine))} * 1000);`
+      return `${pad}${lifecycleResourceFunction(identifiers, 'setTimeout')}(() => {\n${body}\n${pad}}, ${compileExpr(stmt.delay, 6, identifiers, recAt(delayLine))} * 1000);`
     }
     case 'setIntervalSeconds': {
       const body = compileStatements(
@@ -4314,7 +4000,7 @@ ${pad}});`
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
       const delayLine = base + 1 + countLines(body)
-      return `${pad}setInterval(() => {\n${body}\n${pad}}, ${compileExpr(stmt.delay, 6, identifiers, recAt(delayLine))} * 1000);`
+      return `${pad}${lifecycleResourceFunction(identifiers, 'setInterval')}(() => {\n${body}\n${pad}}, ${compileExpr(stmt.delay, 6, identifiers, recAt(delayLine))} * 1000);`
     }
     case 'rawJS': {
       // Indenta APENAS a 1ª linha física (e só se ela não for vazia). As linhas
@@ -7777,6 +7463,7 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
     case 'g2d:isMovingV':
     case 'g2d:hasHealth':
     case 'g2d:healthDepleted':
+    case 'g2d:isInvincible':
       names.add(expr.spriteVar)
       return
     case 'g2d:cooldownReady':

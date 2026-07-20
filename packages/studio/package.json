@@ -34,6 +34,7 @@
   },
   "dependencies": {
     "@babel/parser": "^7.29.7",
+    "@babel/types": "^7.29.7",
     "@blockly/field-colour": "^6.0.12",
     "@blockly/toolbox-search": "^3.1.9",
     "@monaco-editor/react": "^4.6.0",

@@ -5,6 +5,12 @@
  */
 export const GAME_KIT_PERSISTENT_COMMANDS = [
   { blockType: 'sz_gk_create_character', statementType: 'gk:createCharacter' },
+  { blockType: 'sz_gk_tween_to', statementType: 'gk:tweenTo' },
+  { blockType: 'sz_gk_fade_to', statementType: 'gk:fadeTo' },
+  { blockType: 'sz_gk_tween_property', statementType: 'gk:tweenProperty' },
+  { blockType: 'sz_gk_trail_on', statementType: 'gk:trailOn' },
+  { blockType: 'sz_gk_lean_on_move', statementType: 'gk:leanOnMove' },
+  { blockType: 'sz_gk_nave_wave_shooter', statementType: 'gk:naveWaveShooter' },
   { blockType: 'sz_gk_rpg_battle_stats', statementType: 'gk:rpgBattleStats' },
   { blockType: 'sz_gk_rpg_set_special', statementType: 'gk:rpgSetSpecial' },
   { blockType: 'sz_gk_rpg_add_ally', statementType: 'gk:rpgAddAlly' },

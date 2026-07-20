@@ -1,3 +1,4 @@
+import { CONTINUOUS_EXTENSION_STATEMENT_TYPES } from '../official-extensions/continuousCommandContract'
 import type { JSStatement } from './schema'
 
 export type LifecycleArea = 'start' | 'events' | 'loops'
@@ -24,13 +25,6 @@ const LOOP_ROOT_TYPES = new Set([
   'g3k:onEntityStateUpdate',
   'w3d:onUpdate',
   ...PERIODIC_STATEMENT_TYPES,
-])
-
-const LOOP_BODY_ONLY_TYPES = new Set([
-  'g2d:onEnemyShotHit',
-  'g2d:onGroupOverlap',
-  'g2d:onSpriteGroupOverlap',
-  'gk:overlapGroups',
 ])
 
 /**
@@ -252,7 +246,7 @@ export function isEventStatement(statement: JSStatement): boolean {
   if (statement.type === 'event') return !isLegacyLoadEvent(statement)
   if (
     LOOP_ROOT_TYPES.has(statement.type) ||
-    LOOP_BODY_ONLY_TYPES.has(statement.type) ||
+    CONTINUOUS_EXTENSION_STATEMENT_TYPES.has(statement.type) ||
     LEGACY_START_WRAPPER_TYPES.has(statement.type)
   ) {
     return false
@@ -272,7 +266,10 @@ export function isLoopRootStatement(statement: JSStatement): boolean {
 
 /** Fonte única para classificar um statement nas três áreas de comportamento. */
 export function lifecycleAreaForStatement(statement: JSStatement): LifecycleArea {
-  if (LOOP_ROOT_TYPES.has(statement.type) || LOOP_BODY_ONLY_TYPES.has(statement.type)) {
+  if (
+    LOOP_ROOT_TYPES.has(statement.type) ||
+    CONTINUOUS_EXTENSION_STATEMENT_TYPES.has(statement.type)
+  ) {
     return 'loops'
   }
   if (isEventStatement(statement)) return 'events'
@@ -288,7 +285,7 @@ export function isLifecycleRootAllowed(statement: JSStatement, area: LifecycleAr
     LEGACY_START_WRAPPER_TYPES.has(statement.type) ||
     LEGACY_ENGINE_BOOT_TYPES.has(statement.type) ||
     isLegacyLoadEvent(statement) ||
-    LOOP_BODY_ONLY_TYPES.has(statement.type) ||
+    CONTINUOUS_EXTENSION_STATEMENT_TYPES.has(statement.type) ||
     EVENT_BODY_ONLY_TYPES.has(statement.type)
   ) {
     return false
@@ -304,10 +301,12 @@ export interface LifecycleSemanticIssue {
 interface SemanticContext {
   nested: boolean
   loopDepth: number
+  continuousBody: boolean
   eventBody: boolean
   keyboardEventBody: boolean
   pointerEventBody: boolean
   functionBody: boolean
+  constructorBody: boolean
   asyncFunctionBody: boolean
   derivedConstructorBody: boolean
   derivedMethodBody: boolean
@@ -345,6 +344,18 @@ function validateContextDependentNode(
   path: PropertyKey[],
   issues: LifecycleSemanticIssue[],
 ): void {
+  if (
+    CONTINUOUS_EXTENSION_STATEMENT_TYPES.has(String(node.type)) &&
+    !context.continuousBody &&
+    (!context.functionBody || context.eventBody || context.constructorBody)
+  ) {
+    issue(
+      issues,
+      path,
+      'Este comando contínuo só pode ser usado dentro de um loop, função ou método',
+    )
+  }
+
   switch (node.type) {
     case 'break':
     case 'continue':
@@ -457,6 +468,7 @@ function childContext(statement: JSStatement, context: SemanticContext): Semanti
     // Loops do motor executam o corpo dentro de callbacks; eles não criam um
     // laço sintático JavaScript onde `break`/`continue` possam atuar.
     loopDepth: context.loopDepth + (SYNTACTIC_LOOP_TYPES.has(statement.type) ? 1 : 0),
+    continuousBody: context.continuousBody || isLoopStatement(statement),
     eventBody: context.eventBody || isEventStatement(statement),
     keyboardEventBody: context.keyboardEventBody || capabilities.keyboard,
     pointerEventBody: context.pointerEventBody || capabilities.pointer,
@@ -537,6 +549,7 @@ function visitStatement(
       ...context,
       nested: true,
       functionBody: true,
+      constructorBody: true,
       asyncFunctionBody: false,
       derivedConstructorBody: derived,
       derivedMethodBody: false,
@@ -550,6 +563,7 @@ function visitStatement(
         ...context,
         nested: true,
         functionBody: true,
+        constructorBody: false,
         asyncFunctionBody: method.async === true,
         derivedConstructorBody: false,
         derivedMethodBody: derived,
@@ -573,6 +587,7 @@ function visitStatement(
       ? {
           ...nestedContext,
           functionBody: true,
+          constructorBody: false,
           asyncFunctionBody: statement.async === true,
           derivedConstructorBody: false,
           derivedMethodBody: false,
@@ -607,10 +622,12 @@ export function validateLifecycleSemantics(
     {
       nested: false,
       loopDepth: 0,
+      continuousBody: false,
       eventBody: false,
       keyboardEventBody: false,
       pointerEventBody: false,
       functionBody: false,
+      constructorBody: false,
       asyncFunctionBody: false,
       derivedConstructorBody: false,
       derivedMethodBody: false,

@@ -15,8 +15,9 @@ import { parseGuidedMediaQueryCondition } from '../css/mediaQueries'
  * `.card:last-child`) e qualquer propriedade viram uma `CSSRule` — que o editor
  * reconstrói como bloco genérico "Regra CSS" + "propriedade: valor".
  *
- * Apenas as @-rules (`@media`, `@keyframes`, …) têm estrutura aninhada que o
- * regex não modela; elas continuam como `rawCSS advanced`, preservadas verbatim.
+ * `@media` e `@keyframes` canônicos também são estruturados. Outras @-rules, e
+ * qualquer forma que o editor guiado não represente fielmente, continuam como
+ * `rawCSS advanced`, preservadas verbatim.
  */
 /**
  * Profundidade máxima de @media aninhados que estruturamos. `@media`s mais

@@ -168,7 +168,7 @@ describe('diagnósticos semânticos nos blocos', () => {
   })
 
   it('orienta campos HTML sem rótulo sem bloquear o preview', () => {
-    const ids = ['nome-1', 'mensagem-1']
+    const ids = ['nome-1', 'mensagem-1', 'botao-1']
     const { workspace, warnings } = warningWorkspaceFor(ids)
     const valid = applySemanticDiagnostics(workspace, {
       html: [
@@ -184,6 +184,12 @@ describe('diagnósticos semânticos nos blocos', () => {
           attrs: { placeholder: 'Sua mensagem' },
           __id: 'mensagem-1',
         },
+        {
+          type: 'element',
+          tag: 'input',
+          attrs: { type: 'button' },
+          __id: 'botao-1',
+        },
       ],
       css: [],
       js: [],
@@ -193,10 +199,11 @@ describe('diagnósticos semânticos nos blocos', () => {
     expect(valid).toBe(true)
     expect(warnings.get('nome-1')?.at(-1)).toContain('Explicar o campo')
     expect(warnings.get('mensagem-1')?.at(-1)).toContain('Explicar o campo')
+    expect(warnings.get('botao-1')?.at(-1)).toContain('Explicar o campo')
   })
 
   it('aceita campos explicados por for, aninhamento ou aria-label', () => {
-    const ids = ['email-1', 'aceite-1', 'busca-1']
+    const ids = ['email-1', 'aceite-1', 'busca-1', 'acao-1']
     const { workspace, warnings } = warningWorkspaceFor(ids)
     const valid = applySemanticDiagnostics(workspace, {
       html: [
@@ -220,6 +227,12 @@ describe('diagnósticos semânticos nos blocos', () => {
           tag: 'input',
           attrs: { type: 'search', 'aria-label': 'Buscar' },
           __id: 'busca-1',
+        },
+        {
+          type: 'element',
+          tag: 'input',
+          attrs: { type: 'button', value: 'Jogar' },
+          __id: 'acao-1',
         },
       ],
       css: [],

@@ -13,8 +13,10 @@ novo as três áreas; não gere onStart nem um bloco manual de boot.
 
 QUADROS E EVENTOS: todos os blocos “A cada quadro” são compostos pelo mesmo
 agendador, em passos fixos de 60 Hz. Tecla, clique e contato são registrados uma
-vez em ⚡ Quando acontecer, nunca dentro de “A cada quadro”. Movimento, desenho, checagens de
-grupo e HUD ficam dentro do quadro. Um erro interrompe somente o bloco afetado.
+vez em ⚡ Quando acontecer, nunca dentro de “A cada quadro”. Comandos contínuos,
+como checagens de grupo, ficam dentro do quadro ou em funções/métodos chamados
+por ele, nunca diretamente em Ao iniciar ou em eventos. Movimento, desenho e HUD
+seguem o mesmo fluxo. Um erro interrompe somente o bloco afetado.
 
 ORDEM DIDÁTICA: preparar palco; criar personagens e grupos; definir tela “inicio”;
 descrever objetivo e controles com “Descrever o jogo para leitor de tela”;
@@ -31,7 +33,8 @@ telas de início, vitória e derrota sem repetir a cada quadro.
 
 VIDAS: inicialize a vida do sprite uma vez em ⚙️ Ao iniciar. Para contato contínuo,
 use o bloco de machucar com invencibilidade; para perguntar pelo fim, prefira “as
-vidas acabaram?”. O HUD automático recebe o sprite e escolhe corações ou barra.
+vidas acabaram?”. “O sprite está invencível?” reflete se um novo dano seria ignorado;
+combine com “não” antes de efeitos de dano. O HUD automático recebe o sprite e escolhe corações ou barra.
 Sprite sem vida inicializada não é tratado como morto.
 
 REGRAS: não misture com Jogo 2D Avançado. Não use bibliotecas externas nem JS cru
