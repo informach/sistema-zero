@@ -1,4 +1,5 @@
 import { buildProjectRunContextRuntime } from '#extensions'
+import { withGameUIFontRuntime } from '../gameUiFont'
 import { towerDefenseRuntime } from './runtime/towerDefense'
 
 /**
@@ -21,10 +22,11 @@ import { towerDefenseRuntime } from './runtime/towerDefense'
  * - Nunca quebrar o jogo do aluno: API pública embrulhada em try/catch com
  *   console.warn (padrão do SZGame2D).
  */
-export const gameKitRuntime =
+export const gameKitRuntime = withGameUIFontRuntime(
   buildProjectRunContextRuntime() +
-  '\n' +
-  `(function () {
+    '\n' +
+    `(function () {
+  var _szGameUIFont = window.SZGameUIFont.family;
   // ---- Config (do bloco "Preparar o jogo profissional") ----
   var config = {
     w: 1280,
@@ -231,7 +233,7 @@ export const gameKitRuntime =
     return '' +
       '#szgk-stage { position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; ' +
         'background: ' + config.bg + '; overflow: hidden; ' +
-        "font-family: 'Courier New', monospace; color: #eee; }" +
+        'font-family: var(--sz-game-ui-font); color: #eee; }' +
       '#szgk-canvas { border: 4px solid #2e2e3e; image-rendering: pixelated; image-rendering: crisp-edges; ' +
         'background: ' + config.bg + '; }' +
       '.szgk-panel { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); ' +
@@ -2376,7 +2378,7 @@ export const gameKitRuntime =
       ctx2d.fillRect(rx, ry, cw, ch); ctx2d.strokeRect(rx, ry, cw, ch);
       var card = pile[i];
       var face = (card && typeof card === 'object' && 'faceUp' in card) ? (card.faceUp ? card.front : card.back) : card;
-      ctx2d.fillStyle = '#1b1b1b'; ctx2d.font = '22px sans-serif';
+      ctx2d.fillStyle = '#1b1b1b'; ctx2d.font = '22px ' + _szGameUIFont;
       ctx2d.textAlign = 'center'; ctx2d.textBaseline = 'middle';
       ctx2d.fillText(String(face === undefined || face === null ? '' : face), rx + cw / 2, ry + ch / 2);
       ctx2d.restore();
@@ -2456,7 +2458,7 @@ export const gameKitRuntime =
     drawBar(Math.max(0, b.enemyHp), b.enemyMax, config.w / 2 - 130, 46, 260, 18, '#ef4444');
     drawBar(Math.max(0, b.heroHp), b.heroMax, config.w / 2 - 130, config.h - 66, 260, 18, '#4ade80');
     ctx2d.save();
-    ctx2d.fillStyle = '#ffffff'; ctx2d.font = '15px sans-serif'; ctx2d.textAlign = 'center';
+    ctx2d.fillStyle = '#ffffff'; ctx2d.font = '15px ' + _szGameUIFont; ctx2d.textAlign = 'center';
     ctx2d.fillText('👿 vai: ' + b.intentAction + ' ' + b.intentValue, config.w / 2, 34);
     ctx2d.fillText('⚡ Energia: ' + b.energy + '     🛡️ Escudo: ' + b.block, config.w / 2, config.h - 34);
     ctx2d.restore();
@@ -3510,7 +3512,7 @@ export const gameKitRuntime =
       ctx2d.fillStyle = 'rgba(0,0,0,0.55)';
       ctx2d.fillRect(bx, yy, 168, 22);
       ctx2d.fillStyle = t.hp > 0 ? '#ffffff' : '#ff8080';
-      ctx2d.font = '13px sans-serif';
+      ctx2d.font = '13px ' + _szGameUIFont;
       ctx2d.fillText(t.species + ' Nv' + t.level, bx + 6, yy + 15);
       var pct = Math.max(0, Math.min(1, t.hp / Math.max(1, t.hpMax)));
       ctx2d.fillStyle = '#333';
@@ -3905,7 +3907,7 @@ export const gameKitRuntime =
     ctx2d.lineWidth = 3;
     ctx2d.strokeRect(x, y, 240, 54);
     ctx2d.fillStyle = '#111';
-    ctx2d.font = '15px sans-serif';
+    ctx2d.font = '15px ' + _szGameUIFont;
     ctx2d.fillText(ind.species + '  Nv' + ind.level, x + 10, y + 22);
     var pct = Math.max(0, Math.min(1, ind.hp / Math.max(1, ind.hpMax)));
     ctx2d.fillStyle = '#ccc';
@@ -4299,7 +4301,7 @@ export const gameKitRuntime =
     ctx2d.fillStyle = '#000000';
     ctx2d.fillRect(W / 2 - 34, 16, 68, 42);
     ctx2d.fillStyle = '#ffffff';
-    ctx2d.font = 'bold 28px sans-serif';
+    ctx2d.font = 'bold 28px ' + _szGameUIFont;
     ctx2d.textAlign = 'center';
     ctx2d.fillText(String(falta), W / 2, 47);
     // bolinhas de round ganho
@@ -4313,7 +4315,7 @@ export const gameKitRuntime =
     }
     if (msg) {
       ctx2d.fillStyle = config.accent || '#ffffff';
-      ctx2d.font = 'bold 56px sans-serif';
+      ctx2d.font = 'bold 56px ' + _szGameUIFont;
       ctx2d.fillText(msg, W / 2, config.h / 2);
     }
     ctx2d.textAlign = 'left';
@@ -4336,7 +4338,7 @@ export const gameKitRuntime =
     ctx2d.fillRect(direita ? x + w - sw : x, y + 25, sw, 8);
     if (side.combo > 1) {
       ctx2d.fillStyle = '#ffffff';
-      ctx2d.font = 'bold 16px sans-serif';
+      ctx2d.font = 'bold 16px ' + _szGameUIFont;
       ctx2d.textAlign = direita ? 'right' : 'left';
       ctx2d.fillText(side.combo + ' seguidos!', direita ? x + w : x, y + 50);
       ctx2d.textAlign = 'left';
@@ -4597,7 +4599,7 @@ export const gameKitRuntime =
       try { ctx2d.globalAlpha = Math.max(0, 1 - f.t / f.life); } catch (e) {}
       ctx2d.fillStyle = f.color;
       var fs = Math.round(f.size);
-      ctx2d.font = floatieFonts[fs] || (floatieFonts[fs] = 'bold ' + fs + 'px sans-serif');
+      ctx2d.font = floatieFonts[fs] || (floatieFonts[fs] = 'bold ' + fs + 'px ' + _szGameUIFont);
       ctx2d.fillText(f.text, f.x, f.y);
     }
     try { ctx2d.globalAlpha = prev; } catch (e) {}
@@ -5372,7 +5374,7 @@ ${towerDefenseRuntime}
     var label = mins + ':' + (secs < 10 ? '0' + secs : '' + secs);
     ctx2d.save();
     ctx2d.fillStyle = config.accent;
-    ctx2d.font = '28px "Courier New", monospace';
+    ctx2d.font = '28px ' + _szGameUIFont;
     try { ctx2d.textAlign = 'left'; } catch (e) {}
     ctx2d.fillText(label, num(x, 20), num(y, 40));
     ctx2d.restore();
@@ -5623,10 +5625,10 @@ ${towerDefenseRuntime}
     var shown = Math.floor(Math.max(0, playTime - d.start) * DIALOG_CPS);
     var visible = d.text.slice(0, shown);
     var ty = by + 30;
-    ctx2d.font = 'bold 18px "Courier New", monospace';
+    ctx2d.font = 'bold 18px ' + _szGameUIFont;
     ctx2d.fillStyle = config.accent;
     if (d.name) { ctx2d.fillText(d.name, bx + 16, ty); ty += 26; }
-    ctx2d.font = '18px "Courier New", monospace';
+    ctx2d.font = '18px ' + _szGameUIFont;
     ctx2d.fillStyle = '#ffffff';
     // Quebra por PALAVRA (Courier ~11px/char a 18px): não parte a palavra no meio.
     var perLine = Math.max(10, Math.floor((bw - 32) / 11));
@@ -5816,7 +5818,7 @@ ${towerDefenseRuntime}
         try { ctx2d.drawImage(entry.img, ix + 4, by + 4, size - 8, size - 8); } catch (e) {}
       } else {
         ctx2d.fillStyle = config.accent;
-        ctx2d.font = 'bold 20px "Courier New", monospace';
+        ctx2d.font = 'bold 20px ' + _szGameUIFont;
         ctx2d.fillText(it.name.slice(0, 1).toUpperCase(), ix + 13, by + 28);
       }
       ctx2d.strokeStyle = config.accent;
@@ -5833,10 +5835,10 @@ ${towerDefenseRuntime}
     drawBackground('#20283a', true);
     ctx2d.save();
     ctx2d.fillStyle = '#ffffff';
-    ctx2d.font = 'bold 22px sans-serif';
+    ctx2d.font = 'bold 22px ' + _szGameUIFont;
     ctx2d.textAlign = 'center';
     ctx2d.fillText('O mapa “' + name + '” ainda não tem desenho', config.w / 2, config.h / 2 - 8);
-    ctx2d.font = '16px sans-serif';
+    ctx2d.font = '16px ' + _szGameUIFont;
     ctx2d.fillText('Use formas, um mapa do Pinta ou uma imagem importada.', config.w / 2, config.h / 2 + 22);
     ctx2d.restore();
   }
@@ -6243,13 +6245,13 @@ ${towerDefenseRuntime}
     ctx2d.strokeRect(bx, by, bw, bh);
     var ty = by + pad;
     if (m.title) {
-      ctx2d.font = 'bold 18px "Courier New", monospace';
+      ctx2d.font = 'bold 18px ' + _szGameUIFont;
       ctx2d.fillStyle = config.accent;
       ctx2d.fillText(m.title, bx + pad, ty + 14);
       ty += titleH;
     }
     rpg.menuRects = [];
-    ctx2d.font = '18px "Courier New", monospace';
+    ctx2d.font = '18px ' + _szGameUIFont;
     for (var i = 0; i < m.options.length; i++) {
       var oy = ty + i * lineH;
       var sel = (i === m.index);
@@ -6803,7 +6805,7 @@ ${towerDefenseRuntime}
       ctx2d.save();
       ctx2d.fillStyle = c.alive ? '#ffffff' : '#ff8080';
       // 👑 O chefão ganha nome maior (com coroa) e barra de vida mais grossa.
-      ctx2d.font = (c.boss ? 'bold 17px' : '13px') + ' sans-serif'; ctx2d.textAlign = 'center';
+      ctx2d.font = (c.boss ? 'bold 17px ' : '13px ') + _szGameUIFont; ctx2d.textAlign = 'center';
       ctx2d.fillText((c.boss ? '👑 ' : '') + c.name, c.x + c.w / 2, c.y - 10);
       ctx2d.restore();
       var bh = c.boss ? 12 : 7;
@@ -6814,7 +6816,7 @@ ${towerDefenseRuntime}
     if (!b.message) return;
     ctx2d.save();
     ctx2d.fillStyle = 'rgba(0,0,0,0.7)'; ctx2d.fillRect(0, 0, config.w, 34);
-    ctx2d.fillStyle = '#ffffff'; ctx2d.font = '15px sans-serif'; ctx2d.textAlign = 'left';
+    ctx2d.fillStyle = '#ffffff'; ctx2d.font = '15px ' + _szGameUIFont; ctx2d.textAlign = 'left';
     ctx2d.fillText(b.message, 14, 22);
     ctx2d.restore();
   }
@@ -6842,9 +6844,9 @@ ${towerDefenseRuntime}
     ctx2d.textAlign = 'left';
     ctx2d.fillStyle = 'rgba(0,0,0,0.8)'; ctx2d.fillRect(x, y, w, h);
     ctx2d.strokeStyle = c.side === 'inimigo' ? '#ff6b6b' : '#7dd3fc'; ctx2d.lineWidth = 2; ctx2d.strokeRect(x, y, w, h);
-    ctx2d.fillStyle = '#ffd166'; ctx2d.font = 'bold 15px sans-serif';
+    ctx2d.fillStyle = '#ffd166'; ctx2d.font = 'bold 15px ' + _szGameUIFont;
     ctx2d.fillText(c.name + (c.side === 'inimigo' ? '  (inimigo)' : '  (do seu time)'), x + pad, y + 22);
-    ctx2d.fillStyle = '#ffffff'; ctx2d.font = '13px sans-serif';
+    ctx2d.fillStyle = '#ffffff'; ctx2d.font = '13px ' + _szGameUIFont;
     for (var j = 0; j < lines.length; j++) ctx2d.fillText(lines[j], x + pad, y + 44 + j * 20);
     ctx2d.restore();
   }
@@ -7588,4 +7590,5 @@ ${towerDefenseRuntime}
   });
   window.SZGameKit = api;
 })();
-`
+`,
+)

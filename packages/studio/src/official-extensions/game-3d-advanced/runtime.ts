@@ -1,3 +1,5 @@
+import { withGameUIFontRuntime } from '../gameUiFont'
+
 /**
  * Runtime do "Jogo 3D Avançado" — injetado no <head> do iframe quando a
  * extensão "game-3d-advanced" está instalada. É um SCRIPT MODULE (importa
@@ -27,8 +29,9 @@
  *   clone de molde compartilha geometria/material, dispose + forceContextLoss
  *   no fechamento (o navegador limita ~16 contextos WebGL).
  */
-export const gameKit3DRuntime = `import * as THREE from 'three';
+export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 'three';
 (function () {
+  var _szGameUIFont = window.SZGameUIFont.family;
   // ---- Config (do bloco "Preparar o jogo 3D") ----
   var config = {
     w: 1280,
@@ -265,7 +268,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     return '' +
       '#szg3k-stage { position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; ' +
         'background: #05060f; overflow: hidden; ' +
-        "font-family: 'Courier New', monospace; color: #eee; }" +
+        'font-family: var(--sz-game-ui-font); color: #eee; }' +
       '#szg3k-frame { position: relative; }' +
       '#szg3k-canvas { display: block; border: 4px solid #1f2337; background: ' + config.sky + '; }' +
       '.szg3k-hud { position: absolute; padding: 10px 14px; font-size: 20px; font-weight: bold; ' +
@@ -4968,4 +4971,4 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   });
   window.SZGameKit3D = api;
 })();
-`
+`)

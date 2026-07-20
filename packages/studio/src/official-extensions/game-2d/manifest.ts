@@ -20,7 +20,7 @@ import { withGameTwoDLifecycleGuidance } from './pedagogy'
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.35.0',
+  version: '0.35.2',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, vidas automáticas em corações ou barra, colisões, mapas, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
@@ -34,6 +34,9 @@ Esta extensão adiciona um pequeno runtime didático em \`window.SZGame2D\`
 que ajuda a montar jogos 2D simples sobre Canvas API. O código gerado é
 intencionalmente legível. Quando você abrir o modo Código vai ver
 chamadas explícitas para \`SZGame2D.createSprite(...)\` e \`SZGame2D.gameLoop(...)\`.
+Os HUDs, placares e telas dos kits usam a fonte arredondada Baloo 2, incorporada
+no próprio runtime para também funcionar offline. Fontes escolhidas por você nos
+blocos de Canvas continuam sendo respeitadas.
 
 ### Comece um projeto
 
@@ -49,7 +52,7 @@ qual área colocar cada bloco.
 
 - **Preparar o jogo em tela cheia**. Atalho para começar: prepara a tela (largura × altura) ocupando a janela, responsiva (mantém a proporção e redimensiona sozinha), **centralizada**, com uma **cor de fundo** que combina com o jogo (vai no canvas e na sobra ao redor). Não precisa criar o canvas no HTML. Os blocos individuais continuam disponíveis para montar na mão.
 - **Preparar o jogo para ocupar a tela toda**. Como o de cima, mas **sem dimensões**: o canvas preenche a tela INTEIRA (sem barras nas laterais) e a área do jogo **acompanha** o tamanho da janela. A resolução do jogo passa a ser o tamanho da tela. Aqui "a largura/altura da tela" mudam com a janela, então centralize por eles (não por números fixos). Combine com "entrar em tela cheia" para o jogo tomar o monitor todo. Use UM dos dois "Preparar", no começo.
-- **Descrever o jogo para leitor de tela**. Conte o objetivo e os controles em uma frase, por exemplo: “Pegue as moedas. Use as setas para andar.” Coloque em **⚙️ Ao iniciar** depois de preparar o palco.
+- **Descrever o jogo para leitor de tela**. Conte o objetivo e os controles em uma frase, por exemplo: “Pegue as moedas. Use as setas para andar.” Coloque em **⚙️ Ao iniciar**; pode vir antes ou depois do bloco de preparação.
 - **Criar sprite**. Define um objeto com \`x\`, \`y\`, \`largura\`, \`altura\`, \`cor\`.
 - **Desenhar o sprite**. Desenha o sprite no contexto do canvas.
 - **Mover em 4 direções**. Move o sprite com as setas do teclado (ver "Movimento" abaixo).

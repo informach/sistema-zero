@@ -6,19 +6,20 @@ Os **15 achados** desta auditoria foram corrigidos: um P0, quatro P1, oito P2 e
 dois P3. Cinco correções eram de experiência pedagógica e visual; as outras dez
 tratavam comportamento do runtime, arquitetura, tipagem e documentação.
 
-A paleta permanece extensa por decisão de produto: são 190 definições de bloco
-(189 visíveis e uma legada oculta). A seleção do conteúdo apresentado continua
+A paleta permanece extensa por decisão de produto: são 195 definições de bloco
+(193 visíveis e 2 legadas ocultas). A seleção do conteúdo apresentado continua
 sendo responsabilidade do perfil de aprendizagem e de cada aula.
 
 A correção técnica desta auditoria foi publicada como **Jogo 2D 0.34.0**. O
-manifesto vigente está em **0.35.0** após as correções posteriores de lifecycle.
+manifesto vigente está em **0.35.2** após as correções posteriores de lifecycle,
+acessibilidade e tipografia local das interfaces automáticas.
 Não há achados abertos no escopo desta revisão.
 
 ## Escopo revisado
 
-- 41 arquivos próprios da extensão;
-- 190 definições de blocos e 24 subcategorias;
-- 188 métodos e valores públicos em `window.SZGame2D`;
+- 42 arquivos próprios da extensão;
+- 195 definições de blocos e 24 subcategorias;
+- 193 métodos e valores públicos em `window.SZGame2D`;
 - dez fragmentos que compõem o runtime injetado;
 - definição → Blockly → IR → JavaScript → parser → workspace state;
 - manifesto, permissões, documentação do aluno e contexto da IA;
@@ -130,7 +131,7 @@ magnitude, produto vetorial e sentido do vetor.
 
 ### P2 — Contrato público tipado
 
-`runtimeContract.ts` deixou de reduzir 188 membros a
+`runtimeContract.ts` deixou de reduzir 193 membros a
 `(...args: unknown[]) => unknown`. A API foi dividida em contratos explícitos de
 ciclo de vida, palco, sprites, física, áudio, matemática/estado, entrada/movimento,
 mundo, HUD/cenas e kits.
@@ -160,7 +161,7 @@ próximo do ponto médio. Tooltip e manual descrevem o mesmo contrato.
 ### P3 — Fonte de verdade da documentação interna
 
 A seção de Jogo 2D 0.23.0 em `CLAUDE.md` está identificada como registro
-histórico. A versão vigente aparece como 0.35.0, e o limite de documentação é
+histórico. A versão vigente aparece como 0.35.2, e o limite de documentação é
 obtido do schema em `src/extensions/manifest.ts` (`MAX_DOCS_CHARS = 60_000`), sem
 manter um segundo teto divergente no guia.
 
@@ -233,7 +234,7 @@ arquiteturais de reset. Depois das alterações, os mesmos cenários passaram.
 - **Suíte completa do Studio:** 4.331 aprovados, 0 falhas, 41.833 asserções,
   293 arquivos;
 - **Contrato público:** compilação TypeScript isolada aprovada e inventário
-  exato das 188 chaves aprovado;
+  exato das 193 chaves aprovado;
 - **TypeScript global:** `tsc --noEmit` aprovado;
 - **Biome global:** 682 arquivos aprovados, sem correções pendentes;
 - **Chromium:** 25 cenários aprovados — todos os exemplos introdutórios,

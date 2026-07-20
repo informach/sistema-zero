@@ -4,7 +4,7 @@ import { world3DExamples } from './examples'
 export const world3DManifest: ExtensionManifest = {
   id: 'world-3d',
   name: 'Mundo 3D',
-  version: '4.1.0',
+  version: '4.1.1',
   description:
     'Crie mundos 3D abertos só com primitivas: 7 cenários, arquipélago, cidade completa, distritos, redes de ruas e casas procedurais instanciadas. Passeie a pé, de carro ou barco; use física leve própria, inventário persistente, missões, clima e qualidade adaptativa. Sem Rapier, WASM ou pacote de assets.',
   category: 'games',
@@ -22,6 +22,8 @@ os sites-mundo dos grandes estúdios. Ela usa \`window.SZWorld3D\`. Diferente do
 kits de JOGO (fases, inimigos, vida), aqui a estrela é o **mundo**: o chão com
 morros, o céu do seu estilo, e um carrinho gostoso de dirigir. Cada bloco é
 "mágico": um bloco = um resultado grande na tela.
+Os objetivos, diálogos, placas e demais textos automáticos usam Baloo 2,
+incorporada no próprio mundo para funcionar também offline.
 
 O que o motor já faz por você:
 

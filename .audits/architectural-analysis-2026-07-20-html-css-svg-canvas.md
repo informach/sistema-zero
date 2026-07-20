@@ -263,10 +263,10 @@ Esta seção revalida o código **como ele está no worktree atual**, que já co
 
 - Inventário: **152 definições** nas quatro categorias; **151 visíveis**. HTML tem 24 blocos/5 grupos; CSS, 52/8; SVG, 21/4; Canvas, 54 visíveis de 55/8. O único oculto é `sz_canvas_keyboard`, legado e protegido por teste.
 - Regressões TDD cobrem runtime exportado, ordem/colisão Canvas, segurança e fidelidade CSS, HTML inline/source map, Google Fonts e comprimentos SVG.
-- `bun test src`: **4.562 passaram, 0 falharam, 43.111 asserções**, em 295 arquivos.
+- `bun test src`: **4.565 passaram, 0 falharam, 43.116 asserções**, em 295 arquivos.
 - `bun run typecheck`: passou (`tsc --noEmit`).
 - Biome dirigido aos **25 arquivos** alterados nesta correção: passou sem diagnóstico.
-- `bun run check` global ainda encontra sete formatações em arquivos modificados por trabalhos paralelos (`e2e/helpers/blockly.ts`, execução/lifecycle e parser/gerador JS); nenhum dos 25 arquivos deste lote aparece no resultado.
+- `bun run check`: **689 arquivos verificados, sem correções**.
 - Chromium dirigido a HTML/CSS/SVG/Canvas: **8 passaram, 0 falharam**.
 
 ### Situação por categoria

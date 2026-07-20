@@ -511,7 +511,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     if (!ctx) return;
     ctx.save();
     ctx.fillStyle = color || '#ffffff';
-    ctx.font = 'bold ' + ((typeof size === 'number' && size > 0) ? size : 20) + 'px sans-serif';
+    ctx.font = 'bold ' + ((typeof size === 'number' && size > 0) ? size : 20) + 'px ' + _szGameUIFont;
     ctx.textAlign = 'left';
     var text = (label === undefined || label === null || label === '') ? String(value)
       : String(label) + ' ' + String(value);
@@ -523,7 +523,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     if (!ctx) return;
     ctx.save();
     ctx.fillStyle = color || '#ffffff';
-    ctx.font = 'bold ' + ((typeof size === 'number' && size > 0) ? size : 20) + 'px sans-serif';
+    ctx.font = 'bold ' + ((typeof size === 'number' && size > 0) ? size : 20) + 'px ' + _szGameUIFont;
     ctx.textAlign = align || 'left';
     ctx.fillText(String(text === undefined || text === null ? '' : text), x || 0, y || 0);
     ctx.restore();
@@ -624,16 +624,16 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     ctx.globalAlpha = 1;
     ctx.textAlign = 'center';
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold ' + Math.round(36 * sc) + 'px sans-serif';
+    ctx.font = 'bold ' + Math.round(36 * sc) + 'px ' + _szGameUIFont;
     ctx.fillText(String(title || ''), w / 2, h / 2 - 24 * sc);
     var afterY = h / 2 + 12 * sc;
     if (subtitle) {
-      ctx.font = Math.round(20 * sc) + 'px sans-serif';
+      ctx.font = Math.round(20 * sc) + 'px ' + _szGameUIFont;
       ctx.fillStyle = 'rgba(255,255,255,0.85)';
       afterY = _wrapText(ctx, subtitle, w / 2, afterY, Math.min(w * 0.8, 640), 30 * sc);
     }
     if (hint) {
-      ctx.font = Math.round(16 * sc) + 'px sans-serif';
+      ctx.font = Math.round(16 * sc) + 'px ' + _szGameUIFont;
       ctx.fillStyle = 'rgba(255,255,255,0.7)';
       ctx.fillText(String(hint), w / 2, afterY + 40 * sc);
     }
@@ -1368,7 +1368,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
       ctx.closePath();
       ctx.fill();
     }
-    ctx.font = 'bold 11px sans-serif';
+    ctx.font = 'bold 11px ' + _szGameUIFont;
     ctx.textAlign = 'center';
     ctx.fillText('vento', cx, cy - 9);
     ctx.restore();
@@ -1507,7 +1507,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     var deg = Math.round(-_aim.angle * 180 / Math.PI);
     var pow = Math.round(_aim.power);
     ctx.save();
-    ctx.font = 'bold 12px sans-serif';
+    ctx.font = 'bold 12px ' + _szGameUIFont;
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'left';
     ctx.fillText('angulo ' + deg + ' / forca ' + pow, 12, stageH(ctx) - 12);

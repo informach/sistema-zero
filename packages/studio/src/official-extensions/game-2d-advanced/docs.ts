@@ -5,6 +5,9 @@ estrutura que estúdios usam. Ela usa \`window.SZGameKit\`. Diferente do "Jogo 2
 (que traz comportamentos prontos), aqui o motor cuida só do que **nunca muda**
 num jogo profissional, e **as regras são suas**: você escreve a mecânica dentro
 dos ganchos, com blocos de matemática, "se", variáveis e Canvas.
+As telas, diálogos e HUDs que o motor desenha sozinhos usam Baloo 2, uma fonte
+arredondada incorporada no jogo e disponível mesmo offline. Uma fonte que você
+escolher explicitamente nos seus blocos de desenho continua valendo.
 
 O que o motor já faz por você (cada um tem a sua seção mais abaixo):
 

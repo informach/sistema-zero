@@ -328,7 +328,6 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   const onWorkspaceReadyRef = useRef(onWorkspaceReady)
   onWorkspaceReadyRef.current = onWorkspaceReady
   const [workspace, setWorkspace] = useState<Blockly.WorkspaceSvg | null>(null)
-  const [draftBlockIds, setDraftBlockIds] = useState<string[]>([])
   const lastSerializedRef = useRef<string>('')
   const isApplyingStateRef = useRef(false)
   const isSelectingFromEditorRef = useRef(false)
@@ -538,21 +537,13 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   // Pilhas executáveis fora das Áreas do projeto são preservadas como rascunho,
   // mas precisam ficar inequivocamente diferentes do código que entra no preview.
   useEffect(() => {
-    if (!workspace) {
-      setDraftBlockIds([])
-      return
-    }
+    if (!workspace) return
     let disposed = false
     let refreshQueued = false
     const refresh = () => {
       refreshQueued = false
       if (disposed) return
-      const next = applyDraftDiagnostics(workspace)
-      setDraftBlockIds((current) =>
-        current.length === next.length && current.every((id, index) => id === next[index])
-          ? current
-          : next,
-      )
+      applyDraftDiagnostics(workspace)
     }
     const scheduleRefresh = () => {
       if (refreshQueued) return
@@ -577,19 +568,6 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       workspace.removeChangeListener(listener)
     }
   }, [workspace])
-
-  const focusFirstDraft = useCallback(() => {
-    const id = draftBlockIds[0]
-    if (!workspace || !id) return
-    const block = workspace.getBlockById(id) as Blockly.BlockSvg | null
-    if (!block) return
-    // Fecha o flyout antes de centralizar. Em telas estreitas ele ocupa quase
-    // toda a área útil e deixava o bloco focalizado escondido sob a toolbox.
-    workspace.getToolbox()?.clearSelection()
-    Blockly.svgResize(workspace)
-    block.select()
-    workspace.centerOnBlock(id, false)
-  }, [draftBlockIds, workspace])
 
   // Regeneração código a partir dos blocos. Filtra eventos para reagir apenas a
   // edições reais (criar/apagar/mover/alterar bloco). Eventos disparados durante
@@ -961,8 +939,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       installExtensionById: (id) => {
         const ext = findExtension(id)
         if (!ext) return false
-        installExtension(ext, projectStoreApi)
-        return true
+        return installExtension(ext, projectStoreApi).ok
       },
       isBlockTypeKnown: (type) =>
         isBlockTypeKnown(
@@ -1028,28 +1005,6 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
           ].join(' ')}
         >
           <Spinner />
-        </div>
-      )}
-      {draftBlockIds.length > 0 && (
-        <div className="pointer-events-none absolute inset-x-0 top-3 z-[100] flex justify-center px-3">
-          <aside
-            aria-live="polite"
-            className="pointer-events-auto flex max-w-xl items-center gap-3 rounded-2xl border-2 border-amber-500 bg-sz-panel px-4 py-2.5 text-sm text-sz-fg shadow-lg"
-          >
-            <span aria-hidden="true">⚠️</span>
-            <span>
-              {draftBlockIds.length === 1
-                ? '1 pilha está salva como rascunho e não aparece no preview.'
-                : `${draftBlockIds.length} pilhas estão salvas como rascunho e não aparecem no preview.`}
-            </span>
-            <button
-              className="shrink-0 rounded-lg bg-amber-500 px-3 py-1.5 font-bold text-black hover:bg-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sz-accent"
-              onClick={focusFirstDraft}
-              type="button"
-            >
-              Ver rascunho
-            </button>
-          </aside>
         </div>
       )}
       {pasteNotice && (

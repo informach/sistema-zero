@@ -1,3 +1,4 @@
+import { withGameUIFontRuntime } from '../gameUiFont'
 import { compactOfficialRuntimeSource } from '../runtimeSource'
 
 /**
@@ -30,6 +31,7 @@ import { compactOfficialRuntimeSource } from '../runtimeSource'
  */
 const world3DRuntimeSource = `import * as THREE from 'three';
 (function () {
+  var _szGameUIFont = window.SZGameUIFont.family;
   // ---- Config (dos blocos "Criar o mundo 3D" / "Deixar o chão com morros") ----
   var config = {
     w: 1280,
@@ -2324,7 +2326,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     if (!el) {
       el = document.createElement('div');
       el.className = 'szw3d-hud';
-      el.setAttribute('style', 'position:absolute;' + HUD_POS[key] + ';color:#fff;font:700 20px system-ui,sans-serif;text-shadow:0 2px 6px rgba(0,0,0,.6);pointer-events:none;z-index:6');
+      el.setAttribute('style', 'position:absolute;' + HUD_POS[key] + ';color:#fff;font:700 20px var(--sz-game-ui-font);text-shadow:0 2px 6px rgba(0,0,0,.6);pointer-events:none;z-index:6');
       frameEl.appendChild(el);
       hudEls[key] = el;
     }
@@ -2335,7 +2337,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     if (!ensureShell()) return;
     if (!sayEl) {
       sayEl = document.createElement('div');
-      sayEl.setAttribute('style', 'position:absolute;padding:6px 12px;border-radius:14px;background:rgba(255,255,255,.92);color:#123;font:600 15px system-ui,sans-serif;transform:translate(-50%,-100%);white-space:nowrap;pointer-events:none;z-index:7;box-shadow:0 4px 12px rgba(0,0,0,.3)');
+      sayEl.setAttribute('style', 'position:absolute;padding:6px 12px;border-radius:14px;background:rgba(255,255,255,.92);color:#123;font:600 15px var(--sz-game-ui-font);transform:translate(-50%,-100%);white-space:nowrap;pointer-events:none;z-index:7;box-shadow:0 4px 12px rgba(0,0,0,.3)');
       frameEl.appendChild(sayEl);
     }
     sayEl.textContent = text(msgTxt, '');
@@ -2386,10 +2388,10 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       g.fillRect(0, 0, 256, 10);
       g.fillRect(0, 246, 256, 10);
       g.fillStyle = '#3a2f1b';
-      g.font = 'bold 26px system-ui, sans-serif';
+      g.font = 'bold 26px ' + _szGameUIFont;
       g.textAlign = 'center';
       g.fillText(text(title, ''), 128, 48, 240);
-      g.font = '18px system-ui, sans-serif';
+      g.font = '18px ' + _szGameUIFont;
       var words = text(body, '').split(' ');
       var line = '';
       var y = 92;
@@ -2605,7 +2607,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     if (!ensureShell()) return;
     if (!promptEl) {
       promptEl = document.createElement('div');
-      promptEl.setAttribute('style', 'position:absolute;padding:4px 10px;border-radius:10px;background:#22d3ee;color:#04252b;font:800 15px system-ui,sans-serif;transform:translate(-50%,-100%);pointer-events:none;z-index:7;box-shadow:0 3px 10px rgba(0,0,0,.35)');
+      promptEl.setAttribute('style', 'position:absolute;padding:4px 10px;border-radius:10px;background:#22d3ee;color:#04252b;font:800 15px var(--sz-game-ui-font);transform:translate(-50%,-100%);pointer-events:none;z-index:7;box-shadow:0 3px 10px rgba(0,0,0,.35)');
       promptEl.textContent = 'E';
       frameEl.appendChild(promptEl);
     }
@@ -2677,11 +2679,11 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       galleryEl.appendChild(im);
     }
     var cap = document.createElement('div');
-    cap.setAttribute('style', 'color:#fff;font:600 20px system-ui,sans-serif;text-align:center');
+    cap.setAttribute('style', 'color:#fff;font:600 20px var(--sz-game-ui-font);text-align:center');
     cap.textContent = text(caption, '');
     galleryEl.appendChild(cap);
     var hint = document.createElement('div');
-    hint.setAttribute('style', 'color:#9fb;opacity:.7;font:400 13px system-ui,sans-serif');
+    hint.setAttribute('style', 'color:#9fb;opacity:.7;font:400 13px var(--sz-game-ui-font)');
     hint.textContent = 'clique para fechar';
     galleryEl.appendChild(hint);
     galleryEl.style.display = 'flex';
@@ -3244,7 +3246,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   // ---- Tela (stage + letterbox + splash "clique para começar") ----
 
   function buildCss() {
-    return '#szw3d-stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#0b0f14;z-index:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif}' +
+    return '#szw3d-stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#0b0f14;z-index:0;font-family:var(--sz-game-ui-font)}' +
       '#szw3d-frame{position:relative}' +
       '#szw3d-canvas{display:block;background:#0b0f14}' +
       '.szw3d-splash{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(8,12,18,0.5);color:#fff;text-align:center;z-index:5;transition:opacity .3s}' +
@@ -3977,7 +3979,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     if (frameEl) {
       if (!achToastEl) {
         achToastEl = document.createElement('div');
-        achToastEl.setAttribute('style', 'position:absolute;top:52px;right:12px;padding:8px 14px;border-radius:12px;background:#fbbf24;color:#3b2900;font:800 15px system-ui,sans-serif;z-index:9;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.35);display:none;');
+        achToastEl.setAttribute('style', 'position:absolute;top:52px;right:12px;padding:8px 14px;border-radius:12px;background:#fbbf24;color:#3b2900;font:800 15px var(--sz-game-ui-font);z-index:9;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.35);display:none;');
         frameEl.appendChild(achToastEl);
       }
       achToastEl.textContent = '🏆 Conquista: ' + nm;
@@ -4109,7 +4111,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     cv.setAttribute('style', 'width:min(78%,420px);height:auto;border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,.5);cursor:' + (minimapMode === 'teleporte' ? 'crosshair' : 'default') + ';');
     bigMapEl.appendChild(cv);
     var hint = document.createElement('div');
-    hint.setAttribute('style', 'position:absolute;bottom:18px;left:0;right:0;text-align:center;color:#e2e8f0;font:700 14px system-ui,sans-serif;');
+    hint.setAttribute('style', 'position:absolute;bottom:18px;left:0;right:0;text-align:center;color:#e2e8f0;font:700 14px var(--sz-game-ui-font);');
     hint.textContent = minimapMode === 'teleporte' ? 'Clique para TELEPORTAR · M fecha' : 'M fecha';
     bigMapEl.appendChild(hint);
     frameEl.appendChild(bigMapEl);
@@ -4151,14 +4153,14 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     if (!frameEl || podiumEntry) return;
     _lastRaceMs = ms;
     var el = document.createElement('div');
-    el.setAttribute('style', 'position:absolute;inset:0;background:rgba(2,6,23,.7);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:11;color:#f8fafc;font:800 20px system-ui,sans-serif;');
+    el.setAttribute('style', 'position:absolute;inset:0;background:rgba(2,6,23,.7);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:11;color:#f8fafc;font:800 20px var(--sz-game-ui-font);');
     el.innerHTML = '';
     var title = document.createElement('div');
     title.textContent = '🏁 Suas iniciais (setas mudam, E confirma)';
-    title.style.font = '800 17px system-ui,sans-serif';
+    title.style.font = '800 17px var(--sz-game-ui-font)';
     el.appendChild(title);
     var row = document.createElement('div');
-    row.setAttribute('style', 'display:flex;gap:12px;font:900 44px system-ui,sans-serif;');
+    row.setAttribute('style', 'display:flex;gap:12px;font:900 44px var(--sz-game-ui-font);');
     el.appendChild(row);
     frameEl.appendChild(el);
     podiumEntry = { el: el, row: row, slots: [0, 0, 0], idx: 0 };
@@ -4213,7 +4215,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     if (!frameEl) return;
     var list = podiumList();
     var el = document.createElement('div');
-    el.setAttribute('style', 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);min-width:230px;padding:14px 20px;border-radius:16px;background:rgba(2,6,23,.85);color:#f8fafc;font:700 16px system-ui,sans-serif;z-index:11;text-align:center;');
+    el.setAttribute('style', 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);min-width:230px;padding:14px 20px;border-radius:16px;background:rgba(2,6,23,.85);color:#f8fafc;font:700 16px var(--sz-game-ui-font);z-index:11;text-align:center;');
     var html = '<div style="font-size:19px;margin-bottom:8px;">🏆 Pódio</div>';
     if (!list.length) html += '<div>Ninguém correu ainda!</div>';
     for (var i = 0; i < list.length; i++) {
@@ -4234,7 +4236,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     cv.height = 64;
     var g = cv.getContext('2d');
     if (g) {
-      g.font = '46px system-ui, sans-serif';
+      g.font = '46px ' + _szGameUIFont;
       g.textAlign = 'center';
       g.textBaseline = 'middle';
       g.fillText('🔥', 32, 36);
@@ -4270,11 +4272,11 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     el.setAttribute('style', 'position:absolute;inset:0;background:rgba(2,6,23,.7);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:11;');
     var lbl = document.createElement('div');
     lbl.textContent = '🔥 Deixe seu recado (Enter salva, Esc cancela)';
-    lbl.setAttribute('style', 'color:#f8fafc;font:800 16px system-ui,sans-serif;');
+    lbl.setAttribute('style', 'color:#f8fafc;font:800 16px var(--sz-game-ui-font);');
     el.appendChild(lbl);
     var input = document.createElement('input');
     input.setAttribute('maxlength', '80');
-    input.setAttribute('style', 'width:min(70%,340px);padding:10px 14px;border-radius:12px;border:none;font:700 16px system-ui,sans-serif;');
+    input.setAttribute('style', 'width:min(70%,340px);padding:10px 14px;border-radius:12px;border:none;font:700 16px var(--sz-game-ui-font);');
     el.appendChild(input);
     frameEl.appendChild(el);
     whisperInput = { el: el, input: input };
@@ -4387,7 +4389,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   function ensureCoinHud() {
     if (coinHudEl || !frameEl) return;
     coinHudEl = document.createElement('div');
-    coinHudEl.setAttribute('style', 'position:absolute;top:10px;right:12px;padding:5px 12px;border-radius:12px;background:rgba(15,23,42,.72);color:#fde68a;font:800 16px system-ui,sans-serif;z-index:7;pointer-events:none;');
+    coinHudEl.setAttribute('style', 'position:absolute;top:10px;right:12px;padding:5px 12px;border-radius:12px;background:rgba(15,23,42,.72);color:#fde68a;font:800 16px var(--sz-game-ui-font);z-index:7;pointer-events:none;');
     frameEl.appendChild(coinHudEl);
     coinHudEl.textContent = '🪙 0';
   }
@@ -4433,7 +4435,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   function ensureQuestHud() {
     if (questHudEl || !frameEl) return;
     questHudEl = document.createElement('div');
-    questHudEl.setAttribute('style', 'position:absolute;top:10px;left:12px;max-width:300px;padding:6px 12px;border-radius:12px;background:rgba(15,23,42,.72);color:#e2e8f0;font:700 14px system-ui,sans-serif;z-index:7;pointer-events:none;display:none;');
+    questHudEl.setAttribute('style', 'position:absolute;top:10px;left:12px;max-width:300px;padding:6px 12px;border-radius:12px;background:rgba(15,23,42,.72);color:#e2e8f0;font:700 14px var(--sz-game-ui-font);z-index:7;pointer-events:none;display:none;');
     frameEl.appendChild(questHudEl);
   }
 
@@ -4491,7 +4493,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     cv.height = 64;
     var g = cv.getContext('2d');
     if (!g) return;
-    g.font = '48px system-ui, sans-serif';
+    g.font = '48px ' + _szGameUIFont;
     g.textAlign = 'center';
     g.textBaseline = 'middle';
     g.fillText(emoji, 32, 36);
@@ -4514,7 +4516,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   function ensureGuide() {
     if (guideEl || !frameEl) return;
     guideEl = document.createElement('div');
-    guideEl.setAttribute('style', 'position:absolute;bottom:70px;left:50%;transform:translateX(-50%) rotate(0deg);font:900 30px system-ui,sans-serif;color:#fde68a;text-shadow:0 2px 6px rgba(0,0,0,.5);z-index:7;pointer-events:none;display:none;');
+    guideEl.setAttribute('style', 'position:absolute;bottom:70px;left:50%;transform:translateX(-50%) rotate(0deg);font:900 30px var(--sz-game-ui-font);color:#fde68a;text-shadow:0 2px 6px rgba(0,0,0,.5);z-index:7;pointer-events:none;display:none;');
     guideEl.textContent = '⬆';
     frameEl.appendChild(guideEl);
   }
@@ -4577,7 +4579,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   function ensureNpcBubble() {
     if (npcBubble || !frameEl) return;
     var el = document.createElement('div');
-    el.setAttribute('style', 'position:absolute;max-width:280px;padding:8px 12px;border-radius:14px;background:#ffffff;color:#0f172a;font:700 14px system-ui,sans-serif;transform:translate(-50%,-100%);pointer-events:none;z-index:8;box-shadow:0 4px 14px rgba(0,0,0,.3);display:none;');
+    el.setAttribute('style', 'position:absolute;max-width:280px;padding:8px 12px;border-radius:14px;background:#ffffff;color:#0f172a;font:700 14px var(--sz-game-ui-font);transform:translate(-50%,-100%);pointer-events:none;z-index:8;box-shadow:0 4px 14px rgba(0,0,0,.3);display:none;');
     frameEl.appendChild(el);
     npcBubble = { el: el, name: '', text: '', shown: 0, t: 0 };
   }
@@ -4622,7 +4624,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       (function (idx) {
         var b = document.createElement('button');
         b.textContent = labels[idx];
-        b.setAttribute('style', 'padding:6px 12px;border-radius:12px;border:0;background:#22d3ee;color:#04252b;font:800 13px system-ui,sans-serif;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.35)');
+        b.setAttribute('style', 'padding:6px 12px;border-radius:12px;border:0;background:#22d3ee;color:#04252b;font:800 13px var(--sz-game-ui-font);cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.35)');
         b.addEventListener('pointerdown', function (ev) {
           if (ev && ev.preventDefault) ev.preventDefault();
           npcChoosePick(idx);
@@ -5847,7 +5849,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var card = document.createElement('div');
     card.setAttribute('style', 'max-width:420px;width:86%;background:#fffef8;border-radius:18px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 44px rgba(0,0,0,.5)');
     var h = document.createElement('div');
-    h.setAttribute('style', 'font:800 22px system-ui,sans-serif;color:#0f172a');
+    h.setAttribute('style', 'font:800 22px var(--sz-game-ui-font);color:#0f172a');
     h.textContent = rec.title || 'Porta';
     card.appendChild(h);
     var url = ASSETS[text(rec.image, '')];
@@ -5858,11 +5860,11 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       card.appendChild(im);
     }
     var p = document.createElement('div');
-    p.setAttribute('style', 'font:500 15px system-ui,sans-serif;color:#334155;white-space:pre-wrap');
+    p.setAttribute('style', 'font:500 15px var(--sz-game-ui-font);color:#334155;white-space:pre-wrap');
     p.textContent = rec.body || '';
     card.appendChild(p);
     var hint = document.createElement('div');
-    hint.setAttribute('style', 'font:400 12px system-ui,sans-serif;color:#94a3b8');
+    hint.setAttribute('style', 'font:400 12px var(--sz-game-ui-font);color:#94a3b8');
     hint.textContent = 'E ou clique para fechar';
     card.appendChild(hint);
     doorOverlayEl.appendChild(card);
@@ -6951,7 +6953,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     g.fillStyle = '#f8fafc';
     g.fillRect(0, 0, 128, 128);
     g.fillStyle = '#0f172a';
-    g.font = '900 96px system-ui, sans-serif';
+    g.font = '900 96px ' + _szGameUIFont;
     g.textAlign = 'center';
     g.textBaseline = 'middle';
     g.fillText(ch, 64, 70);
@@ -9317,4 +9319,6 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 })();
 `
 
-export const world3DRuntime = compactOfficialRuntimeSource(world3DRuntimeSource)
+export const world3DRuntime = withGameUIFontRuntime(
+  compactOfficialRuntimeSource(world3DRuntimeSource),
+)

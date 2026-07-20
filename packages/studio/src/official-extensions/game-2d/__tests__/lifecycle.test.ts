@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { gameTwoDRuntime } from '../runtime'
-import type { GameTwoDLifecycleApi } from '../runtimeContract'
+import type { GameTwoDRuntimeApi } from '../runtimeContract'
 
 type Listener = (event: Record<string, unknown>) => void
 
@@ -44,7 +44,7 @@ function runtimeHarness() {
   }
 
   return {
-    api: (windowObject as unknown as { SZGame2D: GameTwoDLifecycleApi }).SZGame2D,
+    api: (windowObject as unknown as { SZGame2D: GameTwoDRuntimeApi }).SZGame2D,
     fire,
     flushFrame,
   }
@@ -185,17 +185,7 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
 
   it('erro dentro de um bloco composto sobe até o driver e desativa a raiz culpada', () => {
     const { api, flushFrame } = runtimeHarness()
-    const composed = api as GameTwoDLifecycleApi & {
-      createGroup: () => { items: Array<{ x: number; y: number; w: number; h: number }> }
-      spawn: (
-        group: { items: Array<{ x: number; y: number; w: number; h: number }> },
-        options: { x: number; y: number; w: number; h: number; color: string },
-      ) => void
-      forEachInGroup: (
-        group: { items: Array<{ x: number; y: number; w: number; h: number }> },
-        callback: () => void,
-      ) => void
-    }
+    const composed = api
     const group = composed.createGroup()
     composed.spawn(group, { x: 0, y: 0, w: 10, h: 10, color: '#ffffff' })
     const original = console.error
@@ -311,9 +301,7 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
     document.body.innerHTML = ''
     const { api } = runtimeHarness()
     api.setupStage(400, 300, '#000000')
-    const accessibleApi = api as GameTwoDLifecycleApi & {
-      setStageDescription: (description: string) => void
-    }
+    const accessibleApi = api
 
     accessibleApi.setStageDescription('Pegue as moedas. Use as setas para andar.')
 
@@ -322,6 +310,38 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
     expect(canvas?.getAttribute('aria-label')).toBe('Pegue as moedas. Use as setas para andar.')
     expect(document.getElementById(descriptionId)?.textContent).toBe(
       'Pegue as moedas. Use as setas para andar.',
+    )
+  })
+
+  it('preserva a descrição acessível quando ela vem antes da preparação do palco', () => {
+    document.body.innerHTML = ''
+    const { api } = runtimeHarness()
+
+    api.setStageDescription('Encontre a saída. Use as setas para andar.')
+    api.setupStage(400, 300, '#000000')
+
+    const canvas = document.querySelector('canvas')
+    const descriptionId = canvas?.getAttribute('aria-describedby') ?? ''
+    expect(canvas?.getAttribute('aria-label')).toBe('Encontre a saída. Use as setas para andar.')
+    expect(document.getElementById(descriptionId)?.textContent).toBe(
+      'Encontre a saída. Use as setas para andar.',
+    )
+  })
+
+  it('não perde uma descrição explícita ao preparar o palco novamente', () => {
+    document.body.innerHTML = ''
+    const { api } = runtimeHarness()
+    api.setupStage(400, 300, '#000000')
+    api.setStageDescription('Colete 4 moedas. Use as setas.')
+
+    api.setupStage(800, 480, '#111111')
+    expect(document.querySelector('canvas')?.getAttribute('aria-label')).toBe(
+      'Colete 4 moedas. Use as setas.',
+    )
+
+    api.setupStageFull('#222222')
+    expect(document.querySelector('canvas')?.getAttribute('aria-label')).toBe(
+      'Colete 4 moedas. Use as setas.',
     )
   })
 })

@@ -249,7 +249,7 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
     ctx.restore();
     // HUD
     ctx.fillStyle = '#1b2330';
-    ctx.font = 'bold ' + Math.round(h * 0.10) + 'px Segoe UI, sans-serif';
+    ctx.font = 'bold ' + Math.round(h * 0.10) + 'px ' + _szGameUIFont;
     ctx.textAlign = 'right';
     ctx.textBaseline = 'top';
     ctx.fillText(String(game.score), w - w * 0.04, h * 0.04);
@@ -258,7 +258,7 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
       ctx.globalAlpha = Math.min(1, game.perfectFlash);
       ctx.fillStyle = '#e23b3b';
       ctx.textAlign = 'center';
-      ctx.font = 'bold ' + Math.round(h * 0.06) + 'px Segoe UI, sans-serif';
+      ctx.font = 'bold ' + Math.round(h * 0.06) + 'px ' + _szGameUIFont;
       ctx.fillText('PERFEITO! +2', w / 2, h * 0.16);
       ctx.restore();
     }
@@ -266,13 +266,13 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
       ctx.fillStyle = 'rgba(20,20,30,0.6)';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.font = Math.round(h * 0.045) + 'px Segoe UI, sans-serif';
+      ctx.font = Math.round(h * 0.045) + 'px ' + _szGameUIFont;
       ctx.fillText('Segure para esticar o bastão', w / 2, h * 0.45);
     } else if (game.phase === 'over') {
       ctx.fillStyle = 'rgba(20,20,30,0.7)';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.font = 'bold ' + Math.round(h * 0.06) + 'px Segoe UI, sans-serif';
+      ctx.font = 'bold ' + Math.round(h * 0.06) + 'px ' + _szGameUIFont;
       ctx.fillText('Caiu! Toque para recomeçar', w / 2, h * 0.45);
     }
     ctx.restore();
@@ -450,7 +450,7 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
     ctx.fillStyle = game.fuel <= 30 ? 'rgba(230,40,40,0.55)' : 'rgba(150,150,200,0.55)';
     ctx.fillRect(fx, fy, fw * game.fuel / 100, fh);
     ctx.fillStyle = '#1b2330';
-    ctx.font = 'bold ' + Math.round(h * 0.07) + 'px Segoe UI, sans-serif';
+    ctx.font = 'bold ' + Math.round(h * 0.07) + 'px ' + _szGameUIFont;
     ctx.textAlign = 'right';
     ctx.textBaseline = 'top';
     ctx.fillText(game.meters + ' m', w - w * 0.06, fy);
@@ -458,13 +458,13 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
       ctx.fillStyle = 'rgba(20,20,30,0.7)';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.font = 'bold ' + Math.round(h * 0.06) + 'px Segoe UI, sans-serif';
+      ctx.font = 'bold ' + Math.round(h * 0.06) + 'px ' + _szGameUIFont;
       ctx.fillText('Fim! Toque para recomeçar', w / 2, h * 0.45);
     } else if (game.by >= game.groundY - 1 && game.dist === 0) {
       ctx.fillStyle = 'rgba(20,20,30,0.55)';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.font = Math.round(h * 0.045) + 'px Segoe UI, sans-serif';
+      ctx.font = Math.round(h * 0.045) + 'px ' + _szGameUIFont;
       ctx.fillText('Segure para subir · voe baixo p/ poupar combustível', w / 2, h * 0.45);
     }
     ctx.restore();

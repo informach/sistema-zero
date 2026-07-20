@@ -1,4 +1,5 @@
 import { buildProjectRunContextRuntime } from '#extensions'
+import { withGameUIFontRuntime } from '../gameUiFont'
 import { gameTwoDArcadeKitsRuntime } from './runtime/arcadeKits'
 import { gameTwoDAudioRuntime } from './runtime/audio'
 import { gameTwoDCasualKitsRuntime } from './runtime/casualKits'
@@ -18,10 +19,11 @@ import { gameTwoDWorldRuntime } from './runtime/world'
  * `SZGame2D.createSprite(...)` no script.js e seguir o link mental até esta
  * função.
  */
-export const gameTwoDRuntime =
+export const gameTwoDRuntime = withGameUIFontRuntime(
   buildProjectRunContextRuntime() +
-  '\n' +
-  `(function () {
+    '\n' +
+    `(function () {
+  var _szGameUIFont = window.SZGameUIFont.family;
   // Estado interno: lista de teclas pressionadas.
   var keys = { left: false, right: false, up: false, down: false };
   window.addEventListener('keydown', function (e) {
@@ -86,17 +88,17 @@ export const gameTwoDRuntime =
   }
 
 ` +
-  gameTwoDSpritesRuntime +
-  gameTwoDLifecycleRuntime +
-  gameTwoDPhysicsRuntime +
-  gameTwoDAudioRuntime +
-  gameTwoDInputAndMotionRuntime +
-  gameTwoDWorldRuntime +
-  gameTwoDArcadeKitsRuntime +
-  gameTwoDStageRuntime +
-  gameTwoDCasualKitsRuntime +
-  gameTwoDUtilitiesRuntime +
-  `  window.SZGame2D = {
+    gameTwoDSpritesRuntime +
+    gameTwoDLifecycleRuntime +
+    gameTwoDPhysicsRuntime +
+    gameTwoDAudioRuntime +
+    gameTwoDInputAndMotionRuntime +
+    gameTwoDWorldRuntime +
+    gameTwoDArcadeKitsRuntime +
+    gameTwoDStageRuntime +
+    gameTwoDCasualKitsRuntime +
+    gameTwoDUtilitiesRuntime +
+    `  window.SZGame2D = {
     createSprite: createSprite,
     drawSprite: _camWrap(drawSprite),
     clear: clear,
@@ -307,4 +309,5 @@ export const gameTwoDRuntime =
     balloonOver: balloonOver,
     restartBalloon: restartBalloon
   };
-})();`
+})();`,
+)

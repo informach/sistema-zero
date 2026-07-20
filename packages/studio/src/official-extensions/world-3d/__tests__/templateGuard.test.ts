@@ -81,8 +81,9 @@ describe('Guarda dos template literals do Mundo 3D', () => {
   it('os três módulos avaliam e entregam string não-vazia (a prova final)', () => {
     expect(world3DRuntime.length).toBeGreaterThan(1000)
     // O payload publicado é compactado de forma conservadora (só linhas vazias
-    // e comentários completos), enquanto este arquivo permanece legível.
-    expect(world3DRuntime.length).toBeLessThan(340_000)
+    // e comentários completos), enquanto este arquivo permanece legível. O teto
+    // inclui cerca de 44 KB da Baloo 2 Latin incorporada para execução offline.
+    expect(world3DRuntime.length).toBeLessThan(390_000)
     expect(world3DPromptContext.length).toBeGreaterThan(500)
     expect(world3DManifest.docs.length).toBeGreaterThan(500)
   })

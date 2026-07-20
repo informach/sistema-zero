@@ -3,6 +3,8 @@
 # O passo global roda sem Postgres na porta local padrão, então os tests/db dos
 # pacotes continuam auto-pulando. O fiscal tem um passo explícito com Postgres
 # real em porta dedicada para provar as invariantes de concorrência críticas.
+# O Studio ainda executa no Chromium os cenários focados da extensão Jogo 2D,
+# pois canvas, DPR e viewport real não são cobertos pelo happy-dom.
 # Sem `.env` aqui — testes não podem depender de env local (handlers recebem tudo por deps).
 #
 # Push na STAGING também faz o DEPLOY do ambiente staging do Railway (job
@@ -70,6 +72,14 @@ jobs:
 
       - name: Typecheck (todos os pacotes)
         run: bun run --filter '*' typecheck
+
+      - name: Instalar Chromium do Playwright
+        working-directory: packages/studio
+        run: bunx playwright install --with-deps chromium
+
+      - name: E2E Jogo 2D (Chromium)
+        working-directory: packages/studio
+        run: bunx playwright test e2e/examples-gallery.spec.ts --grep "game-2d:"
 
   deploy-staging:
     name: deploy-staging

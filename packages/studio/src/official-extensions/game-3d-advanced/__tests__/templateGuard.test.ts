@@ -32,8 +32,9 @@ function rawBackticksInside(src: string, openerNeedle: string): number[] {
   const out: number[] = []
   for (let i = opener + 1; i < lines.length; i++) {
     const line = lines[i] as string
-    // O FECHO pretendido é uma linha que só tem a crase (com ou sem vírgula).
-    if (line.trim() === '`' || line.trim() === '`,') return out
+    // O FECHO pretendido é uma linha que só tem a crase, opcionalmente seguida
+    // pela vírgula antiga ou pelo parêntese do wrapper da fonte local.
+    if (/^`[,)]?$/.test(line.trim())) return out
     for (let c = 0; c < line.length; c++) {
       if (line[c] !== '`') continue
       if (c > 0 && line[c - 1] === '\\') continue // escapada: ok

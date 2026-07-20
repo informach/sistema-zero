@@ -123,12 +123,12 @@ test.describe('Áreas de comportamento — lifecycle completo', () => {
     await area.click({ button: 'right', position: { x: 24, y: 12 } })
     await page.getByText(/^(Excluir|Deletar)/).click()
 
-    await expect(page.getByText(/1 pilha está salva como rascunho/)).toBeVisible()
-    await expect(
-      page
-        .locator('.blocklyWorkspace .blocklyBlockCanvas .blocklyDraggable')
-        .filter({ hasText: 'não apagar' }),
-    ).toBeVisible()
+    const draft = page
+      .locator('.blocklyWorkspace .blocklyBlockCanvas .sz_js_console_log_text.blocklyDraggable')
+      .filter({ hasText: 'não apagar' })
+    await expect(draft).toBeVisible()
+    await expect(draft).toHaveClass(/sz-draft-block/)
+    await expect(page.getByText(/pilha está salva como rascunho/)).toHaveCount(0)
 
     await page.locator('.blocklyMainBackground').click()
     await page.keyboard.press('ControlOrMeta+z')
@@ -137,7 +137,7 @@ test.describe('Áreas de comportamento — lifecycle completo', () => {
         .locator('.blocklyWorkspace .blocklyBlockCanvas .blocklyDraggable')
         .filter({ hasText: 'Ao iniciar' }),
     ).toBeVisible()
-    await expect(page.getByText(/pilha está salva como rascunho/)).toHaveCount(0)
+    await expect(draft).not.toHaveClass(/sz-draft-block/)
   })
 
   test('a pesquisa não oferece o bloco legado de carregar a página', async ({ page }) => {

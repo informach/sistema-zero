@@ -39,6 +39,10 @@ projeto que instalar a extensão.
       nunca polui o escopo global com nomes genéricos.
 - [ ] Listeners de teclado/mouse/áudio só existem se as permissions
       correspondentes (`keyboard`, `mouse`, `audio`) estiverem declaradas.
+- [ ] HUDs e telas automáticas reutilizam `gameUiFont.ts`: Baloo 2 fica
+      incorporada como `data:` URI, sem CDN, e a licença permanece em
+      `official-extensions/fonts/`. Não substitua fontes escolhidas pelo aluno
+      nem a tipografia monoespaçada de painéis estritamente técnicos.
 
 ### 2. Validação do manifest
 

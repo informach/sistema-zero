@@ -63,6 +63,10 @@ describe('requiredExtensionsForBlockState', () => {
     const state = { type: 'sz_g2d_create_sprite', next: { block: { type: 'sz_g3d_create_box' } } }
     expect(requiredExtensionsForBlockState(state).sort()).toEqual(['game-2d', 'game-3d'])
   })
+
+  test('bloco de Mundo 3D → world-3d', () => {
+    expect(requiredExtensionsForBlockState({ type: 'sz_w3d_setup' })).toEqual(['world-3d'])
+  })
 })
 
 describe('área de transferência (localStorage)', () => {

@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'bun:test'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import type { ExtensionToolboxCategory } from '#extensions'
 import { gameTwoDPromptContext } from '../ai'
 import { gameTwoDPromptSummary } from '../aiSummary'
@@ -6,6 +8,7 @@ import { G2D_SOCKET_SHADOW_TYPES, gameTwoDBlocks, gameTwoDToolboxCategory } from
 import { gameTwoDManifest } from '../manifest'
 import { GAME_TWO_D_AREAS, GAME_TWO_D_LIFECYCLE_GUIDANCE } from '../pedagogy'
 import { gameTwoDRuntime } from '../runtime'
+import { GAME_TWO_D_API_KEYS } from '../runtimeContract'
 
 /**
  * MATA A CLASSE, não o caso (clone do docDrift do gk).
@@ -111,6 +114,19 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
 
   it('a contagem de blocos está travada (remoção acidental salta aqui)', () => {
     expect(gameTwoDBlocks.length).toBe(195)
+  })
+
+  it('mantém o inventário da auditoria sincronizado com blocos e API reais', () => {
+    const audit = readFileSync(
+      join(import.meta.dir, '../../../../docs/game-2d-audit-2026-07-20.md'),
+      'utf8',
+    )
+    const visibleBlocks = gameTwoDBlocks.filter((block) => !block.hidden).length
+    const hiddenBlocks = gameTwoDBlocks.length - visibleBlocks
+
+    expect(audit).toContain(`${gameTwoDBlocks.length} definições de bloco`)
+    expect(audit).toContain(`${visibleBlocks} visíveis e ${hiddenBlocks} legadas ocultas`)
+    expect(audit).toContain(`${GAME_TWO_D_API_KEYS.length} métodos e valores públicos`)
   })
 
   it('organiza controles, colisões e tempo por assunto, não pela Área do projeto', () => {

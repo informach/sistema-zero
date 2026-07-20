@@ -3,6 +3,11 @@
 Status: implementado em 20 de julho de 2026. Este documento registra a decisão
 arquitetural. A seção “Problema” descreve o estado anterior à implementação.
 
+> **Atualização de UX em 20 de julho de 2026:** a marcação persistente continua
+> no próprio bloco de rascunho, mas o painel global com contagem e botão de foco
+> foi removido por ocupar a área de trabalho. A decisão atual está em
+> `2026-07-20-studio-drafts-game-font-design.md`.
+
 ## Problema
 
 O Estúdio separa HTML, CSS e JavaScript em três molduras. Todo comportamento,
@@ -33,7 +38,7 @@ Naquele momento, todos ainda usavam `ir.js` e ciclos de vida antigos.
 - Compartilhar o mesmo escopo léxico entre as três áreas.
 - Aplicar as mesmas regras ao núcleo e a todas as extensões oficiais.
 - Migrar projetos antigos sem perder blocos nem mudar comportamento representável.
-- Preservar blocos soltos como rascunhos com aviso persistente.
+- Preservar blocos soltos como rascunhos com aviso no próprio bloco.
 - Manter projetos novos sem áreas predefinidas.
 - Preservar a API pública de `@sistemazero/studio` e o gate privilegiado da galeria.
 
@@ -365,13 +370,13 @@ horizontal.
 Excluir uma área solta seu conteúdo como rascunho e permite desfazer. Colar um
 bloco incompatível também o preserva como rascunho.
 
-Todo statement solto recebe contorno e aviso persistentes:
+Todo statement solto recebe contorno e aviso persistentes no próprio bloco:
 
 > Este bloco é um rascunho. Coloque em uma Área do projeto para ele funcionar.
 
-O painel mostra a quantidade de rascunhos; clicar no aviso centraliza o bloco.
-O preview avisa que esses blocos não foram executados. Valores soltos usados para
-experimentação não contam como erro.
+Não há painel global de rascunhos sobre o workspace. O preview avisa que esses
+blocos não foram executados. Valores soltos usados para experimentação não contam
+como erro.
 
 ## Arquivos e responsabilidades
 

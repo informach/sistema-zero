@@ -6,6 +6,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
   var _stageCanvas = null;
   var _stageCtx = null;
   var _stageDescription = '';
+  var _explicitStageDescription = '';
   var _announcedScreen = '';
   var STAGE_DESCRIPTION_ID = 'sz-game-2d-description';
   var STAGE_FOCUS_STYLE_ID = 'sz-game-2d-focus-style';
@@ -52,9 +53,10 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
   }
 
   function _setStageDescription(description) {
-    _stageDescription = (typeof description === 'string' && description.trim())
-      ? description.trim()
-      : _defaultStageDescription();
+    if (arguments.length > 0) {
+      _explicitStageDescription = typeof description === 'string' ? description.trim() : '';
+    }
+    _stageDescription = _explicitStageDescription || _defaultStageDescription();
     var c = _stageCanvas;
     if (c && c.setAttribute) {
       c.setAttribute('aria-label', _stageDescription);
@@ -106,7 +108,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     }
     _ensureStageFocusStyle();
     _stageCanvas = c;
-    _setStageDescription(_stageDescription);
+    _setStageDescription();
     try { _stageCtx = c.getContext('2d'); } catch (e) {}
     return _stageCtx;
   }

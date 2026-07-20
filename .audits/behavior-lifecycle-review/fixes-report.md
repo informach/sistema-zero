@@ -64,7 +64,8 @@ Todos agora usam o contrato `resource-creator`, que permite a preparação em
 `loop-body` em qualquer profundidade. Um contrato explícito bloco → statement
 protege também IR importada: laços nativos das extensões e laços sintáticos são
 rejeitados pelo `SZIRV2Schema`. Os manuais e tooltips afetados foram atualizados,
-com versões `game-2d-advanced@0.43.2` e `game-3d-advanced@0.8.2`.
+com versões `game-2d-advanced@0.43.3` e `game-3d-advanced@0.8.3` após a
+atualização visual posterior dos runtimes.
 
 Evidência daquela rodada da revisão complementar:
 
