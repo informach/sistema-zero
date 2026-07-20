@@ -46,6 +46,16 @@ describe('DOM "na mão" — estilo por código, atributo, densidade, modo escuro
     ])
   })
 
+  it('mantém atributos executáveis e URLs como Código avançado', () => {
+    for (const code of [
+      'forma.setAttribute("onclick", executar);',
+      'forma.setAttribute("srcdoc", html);',
+      'link.setAttribute("href", destino);',
+    ]) {
+      expect(parseJS(code)[0]).toMatchObject({ type: 'rawJS', code, advanced: true })
+    }
+  })
+
   it('devicePixelRatio e systemDark como valores num "se"', () => {
     const ir: JSStatement[] = [
       {

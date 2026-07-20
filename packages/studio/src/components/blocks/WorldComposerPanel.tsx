@@ -52,6 +52,7 @@ export function WorldComposerPanel({ workspace }: WorldComposerPanelProps): JSX.
   const dragRef = useRef<DragState | null>(null)
   const [items, setItems] = useState<WorldComposerItem[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [addNotice, setAddNotice] = useState<string | null>(null)
   const [webglUnavailable, setWebglUnavailable] = useState(false)
   const selectedItem = useMemo(
     () => items.find((item) => item.id === selectedId) ?? null,
@@ -276,7 +277,12 @@ export function WorldComposerPanel({ workspace }: WorldComposerPanelProps): JSX.
   const addBlock = (type: 'sz_w3d_district' | 'sz_w3d_road_grid' | 'sz_w3d_house_row') => {
     if (!workspace) return
     const id = appendWorldComposerBlock(workspace, type)
-    if (id) setSelectedId(id)
+    if (id) {
+      setSelectedId(id)
+      setAddNotice(null)
+    } else {
+      setAddNotice('Crie a área “⚙️ Ao iniciar” em Áreas do projeto para adicionar ao mundo.')
+    }
   }
 
   const setCameraPreset = (preset: 'perspectiva' | 'topo') => {
@@ -316,6 +322,14 @@ export function WorldComposerPanel({ workspace }: WorldComposerPanelProps): JSX.
               Casas
             </button>
           </div>
+          {addNotice && (
+            <p
+              role="status"
+              className="mt-2 rounded-lg bg-amber-500/10 p-2 text-xs text-amber-700 dark:text-amber-300"
+            >
+              {addNotice}
+            </p>
+          )}
         </div>
         <nav className="min-h-0 flex-1 overflow-auto p-2" aria-label="Objetos do mundo">
           {items.length === 0 ? (

@@ -1,11 +1,13 @@
 export const gameKitPromptSummary = `Jogo 2D Avançado expõe window.SZGameKit e usa blocos reais de motor 2D.
 
-ORDEM: setup/setupFull uma vez; declarar dados/personagens/mapas e ganchos;
-start() por último. Movimento e física usam dt em segundos. onUpdate roda apenas
-em "jogando"; onDraw redesenha o quadro; onDrawHud desenha sem câmera.
+ÁREAS: “Ao iniciar” contém setup/setupFull e declara dados, personagens e mapas;
+“Eventos” contém os chapéus de clique, aviso, estado e mapa; “Loop principal”
+contém onUpdate, onDraw, onDrawHud e cadências periódicas. O Estúdio registra as
+áreas e chama o boot automaticamente: não gere start() nem onGameStart().
+Movimento e física usam dt em segundos.
 
 PARTIDA E ESTADOS: setState(nome) apenas troca o estado e nunca apaga progresso.
-restartGame() começa uma partida limpa; onGameStart(fn) prepara cada partida nova.
+restartGame() começa uma partida limpa e executa novamente as três áreas.
 onEnterState(nome, fn) reage a toda entrada naquele estado, inclusive ao voltar de
 loja/inventário. Botões Jogar/Jogar de novo devem chamar restartGame().
 

@@ -73,6 +73,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    placement: { root: [], nested: ['function-body'], role: 'command' },
     tooltip: 'Devolve um valor de dentro de um método.',
   },
   {
@@ -81,6 +82,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    placement: { root: [], nested: ['function-body'], role: 'command' },
     tooltip: 'Sai da função imediatamente, sem devolver valor.',
   },
   {
@@ -119,9 +121,10 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    placement: { root: [], nested: ['derived-constructor-body'], role: 'command' },
     mutator: 'sz_args_mutator',
     tooltip:
-      'Dentro do construtor de uma classe que herda de outra: roda o construtor da classe-mãe. Use + para passar argumentos. Vira super(argumentos).',
+      'Dentro de uma classe filha, prepara primeiro a parte herdada da classe-mãe. Use + para passar informações.',
   },
   {
     type: 'sz_js_super_method',
@@ -131,9 +134,9 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    placement: { root: [], nested: ['derived-method-body'], role: 'command' },
     mutator: 'sz_args_mutator',
-    tooltip:
-      'Chama um método da classe-mãe (a versão herdada), mesmo que a classe filha tenha um método com o mesmo nome. Vira super.metodo(argumentos).',
+    tooltip: 'Chama a versão herdada de um método da classe-mãe. Use + para passar informações.',
   },
   {
     type: 'sz_val_call_method',
@@ -157,7 +160,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
     colour: C,
     mutator: 'sz_args_mutator',
     tooltip:
-      'Cria um objeto novo da classe para usar numa tomada de valor: como argumento (ex.: adicionar à lista), em "definir minha propriedade"… Vira new Classe(argumentos).',
+      'Cria um objeto novo da classe para encaixar como valor, guardar em uma propriedade ou adicionar a uma lista.',
   },
   {
     type: 'sz_js_set_this_prop',

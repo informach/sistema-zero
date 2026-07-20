@@ -13,6 +13,7 @@ import {
  * redigitar a grafia igualzinha em cada bloco (à la Scratch/MakeCode). "Sabores" pelo
  * `kind`:
  *  - `variable` → variáveis simples (blocos que criam/declaram uma variável);
+ *  - `mutable-variable` → somente variáveis que podem receber outro valor;
  *  - `group`    → grupos de sprites (Jogo 2D) E listas do núcleo (variáveis que
  *                 guardam uma lista `sz_val_array`) — "grupo ≡ lista";
  *  - `class`    → nomes de classe (`sz_js_class`);
@@ -23,6 +24,7 @@ import {
  *  - `method`   → métodos de classe, mesma lógica de escopo do `property`;
  *  - `canvas`   → id de uma tela de desenho (`sz_html_canvas`);
  *  - `selector` → partes da página já criadas (`body`, `#id` e `.classe`);
+ *  - `svg-reference` → ids de formas SVG reutilizáveis, já com o prefixo `#`;
  *  - `font`     → fontes importadas por um bloco do Google Fonts;
  *  - `animation` → animações CSS declaradas por blocos de keyframes;
  *  - `spritesheet` → folha de quadros do Jogo 2D (`sz_g2d_load_spritesheet`);
@@ -34,15 +36,16 @@ import {
  *
  * Estende `FieldTextInput` (NÃO `FieldDropdown`), então o VALOR continua sendo uma
  * string — IR, round-trip, serialização e allowlist ficam IDÊNTICOS a um
- * `field_input`; este campo só troca o EDITOR por um seletor visual + um input de
- * texto de fallback (para nomear algo ainda não criado, ou digitar livre). Coleta lê
- * o PRÓPRIO workspace do bloco (multi-instância, sem globais).
+ * `field_input`; este campo só troca o EDITOR por um seletor visual. Quase todos os
+ * tipos mantêm um campo de texto para criar nomes; alterar variável exige escolher
+ * uma variável mutável já visível. A coleta lê o PRÓPRIO workspace do bloco.
  *
  * ⚠️ `FieldDropdown` não serve: ele valida o valor contra a lista de opções e coage
  * um nome desconhecido para a 1ª opção → perderia o nome do aluno no round-trip.
  */
 export type NameKind =
   | 'variable'
+  | 'mutable-variable'
   | 'group'
   | 'class'
   | 'function'
@@ -50,6 +53,7 @@ export type NameKind =
   | 'method'
   | 'canvas'
   | 'selector'
+  | 'svg-reference'
   | 'font'
   | 'animation'
   | 'spritesheet'
@@ -86,6 +90,10 @@ export type NameKind =
   | 'w3dquest'
   | 'w3dachieve'
 
+export function nameKindAllowsFreeText(kind: NameKind): boolean {
+  return kind !== 'mutable-variable'
+}
+
 const NAME_KINDS: readonly NameKind[] = [
   'path',
   'w3dpoint',
@@ -96,6 +104,7 @@ const NAME_KINDS: readonly NameKind[] = [
   'pkmcreature',
   'pkmtype',
   'variable',
+  'mutable-variable',
   'group',
   'class',
   'function',
@@ -103,6 +112,7 @@ const NAME_KINDS: readonly NameKind[] = [
   'method',
   'canvas',
   'selector',
+  'svg-reference',
   'font',
   'animation',
   'spritesheet',
@@ -147,11 +157,10 @@ interface FieldNamePickerFromJsonConfig extends Blockly.FieldTextInputFromJsonCo
  * alterar) é que ganham o seletor. ⚠️ Bloco novo que cria variável? Adicione aqui.
  */
 const VARIABLE_DECL_BLOCKS: Record<string, string[]> = {
-  // Núcleo: criar/declarar/alterar variável.
+  // Núcleo: criar/declarar variável. Alterar consome um nome existente.
   sz_js_var_declare: ['NAME'],
   sz_js_var_create: ['NAME'],
   sz_js_const_create: ['NAME'],
-  sz_js_var_assign: ['NAME'],
   // Canvas 3D: `criar cena = novo THREE.Scene()` declara um objeto do three.js —
   // os facilitadores (posição/rotação/render/…) o consomem pelo seletor de nomes.
   sz_t3d_new_var: ['VARNAME'],
@@ -193,6 +202,13 @@ const VARIABLE_DECL_BLOCKS: Record<string, string[]> = {
   // Canvas: "Pegar canvas … e guardar contexto em CTX" — o ctx é uma variável e os
   // ~40 blocos de desenho que o consomem (campo CTX) ganham o seletor.
   sz_canvas_setup: ['CTX'],
+}
+
+/** Declarações cujo vínculo pode receber outro valor por atribuição. */
+const MUTABLE_VARIABLE_DECL_BLOCKS: Record<string, string[]> = {
+  sz_js_var_declare: ['NAME'],
+  sz_js_var_create: ['NAME'],
+  sz_g2d_score: ['NAME'],
 }
 
 /** Blocos que DECLARAM uma classe / uma função (fonte das listas de classe/função). */
@@ -237,6 +253,23 @@ export function collectCSSSelectors(workspace: Blockly.Workspace | null | undefi
     }
   }
   return ordered
+}
+
+/** IDs disponíveis para o href de “Reutilizar forma”, já no formato `#nome`. */
+export function collectSVGReferences(workspace: Blockly.Workspace | null | undefined): string[] {
+  if (!workspace) return []
+  const seen = new Set<string>()
+  const references: string[] = []
+  for (const block of workspace.getAllBlocks(false)) {
+    if (!block.type.startsWith('sz_svg_') && block.type !== 'sz_html_svg') continue
+    if (!block.getField('ID')) continue
+    const id = `${block.getFieldValue('ID') ?? ''}`.trim()
+    const reference = id ? `#${id}` : ''
+    if (!reference || seen.has(reference)) continue
+    seen.add(reference)
+    references.push(reference)
+  }
+  return references
 }
 
 export function collectCSSFonts(workspace: Blockly.Workspace | null | undefined): string[] {
@@ -383,6 +416,7 @@ function collectLooks(workspace: Blockly.Workspace | null | undefined): string[]
 const SOUND_DECL_BLOCKS: Record<string, string[]> = {
   sz_gk_load_sound: ['NAME'],
   sz_g3k_load_sound: ['NAME'],
+  sz_w3d_load_sound: ['NAME'],
 }
 function collectSounds(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, SOUND_DECL_BLOCKS)
@@ -426,7 +460,10 @@ function collectFlags(workspace: Blockly.Workspace | null | undefined): string[]
   return collectDeclaredNames(workspace, FLAG_DECL_BLOCKS)
 }
 /** Itens: quem DECLARA é o "Ganhar o item" (os demais consomem). */
-const ITEM_DECL_BLOCKS: Record<string, string[]> = { sz_gk_rpg_give_item: ['NAME'] }
+const ITEM_DECL_BLOCKS: Record<string, string[]> = {
+  sz_gk_rpg_give_item: ['NAME'],
+  sz_w3d_inventory_give: ['ITEM'],
+}
 function collectItems(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, ITEM_DECL_BLOCKS)
 }
@@ -627,7 +664,6 @@ function collectEnemyTypes(workspace: Blockly.Workspace | null | undefined): str
 const LIST_VALUE_HOLDERS: Record<string, string> = {
   sz_js_var_create: 'NAME',
   sz_js_const_create: 'NAME',
-  sz_js_var_assign: 'NAME',
 }
 
 interface KindUI {
@@ -663,6 +699,11 @@ const KIND_UI: Record<NameKind, KindUI> = {
     placeholder: 'nome da variável',
     empty:
       'Nenhuma variável no programa ainda — crie uma (ex.: "Criar variável") ou digite o nome abaixo.',
+  },
+  'mutable-variable': {
+    icon: '✏️',
+    placeholder: 'variável para alterar',
+    empty: 'Nenhuma variável mutável neste lugar — crie uma variável primeiro.',
   },
   group: {
     icon: '📋',
@@ -702,6 +743,12 @@ const KIND_UI: Record<NameKind, KindUI> = {
     placeholder: 'body, #caixa ou .cartao',
     empty:
       'Ainda não achei uma parte da página. Crie uma caixa no HTML ou escreva body para estilizar a página toda.',
+  },
+  'svg-reference': {
+    icon: '🧩',
+    placeholder: '#nome-da-forma',
+    empty:
+      'Nenhuma forma com nome ainda. Preencha o campo “id” de uma forma ou crie uma peça reutilizável.',
   },
   font: {
     icon: '🔤',
@@ -878,6 +925,7 @@ const KIND_UI: Record<NameKind, KindUI> = {
 /** Laços que introduzem nomes LOCAIS, por `kind` de seletor (escopo por ancestral). */
 const LOOP_BINDERS_BY_KIND: Partial<Record<NameKind, Record<string, string[]>>> = {
   variable: VARIABLE_LOOP_BINDERS,
+  'mutable-variable': VARIABLE_LOOP_BINDERS,
   object3d: OBJECT3D_LOOP_BINDERS,
   character: CHARACTER_LOOP_BINDERS,
   entity3d: ENTITY3D_LOOP_BINDERS,
@@ -905,9 +953,87 @@ function collectDeclaredNames(
   return ordered
 }
 
-/** Variáveis simples criadas no workspace, na ordem dos blocos, sem repetir. */
+function containingInput(parent: Blockly.Block, child: Blockly.Block): Blockly.Input | null {
+  for (const input of parent.inputList) {
+    let current = input.connection?.targetBlock() ?? null
+    while (current) {
+      if (current === child) return input
+      current = current.getNextBlock()
+    }
+  }
+  return null
+}
+
+/**
+ * Chaves dos escopos léxicos que envolvem um bloco, do mais interno ao global.
+ * Cada boca de comandos é distinta; THEN e ELSE, ou dois eventos, não dividem
+ * por engano as variáveis criadas dentro deles.
+ */
+function variableScopeKeys(block: Blockly.Block | null | undefined): string[] {
+  const keys: string[] = []
+  let child = block ?? null
+  let parent = child?.getSurroundParent() ?? null
+  while (child && parent) {
+    const input = containingInput(parent, child)
+    if (
+      input?.connection?.type === Blockly.ConnectionType.NEXT_STATEMENT &&
+      !parent.type.startsWith('sz_frame_') &&
+      input.name !== 'MEMBERS'
+    ) {
+      keys.push(`${parent.id}:${input.name}`)
+    }
+    child = parent
+    parent = parent.getSurroundParent()
+  }
+  keys.push('global')
+  return keys
+}
+
+function collectVariableDeclarations(
+  workspace: Blockly.Workspace,
+  registry: Record<string, string[]>,
+  visibleScopes: ReadonlySet<string>,
+): string[] {
+  const seen = new Set<string>()
+  const ordered: string[] = []
+  for (const declaration of workspace.getAllBlocks(false)) {
+    const fields = registry[declaration.type]
+    if (!fields) continue
+    const declarationScope = variableScopeKeys(declaration)[0] ?? 'global'
+    if (!visibleScopes.has(declarationScope)) continue
+    for (const field of fields) {
+      const name = declaration.getFieldValue(field)
+      if (!name || seen.has(name)) continue
+      seen.add(name)
+      ordered.push(name)
+    }
+  }
+  return ordered
+}
+
+/** Variáveis globais criadas no workspace, na ordem dos blocos, sem repetir. */
 export function collectVariables(workspace: Blockly.Workspace | null | undefined): string[] {
-  return collectDeclaredNames(workspace, VARIABLE_DECL_BLOCKS)
+  if (!workspace) return []
+  return collectVariableDeclarations(workspace, VARIABLE_DECL_BLOCKS, new Set(['global']))
+}
+
+function collectVisibleVariables(
+  block: Blockly.Block | null | undefined,
+  registry: Record<string, string[]>,
+): string[] {
+  const workspace = block?.workspace
+  if (!workspace) return []
+  return collectVariableDeclarations(workspace, registry, new Set(variableScopeKeys(block)))
+}
+
+/** Variáveis legíveis no ponto do bloco, incluindo constantes e escopos externos. */
+export function collectReadableVariables(block: Blockly.Block | null | undefined): string[] {
+  return collectVisibleVariables(block, VARIABLE_DECL_BLOCKS)
+}
+
+/** Variáveis que podem receber outro valor no ponto do bloco. */
+export function collectMutableVariables(block: Blockly.Block | null | undefined): string[] {
+  return collectVisibleVariables(block, MUTABLE_VARIABLE_DECL_BLOCKS)
 }
 
 /**
@@ -1108,6 +1234,10 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
     ws: Blockly.Workspace | null,
   ): string[] {
     switch (this.kind) {
+      case 'variable':
+        return collectReadableVariables(block)
+      case 'mutable-variable':
+        return collectMutableVariables(block)
       case 'group':
         return collectGroupsAndLists(ws)
       case 'enemytype':
@@ -1122,6 +1252,8 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectCanvasIds(ws)
       case 'selector':
         return collectCSSSelectors(ws)
+      case 'svg-reference':
+        return collectSVGReferences(ws)
       case 'font':
         return collectCSSFonts(ws)
       case 'animation':
@@ -1224,8 +1356,13 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
     applyThemeScope(this, content)
 
     const wrap = document.createElement('div')
+    wrap.className = 'sz-name-picker'
+    wrap.tabIndex = -1
+    wrap.setAttribute('role', 'group')
+    wrap.setAttribute('aria-label', `Escolher ${ui.placeholder}`)
     wrap.style.cssText =
       'padding:8px;width:240px;background:var(--color-sz-panel);font-family:Inter,system-ui,sans-serif;'
+    let focusTarget: HTMLElement = wrap
 
     if (globals.length === 0 && locals.length === 0) {
       const empty = document.createElement('div')
@@ -1235,6 +1372,7 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
       wrap.appendChild(empty)
     } else {
       const list = document.createElement('div')
+      list.className = 'sz-name-picker__list'
       list.style.cssText =
         'display:flex;flex-direction:column;gap:4px;max-height:200px;overflow:auto;'
       // Uma linha selecionável. `loop` = variável local do laço: swatch 🔁 tracejado +
@@ -1242,11 +1380,14 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
       const addRow = (name: string, loop: boolean): void => {
         const btn = document.createElement('button')
         btn.type = 'button'
+        btn.className = 'sz-name-picker__option'
         btn.title = loop ? `${name} — variável deste laço (local)` : name
         const selected = name === this.getValue()
+        btn.setAttribute('aria-pressed', selected ? 'true' : 'false')
         btn.style.cssText = `display:flex;align-items:center;gap:8px;padding:5px 7px;border:1px solid ${selected ? 'var(--color-sz-accent)' : 'var(--color-sz-border)'};border-radius:6px;background:var(--color-sz-bg);cursor:pointer;text-align:left;`
         const icon = document.createElement('span')
         icon.textContent = loop ? '🔁' : ui.icon
+        icon.setAttribute('aria-hidden', 'true')
         icon.style.cssText = loop
           ? 'flex:none;width:22px;height:22px;border-radius:5px;border:1px dashed var(--color-sz-border);display:flex;align-items:center;justify-content:center;font-size:12px;'
           : 'flex:none;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:15px;'
@@ -1265,6 +1406,7 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
           this.setValue(name)
           Blockly.DropDownDiv.hideIfOwner(this)
         })
+        if (focusTarget === wrap) focusTarget = btn
         list.appendChild(btn)
       }
       for (const name of globals) addRow(name, false)
@@ -1272,42 +1414,50 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
       wrap.appendChild(list)
     }
 
-    // Fallback de texto livre (nomear algo ainda não criado, ou digitar livre).
-    const row = document.createElement('div')
-    row.style.cssText =
-      'display:flex;gap:6px;margin-top:8px;border-top:1px solid var(--color-sz-border);padding-top:8px;align-items:center;'
-    const input = document.createElement('input')
-    input.type = 'text'
-    input.value = `${this.getValue() ?? ''}`
-    input.placeholder = ui.placeholder
-    input.spellcheck = false
-    input.style.cssText =
-      'flex:1;min-width:0;padding:3px 6px;border:1px solid var(--color-sz-border);background:var(--color-sz-bg);color:var(--color-sz-fg);border-radius:4px;font-size:12px;font-family:"JetBrains Mono",ui-monospace,monospace;outline:none;'
-    const ok = document.createElement('button')
-    ok.type = 'button'
-    ok.textContent = 'OK'
-    ok.style.cssText =
-      'padding:3px 10px;background:var(--color-sz-accent);color:var(--color-sz-bg);border:0;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;'
-    const apply = () => {
-      this.setValue(input.value.trim())
-      Blockly.DropDownDiv.hideIfOwner(this)
-    }
-    input.addEventListener('keydown', (ev) => {
-      ev.stopPropagation()
-      if (ev.key === 'Enter') {
-        ev.preventDefault()
-        apply()
+    // Quem ALTERA uma variável deve escolher um nome mutável que realmente está
+    // em escopo. Os demais seletores mantêm a entrada livre para criar nomes.
+    if (nameKindAllowsFreeText(this.kind)) {
+      const row = document.createElement('div')
+      row.style.cssText =
+        'display:flex;gap:6px;margin-top:8px;border-top:1px solid var(--color-sz-border);padding-top:8px;align-items:center;'
+      const input = document.createElement('input')
+      input.type = 'text'
+      input.className = 'sz-name-picker__input'
+      input.value = `${this.getValue() ?? ''}`
+      input.placeholder = ui.placeholder
+      input.setAttribute('aria-label', ui.placeholder)
+      input.spellcheck = false
+      input.style.cssText =
+        'flex:1;min-width:0;padding:3px 6px;border:1px solid var(--color-sz-border);background:var(--color-sz-bg);color:var(--color-sz-fg);border-radius:4px;font-size:12px;font-family:"JetBrains Mono",ui-monospace,monospace;'
+      const ok = document.createElement('button')
+      ok.type = 'button'
+      ok.className = 'sz-name-picker__confirm'
+      ok.textContent = 'Usar'
+      ok.setAttribute('aria-label', `Usar ${ui.placeholder}`)
+      ok.style.cssText =
+        'padding:3px 10px;background:var(--color-sz-accent);color:var(--color-sz-bg);border:0;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;'
+      const apply = () => {
+        this.setValue(input.value.trim())
+        Blockly.DropDownDiv.hideIfOwner(this)
       }
-    })
-    ok.addEventListener('click', apply)
-    row.append(input, ok)
-    wrap.appendChild(row)
+      input.addEventListener('keydown', (ev) => {
+        ev.stopPropagation()
+        if (ev.key === 'Enter') {
+          ev.preventDefault()
+          apply()
+        }
+      })
+      ok.addEventListener('click', apply)
+      row.append(input, ok)
+      wrap.appendChild(row)
+      focusTarget = input
+    }
 
     content.appendChild(wrap)
     Blockly.DropDownDiv.showPositionedByField(this, () => {})
     // `preventScroll`: focar um input fora da vista rolaria a PÁGINA até ele (no modo
     // aula normal a página rola) — o pop-up "pulava" p/ o vídeo. Não rolar nada.
-    setTimeout(() => input.focus({ preventScroll: true }), 0)
+    setTimeout(() => focusTarget.focus({ preventScroll: true }), 0)
   }
 }
 

@@ -4,7 +4,7 @@ import { world3DExamples } from './examples'
 export const world3DManifest: ExtensionManifest = {
   id: 'world-3d',
   name: 'Mundo 3D',
-  version: '4.0.0',
+  version: '4.1.0',
   description:
     'Crie mundos 3D abertos só com primitivas: 7 cenários, arquipélago, cidade completa, distritos, redes de ruas e casas procedurais instanciadas. Passeie a pé, de carro ou barco; use física leve própria, inventário persistente, missões, clima e qualidade adaptativa — sem Rapier, WASM ou pacote de assets.',
   category: 'games',
@@ -47,7 +47,8 @@ O que o motor já faz por você:
 2. **Deixar o chão com morros** — altura 4, suavidade 5 é um ótimo passeio.
 3. **Criar o carrinho dirigível** — escolha o jeitão e a cor.
 4. **A cada quadro (dt)** — a SUA mecânica extra (opcional).
-5. **Começar o passeio** — uma vez, NO FIM.
+
+Ao executar o projeto, o Studio monta e começa o passeio automaticamente.
 
 ### 🌍 Mundo
 
@@ -65,8 +66,9 @@ O que o motor já faz por você:
 - **Pôr água na altura … da cor …** — enche o mundo de água até uma altura
   (os buracos viram lago/mar). A água ondula; o carrinho fica lento na
   beirada e, se cair fundo, volta ao último lugar seco.
-- **Começar o passeio** — liga tudo e mostra a telinha "Começar o passeio".
-  Sempre o ÚLTIMO bloco.
+- **Usar o céu 360° HDR …** — escolhe um arquivo .hdr do projeto para virar
+  o céu panorâmico e a iluminação ambiente. Sem HDR, o degradê procedural do
+  estilo continua sendo usado.
 - **o tamanho do mundo** — o lado do mundo, para as suas contas.
 - **a altura do chão em x … z …** — a altura do terreno naquele ponto. Use
   para pousar as suas coisas EM CIMA do morro.
@@ -85,8 +87,8 @@ O que o motor já faz por você:
   o carrinho atropela de boa. Por dentro é instancing profissional: 300
   árvores custam 3 "desenhos" para a placa de vídeo.
 - **Espalhar … cópias do modelo …** — igual, mas com um modelo .glb SEU:
-  envie o arquivo no painel de imagens (seção de modelos 3D) e escreva o nome
-  dele no bloco. Tamanho 1 = o original.
+  envie o arquivo no painel de imagens (seção de modelos 3D) e escolha pelo
+  seletor do bloco. Tamanho 1 = o original.
 - **Pôr 1 … em x z / Pôr o modelo …** — UMA coisa num lugar exato, para os
   cantinhos especiais (a árvore gigante do topo, a estátua da praça).
 - **Deixar limpo perto de x z num raio de …** — reserva um círculo SEM
@@ -379,7 +381,8 @@ O que o motor já faz por você:
 
 - **Um mundo por projeto**: use APENAS UMA extensão de jogo/mundo por projeto
   (cada uma cria a própria tela — juntas elas brigam pelo canvas).
-- "Criar o mundo 3D" só vale ANTES do "Começar o passeio".
+- Coloque "Criar o mundo 3D" em **Ao iniciar**. O Estúdio começa o passeio
+  automaticamente depois de registrar Eventos e Loop principal.
 - Tudo em METROS: o carrinho tem ~3 m; pense as distâncias de verdade.
 - O mundo é sempre O MESMO mundo: os morros não mudam de lugar entre uma
   jogada e outra — dá para decorar o caminho como o seu quintal.

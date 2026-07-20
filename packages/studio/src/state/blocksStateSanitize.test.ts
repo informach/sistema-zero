@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'bun:test'
 import { buildWorkspaceStateFromIR } from '#blockly'
 import type { SZIR } from '#ir'
+import {
+  BEHAVIOR_AREAS_STATE_KEY,
+  BEHAVIOR_AREAS_STATE_VERSION,
+} from '../blockly/blocksStateVersion'
 import { invadersNaMaoExample } from '../examples/core'
 import {
   MAX_BLOCKSTATE_BLOCKS,
@@ -16,6 +20,21 @@ import {
  * carga.
  */
 describe('sanitizeImportedBlocksState — aceita estado gerado pela Ponte', () => {
+  it('preserva a versão válida das áreas de comportamento e recusa versões desconhecidas', () => {
+    const base = { blocks: { languageVersion: 0, blocks: [] } }
+    const current = {
+      ...base,
+      [BEHAVIOR_AREAS_STATE_KEY]: BEHAVIOR_AREAS_STATE_VERSION,
+    }
+    const future = {
+      ...base,
+      [BEHAVIOR_AREAS_STATE_KEY]: BEHAVIOR_AREAS_STATE_VERSION + 1,
+    }
+
+    expect(sanitizeImportedBlocksState(current, [])).toEqual(current)
+    expect(sanitizeImportedBlocksState(future, [])).toBeNull()
+  })
+
   it('preserva uma classe completa (extends, construtor com params, método, propriedades)', () => {
     const ir: SZIR = {
       html: [],

@@ -14,4 +14,4 @@ SZWorld3D.door(48, 30, 0, "Centro de Saude", "Conheca quem cuida das pessoas e d
 SZWorld3D.inventoryGive("mapa de carreiras", 1);
 SZWorld3D.quest("Minha vocacao", "Visite os tres distritos e converse com os moradores.");
 SZWorld3D.minimap("ver");
-SZWorld3D.start();`
+`

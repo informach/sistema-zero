@@ -4,6 +4,53 @@ import type { BlockDefinition } from '../blockly/blocks/types'
 
 export type ExtensionPermission = 'canvas' | 'keyboard' | 'mouse' | 'audio' | 'storage' | 'network'
 
+export interface ProjectRunScheduler {
+  onFrame(callback: (deltaSeconds: number) => void): () => void
+  everyFrames(frames: number, callback: () => void): () => void
+  everySeconds(seconds: number, callback: () => void): () => void
+  pause(): void
+  resume(): void
+  dispose(): void
+}
+
+export interface ProjectRunContext {
+  signal: AbortSignal
+  scheduler: ProjectRunScheduler
+  registerResource(dispose: () => void): void
+  requestRestart(): void
+}
+
+export interface LifecycleAdapter {
+  prepare(run: ProjectRunContext): void
+  boot(run: ProjectRunContext): void
+  restart(run: ProjectRunContext): void
+  pause(run: ProjectRunContext): void
+  resume(run: ProjectRunContext): void
+  dispose(run: ProjectRunContext): void
+}
+
+export type ProjectLifecycleTarget =
+  | 'core'
+  | 'game-2d'
+  | 'game-2d-advanced'
+  | 'game-3d'
+  | 'game-3d-advanced'
+  | 'world-3d'
+
+/** Descreve como o gerador conversa com o adapter implementado no iframe. */
+export interface RuntimeLifecycleContract {
+  target: ProjectLifecycleTarget
+  extensionId?: string
+  globalName?: string
+  runMethod?: string
+  runId?: string
+  bootMethod?: string
+  restartMethod?: string
+  pauseMethod?: string
+  resumeMethod?: string
+  disposeMethod?: string
+}
+
 /**
  * Default do `minLevel` de extensão SEM classificação: `intermediario-3d` — o
  * degrau em que o legado `intermediario` normaliza. Preserva "aparecia quando o
@@ -90,6 +137,8 @@ export interface ExtensionDefinition {
   runtime: {
     /** Script injetado no <head> do iframe — expõe API global (ex.: window.SZGame2D). */
     bootstrapScript: string
+    /** Contrato interno do ciclo de vida; obrigatório em toda extensão oficial. */
+    lifecycle: RuntimeLifecycleContract
     /**
      * Módulos ESM que a extensão precisa no preview, como mapa
      * `specifier → URL` adicionado ao importmap do iframe (ex.:

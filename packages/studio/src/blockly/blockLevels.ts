@@ -91,12 +91,12 @@ const INTERMEDIARIO_2D: ReadonlySet<string> = new Set<string>([
   'sz_js_class_op',
   'sz_js_create_element',
   'sz_js_append_child',
-  // Canvas — preparo/pincel/texto/entrada + laço de animação (desenho guiado)
-  'sz_canvas_setup',
+  // Canvas — ajustes/texto/entrada + laço de animação (desenho guiado).
+  // Preparar a tela e escolher a cor ficam no iniciante: sem os dois, as formas
+  // prontas daquele degrau não formavam um primeiro projeto executável.
   'sz_canvas_set_size',
   'sz_canvas_clear',
   'sz_canvas_clear_rect',
-  'sz_canvas_fill_style',
   'sz_canvas_stroke_style',
   'sz_canvas_line_width',
   'sz_canvas_global_alpha',
@@ -106,9 +106,7 @@ const INTERMEDIARIO_2D: ReadonlySet<string> = new Set<string>([
   'sz_canvas_measure_text',
   'sz_canvas_anim_loop',
   'sz_canvas_cancel_anim',
-  'sz_canvas_request_frame',
-  'sz_canvas_request_frame_do',
-  'sz_canvas_keyboard',
+  'sz_canvas_arc_slice',
   'sz_input_key_pressed',
   'sz_input_pointer_x',
   'sz_input_pointer_y',
@@ -143,10 +141,14 @@ const INTERMEDIARIO_2D: ReadonlySet<string> = new Set<string>([
   'sz_js_array_push',
   'sz_js_array_remove',
   'sz_js_array_splice',
+  'sz_val_array',
   // Funções
   'sz_js_function',
   'sz_js_call_function',
   'sz_val_call_function',
+  'sz_js_return',
+  'sz_js_return_void',
+  'sz_val_arg',
   // ── EXTENSÃO Jogo 2D — getters/setters/grupos ──────────────────────────────
   // NOTA: os grupos básicos (criar/atualizar/desenhar/tirar-da-tela/tirar-do-grupo),
   // os getters de posição (posição x/y, centro x/y), o aleatório NA TELA (x/y) e o
@@ -244,6 +246,10 @@ const AVANCADO_2D: ReadonlySet<string> = new Set<string>([
   'sz_canvas_translate',
   'sz_canvas_rotate',
   'sz_canvas_scale',
+  // Versões manuais do ciclo de animação. O bloco guiado "A cada quadro" já
+  // cobre o caminho infantil; estas peças expõem a mecânica de baixo nível.
+  'sz_canvas_request_frame',
+  'sz_canvas_request_frame_do',
   'sz_val_image',
   'sz_js_new_image',
   'sz_js_image_onload',
@@ -255,7 +261,6 @@ const AVANCADO_2D: ReadonlySet<string> = new Set<string>([
   'sz_val_perf_now',
   'sz_val_vector2d',
   'sz_val_vector3d',
-  'sz_val_array',
   'sz_val_array_length',
   'sz_val_array_map',
   'sz_val_array_index',
@@ -266,7 +271,6 @@ const AVANCADO_2D: ReadonlySet<string> = new Set<string>([
   'sz_val_shuffle',
   'sz_val_join',
   'sz_val_dataset',
-  'sz_val_storage_get',
   'sz_val_class_contains',
   // Matemática — trigonometria / vetorial
   'sz_math_trig',
@@ -285,8 +289,6 @@ const AVANCADO_2D: ReadonlySet<string> = new Set<string>([
   'sz_js_class',
   'sz_js_constructor',
   'sz_js_class_method',
-  'sz_js_return',
-  'sz_js_return_void',
   'sz_js_new_var',
   'sz_js_call_method',
   'sz_val_call_method',
@@ -297,7 +299,6 @@ const AVANCADO_2D: ReadonlySet<string> = new Set<string>([
   'sz_js_set_prop',
   'sz_val_this_prop',
   'sz_val_get_prop',
-  'sz_val_arg',
   // Objetos — todos
   'sz_val_object',
   'sz_val_object_op',

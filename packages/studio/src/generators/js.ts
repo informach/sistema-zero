@@ -1,10 +1,11 @@
-import type { BehaviorIR, JSExpr, JSStatement } from '#ir'
 import {
-  BEHAVIOR_SECTION_MARKERS,
+  lifecycleContractForTarget,
   type ProjectLifecycleTarget,
-  screenTextToExpr,
-  valueToExpr,
-} from '#ir'
+  type RuntimeLifecycleContract,
+} from '#extensions'
+import type { BehaviorIR, JSExpr, JSStatement } from '#ir'
+import { BEHAVIOR_SECTION_MARKERS, screenTextToExpr, valueToExpr } from '#ir'
+import { CANVAS_IMAGE_PRELOAD_MARKERS } from '../canvasImagePreloadCodec'
 import { CANVAS3D_SEMANTIC_STATEMENT_TYPES } from '../three/canvas3dContract'
 import { wrapCanvas3DMacro, wrapCanvas3DRuntime } from '../three/canvas3dMacroCodec'
 import { physicsLiteRuntimeSource } from '../three/physicsLiteRuntime'
@@ -224,6 +225,54 @@ function treeHasStatementType(statements: JSStatement[], type: JSStatement['type
   return false
 }
 
+/** Fontes de imagem usadas por blocos Canvas, em ordem e sem duplicatas. */
+function collectCanvasImageSources(statements: JSStatement[]): string[] {
+  const sources = new Set<string>()
+  // Pilha em ordem inversa para visitar o programa da esquerda para a direita.
+  // A ordem não muda o Promise.all, mas mantém o código gerado previsível.
+  const pending = [...statements].reverse()
+  while (pending.length > 0) {
+    const statement = pending.pop()
+    if (!statement) continue
+    if (statement.type === 'canvasDrawImage') sources.add(statement.src)
+    const children = jsChildBodies(statement).flat()
+    for (let index = children.length - 1; index >= 0; index -= 1) {
+      const child = children[index]
+      if (child) pending.push(child)
+    }
+  }
+  return [...sources]
+}
+
+function canvasImagePreloadOpen(
+  sources: string[],
+  identifiers: ReturnType<IdentifierScope['prepareCanvasImageIdentifiers']>,
+): string {
+  const names = JSON.stringify(sources)
+  return [
+    CANVAS_IMAGE_PRELOAD_MARKERS.start,
+    `const ${identifiers.images} = new Map();`,
+    `const ${identifiers.ready} = Promise.all(${names}.map((nomeDaImagem) => new Promise((pronta) => {`,
+    '  const imagem = new Image();',
+    "  imagem.addEventListener('load', () => {",
+    `    ${identifiers.images}.set(nomeDaImagem, imagem);`,
+    '    pronta();',
+    '  }, { once: true });',
+    "  imagem.addEventListener('error', () => {",
+    "    console.warn('Não foi possível carregar a imagem:', nomeDaImagem);",
+    '    pronta();',
+    '  }, { once: true });',
+    '  imagem.src = window.__SZGAME_ASSETS?.[nomeDaImagem] ?? nomeDaImagem;',
+    '})));',
+    `${identifiers.ready}.then(() => {`,
+    CANVAS_IMAGE_PRELOAD_MARKERS.body,
+  ].join('\n')
+}
+
+function canvasImagePreloadClose(): string {
+  return `${CANVAS_IMAGE_PRELOAD_MARKERS.end}\n});`
+}
+
 /**
  * Guarda de profundidade ITERATIVA (pilha explícita, sem recursão). Roda ANTES
  * de `hoistAnimationLoops`/`createPreparedIdentifierScope`/compilação — todas
@@ -247,7 +296,7 @@ export type GenerateJSOptions = {
   /** Header injected at top (e.g., comment header). */
   header?: string
   /** Adaptador interno que cria o escopo de uma execução e liga o boot automático. */
-  lifecycle?: ProjectLifecycleTarget
+  lifecycle?: ProjectLifecycleTarget | RuntimeLifecycleContract
 } & ({ statements: JSStatement[]; behavior?: never } | { statements?: never; behavior: BehaviorIR })
 
 export interface GenerateJSWithMapResult {
@@ -304,12 +353,16 @@ export function generateJSWithMap(opts: GenerateJSOptions): GenerateJSWithMapRes
     ? [...imports, ...hoistedLoops.filter((s) => !isImport(s))]
     : hoistedLoops
   const identifiers = createPreparedIdentifierScope(statements)
+  const canvasImageSources = collectCanvasImageSources(statements)
+  const canvasImages =
+    canvasImageSources.length > 0 ? identifiers.prepareCanvasImageIdentifiers() : undefined
   const headerText = opts.header ? `${opts.header.trim()}\n\n` : ''
   // Statements começam após o header (1-indexed).
   let currentLine = headerText ? countLines(headerText) + 1 : 1
   const pieces: string[] = []
   const needsPhysicsLite = treeHasStatementType(statements, 'physicsLiteSetup')
   let physicsLiteInserted = false
+  let canvasImagesOpened = false
   for (const stmt of statements) {
     if (needsPhysicsLite && !physicsLiteInserted && !isImport(stmt)) {
       const runtime = wrapCanvas3DRuntime(physicsLiteRuntimeSource)
@@ -317,7 +370,16 @@ export function generateJSWithMap(opts: GenerateJSOptions): GenerateJSWithMapRes
       currentLine += countLines(runtime)
       physicsLiteInserted = true
     }
-    const piece = compileStatement(stmt, 0, identifiers, { map, startLine: currentLine })
+    if (canvasImages && !canvasImagesOpened && !isImport(stmt)) {
+      const open = canvasImagePreloadOpen(canvasImageSources, canvasImages)
+      pieces.push(open)
+      currentLine += countLines(open)
+      canvasImagesOpened = true
+    }
+    const piece = compileStatement(stmt, canvasImagesOpened ? 1 : 0, identifiers, {
+      map,
+      startLine: currentLine,
+    })
     const lines = countLines(piece)
     pieces.push(piece)
     // Pieces são unidos por '\n' (separador, não linha adicional). Próximo
@@ -327,6 +389,7 @@ export function generateJSWithMap(opts: GenerateJSOptions): GenerateJSWithMapRes
   if (needsPhysicsLite && !physicsLiteInserted) {
     pieces.push(wrapCanvas3DRuntime(physicsLiteRuntimeSource))
   }
+  if (canvasImagesOpened) pieces.push(canvasImagePreloadClose())
   const body = pieces.join('\n')
   const code = headerText + (body ? `${body}\n` : '')
   return { code, map }
@@ -335,7 +398,7 @@ export function generateJSWithMap(opts: GenerateJSOptions): GenerateJSWithMapRes
 function generateBehaviorJSWithMap(
   behavior: BehaviorIR,
   header: string | undefined,
-  lifecycle: ProjectLifecycleTarget | undefined,
+  lifecycle: ProjectLifecycleTarget | RuntimeLifecycleContract | undefined,
 ): GenerateJSWithMapResult {
   const map = new SourceMapBuilder()
   const ordered = [...behavior.start, ...behavior.events, ...behavior.loops]
@@ -372,6 +435,9 @@ function generateBehaviorJSWithMap(
     ...imports,
     ...ordered.filter((s) => !isImport(s)),
   ])
+  const canvasImageSources = collectCanvasImageSources(ordered)
+  const canvasImages =
+    canvasImageSources.length > 0 ? identifiers.prepareCanvasImageIdentifiers() : undefined
   const headerText = header ? `${header.trim()}\n\n` : ''
   let currentLine = headerText ? countLines(headerText) + 1 : 1
   const pieces: string[] = []
@@ -389,11 +455,18 @@ function generateBehaviorJSWithMap(
     currentLine += countLines(runtime)
   }
 
+  if (canvasImages) {
+    const open = canvasImagePreloadOpen(canvasImageSources, canvasImages)
+    pieces.push(open)
+    currentLine += countLines(open)
+  }
+
   const envelope = lifecycle ? lifecycleEnvelope(lifecycle) : undefined
-  const indent = envelope ? 1 : 0
+  const canvasIndent = canvasImages ? 1 : 0
+  const indent = canvasIndent + (envelope ? 1 : 0)
   const markerIndent = '  '.repeat(indent)
   if (envelope) {
-    pieces.push(envelope.open)
+    pieces.push(`${'  '.repeat(canvasIndent)}${envelope.open}`)
     currentLine += 1
   }
 
@@ -411,9 +484,10 @@ function generateBehaviorJSWithMap(
     }
   }
   if (envelope) {
-    pieces.push(envelope.close)
-    if (envelope.boot) pieces.push(envelope.boot)
+    pieces.push(`${'  '.repeat(canvasIndent)}${envelope.close}`)
+    if (envelope.boot) pieces.push(`${'  '.repeat(canvasIndent)}${envelope.boot}`)
   }
+  if (canvasImages) pieces.push(canvasImagePreloadClose())
 
   const body = pieces.join('\n')
   return { code: headerText + (body ? `${body}\n` : ''), map }
@@ -449,38 +523,19 @@ interface LifecycleEnvelope {
   boot?: string
 }
 
-function lifecycleEnvelope(target: ProjectLifecycleTarget): LifecycleEnvelope {
-  switch (target) {
-    case 'game-2d':
-      return {
-        open: 'SZGame2D.onStart(function __szProjectRun() {',
-        close: '}, "__sz-project");',
-      }
-    case 'game-2d-advanced':
-      return {
-        open: 'SZGameKit.runProject(function __szProjectRun() {',
-        close: '});',
-        boot: 'SZGameKit.start();',
-      }
-    case 'game-3d':
-      return {
-        open: 'SZGame3D.runProject(function __szProjectRun() {',
-        close: '});',
-      }
-    case 'game-3d-advanced':
-      return {
-        open: 'SZGameKit3D.runProject(function __szProjectRun() {',
-        close: '});',
-        boot: 'SZGameKit3D.start();',
-      }
-    case 'world-3d':
-      return {
-        open: 'SZWorld3D.runProject(function __szProjectRun() {',
-        close: '});',
-        boot: 'SZWorld3D.start();',
-      }
-    case 'core':
-      return { open: '(function __szProjectRun() {', close: '})();' }
+function lifecycleEnvelope(
+  lifecycle: ProjectLifecycleTarget | RuntimeLifecycleContract,
+): LifecycleEnvelope {
+  const contract = typeof lifecycle === 'string' ? lifecycleContractForTarget(lifecycle) : lifecycle
+  if (!contract.globalName || !contract.runMethod) {
+    return { open: '(function __szProjectRun() {', close: '})();' }
+  }
+  const call = `${contract.globalName}.${contract.runMethod}`
+  const close = contract.runId ? `}, ${JSON.stringify(contract.runId)});` : '});'
+  return {
+    open: `${call}(function __szProjectRun() {`,
+    close,
+    ...(contract.bootMethod ? { boot: `${contract.globalName}.${contract.bootMethod}();` } : {}),
   }
 }
 
@@ -838,16 +893,20 @@ function compileStatementCode(
       return `${out};`
     }
     case 'event': {
+      const protectsForm = stmt.event === 'submit'
       const body = compileStatements(
         stmt.body,
         indent + 1,
         identifiers,
-        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + (protectsForm ? 2 : 1)),
       )
+      const protectedBody = protectsForm
+        ? `${'  '.repeat(indent + 1)}event.preventDefault();${body ? `\n${body}` : ''}`
+        : body
       // Escuta global na JANELA: eventos da página inteira (load/resize) — ou
       // qualquer evento marcado explicitamente como targetKind 'window'.
       if (stmt.targetKind === 'window' || stmt.event === 'load' || stmt.event === 'resize') {
-        return `${pad}window.addEventListener(${JSON.stringify(stmt.event)}, (event) => {\n${body}\n${pad}});`
+        return `${pad}window.addEventListener(${JSON.stringify(stmt.event)}, (event) => {\n${protectedBody}\n${pad}});`
       }
       // Eventos que pegam um alvo (target) — vão para o elemento:
       const elementBound: ReadonlySet<string> = new Set([
@@ -861,9 +920,9 @@ function compileStatementCode(
       // Escuta global no documento: clique em qualquer lugar (targetKind
       // 'document'), eventos de teclado (keydown/keyup) ou mover o mouse.
       if (stmt.targetKind === 'document' || !elementBound.has(stmt.event)) {
-        return `${pad}document.addEventListener(${JSON.stringify(stmt.event)}, (event) => {\n${body}\n${pad}});`
+        return `${pad}document.addEventListener(${JSON.stringify(stmt.event)}, (event) => {\n${protectedBody}\n${pad}});`
       }
-      return `${pad}${elementExpr(stmt.target, stmt.targetKind, identifiers)}?.addEventListener(${JSON.stringify(stmt.event)}, (event) => {\n${body}\n${pad}});`
+      return `${pad}${elementExpr(stmt.target, stmt.targetKind, identifiers)}?.addEventListener(${JSON.stringify(stmt.event)}, (event) => {\n${protectedBody}\n${pad}});`
     }
     case 'consoleLog':
       return `${pad}console.log(${compileExpr(stmt.value, 0, identifiers, recAt(base))});`
@@ -908,16 +967,42 @@ function compileStatementCode(
       return `${pad}Object.assign(${identifiers.get(stmt.targetVar)}, ${identifiers.get(stmt.sourceVar)});`
     case 'switch': {
       const subj = compileExpr(stmt.subject, 0, identifiers, recAt(base))
-      const cases = stmt.cases
-        .map((c) => {
-          const body = compileStatements(c.body, indent + 2, identifiers)
-          return `${pad}  case ${compileExpr(c.match, 0, identifiers)}: {\n${body}\n${pad}    break;\n${pad}  }`
-        })
-        .join('\n')
-      const def = stmt.default
-        ? `\n${pad}  default: {\n${compileStatements(stmt.default, indent + 2, identifiers)}\n${pad}  }`
-        : ''
-      return `${pad}switch (${subj}) {\n${cases}${def}\n${pad}}`
+      let cursorLine = base + 1
+      const caseChunks: string[] = []
+      for (const c of stmt.cases) {
+        const body = compileStatements(
+          c.body,
+          indent + 2,
+          identifiers,
+          childMapContext(mapContext, cursorLine + 1),
+        )
+        const matchContext: ExprMapContext | undefined = mapContext
+          ? { map: mapContext.map, line: cursorLine, indent: indent + 1 }
+          : undefined
+        const chunk = `${pad}  case ${compileExpr(c.match, 0, identifiers, matchContext)}: {\n${body}\n${pad}    break;\n${pad}  }`
+        const endLine = cursorLine + countLines(chunk) - 1
+        mapContext?.map.record(
+          c.__id,
+          'script.js',
+          cursorLine,
+          endLine,
+          (indent + 1) * 2 + 1,
+          lastLineEndColumn(chunk),
+        )
+        caseChunks.push(chunk)
+        cursorLine = endLine + 1
+      }
+      let def = ''
+      if (stmt.default) {
+        const defaultBody = compileStatements(
+          stmt.default,
+          indent + 2,
+          identifiers,
+          childMapContext(mapContext, cursorLine + 1),
+        )
+        def = `${caseChunks.length > 0 ? '\n' : ''}${pad}  default: {\n${defaultBody}\n${pad}  }`
+      }
+      return `${pad}switch (${subj}) {\n${caseChunks.join('\n')}${def}\n${pad}}`
     }
     // Tela cheia na PÁGINA inteira (document.documentElement). Só funciona a partir
     // de um gesto do aluno (clique/tecla) — daí ir dentro de um "Quando ...".
@@ -1107,6 +1192,16 @@ function compileStatementCode(
       return `${pad}cancelAnimationFrame(${compileExpr(stmt.handle, 0, identifiers, recAt(base))});`
     case 'canvasDrawImage': {
       const ctx = identifiers.get(stmt.ctxVar)
+      const cached = identifiers.getCanvasImageIdentifiers()
+      if (cached) {
+        const image = identifiers.reserveInternal(`${ctx}Imagem`)
+        return [
+          `${pad}{`,
+          `${pad}  const ${image} = ${cached.images}.get(${JSON.stringify(stmt.src)});`,
+          `${pad}  if (${image}) ${ctx}.drawImage(${image}, ${compileExpr(stmt.x, 0, identifiers, recAt(base + 2))}, ${compileExpr(stmt.y, 0, identifiers, recAt(base + 2))}, ${compileExpr(stmt.w, 0, identifiers, recAt(base + 2))}, ${compileExpr(stmt.h, 0, identifiers, recAt(base + 2))});`,
+          `${pad}}`,
+        ].join('\n')
+      }
       const image = identifiers.reserveInternal(`${ctx}Img`)
       return [
         `${pad}{`,
@@ -2577,7 +2672,9 @@ function compileStatementCode(
     case 'g3k:setEffects':
       return `${pad}SZGameKit3D.setEffects({ shadows: ${stmt.shadows}, bloom: ${stmt.bloom}, strength: ${compileExpr(valueToExpr(stmt.strength), 0, identifiers, recAt(base))}, vignette: ${stmt.vignette} });`
     case 'g3k:start':
-      return `${pad}SZGameKit3D.start();`
+      // Compatibilidade com projetos antigos: o envelope de ciclo de vida já
+      // inicia o motor uma única vez depois de registrar toda a fábrica.
+      return ''
     case 'g3k:defineMold': {
       const body = compileStatements(
         stmt.body,
@@ -2886,6 +2983,8 @@ ${pad}});`
       return `${pad}SZWorld3D.path(${compileExpr(valueToExpr(stmt.x1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z1), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z2), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))});`
     case 'w3d:water':
       return `${pad}SZWorld3D.water(${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
+    case 'w3d:skyPhoto':
+      return `${pad}SZWorld3D.skyPhoto(${JSON.stringify(stmt.asset)});`
     case 'w3d:start':
       return `${pad}SZWorld3D.start();`
     case 'w3d:car':
@@ -4551,7 +4650,6 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'canvasClear':
       names.add(stmt.ctxVar)
-      names.add(stmt.canvasVar)
       return
     case 'canvasFillStyle':
       names.add(stmt.ctxVar)
@@ -6868,6 +6966,7 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'w3d:start':
     case 'w3d:car':
     case 'w3d:grass':
+    case 'w3d:skyPhoto':
     case 'w3d:engineSound':
     case 'w3d:loadSound':
     case 'w3d:playSound':

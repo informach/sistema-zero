@@ -2,7 +2,8 @@
 
 import { Camera, Maximize, RefreshCw, Volume2, VolumeX } from 'lucide-react'
 import type { CSSProperties, ReactNode, RefObject } from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { requestGamepadFullscreen } from './gamepad-fullscreen'
 
 // Paleta do console (inspirada no MakeCode Arcade)
 const C = {
@@ -276,9 +277,11 @@ function ActionButtons({ iframeRef }: { iframeRef: RefObject<HTMLIFrameElement |
 
 function CtrlBar({
   iframeRef,
+  fullscreenTargetRef,
   onRestart,
 }: {
   iframeRef: RefObject<HTMLIFrameElement | null>
+  fullscreenTargetRef: RefObject<HTMLDivElement | null>
   onRestart: () => void
 }) {
   const [muted, setMuted] = useState(false)
@@ -305,8 +308,8 @@ function CtrlBar({
     iframeRef.current?.contentWindow?.postMessage({ type: 'sz:audio', muted: next }, '*')
   }
 
-  function fullscreen() {
-    iframeRef.current?.requestFullscreen?.().catch(() => {})
+  async function fullscreen() {
+    await requestGamepadFullscreen(fullscreenTargetRef.current)
   }
 
   function screenshot() {
@@ -407,6 +410,7 @@ interface MobileGamepadProps {
  */
 export function MobileGamepad({ iframeRef, onRestart, children }: MobileGamepadProps) {
   const [landscape, setLandscape] = useState(false)
+  const gamepadRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const mq = window.matchMedia('(orientation: landscape)')
@@ -445,7 +449,7 @@ export function MobileGamepad({ iframeRef, onRestart, children }: MobileGamepadP
   if (landscape) {
     // ── Paisagem (mobile deitado + desktop): D-pad | tela | A/B ── //
     return (
-      <div style={body}>
+      <div ref={gamepadRef} style={body}>
         <div
           style={{
             display: 'flex',
@@ -485,14 +489,14 @@ export function MobileGamepad({ iframeRef, onRestart, children }: MobileGamepadP
           <ActionButtons iframeRef={iframeRef} />
         </div>
 
-        <CtrlBar iframeRef={iframeRef} onRestart={onRestart} />
+        <CtrlBar iframeRef={iframeRef} fullscreenTargetRef={gamepadRef} onRestart={onRestart} />
       </div>
     )
   }
 
   // ── Retrato: tela | controles | barra ── //
   return (
-    <div style={body}>
+    <div ref={gamepadRef} style={body}>
       {/* Tela */}
       <div style={{ padding: '14px 14px 10px', display: 'flex', justifyContent: 'center' }}>
         <div style={{ ...screenWrap, width: '100%', aspectRatio: '5/3' }}>{children}</div>
@@ -512,7 +516,7 @@ export function MobileGamepad({ iframeRef, onRestart, children }: MobileGamepadP
         <ActionButtons iframeRef={iframeRef} />
       </div>
 
-      <CtrlBar iframeRef={iframeRef} onRestart={onRestart} />
+      <CtrlBar iframeRef={iframeRef} fullscreenTargetRef={gamepadRef} onRestart={onRestart} />
     </div>
   )
 }

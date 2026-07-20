@@ -96,6 +96,7 @@ export class IdentifierScope implements IdentifierResolver {
   private readonly canvasElements = new Map<string, string>()
   private readonly declaredClasses = new Map<string, string>()
   private readonly classRefs = new Map<string, string>()
+  private canvasImageIdentifiers?: { images: string; ready: string }
   // Próximo sufixo a tentar por base, para a sondagem de colisão NÃO recomeçar do
   // 2 a cada nome homônimo: k nomes que normalizam para a MESMA base custavam
   // O(k²) (a k-ésima alocação varria os sufixos 2..k). Como `used` só cresce
@@ -138,6 +139,22 @@ export class IdentifierScope implements IdentifierResolver {
   reserveInternal(hint: string): string {
     this.internalCount += 1
     return this.allocate(`__internal_${this.internalCount}_${hint}`, normalizeIdentifier(hint))
+  }
+
+  /** Reserva, uma única vez, os nomes do pré-carregador de imagens do Canvas. */
+  prepareCanvasImageIdentifiers(): { images: string; ready: string } {
+    if (!this.canvasImageIdentifiers) {
+      this.canvasImageIdentifiers = {
+        images: this.reserveInternal('imagensCanvas'),
+        ready: this.reserveInternal('imagensCanvasProntas'),
+      }
+    }
+    return this.canvasImageIdentifiers
+  }
+
+  /** Identificadores presentes somente quando o gerador instalou o pré-carregador. */
+  getCanvasImageIdentifiers(): { images: string; ready: string } | undefined {
+    return this.canvasImageIdentifiers
   }
 
   getCanvasElement(ctxName: string): string {

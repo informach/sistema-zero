@@ -114,9 +114,69 @@ beforeAll(() => {
 describe('Auditoria Mundo 3D — inventário', () => {
   it('todo def é statement (previousStatement) ou reporter (output)', () => {
     expect(statementDefs.length + exprDefs.length).toBe(world3DBlocks.length)
-    expect(world3DBlocks.length).toBe(136)
+    expect(world3DBlocks.length).toBe(137)
     for (const def of statementDefs) expect(def.previousStatement).toBe('JSStmt')
     for (const def of exprDefs) expect(def.output).toBe('JSValue')
+  })
+
+  it('mantém construções pesadas só no início e ações leves disponíveis em corpos', () => {
+    for (const type of [
+      'sz_w3d_setup',
+      'sz_w3d_terrain',
+      'sz_w3d_car',
+      'sz_w3d_scatter_model',
+      'sz_w3d_city',
+      'sz_w3d_road_grid',
+    ]) {
+      const definition = world3DBlocks.find((block) => block.type === type)
+      if (!definition) throw new Error(`bloco ${type} ausente`)
+      expect(inferBlockContract(definition).placement).toEqual({
+        root: ['start'],
+        nested: [],
+        role: 'command',
+      })
+    }
+
+    for (const type of ['sz_w3d_confetti', 'sz_w3d_say', 'sz_w3d_car_place']) {
+      const definition = world3DBlocks.find((block) => block.type === type)
+      if (!definition) throw new Error(`bloco ${type} ausente`)
+      const nested = inferBlockContract(definition).placement?.nested ?? []
+      expect(nested).toContain('event-body')
+      expect(nested).toContain('loop-body')
+    }
+  })
+
+  it('usa seletores filtrados para modelos e nomes declarados de som/item', () => {
+    const arg = (type: string, name: string) => {
+      const definition = world3DBlocks.find((block) => block.type === type)
+      if (!definition) throw new Error(`bloco ${type} ausente`)
+      const fields = [...(definition.args0 ?? []), ...(definition.args1 ?? [])] as Array<
+        Record<string, unknown>
+      >
+      return fields.find((field) => field.name === name)
+    }
+
+    for (const type of ['sz_w3d_scatter_model', 'sz_w3d_place_model']) {
+      expect(arg(type, 'MODEL')).toEqual({
+        type: 'field_asset_picker',
+        name: 'MODEL',
+        text: '',
+        kind: '3d',
+        filter: 'model3d',
+      })
+    }
+    expect(arg('sz_w3d_sky_photo', 'ASSET')).toEqual({
+      type: 'field_asset_picker',
+      name: 'ASSET',
+      text: '',
+      kind: '3d',
+      filter: 'environment3d',
+    })
+    expect(arg('sz_w3d_play_sound', 'NAME')?.kind).toBe('sound')
+    expect(arg('sz_w3d_play_music', 'NAME')?.kind).toBe('sound')
+    expect(arg('sz_w3d_inventory_remove', 'ITEM')?.kind).toBe('item')
+    expect(arg('sz_w3d_inventory_count', 'ITEM')?.kind).toBe('item')
+    expect(arg('sz_w3d_inventory_has', 'ITEM')?.kind).toBe('item')
   })
 })
 

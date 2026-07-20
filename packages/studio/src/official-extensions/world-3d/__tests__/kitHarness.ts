@@ -17,6 +17,7 @@ export const runtimeBody = world3DRuntime.replace(/^import \* as THREE from 'thr
 export interface FakeRenderer {
   disposeCalls: number
   forceContextLossCalls: number
+  pixelRatio: number
   loop: ((t: number) => void) | null
   camera: RealTHREE.PerspectiveCamera | null
   scene: RealTHREE.Scene | null
@@ -38,12 +39,15 @@ export function makeFakeThree() {
     const r: FakeRenderer = {
       disposeCalls: 0,
       forceContextLossCalls: 0,
+      pixelRatio: 1,
       loop: null,
       camera: null,
       scene: null,
       shadowMap: { enabled: false, type: 0 },
       toneMapping: 0,
-      setPixelRatio: () => {},
+      setPixelRatio: (n) => {
+        r.pixelRatio = n
+      },
       setSize: () => {},
       setAnimationLoop: (fn) => {
         r.loop = fn
@@ -78,13 +82,14 @@ export function makeFakeThree() {
 
 /** Só o que os testes chamam — o inventário completo é auditado no blockAudit. */
 export interface WorldApi {
-  setup(style: string, size: number): void
+  setup(options: { style: string; world: number }): void
   terrain(h: number, s: number): void
   flatten(x: number, z: number, r: number): void
   water(y: number): void
   start(): void
   groundHeight(x: number, z: number): number
-  car(style: string, color: string): void
+  skyPhoto(name: string): void
+  car(options: { style: string; color: string } | string, legacyColor?: string): void
   carStats(speed: number, turn: number, jump: number): void
   carBoost(force: number): void
   carPlace(x: number, z: number, deg: number): void
@@ -98,6 +103,13 @@ export interface WorldApi {
   onCrash(fn: () => void): void
   onUpdate(fn: (dt: number) => void): void
   keyDown(k: string): boolean
+  keyPressed(k: string): boolean
+  quality(mode: string): void
+  boat(color: string): void
+  person(color: string, hat: string): void
+  explosive(x: number, z: number): void
+  onExplosion(fn: () => void): void
+  disposeAll(): void
   setTime(name: string): void
   dayNight(minutes: number): void
   onDayNight(when: string, fn: () => void): void
@@ -139,7 +151,7 @@ export async function loadStartedWorld(beforeStart?: (api: WorldApi) => void): P
   const win = globalThis.window as unknown as Record<string, unknown>
   new Function('THREE', 'window', runtimeBody)(THREE, win)
   const api = win.SZWorld3D as WorldApi
-  api.setup('floresta', 120)
+  api.setup({ style: 'floresta', world: 120 })
   if (beforeStart) beforeStart(api)
   api.start()
   for (let i = 0; i < 60 && !renderers[0]?.loop; i++) {
@@ -161,8 +173,8 @@ export async function loadStartedWorld(beforeStart?: (api: WorldApi) => void): P
 }
 
 /**
- * Roda o runtime + o JS GERADO de um exemplo (que já traz setup no começo e
- * start() no fim). Bancada do playthrough: o exemplo roda como no preview.
+ * Roda o runtime + o JS GERADO de um exemplo. O adapter de ciclo de vida chama
+ * start() depois do código da criança, como acontece no preview.
  */
 export async function loadExampleWorld(exampleJs: string): Promise<{
   api: WorldApi
@@ -175,6 +187,7 @@ export async function loadExampleWorld(exampleJs: string): Promise<{
   new Function('THREE', 'window', runtimeBody)(THREE, win)
   const api = win.SZWorld3D as WorldApi
   new Function('SZWorld3D', 'window', exampleJs)(api, win)
+  api.start()
   for (let i = 0; i < 60 && !renderers[0]?.loop; i++) {
     await new Promise((resolve) => setTimeout(resolve, 5))
   }

@@ -23,6 +23,16 @@ function htmlBlockCycle(html: HTMLNode[]): HTMLNode[] {
   return buildIRFromWorkspace(ws).html
 }
 
+function stripBlockIds(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(stripBlockIds)
+  if (typeof value !== 'object' || value === null) return value
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([key]) => key !== '__id')
+      .map(([key, child]) => [key, stripBlockIds(child)]),
+  )
+}
+
 describe('SVG — formas novas + data por partes', () => {
   beforeAll(() => {
     ensureBlocklyInitialized()
@@ -77,6 +87,47 @@ describe('SVG — formas novas + data por partes', () => {
     expect(json).toContain('"points":"0,0 10,20"')
     expect(json).toContain('"id":"rotulo"')
     expect(json).toContain('"text":"oi"')
+  })
+
+  it('não inventa atributos ausentes ao passar por blocos', () => {
+    const html: HTMLNode[] = [
+      {
+        type: 'element',
+        tag: 'svg',
+        children: [
+          { type: 'element', tag: 'circle' },
+          { type: 'element', tag: 'ellipse' },
+          { type: 'element', tag: 'rect' },
+          { type: 'element', tag: 'line' },
+          { type: 'element', tag: 'polyline', attrs: { points: '10,10 20,20' } },
+          { type: 'element', tag: 'polygon' },
+          { type: 'element', tag: 'path' },
+          { type: 'element', tag: 'text' },
+        ],
+      },
+    ]
+
+    expect(stripBlockIds(htmlBlockCycle(html))).toEqual(html)
+  })
+
+  it('preserva xlink:href sem acrescentar um href diferente', () => {
+    const html: HTMLNode[] = [
+      {
+        type: 'element',
+        tag: 'svg',
+        children: [{ type: 'element', tag: 'use', attrs: { 'xlink:href': '#formaReal' } }],
+      },
+    ]
+
+    expect(stripBlockIds(htmlBlockCycle(html))).toEqual(html)
+  })
+
+  it('título, descrição, definições e símbolo sobrevivem ao ciclo sem código avançado', () => {
+    const parsed = parseHTML(
+      '<svg viewBox="0 0 200 200"><title>Meu foguete</title><desc>Um foguete roxo</desc><defs><symbol id="foguete"><circle cx="100" cy="100" r="40"></circle></symbol></defs><use href="#foguete"></use></svg>',
+    )
+    expect(JSON.stringify(parsed)).not.toContain('rawHTML')
+    expect(stripBlockIds(htmlBlockCycle(parsed))).toEqual(parsed)
   })
 
   it('dateGet: gerador emite new Date().getHours() e o parser reconhece', () => {

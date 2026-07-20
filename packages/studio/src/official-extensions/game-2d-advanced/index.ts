@@ -1,5 +1,6 @@
 import type { ExtensionDefinition } from '#extensions'
-import { validateManifest } from '#extensions'
+import { GAME_2D_ADVANCED_LIFECYCLE, validateManifest } from '#extensions'
+import { fullscreenConflictsFor } from '../fullscreenConflicts'
 import { gameKitPromptSummary } from './aiSummary'
 import { gameKitBlocks, gameKitToolboxCategory } from './blocks'
 import { gameKitManifest } from './manifest'
@@ -11,7 +12,7 @@ validateManifest(gameKitManifest)
 
 export const gameKitExtension: ExtensionDefinition = {
   manifest: gameKitManifest,
-  conflictsWith: ['game-2d'],
+  conflictsWith: fullscreenConflictsFor('game-2d-advanced'),
   // A extensão começa no Intermediário 2D com o caminho feliz e os kits de
   // gênero. Peças internas de motor (pooling, física manual, grades, pilhas e
   // interpolação genérica) sobem individualmente ao Avançado 2D em blockLevels.
@@ -22,6 +23,7 @@ export const gameKitExtension: ExtensionDefinition = {
   },
   runtime: {
     bootstrapScript: gameKitRuntime,
+    lifecycle: GAME_2D_ADVANCED_LIFECYCLE,
   },
   ai: {
     promptSummary: gameKitPromptSummary,

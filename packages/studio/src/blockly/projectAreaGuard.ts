@@ -51,18 +51,32 @@ export function enforceUniqueProjectAreas(workspace: Blockly.Workspace): Project
   return focusedBlockId ? { removed, focusedBlockId } : { removed }
 }
 
-export function attachProjectAreaGuard(workspace: Blockly.WorkspaceSvg): () => void {
+export function attachProjectAreaGuard(workspace: Blockly.Workspace): () => void {
   let enforcing = false
+  let queued = false
+  let active = true
   const listener = () => {
-    if (enforcing) return
-    enforcing = true
-    try {
-      const result = enforceUniqueProjectAreas(workspace)
-      if (result.focusedBlockId) workspace.centerOnBlock(result.focusedBlockId)
-    } finally {
-      enforcing = false
-    }
+    if (enforcing || queued) return
+    queued = true
+    queueMicrotask(() => {
+      queued = false
+      if (!active || enforcing) return
+      enforcing = true
+      try {
+        // Espera o lote atual terminar: durante `serialization.blocks.append`,
+        // o evento de criação da área chega antes de seus filhos. Remover a
+        // duplicata no meio da desserialização poderia clonar a pilha.
+        const result = enforceUniqueProjectAreas(workspace)
+        const svgWorkspace = workspace as unknown as Partial<Blockly.WorkspaceSvg>
+        if (result.focusedBlockId) svgWorkspace.centerOnBlock?.(result.focusedBlockId)
+      } finally {
+        enforcing = false
+      }
+    })
   }
   workspace.addChangeListener(listener)
-  return () => workspace.removeChangeListener(listener)
+  return () => {
+    active = false
+    workspace.removeChangeListener(listener)
+  }
 }

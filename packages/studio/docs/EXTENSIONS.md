@@ -55,8 +55,14 @@ projeto que instalar a extensão.
 - [ ] `docs` é markdown para o **usuário final** (não é o prompt da IA — esse
       vive em `ExtensionDefinition.ai.promptContext`). Dentro do teto de
       caracteres do schema.
-- [ ] `examples` carregam e rodam (cada um tem um `ir` válido contra o
-      `SZIRSchema`).
+- [ ] `examples` carregam e rodam. Cada exemplo declara `experience`, possui
+      cenário de QA e tem IR válido contra `SZIRV2Schema`, com `start`,
+      `events` e `loops` semanticamente válidos.
+- [ ] `runtime.lifecycle` usa um dos contratos oficiais de
+      `src/extensions/lifecycle.ts`. O `target`, nome global e métodos existem
+      no `bootstrapScript`; o gerador nunca escolhe o motor por `switch` local.
+- [ ] O boot é automático. Blocos antigos de “começar o jogo” podem continuar
+      registrados como `hidden: true` apenas para desserialização e migração.
 
 ### 3. Justificativa de permissões
 
@@ -137,9 +143,17 @@ antes de o código do aluno rodar). Regras:
       hardcode hex por bloco (game-3d já teve uma sub-cat presa em rosa por
       faltar o loop). O texto do bloco é BRANCO, então os tons não podem clarear
       demais (o `categoryShades` já é viés-escuro).
-- [ ] Blocos de comando da extensão usam `previousStatement`/`nextStatement:
-      'JSStmt'` — assim encaixam dentro da área ⚙️ **Comportamento** (modelo de
-      blocos-container; ver CLAUDE.md). A geração coleta o que está DENTRO dela.
+- [ ] Todo bloco executável possui contrato de `placement` materializado em
+      `blockly/blockContracts.ts`: áreas-raiz (`start`, `events`, `loops`),
+      contextos aninhados, papel e fase. Não crie checks ou classificadores
+      paralelos no toolbox, builder ou schema.
+- [ ] Comandos de preparo entram em **Ao iniciar**; chapéus “Quando…” entram em
+      **Eventos**; atualizações contínuas e periódicas entram em **Loop
+      principal**. Eventos e loops-raiz não podem ser aninhados. Corpos internos
+      usam os checks de contexto (`event-body`, `loop-body`, `function-body`,
+      etc.) materializados pelo contrato.
+- [ ] Blocos de compatibilidade com migração `unwrap-*` ou
+      `remove-engine-boot` ficam `hidden: true` e ausentes de toda toolbox.
 - [ ] Campo que REFERENCIA um nome já criado noutro bloco (sprite, cena/mundo,
       objeto 3D, grupo/enxame, folha de quadros, mapa de tiles, imagem/textura…)
       usa um **seletor**, não `field_input`: `field_sprite_picker` (sprites, com
@@ -166,6 +180,11 @@ antes de o código do aluno rodar). Regras:
 
 - [ ] A extensão tem testes (`__tests__/`) cobrindo manifest válido, blocos
       registráveis e os exemplos do manifest.
+- [ ] A guarda exaustiva definição → Blockly → IR → área aceita todas as raízes
+      visíveis; round-trip não emite warnings; blocos de migração não aparecem
+      na paleta.
+- [ ] O runtime cobre execução, reinício/novo jogo quando aplicável, pausa,
+      descarte de listeners/timers/áudio/GPU e erro isolado no callback do aluno.
 - [ ] `bun test src` continua verde e o typecheck (`bun run typecheck`) limpo.
 
 ## Como adicionar

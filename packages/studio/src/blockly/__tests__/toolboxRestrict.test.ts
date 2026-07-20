@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import type { LearningProfile } from '#core'
+import { classCategoryBlockTypes, functionCategoryBlockTypes } from '../paramsFlyout'
 import { buildCoreToolbox, type ToolboxCategory } from '../toolbox'
 
 /** Coleta TODOS os tipos de bloco da toolbox, em qualquer profundidade. */
@@ -115,5 +116,19 @@ describe('buildCoreToolbox — lista de blocos da aula (allowBlocks restritivo)'
     const names = categoryNames(buildCoreToolbox([ext], profile).contents)
     expect(names).toContain('🕹️ Sprites') // tem o bloco listado
     expect(names).not.toContain('🌍 Física') // sem bloco listado → some
+  })
+
+  it('filtra bloco a bloco os flyouts dinâmicos de Funções e Classes', () => {
+    const onlyFunction: LearningProfile = {
+      level: 'iniciante-2d',
+      allowBlocks: ['sz_js_function'],
+    }
+    expect(functionCategoryBlockTypes(onlyFunction)).toEqual(['sz_js_function'])
+
+    const onlyConstructor: LearningProfile = {
+      level: 'iniciante-2d',
+      allowBlocks: ['sz_js_constructor'],
+    }
+    expect(classCategoryBlockTypes(onlyConstructor)).toEqual(['sz_js_constructor'])
   })
 })

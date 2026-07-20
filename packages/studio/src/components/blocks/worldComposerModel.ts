@@ -1,5 +1,6 @@
 import * as Blockly from 'blockly/core'
-import { FRAME_BEHAVIOR } from '#blockly'
+import { FRAME_EVENTS, FRAME_LOOPS, FRAME_START } from '#blockly'
+import { getBlockContract } from '../../blockly/blockContracts'
 
 export interface WorldComposerItem {
   id: string
@@ -122,8 +123,8 @@ export function moveWorldComposerItem(
 }
 
 function connectNumberShadow(
-  workspace: Blockly.WorkspaceSvg,
-  block: Blockly.BlockSvg,
+  workspace: Blockly.Workspace,
+  block: Blockly.Block,
   inputName: string,
   value: number,
 ): void {
@@ -132,8 +133,9 @@ function connectNumberShadow(
   const numberBlock = workspace.newBlock('sz_val_number')
   numberBlock.setFieldValue(String(value), 'NUM')
   numberBlock.setShadow(true)
-  numberBlock.initSvg()
-  numberBlock.render()
+  const renderedNumber = numberBlock as unknown as Partial<Blockly.BlockSvg>
+  renderedNumber.initSvg?.()
+  renderedNumber.render?.()
   if (numberBlock.outputConnection) connection.connect(numberBlock.outputConnection)
 }
 
@@ -146,21 +148,24 @@ const NEW_BLOCK_DEFAULTS: Record<ComposerBlockType, Record<string, number>> = {
 }
 
 export function appendWorldComposerBlock(
-  workspace: Blockly.WorkspaceSvg,
+  workspace: Blockly.Workspace,
   type: ComposerBlockType,
 ): string | null {
-  const frame = workspace.getBlocksByType(FRAME_BEHAVIOR, false)[0]
+  const area = getBlockContract(type)?.placement?.root[0]
+  const frameType = area === 'start' ? FRAME_START : area === 'events' ? FRAME_EVENTS : FRAME_LOOPS
+  const frame = area ? workspace.getBlocksByType(frameType, false)[0] : undefined
   const frameConnection = frame?.getInput('CHILDREN')?.connection
   if (!frameConnection) return null
 
   Blockly.Events.setGroup(true)
   try {
     const block = workspace.newBlock(type)
-    block.initSvg()
+    const renderedBlock = block as unknown as Partial<Blockly.BlockSvg>
+    renderedBlock.initSvg?.()
     for (const [inputName, value] of Object.entries(NEW_BLOCK_DEFAULTS[type])) {
       connectNumberShadow(workspace, block, inputName, value)
     }
-    block.render()
+    renderedBlock.render?.()
 
     const first = frame.getInputTargetBlock('CHILDREN')
     if (!first) {
@@ -172,8 +177,8 @@ export function appendWorldComposerBlock(
         last.nextConnection.connect(block.previousConnection)
       }
     }
-    block.select()
-    workspace.centerOnBlock(block.id, false)
+    renderedBlock.select?.()
+    ;(workspace as unknown as Partial<Blockly.WorkspaceSvg>).centerOnBlock?.(block.id, false)
     return block.id
   } finally {
     Blockly.Events.setGroup(false)

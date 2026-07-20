@@ -14,4 +14,4 @@ SZWorld3D.letters("BRUNO", 0, 14, 1.4);
 SZWorld3D.pushScatter(18, 22, 8, 12);
 SZWorld3D.explosive(28, 8);
 SZWorld3D.totemText(0, 7, "Folio procedural", "Explore, dirija, empurre as letras e encontre a cidade criativa.");
-SZWorld3D.start();`
+`

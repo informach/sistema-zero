@@ -119,7 +119,7 @@ describe('Auditoria Jogo 2D Avançado — inventário', () => {
   // paralela aos defs — nada garantia que as duas casam. Um typo em SUBCATS
   // enviaria um item de toolbox apontando p/ um bloco inexistente, e um bloco
   // esquecido cairia no grupo genérico "Mais" sem ninguém perceber.
-  it('a toolbox cobre TODOS os blocos, exatamente 1× (sem fantasma, sem "Mais")', () => {
+  it('a toolbox cobre todos os blocos visíveis, exatamente 1× (sem fantasma, sem "Mais")', () => {
     const inToolbox: string[] = []
     const walk = (node: unknown): void => {
       if (Array.isArray(node)) {
@@ -134,13 +134,17 @@ describe('Auditoria Jogo 2D Avançado — inventário', () => {
     walk(gameKitToolboxCategory.contents)
 
     const defTypes = gameKitBlocks.map((d) => d.type)
+    const visibleDefTypes = gameKitBlocks
+      .filter((definition) => !definition.hidden)
+      .map((d) => d.type)
     const counts = new Map<string, number>()
     for (const t of inToolbox) counts.set(t, (counts.get(t) ?? 0) + 1)
 
     // Nenhum bloco da toolbox que não exista como def (typo em SUBCATS).
     expect([...counts.keys()].filter((t) => !defTypes.includes(t))).toEqual([])
-    // Nenhum def fora da toolbox (cairia no "Mais").
-    expect(defTypes.filter((t) => !counts.has(t))).toEqual([])
+    // Nenhum def visível fora da toolbox (cairia no "Mais"). Blocos antigos
+    // de migração continuam registrados para abrir projetos existentes.
+    expect(visibleDefTypes.filter((t) => !counts.has(t))).toEqual([])
     // Nenhum bloco em DUAS categorias.
     expect([...counts.entries()].filter(([, n]) => n > 1).map(([t]) => t)).toEqual([])
 
@@ -163,7 +167,7 @@ describe('Auditoria Jogo 2D Avançado — inventário', () => {
       if (c.contents) walkNamed(c.contents)
     }
     walkNamed(gameKitToolboxCategory.contents)
-    expect(defTypes.filter((t) => !named.has(t))).toEqual([])
+    expect(visibleDefTypes.filter((t) => !named.has(t))).toEqual([])
   })
 })
 

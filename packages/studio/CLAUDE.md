@@ -271,46 +271,51 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
     e quebra a injeção do Blockly. NÃO remover o gate. Modo novo no narrow? Desenhe via `NarrowPanels`
     (abas planas), não um split próprio — e respeite `useVisibleBottomTabs` para Console/Terminal/IA.
 
-## Blocos-container (Estrutura / Aparência / Comportamento) — só gera o que está DENTRO
+## Áreas do projeto — só gera o que está DENTRO
 
-Modelo estilo MakeCode Arcade (`on start`): a geração NÃO olha mais a posição/ordem dos blocos no canvas
-— ela coleta o que está DENTRO de 3 blocos-CONTAINER ("frames"). Bloco solto fora deles é **rascunho**
-(ignorado pela geração, mas segue salvo no `blocksState`). Defs em `blockly/blocks/frames.ts`:
+A geração não depende da posição dos blocos no canvas. Ela coleta somente o que a
+criança colocou dentro das cinco áreas opcionais definidas em
+`blockly/blocks/frames.ts`. Bloco solto é **rascunho**: continua salvo e aparece
+com aviso visual, mas não executa.
 
-| Frame | `CHILDREN` check | rota IR | arquivo | cor |
-|---|---|---|---|---|
-| `sz_frame_structure` (🧱 Estrutura) | `'HTMLNode'` | `ir.html` | index.html | html |
-| `sz_frame_appearance` (🎨 Aparência) | `'CSSEntry'` | `ir.css` | style.css | css |
-| `sz_frame_behavior` (⚙️ Comportamento) | `'JSStmt'` | `ir.js` (na ORDEM da pilha) | script.js | js |
+| Área | `CHILDREN` check | rota IR | arquivo |
+|---|---|---|---|
+| `sz_frame_structure` (🧱 Estrutura) | `HTMLNode` | `ir.html` | index.html |
+| `sz_frame_appearance` (🎨 Aparência) | `CSSEntry` | `ir.css` | style.css |
+| `sz_frame_start` (⚙️ Ao iniciar) | `JSStartRoot` | `behavior.start` | script.js |
+| `sz_frame_events` (🎯 Eventos) | `JSEventRoot` | `behavior.events` | script.js |
+| `sz_frame_loops` (🔁 Loop principal) | `JSLoopRoot` | `behavior.loops` | script.js |
 
-São CHAPÉUS (sem `previousStatement`/`nextStatement`) → top-level, 1 de cada por projeto. O `check` de cada
-boca reusa a conexão que os blocos JÁ expõem, então todo bloco existente encaixa sem mudar definição.
-Toolbox: categoria **🗂️ Áreas do projeto** (1ª, logo após Pesquisar).
+As áreas são chapéus top-level e existe no máximo uma de cada. **Projeto novo
+nasce sem áreas**; a criança adiciona somente as que a atividade precisa pela
+categoria **🗂️ Áreas do projeto**. Excluir uma área desconecta seus filhos no
+mesmo grupo de undo, preservando-os como rascunho. Duplicatas recebem o mesmo
+tratamento.
 
-- **Coleta** (`blockly/buildIR.ts buildIRFromWorkspace`): pega o 1º frame de cada tipo e lê seus filhos
-  (`getHtmlChildren`/`getCssEntryChildren`/`getStatementChildren`). Ordem só importa DENTRO do Comportamento
-  (cadeia `.next`). `collectFlatFromWorkspace` (modelo ANTIGO, anda TODOS os top-level em ordem de leitura) é
-  usado SÓ pela migração.
-- **Simetria = baixa complexidade**: `buildIRFromWorkspace` (blocos→IR) e `buildWorkspaceStateFromIR`
-  (IR→blocos, `workspaceState.ts`) embrulham/desembrulham nos mesmos 3 frames → blocos→IR→blocos é estável e
-  a maioria dos testes de round-trip passa sem mexer. (Por isso a antiga máquina de layout multi-pilha —
-  `splitIntoStacks`/`layoutFromBlocksState`/`StacksLayout` — foi REMOVIDA: com 1 frame por categoria não há
-  várias pilhas a reposicionar.)
-- **Projeto novo** (`core/project.ts createEmptyProject`): nasce com os 3 frames VAZIOS no `blocksState`
-  (seed inline; o `BlocksMode` faz short-circuit com IR vazia, por isso semear o blocksState e não a IR).
-- **Migração transparente** (`blockly/normalizeFrames.ts`, hook no load effect do `BlocklyPanel`): projeto
-  LEGADO (sem frames) é carregado num WS headless → `collectFlatFromWorkspace` → IR plana →
-  `buildWorkspaceStateFromIR` (frama) → **preserva a saída byte-a-byte**. Idempotente. ⚠️ As extensões já
-  precisam estar registradas (o `reregisterInstalledExtensions` roda antes), senão o load headless dropa o tipo.
-- **Rascunho × Ponte**: bloco solto NÃO está na IR; editar CÓDIGO na Ponte reconstrói só os framados →
-  **rascunhos somem** (esperado — some só no sync por código, não em edição de blocos nem refresh).
-- **Organizar blocos** (`blockly/organize.ts`): o `categoryOf` LOCAL mapeia os frames p/ html|css|js → os 3
-  ficam LADO A LADO (Estrutura | Aparência | Comportamento), o frame no topo da coluna e rascunho da mesma
-  categoria abaixo dele.
-- **Allowlist**: os 3 `sz_frame_*` estão em `CORE_BLOCKLY_BLOCK_TYPES` (senão `sanitizeImportedBlocksState`
-  zera todo o estado — ver gotcha do round-trip de import).
-- ⚠️ **FASE 2 pendente**: funções/classes/eventos viram blocos-CHAPÉU FORA do Comportamento (referenciados,
-  injetados ANTES do passo a passo). Hoje seguem funcionando DENTRO do Comportamento.
+- **Contrato de posicionamento** (`blockly/blockContracts.ts`): é a fonte comum
+  para checks físicos, área-raiz, contexto aninhado, papel e fase. Eventos e
+  loops são raízes e não podem ser aninhados. `break`, `continue`, `return`,
+  `await`, `super` e valores dependentes de evento só cabem em seu contexto
+  sintático. `ir/lifecycle.ts` repete a gramática recursivamente para proteger
+  estados importados e a Bridge.
+- **Coleta** (`blockly/buildIR.ts`): lê a primeira área de cada tipo e mantém a
+  ordem de cada cadeia. `collectFlatFromWorkspace` existe somente para a
+  migração do modelo anterior.
+- **Migração transparente** (`blockly/normalizeFrames.ts`): migra estados planos,
+  parcialmente organizados e a antiga `sz_frame_behavior` por área, preservando
+  IDs e a saída. Wrappers/boots antigos são registrados apenas para carregar
+  projetos salvos, nunca aparecem na paleta. Conteúdo de áreas antigas
+  duplicadas vira rascunho. O marcador `szBehaviorAreasVersion` impede que um
+  rascunho criado intencionalmente seja migrado depois.
+- **Execução**: o gerador emite `start` → `events` → `loops` e conversa com o
+  runtime pelo `RuntimeLifecycleContract` da extensão. O boot é automático;
+  blocos antigos de “começar” não devem aparecer em projetos novos.
+- **Organizar blocos** (`blockly/organize.ts`): dispõe as cinco áreas em duas
+  linhas e mantém os rascunhos próximos da família correspondente.
+- **World Composer**: adiciona conteúdo apenas numa área compatível já criada.
+  Se faltar **Ao iniciar**, orienta a criança em vez de criar a área sozinho.
+- **Allowlist**: todos os `sz_frame_*` atuais e o legado de migração pertencem a
+  `CORE_BLOCKLY_BLOCK_TYPES`; remover um deles pode zerar estado importado.
 
 ## Copiar/colar blocos entre projetos
 
@@ -398,8 +403,8 @@ bloco visível some (preserva 🔎 Pesquisar e os flyouts dinâmicos `custom`); 
   - **OOP escopado por CLASSE** (`property`/`method`): `blockly/blocks/classIntrospection.ts` (PURO, extraído do `argsMutator.ts` que o reusa) resolve a classe em contexto pela FORMA do bloco (`resolveContextClass`: campo/tomada `OBJ`→`classOfInstance`; sem `OBJ`→`enclosingClass`) e lista SÓ os membros dela (com herança via campo `SUPER`, guarda de ciclo); sem resolver, cai na lista global. ⚠️ NÃO importe `extendsMutator` de dentro do `classIntrospection` (ciclo via FieldNamePicker) — leia `SUPER` inline.
 - **Forward-only** (atalho que não precisa voltar a si na Ponte): os blocos dedicados de CSS (fill/stroke/transform/perspective/grid/var…) e o `sz_js_set_style_text` (cssText) produzem IR GENÉRICA (`CSSRule`/`setStyle`); a Ponte reversa devolve a "Regra"/bloco genérico. Só precisam de block+buildIR+allowlist (IR reusada).
 - **Container + filho (sem mutator)** p/ N itens: `sz_css_keyframes_steps`+`sz_css_keyframe_step` (animação multi-passo) e `sz_js_switch`+`sz_js_case` espelham `sz_css_rule`+`sz_css_decl` — um helper junta os filhos no buildIR (`getKeyframeSteps`/`getSwitchCases`); round-trip pelo container.
-- **Elementos SVG** = `{type:'element', tag, attrs, children}` no MESMO IR do HTML: o gerador emite qualquer tag, o parser `collectAllAttrs` captura todo atributo; em `workspaceState`, `FIELD_ATTRS`/`ID_FIELD_TAGS` dizem quais atributos viram CAMPO de bloco (o resto round-trippa via `data`). Tags SVG vivem em `HTMLTagSchema` + `SUPPORTED_TAGS`/`CONTAINER_TAGS` (parser).
-- **SVG dinâmico**: `createElementNS` (o namespace svg é OBRIGATÓRIO p/ a forma renderizar — `createElement` comum não serve) + `getAttribute`; `setAttribute`/`appendChild`/loop de quadro (`sz_canvas_anim_loop` = requestAnimationFrame no núcleo) já existem.
+- **Elementos SVG** = `{type:'element', tag, attrs, children}` no MESMO IR do HTML: o gerador emite qualquer tag, o parser `collectAllAttrs` captura todo atributo; em `workspaceState`, `FIELD_ATTRS`/`ID_FIELD_TAGS` dizem quais atributos viram CAMPO de bloco (o resto round-trippa via `data`). Tags SVG vivem em `HTMLTagSchema` + `SUPPORTED_TAGS`/`CONTAINER_TAGS` (parser). A raiz SVG é **iniciante** e os blocos cobrem acessibilidade (`title`/`desc`) e reutilização (`defs`/`symbol`/`use`). Formas declaram `ID` em texto; `use.HREF` consome esses ids pelo `field_name_picker` `svg-reference`. Paint usa `field_svg_paint` (paleta + texto livre), pois `none`/`currentColor`/`var(--cor)` precisam sobreviver exatamente. Ao importar código, defaults visuais NÃO podem inventar atributos: ausências ficam vazias e `href` × `xlink:href` é preservado. `svgPedagogy.test.ts` é o contrato exaustivo entre catálogo, níveis, grupos, campos e tooltips.
+- **SVG dinâmico**: `createElementNS` só vira SVG quando o namespace literal é exatamente `http://www.w3.org/2000/svg` (outros namespaces permanecem código bruto) + `getAttribute`; `setAttribute`/`appendChild`/loop de quadro (`sz_canvas_anim_loop` = requestAnimationFrame no núcleo) já existem. Em layout compacto, o Blockly usa toolbox horizontal para deixar a largura inteira disponível aos blocos; o E2E `svg.spec.ts` protege o fluxo e a largura em 375 px.
 - **`agora: …`** (`sz_val_date_part` → `new Date().getHours()…`, numérico, p/ relógios); `getFullYear` continua sendo o `now` string (NÃO vira `dateGet`).
 - **Tela cheia** (`sz_js_request/exit/toggle_fullscreen` + `sz_val_is_fullscreen` + evento `fullscreenchange`): ⚠️ exige `allow="fullscreen"` no iframe (`components/preview/PreviewIframe.tsx` + `StudioProjectPlayer.tsx`), senão `requestFullscreen()` rejeita em silêncio.
 - O CSS criativo (variáveis `--x`/`var()`, grid, 3D `rotateX`/`perspective`, pseudo `:hover`/`::before`) JÁ funciona pela "Regra CSS" + "propriedade: valor" genéricas (o parser preserva seletor/propriedade/valor livres); os blocos dedicados são só atalho de UX.

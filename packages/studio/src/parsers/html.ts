@@ -392,11 +392,9 @@ function mapNode(node: Node, depth: number): HTMLNode | null {
     if (hasElementChild || hasCommentChild) {
       return { type: 'rawHTML', html: el.outerHTML, advanced: true }
     }
-    const node: Extract<HTMLNode, { type: 'element' }> = {
-      type: 'element',
-      tag: t,
-      text: el.textContent ?? '',
-    }
+    const node: Extract<HTMLNode, { type: 'element' }> = { type: 'element', tag: t }
+    const text = el.textContent ?? ''
+    if (text) node.text = text
     if (id) node.id = id
     if (attrs) node.attrs = attrs
     return node

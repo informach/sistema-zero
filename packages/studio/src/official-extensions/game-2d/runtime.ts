@@ -601,7 +601,7 @@ export const gameTwoDRuntime = `(function () {
     if (!_startHandlers[id]) _startOrder.push(id);
     _startHandlers[id] = fn;
     try { fn(); }
-    catch (error) { _reportHandlerError('“Quando o jogo começar”', id, error); }
+    catch (error) { _reportHandlerError('“Ao iniciar”', id, error); }
   }
 
   // ---- Física ----
@@ -2308,7 +2308,7 @@ export const gameTwoDRuntime = `(function () {
   /**
    * Reinicia uma partida em memória. O canvas e os assets carregados são
    * reaproveitados; estado, eventos e quadros da partida anterior são limpos e
-   * cada bloco “Quando o jogo começar” roda novamente.
+   * o factory das Áreas do projeto roda novamente.
    */
   function restart() {
     if (_restarting) return;
@@ -2316,7 +2316,7 @@ export const gameTwoDRuntime = `(function () {
     // reconstruir suas variáveis léxicas. Mantém a compatibilidade por recarga,
     // mas todo projeto novo e todos os exemplos usam o reinício em memória.
     if (!_startOrder.length) {
-      warnOnce('reinicio-legado', 'este projeto antigo ainda não usa “Quando o jogo começar”; vou recarregar o preview para recomeçar.');
+      warnOnce('reinicio-legado', 'este projeto antigo ainda não usa as Áreas do projeto; vou recarregar o preview para recomeçar.');
       try { location.reload(); } catch (error) { _reportHandlerError('de reinício', 'legado', error); }
       return;
     }
@@ -2367,7 +2367,7 @@ export const gameTwoDRuntime = `(function () {
         var start = _startHandlers[id];
         if (typeof start !== 'function') continue;
         try { start(); }
-        catch (error) { _reportHandlerError('“Quando o jogo começar”', id, error); }
+        catch (error) { _reportHandlerError('“Ao iniciar”', id, error); }
       }
     } finally {
       _restarting = false;

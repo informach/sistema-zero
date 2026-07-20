@@ -6,19 +6,14 @@ import {
   FRAME_START,
   FRAME_STRUCTURE,
 } from '../blockContracts'
+import { PROJECT_AREA_SAFE_DELETE_EXTENSION } from '../projectAreaSafeDelete'
 import { CATEGORY_COLORS } from '../theme'
 import type { BlockDefinition } from './types'
 
 /**
- * Os 3 blocos-CONTAINER ("frames") estilo MakeCode (`on start`): SÓ o que está
- * DENTRO de um frame é gerado/executado; bloco solto no canvas é RASCUNHO
- * (ignorado pela geração, mas continua salvo — não some). São CHAPÉUS (sem
- * `previousStatement`/`nextStatement`) → ficam soltos no topo, **um de cada por
- * projeto**. A inclusão passa a ser por CONTÊINER, não por posição/ordem.
- *
- * O `check` de CHILDREN reusa o tipo de conexão que os blocos JÁ expõem
- * (HTML → `'HTMLNode'`, CSS de topo → `'CSSEntry'`, statements JS → `'JSStmt'`),
- * então TODO bloco existente encaixa sem mudar nenhuma definição.
+ * As cinco Áreas do projeto. Só o conteúdo interno gera; bloco solto é rascunho.
+ * São chapéus top-level, no máximo um de cada. Os checks especializados impedem
+ * que início, evento e loop sejam misturados.
  */
 export const FRAME_BLOCKS: BlockDefinition[] = [
   {
@@ -27,6 +22,7 @@ export const FRAME_BLOCKS: BlockDefinition[] = [
     message1: '%1',
     args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'HTMLNode' }],
     colour: CATEGORY_COLORS.html,
+    extensions: [PROJECT_AREA_SAFE_DELETE_EXTENSION],
     tooltip:
       'A página em si (HTML). Tudo que estiver DENTRO daqui vira o index.html. O que ficar de fora é só rascunho.',
   },
@@ -36,6 +32,7 @@ export const FRAME_BLOCKS: BlockDefinition[] = [
     message1: '%1',
     args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'CSSEntry' }],
     colour: CATEGORY_COLORS.css,
+    extensions: [PROJECT_AREA_SAFE_DELETE_EXTENSION],
     tooltip:
       'O visual (CSS). Tudo DENTRO daqui vira o style.css. O que ficar de fora é só rascunho.',
   },
@@ -45,6 +42,7 @@ export const FRAME_BLOCKS: BlockDefinition[] = [
     message1: '%1',
     args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'JSStartRoot' }],
     colour: CATEGORY_COLORS.js,
+    extensions: [PROJECT_AREA_SAFE_DELETE_EXTENSION],
     tooltip: 'Roda ao abrir ou a cada nova partida.',
   },
   {
@@ -53,6 +51,7 @@ export const FRAME_BLOCKS: BlockDefinition[] = [
     message1: '%1',
     args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'JSEventRoot' }],
     colour: '#eab308',
+    extensions: [PROJECT_AREA_SAFE_DELETE_EXTENSION],
     tooltip: 'Roda quando alguma coisa acontece.',
   },
   {
@@ -61,6 +60,7 @@ export const FRAME_BLOCKS: BlockDefinition[] = [
     message1: '%1',
     args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'JSLoopRoot' }],
     colour: '#14b8a6',
+    extensions: [PROJECT_AREA_SAFE_DELETE_EXTENSION],
     tooltip: 'Repete enquanto o projeto estiver rodando.',
   },
   {
@@ -69,6 +69,7 @@ export const FRAME_BLOCKS: BlockDefinition[] = [
     message1: '%1',
     args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'JSStmt' }],
     colour: CATEGORY_COLORS.js,
+    extensions: [PROJECT_AREA_SAFE_DELETE_EXTENSION],
     tooltip: 'Área antiga preservada somente para migração automática.',
     hidden: true,
   },

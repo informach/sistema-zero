@@ -1,23 +1,9 @@
 import { FieldColour, type FieldColourFromJsonConfig } from '@blockly/field-colour'
 import * as Blockly from 'blockly/core'
 import { SZ_PALETTE_COLOURS, SZ_PALETTE_COLUMNS, SZ_PALETTE_TITLES } from '../colorPalette'
+import { applyFieldDropdownTheme } from './dropdownTheme'
 
 const HEX_RE = /^#[0-9a-fA-F]{6}$/
-
-/**
- * Reaplica o `data-sz-theme` do root do <Studio> no conteúdo portalado do
- * DropDownDiv (que vive sob document.body, fora do escopo de tema). Descobre o
- * tema pela injection div do workspace do bloco, que está sob o `[data-sz-theme]`
- * do root. Mesmo padrão do StudioThemeScope/Modal para conteúdo portalado.
- */
-function applyThemeScope(field: Blockly.Field, content: HTMLElement): void {
-  const workspace = field.getSourceBlock()?.workspace as { getInjectionDiv?(): unknown } | undefined
-  const injectionDiv = workspace?.getInjectionDiv?.()
-  const scope = injectionDiv instanceof HTMLElement ? injectionDiv.closest('[data-sz-theme]') : null
-  const theme = scope?.getAttribute('data-sz-theme')
-  if (!theme) return
-  content.setAttribute('data-sz-theme', theme)
-}
 
 /**
  * Campo de cor do Sistema Zero. Usa a paleta MakeCode-like definida em
@@ -43,7 +29,7 @@ export class FieldColourSZ extends FieldColour {
     // O DropDownDiv é portalado para document.body, fora do [data-sz-theme] do
     // root do <Studio> — reaplica o atributo no conteúdo para os tokens da
     // paleta resolverem com o tema certo (mesma ideia do StudioThemeScope/Modal).
-    applyThemeScope(this, content)
+    applyFieldDropdownTheme(this, content)
 
     // Respiro CLARO entre a grade de cores e a linha do HEX (padding-top maior +
     // border-top) — pedido da dona: a caixinha não pode ficar colada nos swatches.

@@ -60,12 +60,12 @@ function rawInterpolationsInside(src: string, openerNeedle: string): number[] {
 describe('Guarda dos template literals do Mundo 3D', () => {
   it('runtime.ts: nenhuma crase crua no miolo do literal', () => {
     const src = readFileSync(join(DIR, 'runtime.ts'), 'utf8')
-    expect(rawBackticksInside(src, 'world3DRuntime =')).toEqual([])
+    expect(rawBackticksInside(src, 'world3DRuntimeSource =')).toEqual([])
   })
 
   it('runtime.ts: nenhuma interpolação ${ crua (interpola em silêncio)', () => {
     const src = readFileSync(join(DIR, 'runtime.ts'), 'utf8')
-    expect(rawInterpolationsInside(src, 'world3DRuntime =')).toEqual([])
+    expect(rawInterpolationsInside(src, 'world3DRuntimeSource =')).toEqual([])
   })
 
   it('ai.ts: idem (o contexto da IA também é um literal só)', () => {
@@ -80,13 +80,8 @@ describe('Guarda dos template literals do Mundo 3D', () => {
 
   it('os três módulos avaliam e entregam string não-vazia (a prova final)', () => {
     expect(world3DRuntime.length).toBeGreaterThan(1000)
-    // Teto de tamanho do payload injetado (plano v3: cidade/trânsito/lua/fazenda
-    // somam ~58 KB sobre a v2): avisa perto de 325 KB via margem, FALHA acima de
-    // 340 KB. O custo real de payload grande é o eval+build, guardado pelo GATE
-    // DE BOOT no playthrough (cidade média < 2,5 s no harness). Antes de subir o
-    // teto de novo, aplicar os cortes pré-aprovados do plano (animais sem anim
-    // por quadro, varal sem bolbos, plaquinhas viram quads, faixas fundidas na
-    // malha, lago próprio fora, rodas fundidas, arquétipos 4→3, vacas fora).
+    // O payload publicado é compactado de forma conservadora (só linhas vazias
+    // e comentários completos), enquanto este arquivo permanece legível.
     expect(world3DRuntime.length).toBeLessThan(340_000)
     expect(world3DPromptContext.length).toBeGreaterThan(500)
     expect(world3DManifest.docs.length).toBeGreaterThan(500)

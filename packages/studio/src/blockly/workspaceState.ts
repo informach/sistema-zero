@@ -11,6 +11,7 @@ import {
   getBlockContract,
 } from './blockContracts'
 import { SHADOW_PRESETS } from './buildIR'
+import { isGuidedDomAttributeName, isGuidedDomProperty } from './domSafety'
 import { ADDON_CLASSES } from './fields/FieldClassPicker'
 import { LEGACY_VALUE_FIELDS } from './migrateValueFields'
 
@@ -50,7 +51,16 @@ const ID_FIELD_TAGS = new Set([
   'img',
   'svg',
   'g',
+  'defs',
+  'symbol',
   'path',
+  'circle',
+  'ellipse',
+  'line',
+  'rect',
+  'polyline',
+  'polygon',
+  'use',
   'text',
 ])
 
@@ -82,14 +92,11 @@ export interface SerializedBlocklyWorkspace {
 export interface BuildWorkspaceStateOptions {
   startX?: number
   startY?: number
-  /** Distância horizontal entre as colunas dos 3 frames. */
+  /** Distância horizontal entre as colunas das Áreas do projeto. */
   colGap?: number
   /**
-   * Omite os frames 🧱 Estrutura (HTML) / 🎨 Aparência (CSS) quando estão VAZIOS.
-   * O ⚙️ Comportamento (JS) é sempre mantido. Usado no reverse-parse da Ponte: um
-   * projeto que só usa JS (ex.: Canvas 3D) não deve ver as áreas de HTML/CSS
-   * "ressuscitarem" vazias a cada ida-e-volta código→blocos. O seed de projeto
-   * novo (emptyFramesBlocksState) NÃO passa a opção → nasce com os 3 frames.
+   * Compatibilidade de chamada. Áreas vazias são sempre omitidas: a Bridge não
+   * ressuscita áreas que a criança não criou e projetos novos nascem vazios.
    */
   omitEmptyAuxFrames?: boolean
 }
@@ -101,10 +108,8 @@ export function buildWorkspaceStateFromIR(
   const normalized = normalizeSZIR(ir)
   const startX = options.startX ?? 32
   const startY = options.startY ?? 32
-  // Modelo CONTAINER (estilo MakeCode): cada categoria vira UM frame — 🧱 Estrutura
-  // (HTML) | 🎨 Aparência (CSS) | ⚙️ Comportamento (JS) — com os blocos da categoria
-  // DENTRO. É o inverso EXATO de buildIRFromWorkspace (que lê os filhos de cada
-  // frame), então blocos→IR→blocos é estável. Uma coluna por frame.
+  // Cada categoria vira uma Área do projeto: Estrutura, Aparência, Ao iniciar,
+  // Eventos ou Loop principal. É o inverso exato de buildIRFromWorkspace.
   const colGap = options.colGap ?? 420
 
   const htmlChildren = normalized.html.map(htmlNodeToBlock).filter(isBlock)
@@ -131,9 +136,8 @@ export function buildWorkspaceStateFromIR(
   recognizeThree = false
   audioLoaderVars = new Set()
 
-  // Um frame por categoria. Com `omitEmptyAuxFrames`, Estrutura/Aparência VAZIAS
-  // são puladas (o Comportamento fica sempre), e as colunas presentes se compactam
-  // à esquerda — sem buraco onde um frame omitido estaria.
+  // Uma área por categoria, somente quando tem conteúdo. A disposição canônica
+  // usa duas linhas: HTML/CSS acima e lifecycle abaixo.
   const frameSpecs: Array<[string, SerializedBlocklyBlock[], number, number]> = [
     [FRAME_STRUCTURE, htmlChildren, 0, 0],
     [FRAME_APPEARANCE, cssChildren, 1, 0],
@@ -158,10 +162,8 @@ export function buildWorkspaceStateFromIR(
 }
 
 /**
- * `blocksState` com os 3 frames VAZIOS — semeia o projeto novo (`createEmptyProject`)
- * já com 🧱 Estrutura / 🎨 Aparência / ⚙️ Comportamento na tela, como o `on start` do
- * MakeCode. (O `BlocksMode` faz short-circuit quando o IR está todo vazio, por isso o
- * projeto novo precisa do `blocksState`, não só do IR.)
+ * Estado Blockly vazio para projeto novo. Nenhuma Área do projeto é criada
+ * automaticamente; a criança escolhe as áreas necessárias na paleta.
  */
 export function emptyFramesBlocksState(): SerializedBlocklyWorkspace {
   return { blocks: { languageVersion: 0, blocks: [] } }
@@ -175,8 +177,12 @@ export { isBlocksStateEmpty } from './blocksStateShape'
 function htmlNodeToBlock(node: SZIR['html'][number]): SerializedBlocklyBlock {
   const built = htmlNodeToBlockInner(node)
   if (node.type === 'element' && built.type !== 'sz_adv_raw_html') {
-    // `class` agora é um campo visível em todos os blocos HTML.
-    if (node.attrs?.class) {
+    // Blocos SVG novos têm classes úteis como default. Ao reconstruir código,
+    // o campo vazio precisa ser explícito para o default de criação não alterar
+    // o programa importado. Nos demais blocos, mantemos a escrita só quando há classe.
+    if (built.type === 'sz_html_svg' || built.type.startsWith('sz_svg_')) {
+      built.fields = { ...(built.fields ?? {}), CLASS: node.attrs?.class ?? '' }
+    } else if (node.attrs?.class) {
       built.fields = { ...(built.fields ?? {}), CLASS: node.attrs.class }
     }
     const data = extraData(node)
@@ -325,9 +331,10 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
     return block(
       'sz_svg_circle',
       {
-        CX: node.attrs?.cx ?? '0',
-        CY: node.attrs?.cy ?? '0',
-        R: node.attrs?.r ?? '8',
+        ID: node.id ?? '',
+        CX: node.attrs?.cx ?? '',
+        CY: node.attrs?.cy ?? '',
+        R: node.attrs?.r ?? '',
         FILL: node.attrs?.fill ?? '',
       },
       {},
@@ -338,10 +345,11 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
     return block(
       'sz_svg_rect',
       {
-        X: node.attrs?.x ?? '0',
-        Y: node.attrs?.y ?? '0',
-        WIDTH: node.attrs?.width ?? '20',
-        HEIGHT: node.attrs?.height ?? '20',
+        ID: node.id ?? '',
+        X: node.attrs?.x ?? '',
+        Y: node.attrs?.y ?? '',
+        WIDTH: node.attrs?.width ?? '',
+        HEIGHT: node.attrs?.height ?? '',
         FILL: node.attrs?.fill ?? '',
       },
       {},
@@ -352,11 +360,12 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
     return block(
       'sz_svg_line',
       {
-        X1: node.attrs?.x1 ?? '0',
-        Y1: node.attrs?.y1 ?? '0',
-        X2: node.attrs?.x2 ?? '10',
-        Y2: node.attrs?.y2 ?? '10',
-        STROKE: node.attrs?.stroke ?? 'black',
+        ID: node.id ?? '',
+        X1: node.attrs?.x1 ?? '',
+        Y1: node.attrs?.y1 ?? '',
+        X2: node.attrs?.x2 ?? '',
+        Y2: node.attrs?.y2 ?? '',
+        STROKE: node.attrs?.stroke ?? '',
       },
       {},
       node.__id,
@@ -365,7 +374,11 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
   if (node.tag === 'use') {
     return block(
       'sz_svg_use',
-      { HREF: node.attrs?.href ?? '#minhaForma', TRANSFORM: node.attrs?.transform ?? '' },
+      {
+        ID: node.id ?? '',
+        HREF: node.attrs?.href ?? node.attrs?.['xlink:href'] ?? '',
+        TRANSFORM: node.attrs?.transform ?? '',
+      },
       {},
       node.__id,
     )
@@ -374,10 +387,11 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
     return block(
       'sz_svg_ellipse',
       {
-        CX: node.attrs?.cx ?? '0',
-        CY: node.attrs?.cy ?? '0',
-        RX: node.attrs?.rx ?? '20',
-        RY: node.attrs?.ry ?? '10',
+        ID: node.id ?? '',
+        CX: node.attrs?.cx ?? '',
+        CY: node.attrs?.cy ?? '',
+        RX: node.attrs?.rx ?? '',
+        RY: node.attrs?.ry ?? '',
         FILL: node.attrs?.fill ?? '',
       },
       {},
@@ -388,9 +402,10 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
     return block(
       'sz_svg_polyline',
       {
+        ID: node.id ?? '',
         POINTS: node.attrs?.points ?? '',
-        FILL: node.attrs?.fill ?? 'none',
-        STROKE: node.attrs?.stroke ?? 'black',
+        FILL: node.attrs?.fill ?? '',
+        STROKE: node.attrs?.stroke ?? '',
       },
       {},
       node.__id,
@@ -400,6 +415,7 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
     return block(
       'sz_svg_polygon',
       {
+        ID: node.id ?? '',
         POINTS: node.attrs?.points ?? '',
         FILL: node.attrs?.fill ?? '',
         STROKE: node.attrs?.stroke ?? '',
@@ -413,8 +429,8 @@ function htmlNodeToBlockInner(node: SZIR['html'][number]): SerializedBlocklyBloc
       'sz_svg_text',
       {
         ID: node.id ?? '',
-        X: node.attrs?.x ?? '0',
-        Y: node.attrs?.y ?? '0',
+        X: node.attrs?.x ?? '',
+        Y: node.attrs?.y ?? '',
         TEXT: node.text ?? '',
         FILL: node.attrs?.fill ?? '',
       },
@@ -1212,6 +1228,7 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       return rawJSBlock(stmt)
     }
     case 'getProperty':
+      if (!isGuidedDomProperty(stmt.property)) return rawJSBlock(stmt)
       return block(
         'sz_js_get_property',
         {
@@ -1237,6 +1254,7 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       )
     case 'setProperty': {
       const kind = stmt.targetKind ?? 'id'
+      if (!isGuidedDomProperty(stmt.property)) return rawJSBlock(stmt)
       if (stmt.value.type === 'now')
         return block(
           'sz_js_set_property_calc',
@@ -1292,7 +1310,9 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       )
     }
     case 'setAttribute': {
-      if (stmt.targetKind === 'this') return rawJSBlock(stmt)
+      if (stmt.targetKind === 'this' || !isGuidedDomAttributeName(stmt.name)) {
+        return rawJSBlock(stmt)
+      }
       const valueBlock = exprToValueBlock(stmt.value)
       if (!valueBlock) return rawJSBlock(stmt)
       return block(
@@ -1672,7 +1692,7 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         const match = exprToValueBlock(c.match)
         if (!match) return rawJSBlock(stmt)
         caseBlocks.push(
-          block('sz_js_case', {}, { DO: statementsToBlocks(c.body) }, undefined, { MATCH: match }),
+          block('sz_js_case', {}, { DO: statementsToBlocks(c.body) }, c.__id, { MATCH: match }),
         )
       }
       return block(
@@ -5922,6 +5942,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block('sz_w3d_water', { COLOR: stmt.color }, {}, stmt.__id, { Y: y })
     }
+    case 'w3d:skyPhoto':
+      return block('sz_w3d_sky_photo', { ASSET: stmt.asset }, {}, stmt.__id)
     case 'w3d:start':
       return block('sz_w3d_start', {}, {}, stmt.__id)
     case 'w3d:car':

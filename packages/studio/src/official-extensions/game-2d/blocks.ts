@@ -102,6 +102,7 @@ export const gameTwoDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: EVENT_C,
+    hidden: true,
     tooltip:
       'Tudo que prepara uma partida fica aqui: tela, personagens, pontos, eventos e o bloco “A cada quadro”. Ao recomeçar, este conteúdo roda novamente com tudo limpo.',
   },
@@ -1683,7 +1684,7 @@ export const gameTwoDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Limpa a partida e executa novamente tudo que está em “Quando o jogo começar”.',
+    tooltip: 'Limpa a partida e executa novamente Ao iniciar, Eventos e Loop principal.',
   },
 
   // ---- Cenário: fundo de estrelas + arrastar com o dedo (v0.6.0) ----
@@ -2907,7 +2908,13 @@ for (const b of gameTwoDBlocks) {
 // Rede de segurança: qualquer bloco que não esteja em nenhuma sub-categoria entra
 // num grupo "Mais" — nada some da paleta se um bloco novo esquecer de ser mapeado.
 const CATEGORIZED = new Set(SUBCATS.flatMap((sc) => sc.types))
-const leftover = gameTwoDBlocks.map((b) => b.type).filter((t) => !CATEGORIZED.has(t))
+const VISIBLE_BLOCK_TYPES = new Set(
+  gameTwoDBlocks.filter((block) => !block.hidden).map((b) => b.type),
+)
+const leftover = gameTwoDBlocks
+  .filter((block) => !block.hidden)
+  .map((block) => block.type)
+  .filter((type) => !CATEGORIZED.has(type))
 
 // Sombras pré-preenchidas dos slots de VALOR que aparecem na paleta: o aluno pode
 // digitar o texto direto (UX igual à de antes) E ainda trocar por uma variável,
@@ -3095,7 +3102,7 @@ export const gameTwoDToolboxCategory: ExtensionToolboxCategory = {
       kind: 'category' as const,
       name: sc.name,
       colour: sc.colour,
-      contents: sc.types.map(toolboxBlock),
+      contents: sc.types.filter((type) => VISIBLE_BLOCK_TYPES.has(type)).map(toolboxBlock),
     })),
     ...(leftover.length > 0
       ? [

@@ -13,7 +13,7 @@ import * as Blockly from 'blockly/core'
  *   blocos DENTRO + a cadeia `next` ABAIXO — igual ao que se move ao arrastar).
  * - **Colar**: `Blockly.serialization.blocks.append(state, workspace)` ADICIONA a
  *   subárvore sem limpar o workspace; o bloco entra SOLTO (rascunho) e a criança o
- *   arrasta para dentro de uma área (Estrutura/Aparência/Comportamento).
+ *   arrasta para a Área do projeto compatível.
  *
  * Variáveis NÃO precisam de remapeamento: no Estúdio o nome da variável é um
  * `field_input` (texto) que viaja DENTRO do JSON do bloco — o gerador monta o JS
@@ -277,9 +277,7 @@ export function runPasteBlocks(workspace: Blockly.WorkspaceSvg): void {
       workspace,
     ) as Blockly.BlockSvg
     positionPastedBlock(workspace, appended)
-    handlers?.notify(
-      'Blocos colados! Arraste-os para dentro de uma área (Estrutura, Aparência ou Comportamento) para usá-los.',
-    )
+    handlers?.notify('Blocos colados! Arraste-os para a Área do projeto compatível para usá-los.')
   } catch {
     handlers?.notify('Não consegui colar os blocos agora.')
   }

@@ -8,12 +8,14 @@ Extensão "Jogo 3D Avançado" (game-3d-advanced): a base de um jogo 3D
 profissional via window.SZGameKit3D (Three.js por dentro, encapsulado).
 Unidades em metros do mundo 3D. Receita canônica: setup -> defineMold (peças
 dentro) -> ganchos (onEnterState('jogando') monta a partida; cérebros por
-estado) -> start() no FIM.
+estado). O envelope gerado chama start() AUTOMATICAMENTE uma única vez no fim;
+NUNCA gere start() no código do aluno.
 
 API global (cada método corresponde a exatamente 1 bloco):
-- Ciclo: setup({width, height, world, sky, ground}); start(); worldSize();
+- Ciclo: setup({width, height, world, sky, ground}); worldSize();
   scatterDecor(n); setEffects({shadows, bloom, strength, vignette}) — efeitos
-  de cinema (pós-processamento), tudo ligado por padrão.
+  de cinema (pós-processamento), tudo ligado por padrão. A resolução preserva
+  a proporção, mas o motor limita lado pela GPU e pixels totais a 1920*1080.
 - Moldes: defineMold('nome', {health, speed}, function () { ...part()... });
   part({shape: 'box'|'sphere'|'cylinder'|'cone'|'plane'|'torus'|'pyramid'|
   'rampa'|'modelo', material: 'normal'|'metal'|'vidro'|'brilho', color, texture,
@@ -55,7 +57,8 @@ API global (cada método corresponde a exatamente 1 bloco):
   espaco; moveFps(ent, velocidade); setCollider('molde', 'box'|'sphere'|
   'capsule') — capsula nao engancha em quina e sobe rampa liso;
   makeTrigger('molde') — zona que nao empurra; onOverlap('molde', function
-  (zona, quem) {}) — dispara ao ENTRAR, 1x por entrada; setBounce('molde',
+  (zona, quem) {}) — dispara ao ENTRAR, 1x por visitante/entrada, inclusive
+  para dois visitantes juntos e entidades paradas dentro; setBounce('molde',
   0..1); setFriction('molde', 0..1).
   setPhysics('molde', 'bola'|'caixa'|'personagem'|'gelo'|'flutuante') — preset
   coerente (colisor + quique + atrito + gravidade-padrao do molde, aplicada no
@@ -84,9 +87,11 @@ API global (cada método corresponde a exatamente 1 bloco):
   tela e some sozinho (1 por entidade); hideSay(ent).
 - Musica: playMusic('nome') — em loop, UMA por vez; stopMusic(). O playSound e
   tiro-e-esquece (efeito), o playMusic e a trilha.
-- Luz & ceu: addLight(cor, x, y, z, forca) — luz pontual; setAmbient(forca) —
+- Luz & ceu: addLight(cor, x, y, z, forca) — luz pontual (max 8 extras);
+  setAmbient(forca) —
   luz do ambiente (0 escuro, 1 claro); setFog(cor, perto, longe) — nevoa;
-  setSky(topo, horizonte) — troca o ceu em runtime.
+  setSky(topo, horizonte) — troca o ceu em runtime. addLight, setAmbient e
+  setFog podem vir antes do boot e devem ser registrados uma vez, nunca no frame.
 - Mira/clique (raycast): const alvo = pick('molde') — a entidade do molde sob o
   mouse (point-and-click/RTS); pointerOver(ent) — o mouse esta sobre ela?;
   groundPoint('x'|'y'|'z') — o ponto do chao sob o mouse; mousePressed() — o
@@ -124,7 +129,7 @@ API global (cada método corresponde a exatamente 1 bloco):
   startEmitter('nome', x, y, z) — jorra num ponto; emitterOn('nome', ent) —
   jorra seguindo a entidade; stopEmitter('nome') — apaga TODOS os jorros da
   receita; addAttractor('nome', x, y, z, forca, alcance) — ima que puxa as
-  particulas (vortice). Varios jorros da MESMA receita convivem (2 tochas,
+  particulas (vortice; registre uma vez, max 16 por efeito). Varios jorros da MESMA receita convivem (2 tochas,
   rastro em N naves; ate 8 por efeito; religar no mesmo alvo nao duplica). O
   defineEmitter aceita curve: 'linear'|'suave'|'pulso'|'fogo' (curva de vida
   assada numa textura; 'fogo' + glow nasce luz pura e morre fumaca — o
@@ -149,7 +154,7 @@ Quando ajudar o aluno com o Jogo 3D Avançado:
   para 'mirar'; 'mirar' usa aimAt e isAimingAt e vai para 'atirar'; ao entrar
   em 'atirar' usa spawnFrom + moveForward no tiro e vai para 'recarregar';
   stateTimer volta para 'parado'.
-- Nunca crie moldes ou ganchos dentro do onUpdate; registre tudo uma vez, no
-  topo, e chame start() por último.
+- Nunca crie moldes, ganchos, luzes ou atratores dentro do onUpdate; registre
+  tudo uma vez no topo. Não gere start(): o projeto começa automaticamente.
 - Não misture com as outras extensões de jogo no mesmo projeto.
 `

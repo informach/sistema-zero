@@ -45,8 +45,9 @@ export const gameKitBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    hidden: true,
     tooltip:
-      'Liga o jogo: mostra a tela de carregando, espera as imagens, abre o menu e começa o laço de quadros. Use uma vez, DEPOIS de preparar tudo (ganchos, personagens, telas).',
+      'Bloco legado mantido para abrir projetos antigos. O Estúdio agora carrega as imagens e liga o jogo automaticamente.',
   },
   {
     type: 'sz_gk_game_width',
@@ -205,8 +206,9 @@ export const gameKitBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    hidden: true,
     tooltip:
-      'Lugar certo para zerar pontos e criar personagens. Não roda ao voltar de loja, inventário, pausa ou batalha.',
+      'Bloco legado mantido para projetos antigos. Em projetos novos, prepare cada partida na área “⚙️ Ao iniciar”.',
   },
   {
     type: 'sz_gk_on_enter_state',
@@ -219,7 +221,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Roda toda vez que o jogo realmente entrar nesse estado. Para preparar uma partida nova, use “Quando começar ou recomeçar uma partida”.',
+      'Roda toda vez que o jogo realmente entrar nesse estado. Para preparar uma partida nova, use a área “⚙️ Ao iniciar”.',
   },
   {
     type: 'sz_gk_state_is',
@@ -471,7 +473,7 @@ export const gameKitBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Troca a tecla que alterna pausa (o padrão é Esc). Use antes de começar o jogo.',
+    tooltip: 'Troca a tecla que alterna pausa (o padrão é Esc). Use em “Ao iniciar”.',
   },
 
   // ---- 📢 Avisos (event bus) ----
@@ -1857,7 +1859,7 @@ export const gameKitBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Prepara um som que você importou (em "Imagens e sons"). Dê um nome; é ele que você usa em "Tocar o som". Use no comecinho, antes de "Começar o jogo".',
+      'Prepara um som que você importou (em "Imagens e sons"). Dê um nome; é ele que você usa em "Tocar o som". Use em “Ao iniciar”.',
   },
   {
     type: 'sz_gk_play_sound',
@@ -5331,7 +5333,13 @@ for (const b of gameKitBlocks) {
 
 // Rede de segurança: bloco fora de qualquer sub-categoria cai num grupo "Mais".
 const CATEGORIZED = new Set(SUBCATS.flatMap((sc) => sc.types))
-const leftover = gameKitBlocks.map((b) => b.type).filter((t) => !CATEGORIZED.has(t))
+const VISIBLE_BLOCK_TYPES = new Set(
+  gameKitBlocks.filter((block) => !block.hidden).map((b) => b.type),
+)
+const leftover = gameKitBlocks
+  .filter((block) => !block.hidden)
+  .map((block) => block.type)
+  .filter((type) => !CATEGORIZED.has(type))
 
 // Sombras pré-preenchidas dos soquetes de VALOR que aparecem na paleta.
 const txtShadow = (text: string) => ({ shadow: { type: 'sz_val_text', fields: { TEXT: text } } })
@@ -5635,7 +5643,7 @@ for (const sc of SUBCATS) {
     kind: 'category',
     name: sc.name,
     colour: sc.colour,
-    contents: sc.types.map(toolboxBlock),
+    contents: sc.types.filter((type) => VISIBLE_BLOCK_TYPES.has(type)).map(toolboxBlock),
   }
   if (!sc.kit) {
     topLevelCats.push(child)

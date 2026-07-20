@@ -59,4 +59,11 @@ describe('BLOCK_CATALOG (picker da lista de blocos da aula)', () => {
     expect(labelOf('sz_val_method_on')).not.toBe(labelOf('sz_js_method_on'))
     expect(labelOf('sz_js_call_method')).not.toBe(labelOf('sz_val_call_method'))
   })
+
+  it('explica os blocos SVG sem expor uma lista de atributos', () => {
+    const labelOf = (type: string) => BLOCK_CATALOG.find((entry) => entry.type === type)?.label
+    expect(labelOf('sz_html_svg')).toBe('Criar uma área de desenho vetorial')
+    expect(labelOf('sz_svg_circle')).toBe('Desenhar um círculo')
+    expect(labelOf('sz_svg_use')).toBe('Reutilizar uma forma pelo nome')
+  })
 })

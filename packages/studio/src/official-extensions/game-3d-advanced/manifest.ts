@@ -11,7 +11,7 @@ import {
 export const gameKit3DManifest: ExtensionManifest = {
   id: 'game-3d-advanced',
   name: 'Jogo 3D Avançado',
-  version: '0.7.0',
+  version: '0.8.0',
   description:
     'A base de um jogo 3D profissional, portada de um curso de engine — um SANDBOX 3D completo. Entidades com máquina de estados que ANIMA o boneco .glb sozinha a cada estado; física por TIPO (bola quica, personagem não, gelo escorrega) com pulo, rampas e plataformas; peças, modelos, luz e névoa; câmera que segue/orbita/1ª pessoa com girar, zoom e tremor, e o WASD sempre relativo a ela; partículas; enxames com pool; vizinhança por grade; combate, fala, cronômetro, sorteio semeado, HUD e música.',
   category: 'games',
@@ -64,7 +64,8 @@ O que o motor já faz por você:
    condição de vitória.
 5. **Os cérebros** — "Enquanto ela do molde X estiver no estado Y" para cada
    estado de cada molde.
-6. **Começar o jogo** — uma vez, NO FIM.
+6. Pronto: o motor **começa automaticamente**, uma única vez, depois que todos
+   os moldes, eventos e telas foram registrados.
 
 ### A máquina de estados (a lição do curso)
 
@@ -134,8 +135,9 @@ O motor de entidade tem física de verdade — feita à mão, sem biblioteca:
   velocidade" já CARREGA quem está em cima dele.
 - **Fazer o molde … ser uma zona** cria uma área que não empurra ninguém, mas
   avisa: **Quando alguém encostar em … do molde …** roda na hora em que a
-  entidade ENTRA (uma vez por entrada, não a cada quadro). É a moeda, a porta,
-  a armadilha, a linha de chegada.
+  entidade ENTRA (uma vez por visitante e por entrada, não a cada quadro). Dois
+  visitantes podem entrar juntos, e até uma entidade parada que nasceu dentro
+  da zona é detectada. É a moeda, a porta, a armadilha, a linha de chegada.
 - ⭐ O "quem" da zona pode ser QUALQUER corpo que entrou — o herói, uma bola,
   um tiro perdido. Pergunte **"… é do molde …?"** antes de contar o ponto: é o
   filtro de alvo dos jogos de verdade (sem ele, uma bola caindo através de
@@ -152,13 +154,14 @@ O motor de entidade tem física de verdade — feita à mão, sem biblioteca:
   **plano, rosca, pirâmide, rampa**), com **material** (fosco, metal, vidro,
   brilho — o "brilho" acende o bloom) e uma **textura** (uma imagem do projeto
   estampada na peça).
-- **Modelo importado**: escolha a forma "modelo importado" e escreva o nome de
-  um arquivo **.glb** que você trouxe para o projeto — a peça vira o modelo 3D
+- **Modelo importado**: escolha a forma "modelo importado" e selecione um
+  arquivo **.glb** do projeto — a peça vira o modelo 3D
   de verdade (feito no Blender, baixado de um site de modelos…). A caixa que
   colide continua sendo o tamanho que você deu, então o jogo não muda de
   comportamento. **Céu de foto**: um arquivo **.hdr** vira o céu 360° E ilumina
   a cena inteira (é o que faz o metal refletir o ambiente).
-- **Pôr uma luz** acende uma luz colorida num ponto (tocha, fogueira);
+- **Pôr uma luz** acende uma luz colorida num ponto (tocha, fogueira). Declare
+  no começo; o motor aceita até 8 luzes extras para proteger o desempenho;
   **Luz do ambiente** deixa o mundo mais claro ou escuro (modo noturno/caverna);
   **Névoa** faz o longe sumir numa cor (mistério); **Trocar o céu** muda o
   degradê em runtime (dia → pôr do sol → noite).
@@ -220,7 +223,8 @@ Escolha a câmera — **seguir** alguém, **girar em volta** (órbita, arrastáv
   transparente, ordenada por profundidade). "Ligar o jorro" prende num ponto
   ou **em cima de uma entidade** (ele acompanha); "Desligar" para de jorrar.
 - **Atratores** ("Puxar as faíscas … para") criam um ímã que suga as
-  partículas para um ponto — vórtice, buraco negro, vento. Pode pôr vários.
+  partículas para um ponto — vórtice, buraco negro, vento. Registre uma vez,
+  fora do quadro; cada efeito aceita até 16.
 - **Vários jorros da MESMA receita convivem** (duas tochas na parede, rastro em
   cada nave — até 8 por efeito): religar no mesmo lugar não duplica, e
   "Desligar o jorro" apaga todos os da receita. Para um jorro que ANDA, prenda
@@ -276,6 +280,9 @@ obedece à semente.
 
 - Unidades são METROS do mundo 3D: um boneco tem ~1–2 de altura, velocidades
   boas ficam entre 3 e 18 por segundo, o mundo padrão tem 80 de lado.
+- A resolução interna mantém a proporção escolhida, mas é reduzida
+  automaticamente se ultrapassar o limite da GPU ou o orçamento de 1920×1080
+  pixels. O canvas continua ocupando o espaço disponível na tela.
 - O jogo pausa com Esc (troque com "Usar a tecla … para pausar").
 - Entrar em "jogando" fora da pausa RECOMEÇA a arena (recolhe todo mundo) —
   por isso a partida se monta no "quando entrar no estado jogando".

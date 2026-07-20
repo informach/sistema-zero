@@ -144,4 +144,26 @@ describe('gk — a doc não pode citar categoria que não existe', () => {
       emDoisLugares: [...conta.entries()].filter(([, n]) => n > 1).map(([t]) => t),
     }).toEqual({ foraDaToolbox: [], emDoisLugares: [] })
   })
+
+  it('tooltips visíveis não ensinam blocos legados ocultos', () => {
+    const ocultos = gameKitBlocks
+      .filter((block) => block.hidden)
+      .map((block) => block.message0)
+      .filter((label): label is string => typeof label === 'string')
+    const tooltipsVisíveis = gameKitBlocks
+      .filter((block) => !block.hidden)
+      .map((block) => block.tooltip)
+      .filter((tooltip): tooltip is string => typeof tooltip === 'string')
+
+    expect(
+      tooltipsVisíveis.flatMap((tooltip) => ocultos.filter((label) => tooltip.includes(label))),
+    ).toEqual([])
+  })
+
+  it('a seção de estados ensina o lifecycle automático atual', () => {
+    const docs = gameKitManifest.docs ?? ''
+
+    expect(docs).not.toContain('- **Quando começar ou recomeçar uma partida**')
+    expect(docs).toContain('Em **⚙️ Ao iniciar**')
+  })
 })

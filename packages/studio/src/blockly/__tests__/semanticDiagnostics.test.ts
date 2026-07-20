@@ -80,4 +80,52 @@ describe('diagnósticos semânticos nos blocos', () => {
     expect(valid).toBe(true)
     expect(warnings.at(-1)).toContain('#fantasma')
   })
+
+  it('avisa quando uma reutilização SVG aponta para um id inexistente', () => {
+    const { workspace, warnings } = warningWorkspace('uso-1')
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [
+        {
+          type: 'element',
+          tag: 'svg',
+          children: [
+            { type: 'element', tag: 'circle', id: 'bola' },
+            { type: 'element', tag: 'use', attrs: { href: '#estrela' }, __id: 'uso-1' },
+          ],
+        },
+      ],
+      css: [],
+      js: [],
+      extensions: [],
+    })
+
+    expect(valid).toBe(true)
+    expect(warnings.at(-1)).toContain('#estrela')
+  })
+
+  it('avisa sobre geometria SVG inválida sem apagar o desenho', () => {
+    const { workspace, warnings } = warningWorkspace('forma-1')
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [
+        {
+          type: 'element',
+          tag: 'svg',
+          children: [
+            {
+              type: 'element',
+              tag: 'polygon',
+              attrs: { points: 'isto não são pontos' },
+              __id: 'forma-1',
+            },
+          ],
+        },
+      ],
+      css: [],
+      js: [],
+      extensions: [],
+    })
+
+    expect(valid).toBe(true)
+    expect(warnings.at(-1)).toContain('pontos')
+  })
 })

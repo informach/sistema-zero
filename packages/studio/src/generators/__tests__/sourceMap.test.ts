@@ -119,6 +119,40 @@ describe('source map (top-level)', () => {
     })
   })
 
+  it('mapeia cada bloco de caso da escolha para suas linhas', () => {
+    const { files, sourceMap } = generateProjectFilesWithMap({
+      projectName: 'Test',
+      ir: {
+        html: [],
+        css: [],
+        js: [
+          {
+            __id: 'escolha',
+            type: 'switch',
+            subject: { type: 'var', name: 'direcao' },
+            cases: [
+              {
+                __id: 'caso-cima',
+                match: { type: 'str', value: 'cima' },
+                body: [
+                  { __id: 'acao', type: 'consoleLog', value: { type: 'str', value: 'subiu' } },
+                ],
+              },
+            ],
+          },
+        ],
+        extensions: [],
+      },
+    })
+
+    const entry = sourceMap['caso-cima']
+    expect(entry).toMatchObject({ file: 'script.js' })
+    const lines = files['script.js'].split('\n')
+    expect(lines[(entry?.startLine ?? 0) - 1]).toContain('case "cima"')
+    expect(lines[(entry?.endLine ?? 0) - 1]?.trim()).toBe('}')
+    expect(sourceMap.acao?.startLine).toBe((entry?.startLine ?? 0) + 1)
+  })
+
   it('mapeia HTML top-level no index.html', () => {
     const { files, sourceMap } = generateProjectFilesWithMap({
       projectName: 'Test',

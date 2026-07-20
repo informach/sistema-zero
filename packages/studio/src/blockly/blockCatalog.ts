@@ -39,6 +39,23 @@ interface BlockLike {
  * não muda — é só o que o admin LÊ na lista). Cobre os 4 pares achados na auditoria de rótulos.
  */
 const LABEL_OVERRIDES: Record<string, string> = {
+  // SVG — o texto visual inclui coordenadas/atributos; o professor precisa ver
+  // a intenção pedagógica, não uma lista como “id largura altura viewBox”.
+  sz_html_svg: 'Criar uma área de desenho vetorial',
+  sz_svg_title: 'Dar um nome acessível ao desenho',
+  sz_svg_desc: 'Descrever o desenho para leitores de tela',
+  sz_svg_defs: 'Guardar formas para reutilizar',
+  sz_svg_symbol: 'Criar uma peça SVG reutilizável',
+  sz_svg_group: 'Agrupar formas para transformar juntas',
+  sz_svg_use: 'Reutilizar uma forma pelo nome',
+  sz_svg_circle: 'Desenhar um círculo',
+  sz_svg_ellipse: 'Desenhar uma elipse',
+  sz_svg_rect: 'Desenhar um retângulo',
+  sz_svg_line: 'Desenhar uma linha',
+  sz_svg_polyline: 'Desenhar uma linha com vários pontos',
+  sz_svg_polygon: 'Desenhar uma forma com vários pontos',
+  sz_svg_path: 'Desenhar um caminho livre',
+  sz_svg_text: 'Escrever no desenho',
   // CSS — mensagens visuais perdem os campos no catálogo; o professor precisa
   // enxergar a intenção completa, não fragmentos como apenas “:”.
   sz_css_rule: 'Regra de estilo para uma parte da página',

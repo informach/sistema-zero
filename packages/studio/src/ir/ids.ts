@@ -58,7 +58,8 @@ function assignHTMLId(node: HTMLNode, id: string): HTMLNode {
 
 /**
  * Percorre um nó de IR de JS (statement ou expressão) e atribui `__id` a ele e a
- * todos os descendentes que forem nós (objetos com `type`), em qualquer nível.
+ * todos os descendentes que forem nós (objetos com `type`) ou casos de uma
+ * escolha (objetos com `match` + `body`), em qualquer nível.
  * Genérico: cobre todas as variantes atuais e futuras sem enumerar cada uma.
  * Muta o nó recebido — por isso `assignStableIdsToIR` clona antes. Preserva
  * `__id` já existente.
@@ -66,7 +67,8 @@ function assignHTMLId(node: HTMLNode, id: string): HTMLNode {
 function assignNodeIds(node: unknown, id: string): void {
   if (node === null || typeof node !== 'object') return
   const obj = node as Record<string, unknown>
-  if (typeof obj.type === 'string' && obj.__id === undefined) obj.__id = id
+  const isSwitchCase = Object.hasOwn(obj, 'match') && Array.isArray(obj.body)
+  if ((typeof obj.type === 'string' || isSwitchCase) && obj.__id === undefined) obj.__id = id
   for (const key of Object.keys(obj)) {
     if (key === '__id' || key === 'type') continue
     const value = obj[key]

@@ -13,7 +13,7 @@ import {
 import { getSuperName } from './blocks/extendsMutator'
 import { getParamNames } from './blocks/paramsMutator'
 
-/** Tipos dos 3 blocos-frame (containers estilo MakeCode). */
+/** Tipos das cinco Áreas do projeto e da moldura legada de migração. */
 export {
   FRAME_APPEARANCE,
   FRAME_BEHAVIOR_LEGACY as FRAME_BEHAVIOR,
@@ -24,14 +24,13 @@ export {
 }
 
 /**
- * Percorre o workspace e devolve a SZ-IR — modelo CONTAINER (estilo MakeCode `on
- * start`): SÓ o que está DENTRO de um frame gera. Pega os filhos da 🧱 Estrutura
- * (→ ir.html), da 🎨 Aparência (→ ir.css) e do ⚙️ Comportamento (→ ir.js, na ORDEM
- * da pilha). **Bloco solto fora dos frames é RASCUNHO** (ignorado pela geração).
+ * Percorre o workspace e devolve a SZ-IR V2. Só gera o que está dentro de
+ * Estrutura, Aparência, Ao iniciar, Eventos ou Loop principal. **Bloco solto é
+ * rascunho** e fica fora da geração.
  * A inclusão é por CONTÊINER, não por posição/ordem no canvas.
  *
- * Defensivo: se houver frames duplicados (a trava de "1 por projeto" é da Fase 3),
- * usa o PRIMEIRO de cada tipo, de forma determinística.
+ * Defensivo: se um estado importado contiver áreas duplicadas, usa a primeira de
+ * cada tipo. A interface preserva o conteúdo das demais como rascunho.
  *
  * Blocos não-reconhecidos DENTRO de um frame viram "modo avançado" (nada se perde).
  */
@@ -166,17 +165,26 @@ function visitStack(block: Blockly.Block, ir: SZIR, seen: Set<string>): void {
  * (ex.: `class`) — contraparte de `extraData` em workspaceState. Garante que
  * atributos não modelados por campos sobrevivam ao round-trip blocos→código.
  */
+function readBlockData(block: Blockly.Block): Record<string, string> {
+  const raw = (block as unknown as { data?: string | null }).data
+  if (!raw) return {}
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    return {}
+  }
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return {}
+  return Object.fromEntries(
+    Object.entries(parsed).filter(
+      (entry): entry is [string, string] => typeof entry[1] === 'string',
+    ),
+  )
+}
+
 function mergeBlockData(block: Blockly.Block, node: HTMLNode): void {
   if (node.type !== 'element') return
-  const raw = (block as unknown as { data?: string | null }).data
-  if (!raw) return
-  let extra: Record<string, string>
-  try {
-    extra = JSON.parse(raw) as Record<string, string>
-  } catch {
-    return
-  }
-  if (typeof extra !== 'object' || extra === null) return
+  const extra = readBlockData(block)
   const { id, ...rest } = extra
   if (id && !node.id) node.id = id
   if (Object.keys(rest).length > 0) {
@@ -298,8 +306,8 @@ function getSwitchCases(
   block: Blockly.Block,
   name: string,
   seen: Set<string>,
-): Array<{ match: JSExpr; body: JSStatement[] }> {
-  const out: Array<{ match: JSExpr; body: JSStatement[] }> = []
+): Array<{ __id?: string; match: JSExpr; body: JSStatement[] }> {
+  const out: Array<{ __id?: string; match: JSExpr; body: JSStatement[] }> = []
   let cur: Blockly.Block | null = block.getInputTargetBlock(name)
   while (cur) {
     if (cur.isInsertionMarker()) {
@@ -308,6 +316,7 @@ function getSwitchCases(
     }
     if (cur.type === 'sz_js_case') {
       out.push({
+        __id: cur.id,
         match: exprInput(cur, 'MATCH', { type: 'str', value: '' }),
         body: getStatementChildren(cur, 'DO', seen),
       })
@@ -1378,7 +1387,7 @@ function htmlText(tag: HTMLTag, block: Blockly.Block, seen: Set<string>): Routed
 
 function catalogHTMLBlockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
   const descriptor = htmlElementForBlock(block.type)
-  if (!descriptor?.blockType.startsWith('sz_html_')) return null
+  if (!descriptor) return null
   if (descriptor.parserShape === 'inline-text') return htmlText(descriptor.tag, block, seen)
   if (
     descriptor.parserShape === 'container' &&
@@ -1388,6 +1397,36 @@ function catalogHTMLBlockToIR(block: Blockly.Block, seen: Set<string>): RoutedNo
     return htmlContainer(descriptor.tag, block, seen)
   }
   return null
+}
+
+function svgAttributes(
+  block: Blockly.Block,
+  fields: ReadonlyArray<readonly [attribute: string, field: string]>,
+): Record<string, string> {
+  const attrs: Record<string, string> = {}
+  for (const [attribute, field] of fields) {
+    const value = f(block, field)
+    if (value) attrs[attribute] = value
+  }
+  return attrs
+}
+
+function svgLeaf(
+  tag: HTMLTag,
+  block: Blockly.Block,
+  fields: ReadonlyArray<readonly [attribute: string, field: string]>,
+): RoutedNode {
+  const id = f(block, 'ID')
+  const attrs = svgAttributes(block, fields)
+  return {
+    kind: 'html',
+    value: {
+      type: 'element',
+      tag,
+      ...(id ? { id } : {}),
+      ...(Object.keys(attrs).length > 0 ? { attrs } : {}),
+    },
+  }
 }
 
 /** Presets de `box-shadow` por intensidade. Compartilhado com o round-trip. */
@@ -1532,120 +1571,87 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       }
     }
     case 'sz_svg_path': {
-      const id = f(block, 'ID')
-      const attrs: Record<string, string> = {}
-      for (const [k, field] of [
+      return svgLeaf('path', block, [
         ['d', 'D'],
         ['fill', 'FILL'],
         ['stroke', 'STROKE'],
         ['transform', 'TRANSFORM'],
-      ] as const) {
-        const v = f(block, field)
-        if (v) attrs[k] = v
-      }
-      return {
-        kind: 'html',
-        value: { type: 'element', tag: 'path', ...(id ? { id } : {}), attrs },
-      }
+      ])
     }
     case 'sz_svg_circle': {
-      const attrs: Record<string, string> = {}
-      for (const [k, field] of [
+      return svgLeaf('circle', block, [
         ['cx', 'CX'],
         ['cy', 'CY'],
         ['r', 'R'],
         ['fill', 'FILL'],
-      ] as const) {
-        const v = f(block, field)
-        if (v) attrs[k] = v
-      }
-      return { kind: 'html', value: { type: 'element', tag: 'circle', attrs } }
+      ])
     }
     case 'sz_svg_rect': {
-      const attrs: Record<string, string> = {}
-      for (const [k, field] of [
+      return svgLeaf('rect', block, [
         ['x', 'X'],
         ['y', 'Y'],
         ['width', 'WIDTH'],
         ['height', 'HEIGHT'],
         ['fill', 'FILL'],
-      ] as const) {
-        const v = f(block, field)
-        if (v) attrs[k] = v
-      }
-      return { kind: 'html', value: { type: 'element', tag: 'rect', attrs } }
+      ])
     }
     case 'sz_svg_line': {
-      const attrs: Record<string, string> = {}
-      for (const [k, field] of [
+      return svgLeaf('line', block, [
         ['x1', 'X1'],
         ['y1', 'Y1'],
         ['x2', 'X2'],
         ['y2', 'Y2'],
         ['stroke', 'STROKE'],
-      ] as const) {
-        const v = f(block, field)
-        if (v) attrs[k] = v
-      }
-      return { kind: 'html', value: { type: 'element', tag: 'line', attrs } }
+      ])
     }
     case 'sz_svg_use': {
       const attrs: Record<string, string> = {}
       const href = f(block, 'HREF')
-      if (href) attrs.href = href
+      const data = readBlockData(block)
+      if (href) attrs['xlink:href' in data ? 'xlink:href' : 'href'] = href
       const tr = f(block, 'TRANSFORM')
       if (tr) attrs.transform = tr
-      return { kind: 'html', value: { type: 'element', tag: 'use', attrs } }
+      const id = f(block, 'ID')
+      return {
+        kind: 'html',
+        value: {
+          type: 'element',
+          tag: 'use',
+          ...(id ? { id } : {}),
+          ...(Object.keys(attrs).length > 0 ? { attrs } : {}),
+        },
+      }
     }
     case 'sz_svg_ellipse': {
-      const attrs: Record<string, string> = {}
-      for (const [k, field] of [
+      return svgLeaf('ellipse', block, [
         ['cx', 'CX'],
         ['cy', 'CY'],
         ['rx', 'RX'],
         ['ry', 'RY'],
         ['fill', 'FILL'],
-      ] as const) {
-        const v = f(block, field)
-        if (v) attrs[k] = v
-      }
-      return { kind: 'html', value: { type: 'element', tag: 'ellipse', attrs } }
+      ])
     }
     case 'sz_svg_polyline': {
-      const attrs: Record<string, string> = {}
-      for (const [k, field] of [
+      return svgLeaf('polyline', block, [
         ['points', 'POINTS'],
         ['fill', 'FILL'],
         ['stroke', 'STROKE'],
-      ] as const) {
-        const v = f(block, field)
-        if (v) attrs[k] = v
-      }
-      return { kind: 'html', value: { type: 'element', tag: 'polyline', attrs } }
+      ])
     }
     case 'sz_svg_polygon': {
-      const attrs: Record<string, string> = {}
-      for (const [k, field] of [
+      return svgLeaf('polygon', block, [
         ['points', 'POINTS'],
         ['fill', 'FILL'],
         ['stroke', 'STROKE'],
-      ] as const) {
-        const v = f(block, field)
-        if (v) attrs[k] = v
-      }
-      return { kind: 'html', value: { type: 'element', tag: 'polygon', attrs } }
+      ])
     }
     case 'sz_svg_text': {
       const id = f(block, 'ID')
-      const attrs: Record<string, string> = {}
-      for (const [k, field] of [
+      const attrs = svgAttributes(block, [
         ['x', 'X'],
         ['y', 'Y'],
         ['fill', 'FILL'],
-      ] as const) {
-        const v = f(block, field)
-        if (v) attrs[k] = v
-      }
+      ])
       const text = f(block, 'TEXT')
       return {
         kind: 'html',
@@ -2805,10 +2811,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           h: exprInput(block, 'H', { type: 'num', value: 300 }),
         },
       }
-    case 'sz_canvas_clear': {
-      const ctx = f(block, 'CTX')
-      return { kind: 'js', value: { type: 'canvasClear', ctxVar: ctx, canvasVar: ctx } }
-    }
+    case 'sz_canvas_clear':
+      return { kind: 'js', value: { type: 'canvasClear', ctxVar: f(block, 'CTX') } }
     case 'sz_canvas_fill_style':
       return {
         kind: 'js',
@@ -9553,6 +9557,9 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           color: f(block, 'COLOR') || '#2b6cb0',
         },
       }
+    case 'sz_w3d_sky_photo':
+      seen.add('world-3d')
+      return { kind: 'js', value: { type: 'w3d:skyPhoto', asset: f(block, 'ASSET') } }
     case 'sz_w3d_start':
       seen.add('world-3d')
       return { kind: 'js', value: { type: 'w3d:start' } }

@@ -4,7 +4,11 @@ import 'blockly/blocks'
 import { registerExtensionBlocks } from '../../blockly/blocks'
 import { ensureBlocklyInitialized } from '../../blockly/setup'
 import { world3DBlocks } from '../../official-extensions/world-3d/blocks'
-import { collectWorldComposerItems, moveWorldComposerItem } from './worldComposerModel'
+import {
+  appendWorldComposerBlock,
+  collectWorldComposerItems,
+  moveWorldComposerItem,
+} from './worldComposerModel'
 
 function connectNumber(
   workspace: Blockly.Workspace,
@@ -24,6 +28,22 @@ beforeAll(() => {
 })
 
 describe('modelo do editor visual do Mundo 3D', () => {
+  it('adiciona na área Ao iniciar e nunca cria uma área automaticamente', () => {
+    const withoutArea = new Blockly.Workspace()
+    expect(appendWorldComposerBlock(withoutArea, 'sz_w3d_district')).toBeNull()
+    expect(withoutArea.getBlocksByType('sz_frame_start', false)).toHaveLength(0)
+    expect(withoutArea.getBlocksByType('sz_w3d_district', false)).toHaveLength(0)
+    withoutArea.dispose()
+
+    const workspace = new Blockly.Workspace()
+    const start = workspace.newBlock('sz_frame_start')
+    const id = appendWorldComposerBlock(workspace, 'sz_w3d_district')
+    expect(id).not.toBeNull()
+    expect(workspace.getBlockById(id ?? '')?.getSurroundParent()).toBe(start)
+    expect(workspace.getBlocksByType('sz_frame_behavior', false)).toHaveLength(0)
+    workspace.dispose()
+  })
+
   it('lê posições dos mesmos blocos e grava o movimento nos valores conectados', () => {
     const workspace = new Blockly.Workspace()
     const district = workspace.newBlock('sz_w3d_district')

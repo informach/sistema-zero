@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+import { AmbientLight, Fog, PointLight } from 'three'
 import { type KitApi, loadStartedKit, runtimeBody } from './kitHarness'
 
 /** Comportamento do motor: pool, FSM, vizinhança, combate e FÍSICA. A
@@ -127,9 +128,7 @@ describe('SZGameKit3D — motor (fake THREE + happy-dom)', () => {
   it('runProject recria o escopo e substitui os ganchos no Jogar de novo', async () => {
     const { api } = await loadStartedKit()
     const seen: number[] = []
-    const runProject = (api as unknown as { runProject(fn: () => void): void }).runProject
-
-    runProject(() => {
+    api.runProject(() => {
       let entradas = 0
       api.onEnterState('jogando', () => seen.push(++entradas))
     })
@@ -138,6 +137,124 @@ describe('SZGameKit3D — motor (fake THREE + happy-dom)', () => {
     api.setState('jogando')
 
     expect(seen).toEqual([1, 1])
+  })
+
+  it('runProject reinicia efeitos, materiais e botões sem acumular recursos', async () => {
+    const { api, renderers, step } = await loadStartedKit()
+    api.runProject(() => {
+      api.defineMold('caixa', { health: 1, speed: 0 }, () => {
+        api.part({ shape: 'box', color: '#f00', w: 1, h: 1, d: 1, x: 0, y: 0.5, z: 0 })
+      })
+      api.defineEffect('faísca', {
+        count: 5,
+        colorFrom: '#fff',
+        colorTo: '#000',
+        sizeFrom: 1,
+        sizeTo: 0,
+        life: 1,
+        spread: 2,
+      })
+      api.addButton('menu', 'Extra', () => {})
+    })
+    const entity = api.spawn('caixa', 0, 0, 0) as {
+      mesh: {
+        children: Array<{ material?: { addEventListener(type: string, fn: () => void): void } }>
+      }
+    }
+    let disposedMaterials = 0
+    entity.mesh.children[0]?.material?.addEventListener('dispose', () => disposedMaterials++)
+    const countPoints = () => {
+      let count = 0
+      renderers[0]?.scene?.traverse((object) => {
+        if (object.type === 'Points') count++
+      })
+      return count
+    }
+    const countExtraButtons = () =>
+      Array.from(document.querySelectorAll('button')).filter(
+        (button) => button.textContent === 'Extra',
+      ).length
+
+    step(1)
+    expect(countPoints()).toBe(1)
+    expect(countExtraButtons()).toBe(1)
+    api.setState('jogando')
+    step(1)
+    expect(countPoints()).toBe(1)
+    expect(countExtraButtons()).toBe(1)
+    expect(disposedMaterials).toBe(1)
+    api.setState('fim')
+    api.setState('jogando')
+    step(1)
+    expect(countPoints()).toBe(1)
+    expect(countExtraButtons()).toBe(1)
+  })
+
+  it('configura luz, ambiente e névoa mesmo quando os blocos vêm antes do start', async () => {
+    const { renderers } = await loadStartedKit((api) => {
+      api.addLight('#ff8800', 1, 2, 3, 2)
+      api.setAmbient(0.25)
+      api.setFog('#223344', 5, 40)
+    })
+    const scene = renderers[0]?.scene
+    const pointLights =
+      scene?.children.filter((object): object is PointLight => object instanceof PointLight) ?? []
+    const ambient = scene?.children.filter(
+      (object): object is AmbientLight => object instanceof AmbientLight,
+    )[0]
+    const fog = scene?.fog
+
+    expect(pointLights).toHaveLength(1)
+    expect(pointLights[0]?.position.toArray()).toEqual([1, 2, 3])
+    expect(ambient?.intensity).toBe(0.25)
+    expect(fog).toBeInstanceOf(Fog)
+    if (!(fog instanceof Fog)) throw new Error('a névoa linear não foi aplicada')
+    expect(fog.near).toBe(5)
+    expect(fog.far).toBe(40)
+  })
+
+  it('limita luzes e atratores acumulativos e avisa uma vez', async () => {
+    const { api, renderers } = await loadStartedKit()
+    api.defineEffect('faísca', {
+      count: 5,
+      colorFrom: '#fff',
+      colorTo: '#000',
+      sizeFrom: 1,
+      sizeTo: 0,
+      life: 1,
+      spread: 2,
+    })
+    const warnings: string[] = []
+    const originalWarn = console.warn
+    console.warn = (...args: unknown[]) => warnings.push(args.map(String).join(' '))
+    try {
+      for (let i = 0; i < 20; i++) {
+        api.addLight('#ffffff', i, 2, 0, 1)
+        api.addAttractor('faísca', i, 2, 0, 20, 5)
+      }
+    } finally {
+      console.warn = originalWarn
+    }
+    const pointLights =
+      renderers[0]?.scene?.children.filter(
+        (object): object is PointLight => object instanceof PointLight,
+      ) ?? []
+
+    expect(pointLights.length).toBeLessThanOrEqual(8)
+    expect(warnings.filter((message) => message.includes('luzes')).length).toBe(1)
+    expect(warnings.filter((message) => message.includes('atratores')).length).toBe(1)
+  })
+
+  it('reduz resoluções gigantes para o orçamento de pixels e limite da GPU', async () => {
+    const { renderers } = await loadStartedKit((api) => {
+      api.setup({ width: 4096, height: 4096, world: 100 })
+    })
+    const size = renderers[0]?.sizes[0]
+
+    expect(size).toBeDefined()
+    expect((size?.width ?? Infinity) * (size?.height ?? Infinity)).toBeLessThanOrEqual(1920 * 1080)
+    expect(size?.width).toBeLessThanOrEqual(renderers[0]?.capabilities.maxTextureSize ?? 0)
+    expect(size?.height).toBeLessThanOrEqual(renderers[0]?.capabilities.maxTextureSize ?? 0)
   })
 
   it('teclado: keyDown lê o mapa; blur solta as teclas', async () => {
@@ -349,6 +466,16 @@ describe('SZGameKit3D — física', () => {
     api.makeSolid('piso')
   }
 
+  function defineWideZoneAndVisitor(api: KitApi) {
+    api.defineMold('zona', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#fde047', w: 4, h: 4, d: 4, x: 0, y: 2, z: 0 })
+    })
+    api.defineMold('visitante', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#38bdf8', w: 1, h: 1, d: 1, x: 0, y: 0.5, z: 0 })
+    })
+    api.makeTrigger('zona')
+  }
+
   it('⭐ zona dispara ao ENTRAR (uma vez), não a cada quadro — com sólido no mundo', async () => {
     const { api, step } = await loadStartedKit()
     api.defineMold('moeda', { health: 1, speed: 0 }, () => {
@@ -389,6 +516,62 @@ describe('SZGameKit3D — física', () => {
     // Antes do filtro do resolveSolids, a moeda BARRAVA o herói (parede) — ele
     // parava em x≈2.3 e o jogo inteiro de coleta morria em silêncio.
     expect(api.posOf(h, 'x')).toBeGreaterThan(4)
+  })
+
+  it('⭐ zona registra cada visitante separadamente quando dois entram juntos', async () => {
+    const { api, step } = await loadStartedKit()
+    defineWideZoneAndVisitor(api)
+    api.setState('jogando')
+    api.spawn('zona', 0, 0, 0)
+    const a = api.spawn('visitante', 0, 0, 0)
+    const b = api.spawn('visitante', 0.5, 0, 0)
+    const hits: unknown[] = []
+    api.onOverlap('zona', (_zone, who) => hits.push(who))
+    api.setVelocity(a, 0.01, 0, 0)
+    api.setVelocity(b, 0.01, 0, 0)
+
+    step(2)
+
+    expect(hits).toHaveLength(2)
+    expect(hits).toContain(a)
+    expect(hits).toContain(b)
+  })
+
+  it('⭐ zona não repete a entrada quando outro slot é reciclado e reutilizado', async () => {
+    const { api, step } = await loadStartedKit()
+    defineWideZoneAndVisitor(api)
+    api.setState('jogando')
+    api.spawn('zona', 0, 0, 0)
+    const a = api.spawn('visitante', 0, 0, 0)
+    const b = api.spawn('visitante', 0.5, 0, 0)
+    const hits: unknown[] = []
+    api.onOverlap('zona', (_zone, who) => hits.push(who))
+    api.setVelocity(a, 0.01, 0, 0)
+    api.setVelocity(b, 0.01, 0, 0)
+    step(2)
+    api.recycle(a)
+    const reused = api.spawn('visitante', 0, 0, 0)
+    api.setVelocity(reused, 0.01, 0, 0)
+
+    step(4)
+
+    expect(reused).toBe(a)
+    expect(hits.filter((who) => who === b)).toHaveLength(1)
+    expect(hits.filter((who) => who === reused)).toHaveLength(2)
+  })
+
+  it('⭐ zona detecta uma entidade parada que nasceu dentro dela', async () => {
+    const { api, step } = await loadStartedKit()
+    defineWideZoneAndVisitor(api)
+    api.setState('jogando')
+    api.spawn('zona', 0, 0, 0)
+    const visitor = api.spawn('visitante', 0, 0, 0)
+    const hits: unknown[] = []
+    api.onOverlap('zona', (_zone, who) => hits.push(who))
+
+    step(5)
+
+    expect(hits).toEqual([visitor])
   })
 
   // ---- Quique ----

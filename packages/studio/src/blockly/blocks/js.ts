@@ -64,6 +64,8 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip:
+      'Mostra uma mensagem na área de console para acompanhar o que o programa está fazendo.',
   },
   {
     type: 'sz_js_console_log_var',
@@ -72,6 +74,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Mostra no console o valor guardado em uma variável.',
   },
   {
     type: 'sz_js_console_log_value',
@@ -81,8 +84,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Mostra qualquer valor no console (junta texto com "juntar", um objeto, uma conta…). Vira console.log(valor).',
+    tooltip: 'Mostra qualquer valor no console, como um texto montado, um objeto ou uma conta.',
   },
   {
     type: 'sz_js_alert_text',
@@ -141,7 +143,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     type: 'sz_js_var_assign',
     message0: 'Alterar variável %1 para %2',
     args0: [
-      { type: 'field_name_picker', name: 'NAME', text: 'contador', kind: 'variable' },
+      { type: 'field_name_picker', name: 'NAME', text: 'contador', kind: 'mutable-variable' },
       { type: 'input_value', name: 'VALUE', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -170,11 +172,12 @@ export const JS_BLOCKS: BlockDefinition[] = [
     message0: 'Somar %1 em variável %2',
     args0: [
       { type: 'field_number', name: 'DELTA', value: 1 },
-      { type: 'field_name_picker', name: 'NAME', text: 'contador', kind: 'variable' },
+      { type: 'field_name_picker', name: 'NAME', text: 'contador', kind: 'mutable-variable' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Soma ou tira uma quantidade do valor atual de uma variável.',
   },
   {
     // Os ramos "senão se"/"senão" são criados pelo mutator (+/− estilo MakeCode);
@@ -202,6 +205,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Repete os blocos de dentro a quantidade de vezes escolhida.',
   },
   {
     type: 'sz_js_while',
@@ -234,6 +238,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    placement: { root: [], nested: ['loop-body'], role: 'command' },
     tooltip: 'Interrompe o laço (loop) atual imediatamente.',
   },
   {
@@ -242,6 +247,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    placement: { root: [], nested: ['loop-body'], role: 'command' },
     tooltip: 'Pula o resto desta volta e vai direto para a próxima repetição do laço.',
   },
   {
@@ -395,7 +401,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Espera N segundos e então executa o "fazer". (No código vira N × 1000 ms.)',
+    tooltip: 'Espera a quantidade de segundos escolhida e então executa os blocos de dentro.',
   },
   {
     type: 'sz_js_set_interval_seconds',
@@ -407,7 +413,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Repete o "fazer" a cada N segundos. (No código vira N × 1000 ms.)',
+    tooltip: 'Repete os blocos de dentro no intervalo de segundos escolhido.',
   },
   // ---- ⏳ Assíncrono (avançado) ----
   {
@@ -418,8 +424,8 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Espera uma promessa terminar antes de seguir. Só funciona dentro de um método "async". Vira await <valor>.',
+    placement: { root: [], nested: ['async-function-body'], role: 'command' },
+    tooltip: 'Espera uma promessa terminar antes de seguir. Use dentro de uma função assíncrona.',
   },
   {
     type: 'sz_js_set_timeout_call',
@@ -432,7 +438,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Espera um tempo e então chama uma função pelo nome. Vira setTimeout(nome, ms).',
+    tooltip: 'Espera um tempo e então chama a função escolhida.',
   },
   {
     type: 'sz_val_new_promise',
@@ -445,7 +451,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Uma promessa: roda o "fazendo" e, quando pronto, chama a função de aviso (ex.: resolve()). Vira new Promise((resolve) => { ... }).',
+      'Cria uma tarefa que avisa quando terminou. Dentro dela, chame a função de aviso quando tudo estiver pronto.',
   },
   {
     type: 'sz_val_promise_all',
@@ -454,7 +460,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     inputsInline: true,
     output: 'JSValue',
     colour: C,
-    tooltip: 'Espera TODAS as promessas de uma lista terminarem. Vira Promise.all([...]).',
+    tooltip: 'Espera todas as tarefas de uma lista terminarem.',
   },
   {
     type: 'sz_js_storage_set',
@@ -544,7 +550,7 @@ export const JS_GROUPS: { name: string; colour: string; types: string[] }[] = [
   {
     name: '📋 Listas',
     colour: '#dd9a0a',
-    types: ['sz_js_array_push', 'sz_js_array_remove', 'sz_js_array_splice', 'sz_js_object_assign'],
+    types: ['sz_js_array_push', 'sz_js_array_remove', 'sz_js_array_splice'],
   },
   {
     name: '🖥️ Console & Avisos',

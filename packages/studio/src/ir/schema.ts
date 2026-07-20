@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { HTML_TAGS, isHTMLElementChildAllowed } from '../html/catalog'
 import { CANVAS3D_RESOURCE_CREATOR_TYPES } from '../three/canvas3dContract'
 import { GAME3D_RESOURCE_CREATOR_TYPES } from '../three/game3dContract'
-import { isLifecycleRootAllowed, type LifecycleArea } from './lifecycle'
+import { isLifecycleRootAllowed, type LifecycleArea, validateLifecycleSemantics } from './lifecycle'
 
 export const MAX_IR_TEXT_CHARS = 2_000_000
 
@@ -1623,7 +1623,7 @@ export type JSStatement =
   | (JSStatementCommon & {
       type: 'switch'
       subject: JSExpr
-      cases: Array<{ match: JSExpr; body: JSStatement[] }>
+      cases: Array<{ __id?: string; match: JSExpr; body: JSStatement[] }>
       default?: JSStatement[]
     })
   // Tela cheia (Fullscreen API) na PÁGINA inteira (document.documentElement).
@@ -1665,7 +1665,12 @@ export type JSStatement =
   // Canvas
   | (JSStatementCommon & { type: 'canvasSetup'; canvasId: string; varName: string })
   | (JSStatementCommon & { type: 'canvasSetSize'; ctxVar: string; w: JSExpr; h: JSExpr })
-  | (JSStatementCommon & { type: 'canvasClear'; ctxVar: string; canvasVar: string })
+  | (JSStatementCommon & {
+      type: 'canvasClear'
+      ctxVar: string
+      /** @deprecated O elemento é resolvido pelo ctxVar; mantido só ao ler IR antiga. */
+      canvasVar?: string
+    })
   | (JSStatementCommon & { type: 'canvasFillStyle'; ctxVar: string; color: JSExpr })
   | (JSStatementCommon & {
       type: 'canvasFillRect'
@@ -4112,6 +4117,7 @@ export type JSStatement =
       w: number | JSExpr
     })
   | (JSStatementCommon & { type: 'w3d:water'; y: number | JSExpr; color: string })
+  | (JSStatementCommon & { type: 'w3d:skyPhoto'; asset: string })
   | (JSStatementCommon & { type: 'w3d:start' })
   | (JSStatementCommon & { type: 'w3d:carBoost'; force: number | JSExpr })
   | (JSStatementCommon & { type: 'w3d:engineSound'; on: boolean })
@@ -5065,7 +5071,9 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('switch'),
       subject: JSExprSchema,
-      cases: z.array(z.object({ match: JSExprSchema, body: z.array(JSStatementSchema) })),
+      cases: z.array(
+        z.object({ match: JSExprSchema, body: z.array(JSStatementSchema), ...idField }),
+      ),
       default: z.array(JSStatementSchema).optional(),
       ...idField,
     }),
@@ -5134,7 +5142,9 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('canvasClear'),
       ctxVar: irText(),
-      canvasVar: irText(),
+      // Campo legado e redundante. Projetos antigos continuam válidos, mas a IR
+      // canônica nova usa somente ctxVar para localizar a tela correspondente.
+      canvasVar: irText().optional(),
       ...idField,
     }),
     z.object({
@@ -8739,6 +8749,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       color: irText(),
       ...idField,
     }),
+    z.object({ type: z.literal('w3d:skyPhoto'), asset: irText(), ...idField }),
     z.object({ type: z.literal('w3d:start'), ...idField }),
     z.object({ type: z.literal('w3d:car'), style: irText(), color: irText(), ...idField }),
     z.object({
@@ -10360,12 +10371,18 @@ export const SZIRV2Schema = z
     for (const area of ['start', 'events', 'loops'] as const satisfies readonly LifecycleArea[]) {
       for (let index = 0; index < ir.behavior[area].length; index += 1) {
         const statement = ir.behavior[area][index]
-        if (!statement || isLifecycleRootAllowed(statement, area)) continue
-        ctx.addIssue({
-          code: 'custom',
-          path: ['behavior', area, index],
-          message: `O bloco “${statement.type}” não pode ficar na área “${area}”`,
-        })
+        if (!statement) continue
+        const rootPath: PropertyKey[] = ['behavior', area, index]
+        if (!isLifecycleRootAllowed(statement, area)) {
+          ctx.addIssue({
+            code: 'custom',
+            path: rootPath,
+            message: `O bloco “${statement.type}” não pode ficar na área “${area}”`,
+          })
+        }
+        for (const issue of validateLifecycleSemantics(statement, rootPath)) {
+          ctx.addIssue({ code: 'custom', path: issue.path, message: issue.message })
+        }
       }
     }
   })
@@ -10997,6 +11014,7 @@ export const W3D_STATEMENT_TYPES = new Set([
   'w3d:flatten',
   'w3d:path',
   'w3d:water',
+  'w3d:skyPhoto',
   'w3d:start',
   'w3d:car',
   'w3d:carStats',

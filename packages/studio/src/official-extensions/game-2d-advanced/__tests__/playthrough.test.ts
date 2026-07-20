@@ -83,6 +83,7 @@ type Fn = (...args: unknown[]) => unknown
 interface Api {
   setup: Fn
   start: Fn
+  runProject: (factory: () => void) => void
   state: () => string
   setState: Fn
   restartGame: Fn
@@ -1612,6 +1613,27 @@ describe('gk — JOGAR uma partida inteira do 🏰 Kit Defesa de Torre (R26)', (
     expect(h.api.countActive('torre')).toBe(1)
     expect(h.api.tdCoins()).toBe(50) // pagou 50
     clickAt(300, 220) // lugar ocupado → nada
+    expect(h.api.countActive('torre')).toBe(1)
+    expect(h.api.tdCoins()).toBe(50)
+  })
+
+  it('runProject recria os registros de torre sem duplicar slots nem compras', async () => {
+    const h = loadRuntime()
+
+    h.api.runProject(() => {
+      h.api.setup({ width: 960, height: 540 })
+      h.api.defineMold('torre', { w: 40, h: 40, health: 1, color: '#4a9eff' })
+      h.api.tdSetCoins(100)
+      h.api.tdSlot(300, 220, 60)
+      h.api.tdOnBuy(50, (lugarX: unknown, lugarY: unknown) => {
+        h.api.spawnFromMold('torre', (lugarX as number) - 20, (lugarY as number) - 20)
+      })
+    })
+
+    await startGame(h)
+    h.api.restartGame()
+    clickAt(300, 220)
+
     expect(h.api.countActive('torre')).toBe(1)
     expect(h.api.tdCoins()).toBe(50)
   })

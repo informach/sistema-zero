@@ -68,7 +68,7 @@ describe('buildCoreToolbox — estrutura e itens sempre válidos', () => {
     for (const n of [
       'HTML',
       'Canvas',
-      '🖼️ Tela',
+      '🖥️ Tela',
       '⬛ Formas',
       '✏️ Traçado',
       '🔄 Transformar',
@@ -90,6 +90,21 @@ describe('buildCoreToolbox — estrutura e itens sempre válidos', () => {
     expect(eventos).toContain('sz_js_on_click_anywhere')
     expect(pagina).not.toContain('sz_js_on_key')
     expect(pagina).toContain('sz_js_get_element_by_id')
+  })
+
+  it('não duplica início, temporizadores nem operação de objetos na paleta', () => {
+    const toolbox = buildCoreToolbox([])
+    const eventos = blockTypesIn(findCategory(toolbox.contents, '⚡ Eventos'))
+    const repeticoes = blockTypesIn(findCategory(toolbox.contents, '🔁 Repetições'))
+    const objetos = blockTypesIn(findCategory(toolbox.contents, '📦 Objetos'))
+    const all = collectTypes(toolbox.contents)
+
+    expect(all).not.toContain('sz_js_on_load')
+    expect(eventos).not.toContain('sz_js_set_timeout')
+    expect(repeticoes).toContain('sz_js_set_timeout')
+    expect(objetos).toContain('sz_js_object_assign')
+    expect(all.filter((type) => type === 'sz_js_set_timeout')).toHaveLength(1)
+    expect(all.filter((type) => type === 'sz_js_object_assign')).toHaveLength(1)
   })
 
   it('a busca está sempre presente', () => {
@@ -120,6 +135,7 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
       'sz_g2d_create_sprite',
       'sz_g2d_top_down',
       'sz_html_h1',
+      'sz_html_svg',
       'sz_svg_circle',
       'sz_canvas_arc',
       'sz_js_if_else',
@@ -180,6 +196,8 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
     ]) {
       expect(types.has(t)).toBe(true)
     }
+    expect(types.has('sz_svg_circle')).toBe(true)
+    expect(types.has('sz_html_svg')).toBe(true)
   })
 
   it('INTERMEDIÁRIO-3D (≡ intermediário antigo): programação real + Jogo 3D + Mundo 3D; sem avançado', () => {

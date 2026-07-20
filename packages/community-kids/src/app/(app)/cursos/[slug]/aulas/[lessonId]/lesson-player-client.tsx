@@ -14,6 +14,10 @@ import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { CourseRatingFlow, type RatingViewer } from '@/components/kids/course-rating-flow'
+import {
+  isGuidedCreationActive,
+  setGuidedCreationActive,
+} from '@/components/kids/guided-creation-session'
 import { KidsLessonAttachments } from '@/components/kids/kids-lesson-attachments'
 import {
   GuidedCreationMode,
@@ -71,9 +75,22 @@ export function LessonPlayer({
 }: Props) {
   const router = useRouter()
   const [completing, setCompleting] = useState(false)
-  // Modo criação guiada (vídeo + estúdio lado a lado) — só quando a aula tem AMBOS os blocos.
-  const [guided, setGuided] = useState(false)
+  // O envio ao professor faz router.refresh() e pode remontar a árvore da aula.
+  // A intenção guiada vive na memória do módulo até a saída explícita, igual ao
+  // estado "Expandir" do StudioBlockView, e é isolada por aula + perfil.
+  const guidedIdentity = useMemo(() => ({ lessonId: lesson.id, viewerId }), [lesson.id, viewerId])
+  const [guided, setGuided] = useState(() => isGuidedCreationActive(guidedIdentity))
   const canGuide = useMemo(() => lessonSupportsGuided(lesson.blocks), [lesson.blocks])
+
+  const enterGuided = useCallback(() => {
+    setGuidedCreationActive(guidedIdentity, true)
+    setGuided(true)
+  }, [guidedIdentity])
+
+  const exitGuided = useCallback(() => {
+    setGuidedCreationActive(guidedIdentity, false)
+    setGuided(false)
+  }, [guidedIdentity])
   // Snapshot do progresso ANTES do refresh (a celebração anima antes→depois)
   // + delta de gamificação vindo na RESPOSTA do complete; null = overlay fechado.
   const [celebration, setCelebration] = useState<{
@@ -296,11 +313,7 @@ export function LessonPlayer({
   if (guided) {
     return (
       <LessonPlayerProvider value={playerContext}>
-        <GuidedCreationMode
-          blocks={lesson.blocks}
-          lessonTitle={lesson.title}
-          onExit={() => setGuided(false)}
-        />
+        <GuidedCreationMode blocks={lesson.blocks} lessonTitle={lesson.title} onExit={exitGuided} />
       </LessonPlayerProvider>
     )
   }
@@ -335,7 +348,7 @@ export function LessonPlayer({
           {canGuide ? (
             <button
               type="button"
-              onClick={() => setGuided(true)}
+              onClick={enterGuided}
               className="flex items-center gap-3 self-start rounded-2xl border-2 border-primary/40 bg-primary/5 px-4 py-2.5 text-left text-primary transition-colors hover:bg-primary/10 active:translate-y-[1px]"
             >
               <Wand2 className="size-5 shrink-0" />

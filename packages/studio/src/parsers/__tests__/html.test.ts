@@ -59,8 +59,8 @@ describe('parseHTML', () => {
             tag: 'g',
             attrs: { class: 'cata', transform: 'translate(100,100)' },
             children: [
-              { type: 'element', tag: 'circle', text: '', attrs: { r: '8' } },
-              { type: 'element', tag: 'path', text: '', attrs: { d: 'M -7 -20 L 2 -80' } },
+              { type: 'element', tag: 'circle', attrs: { r: '8' } },
+              { type: 'element', tag: 'path', attrs: { d: 'M -7 -20 L 2 -80' } },
             ],
           },
         ],

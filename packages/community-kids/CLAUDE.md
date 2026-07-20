@@ -72,7 +72,11 @@ distingue os dois no toast/botão. **MODO CRIAÇÃO GUIADA (28/06):** quando a a
 **e** um de ESTÚDIO (`lessonSupportsGuided`), um botão "Modo criação guiada" aparece sob o título →
 abre o `GuidedCreationMode` (export do `kids-lesson-blocks`): overlay `fixed inset-0` com o vídeo à
 esquerda e o estúdio à direita (lado a lado no desktop; empilha no mobile) + botão "Voltar ao modo
-normal". **Split ARRASTÁVEL no desktop (07/2026):** `react-resizable-panels` (dep própria do kids —
+normal". A intenção de permanecer nesse modo fica em memória por `viewerId` + aula
+(`guided-creation-session.ts`): o `router.refresh()` disparado ao enviar a atividade para o professor
+pode remontar o player, mas NÃO fecha a criação guiada; somente "Voltar ao modo normal" a encerra
+(um reload completo da página começa no modo normal). **Split ARRASTÁVEL no desktop (07/2026):**
+`react-resizable-panels` (dep própria do kids —
 mesma lib/handle `.sz-resize-handle--vertical` de dentro do Estúdio), `autoSaveId
 "kids-guided-creation"` persiste a posição; vídeo `minSize 20`, estúdio `minSize 35` (Blockly
 inusável estreito). Gate por `useIsDesktop` (matchMedia 1024px, estado inicial lido direto — o modo
@@ -197,7 +201,10 @@ clipboard) — a raiz do card deixou de ser `<button>` (âncora não aninha em b
 `app/jogar/[id]/page.tsx` (FORA do grupo `(app)`, sem login, igual a `/perfis`) renderiza o
 `StudioProjectPlayer` (subpath `@sistemazero/studio/player`, `ssr:false`) buscando o projeto em
 `/api/studio/play/:id` — mostra SÓ o jogo + título, NUNCA o nome da criança, e tolera snapshots
-legados/incompletos sem derrubar a página pública. As rotas `/api/studio/{describe,
+legados/incompletos sem derrubar a página pública. Em dispositivos touch, o botão de tela cheia do
+`MobileGamepad` solicita fullscreen no console inteiro (moldura + iframe + controles), nunca somente
+no iframe; no desktop sem gamepad, o fullscreen continua sendo apenas o palco do jogo. As rotas
+`/api/studio/{describe,
 publish,play/[id],cleanup}` são shims sobre `shell.routes.studio*`; o `proxy.ts` exclui `api/studio/publish`
 (multipart), `api/studio/play` (stream público) e **`api/studio/cleanup`** (S2S do hub, HMAC — limpeza de
 R2 na moderação: apagar post do Mural → apaga snapshot jogável + capa) do matcher (`api/studio/describe`

@@ -6,7 +6,7 @@ const C = CATEGORY_COLORS.canvas
 export const CANVAS_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_html_canvas',
-    message0: 'Criar tela de desenho id %1',
+    message0: 'Criar tela de desenho chamada %1',
     args0: [{ type: 'field_input', name: 'ID', text: 'tela' }],
     message1: 'classe (opcional) %1',
     args1: [{ type: 'field_input', name: 'CLASS', text: '' }],
@@ -14,11 +14,11 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'HTMLNode',
     colour: C,
     tooltip:
-      'Cria a tela de desenho (canvas) na página. Encaixa na coluna de HTML; depois use "Pegar canvas" para desenhar nela.',
+      'Cria a área onde seus desenhos vão aparecer. Encaixe em Estrutura; depois use “Preparar tela de desenho” em Ao iniciar.',
   },
   {
     type: 'sz_canvas_setup',
-    message0: 'Pegar canvas id %1 e guardar contexto em %2',
+    message0: 'Preparar tela de desenho %1 e chamar o pincel de %2',
     args0: [
       // CANVAS_ID referencia a tela criada (seletor); CTX DECLARA a variável do
       // contexto → segue texto (a criança nomeia uma vez; os consumidores é que pegam menu).
@@ -28,10 +28,11 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Liga o pincel à tela escolhida. Encaixe em Ao iniciar antes dos blocos que desenham.',
   },
   {
     type: 'sz_canvas_set_size',
-    message0: 'Definir tamanho do canvas %1 largura %2 altura %3',
+    message0: 'Definir tamanho da tela %1 largura %2 altura %3',
     args0: [
       { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
       { type: 'input_value', name: 'W', check: 'JSValue' },
@@ -42,7 +43,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Muda a largura e a altura do canvas dinamicamente (ex.: tela cheia com a largura/altura da janela).',
+      'Muda a largura e a altura da tela de desenho, inclusive para acompanhar o tamanho da janela.',
   },
   {
     type: 'sz_canvas_clear',
@@ -51,6 +52,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Apaga todo o desenho para a tela ficar pronta para o próximo desenho.',
   },
   {
     type: 'sz_canvas_fill_style',
@@ -63,21 +65,26 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Escolhe a cor usada para preencher as próximas formas e letras.',
   },
   {
     type: 'sz_canvas_fill_rect',
-    message0: 'Desenhar retângulo %1 em x %2 y %3 largura %4 altura %5',
-    args0: [
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+    message0: 'Desenhar retângulo com pincel %1',
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    message1: 'em x %1 y %2',
+    args1: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
+    ],
+    message2: 'largura %1 altura %2',
+    args2: [
       { type: 'input_value', name: 'W', check: 'JSValue' },
       { type: 'input_value', name: 'H', check: 'JSValue' },
     ],
-    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Desenha um retângulo preenchido com a cor atual do pincel.',
   },
   {
     type: 'sz_canvas_arc',
@@ -92,6 +99,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Desenha um círculo preenchido com a cor atual do pincel.',
   },
   {
     type: 'sz_canvas_fill_text',
@@ -106,10 +114,11 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Escreve a mensagem na posição escolhida usando a fonte e a cor atuais.',
   },
   {
     type: 'sz_canvas_anim_loop',
-    // O rótulo "A cada frame fazer" e os controles +/− são montados pelo mutator
+    // O rótulo "A cada quadro fazer" e os controles +/− são montados pelo mutator
     // (sz_anim_loop_mutator); aqui ficamos só com o corpo.
     message0: '%1',
     args0: [{ type: 'input_statement', name: 'BODY' }],
@@ -118,7 +127,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     colour: C,
     mutator: 'sz_anim_loop_mutator',
     tooltip:
-      'Repete o corpo a cada quadro. Clique no + para guardar o id da animação numa variável e poder pará-la depois com "parar animação". Deixe o bloco no nível principal para a variável ficar acessível.',
+      'Repete os blocos de dentro em cada quadro da animação. Use o + para guardar um controle e poder parar depois.',
   },
   {
     type: 'sz_canvas_cancel_anim',
@@ -128,7 +137,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Para a animação, cancelando o id guardado por "A cada frame fazer".',
+    tooltip: 'Para a animação indicada pelo controle guardado em “A cada quadro fazer”.',
   },
   {
     type: 'sz_canvas_request_frame',
@@ -139,7 +148,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Agenda a função para rodar no próximo quadro (para fazer o laço do jogo à mão, com o tempo entre quadros). Vira requestAnimationFrame(função).',
+      'Chama a função escolhida no próximo quadro. É uma peça avançada para montar a animação à mão.',
   },
   {
     type: 'sz_canvas_request_frame_do',
@@ -152,8 +161,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Roda o "fazer" no próximo quadro, guardando o tempo (em milissegundos) na variável escolhida — útil para o laço do jogo à mão. Vira requestAnimationFrame((t) => { ... }).',
+    tooltip: 'Roda os blocos de dentro no próximo quadro e guarda o tempo na variável escolhida.',
   },
   {
     type: 'sz_canvas_keyboard',
@@ -162,23 +170,33 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    hidden: true,
+    tooltip:
+      'Bloco antigo mantido para abrir projetos já salvos. Use “a tecla está apertada?” nos projetos novos.',
   },
   // ---- Canvas extras (Fase 2.3) ----
   {
     type: 'sz_canvas_draw_image',
-    message0: 'Desenhar imagem %1 no pincel %2 em x %3 y %4 largura %5 altura %6',
+    message0: 'Desenhar imagem %1 com pincel %2',
     args0: [
       { type: 'field_asset_picker', name: 'SRC', text: 'foto' },
       { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+    ],
+    message1: 'em x %1 y %2',
+    args1: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
+    ],
+    message2: 'largura %1 altura %2',
+    args2: [
       { type: 'input_value', name: 'W', check: 'JSValue' },
       { type: 'input_value', name: 'H', check: 'JSValue' },
     ],
-    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip:
+      'Desenha a imagem escolhida na posição e no tamanho indicados. Ela é preparada uma vez antes do projeto começar.',
   },
   {
     // Bloco-VALOR: a imagem do projeto que a criança escolhe pelo picker. Gera a
@@ -189,7 +207,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     args0: [{ type: 'field_asset_picker', name: 'ASSET', text: 'foto' }],
     output: 'JSValue',
     colour: C,
-    tooltip: 'A imagem do projeto que você escolher, pronta para usar (ex.: em img.src).',
+    tooltip: 'Entrega a imagem escolhida do acervo para encaixar em outro bloco.',
   },
   {
     // Cria um objeto de imagem já com a fonte (`const v = new Image(); v.src = …`).
@@ -203,7 +221,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Cria uma imagem (Image) e define a fonte dela numa variável.',
+    tooltip: 'Prepara uma imagem e guarda o resultado na variável escolhida.',
   },
   {
     // Roda o corpo quando a imagem termina de carregar (`img.onload = () => {…}`).
@@ -217,7 +235,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Roda os blocos de dentro quando a imagem termina de carregar (img.onload).',
+    tooltip: 'Roda os blocos de dentro quando a imagem termina de carregar.',
   },
   {
     // Roda o corpo se a imagem FALHAR ao carregar (`img.onerror = () => {…}`).
@@ -231,7 +249,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Roda os blocos de dentro se a imagem NÃO conseguir carregar (img.onerror).',
+    tooltip: 'Roda os blocos de dentro se a imagem não conseguir carregar.',
   },
   {
     type: 'sz_canvas_save',
@@ -240,6 +258,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Guarda as cores, o recorte e os movimentos atuais do pincel para recuperar depois.',
   },
   {
     type: 'sz_canvas_restore',
@@ -248,6 +267,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Recupera a última configuração guardada do pincel.',
   },
   {
     type: 'sz_canvas_translate',
@@ -261,6 +281,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Move o ponto de origem dos próximos desenhos pela distância indicada.',
   },
   {
     type: 'sz_canvas_rotate',
@@ -273,6 +294,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Gira os próximos desenhos ao redor do ponto de origem atual.',
   },
   {
     type: 'sz_canvas_scale',
@@ -286,24 +308,31 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Aumenta ou diminui os próximos desenhos nos sentidos horizontal e vertical.',
   },
   {
     type: 'sz_canvas_gradient',
-    message0: 'Gradiente linear pincel %1 em variável %2 de (%3,%4) a (%5,%6) com cor %7 → %8',
+    message0: 'Criar degradê com pincel %1 e chamar de %2',
     args0: [
       { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
       { type: 'field_input', name: 'NAME', text: 'g' },
+    ],
+    message1: 'de x %1 y %2 até x %3 y %4',
+    args1: [
       { type: 'input_value', name: 'X0', check: 'JSValue' },
       { type: 'input_value', name: 'Y0', check: 'JSValue' },
       { type: 'input_value', name: 'X1', check: 'JSValue' },
       { type: 'input_value', name: 'Y1', check: 'JSValue' },
+    ],
+    message2: 'começando em %1 e terminando em %2',
+    args2: [
       { type: 'field_colour_sz', name: 'C0', colour: '#22d3ee' },
       { type: 'field_colour_sz', name: 'C1', colour: '#a78bfa' },
     ],
-    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Cria uma passagem suave entre duas cores para usar nos próximos desenhos.',
   },
 
   // ---- Traçado / contorno / fonte / transparência (caminho "na mão", Fase 6) ----
@@ -375,15 +404,18 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_canvas_rect',
-    message0: 'Adicionar retângulo ao traçado %1 em x %2 y %3 largura %4 altura %5',
-    args0: [
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+    message0: 'Adicionar retângulo ao traçado do pincel %1',
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    message1: 'em x %1 y %2',
+    args1: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
+    ],
+    message2: 'largura %1 altura %2',
+    args2: [
       { type: 'input_value', name: 'W', check: 'JSValue' },
       { type: 'input_value', name: 'H', check: 'JSValue' },
     ],
-    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -506,36 +538,41 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_canvas_arc_to',
-    message0: 'Curva no traçado dobrando em x %1 y %2 até x %3 y %4 raio %5',
+    message0: 'Curva no traçado dobrando em x %1 y %2',
     args0: [
       { type: 'input_value', name: 'X1', check: 'JSValue' },
       { type: 'input_value', name: 'Y1', check: 'JSValue' },
+    ],
+    message1: 'seguindo até x %1 y %2 com raio %3',
+    args1: [
       { type: 'input_value', name: 'X2', check: 'JSValue' },
       { type: 'input_value', name: 'Y2', check: 'JSValue' },
       { type: 'input_value', name: 'R', check: 'JSValue' },
     ],
-    message1: 'no pincel %1',
-    args1: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
-    inputsInline: true,
+    message2: 'usando pincel %1',
+    args2: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Liga o ponto atual do traçado a (x até, y até) com um cantinho arredondado de raio dado, dobrando em (x dobra, y dobra). Ótimo para cantos suaves. Vira ctx.arcTo(...).',
+      'Liga o ponto atual do traçado ao ponto final com um cantinho arredondado. Ótimo para cantos suaves.',
   },
 
   // ---- Formas e traçado extras (subcategorias) ----
   {
     type: 'sz_canvas_stroke_rect',
-    message0: 'Desenhar contorno de retângulo %1 em x %2 y %3 largura %4 altura %5',
-    args0: [
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+    message0: 'Desenhar contorno de retângulo com pincel %1',
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    message1: 'em x %1 y %2',
+    args1: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
+    ],
+    message2: 'largura %1 altura %2',
+    args2: [
       { type: 'input_value', name: 'W', check: 'JSValue' },
       { type: 'input_value', name: 'H', check: 'JSValue' },
     ],
-    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -543,15 +580,18 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_canvas_clear_rect',
-    message0: 'Limpar área %1 em x %2 y %3 largura %4 altura %5',
-    args0: [
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+    message0: 'Limpar uma área com pincel %1',
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    message1: 'em x %1 y %2',
+    args1: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
+    ],
+    message2: 'largura %1 altura %2',
+    args2: [
       { type: 'input_value', name: 'W', check: 'JSValue' },
       { type: 'input_value', name: 'H', check: 'JSValue' },
     ],
-    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -559,16 +599,17 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_canvas_round_rect',
-    message0: 'Desenhar retângulo arredondado %1 em x %2 y %3 largura %4 altura %5 raio %6',
-    args0: [
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+    message0: 'Desenhar retângulo arredondado com pincel %1',
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    message1: 'em x %1 y %2 com largura %3 altura %4',
+    args1: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'W', check: 'JSValue' },
       { type: 'input_value', name: 'H', check: 'JSValue' },
-      { type: 'input_value', name: 'R', check: 'JSValue' },
     ],
-    inputsInline: true,
+    message2: 'raio dos cantos %1',
+    args2: [{ type: 'input_value', name: 'R', check: 'JSValue' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -577,15 +618,18 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_canvas_ellipse',
-    message0: 'Desenhar elipse %1 em x %2 y %3 raio-x %4 raio-y %5',
-    args0: [
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+    message0: 'Desenhar elipse com pincel %1',
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    message1: 'no centro x %1 y %2',
+    args1: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
+    ],
+    message2: 'raio horizontal %1 vertical %2',
+    args2: [
       { type: 'input_value', name: 'RX', check: 'JSValue' },
       { type: 'input_value', name: 'RY', check: 'JSValue' },
     ],
-    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -593,16 +637,19 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_canvas_arc_slice',
-    message0: 'Desenhar fatia %1 em x %2 y %3 raio %4 de %5 até %6 (radianos)',
-    args0: [
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+    message0: 'Desenhar fatia com pincel %1',
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    message1: 'no centro x %1 y %2 com raio %3',
+    args1: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'R', check: 'JSValue' },
+    ],
+    message2: 'do ângulo %1 até %2 em radianos',
+    args2: [
       { type: 'input_value', name: 'START', check: 'JSValue' },
       { type: 'input_value', name: 'END', check: 'JSValue' },
     ],
-    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -610,15 +657,18 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_canvas_quadratic_curve',
-    message0: 'Curva no pincel %1 passando pelo controle x %2 y %3 até x %4 y %5',
-    args0: [
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+    message0: 'Curva no pincel %1',
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    message1: 'puxada pelo ponto x %1 y %2',
+    args1: [
       { type: 'input_value', name: 'CPX', check: 'JSValue' },
       { type: 'input_value', name: 'CPY', check: 'JSValue' },
+    ],
+    message2: 'terminando em x %1 y %2',
+    args2: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
     ],
-    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -627,17 +677,20 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_canvas_bezier_curve',
-    message0: 'Curva dupla no pincel %1 controles (x %2 y %3) e (x %4 y %5) até x %6 y %7',
-    args0: [
-      { type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' },
+    message0: 'Curva dupla no pincel %1',
+    args0: [{ type: 'field_name_picker', name: 'CTX', text: 'ctx', kind: 'variable' }],
+    message1: 'puxada por x %1 y %2 e x %3 y %4',
+    args1: [
       { type: 'input_value', name: 'CP1X', check: 'JSValue' },
       { type: 'input_value', name: 'CP1Y', check: 'JSValue' },
       { type: 'input_value', name: 'CP2X', check: 'JSValue' },
       { type: 'input_value', name: 'CP2Y', check: 'JSValue' },
+    ],
+    message2: 'terminando em x %1 y %2',
+    args2: [
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
     ],
-    inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -753,7 +806,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     args0: [],
     output: 'JSValue',
     colour: C,
-    tooltip: 'Posição horizontal do mouse/dedo dentro do canvas.',
+    tooltip: 'Posição horizontal do mouse ou do dedo dentro da tela de desenho.',
   },
   {
     type: 'sz_input_pointer_y',
@@ -761,7 +814,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     args0: [],
     output: 'JSValue',
     colour: C,
-    tooltip: 'Posição vertical do mouse/dedo dentro do canvas.',
+    tooltip: 'Posição vertical do mouse ou do dedo dentro da tela de desenho.',
   },
 ]
 
@@ -769,7 +822,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
 // definidos (blocos novos) são ignorados pelo toolbox até existirem.
 export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] = [
   {
-    name: '🖼️ Tela',
+    name: '🖥️ Tela',
     colour: '#16b87a',
     types: [
       'sz_html_canvas',

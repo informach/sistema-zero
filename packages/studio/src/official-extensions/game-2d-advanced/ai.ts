@@ -10,7 +10,8 @@ pontos, fases) o aluno escreve nos ganchos com blocos do núcleo
 (game-2d, SZGame2D) — aquela traz comportamentos prontos; esta traz a
 arquitetura. Não misturar as duas no mesmo projeto.
 
-RECEITA CANÔNICA (ordem no ⚙️ Comportamento):
+RECEITA CANÔNICA POR ÁREA DO PROJETO:
+⚙️ AO INICIAR:
 1. SZGameKit.setup({ width, height, background, accent })  — 1x, no começo
    · OU SZGameKit.setupFull({ background, accent }) — "ocupar a tela toda": SEM
      dimensões, o canvas preenche a viewport e config.w/h (width()/height())
@@ -18,19 +19,24 @@ RECEITA CANÔNICA (ordem no ⚙️ Comportamento):
 2. SZGameKit.loadImage("nome", "asset") (opcional: apelido/pré-carga) / loadSound
 3. SZGameKit.defineLook / defineMold / defineEffect / setMission — os DADOS
 4. const heroi = SZGameKit.createCharacter({ image, w, h, speed, color })
-5. SZGameKit.onGameStart(function () {…})                   — preparar cada partida
-6. SZGameKit.startSpawner("molde", segundos)                — fábricas
-7. SZGameKit.onUpdate(function (dt) {…})                    — mecânica (só roda em "jogando")
-8. SZGameKit.on("aviso", function () {…})                   — reações desacopladas
-9. SZGameKit.onDraw(function (ctx) {…})                     — visual (ctx = contexto 2D de verdade)
-10. SZGameKit.start()                                       — 1x, NO FIM
+5. SZGameKit.startSpawner("molde", segundos)                — fábricas
+🎯 EVENTOS:
+6. SZGameKit.on("aviso", function () {…})                   — reações desacopladas
+7. onGameClick/onEnterState/rpgOnEnterMap e outros chapéus “Quando…”
+🔁 LOOP PRINCIPAL:
+8. SZGameKit.onUpdate(function (dt) {…})                    — mecânica
+9. SZGameKit.onDraw(function (ctx) {…})                     — visual
+10. SZGameKit.onDrawHud(function (ctx) {…})                 — HUD sem câmera
+
+O Studio envolve tudo em runProject e chama start automaticamente. NÃO gere
+SZGameKit.onGameStart(...) nem SZGameKit.start(); são APIs internas/legadas.
 
 API global injetada como window.SZGameKit:
 - setup({ width, height, background, accent }): resolução INTERNA fixa (o canvas
   se ajusta à janela com letterbox; as coordenadas do jogo nunca mudam) + cores
   da UI. width/height clampados a 64..4096.
-- start(): mostra a tela "carregando", espera imagens+sons (Promise.all), vai ao
-  estado "menu" e liga o requestAnimationFrame. Chamar UMA vez, por último.
+- start(): adapter de boot chamado automaticamente pelo Estúdio depois que as
+  áreas foram registradas. Não gere uma chamada manual.
 - width() / height(): a resolução interna (use nas contas de limite/aleatório).
 - loadImage(nome, asset): OPCIONAL; registra p/ pré-carregamento ou dá apelido.
   Seletores de imagem já carregam o asset escolhido; falhou → fallback visível.
@@ -39,7 +45,8 @@ API global injetada como window.SZGameKit:
   "jogando", "pausado", "fim" (derrota) e "vitoria" (missão cumprida) — telas
   ligam sozinhas; update SÓ roda em "jogando". setState só troca de estado e
   preserva a partida. restartGame() limpa a partida e entra em "jogando";
-  onGameStart(fn) prepara cada partida nova. Estados INVENTADOS
+  as três áreas preparam cada partida nova. onGameStart(fn) é compatibilidade
+  para projetos antigos e não deve ser gerado. Estados INVENTADOS
   (ex.: "loja") valem: congelam o update e escondem as telas — mostre a sua com
   showScreen. onEnterState(nome, fn) roda fn a cada ENTRADA no estado.
 - Telas: setScreenText("menu"|"pausa"|"carregando"|"fim"|"vitoria", titulo,
@@ -515,10 +522,9 @@ API global injetada como window.SZGameKit:
 REGRAS DE OURO ao gerar código:
 - Velocidade SEMPRE × dt (px/segundo), nunca px/quadro.
 - onDraw: começar com drawBackground e desenhar TUDO de novo (o quadro zera).
-- Preparação de partida vive em onGameStart. Botões "Jogar"/"Jogar de novo"
+- Preparação de partida vive em Ao iniciar. Botões "Jogar"/"Jogar de novo"
   chamam restartGame(); onEnterState serve para reagir à entrada sem apagar dados.
-- start() é a ÚLTIMA linha. setup() a primeira. defineMold/defineLook/
-  defineEffect/setMission ANTES do start.
+- setup vem antes das demais declarações em Ao iniciar. O boot é automático.
 - Posição aleatória: Math.random() * (SZGameKit.width() - larguraDoPersonagem).
 - Dano no jogador: gatear com isInvincible (senão empurrão+som repetem 60x/s
   durante o piscar). Morte de inimigo: "se isDead(item): burst + recycle +

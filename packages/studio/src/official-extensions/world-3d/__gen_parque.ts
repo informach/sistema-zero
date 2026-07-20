@@ -52,7 +52,6 @@ SZWorld3D.coinsLine(10, 0, 5, 0, -25);
 SZWorld3D.whisperCorner(-12, 12);
 SZWorld3D.minimap("ver");
 SZWorld3D.hud("Buzine com H! E tem um segredo: cima cima baixo baixo esq dir esq dir B A", "baixo-esquerda");
-SZWorld3D.start();
 `.trim()
 
 function stripIds<T>(value: T): T {

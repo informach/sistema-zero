@@ -1,5 +1,6 @@
 import * as Blockly from 'blockly/core'
-import { areaForBlockType, inferBehaviorAreaFromType } from './blockContracts'
+import { areaForBlockType } from './blockContracts'
+import { BEHAVIOR_AREAS_STATE_KEY, BEHAVIOR_AREAS_STATE_VERSION } from './blocksStateVersion'
 import {
   collectFlatFromWorkspace,
   FRAME_APPEARANCE,
@@ -36,7 +37,6 @@ const START_WRAPPER_BLOCK_TYPES = new Set([
   'sz_js_on_load',
 ])
 const ENGINE_BOOT_BLOCK_TYPES = new Set(['sz_gk_start', 'sz_g3k_start', 'sz_w3d_start'])
-
 interface SerializedBlock {
   type: string
   id?: string
@@ -45,6 +45,29 @@ interface SerializedBlock {
   inputs?: Record<string, { block?: SerializedBlock; shadow?: SerializedBlock }>
   next?: { block: SerializedBlock }
   [key: string]: unknown
+}
+
+type LifecycleVersionedState = Record<string, unknown> & {
+  [BEHAVIOR_AREAS_STATE_KEY]: typeof BEHAVIOR_AREAS_STATE_VERSION
+}
+
+export function markLifecycleBlocksState<T>(state: T): T | (T & LifecycleVersionedState) {
+  if (typeof state !== 'object' || state === null || Array.isArray(state)) return state
+  const record = state as Record<string, unknown>
+  if (record[BEHAVIOR_AREAS_STATE_KEY] === BEHAVIOR_AREAS_STATE_VERSION) return state
+  return {
+    ...record,
+    [BEHAVIOR_AREAS_STATE_KEY]: BEHAVIOR_AREAS_STATE_VERSION,
+  } as T & LifecycleVersionedState
+}
+
+function hasCurrentLifecycleVersion(state: unknown): boolean {
+  return (
+    typeof state === 'object' &&
+    state !== null &&
+    !Array.isArray(state) &&
+    (state as Record<string, unknown>)[BEHAVIOR_AREAS_STATE_KEY] === BEHAVIOR_AREAS_STATE_VERSION
+  )
 }
 
 /** O `blocksState` serializado já tem algum frame (container) no topo? */
@@ -109,7 +132,10 @@ function splitLegacySerializedBehavior(head: SerializedBlock | undefined): {
       return
     }
     if (ENGINE_BOOT_BLOCK_TYPES.has(block.type)) return
-    const area = areaForBlockType(block.type) ?? inferBehaviorAreaFromType(block.type)
+    // O catálogo semântico já foi registrado antes da migração. Tipo sem
+    // contrato fica em Ao iniciar por compatibilidade, sem classificador de
+    // nomes paralelo ao Blockly/IR.
+    const area = areaForBlockType(block.type) ?? 'start'
     if (area === 'events') sections.events.push(block)
     else if (area === 'loops') sections.loops.push(block)
     else sections.start.push(block)
@@ -117,6 +143,18 @@ function splitLegacySerializedBehavior(head: SerializedBlock | undefined): {
 
   for (const block of unlinkChain(head)) visit(block)
   return sections
+}
+
+function legacyDrafts(head: SerializedBlock | undefined): SerializedBlock[] {
+  const drafts: SerializedBlock[] = []
+  for (const block of unlinkChain(head)) {
+    if (START_WRAPPER_BLOCK_TYPES.has(block.type)) {
+      drafts.push(...unlinkChain(firstStatementInput(block)))
+      continue
+    }
+    if (!ENGINE_BOOT_BLOCK_TYPES.has(block.type)) drafts.push(block)
+  }
+  return drafts
 }
 
 function frame(type: string, children: SerializedBlock[], x: number, y: number): SerializedBlock {
@@ -129,13 +167,93 @@ function frame(type: string, children: SerializedBlock[], x: number, y: number):
   }
 }
 
+const FRAME_FOR_AREA = {
+  structure: FRAME_STRUCTURE,
+  appearance: FRAME_APPEARANCE,
+  start: FRAME_START,
+  events: FRAME_EVENTS,
+  loops: FRAME_LOOPS,
+} as const
+
+function appendChildrenToArea(
+  tops: SerializedBlock[],
+  area: keyof typeof FRAME_FOR_AREA,
+  children: SerializedBlock[],
+): void {
+  if (children.length === 0) return
+  const frameType = FRAME_FOR_AREA[area]
+  const existing = tops.find((block) => block.type === frameType)
+  if (!existing) {
+    const column = area === 'appearance' || area === 'events' ? 1 : area === 'loops' ? 2 : 0
+    const row = area === 'structure' || area === 'appearance' ? 0 : 1
+    tops.push(frame(frameType, children, 32 + column * 420, 32 + row * 360))
+    return
+  }
+  const current = unlinkChain(existing.inputs?.CHILDREN?.block)
+  const head = linkChain([...current, ...children])
+  existing.inputs = head
+    ? { ...(existing.inputs ?? {}), CHILDREN: { block: head } }
+    : existing.inputs
+}
+
+function migrateLooseTopBlocks(state: unknown): unknown {
+  const original = serializedTopBlocks(state)
+  if (!original || original.length === 0) return state
+  const cloned = structuredClone(state)
+  const tops = serializedTopBlocks(cloned)
+  if (!tops) return state
+
+  const kept: SerializedBlock[] = []
+  const collected = {
+    structure: [] as SerializedBlock[],
+    appearance: [] as SerializedBlock[],
+    start: [] as SerializedBlock[],
+    events: [] as SerializedBlock[],
+    loops: [] as SerializedBlock[],
+  }
+  let changed = false
+
+  for (const top of tops) {
+    if (CURRENT_FRAME_TYPES.has(top.type)) {
+      kept.push(top)
+      continue
+    }
+    const area = areaForBlockType(top.type)
+    if (!area) {
+      kept.push(top)
+      continue
+    }
+    changed = true
+    if (area === 'structure' || area === 'appearance') {
+      collected[area].push(...unlinkChain(top))
+      continue
+    }
+    const sections = splitLegacySerializedBehavior(top)
+    collected.start.push(...sections.start)
+    collected.events.push(...sections.events)
+    collected.loops.push(...sections.loops)
+  }
+
+  if (!changed) return state
+  tops.splice(0, tops.length, ...kept)
+  appendChildrenToArea(tops, 'structure', collected.structure)
+  appendChildrenToArea(tops, 'appearance', collected.appearance)
+  appendChildrenToArea(tops, 'start', collected.start)
+  appendChildrenToArea(tops, 'events', collected.events)
+  appendChildrenToArea(tops, 'loops', collected.loops)
+  return markLifecycleBlocksState(cloned)
+}
+
 function migrateLegacyBehaviorFrame(state: unknown): unknown {
   const original = serializedTopBlocks(state)
   if (!original?.some((block) => block.type === FRAME_BEHAVIOR)) return state
   const cloned = structuredClone(state)
   const tops = serializedTopBlocks(cloned)
   if (!tops) return state
-  const legacyIndex = tops.findIndex((block) => block.type === FRAME_BEHAVIOR)
+  const legacyIndexes = tops.flatMap((block, index) =>
+    block.type === FRAME_BEHAVIOR ? [index] : [],
+  )
+  const legacyIndex = legacyIndexes[0] ?? -1
   const legacy = tops[legacyIndex]
   if (!legacy) return state
   const sections = splitLegacySerializedBehavior(legacy.inputs?.CHILDREN?.block)
@@ -149,15 +267,26 @@ function migrateLegacyBehaviorFrame(state: unknown): unknown {
   if (sections.loops.length > 0) {
     replacements.push(frame(FRAME_LOOPS, sections.loops, baseX + 840, baseY))
   }
-  tops.splice(legacyIndex, 1, ...replacements)
-  return cloned
+  const duplicateDrafts = legacyIndexes.slice(1).flatMap((index, duplicateIndex) => {
+    const duplicate = tops[index]
+    if (!duplicate) return []
+    return legacyDrafts(duplicate.inputs?.CHILDREN?.block).map((draft, draftIndex) => ({
+      ...draft,
+      x: draft.x ?? (duplicate.x ?? baseX) + duplicateIndex * 32,
+      y: draft.y ?? (duplicate.y ?? baseY) + 120 + draftIndex * 48,
+    }))
+  })
+  for (const index of [...legacyIndexes].reverse()) tops.splice(index, 1)
+  tops.splice(legacyIndex, 0, ...replacements, ...duplicateDrafts)
+  return markLifecycleBlocksState(cloned)
 }
 
 /**
  * MIGRAÇÃO transparente para o modelo CONTAINER (frames). Um projeto LEGADO
- * (blocos soltos, sem frames) é re-emitido com os 3 frames — 🧱 Estrutura /
- * 🎨 Aparência / ⚙️ Comportamento — **preservando a saída**. Idempotente: se já
- * tem frame, ou está vazio/nulo/ilegível, devolve o estado ORIGINAL.
+ * (blocos soltos, sem Áreas do projeto) é re-emitido nas áreas necessárias —
+ * 🧱 Estrutura, 🎨 Aparência, ⚙️ Ao iniciar, 🎯 Eventos e 🔁 Loop principal —
+ * **preservando a saída**. Áreas antigas duplicadas viram rascunhos soltos para
+ * não executar duas vezes nem apagar o trabalho da criança.
  *
  * Carrega o estado num workspace HEADLESS de descarte, deriva a IR PLANA (a mesma
  * coleta do modelo antigo, `collectFlatFromWorkspace`) e re-emite com
@@ -185,6 +314,10 @@ export function normalizeBlocksStateToFrames(state: unknown): unknown {
   if (!migrated) return migrated
   ensureBlocklyInitialized()
   const withLifecycleAreas = migrateLegacyBehaviorFrame(migrated)
+  if (hasCurrentLifecycleVersion(withLifecycleAreas)) return withLifecycleAreas
+  const partiallyMigrated = migrateLooseTopBlocks(withLifecycleAreas)
+  if (partiallyMigrated !== withLifecycleAreas) return partiallyMigrated
+  if (withLifecycleAreas !== migrated) return markLifecycleBlocksState(withLifecycleAreas)
   const topBlocks = serializedTopBlocks(withLifecycleAreas)
   if (topBlocks?.some((block) => CURRENT_FRAME_TYPES.has(block.type))) return withLifecycleAreas
   const blocks = (withLifecycleAreas as { blocks?: { blocks?: unknown[] } }).blocks?.blocks
@@ -192,7 +325,7 @@ export function normalizeBlocksStateToFrames(state: unknown): unknown {
   const scratch = new Blockly.Workspace()
   try {
     Blockly.serialization.workspaces.load(withLifecycleAreas as Record<string, unknown>, scratch)
-    return buildWorkspaceStateFromIR(collectFlatFromWorkspace(scratch))
+    return markLifecycleBlocksState(buildWorkspaceStateFromIR(collectFlatFromWorkspace(scratch)))
   } catch (e) {
     console.warn('Migração de blocos para frames falhou; mantendo o estado original:', e)
     return migrated

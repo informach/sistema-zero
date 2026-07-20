@@ -16,7 +16,7 @@ function animLoopOf(ws: Blockly.Workspace) {
   return stmt
 }
 
-describe('mutator do "A cada frame fazer" — + revela "guardar id em [var]"', () => {
+describe('mutator do "A cada quadro fazer" — + revela "guardar id em [var]"', () => {
   beforeAll(() => ensureBlocklyInitialized())
 
   it('sem clicar no +, o loop não guarda id (sem handle)', () => {

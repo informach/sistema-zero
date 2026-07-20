@@ -4,7 +4,11 @@ import { beforeAll, describe, expect, it } from 'bun:test'
 import { generateProjectFiles } from '#generators'
 import { behaviorStatements } from '#ir'
 import { buildIRFromWorkspace, collectFlatFromWorkspace } from '../buildIR'
-import { blocksStateHasFrame, normalizeBlocksStateToFrames } from '../normalizeFrames'
+import {
+  blocksStateHasFrame,
+  markLifecycleBlocksState,
+  normalizeBlocksStateToFrames,
+} from '../normalizeFrames'
 import { ensureBlocklyInitialized } from '../setup'
 import { buildWorkspaceStateFromIR } from '../workspaceState'
 
@@ -192,5 +196,96 @@ describe('Migração transparente para frames (normalizeBlocksStateToFrames)', (
     expect(JSON.stringify(migrated)).toContain('"id":"quadro"')
     expect(JSON.stringify(migrated)).not.toContain('"id":"boot"')
     expect(normalizeBlocksStateToFrames(migrated)).toBe(migrated)
+  })
+
+  it('migra por área quando o projeto legado já estava parcialmente framado', () => {
+    const partial = {
+      blocks: {
+        languageVersion: 0,
+        blocks: [
+          { type: 'sz_frame_structure', id: 'html', x: 32, y: 32 },
+          {
+            type: 'sz_js_console_log_text',
+            id: 'comando-solto',
+            x: 32,
+            y: 400,
+            fields: { VALUE: 'continua executando' },
+          },
+        ],
+      },
+    }
+
+    const migrated = normalizeBlocksStateToFrames(partial) as typeof partial
+    expect(migrated).not.toBe(partial)
+    expect(migrated.blocks.blocks.map((block) => block.type)).toEqual([
+      'sz_frame_structure',
+      'sz_frame_start',
+    ])
+    expect(JSON.stringify(migrated)).toContain('"id":"comando-solto"')
+
+    const workspace = new Blockly.Workspace()
+    Blockly.serialization.workspaces.load(migrated, workspace)
+    expect(buildIRFromWorkspace(workspace).behavior.start[0]?.type).toBe('consoleLog')
+    workspace.dispose()
+    expect(normalizeBlocksStateToFrames(migrated)).toBe(migrated)
+  })
+
+  it('executa só a primeira área antiga e preserva duplicatas como rascunho', () => {
+    const legacy = {
+      blocks: {
+        languageVersion: 0,
+        blocks: [
+          {
+            type: 'sz_frame_behavior',
+            id: 'area-principal',
+            inputs: {
+              CHILDREN: {
+                block: { type: 'sz_js_console_log_text', id: 'executa', fields: { VALUE: 'um' } },
+              },
+            },
+          },
+          {
+            type: 'sz_frame_behavior',
+            id: 'area-duplicada',
+            inputs: {
+              CHILDREN: {
+                block: {
+                  type: 'sz_js_console_log_text',
+                  id: 'rascunho',
+                  fields: { VALUE: 'dois' },
+                },
+              },
+            },
+          },
+        ],
+      },
+    }
+
+    const migrated = normalizeBlocksStateToFrames(legacy) as typeof legacy
+    expect(migrated.blocks.blocks.map((block) => block.type)).toEqual([
+      'sz_frame_start',
+      'sz_js_console_log_text',
+    ])
+    expect(migrated.blocks.blocks[1]?.id).toBe('rascunho')
+
+    const workspace = new Blockly.Workspace()
+    Blockly.serialization.workspaces.load(migrated, workspace)
+    expect(buildIRFromWorkspace(workspace).behavior.start).toHaveLength(1)
+    expect(workspace.getBlockById('rascunho')?.getParent()).toBeNull()
+    workspace.dispose()
+    expect(normalizeBlocksStateToFrames(migrated)).toBe(migrated)
+  })
+
+  it('preserva blocos soltos como rascunho em um estado atual versionado', () => {
+    const current = markLifecycleBlocksState({
+      blocks: {
+        languageVersion: 0,
+        blocks: [
+          { type: 'sz_frame_structure', id: 'html', x: 32, y: 32 },
+          { type: 'sz_js_console_log_text', id: 'rascunho', x: 32, y: 400 },
+        ],
+      },
+    })
+    expect(normalizeBlocksStateToFrames(current)).toBe(current)
   })
 })

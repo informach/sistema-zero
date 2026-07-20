@@ -81,7 +81,7 @@ export const OBJECT_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Lê uma propriedade só se o objeto existir (não estoura se ele for nada). Vira objeto?.propriedade.',
+      'Lê uma propriedade somente se o objeto existir, sem parar o programa quando ele for vazio.',
   },
   {
     type: 'sz_js_member_set',

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'bun:test'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { createEmptyProject } from '#core'
 import { OFFICIAL_CATALOG } from '#official-extensions'
 import { useProjectStore } from '../../state/projectStore'
@@ -169,10 +169,16 @@ describe('ExtensionsPanel — conflitos entre motores', () => {
 
     const card = screen.getByText(advanced.manifest.name).closest('li')
     expect(card?.querySelector('button[disabled]')).not.toBeNull()
+    if (!card) throw new Error('fixture: card da extensão avançada ausente')
     expect(
-      screen.getByText(
-        `Remova ${simple.manifest.name} antes de instalar: as duas extensões controlam a mesma tela.`,
+      within(card).getByText(
+        `Para instalar ${advanced.manifest.name}, remova ${simple.manifest.name}: as duas extensões controlam a mesma tela.`,
       ),
     ).not.toBeNull()
+
+    const warnings = screen
+      .getAllByText(/as duas extensões controlam a mesma tela\./)
+      .map((element) => element.textContent)
+    expect(new Set(warnings).size).toBe(warnings.length)
   })
 })

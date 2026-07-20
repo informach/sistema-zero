@@ -652,6 +652,7 @@ describe('generateJS', () => {
       ],
     })
     expect(code).toContain('document.getElementById("meuForm")?.addEventListener("submit"')
+    expect(code).toContain('event.preventDefault();')
   })
 
   it('emite querySelector com const', () => {
@@ -668,7 +669,7 @@ describe('generateJS', () => {
     expect(code).toContain('document.getElementById("meuBotao")?.classList.add("ativo");')
   })
 
-  it('emite canvasDrawImage com onload', () => {
+  it('pré-carrega canvasDrawImage e resolve o asset antes de desenhar', () => {
     const code = generateJS({
       statements: [
         {
@@ -683,11 +684,120 @@ describe('generateJS', () => {
       ],
     })
     expect(code).toContain('new Image()')
-    // O src agora resolve o nome pelo manifesto de assets (biblioteca), com a URL/nome como fallback.
-    expect(code).toContain(
-      'ctxImg.src = window.__SZGAME_ASSETS?.["https://exemplo.com/img.png"] ?? "https://exemplo.com/img.png"',
+    expect(code).toContain('imagem.src = window.__SZGAME_ASSETS?.[nomeDaImagem] ?? nomeDaImagem')
+    expect(code).toContain('imagensCanvas.get("https://exemplo.com/img.png")')
+    expect(code).toContain('ctx.drawImage(ctxImagem, 0, 0, 100, 100)')
+  })
+
+  it('carrega uma imagem uma vez e a reutiliza em todos os quadros', async () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'animationLoop',
+          body: [
+            {
+              type: 'canvasDrawImage',
+              ctxVar: 'ctx',
+              src: 'nave.png',
+              x: { type: 'num', value: 10 },
+              y: { type: 'num', value: 20 },
+              w: { type: 'num', value: 64 },
+              h: { type: 'num', value: 64 },
+            },
+          ],
+        },
+      ],
+    })
+
+    let imageCreations = 0
+    class TestImage {
+      complete = false
+      naturalWidth = 64
+      private loadListeners: Array<() => void> = []
+
+      constructor() {
+        imageCreations += 1
+      }
+
+      addEventListener(type: string, listener: () => void): void {
+        if (type === 'load') this.loadListeners.push(listener)
+      }
+
+      set src(_value: string) {
+        this.complete = true
+        for (const listener of this.loadListeners) listener()
+      }
+    }
+
+    let nextFrame: (() => void) | undefined
+    const requestFrame = (callback: () => void): number => {
+      nextFrame = callback
+      return 1
+    }
+    let draws = 0
+    const ctx = { drawImage: () => draws++ }
+
+    new Function('window', 'Image', 'requestAnimationFrame', 'ctx', code)(
+      {},
+      TestImage,
+      requestFrame,
+      ctx,
     )
-    expect(code).toContain('ctx.drawImage(ctxImg, 0, 0, 100, 100)')
+    await Promise.resolve()
+    await Promise.resolve()
+    nextFrame?.()
+    nextFrame?.()
+
+    expect(imageCreations).toBe(1)
+    expect(draws).toBe(3)
+  })
+
+  it('continua o projeto quando uma imagem falha, sem tentar desenhá-la', async () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'canvasDrawImage',
+          ctxVar: 'ctx',
+          src: 'ausente.png',
+          x: { type: 'num', value: 0 },
+          y: { type: 'num', value: 0 },
+          w: { type: 'num', value: 32 },
+          h: { type: 'num', value: 32 },
+        },
+        { type: 'consoleLog', value: { type: 'str', value: 'projeto começou' } },
+      ],
+    })
+
+    class BrokenImage {
+      private errorListeners: Array<() => void> = []
+
+      addEventListener(type: string, listener: () => void): void {
+        if (type === 'error') this.errorListeners.push(listener)
+      }
+
+      set src(_value: string) {
+        for (const listener of this.errorListeners) listener()
+      }
+    }
+
+    let draws = 0
+    const logs: string[] = []
+    const warnings: string[] = []
+    new Function('window', 'Image', 'ctx', 'console', code)(
+      {},
+      BrokenImage,
+      { drawImage: () => draws++ },
+      {
+        log: (message: string) => logs.push(message),
+        warn: (_message: string, source: string) => warnings.push(source),
+      },
+    )
+    await Promise.resolve()
+    await Promise.resolve()
+
+    expect(draws).toBe(0)
+    expect(logs).toEqual(['projeto começou'])
+    expect(warnings).toEqual(['ausente.png'])
   })
 
   it('emite canvasSave/restore/translate/rotate/scale', () => {

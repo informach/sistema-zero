@@ -1,5 +1,6 @@
 import type { ExtensionDefinition } from '#extensions'
-import { validateManifest } from '#extensions'
+import { GAME_2D_LIFECYCLE, validateManifest } from '#extensions'
+import { fullscreenConflictsFor } from '../fullscreenConflicts'
 import { gameTwoDPromptSummary } from './aiSummary'
 import { gameTwoDBlocks, gameTwoDToolboxCategory } from './blocks'
 import { gameTwoDManifest } from './manifest'
@@ -11,7 +12,7 @@ validateManifest(gameTwoDManifest)
 
 export const gameTwoDExtension: ExtensionDefinition = {
   manifest: gameTwoDManifest,
-  conflictsWith: ['game-2d-advanced'],
+  conflictsWith: fullscreenConflictsFor('game-2d'),
   // Os Kits de Jogo são FACILITADORES p/ quem começa → 2D já no INICIANTE 2D (o
   // 3D entra no iniciante-3d; o "na unha"/manual fica avançado). A extensão
   // continua oferecendo a paleta completa; a aula escolhe quais blocos apresentar.
@@ -22,6 +23,7 @@ export const gameTwoDExtension: ExtensionDefinition = {
   },
   runtime: {
     bootstrapScript: gameTwoDRuntime,
+    lifecycle: GAME_2D_LIFECYCLE,
   },
   ai: {
     promptSummary: gameTwoDPromptSummary,

@@ -196,6 +196,33 @@ function seedModels(models: Record<string, string>) {
   ;(globalThis.window as unknown as Record<string, unknown>).__SZGAME_ASSETS_3D = entries
 }
 
+/** Radiance HDR mínimo (1×1, sem RLE) aceito pelo RGBELoader real. */
+function makeHdrDataUrl(red: number, green: number, blue: number): string {
+  const header = new TextEncoder().encode('#?RADIANCE\nFORMAT=32-bit_rle_rgbe\n\n-Y 1 +X 1\n')
+  const bytes = new Uint8Array(header.length + 4)
+  bytes.set(header)
+  bytes.set([red, green, blue, 129], header.length)
+  let binary = ''
+  for (const byte of bytes) binary += String.fromCharCode(byte)
+  return `data:application/octet-stream;base64,${btoa(binary)}`
+}
+
+function seedEnvironments(environments: Record<string, string>) {
+  const entries: Record<string, unknown> = {}
+  for (const [name, dataUrl] of Object.entries(environments)) {
+    entries[name] = { kind: 'environment3d', dataUrl, fileName: `${name}.hdr` }
+  }
+  ;(globalThis.window as unknown as Record<string, unknown>).__SZGAME_ASSETS_3D = entries
+}
+
+async function waitUntil(predicate: () => boolean): Promise<void> {
+  for (let i = 0; i < 60; i++) {
+    if (predicate()) return
+    await new Promise((resolve) => setTimeout(resolve, 5))
+  }
+  throw new Error('a condição assíncrona não aconteceu a tempo')
+}
+
 /**
  * O nó do .glb aparece na árvore do mesh da entidade? (= o modelo entrou de fato,
  * em vez do cubo de reserva). A entidade é um objeto simples com `.mesh` — não
@@ -438,5 +465,36 @@ describe('SZGameKit3D — modelos .glb', () => {
       console.warn = orig
     }
     expect(avisos.some((m) => m.includes('sumido') && m.includes('reserva'))).toBe(true)
+  })
+})
+
+describe('SZGameKit3D — ambientes .hdr', () => {
+  it('troca e remove o HDR sem vazar textura nem deixar iluminação antiga', async () => {
+    seedEnvironments({
+      dia: makeHdrDataUrl(160, 190, 255),
+      noite: makeHdrDataUrl(20, 30, 80),
+    })
+    const { api, renderers } = await loadStartedKit()
+    const scene = renderers[0]?.scene
+    expect(scene).toBeTruthy()
+
+    api.setSkyPhoto('dia')
+    await waitUntil(() => Boolean(scene?.environment))
+    const day = scene?.environment
+    let dayDisposals = 0
+    day?.addEventListener('dispose', () => dayDisposals++)
+
+    api.setSkyPhoto('noite')
+    await waitUntil(() => Boolean(scene?.environment && scene.environment !== day))
+    const night = scene?.environment
+    expect(dayDisposals).toBe(1)
+    expect(scene?.background).toBe(night)
+
+    let nightDisposals = 0
+    night?.addEventListener('dispose', () => nightDisposals++)
+    api.setSky('#111827', '#93c5fd')
+    expect(scene?.environment).toBeNull()
+    expect(scene?.background).not.toBe(night)
+    expect(nightDisposals).toBe(1)
   })
 })

@@ -16,14 +16,17 @@ import {
   collectGroups3d,
   collectGroupsAndLists,
   collectMethodNames,
+  collectMutableVariables,
   collectObjects3d,
   collectPropertyNames,
   collectScenes3d,
   collectScopedVariableNames,
   collectSpritesheets,
+  collectSVGReferences,
   collectTilemaps,
   collectVariables,
   FieldNamePicker,
+  nameKindAllowsFreeText,
 } from '../FieldNamePicker'
 
 describe('FieldNamePicker', () => {
@@ -86,6 +89,35 @@ describe('FieldNamePicker', () => {
       expect(collectVariables(ws)).toEqual(['contador'])
     })
 
+    it('atribuir não declara e variáveis internas de evento não viram globais', () => {
+      const ws = new Blockly.Workspace()
+      ws.newBlock('sz_js_var_assign').setFieldValue('fantasma', 'NAME')
+      ws.newBlock('sz_js_var_create').setFieldValue('global', 'NAME')
+      const click = ws.newBlock('sz_js_on_click')
+      const local = ws.newBlock('sz_js_var_create')
+      local.setFieldValue('dentroDoClique', 'NAME')
+      click.getInput('DO')?.connection?.connect(local.previousConnection as Blockly.Connection)
+
+      expect(collectVariables(ws)).toEqual(['global'])
+    })
+
+    it('a escrita vê apenas variáveis mutáveis no seu escopo', () => {
+      const ws = new Blockly.Workspace()
+      ws.newBlock('sz_js_var_create').setFieldValue('global', 'NAME')
+      ws.newBlock('sz_js_const_create').setFieldValue('FIXA', 'NAME')
+
+      const click = ws.newBlock('sz_js_on_click')
+      const local = ws.newBlock('sz_js_var_create')
+      local.setFieldValue('local', 'NAME')
+      const inside = ws.newBlock('sz_js_var_assign')
+      local.nextConnection?.connect(inside.previousConnection as Blockly.Connection)
+      click.getInput('DO')?.connection?.connect(local.previousConnection as Blockly.Connection)
+
+      const outside = ws.newBlock('sz_js_var_assign')
+      expect(collectMutableVariables(inside)).toEqual(['global', 'local'])
+      expect(collectMutableVariables(outside)).toEqual(['global'])
+    })
+
     it('workspace vazio → lista vazia', () => {
       expect(collectVariables(new Blockly.Workspace())).toEqual([])
       expect(collectVariables(null)).toEqual([])
@@ -139,6 +171,25 @@ describe('FieldNamePicker', () => {
     })
   })
 
+  describe('tipos de seletor para leitura e escrita', () => {
+    const kindOf = (type: string): string | undefined => {
+      const block = new Blockly.Workspace().newBlock(type)
+      const field = block.getField('NAME')
+      return field instanceof FieldNamePicker ? field.kind : undefined
+    }
+
+    it('leitura aceita constante; alteração exige variável mutável', () => {
+      expect(kindOf('sz_val_variable')).toBe('variable')
+      expect(kindOf('sz_js_var_assign')).toBe('mutable-variable')
+      expect(kindOf('sz_js_var_increment')).toBe('mutable-variable')
+    })
+
+    it('alteração exige escolher um nome existente; leitura ainda aceita texto livre', () => {
+      expect(nameKindAllowsFreeText('mutable-variable')).toBe(false)
+      expect(nameKindAllowsFreeText('variable')).toBe(true)
+    })
+  })
+
   describe('collectGroupsAndLists — grupos de sprites + listas de verdade', () => {
     it('reconhece grupos do Jogo 2D (Criar grupo de sprites)', () => {
       const ws = new Blockly.Workspace()
@@ -170,12 +221,22 @@ describe('FieldNamePicker', () => {
     it('junta grupos e listas sem repetir', () => {
       const ws = new Blockly.Workspace()
       ws.newBlock('sz_g2d_create_group').setFieldValue('inimigos', 'NAME')
-      const varBlock = ws.newBlock('sz_js_var_assign')
+      const varBlock = ws.newBlock('sz_js_var_create')
       varBlock.setFieldValue('placar', 'NAME')
       const arr = ws.newBlock('sz_val_array')
       varBlock.getInput('VALUE')?.connection?.connect(arr.outputConnection as Blockly.Connection)
 
       expect(collectGroupsAndLists(ws)).toEqual(['inimigos', 'placar'])
+    })
+
+    it('alterar para uma lista não transforma um nome inexistente em declaração', () => {
+      const ws = new Blockly.Workspace()
+      const assignment = ws.newBlock('sz_js_var_assign')
+      assignment.setFieldValue('fantasma', 'NAME')
+      const arr = ws.newBlock('sz_val_array')
+      assignment.getInput('VALUE')?.connection?.connect(arr.outputConnection as Blockly.Connection)
+
+      expect(collectGroupsAndLists(ws)).toEqual([])
     })
   })
 
@@ -340,10 +401,27 @@ describe('FieldNamePicker', () => {
     it('liga cada consumidor ao kind correto e mantém declarações como texto', () => {
       const ws = new Blockly.Workspace()
       expect(kindOf(ws.newBlock('sz_css_background_color'), 'SELECTOR')).toBe('selector')
+      expect(kindOf(ws.newBlock('sz_css_fill'), 'SELECTOR')).toBe('selector')
+      expect(kindOf(ws.newBlock('sz_css_stroke'), 'SELECTOR')).toBe('selector')
+      expect(kindOf(ws.newBlock('sz_svg_use'), 'HREF')).toBe('svg-reference')
       expect(kindOf(ws.newBlock('sz_css_use_font'), 'FONT')).toBe('font')
       expect(kindOf(ws.newBlock('sz_css_apply_animation'), 'NAME')).toBe('animation')
       expect(ws.newBlock('sz_css_google_font').getField('FONT')).not.toBeInstanceOf(FieldNamePicker)
       expect(ws.newBlock('sz_css_keyframes').getField('NAME')).not.toBeInstanceOf(FieldNamePicker)
+    })
+
+    it('oferece ids das formas SVG para CSS e reutilização', () => {
+      const ws = new Blockly.Workspace()
+      const circle = ws.newBlock('sz_svg_circle')
+      circle.setFieldValue('bola', 'ID')
+      circle.setFieldValue('forma redonda', 'CLASS')
+
+      expect(collectCSSSelectors(ws)).toEqual(['body', '#bola', '.forma', '.redonda'])
+      expect(collectSVGReferences(ws)).toEqual(['#bola'])
+
+      const use = ws.newBlock('sz_svg_use')
+      const href = use.getField('HREF') as FieldNamePicker
+      expect(href.kind).toBe('svg-reference')
     })
   })
 

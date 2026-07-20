@@ -36,9 +36,12 @@ chamadas explícitas para \`SZGame2D.createSprite(...)\` e \`SZGame2D.gameLoop(.
 
 ### Blocos disponíveis
 
-- **Quando o jogo começar** — raiz da partida: coloque dentro dele o preparo da tela,
-  personagens, variáveis, eventos e os blocos de quadro. Ao reiniciar, tudo é limpo
-  e este conteúdo roda novamente.
+- **⚙️ Ao iniciar** — prepare a tela, crie personagens, grupos e variáveis. Esta
+  área roda novamente depois de **Reiniciar o jogo**.
+- **🎯 Eventos** — coloque os chapéus “Quando…”: tecla, clique, contato e outras
+  reações. O runtime registra tudo uma vez por partida.
+- **🔁 Loop principal** — coloque “A cada quadro”, “A cada N quadros” e “A cada N
+  segundos”. Cada raiz tem seu próprio agendamento e não fica dentro de outra.
 - **Preparar o jogo em tela cheia** — atalho para começar: prepara a tela (largura × altura) ocupando a janela, responsiva (mantém a proporção e redimensiona sozinha), **centralizada**, com uma **cor de fundo** que combina com o jogo (vai no canvas e na sobra ao redor). Não precisa criar o canvas no HTML. Os blocos individuais continuam disponíveis para montar na mão.
 - **Preparar o jogo para ocupar a tela toda** — como o de cima, mas **sem dimensões**: o canvas preenche a tela INTEIRA (sem barras nas laterais) e a área do jogo **acompanha** o tamanho da janela — a resolução do jogo passa a ser o tamanho da tela. Aqui "a largura/altura da tela" mudam com a janela, então centralize por eles (não por números fixos). Combine com "entrar em tela cheia" para o jogo tomar o monitor todo. Use UM dos dois "Preparar", no começo.
 - **Criar sprite** — define um objeto com \`x\`, \`y\`, \`largura\`, \`altura\`, \`cor\`.
@@ -50,6 +53,9 @@ chamadas explícitas para \`SZGame2D.createSprite(...)\` e \`SZGame2D.gameLoop(.
 - **Mostrar fim de jogo com o texto** — escreve a mensagem em vermelho no canvas.
 - **A cada quadro do jogo...** — registra uma atualização no agendador do motor, em
   passos fixos de 60 Hz. Vários blocos desse tipo coexistem sem cancelar um ao outro.
+
+O Estúdio liga o motor automaticamente. O antigo bloco “Quando o jogo começar”
+existe apenas para migrar projetos salvos e não aparece na paleta.
 
 ### Física, áudio e mouse (v0.2.0)
 

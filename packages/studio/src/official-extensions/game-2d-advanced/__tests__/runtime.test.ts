@@ -1148,6 +1148,15 @@ describe('SZGameKit — máquina de estados', () => {
     expect(warnings).toEqual([])
   })
 
+  it('preserva o estado escolhido antes do boot para permitir jogo sem menu', async () => {
+    const h = loadRuntime()
+
+    h.api.setState('jogando')
+    await startGame(h)
+
+    expect(h.api.state()).toBe('jogando')
+  })
+
   it('pause só pausa jogando; resume só continua pausado; endGame vai ao fim', () => {
     const { api } = loadRuntime()
     api.pause() // no menu: não faz nada

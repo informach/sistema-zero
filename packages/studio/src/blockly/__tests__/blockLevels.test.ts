@@ -75,6 +75,11 @@ describe('resolveBlockLevel — amostras representativas', () => {
       'sz_js_for_range',
       'sz_math_arithmetic',
       'sz_js_function',
+      'sz_js_return',
+      'sz_js_return_void',
+      'sz_val_arg',
+      'sz_js_array_push',
+      'sz_val_array',
       'sz_g2d_sprite_vx', // getter de velocidade
       'sz_g2d_set_opacity',
       'sz_css_display_flex',
@@ -86,6 +91,13 @@ describe('resolveBlockLevel — amostras representativas', () => {
     ]) {
       expect(resolveBlockLevel(t)).toBe('intermediario-2d')
     }
+  })
+
+  it('mantém unidades pedagógicas no mesmo degrau', () => {
+    expect(resolveBlockLevel('sz_js_storage_set')).toBe('iniciante-2d')
+    expect(resolveBlockLevel('sz_val_storage_get')).toBe('iniciante-2d')
+    expect(resolveBlockLevel('sz_js_on_submit')).toBe('iniciante-2d')
+    expect(resolveBlockLevel('sz_js_event_method')).toBe('avancado-2d')
   })
 
   it('Mundo 3D = intermediario-3d (prefixo inteiro)', () => {

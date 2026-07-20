@@ -38,6 +38,11 @@ import {
   SZIRInputSchema,
 } from '#ir'
 import { findExtension } from '#official-extensions'
+import {
+  BEHAVIOR_AREAS_STATE_KEY,
+  BEHAVIOR_AREAS_STATE_VERSION,
+  hasValidBehaviorAreasStateVersion,
+} from '../blockly/blocksStateVersion'
 import { createProProject as createProProjectFromTemplate } from '../components/code/pro-templates'
 import { STUDENT_BASELINE_PERMISSIONS } from '../preview/permissionGuard'
 import {
@@ -435,6 +440,10 @@ export const CORE_BLOCKLY_BLOCK_TYPES = new Set([
   'sz_html_ul',
   'sz_html_svg',
   'sz_svg_group',
+  'sz_svg_title',
+  'sz_svg_desc',
+  'sz_svg_defs',
+  'sz_svg_symbol',
   'sz_svg_path',
   'sz_svg_circle',
   'sz_svg_rect',
@@ -1439,6 +1448,7 @@ export const EXTENSION_BLOCKLY_BLOCK_TYPES: Record<string, ReadonlySet<string>> 
     'sz_w3d_flatten',
     'sz_w3d_path',
     'sz_w3d_water',
+    'sz_w3d_sky_photo',
     'sz_w3d_start',
     'sz_w3d_world_size',
     'sz_w3d_ground_height',
@@ -1922,8 +1932,13 @@ function describeBlocklyValidationFailure(
     return 'raiz não é objeto plano'
   }
   const rootKeys = Object.keys(raw)
-  const extraRoot = rootKeys.find((k) => k !== 'blocks' && k !== 'variables')
+  const extraRoot = rootKeys.find(
+    (k) => k !== 'blocks' && k !== 'variables' && k !== BEHAVIOR_AREAS_STATE_KEY,
+  )
   if (extraRoot) return `chave de raiz inesperada: "${extraRoot}"`
+  if (!hasValidBehaviorAreasStateVersion(raw)) {
+    return `versão das áreas de comportamento inesperada: ${JSON.stringify(raw[BEHAVIOR_AREAS_STATE_KEY])} (esperada ${BEHAVIOR_AREAS_STATE_VERSION})`
+  }
 
   const blocksSection = (raw as { blocks?: unknown }).blocks
   if (
@@ -2283,7 +2298,14 @@ function isSupportedBlocklyWorkspaceState(
 ): raw is Record<string, unknown> {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !isPlainRecord(raw)) return false
   const rootKeys = Object.keys(raw)
-  if (rootKeys.some((key) => key !== 'blocks' && key !== 'variables')) return false
+  if (
+    rootKeys.some(
+      (key) => key !== 'blocks' && key !== 'variables' && key !== BEHAVIOR_AREAS_STATE_KEY,
+    )
+  ) {
+    return false
+  }
+  if (!hasValidBehaviorAreasStateVersion(raw)) return false
 
   const blocksSection = raw.blocks
   if (

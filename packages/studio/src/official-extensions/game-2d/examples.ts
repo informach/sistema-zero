@@ -39,7 +39,7 @@ function liftBeginnerPeriodicLoops(loops: JSStatement[]): JSStatement[] {
 
 /**
  * Todos os cartões ensinam o mesmo caminho que a criança usa nas aulas: um
- * único “Quando o jogo começar” prepara o palco implícito e contém a partida.
+ * “Ao iniciar” prepara o palco implícito; eventos e loops ficam nas áreas próprias.
  * O canvas deixa de ser uma peça escondida no HTML do exemplo.
  */
 function beginnerGameExample(example: ExtensionExample): ExtensionExample {

@@ -1,4 +1,5 @@
 import type { ExtensionToolboxCategory } from '#extensions'
+import type { BlockDefinition } from '../../blockly/blocks/types'
 import { categoryShades } from '../../blockly/colorShades'
 
 // Mundo 3D = UMA cor da categoria: ESMERALDA (natureza/mundo). As sub-categorias
@@ -7,7 +8,7 @@ import { categoryShades } from '../../blockly/colorShades'
 // amarelo (Jogo 3D) e do verde-folha do SVG (este é mais escuro e azulado).
 const C = '#059669'
 
-export const world3DBlocks = [
+export const world3DBlocks: BlockDefinition[] = [
   // ---- 🌍 Mundo ----
   {
     type: 'sz_w3d_setup',
@@ -96,14 +97,33 @@ export const world3DBlocks = [
       'Enche o mundo de água até uma altura (as partes do chão mais baixas viram lago/mar). A água ondula; o carrinho fica lento na beirada e, se cair fundo, volta para o último lugar seco. Altura 0 alaga só os buracos; altura 3 faz um mundo de ilhas.',
   },
   {
+    type: 'sz_w3d_sky_photo',
+    message0: 'Usar o céu 360° HDR %1 🌅',
+    args0: [
+      {
+        type: 'field_asset_picker',
+        name: 'ASSET',
+        text: '',
+        kind: '3d',
+        filter: 'environment3d',
+      },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Usa um arquivo .hdr do projeto como céu panorâmico e iluminação ambiente. Sem arquivo, o céu procedural do estilo continua funcionando.',
+  },
+  {
     type: 'sz_w3d_start',
     message0: 'Começar o passeio',
     args0: [],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    hidden: true,
     tooltip:
-      'Liga o mundo: monta o chão, o céu e o carrinho, abre a telinha de "clique para começar" e começa o laço de quadros. Use uma vez, NO FIM, depois de preparar tudo.',
+      'Bloco legado: projetos atuais começam o passeio automaticamente depois de preparar o mundo.',
   },
   {
     type: 'sz_w3d_world_size',
@@ -291,7 +311,13 @@ export const world3DBlocks = [
     message0: 'Espalhar %1 cópias do modelo %2 (tamanho %3)',
     args0: [
       { type: 'input_value', name: 'N', check: 'JSValue' },
-      { type: 'field_input', name: 'MODEL', text: '' },
+      {
+        type: 'field_asset_picker',
+        name: 'MODEL',
+        text: '',
+        kind: '3d',
+        filter: 'model3d',
+      },
       { type: 'input_value', name: 'S', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -299,7 +325,7 @@ export const world3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Espalha cópias de um modelo .glb SEU (envie no painel de imagens → modelos 3D e escreva o nome dele aqui). Cada cópia pousa no terreno com giro e tamanho parecidos. Tamanho 1 = o tamanho original do arquivo.',
+      'Espalha cópias de um modelo .glb SEU (envie no painel de imagens → modelos 3D e escolha no seletor). Cada cópia pousa no terreno com giro e tamanho parecidos. Tamanho 1 = o tamanho original do arquivo.',
   },
   {
     type: 'sz_w3d_place_thing',
@@ -333,7 +359,13 @@ export const world3DBlocks = [
     type: 'sz_w3d_place_model',
     message0: 'Pôr o modelo %1 em x %2 z %3 (tamanho %4, girado %5 graus)',
     args0: [
-      { type: 'field_input', name: 'MODEL', text: '' },
+      {
+        type: 'field_asset_picker',
+        name: 'MODEL',
+        text: '',
+        kind: '3d',
+        filter: 'model3d',
+      },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Z', check: 'JSValue' },
       { type: 'input_value', name: 'S', check: 'JSValue' },
@@ -1698,7 +1730,7 @@ export const world3DBlocks = [
   {
     type: 'sz_w3d_play_sound',
     message0: 'Tocar o som %1',
-    args0: [{ type: 'field_input', name: 'NAME', text: 'buzina' }],
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'buzina', kind: 'sound' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1708,7 +1740,7 @@ export const world3DBlocks = [
   {
     type: 'sz_w3d_play_music',
     message0: 'Tocar a música %1 sem parar',
-    args0: [{ type: 'field_input', name: 'NAME', text: 'musica' }],
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'musica', kind: 'sound' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -2170,7 +2202,7 @@ export const world3DBlocks = [
     message0: 'Tirar %1 unidades do item %2 🎒',
     args0: [
       { type: 'input_value', name: 'N', check: 'JSValue' },
-      { type: 'field_input', name: 'ITEM', text: 'madeira' },
+      { type: 'field_name_picker', name: 'ITEM', text: 'madeira', kind: 'item' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -2181,7 +2213,7 @@ export const world3DBlocks = [
   {
     type: 'sz_w3d_inventory_count',
     message0: 'quantos %1 há no inventário',
-    args0: [{ type: 'field_input', name: 'ITEM', text: 'madeira' }],
+    args0: [{ type: 'field_name_picker', name: 'ITEM', text: 'madeira', kind: 'item' }],
     output: 'JSValue',
     colour: C,
     tooltip: 'Informa a quantidade salva desse item.',
@@ -2191,7 +2223,7 @@ export const world3DBlocks = [
     message0: 'tem pelo menos %1 do item %2 ?',
     args0: [
       { type: 'input_value', name: 'N', check: 'JSValue' },
-      { type: 'field_input', name: 'ITEM', text: 'madeira' },
+      { type: 'field_name_picker', name: 'ITEM', text: 'madeira', kind: 'item' },
     ],
     inputsInline: true,
     output: 'JSValue',
@@ -2199,6 +2231,96 @@ export const world3DBlocks = [
     tooltip: 'Verdadeiro quando o inventário tem a quantidade pedida.',
   },
 ]
+
+/**
+ * Receitas que constroem ou reconstroem partes persistentes do mundo. Elas
+ * pertencem à área "Ao iniciar" e não podem ser encaixadas em eventos/laços:
+ * isso evita registrar ganchos repetidos ou reconstruir geometria a 60 FPS.
+ * Ações momentâneas (confete, fala, teleporte, clima, inventário etc.) seguem
+ * disponíveis dentro dos corpos de eventos e de "A cada quadro".
+ */
+const START_ONLY_WORLD_BUILDERS = new Set([
+  'sz_w3d_setup',
+  'sz_w3d_terrain',
+  'sz_w3d_flatten',
+  'sz_w3d_path',
+  'sz_w3d_water',
+  'sz_w3d_sky_photo',
+  'sz_w3d_car',
+  'sz_w3d_car_stats',
+  'sz_w3d_car_boost',
+  'sz_w3d_engine_sound',
+  'sz_w3d_grass',
+  'sz_w3d_scatter',
+  'sz_w3d_scatter_model',
+  'sz_w3d_place_thing',
+  'sz_w3d_place_model',
+  'sz_w3d_clear_area',
+  'sz_w3d_horn',
+  'sz_w3d_car_lights',
+  'sz_w3d_tire_marks',
+  'sz_w3d_minimap',
+  'sz_w3d_race_podium',
+  'sz_w3d_whisper_corner',
+  'sz_w3d_flame_note',
+  'sz_w3d_coins_scatter',
+  'sz_w3d_coins_ring',
+  'sz_w3d_coins_line',
+  'sz_w3d_quest',
+  'sz_w3d_marker',
+  'sz_w3d_npc',
+  'sz_w3d_npc_wander',
+  'sz_w3d_npc_talk',
+  'sz_w3d_npc_ask',
+  'sz_w3d_islands',
+  'sz_w3d_boat',
+  'sz_w3d_bridge',
+  'sz_w3d_lighthouse',
+  'sz_w3d_person',
+  'sz_w3d_person_stats',
+  'sz_w3d_person_accessory',
+  'sz_w3d_waterfall',
+  'sz_w3d_lamp',
+  'sz_w3d_fireflies',
+  'sz_w3d_campfire',
+  'sz_w3d_push_place',
+  'sz_w3d_push_scatter',
+  'sz_w3d_letters',
+  'sz_w3d_explosive',
+  'sz_w3d_point',
+  'sz_w3d_zone',
+  'sz_w3d_totem_text',
+  'sz_w3d_totem_image',
+  'sz_w3d_gallery_create',
+  'sz_w3d_gallery_add',
+  'sz_w3d_race_create',
+  'sz_w3d_race_checkpoint',
+  'sz_w3d_bowling_create',
+  'sz_w3d_stack',
+  'sz_w3d_effects',
+  'sz_w3d_load_sound',
+  'sz_w3d_city',
+  'sz_w3d_crops',
+  'sz_w3d_barn',
+  'sz_w3d_windmill',
+  'sz_w3d_fence',
+  'sz_w3d_animals',
+  'sz_w3d_crater',
+  'sz_w3d_flag',
+  'sz_w3d_rocket',
+  'sz_w3d_door',
+  'sz_w3d_traffic',
+  'sz_w3d_string_lights',
+  'sz_w3d_district',
+  'sz_w3d_road_grid',
+  'sz_w3d_house_row',
+  'sz_w3d_quality',
+])
+
+for (const block of world3DBlocks) {
+  if (!START_ONLY_WORLD_BUILDERS.has(block.type)) continue
+  block.placement = { root: ['start'], nested: [], role: 'command' }
+}
 
 // ---- Sub-categorias da paleta (a ordem é a ordem de leitura da criança) ----
 
@@ -2212,6 +2334,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_w3d_flatten',
       'sz_w3d_path',
       'sz_w3d_water',
+      'sz_w3d_sky_photo',
       'sz_w3d_start',
       'sz_w3d_world_size',
       'sz_w3d_ground_height',
@@ -2447,7 +2570,13 @@ for (const b of world3DBlocks) {
 
 // Rede de segurança: bloco fora de qualquer sub-categoria cai num grupo "Mais".
 const CATEGORIZED = new Set(SUBCATS.flatMap((sc) => sc.types))
-const leftover = world3DBlocks.map((b) => b.type).filter((t) => !CATEGORIZED.has(t))
+const VISIBLE_BLOCK_TYPES = new Set(
+  world3DBlocks.filter((block) => !block.hidden).map((b) => b.type),
+)
+const leftover = world3DBlocks
+  .filter((block) => !block.hidden)
+  .map((block) => block.type)
+  .filter((type) => !CATEGORIZED.has(type))
 
 // Sombras pré-preenchidas dos soquetes de VALOR que aparecem na paleta.
 const numShadow = (value: number) => ({ shadow: { type: 'sz_val_number', fields: { NUM: value } } })
@@ -2584,7 +2713,7 @@ export const world3DToolboxCategory: ExtensionToolboxCategory = {
       kind: 'category' as const,
       name: sc.name,
       colour: sc.colour,
-      contents: sc.types.map(toolboxBlock),
+      contents: sc.types.filter((type) => VISIBLE_BLOCK_TYPES.has(type)).map(toolboxBlock),
     })),
     ...(leftover.length > 0
       ? [

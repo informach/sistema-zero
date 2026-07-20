@@ -29,6 +29,8 @@ export interface FakeRenderer {
   /** A CENA viva, capturada junto da câmera (mesmo filtro anti-quad do composer)
    *  — é como os testes observam luz/sombras e as partículas (Points/drawRange). */
   scene: RealTHREE.Scene | null
+  capabilities: { maxTextureSize: number }
+  sizes: Array<{ width: number; height: number; updateStyle: boolean }>
   shadowMap: { enabled: boolean; type: number }
   toneMapping: number
   setPixelRatio: (n: number) => void
@@ -61,10 +63,14 @@ export function makeFakeThree() {
       loop: null,
       camera: null,
       scene: null,
+      capabilities: { maxTextureSize: 2048 },
+      sizes: [],
       shadowMap: { enabled: false, type: 0 },
       toneMapping: 0,
       setPixelRatio: () => {},
-      setSize: () => {},
+      setSize: (width, height, updateStyle) => {
+        r.sizes.push({ width, height, updateStyle })
+      },
       setAnimationLoop: (fn) => {
         r.loop = fn
       },
@@ -103,6 +109,7 @@ export function makeFakeThree() {
 export interface KitApi {
   setup(opts: Record<string, unknown>): void
   start(): void
+  runProject(fn: () => void): void
   state(): string
   setState(name: string): void
   onEnterState(name: string, fn: () => void): void
@@ -148,6 +155,21 @@ export interface KitApi {
   timeLeft(): number
   stopTimer(): void
   onTimerEnd(fn: () => void): void
+  defineEffect(name: string, opts: Record<string, unknown>): void
+  addAttractor(
+    effect: string,
+    x: number,
+    y: number,
+    z: number,
+    intensity: number,
+    radius: number,
+  ): void
+  addLight(color: string, x: number, y: number, z: number, intensity: number): void
+  setAmbient(intensity: number): void
+  setFog(color: string, near: number, far: number): void
+  setSky(top: string, bottom: string): void
+  setSkyPhoto(name: string): void
+  addButton(screen: string, label: string, fn: () => void): void
   playMusic(name: string): void
   playSound(name: string): void
   loadSound(name: string, asset: string): void

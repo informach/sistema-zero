@@ -1,5 +1,6 @@
 import * as Blockly from 'blockly/core'
-import { isCategoryAllowed, type LearningProfile } from '#core'
+import { FULL_LEARNING_PROFILE, isBlockTypeAllowed, type LearningProfile } from '#core'
+import { resolveBlockLevel } from './blockLevels'
 import { FUNCTION_BLOCKS, OOP_BLOCKS } from './blocks'
 import { getParamNames } from './blocks/paramsMutator'
 import { socketInputsFor } from './blocks/valueSockets'
@@ -91,9 +92,25 @@ const LEGACY_OOP_TYPES = new Set([
 ])
 
 /** Entradas estáticas dos blocos de classe (com sombras nos slots de valor). */
-function staticEntries(): FlyoutItem[] {
+function dynamicBlockAllowed(
+  type: string,
+  category: 'Funções' | 'Classes',
+  profile: LearningProfile,
+): boolean {
+  if (profile.allowBlocks && profile.allowBlocks.length > 0) {
+    return profile.allowBlocks.includes(type)
+  }
+  if (profile.allowCategories?.includes(category)) return true
+  return isBlockTypeAllowed(type, resolveBlockLevel(type), profile)
+}
+
+function staticEntries(profile: LearningProfile): FlyoutItem[] {
   return OOP_BLOCKS.filter(
-    (b) => !b.hidden && b.type !== 'sz_val_arg' && !LEGACY_OOP_TYPES.has(b.type),
+    (b) =>
+      !b.hidden &&
+      b.type !== 'sz_val_arg' &&
+      !LEGACY_OOP_TYPES.has(b.type) &&
+      dynamicBlockAllowed(b.type, 'Classes', profile),
   ).map((b) => {
     const inputs = socketInputsFor(b.type)
     if (!inputs) return { kind: 'block', type: b.type }
@@ -101,15 +118,15 @@ function staticEntries(): FlyoutItem[] {
   })
 }
 
-function classesFlyout(workspace: Blockly.WorkspaceSvg): FlyoutItem[] {
-  const items: FlyoutItem[] = [...staticEntries()]
+function classesFlyout(workspace: Blockly.WorkspaceSvg, profile: LearningProfile): FlyoutItem[] {
+  const items: FlyoutItem[] = [...staticEntries(profile)]
 
   const selected = Blockly.common.getSelected()
   const selectedBlock = selected instanceof Blockly.BlockSvg ? selected : null
   let names = selectedBlock ? scopeParams(selectedBlock) : null
   if (!names || names.length === 0) names = allParams(workspace)
 
-  if (names.length > 0) {
+  if (names.length > 0 && dynamicBlockAllowed('sz_val_arg', 'Classes', profile)) {
     items.push({ kind: 'label', text: 'Parâmetros' })
     for (const name of names) {
       items.push({ kind: 'block', type: 'sz_val_arg', fields: { NAME: name } })
@@ -119,14 +136,15 @@ function classesFlyout(workspace: Blockly.WorkspaceSvg): FlyoutItem[] {
 }
 
 /** Registra o callback do flyout da categoria Classes num workspace. */
-export function registerClassesFlyout(workspace: Blockly.WorkspaceSvg): void {
+export function registerClassesFlyout(
+  workspace: Blockly.WorkspaceSvg,
+  profile: LearningProfile = FULL_LEARNING_PROFILE,
+): void {
   ensureParamsVersionTracking(workspace)
-  workspace.registerToolboxCategoryCallback(
-    CLASSES_FLYOUT_CALLBACK,
-    classesFlyout as unknown as (
-      ws: Blockly.WorkspaceSvg,
-    ) => Blockly.utils.toolbox.FlyoutItemInfo[],
-  )
+  workspace.registerToolboxCategoryCallback(CLASSES_FLYOUT_CALLBACK, ((ws: Blockly.WorkspaceSvg) =>
+    classesFlyout(ws, profile)) as unknown as (
+    ws: Blockly.WorkspaceSvg,
+  ) => Blockly.utils.toolbox.FlyoutItemInfo[])
 }
 
 /** Tipo de bloco como item de flyout, já com sombras dos slots de valor. */
@@ -140,19 +158,15 @@ function blockEntry(type: string): FlyoutItem {
  * chamar como comando/valor) e `retornar`, mais os relatores (`sz_val_arg`) dos
  * parâmetros da função em edição (escopo = bloco selecionado; fallback = todos).
  */
-function functionsFlyout(workspace: Blockly.WorkspaceSvg): FlyoutItem[] {
-  const items: FlyoutItem[] = [
-    ...FUNCTION_BLOCKS.filter((b) => !b.hidden).map((b) => blockEntry(b.type)),
-    blockEntry('sz_js_return'),
-    blockEntry('sz_js_return_void'),
-  ]
+function functionsFlyout(workspace: Blockly.WorkspaceSvg, profile: LearningProfile): FlyoutItem[] {
+  const items: FlyoutItem[] = functionCategoryBlockTypes(profile).map(blockEntry)
 
   const selected = Blockly.common.getSelected()
   const selectedBlock = selected instanceof Blockly.BlockSvg ? selected : null
   let names = selectedBlock ? scopeParams(selectedBlock) : null
   if (!names || names.length === 0) names = allParams(workspace)
 
-  if (names.length > 0) {
+  if (names.length > 0 && dynamicBlockAllowed('sz_val_arg', 'Funções', profile)) {
     items.push({ kind: 'label', text: 'Parâmetros' })
     for (const name of names) {
       items.push({ kind: 'block', type: 'sz_val_arg', fields: { NAME: name } })
@@ -168,18 +182,26 @@ function functionsFlyout(workspace: Blockly.WorkspaceSvg): FlyoutItem[] {
  * os blocos OOP legados (fora da paleta). Usado por `searchCategory.ts`.
  */
 /** Tipos da categoria "Funções" (sem os ocultos), incl. os de retorno. */
-function functionCategoryBlockTypes(): string[] {
+export function functionCategoryBlockTypes(
+  profile: LearningProfile = FULL_LEARNING_PROFILE,
+): string[] {
   return [
     ...FUNCTION_BLOCKS.filter((b) => !b.hidden).map((b) => b.type),
     'sz_js_return',
     'sz_js_return_void',
-  ]
+  ].filter((type) => dynamicBlockAllowed(type, 'Funções', profile))
 }
 
 /** Tipos da categoria "Classes" (sem ocultos/legados/relatores). */
-function classCategoryBlockTypes(): string[] {
+export function classCategoryBlockTypes(
+  profile: LearningProfile = FULL_LEARNING_PROFILE,
+): string[] {
   return OOP_BLOCKS.filter(
-    (b) => !b.hidden && b.type !== 'sz_val_arg' && !LEGACY_OOP_TYPES.has(b.type),
+    (b) =>
+      !b.hidden &&
+      b.type !== 'sz_val_arg' &&
+      !LEGACY_OOP_TYPES.has(b.type) &&
+      dynamicBlockAllowed(b.type, 'Classes', profile),
   ).map((b) => b.type)
 }
 
@@ -193,28 +215,27 @@ export function dynamicCategoryBlockTypes(): string[] {
  * languageTree estático já filtrado por nível), então sem este filtro um aluno em
  * perfil restrito acharia Funções/Classes digitando o nome — vazamento da oferta
  * que contradiz a divulgação progressiva do professor. Espelha EXATAMENTE o gate
- * da paleta: `pushCustom` em toolbox.ts gateia essas categorias só por
- * `isCategoryAllowed` (Funções='intermediario-2d', Classes='avancado-2d'), sem filtrar
- * bloco a bloco — então aqui também gateamos por categoria inteira.
+ * da paleta: categoria, nível por bloco e listas restritivas da aula passam pelo
+ * mesmo `dynamicBlockAllowed`, evitando diferenças entre busca e flyout.
  */
 export function blockedDynamicSearchTypes(profile: LearningProfile): Set<string> {
-  const blocked = new Set<string>()
-  if (!isCategoryAllowed('Funções', 'intermediario-2d', profile)) {
-    for (const type of functionCategoryBlockTypes()) blocked.add(type)
-  }
-  if (!isCategoryAllowed('Classes', 'avancado-2d', profile)) {
-    for (const type of classCategoryBlockTypes()) blocked.add(type)
-  }
-  return blocked
+  const all = dynamicCategoryBlockTypes()
+  const allowed = new Set([
+    ...functionCategoryBlockTypes(profile),
+    ...classCategoryBlockTypes(profile),
+  ])
+  return new Set(all.filter((type) => !allowed.has(type)))
 }
 
 /** Registra o callback do flyout da categoria Funções num workspace. */
-export function registerFunctionsFlyout(workspace: Blockly.WorkspaceSvg): void {
+export function registerFunctionsFlyout(
+  workspace: Blockly.WorkspaceSvg,
+  profile: LearningProfile = FULL_LEARNING_PROFILE,
+): void {
   ensureParamsVersionTracking(workspace)
-  workspace.registerToolboxCategoryCallback(
-    FUNCTIONS_FLYOUT_CALLBACK,
-    functionsFlyout as unknown as (
-      ws: Blockly.WorkspaceSvg,
-    ) => Blockly.utils.toolbox.FlyoutItemInfo[],
-  )
+  workspace.registerToolboxCategoryCallback(FUNCTIONS_FLYOUT_CALLBACK, ((
+    ws: Blockly.WorkspaceSvg,
+  ) => functionsFlyout(ws, profile)) as unknown as (
+    ws: Blockly.WorkspaceSvg,
+  ) => Blockly.utils.toolbox.FlyoutItemInfo[])
 }

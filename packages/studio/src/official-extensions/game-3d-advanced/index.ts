@@ -1,5 +1,6 @@
 import type { ExtensionDefinition } from '#extensions'
-import { validateManifest } from '#extensions'
+import { GAME_3D_ADVANCED_LIFECYCLE, validateManifest } from '#extensions'
+import { fullscreenConflictsFor } from '../fullscreenConflicts'
 import { gameKit3DPromptContext } from './ai'
 import { gameKit3DBlocks, gameKit3DToolboxCategory } from './blocks'
 import { gameKit3DManifest } from './manifest'
@@ -36,6 +37,7 @@ const SKELETON_UTILS_CDN = `${THREE_CDN}/examples/jsm/utils/SkeletonUtils.js?ext
 
 export const gameKit3DExtension: ExtensionDefinition = {
   manifest: gameKit3DManifest,
+  conflictsWith: fullscreenConflictsFor('game-3d-advanced'),
   // Decisão de produto (14/07/2026): TODOS os blocos são nível AVANÇADO — é a
   // base de engine profissional (FSM por entidade, pooling, grade espacial).
   // O piso por prefixo sz_g3k_ vive em blockLevels.ts.
@@ -46,6 +48,7 @@ export const gameKit3DExtension: ExtensionDefinition = {
   },
   runtime: {
     bootstrapScript: gameKit3DRuntime,
+    lifecycle: GAME_3D_ADVANCED_LIFECYCLE,
     esmImports: {
       three: THREE_CDN,
       'three/addons/loaders/GLTFLoader.js': GLTF_LOADER_CDN,

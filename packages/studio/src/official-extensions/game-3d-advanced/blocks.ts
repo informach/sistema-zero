@@ -23,7 +23,7 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O primeiro bloco do jogo 3D: escolhe a resolução da tela (fixa por dentro, com ajuste automático à janela), o tamanho do mundo (o lado do chão), a cor do céu (vira um degradê) e a do chão. O motor monta sombras, luz, câmera de órbita e as telas prontas sozinho. Use uma vez, no começo.',
+      'O primeiro bloco do jogo 3D: escolhe a proporção e a resolução interna da tela, o tamanho do mundo (o lado do chão), a cor do céu (vira um degradê) e a do chão. O motor reduz resoluções acima do limite seguro da GPU, ajusta o canvas à janela e monta sombras, luz, câmera de órbita e telas prontas sozinho. Use uma vez, no começo.',
   },
   {
     type: 'sz_g3k_set_effects',
@@ -70,8 +70,9 @@ export const gameKit3DBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    hidden: true,
     tooltip:
-      'Liga o jogo: monta o mundo 3D, espera os sons carregarem, abre o menu e começa o laço de quadros. Use uma vez, DEPOIS de preparar tudo (moldes, ganchos, telas).',
+      'Bloco antigo mantido para abrir projetos anteriores. O motor agora começa automaticamente depois de preparar moldes, eventos e telas.',
   },
   {
     type: 'sz_g3k_world_size',
@@ -140,14 +141,20 @@ export const gameKit3DBlocks = [
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'Z', check: 'JSValue' },
       { type: 'field_asset_picker', name: 'TEXTURE', text: '' },
-      { type: 'field_input', name: 'MODEL', text: '' },
+      {
+        type: 'field_asset_picker',
+        name: 'MODEL',
+        text: '',
+        kind: '3d',
+        filter: 'model3d',
+      },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Uma peça do molde: a forma, o acabamento (normal, metal, vidro ou BRILHO — que acende com o efeito de brilho/bloom), a cor, o tamanho (largura × altura × profundidade) e onde ela fica em relação ao centro do molde. O y 0.5 senta um cubo de altura 1 no chão. Com a forma "modelo importado", escreva no campo modelo o nome do arquivo .glb que você trouxe para o projeto — aí a peça vira o modelo de verdade (a caixa que colide continua sendo o tamanho que você deu). Só funciona DENTRO de "Criar o molde 3D".',
+      'Uma peça do molde: a forma, o acabamento (normal, metal, vidro ou BRILHO — que acende com o efeito de brilho/bloom), a cor, o tamanho (largura × altura × profundidade) e onde ela fica em relação ao centro do molde. O y 0.5 senta um cubo de altura 1 no chão. Com a forma "modelo importado", escolha um arquivo .glb do projeto — aí a peça vira o modelo de verdade (a caixa que colide continua sendo o tamanho que você deu). Só funciona DENTRO de "Criar o molde 3D".',
   },
 
   // ---- 👾 Nascer & enxames ----
@@ -1041,7 +1048,7 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria um ímã que PUXA as partículas desse efeito para um ponto — como um vórtice, um buraco negro ou o vento sugando a fumaça. A força diz o quanto puxa; o alcance, até onde o puxão é forte. Pode pôr mais de um.',
+      'Cria um ímã que PUXA as partículas desse efeito para um ponto — como um vórtice, um buraco negro ou o vento sugando a fumaça. A força diz o quanto puxa; o alcance, até onde o puxão é forte. Registre uma vez, fora do "A cada quadro"; cada efeito aceita até 16.',
   },
 
   // ---- 🏃 Física ----
@@ -1393,7 +1400,7 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Acende uma luz colorida num ponto do mundo (tocha, fogueira, lâmpada). Ótima para dar clima. Ponha no começo, não a cada quadro.',
+      'Acende uma luz colorida num ponto do mundo (tocha, fogueira, lâmpada). Ótima para dar clima. Ponha no começo, não a cada quadro; o mundo aceita até 8 luzes extras para manter o jogo rápido.',
   },
   {
     type: 'sz_g3k_set_ambient',
@@ -1424,12 +1431,20 @@ export const gameKit3DBlocks = [
   {
     type: 'sz_g3k_set_sky_photo',
     message0: 'Usar o céu de foto %1',
-    args0: [{ type: 'field_input', name: 'PHOTO', text: 'ceu' }],
+    args0: [
+      {
+        type: 'field_asset_picker',
+        name: 'PHOTO',
+        text: 'ceu',
+        kind: '3d',
+        filter: 'environment3d',
+      },
+    ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Troca o céu por uma FOTO 360° de verdade (arquivo .hdr que você trouxe para o projeto). Além de aparecer no fundo, ela ilumina a cena inteira — é o que faz o metal refletir o ambiente. Escreva o nome do arquivo sem o .hdr.',
+      'Troca o céu por uma FOTO 360° de verdade. Escolha um arquivo .hdr do projeto: além de aparecer no fundo, ele ilumina a cena inteira e faz o metal refletir o ambiente.',
   },
   {
     type: 'sz_g3k_set_sky',
@@ -1781,7 +1796,7 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Prepara um som que você importou (em "Imagens e sons"). Dê um nome; é ele que você usa em "Tocar o som". Use no comecinho, antes de "Começar o jogo".',
+      'Prepara um som que você importou (em "Imagens e sons"). Dê um nome; é ele que você usa em "Tocar o som". Use no comecinho, antes de o jogo começar automaticamente.',
   },
   {
     type: 'sz_g3k_play_sound',
@@ -1850,7 +1865,6 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g3k_set_effects',
       'sz_g3k_set_seed',
       'sz_g3k_scatter_decor',
-      'sz_g3k_start',
       'sz_g3k_world_size',
     ],
   },
@@ -2120,7 +2134,10 @@ for (const b of gameKit3DBlocks) {
 
 // Rede de segurança: bloco fora de qualquer sub-categoria cai num grupo "Mais".
 const CATEGORIZED = new Set(SUBCATS.flatMap((sc) => sc.types))
-const leftover = gameKit3DBlocks.map((b) => b.type).filter((t) => !CATEGORIZED.has(t))
+const leftover = gameKit3DBlocks
+  .filter((block) => !block.hidden)
+  .map((block) => block.type)
+  .filter((type) => !CATEGORIZED.has(type))
 
 // Sombras pré-preenchidas dos soquetes de VALOR que aparecem na paleta.
 const txtShadow = (text: string) => ({ shadow: { type: 'sz_val_text', fields: { TEXT: text } } })
@@ -2205,6 +2222,10 @@ export const G3K_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
     INT: numShadow(20),
     RAD: numShadow(5),
   },
+  sz_g3k_random_between: { FROM: numShadow(0), TO: numShadow(1) },
+  sz_g3k_random_chance: { PERCENT: numShadow(50) },
+  sz_g3k_start_timer: { SECONDS: numShadow(30) },
+  sz_g3k_say: { TEXT: txtShadow('Olá!'), SECONDS: numShadow(2) },
   sz_g3k_set_screen_text: {
     TITLE: txtShadow('Meu Jogo 3D'),
     TEXT: txtShadow('WASD ou setas para andar'),

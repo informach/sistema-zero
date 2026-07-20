@@ -257,6 +257,16 @@ describe('parseJS', () => {
     }
   })
 
+  it('não duplica a proteção automática do envio de formulário', () => {
+    const [event] = parseJS(
+      'document.getElementById("form")?.addEventListener("submit", (event) => { event.preventDefault(); console.log("ok"); });',
+    )
+    expect(event).toMatchObject({ type: 'event', event: 'submit' })
+    if (event?.type === 'event') {
+      expect(event.body).toEqual([{ type: 'consoleLog', value: { type: 'str', value: 'ok' } }])
+    }
+  })
+
   it('reconhece if (var op num) { ... } com binop', () => {
     const code = `if (contador > 5) { console.log("alto"); } else { console.log("baixo"); }`
     const ir = parseJS(code)
@@ -483,7 +493,7 @@ const ctx = canvas.getContext("2d");
 
   it('reconhece ctx.clearRect(0,0,canvas.width,canvas.height) → canvasClear', () => {
     const ir = parseJS(`${SETUP}ctx.clearRect(0, 0, canvas.width, canvas.height);`)
-    expect(ir[1]).toEqual({ type: 'canvasClear', ctxVar: 'ctx', canvasVar: 'canvas' })
+    expect(ir[1]).toEqual({ type: 'canvasClear', ctxVar: 'ctx' })
   })
 
   it('reconhece ctx.fillStyle = "#cor" → canvasFillStyle (cor hexadecimal vira tipo color)', () => {
@@ -678,6 +688,35 @@ titulo.textContent = "#ff0000";`
       w: { type: 'num', value: 64 },
       h: { type: 'num', value: 64 },
     })
+  })
+
+  it('remove o pré-carregador gerado e recupera canvasDrawImage', () => {
+    const code = generateJS({
+      statements: [
+        { type: 'canvasSetup', canvasId: 'tela', varName: 'ctx' },
+        {
+          type: 'canvasDrawImage',
+          ctxVar: 'ctx',
+          src: 'foto.png',
+          x: { type: 'num', value: 1 },
+          y: { type: 'num', value: 2 },
+          w: { type: 'num', value: 64 },
+          h: { type: 'num', value: 32 },
+        },
+      ],
+    })
+    expect(parseJS(code)).toEqual([
+      { type: 'canvasSetup', canvasId: 'tela', varName: 'ctx' },
+      {
+        type: 'canvasDrawImage',
+        ctxVar: 'ctx',
+        src: 'foto.png',
+        x: { type: 'num', value: 1 },
+        y: { type: 'num', value: 2 },
+        w: { type: 'num', value: 64 },
+        h: { type: 'num', value: 32 },
+      },
+    ])
   })
 
   it('reconhece função frame + requestAnimationFrame → animationLoop', () => {
@@ -1119,16 +1158,21 @@ document.addEventListener('keyup', (e) => {
     ])
   })
 
-  // ---- Fase 3: DOM dinâmico ----
-  it('reconhece innerHTML em setProperty', () => {
-    expect(parseJS('board.innerHTML = "";')).toEqual([
+  it('preserva Promise vazia como valor, não como instância genérica', () => {
+    expect(parseJS('const espera = new Promise((resolve) => {});')).toEqual([
       {
-        type: 'setProperty',
-        targetId: 'board',
-        targetKind: 'var',
-        property: 'innerHTML',
-        value: { type: 'str', value: '' },
+        type: 'var',
+        kind: 'const',
+        name: 'espera',
+        value: { type: 'newPromise', param: 'resolve', body: [] },
       },
+    ])
+  })
+
+  // ---- Fase 3: DOM dinâmico ----
+  it('mantém innerHTML como Código avançado', () => {
+    expect(parseJS('board.innerHTML = "";')).toEqual([
+      { type: 'rawJS', code: 'board.innerHTML = "";', advanced: true },
     ])
   })
 

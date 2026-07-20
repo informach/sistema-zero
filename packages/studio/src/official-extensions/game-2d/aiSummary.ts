@@ -1,13 +1,15 @@
 export const gameTwoDPromptSummary = `Jogo 2D expõe window.SZGame2D e blocos facilitadores para crianças iniciantes.
 
-CICLO DE VIDA: use um único “Quando o jogo começar” como raiz. Dentro dele,
-prepare a tela, crie sprites/grupos/variáveis, registre eventos e coloque os
-blocos “A cada quadro”. Reiniciar limpa a partida e executa essa raiz novamente.
-Projetos antigos sem essa raiz ainda reiniciam recarregando o preview.
+CICLO DE VIDA: use as Áreas do projeto. “Ao iniciar” prepara tela,
+sprites/grupos/variáveis; “Eventos” recebe somente os chapéus “Quando…”; “Loop
+principal” recebe “A cada quadro”, “A cada N quadros” e “A cada N segundos”. O
+antigo “Quando o jogo começar” corresponde hoje à Área “Ao iniciar”. O Estúdio
+liga o motor automaticamente. Reiniciar limpa a partida e executa de
+novo as três áreas; não gere onStart nem um bloco manual de boot.
 
 QUADROS E EVENTOS: todos os blocos “A cada quadro” são compostos pelo mesmo
 agendador, em passos fixos de 60 Hz. Tecla, clique e contato são registrados uma
-vez no início, nunca dentro de “A cada quadro”. Movimento, desenho, checagens de
+vez em Eventos, nunca dentro de “A cada quadro”. Movimento, desenho, checagens de
 grupo e HUD ficam dentro do quadro. Um erro interrompe somente o bloco afetado.
 
 ORDEM DIDÁTICA: preparar palco; criar personagens e grupos; definir tela “inicio”;

@@ -129,11 +129,11 @@ function collectTypes(blocks: SerializedBlocklyBlock[]): string[] {
   return out
 }
 
-function rawCount(stmts: JSStatement[]): number {
-  let n = 0
+function collectRawStatements(stmts: JSStatement[]): Extract<JSStatement, { type: 'rawJS' }>[] {
+  const raw: Extract<JSStatement, { type: 'rawJS' }>[] = []
   const walk = (list: JSStatement[]) => {
     for (const s of list) {
-      if (s.type === 'rawJS') n += 1
+      if (s.type === 'rawJS') raw.push(s)
       else if (s.type === 'if') {
         walk(s.then)
         if (s.else) walk(s.else)
@@ -143,7 +143,7 @@ function rawCount(stmts: JSStatement[]): number {
     }
   }
   walk(stmts)
-  return n
+  return raw
 }
 
 describe('Jogo da Memória — round-trip código↔blocos', () => {
@@ -188,9 +188,12 @@ describe('Jogo da Memória — round-trip código↔blocos', () => {
     }
   })
 
-  it('o jogo inteiro vira blocos — nada sobra como código avançado', () => {
-    // Com if por soquete de condição + comparação/lógica/return como blocos,
-    // todos os trechos do jogo são representáveis (rawCount == 0).
-    expect(rawCount(behaviorStatements(parsed1))).toBe(0)
+  it('mantém somente innerHTML como código avançado por segurança', () => {
+    const raw = collectRawStatements(behaviorStatements(parsed1))
+    expect(raw).toHaveLength(2)
+    for (const statement of raw) {
+      expect(statement.advanced).toBe(true)
+      expect(statement.code).toContain('.innerHTML =')
+    }
   })
 })

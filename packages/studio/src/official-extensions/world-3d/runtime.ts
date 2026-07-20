@@ -1,3 +1,5 @@
+import { compactOfficialRuntimeSource } from '../runtimeSource'
+
 /**
  * Runtime do "Mundo 3D" — injetado no <head> do iframe quando a extensão
  * "world-3d" está instalada. É um SCRIPT MODULE (importa `three` via importmap
@@ -26,7 +28,7 @@
  * - Higiene de GPU: pixelRatio 1 (resolução interna fixa), terreno rebuild
  *   descarta o antigo, dispose + forceContextLoss no fechamento.
  */
-export const world3DRuntime = `import * as THREE from 'three';
+const world3DRuntimeSource = `import * as THREE from 'three';
 (function () {
   // ---- Config (dos blocos "Criar o mundo 3D" / "Deixar o chão com morros") ----
   var config = {
@@ -87,6 +89,7 @@ export const world3DRuntime = `import * as THREE from 'three';
   var sunTarget = null;
   var ambientLight = null;
   var terrainMesh = null;
+  var terrainField = null;       // grade visual + física: uma única fonte após o build
   var gradientTex = null;
   var skyTex = null;
   var playTime = 0;
@@ -159,6 +162,9 @@ export const world3DRuntime = `import * as THREE from 'three';
   var natureGroup = null;       // raiz de tudo que foi espalhado/posto
   var scatterBudget = 12000;    // teto TOTAL de instâncias espalhadas (higiene de GPU)
   var scatterCount = 0;
+  var MAX_MODEL_SCATTER_MESHES = 48;
+  var MAX_MODEL_TRIANGLES = 500000;
+  var MODEL_SCATTER_TRIANGLE_BUDGET = 2000000;
   var placedCount = 0;
   var MAX_PLACED = 200;         // "Pôr 1" é para cantinhos especiais, não para florestas
   var crashHooks = [];
@@ -342,6 +348,13 @@ export const world3DRuntime = `import * as THREE from 'three';
   var _gltfMod = null;
   var _modelCache = null;       // nome -> { scene } já parseado
   var _modelPending = null;     // nome -> fila de callbacks (parse em voo)
+  var _hdrMod = null;
+  var _hdrWaiters = [];
+  var _hdrCache = null;         // nome -> DataTexture base
+  var _hdrPending = null;       // nome -> fila de callbacks
+  var _environmentTexture = null;
+  var _pendingEnvironmentTexture = null;
+  var _skyPhotoRequest = 0;
   // Céu & clima: ciclo dia/noite por keyframes + tempo fixo + partículas de clima.
   var dayCfg = { on: false, minutes: 4 };
   var atmoUsed = false;         // setTime/dayNight ligam a atmosfera por keyframes
@@ -492,12 +505,8 @@ export const world3DRuntime = `import * as THREE from 'three';
     return { dist: Math.sqrt(ex * ex + ez * ez), t: t };
   }
 
-  /**
-   * A altura do chão em (x, z) — ANALÍTICA e pura: carro, natureza, água e o
-   * bloco "a altura do chão" consultam a MESMA função (nunca dessincroniza).
-   * O centro do mundo é aplainado; aplainar/trilha puxam a altura ao seu alvo.
-   */
-  function heightAt(x, z) {
+  /** Altura contínua usada para AMOSTRAR a malha do terreno. */
+  function analyticHeightAt(x, z) {
     var h = baseHeightAt(x, z);
     for (var i = 0; i < terrainMods.length; i++) {
       var m = terrainMods[i];
@@ -529,6 +538,33 @@ export const world3DRuntime = `import * as THREE from 'three';
       }
     }
     return h;
+  }
+
+  /**
+   * Interpola exatamente os mesmos dois triângulos que PlaneGeometry cria em
+   * cada célula. Depois do build, física, natureza e o bloco de altura leem a
+   * grade VISUAL — não uma função mais detalhada escondida sob a malha.
+   */
+  function sampledTerrainHeight(x, z) {
+    var f = terrainField;
+    if (!f) return analyticHeightAt(x, z);
+    var gx = clamp((x / f.world + 0.5) * f.seg, 0, f.seg);
+    var gz = clamp((z / f.world + 0.5) * f.seg, 0, f.seg);
+    var ix = Math.min(f.seg - 1, Math.floor(gx));
+    var iz = Math.min(f.seg - 1, Math.floor(gz));
+    var u = gx - ix;
+    var v = gz - iz;
+    var stride = f.seg + 1;
+    var a = f.values[iz * stride + ix];
+    var b = f.values[(iz + 1) * stride + ix];
+    var c = f.values[(iz + 1) * stride + ix + 1];
+    var d = f.values[iz * stride + ix + 1];
+    if (u + v <= 1) return a + (d - a) * u + (b - a) * v;
+    return c + (b - c) * (1 - u) + (d - c) * (1 - v);
+  }
+
+  function heightAt(x, z) {
+    return sampledTerrainHeight(num(x, 0), num(z, 0));
   }
 
   /**
@@ -780,15 +816,17 @@ export const world3DRuntime = `import * as THREE from 'three';
     return placements;
   }
 
-  function takeScatterRoom(want) {
+  function takeScatterRoom(want, costPerPlacement) {
+    var cost = Math.max(1, Math.floor(num(costPerPlacement, 1)));
     var room = scatterBudget - scatterCount;
     if (room <= 0) {
       warnOnce('scatter-budget', 'o mundo está cheio — teto de ' + scatterBudget + ' coisas espalhadas (para o passeio continuar liso)');
       return 0;
     }
-    if (want > room) {
-      warnOnce('scatter-budget', 'faltou espaço para tudo — espalhei só ' + room + ' (teto de ' + scatterBudget + ' coisas)');
-      return room;
+    var placements = Math.floor(room / cost);
+    if (want > placements) {
+      warnOnce('scatter-budget', 'faltou espaço para tudo — espalhei só ' + placements + ' cópias (teto de ' + scatterBudget + ' partes instanciadas)');
+      return placements;
     }
     return want;
   }
@@ -796,11 +834,11 @@ export const world3DRuntime = `import * as THREE from 'three';
   function buildSpeciesRecipe(rec) {
     var spec = SPECIES[rec.thing];
     if (!spec || !scene) return;
-    var want = takeScatterRoom(Math.floor(clamp(num(rec.n, 0), 1, 3000)));
+    var want = takeScatterRoom(Math.floor(clamp(num(rec.n, 0), 1, 3000)), spec.parts.length);
     if (want <= 0) return;
     var placements = samplePlacements(rec, want, spec.smin, spec.smax);
     if (!placements.length) return;
-    scatterCount += placements.length;
+    scatterCount += placements.length * spec.parts.length;
     ensureUnitGeos();
     ensureDummies();
     var locals = speciesLocals(spec);
@@ -868,6 +906,144 @@ export const world3DRuntime = `import * as THREE from 'three';
     }
   }
 
+  function disposeTexture(texture, warningKey) {
+    if (!texture || !texture.dispose) return;
+    try { texture.dispose(); }
+    catch (e) { warnOnce(warningKey, 'não consegui liberar uma textura antiga: ' + e); }
+  }
+
+  function clearEnvironmentTexture() {
+    var old = _environmentTexture;
+    _environmentTexture = null;
+    if (scene) {
+      if (scene.background === old) scene.background = null;
+      if (scene.environment === old) scene.environment = null;
+    }
+    disposeTexture(old, 'dispose-hdr');
+  }
+
+  function clearPendingEnvironmentTexture() {
+    var old = _pendingEnvironmentTexture;
+    _pendingEnvironmentTexture = null;
+    disposeTexture(old, 'dispose-pending-hdr');
+  }
+
+  function useEnvironmentTexture(texture) {
+    if (!texture) return;
+    clearEnvironmentTexture();
+    if (!scene) {
+      clearPendingEnvironmentTexture();
+      _pendingEnvironmentTexture = texture;
+      return;
+    }
+    if (skyTex) {
+      disposeTexture(skyTex, 'dispose-gradient-sky');
+      skyTex = null;
+    }
+    scene.background = texture;
+    scene.environment = texture;
+    _environmentTexture = texture;
+  }
+
+  function cloneHdrTexture(base) {
+    if (!base) return null;
+    var texture = base.clone ? base.clone() : null;
+    if (!texture && base.image) texture = new THREE.DataTexture(base.image.data, base.image.width, base.image.height);
+    if (!texture) return null;
+    if (THREE.EquirectangularReflectionMapping != null) texture.mapping = THREE.EquirectangularReflectionMapping;
+    texture.needsUpdate = true;
+    return texture;
+  }
+
+  function withHdrLoader(callback) {
+    if (_hdrMod) { callback(_hdrMod); return; }
+    _hdrWaiters.push(callback);
+    if (_hdrWaiters.length > 1) return;
+    var finish = function (mod) {
+      if (mod) _hdrMod = mod;
+      var waiters = _hdrWaiters.slice();
+      _hdrWaiters.length = 0;
+      for (var i = 0; i < waiters.length; i++) waiters[i](mod);
+    };
+    try {
+      import('three/addons/loaders/HDRLoader.js').then(finish, function (e) {
+        if (!disposed) warn('não consegui carregar o leitor de céu: ' + e);
+        finish(null);
+      });
+    } catch (e) {
+      if (!disposed) warn('não consegui carregar o leitor de céu: ' + e);
+      finish(null);
+    }
+  }
+
+  function loadHdrTexture(name, entry, callback) {
+    if (disposed) { callback(null); return; }
+    if (!_hdrCache) _hdrCache = Object.create(null);
+    if (_hdrCache[name]) { callback(cloneHdrTexture(_hdrCache[name])); return; }
+    if (!_hdrPending) _hdrPending = Object.create(null);
+    if (_hdrPending[name]) { _hdrPending[name].push(callback); return; }
+    _hdrPending[name] = [callback];
+    var release = null;
+    pending.push(new Promise(function (resolve) { release = resolve; }));
+    var settled = false;
+    var flush = function (base) {
+      if (settled) return;
+      settled = true;
+      var queue = _hdrPending && _hdrPending[name] ? _hdrPending[name] : [];
+      if (_hdrPending) delete _hdrPending[name];
+      for (var i = 0; i < queue.length; i++) queue[i](base && !disposed ? cloneHdrTexture(base) : null);
+      if (release) release();
+    };
+    var buf = dataUrlToBuffer(entry.dataUrl);
+    if (!buf) { warn('não consegui ler os dados do céu "' + name + '"'); flush(null); return; }
+    withHdrLoader(function (mod) {
+      if (!mod || disposed) { flush(null); return; }
+      try {
+        var parsed = new mod.HDRLoader().parse(buf);
+        if (!parsed || !parsed.data) { flush(null); return; }
+        var base = new THREE.DataTexture(parsed.data, parsed.width, parsed.height);
+        if (parsed.type != null) base.type = parsed.type;
+        if (THREE.LinearSRGBColorSpace != null) base.colorSpace = THREE.LinearSRGBColorSpace;
+        if (THREE.LinearFilter != null) {
+          base.minFilter = THREE.LinearFilter;
+          base.magFilter = THREE.LinearFilter;
+        }
+        base.generateMipmaps = false;
+        base.flipY = true;
+        if (THREE.EquirectangularReflectionMapping != null) base.mapping = THREE.EquirectangularReflectionMapping;
+        base.needsUpdate = true;
+        if (disposed || !_hdrCache) {
+          disposeTexture(base, 'dispose-late-hdr');
+          flush(null);
+          return;
+        }
+        _hdrCache[name] = base;
+        flush(base);
+      } catch (e) {
+        warn('não consegui abrir o céu "' + name + '": ' + e);
+        flush(null);
+      }
+    });
+  }
+
+  function setSkyPhoto(name) {
+    var key = text(name, '');
+    var entry = MODELS3D[key];
+    if (!entry || entry.kind !== 'environment3d') {
+      warn('o céu "' + key + '" não está no projeto — envie um arquivo .hdr');
+      return;
+    }
+    var request = ++_skyPhotoRequest;
+    loadHdrTexture(key, entry, function (texture) {
+      if (!texture) return;
+      if (disposed || request !== _skyPhotoRequest) {
+        disposeTexture(texture, 'dispose-stale-hdr');
+        return;
+      }
+      useEnvironmentTexture(texture);
+    });
+  }
+
   /** Aquece o modelo (compileAsync best-effort — nunca derruba o carregamento). */
   function warmModel(root) {
     if (!root || !renderer || !scene || !camera) return;
@@ -877,12 +1053,44 @@ export const world3DRuntime = `import * as THREE from 'three';
     } catch (e) {}
   }
 
+  /** Libera uma árvore procedural ou um asset que terminou de carregar tarde. */
+  function disposeObjectTree(root, disposeTextures) {
+    if (!root || !root.traverse) return;
+    var geometries = new Set();
+    var materials = new Set();
+    var textures = new Set();
+    try {
+      root.traverse(function (o) {
+        if (o.isInstancedMesh && o.dispose) o.dispose();
+        if (o.geometry) geometries.add(o.geometry);
+        if (!o.material) return;
+        var list = o.material.length ? o.material : [o.material];
+        for (var mi = 0; mi < list.length; mi++) {
+          var material = list[mi];
+          if (!material) continue;
+          materials.add(material);
+          if (!disposeTextures) continue;
+          for (var key in material) {
+            var value = material[key];
+            if (value && value.isTexture) textures.add(value);
+          }
+        }
+      });
+      textures.forEach(function (texture) { if (texture.dispose) texture.dispose(); });
+      geometries.forEach(function (geometry) { if (geometry.dispose) geometry.dispose(); });
+      materials.forEach(function (material) { if (material.dispose) material.dispose(); });
+    } catch (e) {
+      warnOnce('dispose-object-tree', 'não consegui liberar uma árvore 3D por completo: ' + e);
+    }
+  }
+
   /**
    * Carrega e parseia um .glb do projeto (cacheado; carga em voo enfileira o
    * callback). O start() ESPERA a promessa em pending — o passeio só começa com
    * os modelos remendados. NUNCA rejeita: modelo quebrado avisa e segue.
    */
   function loadModel(name, onReady) {
+    if (disposed) return null;
     var k = text(name, '');
     if (!k) {
       warn('escreva o NOME do modelo (o nome dele no painel de imagens → modelos 3D)');
@@ -905,21 +1113,30 @@ export const world3DRuntime = `import * as THREE from 'three';
     _modelPending[k] = typeof onReady === 'function' ? [onReady] : [];
     var release = null;
     pending.push(new Promise(function (resolve) { release = resolve; }));
+    var settled = false;
     var flush = function (hit) {
-      var queue = _modelPending[k] || [];
-      _modelPending[k] = null;
-      if (hit) {
+      if (settled) return;
+      settled = true;
+      var queue = _modelPending && _modelPending[k] ? _modelPending[k] : [];
+      if (_modelPending) delete _modelPending[k];
+      if (hit && !disposed) {
         for (var i = 0; i < queue.length; i++) {
-          try { queue[i](hit); } catch (e) {}
+          try { queue[i](hit); } catch (e) { warnOnce('model-ready-' + k, 'erro ao montar o modelo "' + k + '": ' + e); }
         }
       }
       if (release) release();
     };
     var finish = function (mod) {
+      if (disposed) { flush(null); return; }
       _gltfMod = mod;
       try {
         new mod.GLTFLoader().parse(buf, '', function (gltf) {
           if (gltf && gltf.scene) {
+            if (disposed || !_modelCache) {
+              disposeObjectTree(gltf.scene, true);
+              flush(null);
+              return;
+            }
             _modelCache[k] = { scene: gltf.scene };
             warmModel(gltf.scene);
             flush(_modelCache[k]);
@@ -963,6 +1180,17 @@ export const world3DRuntime = `import * as THREE from 'three';
     return list;
   }
 
+  function modelTriangleCount(meshes) {
+    var triangles = 0;
+    for (var i = 0; i < meshes.length; i++) {
+      var geometry = meshes[i].geometry;
+      if (!geometry) continue;
+      if (geometry.index && geometry.index.count != null) triangles += Math.floor(geometry.index.count / 3);
+      else if (geometry.attributes && geometry.attributes.position) triangles += Math.floor(geometry.attributes.position.count / 3);
+    }
+    return triangles;
+  }
+
   /** Raio de colisão do modelo no plano XZ (metade da diagonal da caixa). */
   function modelRadius(root) {
     try {
@@ -978,17 +1206,31 @@ export const world3DRuntime = `import * as THREE from 'three';
 
   function buildScatterModel(rec) {
     if (!rec.model || !rec.model.scene || !scene) return;
-    var want = takeScatterRoom(Math.floor(clamp(num(rec.n, 0), 1, 500)));
-    if (want <= 0) return;
-    var s = clamp(num(rec.s, 1), 0.05, 20);
-    var placements = samplePlacements(rec, want, s * 0.9, s * 1.15);
-    if (!placements.length) return;
-    scatterCount += placements.length;
     var meshes = modelMeshList(rec.model.scene);
     if (!meshes.length) {
       warn('o modelo "' + rec.name + '" não tem malhas — nada para espalhar');
       return;
     }
+    if (meshes.length > MAX_MODEL_SCATTER_MESHES) {
+      warn('o modelo "' + rec.name + '" tem ' + meshes.length + ' malhas — o máximo para espalhar é ' + MAX_MODEL_SCATTER_MESHES + '; una as peças no editor 3D');
+      return;
+    }
+    var triangles = modelTriangleCount(meshes);
+    if (triangles > MAX_MODEL_TRIANGLES) {
+      warn('o modelo "' + rec.name + '" tem triângulos demais para este mundo (' + triangles + ' > ' + MAX_MODEL_TRIANGLES + ')');
+      return;
+    }
+    var requested = Math.floor(clamp(num(rec.n, 0), 1, 500));
+    var triangleRoom = triangles > 0 ? Math.max(1, Math.floor(MODEL_SCATTER_TRIANGLE_BUDGET / triangles)) : requested;
+    var want = takeScatterRoom(Math.min(requested, triangleRoom), meshes.length);
+    if (requested > triangleRoom) {
+      warnOnce('model-triangle-budget-' + rec.name, 'o modelo "' + rec.name + '" é detalhado — espalhei só ' + triangleRoom + ' cópias para manter o desempenho');
+    }
+    if (want <= 0) return;
+    var s = clamp(num(rec.s, 1), 0.05, 20);
+    var placements = samplePlacements(rec, want, s * 0.9, s * 1.15);
+    if (!placements.length) return;
+    scatterCount += placements.length * meshes.length;
     ensureDummies();
     var group = ensureNatureGroup();
     for (var m = 0; m < meshes.length; m++) {
@@ -1019,6 +1261,12 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (!rec.model || !rec.model.scene || !scene) return;
     if (placedCount >= MAX_PLACED) {
       warnOnce('placed-max', 'muitos "Pôr" — o teto é ' + MAX_PLACED);
+      return;
+    }
+    var meshes = modelMeshList(rec.model.scene);
+    var triangles = modelTriangleCount(meshes);
+    if (triangles > MAX_MODEL_TRIANGLES) {
+      warn('o modelo "' + rec.name + '" tem triângulos demais para este mundo (' + triangles + ' > ' + MAX_MODEL_TRIANGLES + ')');
       return;
     }
     placedCount++;
@@ -1474,17 +1722,28 @@ export const world3DRuntime = `import * as THREE from 'three';
   function buildGrassHeightTex() {
     var HG = 128;
     var data = new Uint8Array(HG * HG);
-    var hMin = -terrainCfg.hills * 1.25 - 1;
-    var hRange = (terrainCfg.hills * 1.25 + 1) * 2;
+    var heights = new Float32Array(HG * HG);
+    var hMin = Infinity;
+    var hMax = -Infinity;
     for (var iz = 0; iz < HG; iz++) {
       for (var ix = 0; ix < HG; ix++) {
         var x = (ix / (HG - 1) - 0.5) * config.world;
         var z = (iz / (HG - 1) - 0.5) * config.world;
-        var v = (heightAt(x, z) - hMin) / hRange;
+        var h = heightAt(x, z);
+        heights[iz * HG + ix] = h;
+        if (h < hMin) hMin = h;
+        if (h > hMax) hMax = h;
+      }
+    }
+    // Margem pequena evita cortar a interpolação linear nas extremidades.
+    hMin -= 0.25;
+    hMax += 0.25;
+    var hRange = Math.max(0.5, hMax - hMin);
+    for (var hi = 0; hi < heights.length; hi++) {
+        var v = (heights[hi] - hMin) / hRange;
         if (v < 0) v = 0;
         if (v > 1) v = 1;
-        data[iz * HG + ix] = Math.round(v * 255);
-      }
+        data[hi] = Math.round(v * 255);
     }
     if (heightTex && heightTex.dispose) { try { heightTex.dispose(); } catch (e) {} }
     heightTex = new THREE.DataTexture(data, HG, HG, THREE.RedFormat);
@@ -1651,6 +1910,7 @@ export const world3DRuntime = `import * as THREE from 'three';
   /** Redesenha o degradê do céu NA MESMA textura (barato: canvas 2×256). */
   function drawSky(top, bot) {
     if (!scene) return;
+    if (_environmentTexture || _pendingEnvironmentTexture) return;
     try {
       if (!_skyCanvas) {
         _skyCanvas = document.createElement('canvas');
@@ -1857,22 +2117,28 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (p.geo.attributes.position) p.geo.attributes.position.needsUpdate = true;
   }
 
-  /** Modo turbo: menos grama, sombra menor, sem composer (o gate no renderFrame). */
-  function applyTurbo() {
-    if (quality.tier === 'turbo') return;
-    quality.tier = 'turbo';
-    warn('modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)');
+  function applyQualityTier(tier) {
+    quality.tier = tier === 'turbo' ? 'turbo' : 'alta';
+    if (renderer) renderer.setPixelRatio(quality.tier === 'turbo' ? 0.75 : 1);
     if (sunLight && sunLight.shadow) {
       try {
-        if (sunLight.shadow.mapSize && sunLight.shadow.mapSize.set) sunLight.shadow.mapSize.set(1024, 1024);
+        var shadowSize = quality.tier === 'turbo' ? 1024 : 2048;
+        if (sunLight.shadow.mapSize && sunLight.shadow.mapSize.set) sunLight.shadow.mapSize.set(shadowSize, shadowSize);
         if (sunLight.shadow.map) {
           sunLight.shadow.map.dispose();
           sunLight.shadow.map = null;
         }
-      } catch (e) {}
+      } catch (e) { warnOnce('quality-shadow', 'não consegui reajustar a sombra: ' + e); }
     }
     if (grassMesh) buildGrass();
     if (weatherPts) buildWeather();
+  }
+
+  /** Modo turbo: menos grama/clima, sombra e resolução menores, sem composer. */
+  function applyTurbo() {
+    if (quality.tier === 'turbo') return;
+    warn('modo turbo ligado: este computador pediu um mundo mais leve (menos grama, sombra menor, sem efeitos de cinema)');
+    applyQualityTier('turbo');
   }
 
   // ---- 💧 Água (plano ondulado; o carro afunda/respinga/respawna) ----
@@ -2865,8 +3131,9 @@ export const world3DRuntime = `import * as THREE from 'three';
   function bindInput() {
     window.addEventListener('keydown', function (e) {
       var k = String(e.key).toLowerCase();
+      var firstDown = !keys[k] && !e.repeat;
       keys[k] = true;
-      justPressed[k] = true;
+      if (firstDown) justPressed[k] = true;
       hideSplash();
       resumeAudio();
       // Konami (↑↑↓↓←→←→BA): o carrinho vira FOGUETE. Segredo de quem sabe.
@@ -2896,13 +3163,15 @@ export const world3DRuntime = `import * as THREE from 'three';
     ensureJoystick();
   }
 
-  /** Joystick virtual (só em toque): alavanca esquerda = dirigir; botões pular/E. */
+  /** Joystick virtual (só em toque): direção + paridade das ações do teclado. */
   function ensureJoystick() {
     try {
       var coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
       if (!coarse || !frameEl) return;
     } catch (e) { return; }
     var stick = document.createElement('div');
+    stick.setAttribute('role', 'application');
+    stick.setAttribute('aria-label', 'Controle de direção');
     stick.setAttribute('style', 'position:absolute;left:20px;bottom:20px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.35);z-index:8;touch-action:none');
     var nub = document.createElement('div');
     nub.setAttribute('style', 'position:absolute;left:35px;top:35px;width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.55)');
@@ -2934,19 +3203,42 @@ export const world3DRuntime = `import * as THREE from 'three';
     });
     stick.addEventListener('pointerup', function () { active = false; clearDir(); });
     stick.addEventListener('pointercancel', function () { active = false; clearDir(); });
-    // Botões pular (espaço) e E.
-    var jump = document.createElement('button');
-    jump.textContent = '⤒';
-    jump.setAttribute('style', 'position:absolute;right:24px;bottom:80px;width:64px;height:64px;border-radius:50%;border:0;background:rgba(16,185,129,.7);color:#fff;font-size:26px;z-index:8;touch-action:none');
-    jump.addEventListener('pointerdown', function () { keys[' '] = true; justPressed[' '] = true; });
-    jump.addEventListener('pointerup', function () { keys[' '] = false; });
-    frameEl.appendChild(jump);
-    var eb = document.createElement('button');
-    eb.textContent = 'E';
-    eb.setAttribute('style', 'position:absolute;right:96px;bottom:28px;width:56px;height:56px;border-radius:50%;border:0;background:rgba(34,211,238,.75);color:#04252b;font-weight:800;font-size:20px;z-index:8;touch-action:none');
-    eb.addEventListener('pointerdown', function () { keys['e'] = true; justPressed['e'] = true; });
-    eb.addEventListener('pointerup', function () { keys['e'] = false; });
-    frameEl.appendChild(eb);
+    stick.addEventListener('lostpointercapture', function () { active = false; clearDir(); });
+
+    function touchKeyButton(parent, label, key, aria, background) {
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = label;
+      button.setAttribute('aria-label', aria);
+      button.title = aria;
+      button.setAttribute('style', 'width:54px;height:54px;border-radius:50%;border:0;background:' + background + ';color:#fff;font-weight:800;font-size:18px;z-index:8;touch-action:none;user-select:none');
+      var release = function () { keys[key] = false; };
+      button.addEventListener('pointerdown', function (e) {
+        try { e.preventDefault(); button.setPointerCapture(e.pointerId); } catch (err) {}
+        hideSplash();
+        resumeAudio();
+        if (!keys[key]) justPressed[key] = true;
+        keys[key] = true;
+      });
+      button.addEventListener('pointerup', release);
+      button.addEventListener('pointercancel', release);
+      button.addEventListener('lostpointercapture', release);
+      parent.appendChild(button);
+    }
+
+    var actions = document.createElement('div');
+    actions.setAttribute('style', 'position:absolute;right:16px;bottom:16px;display:grid;grid-template-columns:repeat(2,54px);gap:10px;z-index:8');
+    frameEl.appendChild(actions);
+    touchKeyButton(actions, '⤒', ' ', 'Pular', 'rgba(16,185,129,.78)');
+    touchKeyButton(actions, '⇧', 'shift', 'Turbo ou correr', 'rgba(249,115,22,.78)');
+    touchKeyButton(actions, 'E', 'e', 'Interagir', 'rgba(34,211,238,.78)');
+    touchKeyButton(actions, 'H', 'h', 'Buzinar', 'rgba(168,85,247,.78)');
+
+    var utilities = document.createElement('div');
+    utilities.setAttribute('style', 'position:absolute;right:16px;top:16px;display:flex;gap:8px;z-index:8');
+    frameEl.appendChild(utilities);
+    touchKeyButton(utilities, 'M', 'm', 'Abrir mapa', 'rgba(15,23,42,.72)');
+    touchKeyButton(utilities, 'P', 'p', 'Abrir pódio', 'rgba(15,23,42,.72)');
   }
 
   // ---- Tela (stage + letterbox + splash "clique para começar") ----
@@ -3051,6 +3343,11 @@ export const world3DRuntime = `import * as THREE from 'three';
 
       scene = new THREE.Scene();
       applySky();
+      if (_pendingEnvironmentTexture) {
+        var pendingSky = _pendingEnvironmentTexture;
+        _pendingEnvironmentTexture = null;
+        useEnvironmentTexture(pendingSky);
+      }
       if (THREE.Fog) {
         scene.fog = new THREE.Fog(st.fog, config.world * 0.45, config.world * 1.5);
       }
@@ -3074,7 +3371,10 @@ export const world3DRuntime = `import * as THREE from 'three';
         sun.shadow.camera.right = half;
         sun.shadow.camera.top = half;
         sun.shadow.camera.bottom = -half;
-        if (sun.shadow.mapSize && sun.shadow.mapSize.set) sun.shadow.mapSize.set(2048, 2048);
+        if (sun.shadow.mapSize && sun.shadow.mapSize.set) {
+          var initialShadowSize = quality.tier === 'turbo' ? 1024 : 2048;
+          sun.shadow.mapSize.set(initialShadowSize, initialShadowSize);
+        }
         // Anti-acne: sem o bias, superfícies rasantes ficam listradas.
         sun.shadow.normalBias = 0.05;
       }
@@ -3202,14 +3502,21 @@ export const world3DRuntime = `import * as THREE from 'three';
       terrainMesh = null;
     }
     var st = styleOf();
-    var SEG = 128;
+    var spacing = Math.max(0.75, Math.min(2, terrainCfg.smooth * 0.25));
+    var detail = 0.75 + Math.sqrt(Math.max(0, terrainCfg.hills) / 10);
+    var maxSeg = quality.tier === 'turbo' ? 160 : 320;
+    var SEG = Math.max(64, Math.min(maxSeg, Math.ceil((config.world / spacing) * detail)));
     var geo = new THREE.PlaneGeometry(config.world, config.world, SEG, SEG);
     geo.rotateX(-Math.PI / 2);
     var pos = geo.attributes.position;
+    var values = new Float32Array(pos.count);
     var i;
     for (i = 0; i < pos.count; i++) {
-      pos.setY(i, heightAt(pos.getX(i), pos.getZ(i)));
+      var sampled = analyticHeightAt(pos.getX(i), pos.getZ(i));
+      values[i] = sampled;
+      pos.setY(i, sampled);
     }
+    terrainField = { seg: SEG, world: config.world, values: values };
     geo.computeVertexNormals();
     // Cores por vértice: mistura baixo→alto pela altura; encosta puxa p/ pedra.
     var low = new THREE.Color(st.low);
@@ -4491,7 +4798,8 @@ export const world3DRuntime = `import * as THREE from 'three';
   function buildBoat() {
     if (!scene || !boatCfg) return;
     if (boatGroup) {
-      try { scene.remove(boatGroup); } catch (e) {}
+      try { scene.remove(boatGroup); } catch (e) { warnOnce('remove-boat', 'não consegui remover o barco antigo: ' + e); }
+      disposeObjectTree(boatGroup, true);
       boatGroup = null;
     }
     boatGroup = new THREE.Group();
@@ -4781,10 +5089,8 @@ export const world3DRuntime = `import * as THREE from 'three';
     if (!personGroup) return;
     try {
       scene.remove(personGroup);
-      personGroup.traverse(function (o) {
-        if (o.geometry && o.geometry.dispose) { try { o.geometry.dispose(); } catch (e) {} }
-      });
-    } catch (e) {}
+    } catch (e) { warnOnce('remove-person', 'não consegui remover o personagem antigo: ' + e); }
+    disposeObjectTree(personGroup, true);
     personGroup = null;
     personParts = null;
   }
@@ -6402,12 +6708,9 @@ export const world3DRuntime = `import * as THREE from 'three';
     quality.fpsN = 0;
     if (selected === 'desempenho') {
       applyTurbo();
-      if (renderer) renderer.setPixelRatio(0.75);
       return;
     }
-    quality.tier = 'alta';
-    if (renderer) renderer.setPixelRatio(1);
-    if (grassMesh) buildGrass();
+    applyQualityTier('alta');
   }
 
   function inventoryStorageKey() {
@@ -6776,7 +7079,8 @@ export const world3DRuntime = `import * as THREE from 'three';
   function detonate(ex) {
     if (ex.done) return;
     ex.done = true;
-    try { scene.remove(ex.mesh); } catch (e) {}
+    try { scene.remove(ex.mesh); } catch (e) { warnOnce('remove-explosive', 'não consegui remover a caixa explosiva: ' + e); }
+    disposeObjectTree(ex.mesh, true);
     // Bola de fogo que incha e some + faíscas do pool de festa.
     var bm = new THREE.MeshBasicMaterial({ color: '#fbbf24', transparent: true, opacity: 0.9 });
     var ball = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 10), bm);
@@ -7629,7 +7933,7 @@ export const world3DRuntime = `import * as THREE from 'three';
 
   function start() {
     if (started) {
-      warn('o passeio já começou — use "Começar o passeio" uma vez só');
+      warn('o passeio já começou automaticamente — o bloco antigo de início não é mais necessário');
       return;
     }
     if (!ensureShell()) {
@@ -7644,6 +7948,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     resizeCanvas();
     window.addEventListener('resize', function () { resizeCanvas(); });
     Promise.all(pending.slice()).then(function () {
+      if (disposed || !renderer) return;
       _lastT = 0;
       renderer.setAnimationLoop(gameLoop);
     });
@@ -7685,6 +7990,19 @@ export const world3DRuntime = `import * as THREE from 'three';
       if (heightTex && heightTex.dispose) { try { heightTex.dispose(); } catch (e) {} }
       if (spriteTex && spriteTex.dispose) { try { spriteTex.dispose(); } catch (e) {} }
       if (waterMat && waterMat.dispose) { try { waterMat.dispose(); } catch (e) {} }
+      clearEnvironmentTexture();
+      clearPendingEnvironmentTexture();
+      if (_hdrCache) {
+        for (var hdrName in _hdrCache) disposeTexture(_hdrCache[hdrName], 'dispose-hdr-cache');
+        _hdrCache = null;
+      }
+      _skyPhotoRequest++;
+      if (_modelCache) {
+        for (var modelName in _modelCache) {
+          var cachedModel = _modelCache[modelName];
+          if (cachedModel && cachedModel.scene) disposeObjectTree(cachedModel.scene, true);
+        }
+      }
       // O motor e a música vivem no WebAudio/Audio (fora da cena) — o teardown
       // do renderer não os alcança; parar aqui evita som na janela do bfcache.
       try { if (engineOsc) engineOsc.stop(); } catch (e) {}
@@ -7701,6 +8019,7 @@ export const world3DRuntime = `import * as THREE from 'three';
     scene = null;
     camera = null;
     terrainMesh = null;
+    terrainField = null;
     carGroup = null;
     carBody = null;
     carWheels = [];
@@ -7711,6 +8030,8 @@ export const world3DRuntime = `import * as THREE from 'three';
     speciesMats = null;
     collCells = Object.create(null);
     _modelCache = null;
+    _modelPending = null;
+    _hdrPending = null;
     grassMesh = null;
     grassMat = null;
     heightTex = null;
@@ -7943,6 +8264,7 @@ export const world3DRuntime = `import * as THREE from 'three';
       waterCfg = { y: num(y, 0), color: text(color, '#2b6cb0') };
       if (worldReady) buildWater();
     }),
+    skyPhoto: guard('skyPhoto', setSkyPhoto),
 
     // 🚗 Carrinho
     car: guard('car', function (opts) {
@@ -8984,6 +9306,9 @@ export const world3DRuntime = `import * as THREE from 'three';
   Object.defineProperty(api, 'runProject', {
     value: guard('runProject', runProject), enumerable: false
   });
+  Object.defineProperty(api, 'disposeAll', {
+    value: guard('disposeAll', disposeAll), enumerable: false
+  });
   if (typeof window !== 'undefined') {
     window.SZWorld3D = api;
   } else if (typeof globalThis !== 'undefined') {
@@ -8991,3 +9316,5 @@ export const world3DRuntime = `import * as THREE from 'three';
   }
 })();
 `
+
+export const world3DRuntime = compactOfficialRuntimeSource(world3DRuntimeSource)

@@ -44,13 +44,18 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     // padrão — são a identidade do kit. setEffects desliga (modo turbo).
     bloom: true,
     bloomStrength: 1.2,
-    vignette: true
+    vignette: true,
+    ambient: 0.55,
+    fog: null
   };
 
   // ---- Tetos (higiene de GPU/CPU) ----
   var MAX_ENTITIES = 200;   // cada entidade é um Group multi-peça com sombra
   var MAX_PARTS = 20;       // peças por molde
   var MAX_DECOR = 64;       // enfeites do cenário
+  var MAX_EXTRA_LIGHTS = 8; // luz pontual multiplica o custo de cada material
+  var MAX_ATTRACTORS_PER_EFFECT = 16;
+  var MAX_RENDER_PIXELS = 1920 * 1080;
 
   // ---- Estado interno ----
   var state = 'menu';
@@ -66,6 +71,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   var projectFactory = null;
   var runningProjectFactory = false;
   var screens = Object.create(null);     // nome -> { el, title, text, mainBtn }
+  var projectButtons = [];               // botões extras criados pela fábrica do aluno
   var hudEls = Object.create(null);      // canto -> div
   var sounds = Object.create(null);      // nome -> HTMLAudioElement
   var molds = Object.create(null);       // nome -> { health, speed, template, radius }
@@ -93,6 +99,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   var ambientLight = null;                // luz do ambiente (setAmbient muda a força)
   var sunLight = null;                    // sol direcional (initWorld)
   var extraLights = [];                   // luzes pontuais adicionadas (addLight)
+  var pendingLights = [];                 // luzes declaradas antes de o mundo nascer
   var decor = [];
   var _decorMat = null;                   // material do cristal, compartilhado
   var currentDt = 0;
@@ -476,19 +483,43 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     timerHooks.length = 0;
     stateTimers.length = 0;
     spawners.length = 0;
-    for (var di = 0; di < decor.length; di++) {
-      if (scene && decor[di]) scene.remove(decor[di]);
-    }
-    decor.length = 0;
+    clearDecor();
     for (var li = 0; li < extraLights.length; li++) {
-      if (scene && extraLights[li]) scene.remove(extraLights[li]);
+      var light = extraLights[li];
+      if (scene && light) scene.remove(light);
+      if (light && light.dispose) {
+        try { light.dispose(); } catch (e) { warnOnce('dispose-light', 'não consegui liberar uma luz antiga: ' + e); }
+      }
     }
     extraLights.length = 0;
+    for (var fk in effects) disposeEffect(effects[fk]);
+    var disposedMaterials = new Set();
+    for (var mk in molds) {
+      var tpl = molds[mk].template;
+      if (!tpl || !tpl.traverse) continue;
+      tpl.traverse(function (o) {
+        var list = o.material && o.material.length ? o.material : [o.material];
+        for (var mi = 0; mi < list.length; mi++) {
+          var material = list[mi];
+          if (!material || !material.dispose || disposedMaterials.has(material)) continue;
+          disposedMaterials.add(material);
+          try { material.dispose(); } catch (e) { warnOnce('dispose-mold', 'não consegui liberar um material antigo: ' + e); }
+        }
+      });
+    }
+    for (var bi = 0; bi < projectButtons.length; bi++) {
+      var button = projectButtons[bi];
+      if (button && button.parentNode) button.parentNode.removeChild(button);
+    }
+    projectButtons.length = 0;
     molds = Object.create(null);
     pools = Object.create(null);
     totalAlive = 0;
     effects = Object.create(null);
     jets.length = 0;
+    anySolid = false;
+    anyTrigger = false;
+    anyCarrier = false;
   }
 
   function executeProjectFactory() {
@@ -562,6 +593,15 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     canvasEl.style.height = h + 'px';
   }
 
+  /** Mantém a proporção e respeita simultaneamente pixels totais e lado da GPU. */
+  function fitRenderSize(width, height, maxSide) {
+    var w = Math.max(1, num(width, 1280));
+    var h = Math.max(1, num(height, 720));
+    var side = Math.max(1, num(maxSide, 4096));
+    var scale = Math.min(1, side / w, side / h, Math.sqrt(MAX_RENDER_PIXELS / (w * h)));
+    return { w: Math.max(1, Math.floor(w * scale)), h: Math.max(1, Math.floor(h * scale)) };
+  }
+
   // ---- Mundo three (renderer/cena/câmera/luz/céu/chão) — só no start ----
 
   function initWorld() {
@@ -574,6 +614,12 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       _camR = new THREE.Vector3(1, 0, 0);
 
       renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvasEl });
+      var maxTexture = renderer.capabilities && renderer.capabilities.maxTextureSize
+        ? renderer.capabilities.maxTextureSize
+        : 4096;
+      var fitted = fitRenderSize(config.w, config.h, maxTexture);
+      config.w = fitted.w;
+      config.h = fitted.h;
       // Resolução interna FIXA (as contas do aluno nunca mudam com a janela).
       renderer.setPixelRatio(1);
       renderer.setSize(config.w, config.h, false);
@@ -585,11 +631,19 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
 
       scene = new THREE.Scene();
       applySky();
+      if (_pendingEnvironmentTexture) {
+        var pendingEnvironment = _pendingEnvironmentTexture;
+        _pendingEnvironmentTexture = null;
+        useEnvironmentTexture(pendingEnvironment);
+      }
 
       camera = new THREE.PerspectiveCamera(60, config.w / config.h, 0.1, Math.max(1000, config.world * 6));
 
-      ambientLight = new THREE.AmbientLight(0xffffff, 0.55);
+      ambientLight = new THREE.AmbientLight(0xffffff, config.ambient);
       scene.add(ambientLight);
+      if (config.fog) {
+        scene.fog = new THREE.Fog(config.fog.color, config.fog.near, config.fog.far);
+      }
       var sun = new THREE.DirectionalLight(0xffffff, 1.0);
       sunLight = sun;
       sun.position.set(config.world * 0.35, config.world * 0.55, config.world * 0.25);
@@ -617,6 +671,9 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       groundMesh.receiveShadow = true;
       scene.add(groundMesh);
 
+      for (var pli = 0; pli < pendingLights.length; pli++) attachPointLight(pendingLights[pli]);
+      pendingLights.length = 0;
+
       // Câmera default: órbita arrastável em volta do centro do mundo.
       if (camMode.kind === 'orbit') setOrbit(camMode.dist);
       updateCamera(0);
@@ -632,6 +689,12 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   /** Céu = degradê da cor escolhida para um horizonte mais claro (canvas 2D). */
   function applySky() {
     if (!scene) return;
+    clearEnvironmentTexture();
+    scene.environment = null;
+    if (scene.background && scene.background.isTexture) {
+      disposeTexture(scene.background, 'dispose-sky');
+    }
+    scene.background = null;
     try {
       var cv = document.createElement('canvas');
       cv.width = 2;
@@ -647,8 +710,6 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       grad.addColorStop(1, config.skyBottom ? config.skyBottom : lighten(config.sky, 0.55));
       g.fillStyle = grad;
       g.fillRect(0, 0, 2, 256);
-      var old = scene.background;
-      if (old && old.isTexture && old.dispose) { try { old.dispose(); } catch (e) {} }
       scene.background = new THREE.CanvasTexture(cv);
     } catch (e) {
       try { scene.background = new THREE.Color(config.sky); } catch (e2) {}
@@ -657,39 +718,68 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
 
   // ---- 💡 Luz & céu (atmosfera) — mexer depois do start ----
 
-  function addLight(color, x, y, z, intensity) {
-    if (!worldReady && !initWorldLater('Pôr uma luz')) return;
+  function attachPointLight(opts) {
     if (!THREE.PointLight) return;
-    var p = new THREE.PointLight(text(color, '#ffffff'), Math.max(0, num(intensity, 1)), 0);
-    p.position.set(num(x, 0), num(y, 5), num(z, 0));
+    var p = new THREE.PointLight(opts.color, opts.intensity, 0);
+    p.position.set(opts.x, opts.y, opts.z);
     scene.add(p);
     extraLights.push(p);
   }
+  function addLight(color, x, y, z, intensity) {
+    if (extraLights.length + pendingLights.length >= MAX_EXTRA_LIGHTS) {
+      warnOnce('light-limit', 'o mundo já tem ' + MAX_EXTRA_LIGHTS + ' luzes extras — reutilize as existentes');
+      return;
+    }
+    var opts = {
+      color: text(color, '#ffffff'),
+      x: num(x, 0), y: num(y, 5), z: num(z, 0),
+      intensity: Math.max(0, num(intensity, 1))
+    };
+    if (!worldReady) { pendingLights.push(opts); return; }
+    attachPointLight(opts);
+  }
   function setFog(color, near, far) {
-    if (!worldReady && !initWorldLater('Névoa')) return;
-    if (!THREE.Fog) return;
-    scene.fog = new THREE.Fog(text(color, '#9ca3af'), num(near, 8), num(far, config.world));
+    config.fog = {
+      color: text(color, '#9ca3af'),
+      near: num(near, 8),
+      far: num(far, config.world)
+    };
+    if (worldReady && THREE.Fog) {
+      scene.fog = new THREE.Fog(config.fog.color, config.fog.near, config.fog.far);
+    }
   }
   function setSkyRuntime(top, bottom) {
+    _skyPhotoRequest++;
+    clearPendingEnvironmentTexture();
     config.sky = text(top, config.sky);
     if (bottom != null) config.skyBottom = text(bottom, '');
     if (worldReady) applySky();
   }
   function setAmbient(intensity) {
-    if (ambientLight) ambientLight.intensity = Math.max(0, num(intensity, 0.55));
+    config.ambient = Math.max(0, num(intensity, 0.55));
+    if (ambientLight) ambientLight.intensity = config.ambient;
+  }
+
+  function clearDecor() {
+    var disposedMaterials = new Set();
+    for (var d = 0; d < decor.length; d++) {
+      var old = decor[d];
+      if (old.parent) old.parent.remove(old);
+      // A geometria é COMPARTILHADA (UNIT_GEOS) — não dispor aqui; só o material.
+      if (old.material && old.material.dispose && !disposedMaterials.has(old.material)) {
+        disposedMaterials.add(old.material);
+        try { old.material.dispose(); } catch (e) { warnOnce('dispose-decor', 'não consegui liberar um material de enfeite: ' + e); }
+      }
+    }
+    decor.length = 0;
+    _decorMat = null;
   }
 
   /** Enfeites procedurais (pedras cinzas + cristais na cor de destaque). */
   function scatterDecor(count) {
     if (!worldReady && !initWorldLater('Espalhar enfeites')) return;
     var n = Math.max(0, Math.min(MAX_DECOR, Math.floor(num(count, 16))));
-    for (var d = 0; d < decor.length; d++) {
-      var old = decor[d];
-      if (old.parent) old.parent.remove(old);
-      // A geometria é COMPARTILHADA (UNIT_GEOS) — não dispor aqui; só o material.
-      if (old.material && old.material.dispose) { try { old.material.dispose(); } catch (e) {} }
-    }
-    decor.length = 0;
+    clearDecor();
     var radius = config.world * 0.45;
     // Geometrias-unidade COMPARTILHADAS pelos enfeites (antes cada um alocava a
     // sua — até 64 geometrias à toa). São liberadas no disposeAll (UNIT_GEOS).
@@ -737,7 +827,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
 
   /** Blocos de mundo usados antes do start: avisa (o mundo nasce no start). */
   function initWorldLater(label) {
-    warn('"' + label + '" só funciona depois de "Começar o jogo" — deixe-o num gancho (ex.: quando entrar no estado jogando)');
+    warn('"' + label + '" só funciona durante a partida — deixe-o num gancho (ex.: quando entrar no estado jogando)');
     return false;
   }
 
@@ -885,10 +975,16 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     ? window.__SZGAME_ASSETS_3D
     : {};
   var _gltfMod = null;       // módulo do GLTFLoader (import dinâmico)
-  var _rgbeMod = null;
+  var _hdrLoaderMod = null;
+  var _hdrLoaderWaiters = [];
   var _skelMod = null;       // SkeletonUtils: clone que REAMARRA o esqueleto
   var _modelCache = null;    // nome -> { scene, clips } já parseado (clonado a cada uso)
   var _modelPending = null;  // nome -> FILA de callbacks (import/parse em voo)
+  var _hdrCache = null;      // nome -> DataTexture-base (cada uso recebe um clone)
+  var _hdrPending = null;    // nome -> callbacks aguardando um único parse
+  var _environmentTexture = null;
+  var _pendingEnvironmentTexture = null;
+  var _skyPhotoRequest = 0;  // impede uma carga antiga de vencer a escolha mais nova
 
   /** data: URL base64 -> ArrayBuffer, sem tocar na rede. */
   function dataUrlToBuffer(url) {
@@ -1101,7 +1197,129 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     return null;
   }
 
-  /** Céu de FOTO (HDR equirretangular) — vira o background da cena. */
+  function disposeTexture(texture, warningKey) {
+    if (!texture || !texture.dispose) return;
+    try { texture.dispose(); }
+    catch (e) { warnOnce(warningKey, 'não consegui liberar uma textura antiga: ' + e); }
+  }
+
+  function clearEnvironmentTexture() {
+    var old = _environmentTexture;
+    _environmentTexture = null;
+    if (scene) {
+      if (scene.background === old) scene.background = null;
+      if (scene.environment === old) scene.environment = null;
+    }
+    disposeTexture(old, 'dispose-hdr');
+  }
+
+  function clearPendingEnvironmentTexture() {
+    var old = _pendingEnvironmentTexture;
+    _pendingEnvironmentTexture = null;
+    disposeTexture(old, 'dispose-pending-hdr');
+  }
+
+  function useEnvironmentTexture(texture) {
+    if (!texture) return;
+    clearEnvironmentTexture();
+    if (scene && scene.background && scene.background.isTexture) {
+      disposeTexture(scene.background, 'dispose-sky');
+    }
+    if (!scene) {
+      clearPendingEnvironmentTexture();
+      _pendingEnvironmentTexture = texture;
+      return;
+    }
+    scene.background = texture;
+    scene.environment = texture;
+    _environmentTexture = texture;
+  }
+
+  function cloneHdrTexture(base) {
+    if (!base) return null;
+    var texture = base.clone ? base.clone() : null;
+    if (!texture && base.image) {
+      texture = new THREE.DataTexture(base.image.data, base.image.width, base.image.height);
+    }
+    if (!texture) return null;
+    if (THREE.EquirectangularReflectionMapping != null) {
+      texture.mapping = THREE.EquirectangularReflectionMapping;
+    }
+    texture.needsUpdate = true;
+    return texture;
+  }
+
+  function withHdrLoader(callback) {
+    if (_hdrLoaderMod) { callback(_hdrLoaderMod); return; }
+    _hdrLoaderWaiters.push(callback);
+    if (_hdrLoaderWaiters.length > 1) return;
+    var finish = function (mod) {
+      if (mod) _hdrLoaderMod = mod;
+      var waiters = _hdrLoaderWaiters.slice();
+      _hdrLoaderWaiters.length = 0;
+      for (var i = 0; i < waiters.length; i++) waiters[i](mod);
+    };
+    try {
+      import('three/addons/loaders/HDRLoader.js').then(finish, function (e) {
+        warn('não consegui carregar o leitor de céu: ' + e);
+        finish(null);
+      });
+    } catch (e) {
+      warn('não consegui carregar o leitor de céu: ' + e);
+      finish(null);
+    }
+  }
+
+  function loadHdrTexture(name, entry, callback) {
+    if (!_hdrCache) _hdrCache = Object.create(null);
+    if (_hdrCache[name]) { callback(cloneHdrTexture(_hdrCache[name])); return; }
+    if (!_hdrPending) _hdrPending = Object.create(null);
+    if (_hdrPending[name]) { _hdrPending[name].push(callback); return; }
+    _hdrPending[name] = [callback];
+    var flush = function (base) {
+      var queue = _hdrPending && _hdrPending[name] ? _hdrPending[name] : [];
+      if (_hdrPending) delete _hdrPending[name];
+      for (var i = 0; i < queue.length; i++) queue[i](cloneHdrTexture(base));
+    };
+    var buf = dataUrlToBuffer(entry.dataUrl);
+    if (!buf) { warn('não consegui ler os dados do céu "' + name + '"'); flush(null); return; }
+    withHdrLoader(function (mod) {
+      if (!mod) { flush(null); return; }
+      try {
+        var parsed = new mod.HDRLoader().parse(buf);
+        if (!parsed) { flush(null); return; }
+        var base = parsed.isTexture
+          ? parsed
+          : new THREE.DataTexture(parsed.data, parsed.width, parsed.height);
+        if (!parsed.isTexture) {
+          if (parsed.type != null) base.type = parsed.type;
+          if (THREE.LinearSRGBColorSpace != null) base.colorSpace = THREE.LinearSRGBColorSpace;
+          if (THREE.LinearFilter != null) {
+            base.minFilter = THREE.LinearFilter;
+            base.magFilter = THREE.LinearFilter;
+          }
+          base.generateMipmaps = false;
+          base.flipY = true;
+        }
+        if (THREE.EquirectangularReflectionMapping != null) {
+          base.mapping = THREE.EquirectangularReflectionMapping;
+        }
+        base.needsUpdate = true;
+        if (disposed) {
+          disposeTexture(base, 'dispose-late-hdr');
+          flush(null);
+          return;
+        }
+        _hdrCache[name] = base;
+        flush(base);
+      } catch (e) {
+        warn('não consegui abrir o céu "' + name + '": ' + e);
+        flush(null);
+      }
+    });
+  }
+
+  /** Céu de FOTO (HDR equirretangular) — vira o fundo e ilumina a cena. */
   function setSkyPhoto(name) {
     var k = text(name, '');
     var entry = MODELS3D[k];
@@ -1109,32 +1327,15 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       warn('o céu "' + k + '" não está no projeto (envie um arquivo .hdr)');
       return;
     }
-    var buf = dataUrlToBuffer(entry.dataUrl);
-    if (!buf) return;
-    var apply = function (mod) {
-      _rgbeMod = mod;
-      try {
-        var tex = new mod.RGBELoader().parse(buf);
-        if (!tex) return;
-        // O parse devolve os dados crus: vira DataTexture equirretangular.
-        var dt = tex.isTexture ? tex : new THREE.DataTexture(tex.data, tex.width, tex.height);
-        if (THREE.EquirectangularReflectionMapping != null) {
-          dt.mapping = THREE.EquirectangularReflectionMapping;
-        }
-        dt.needsUpdate = true;
-        if (scene) { scene.background = dt; scene.environment = dt; }
-      } catch (e) {
-        warn('não consegui abrir o céu "' + k + '": ' + e);
+    var request = ++_skyPhotoRequest;
+    loadHdrTexture(k, entry, function (texture) {
+      if (!texture) return;
+      if (disposed || request !== _skyPhotoRequest) {
+        disposeTexture(texture, 'dispose-stale-hdr');
+        return;
       }
-    };
-    if (_rgbeMod) { apply(_rgbeMod); return; }
-    try {
-      import('three/addons/loaders/RGBELoader.js').then(apply, function (e) {
-        warn('não consegui carregar o leitor de céu: ' + e);
-      });
-    } catch (e) {
-      warn('não consegui carregar o leitor de céu: ' + e);
-    }
+      useEnvironmentTexture(texture);
+    });
   }
 
   /** Textura de imagem do projeto (data:URL) → cache global + pixel-nítida. */
@@ -1426,9 +1627,9 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
       // place() — velocidade sozinha perderia o segundo.
       _dx: 0, _dy: 0, _dz: 0,
       _lx: 0, _ly: 0, _lz: 0,
-      // Zona: geração do visitante que JÁ está dentro (0 = ninguém). É o que faz
-      // o gancho disparar ao ENTRAR e não a cada quadro.
-      _inKey: 0,
+      // Zona: mapa visitante -> geração de TODOS que já estão dentro. Um único
+      // carimbo não distingue duas entidades na mesma geração de slots do pool.
+      _inside: null,
       // A "gaveta" de dados da criança (cronômetro/alvo/contador por entidade).
       // Zerada a cada nascimento — nunca vaza de uma vida anterior do slot do pool.
       data: null,
@@ -1452,7 +1653,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
 
   function spawn(name, x, y, z) {
     if (!worldReady) {
-      warn('"Nascer" só funciona depois de "Começar o jogo" — use dentro de "quando o jogo entrar no estado jogando"');
+      warn('"Nascer" só funciona durante a partida — use dentro de "quando o jogo entrar no estado jogando"');
       return null;
     }
     var k = text(name, '');
@@ -1518,7 +1719,9 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     e._ride = null; e._rideGen = 0;
     e._dx = 0; e._dy = 0; e._dz = 0;
     e._lx = num(x, 0); e._ly = num(y, 0); e._lz = num(z, 0);
-    e._inKey = 0;
+    // Se este slot já foi uma zona em outra vida, nenhuma entrada atravessa o
+    // recycle. O Map só nasce para moldes trigger, na passada própria de zonas.
+    e._inside = null;
     // Gaveta de dados NOVA a cada nascimento — nunca herda o lixo do slot reusado
     // do pool (era o vazamento de campo custom entre vidas).
     e.data = {};
@@ -2097,25 +2300,69 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     if (!hit) p.y = y0;
   }
 
-  /** Zonas: sobreposição SEM empurrar; dispara no ENTRAR, não a cada quadro. */
-  function stepTriggers(e) {
-    entBox(e, _boxA);
+  function boxesOverlap(a, b) {
+    return a.maxX > b.minX && a.minX < b.maxX &&
+           a.maxY > b.minY && a.minY < b.maxY &&
+           a.maxZ > b.minZ && a.minZ < b.maxZ;
+  }
+
+  /** Broadphase de uma zona: traz qualquer entidade, não só sólidos/zonas. */
+  function fillTriggerVisitors(z) {
+    _candN = 0;
+    var m = molds[z._mold];
+    if (!m) return;
+    var p = z.mesh.position;
+    var reach = Math.max(m.hw, m.hd) + SKIN + 0.5;
+    var list = gridQuery(p.x, p.z, reach);
+    for (var i = 0; i < list.length; i++) {
+      var e = list[i];
+      if (e === z || !e._alive) continue;
+      var em = molds[e._mold];
+      // Uma zona é sensor, não visitante de outra zona.
+      if (!em || em.trigger) continue;
+      _cand[_candN++] = e;
+    }
+  }
+
+  /** Uma zona acompanha TODOS os visitantes, cada um junto da geração do pool. */
+  function stepTriggerZone(z) {
+    var inside = z._inside || (z._inside = new Map());
+    entBox(z, _boxA);
+    // Primeiro reconhece SAÍDAS, inclusive visitante reciclado ou teleportado
+    // para longe. Assim uma reentrada da mesma vida volta a disparar uma vez.
+    inside.forEach(function (gen, e) {
+      if (!e || !e._alive || e._gen !== gen) {
+        inside.delete(e);
+        return;
+      }
+      entBox(e, _boxB);
+      if (!boxesOverlap(_boxA, _boxB)) inside.delete(e);
+    });
+    if (!z._alive) return;
+    fillTriggerVisitors(z);
+    entBox(z, _boxA);
     for (var i = 0; i < _candN; i++) {
-      var z = _cand[i];
-      if (!z || !z._alive) continue;
-      var zm = molds[z._mold];
-      if (!zm || !zm.trigger) continue;
-      entBox(z, _boxB);
-      var over = _boxA.maxX > _boxB.minX && _boxA.minX < _boxB.maxX &&
-                 _boxA.maxY > _boxB.minY && _boxA.minY < _boxB.maxY &&
-                 _boxA.maxZ > _boxB.minZ && _boxA.minZ < _boxB.maxZ;
-      // Carimbo de "já estava dentro" no par (zona, geração do visitante): o
-      // gancho roda na ENTRADA. Por quadro seria pegadinha (hurt todo frame).
-      var key = e._gen;
-      if (over) {
-        if (z._inKey !== key) { z._inKey = key; runOverlapHooks(z, e); }
-      } else if (z._inKey === key) {
-        z._inKey = 0;
+      var e = _cand[i];
+      if (!e || !e._alive) continue;
+      entBox(e, _boxB);
+      if (!boxesOverlap(_boxA, _boxB) || inside.get(e) === e._gen) continue;
+      inside.set(e, e._gen);
+      runOverlapHooks(z, e);
+      // Coletas costumam reciclar a própria zona dentro do gancho.
+      if (!z._alive) return;
+    }
+  }
+
+  /** Passada própria DEPOIS da física: zonas móveis e visitantes parados valem. */
+  function stepTriggers() {
+    if (!anyTrigger) return;
+    for (var pk in pools) {
+      var m = molds[pk];
+      if (!m || !m.trigger) continue;
+      var active = pools[pk].active;
+      for (var i = active.length - 1; i >= 0; i--) {
+        var z = active[i];
+        if (z && z._alive) stepTriggerZone(z);
       }
     }
   }
@@ -2196,7 +2443,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     //    que ser parado por um piso invisível (tiro, drone, câmera). Já ser SÓLIDO
     //    é consequência de EXISTIR: parede para tudo que não é fantasma. Fundir os
     //    dois era o bug do tiro atravessando a parede.
-    var wantSolid = (anySolid || anyTrigger) && e.body === 0;
+    var wantSolid = anySolid && e.body === 0;
     if (wantSolid && (dx || dy || dz || e.gravity)) {
       fillCandidates(e, dx, dz);
       var k = _candN > 0 ? substepsFor(e, dx, dy, dz) : 1;
@@ -2227,7 +2474,6 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
           e.vx *= ff; e.vz *= ff;
         }
       }
-      if (anyTrigger) stepTriggers(e);
     } else {
       if (dx || dy || dz) { p.x += dx; p.y += dy; p.z += dz; }
       if (e.gravity) resolveGround(e);
@@ -3093,6 +3339,10 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
   function addAttractor(effect, x, y, z, intensity, radius) {
     var fx = effects[text(effect, '')];
     if (!fx) return;
+    if (fx.attractors.length >= MAX_ATTRACTORS_PER_EFFECT) {
+      warnOnce('attractor-limit:' + text(effect, ''), 'o efeito "' + text(effect, '') + '" já tem ' + MAX_ATTRACTORS_PER_EFFECT + ' atratores — mova ou reutilize os existentes');
+      return;
+    }
     fx.attractors.push({
       x: num(x, 0), y: num(y, 0), z: num(z, 0),
       intensity: num(intensity, 20),
@@ -3961,6 +4211,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
     } else {
       stepPools(dt, 0);
     }
+    stepTriggers();
     // As faíscas só andam em 'jogando' — a pausa congela tudo, como no curso.
     stepEmitters(dt);
     stepParticles(dt);
@@ -4284,7 +4535,7 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
 
   function start() {
     if (started) {
-      warn('o jogo já começou — use "Começar o jogo" uma vez só');
+      warn('o jogo já começou automaticamente — o bloco antigo de início não é mais necessário');
       return;
     }
     if (!ensureShell()) {
@@ -4335,9 +4586,17 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
           }
         });
       }
-      if (scene && scene.background && scene.background.isTexture && scene.background.dispose) {
-        try { scene.background.dispose(); } catch (e) {}
+      clearEnvironmentTexture();
+      if (scene && scene.background && scene.background.isTexture) {
+        disposeTexture(scene.background, 'dispose-sky');
+        scene.background = null;
       }
+      clearPendingEnvironmentTexture();
+      if (_hdrCache) {
+        for (var hk in _hdrCache) disposeTexture(_hdrCache[hk], 'dispose-hdr-cache');
+        _hdrCache = null;
+      }
+      _skyPhotoRequest++;
       // Templates de molde vivem FORA da cena — descarta os materiais próprios
       // (as geometrias-unidade são compartilhadas e saem junto).
       for (var mk in molds) {
@@ -4410,8 +4669,13 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
         if (!runningProjectFactory) warn('"Preparar o jogo 3D" depois de começar não muda o mundo — deixe-o no comecinho');
         return;
       }
-      config.w = Math.max(64, Math.min(4096, num(o.width, config.w)));
-      config.h = Math.max(64, Math.min(4096, num(o.height, config.h)));
+      var fitted = fitRenderSize(
+        Math.max(64, Math.min(4096, num(o.width, config.w))),
+        Math.max(64, Math.min(4096, num(o.height, config.h))),
+        4096
+      );
+      config.w = fitted.w;
+      config.h = fitted.h;
       config.world = Math.max(20, Math.min(1000, num(o.world, config.world)));
       if (o.sky != null) config.sky = text(o.sky, config.sky);
       if (o.ground != null) config.ground = text(o.ground, config.ground);
@@ -4659,7 +4923,8 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
         warn('a tela "' + text(screen, '') + '" não existe — crie-a antes de pôr o botão');
         return;
       }
-      makeButton(entry, text(label, 'Botão'), typeof fn === 'function' ? fn : function () {});
+      var button = makeButton(entry, text(label, 'Botão'), typeof fn === 'function' ? fn : function () {});
+      projectButtons.push(button);
     }),
     showScreen: guard('showScreen', showScreen),
     hideScreens: guard('hideScreens', hideScreens),
@@ -4697,6 +4962,9 @@ export const gameKit3DRuntime = `import * as THREE from 'three';
 
   Object.defineProperty(api, 'runProject', {
     value: guard('runProject', runProject), enumerable: false
+  });
+  Object.defineProperty(api, 'disposeAll', {
+    value: guard('disposeAll', disposeAll), enumerable: false
   });
   window.SZGameKit3D = api;
 })();

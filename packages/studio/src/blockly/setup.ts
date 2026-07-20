@@ -13,6 +13,7 @@ import { registerExtendsMutator } from './blocks/extendsMutator'
 import { registerIfElseMutator } from './blocks/ifElseMutator'
 import { registerObjectMutator } from './blocks/objectMutator'
 import { registerParamsMutator } from './blocks/paramsMutator'
+import { registerSafeDomAttributeExtension } from './blocks/safeDomAttributeExtension'
 import {
   FRAME_APPEARANCE,
   FRAME_BEHAVIOR,
@@ -30,8 +31,10 @@ import { registerFieldNamePicker } from './fields/FieldNamePicker'
 import { registerFieldSolidTilesPicker } from './fields/FieldSolidTilesPicker'
 import { registerFieldSoundPicker } from './fields/FieldSoundPicker'
 import { registerFieldSpritePicker } from './fields/FieldSpritePicker'
+import { registerFieldSvgPaint } from './fields/FieldSvgPaint'
 import { registerFieldTileGrid } from './fields/FieldTileGrid'
 import { organizeBlocks } from './organize'
+import { registerProjectAreaSafeDeleteExtension } from './projectAreaSafeDelete'
 import { exportWorkspaceImage } from './screenshot'
 import { registerPtSearchCategory } from './searchCategory'
 import { szTheme } from './theme'
@@ -223,7 +226,7 @@ const FRAME_TYPES = new Set<string>([
 /**
  * "Copiar blocos" no menu de contexto de um BLOCO: guarda o bloco + tudo dentro
  * dele + a sequência abaixo numa área de transferência durável (ver
- * `blockClipboard`), para colar em OUTRO projeto. Escondido nos 3 frames (copiar
+ * `blockClipboard`), para colar em OUTRO projeto. Escondido nas Áreas do projeto (copiar
  * uma área inteira não faz sentido). Idempotente.
  */
 function registerCopyBlocksContextMenu(): void {
@@ -279,6 +282,7 @@ export function ensureBlocklyInitialized(): void {
   patchFieldEditorAnchor()
   registerFieldColour()
   registerFieldColourSZ()
+  registerFieldSvgPaint()
   // Campo de seleção de imagem (asset) dos blocos de Jogo 2D. Registrado ANTES da
   // definição dos blocos da extensão (que rodam na instalação) — senão Blockly
   // falha ao ver o tipo `field_asset_picker`.
@@ -302,6 +306,10 @@ export function ensureBlocklyInitialized(): void {
   // Campo de seleção de NOME (variável / grupo-lista já criados) — mesma exigência de
   // ordem: registrado antes dos blocos do núcleo e da extensão que o usam.
   registerFieldNamePicker()
+  // O atributo livre do bloco de DOM precisa ser validado antes de o bloco ser
+  // instanciado. A categoria guiada não aceita eventos nem URLs executáveis.
+  registerSafeDomAttributeExtension()
+  registerProjectAreaSafeDeleteExtension()
   // Os mutators precisam estar registrados antes de qualquer instância dos
   // blocos que os usam ser criada (init aplica o mutator pelo nome).
   registerAnimLoopMutator()

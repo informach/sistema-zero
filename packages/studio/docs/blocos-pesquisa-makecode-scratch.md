@@ -1,8 +1,9 @@
-# Blocos para criança: estudo MakeCode Arcade + Scratch e diretrizes do Estúdio
+# Pesquisa histórica: MakeCode Arcade + Scratch
 
-> Documento de referência do redesenho dos blocos de jogo do `@sistemazero/studio`.
-> Consolida a pesquisa em MakeCode Arcade e Scratch, a review dos blocos atuais e as
-> diretrizes adotadas. Fonte da verdade das decisões de usabilidade infantil.
+> Este estudo registra o raciocínio anterior à divisão final do lifecycle. As
+> referências abaixo a três áreas e a um único “Comportamento” são históricas,
+> não o contrato atual. A fonte vigente é `CLAUDE.md` junto de
+> `docs/plans/2026-07-19-project-behavior-lifecycle-design.md`.
 
 ## 1. Por que isto importa
 

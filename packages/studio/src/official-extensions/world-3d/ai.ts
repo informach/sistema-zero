@@ -9,17 +9,22 @@ Mundo 3D aberto dirigível via \`window.SZWorld3D\` (facade global, já carregad
 no preview). Modelo mental: a criança monta um MUNDO (não um jogo de fases) e
 dirige um carrinho nele. Unidades em METROS; o carrinho tem ~3 m.
 
-### Receita canônica (a ordem importa só no começar)
+### Receita canônica por Área do projeto
 
 \`\`\`js
+// ⚙️ Ao iniciar
 SZWorld3D.setup({ style: 'floresta', world: 160 });
 SZWorld3D.terrain(4, 5);
 SZWorld3D.car({ style: 'passeio', color: '#ef4444' });
+// 🔁 Loop principal
 SZWorld3D.onUpdate(function (dt) {
   // mecânica extra da criança (opcional)
 });
-SZWorld3D.start(); // SEMPRE por último
 \`\`\`
+
+Use 🎯 Eventos para os chapéus “Quando…” e 🔁 Loop principal para onUpdate e
+outros loops-raiz. O Studio chama o ciclo de vida automaticamente. NÃO gere
+\`SZWorld3D.start()\`: esse método existe apenas para projetos legados.
 
 ### API (1 método por bloco)
 
@@ -27,7 +32,7 @@ SZWorld3D.start(); // SEMPRE por último
   'neve' | 'deserto' | 'primavera' | 'lua' | 'fazenda' (na neve o carro
   escorrega; na LUA a gravidade cai p/ 40%, o céu nasce estrelado e o chão
   ganha crateras automáticas). world = lado do mundo em metros (40–600,
-  padrão 160). Só ANTES do start.
+  padrão 160). Use em Ao iniciar, antes do boot automático.
 - \`SZWorld3D.terrain(alturaMorros, suavidade)\` — colinas por ruído
   determinístico (mesmo mundo sempre); centro plano p/ o spawn. Pode DEPOIS
   do start (reconstrói na hora). altura 0–30 m, suavidade 1–30.
@@ -35,7 +40,8 @@ SZWorld3D.start(); // SEMPRE por último
 - \`SZWorld3D.path(x1, z1, x2, z2, largura)\` — trilha plana entre 2 pontos.
 - \`SZWorld3D.water(altura, cor)\` — água até a altura dada; o carro afunda/
   respinga e respawna se cair fundo.
-- \`SZWorld3D.start()\` — monta tudo, telinha "Começar o passeio", liga o laço.
+- \`SZWorld3D.skyPhoto(nomeDoHdr)\` — usa um asset .hdr do projeto como céu
+  panorâmico e iluminação ambiente; nunca carrega URL externa.
 - \`SZWorld3D.worldSize()\` → número (lado do mundo).
 - \`SZWorld3D.groundHeight(x, z)\` → altura do terreno naquele ponto (use para
   pousar objetos SEUS em cima dos morros).
@@ -132,7 +138,7 @@ SZWorld3D.start(); // SEMPRE por último
   SÓLIDOS (colidem com o carro); flores/cogumelos não. Teto global ~12.000
   instâncias. Respeita as áreas do clearArea; o centro (spawn) já nasce limpo.
 - \`SZWorld3D.scatterModel(n, nomeDoModelo, tamanho)\` — espalha um .glb do
-  projeto (o aluno envia no painel de assets e usa o NOME). Sólido se for
+  projeto (o aluno envia no painel de assets e escolhe no seletor). Sólido se for
   grandinho.
 - \`SZWorld3D.placeThing(especie, x, z, tamanho)\` — UMA cópia num ponto exato.
 - \`SZWorld3D.placeModel(nome, x, z, tamanho, graus)\` — UM .glb num ponto.
@@ -192,6 +198,6 @@ SZWorld3D.start(); // SEMPRE por último
   runtime parseia o ArrayBuffer; nada de carregar por URL).
 - Sem Rapier/física de biblioteca: o carro é arcade na unha do motor.
 - Sem menu/pausa/vidas: não é um jogo de fases, é um mundo.
-- Joystick mobile e modos de câmera chegam na próxima versão.
+- No toque aparecem direção, pulo, interação, turbo/corrida, buzina, mapa e pódio.
 - Use APENAS UMA extensão de jogo/mundo por projeto (brigam pelo canvas).
 `

@@ -21,9 +21,11 @@ alteraram o gate privilegiado da galeria nem a API pública do pacote.
 2. As cinco áreas são opcionais e únicas. Conexões erradas são recusadas; blocos
    soltos ou vindos de uma área excluída continuam visíveis como rascunho com
    aviso, sem executar silenciosamente.
-3. O motor inicia automaticamente. **Ao iniciar** roda de novo em cada partida;
-   reiniciar descarta listeners, timers, áudio, callbacks, estado e frames antes
-   de criar uma execução limpa.
+3. O motor inicia automaticamente por um `RuntimeLifecycleContract` obrigatório
+   em cada extensão. **Ao iniciar**, **Eventos** e **Loops** formam uma fábrica de
+   execução; nos motores com novo jogo, reiniciar limpa os registros e executa
+   novamente a fábrica. O descarte do preview libera os recursos do motor,
+   inclusive GPU nos motores 3D.
 4. `A cada N quadros` e `A cada N segundos` são loops-raiz independentes. Eventos
    de contato disparam na entrada do contato; consultas de sobreposição continuam
    valores/loops contínuos.

@@ -1,5 +1,6 @@
 import type { ExtensionDefinition } from '#extensions'
-import { validateManifest } from '#extensions'
+import { validateManifest, WORLD_3D_LIFECYCLE } from '#extensions'
+import { fullscreenConflictsFor } from '../fullscreenConflicts'
 import { world3DPromptContext } from './ai'
 import { world3DBlocks, world3DToolboxCategory } from './blocks'
 import { world3DManifest } from './manifest'
@@ -19,9 +20,11 @@ const THREE_CDN = 'https://esm.sh/three@0.180.0'
  * esm.sh). A rede é MORTA no preview → o runtime usa `loader.parse(arrayBuffer)`.
  */
 const GLTF_LOADER_CDN = `${THREE_CDN}/examples/jsm/loaders/GLTFLoader.js?external=three`
+const HDR_LOADER_CDN = `${THREE_CDN}/examples/jsm/loaders/HDRLoader.js?external=three`
 
 export const worldThreeDExtension: ExtensionDefinition = {
   manifest: world3DManifest,
+  conflictsWith: fullscreenConflictsFor('world-3d'),
   // Decisão de produto: diferente do Jogo 3D Avançado (base de engine, tudo
   // 'avancado-3d'), o Mundo 3D é a extensão dos blocos "mágicos" de alto nível —
   // 1 bloco = 1 resultado, um degrau acima da entrada do 3D (decisão da usuária
@@ -34,9 +37,11 @@ export const worldThreeDExtension: ExtensionDefinition = {
   },
   runtime: {
     bootstrapScript: world3DRuntime,
+    lifecycle: WORLD_3D_LIFECYCLE,
     esmImports: {
       three: THREE_CDN,
       'three/addons/loaders/GLTFLoader.js': GLTF_LOADER_CDN,
+      'three/addons/loaders/HDRLoader.js': HDR_LOADER_CDN,
     },
   },
   ai: {

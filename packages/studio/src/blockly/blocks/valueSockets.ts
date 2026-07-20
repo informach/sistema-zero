@@ -9,14 +9,35 @@
  *    valor `num` vire um shadow editável e que slots vazios tenham padrão.
  */
 export const VALUE_SOCKETS: Record<string, Record<string, number>> = {
+  // Canvas 2D — todo encaixe numérico chega preenchido para a criança poder
+  // testar o bloco assim que o arrasta. Os valores formam exemplos pequenos e
+  // visíveis, mas continuam sendo sombras substituíveis por qualquer expressão.
   sz_canvas_fill_rect: { X: 10, Y: 10, W: 50, H: 50 },
   sz_canvas_arc: { X: 100, Y: 100, R: 20 },
   sz_canvas_fill_text: { X: 10, Y: 30 },
-  sz_canvas_translate: { X: 0, Y: 0 },
-  sz_canvas_draw_image: { X: 0, Y: 0, W: 100, H: 100 },
   sz_canvas_set_size: { W: 400, H: 300 },
+  sz_canvas_move_to: { X: 20, Y: 20 },
+  sz_canvas_line_to: { X: 100, Y: 80 },
+  sz_canvas_rect: { X: 10, Y: 10, W: 100, H: 60 },
+  sz_canvas_line_width: { WIDTH: 2 },
+  sz_canvas_global_alpha: { ALPHA: 1 },
+  sz_canvas_arc_to: { X1: 40, Y1: 40, X2: 80, Y2: 0, R: 12 },
+  sz_canvas_stroke_rect: { X: 10, Y: 10, W: 80, H: 50 },
+  sz_canvas_clear_rect: { X: 0, Y: 0, W: 100, H: 100 },
+  sz_canvas_round_rect: { X: 10, Y: 10, W: 100, H: 60, R: 12 },
+  sz_canvas_ellipse: { X: 100, Y: 80, RX: 60, RY: 35 },
+  sz_canvas_arc_slice: { X: 100, Y: 100, R: 50, START: 0, END: 1.57 },
+  sz_canvas_quadratic_curve: { CPX: 50, CPY: 0, X: 100, Y: 50 },
+  sz_canvas_bezier_curve: { CP1X: 25, CP1Y: 0, CP2X: 75, CP2Y: 100, X: 100, Y: 50 },
+  sz_canvas_shadow: { BLUR: 12 },
+  sz_canvas_stroke_text: { X: 10, Y: 30 },
+  sz_canvas_line_dash: { SEGMENT: 8 },
+  sz_canvas_point_in_path: { X: 0, Y: 0 },
+  sz_canvas_point_in_stroke: { X: 0, Y: 0 },
+  sz_canvas_translate: { X: 0, Y: 0 },
   sz_canvas_rotate: { ANGLE: 0 },
   sz_canvas_scale: { SX: 1, SY: 1 },
+  sz_canvas_draw_image: { X: 0, Y: 0, W: 100, H: 100 },
   sz_canvas_gradient: { X0: 0, Y0: 0, X1: 200, Y1: 0 },
   sz_val_random: { MIN: 0, MAX: 100 },
   // Cor HSL: matiz (0–360) + saturação/luminosidade em % (0–100).
@@ -155,6 +176,8 @@ export const COLOR_SOCKETS: Record<string, Record<string, string>> = {
  */
 export const TEXT_SOCKETS: Record<string, Record<string, string>> = {
   sz_canvas_fill_text: { TEXT: 'Olá' },
+  sz_canvas_stroke_text: { TEXT: 'Olá' },
+  sz_canvas_measure_text: { TEXT: 'Olá' },
 }
 
 interface CompareSeed {
@@ -168,6 +191,7 @@ export type SocketShadow =
   | { shadow: { type: 'sz_val_number'; fields: { NUM: number } } }
   | { shadow: { type: 'sz_val_text'; fields: { TEXT: string } } }
   | { shadow: { type: 'sz_val_color'; fields: { COLOR: string } } }
+  | { shadow: { type: 'sz_val_image'; fields: { ASSET: string } } }
   | { shadow: CompareSeed }
   // Comparação como bloco REAL (não sombra): usada nas CONDIÇÕES (Se/enquanto/…).
   // Um bloco de valor real NÃO pode ser encaixado dentro de um input de SOMBRA
@@ -187,6 +211,17 @@ const OBJ_VAR_SHADOW: SocketShadow = {
 }
 
 const CUSTOM_SOCKETS: Record<string, Record<string, SocketShadow>> = {
+  // Imagens — a fonte começa com o seletor do acervo e os eventos apontam para
+  // a variável criada pelo bloco "criar imagem". Nenhuma tomada fica vazia.
+  sz_js_new_image: {
+    SRC: { shadow: { type: 'sz_val_image', fields: { ASSET: 'foto' } } },
+  },
+  sz_js_image_onload: {
+    TARGET: { shadow: { type: 'sz_val_variable', fields: { NAME: 'img' } } },
+  },
+  sz_js_image_onerror: {
+    TARGET: { shadow: { type: 'sz_val_variable', fields: { NAME: 'img' } } },
+  },
   // "parar animação": o id vem de uma variável "animId" por padrão (a mesma que
   // o bloco "A cada frame fazer" sugere ao guardar o id).
   sz_canvas_cancel_anim: {

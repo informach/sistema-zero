@@ -38,7 +38,7 @@ const COM_EMOJI = /^(\p{Extended_Pictographic}|\p{Emoji_Presentation})/u
  * Categorias do NÚCLEO (não da extensão) que a doc cita de propósito na seção
  * "fazer na mão" — não são sub-categorias do Jogo 2D e não devem falhar o drift.
  */
-const EXTERNAS_OK = new Set(['🎨 SVG'])
+const EXTERNAS_OK = new Set(['🎨 SVG', '⚙️ Ao iniciar', '🎯 Eventos', '🔁 Loop principal'])
 
 /** Spans em negrito `**🎯 Nome**` cujo conteúdo começa com emoji = citação de chip. */
 function chipsCitadosNasDocs(texto: string): string[] {

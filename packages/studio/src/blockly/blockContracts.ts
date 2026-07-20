@@ -99,10 +99,32 @@ const BODY_CONTEXTS: readonly StatementContext[] = [
   'event-body',
   'loop-body',
   'function-body',
+  'async-function-body',
+  'derived-constructor-body',
+  'derived-method-body',
   'draw-world',
   'draw-hud',
   'map-draw',
   'map-enter',
+]
+
+const CHECK_BY_CONTEXT: Readonly<Record<StatementContext, string>> = {
+  statement: 'JSStmt',
+  'event-body': 'JSEventStmt',
+  'loop-body': 'JSLoopStmt',
+  'function-body': 'JSFunctionStmt',
+  'async-function-body': 'JSAsyncStmt',
+  'derived-constructor-body': 'JSDerivedConstructorStmt',
+  'derived-method-body': 'JSDerivedMethodStmt',
+  'class-member': 'ClassMember',
+  'draw-world': 'JSStmt',
+  'draw-hud': 'JSStmt',
+  'map-draw': 'JSStmt',
+  'map-enter': 'JSStmt',
+}
+
+export const NESTED_STATEMENT_CHECKS = [
+  ...new Set(BODY_CONTEXTS.map((context) => CHECK_BY_CONTEXT[context])),
 ]
 
 function isEventBlockType(type: string): boolean {
@@ -129,12 +151,6 @@ function isEventBlockType(type: string): boolean {
   )
 }
 
-export function inferBehaviorAreaFromType(type: string): BehaviorArea {
-  if (LOOP_BLOCK_TYPES.has(type) || LOOP_BODY_ONLY_BLOCK_TYPES.has(type)) return 'loops'
-  if (isEventBlockType(type)) return 'events'
-  return 'start'
-}
-
 function loopPhase(type: string): BlockPlacement['phase'] {
   if (DRAW_WORLD_BLOCK_TYPES.has(type)) return 'draw-world'
   if (DRAW_HUD_BLOCK_TYPES.has(type)) return 'draw-hud'
@@ -147,8 +163,30 @@ function statementChecks(placement: BlockPlacement): string[] {
   if (placement.root.includes('start')) checks.add('JSStartRoot')
   if (placement.root.includes('events')) checks.add('JSEventRoot')
   if (placement.root.includes('loops')) checks.add('JSLoopRoot')
-  if (placement.nested.length > 0) checks.add('JSStmt')
+  for (const context of placement.nested) checks.add(CHECK_BY_CONTEXT[context])
   return [...checks]
+}
+
+function materializeStatementInputs(definition: BlockDefinition): BlockDefinition {
+  const rewrite = (args: unknown[] | undefined): unknown[] | undefined =>
+    args?.map((arg) => {
+      if (typeof arg !== 'object' || arg === null) return arg
+      const input = arg as { type?: unknown; check?: unknown }
+      if (
+        input.type !== 'input_statement' ||
+        (input.check !== undefined && input.check !== 'JSStmt')
+      ) {
+        return arg
+      }
+      return { ...input, check: NESTED_STATEMENT_CHECKS }
+    })
+
+  return {
+    ...definition,
+    ...(definition.args0 ? { args0: rewrite(definition.args0) } : {}),
+    ...(definition.args1 ? { args1: rewrite(definition.args1) } : {}),
+    ...(definition.args2 ? { args2: rewrite(definition.args2) } : {}),
+  }
 }
 
 export function inferBlockContract(definition: BlockDefinition): BlockContract {
@@ -253,13 +291,17 @@ export function requireBlockContract(type: string): BlockContract {
 export function materializeBlockDefinition(definition: BlockDefinition): BlockDefinition {
   const contract = inferBlockContract(definition)
   if (contract.domain !== 'behavior' || !contract.placement) return definition
+  const withInputs = {
+    ...materializeStatementInputs(definition),
+    placement: contract.placement,
+  }
   const previous = definition.previousStatement
   const previousChecks = Array.isArray(previous) ? previous : previous ? [previous] : []
-  if (!previousChecks.includes('JSStmt')) return definition
+  if (!previousChecks.includes('JSStmt')) return withInputs
   const checks = statementChecks(contract.placement)
-  if (checks.length === 0) return definition
+  if (checks.length === 0) return withInputs
   return {
-    ...definition,
+    ...withInputs,
     previousStatement: definition.previousStatement == null ? definition.previousStatement : checks,
     nextStatement: definition.nextStatement == null ? definition.nextStatement : checks,
   }

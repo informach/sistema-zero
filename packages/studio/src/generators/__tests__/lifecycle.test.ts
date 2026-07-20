@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
-import type { ProjectLifecycleTarget, SZIRV2 } from '#ir'
+import type { ProjectLifecycleTarget } from '#extensions'
+import type { SZIRV2 } from '#ir'
 import { parseProjectFiles } from '#parsers'
 import { generateProjectFiles } from '../project'
 
@@ -48,6 +49,24 @@ describe('fábrica e boot do ciclo de vida', () => {
       expect(parsed.behavior.loops.map((statement) => statement.type)).toEqual(['animationLoop'])
     })
   }
+
+  it('game-3d-advanced migra o bloco de boot legado sem ligar o motor duas vezes', () => {
+    const ir: SZIRV2 = {
+      version: 2,
+      html: [],
+      css: [],
+      behavior: {
+        start: [{ type: 'g3k:start' }],
+        events: [],
+        loops: [],
+      },
+      extensions: [{ extensionId: 'game-3d-advanced' }],
+    }
+
+    const files = generateProjectFiles({ ir, projectName: 'Boot legado' })
+    expect(files['script.js'].match(/SZGameKit3D\.start\(\);/g)).toHaveLength(1)
+    expect(parseProjectFiles(files).behavior.start).toEqual([])
+  })
 
   it('loops periódicos independentes registram seu próprio tick e preservam o round-trip', () => {
     const game2d: SZIRV2 = {

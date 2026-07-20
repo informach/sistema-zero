@@ -10,7 +10,7 @@ import { buildIRFromWorkspace } from '../../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import { parseJS } from '../../../parsers/js'
-import { gameKit3DBlocks } from '../blocks'
+import { G3K_SOCKET_SHADOWS, gameKit3DBlocks, gameKit3DToolboxCategory } from '../blocks'
 import { gameKit3DRuntime } from '../runtime'
 
 /**
@@ -117,6 +117,52 @@ describe('Auditoria Jogo 3D Avançado — inventário', () => {
     expect(gameKit3DBlocks.length).toBe(130)
     for (const def of statementDefs) expect(def.previousStatement).toBe('JSStmt')
     for (const def of exprDefs) expect(def.output).toBe('JSValue')
+  })
+
+  it('todo soquete de valor da paleta abre com uma sombra intuitiva', () => {
+    const missing: string[] = []
+    for (const definition of gameKit3DBlocks) {
+      for (const [key, value] of Object.entries(definition)) {
+        if (!key.startsWith('args') || !Array.isArray(value)) continue
+        for (const arg of value as Array<{ type?: string; name?: string }>) {
+          if (arg.type !== 'input_value' || !arg.name) continue
+          if (!G3K_SOCKET_SHADOWS[definition.type]?.[arg.name]) {
+            missing.push(`${definition.type}.${arg.name}`)
+          }
+        }
+      }
+    }
+    expect(missing).toEqual([])
+  })
+
+  it('modelo GLB e céu HDR usam seletores filtrados aos assets corretos', () => {
+    const argument = (type: string, name: string) => {
+      const definition = gameKit3DBlocks.find((block) => block.type === type)
+      for (const [key, value] of Object.entries(definition ?? {})) {
+        if (!key.startsWith('args') || !Array.isArray(value)) continue
+        const found = (value as Array<{ name?: string }>).find((arg) => arg.name === name)
+        if (found) return found
+      }
+      return undefined
+    }
+    expect(argument('sz_g3k_part', 'MODEL')).toMatchObject({
+      type: 'field_asset_picker',
+      kind: '3d',
+      filter: 'model3d',
+    })
+    expect(argument('sz_g3k_set_sky_photo', 'PHOTO')).toMatchObject({
+      type: 'field_asset_picker',
+      kind: '3d',
+      filter: 'environment3d',
+    })
+  })
+
+  it('o bloco de boot legado fica registrado, mas não aparece na paleta', () => {
+    expect(gameKit3DBlocks.find((block) => block.type === 'sz_g3k_start')).toMatchObject({
+      hidden: true,
+    })
+    const toolboxTypes = collectTypes(gameKit3DToolboxCategory)
+    expect(toolboxTypes.has('sz_g3k_start')).toBe(false)
   })
 })
 

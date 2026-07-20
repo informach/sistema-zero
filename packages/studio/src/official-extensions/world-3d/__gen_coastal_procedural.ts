@@ -12,4 +12,4 @@ SZWorld3D.coinsLine(18, 0, 12, 72, -24);
 SZWorld3D.quest("Explorador da costa", "Atravesse as ilhas e chegue ao farol.");
 SZWorld3D.totemText(0, 8, "Coastal World", "Use o barco, as pontes ou o jetpack para explorar o arquipelago.");
 SZWorld3D.ambience("mar");
-SZWorld3D.start();`
+`

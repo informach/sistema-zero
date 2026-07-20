@@ -87,6 +87,7 @@ describe('Fase 4 — throw / Object.assign / cssText / sign / map / switch', () 
         subject: { type: 'var', name: 'dir' },
         cases: [
           {
+            __id: 'case-cima',
             match: { type: 'str', value: 'cima' },
             body: [
               {
@@ -110,6 +111,7 @@ describe('Fase 4 — throw / Object.assign / cssText / sign / map / switch', () 
     const sw = out.find((e) => e.type === 'switch')
     expect(sw).toBeTruthy()
     expect(sw.cases.length).toBe(1)
+    expect(sw.cases[0].__id).toBe('case-cima')
     expect(sw.cases[0].match.value).toBe('cima')
     expect(sw.default.length).toBe(1)
   })

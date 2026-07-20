@@ -50,7 +50,6 @@ const EVENT_LISTENER_TYPES: ReadonlySet<string> = new Set([
   'sz_js_on_mousemove',
   'sz_js_on_pointer_down',
   'sz_js_on_pointer_up',
-  'sz_js_on_load',
   'sz_js_on_resize',
   'sz_js_on_fullscreen_change',
   'sz_js_on_context_menu',
@@ -59,9 +58,8 @@ const EVENT_LISTENER_TYPES: ReadonlySet<string> = new Set([
 ])
 
 // Ordem dos blocos DENTRO da subcategoria ⚡ Eventos (teclado → mouse/clique →
-// formulário → janela → tempo → ligar-a-função). Reúne blocos de DOM, JS (timers)
-// e Valores (leitores do evento); um mesmo bloco pode aparecer aqui E na sua
-// categoria de origem (timers em 🔁 Repetições, leitores em 🔣 Valores).
+// formulário → janela → ligar-a-função). Reúne blocos de DOM e leitores do
+// evento. Temporizadores ficam só em 🔁 Repetições para não duplicar conceitos.
 const EVENTOS_TYPE_ORDER: readonly string[] = [
   // ⌨️ Teclado
   'sz_js_on_key',
@@ -78,17 +76,11 @@ const EVENTOS_TYPE_ORDER: readonly string[] = [
   'sz_js_on_input',
   'sz_js_on_submit',
   // 🪟 Página / janela
-  'sz_js_on_load',
   'sz_js_on_resize',
   'sz_js_on_fullscreen_change',
   'sz_js_on_context_menu',
   'sz_js_on_blur',
   'sz_js_element_onclick',
-  // ⏱️ Tempo
-  'sz_js_set_timeout',
-  'sz_js_set_interval',
-  'sz_js_set_timeout_seconds',
-  'sz_js_set_interval_seconds',
   // 🔧 Avançado: ligar a uma função nomeada + método do evento
   'sz_js_on_event_named',
   'sz_js_event_method',
@@ -315,7 +307,9 @@ export function buildCoreToolbox(
   // 1) JavaScript dividido em grupos (nível-base iniciante; o nível por-bloco filtra).
   if (isCategoryAllowed('JavaScript', 'iniciante-2d', profile)) {
     const jsByType = new Map(JS_BLOCKS.map((b) => [b.type, b]))
-    const usedJs = new Set<string>()
+    // Object.assign é linguagem JS, mas pedagogicamente pertence à caixa de
+    // Objetos. Reservá-lo aqui evita que reapareça no grupo "Mais".
+    const usedJs = new Set<string>(['sz_js_object_assign'])
     for (const g of JS_GROUPS) {
       const blocks = g.types
         .map((t) => {
@@ -371,7 +365,7 @@ export function buildCoreToolbox(
   // Página: só os blocos de ELEMENTO (os "Quando…" saem para ⚡ Eventos).
   const paginaBlocks = DOM_BLOCKS.filter((b) => !EVENT_LISTENER_TYPES.has(b.type))
   pushSub('DOM', '🌐 Página', CATEGORY_COLORS.dom, 'iniciante-2d', paginaBlocks)
-  // ⚡ Eventos: listeners + leitores do evento + temporizadores, na ordem curada.
+  // ⚡ Eventos: listeners + leitores do evento, na ordem curada.
   // Gateada por 'DOM' (preserva o allowCategories das aulas). Resolve cada tipo a
   // partir das três origens; tipos inexistentes (ex.: nível) são ignorados.
   const eventosByType = new Map(
@@ -397,7 +391,10 @@ export function buildCoreToolbox(
     'SZ_CLASSES',
     OOP_BLOCKS,
   )
-  pushSub('Objetos', '📦 Objetos', CATEGORY_COLORS.objects, 'avancado-2d', OBJECT_BLOCKS)
+  pushSub('Objetos', '📦 Objetos', CATEGORY_COLORS.objects, 'avancado-2d', [
+    ...OBJECT_BLOCKS,
+    ...JS_BLOCKS.filter((b) => b.type === 'sz_js_object_assign'),
+  ])
   if (progSubs.length > 0) {
     contents.push({
       kind: 'category',

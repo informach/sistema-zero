@@ -36,6 +36,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Executa os blocos de dentro quando clicarem no elemento escolhido.',
   },
   {
     type: 'sz_js_on_click_anywhere',
@@ -67,6 +68,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Executa os blocos de dentro quando o ponteiro passar sobre o elemento escolhido.',
   },
   {
     type: 'sz_js_on_input',
@@ -87,6 +89,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Executa os blocos de dentro sempre que o conteúdo do campo mudar.',
   },
   {
     type: 'sz_js_on_submit',
@@ -107,6 +110,8 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip:
+      'Executa os blocos de dentro quando o formulário for enviado, sem recarregar a página.',
   },
   {
     type: 'sz_js_on_event_named',
@@ -185,7 +190,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Roda o "fazer" quando qualquer tecla é apertada (ou solta). Dentro, use "o código da tecla do evento" para saber qual foi, ex.: se ( o código da tecla = "KeyW" ). Vira document.addEventListener("keydown", (event) => { ... }).',
+      'Roda os blocos de dentro quando qualquer tecla é apertada ou solta. Use o valor da tecla do evento para descobrir qual foi.',
   },
   {
     type: 'sz_js_on_mousemove',
@@ -207,7 +212,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Roda o "fazer" no momento em que apertam o mouse (ou tocam a tela), em qualquer lugar. Ótimo para "segurar para carregar". Vira window.addEventListener("mousedown", (event) => { ... }).',
+      'Roda os blocos de dentro quando apertam o mouse ou tocam a tela. É útil para ações de segurar.',
   },
   {
     type: 'sz_js_on_pointer_up',
@@ -217,10 +222,11 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Roda o "fazer" no momento em que soltam o mouse (ou tiram o dedo da tela), em qualquer lugar. Vira window.addEventListener("mouseup", (event) => { ... }).',
+    tooltip: 'Roda os blocos de dentro quando soltam o mouse ou tiram o dedo da tela.',
   },
   {
+    // Legado para abrir projetos antigos. O frame "Ao iniciar" já representa
+    // este momento e evita ensinar dois jeitos para o mesmo conceito.
     type: 'sz_js_on_load',
     message0: 'Quando a página terminar de carregar',
     message1: 'fazer %1',
@@ -228,8 +234,8 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Roda o "fazer" quando a página termina de carregar (tudo já pronto na tela). Vira window.addEventListener("load", (event) => { ... }).',
+    hidden: true,
+    tooltip: 'Abre projetos antigos que esperavam a página terminar de carregar.',
   },
   {
     type: 'sz_js_on_resize',
@@ -239,8 +245,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Roda o "fazer" quando a janela do navegador muda de tamanho. Vira window.addEventListener("resize", (event) => { ... }).',
+    tooltip: 'Roda os blocos de dentro quando a janela muda de tamanho.',
   },
   {
     type: 'sz_js_on_context_menu',
@@ -251,7 +256,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Roda o "fazer" quando o menu do botão direito é aberto (útil para zerar o teclado no jogo). Vira window.addEventListener("contextmenu", (event) => { ... }).',
+      'Roda os blocos de dentro quando o menu do botão direito é aberto. É útil para pausar controles de um jogo.',
   },
   {
     type: 'sz_js_on_blur',
@@ -262,7 +267,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Roda o "fazer" quando a pessoa sai da janela do jogo (útil para zerar o teclado). Vira window.addEventListener("blur", (event) => { ... }).',
+      'Roda os blocos de dentro quando a pessoa sai da janela do jogo. É útil para soltar teclas que ficaram apertadas.',
   },
   {
     type: 'sz_js_element_onclick',
@@ -275,8 +280,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Roda os blocos de dentro quando o elemento for clicado — ex.: um botão (o elemento com id "playBtn"). Vira elemento.onclick = () => { ... }.',
+    tooltip: 'Roda os blocos de dentro quando o elemento encaixado for clicado.',
   },
   {
     type: 'sz_js_on_fullscreen_change',
@@ -287,7 +291,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Roda o "fazer" quando a página entra OU sai da tela cheia (inclusive quando apertam ESC). Use junto de "está em tela cheia?" para trocar o ícone do botão. Vira document.addEventListener("fullscreenchange", (event) => { ... }).',
+      'Roda os blocos de dentro quando a página entra ou sai da tela cheia. Use com "está em tela cheia?" para atualizar um botão.',
   },
   // ---- Tela cheia (Fullscreen API) ----
   {
@@ -296,8 +300,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Faz a página inteira ocupar a tela toda. Só funciona a partir de um clique ou tecla. Use dentro de um "Quando clicarem". Vira document.documentElement.requestFullscreen().',
+    tooltip: 'Faz a página inteira ocupar a tela. Use dentro de uma ação de clique ou tecla.',
   },
   {
     type: 'sz_js_exit_fullscreen',
@@ -305,7 +308,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Volta do modo tela cheia para a janela normal. Vira document.exitFullscreen().',
+    tooltip: 'Volta do modo tela cheia para a janela normal.',
   },
   {
     type: 'sz_js_toggle_fullscreen',
@@ -344,8 +347,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     inputsInline: true,
     output: 'JSValue',
     colour: C,
-    tooltip:
-      'O elemento da página com esse id, como valor — ex.: pegar uma imagem (<img id="…">) para desenhar no canvas. Vira document.getElementById("id").',
+    tooltip: 'Pega o elemento que tem esse nome para encaixá-lo como valor em outro bloco.',
   },
   {
     type: 'sz_val_query_select',
@@ -365,7 +367,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Os elementos da página que casam com um seletor CSS, como valor — ex.: para percorrer com "para cada". Vira document.querySelectorAll("seletor") (ou querySelector para o primeiro).',
+      'Pega o primeiro elemento ou todos os elementos que combinam com a busca. A lista pode ser usada em "para cada".',
   },
   {
     type: 'sz_js_query_selector',
@@ -377,6 +379,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Procura o primeiro elemento que combina com a busca e guarda em uma variável.',
   },
   {
     type: 'sz_js_query_selector_all',
@@ -402,7 +405,6 @@ export const DOM_BLOCKS: BlockDefinition[] = [
         options: [
           ['o texto', 'textContent'],
           ['o valor', 'value'],
-          ['o conteúdo HTML', 'innerHTML'],
         ],
       },
       {
@@ -432,7 +434,6 @@ export const DOM_BLOCKS: BlockDefinition[] = [
         options: [
           ['o texto', 'textContent'],
           ['o valor', 'value'],
-          ['o conteúdo HTML', 'innerHTML'],
         ],
       },
       {
@@ -450,8 +451,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Escreve uma propriedade do elemento com qualquer valor (texto montado, conta, etc.). Use "juntar texto" para montar HTML.',
+    tooltip: 'Mostra um texto ou preenche o valor de um campo usando o resultado de outro bloco.',
   },
   {
     type: 'sz_js_set_style',
@@ -494,7 +494,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Muda UMA propriedade de estilo do elemento por código (ex.: position/left/top para posicionar, opacity/visibility para mostrar/esconder). Vira el.style.left = valor. Escreva no campo livre para um estilo fora da lista (ex.: animationDuration). Lembre da unidade ("120px").',
+      'Muda uma característica visual do elemento, como posição, tamanho ou transparência. Lembre da unidade em medidas, como 120px.',
   },
   {
     type: 'sz_js_set_style_text',
@@ -515,8 +515,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Define VÁRIOS estilos de uma vez por uma string (ex.: "left: 10px; top: 20px; background: red;"). Vira el.style.cssText = valor.',
+    tooltip: 'Define várias características visuais de uma vez usando um texto de estilos.',
   },
   {
     type: 'sz_js_set_attribute',
@@ -538,8 +537,8 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Escreve um atributo do elemento por código (ex.: stroke/fill de um SVG, href, data-…). Vira el.setAttribute("nome", valor).',
+    tooltip: 'Muda uma característica segura do elemento, como stroke, fill, data- ou aria-.',
+    extensions: ['sz_safe_dom_attribute'],
   },
   {
     type: 'sz_js_set_property_var',
@@ -551,7 +550,6 @@ export const DOM_BLOCKS: BlockDefinition[] = [
         options: [
           ['o texto', 'textContent'],
           ['o valor', 'value'],
-          ['o conteúdo HTML', 'innerHTML'],
         ],
       },
       {
@@ -580,7 +578,6 @@ export const DOM_BLOCKS: BlockDefinition[] = [
         options: [
           ['o texto', 'textContent'],
           ['o valor', 'value'],
-          ['o conteúdo HTML', 'innerHTML'],
         ],
       },
       {
@@ -618,7 +615,6 @@ export const DOM_BLOCKS: BlockDefinition[] = [
         options: [
           ['o texto', 'textContent'],
           ['o valor', 'value'],
-          ['o conteúdo HTML', 'innerHTML'],
         ],
       },
       {
@@ -657,8 +653,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip:
-      'Lê um atributo (ex.: cx, transform, fill) de um elemento por id ou variável e guarda numa variável. Vira el.getAttribute("nome").',
+    tooltip: 'Lê uma característica do elemento e guarda o resultado em uma variável.',
   },
   {
     // Legado: substituído por sz_js_set_property_text. Mantido (oculto da
@@ -703,6 +698,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
+    tooltip: 'Adiciona, remove ou alterna uma classe visual do elemento escolhido.',
   },
   {
     type: 'sz_js_set_dataset',
@@ -752,7 +748,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria uma forma SVG (circle, rect, line, path…) por código e guarda numa variável. Depois use "definir atributo" para configurar e "dentro de … adicionar" para colocar num <svg>. Vira document.createElementNS("http://www.w3.org/2000/svg", "tag").',
+      'Cria uma forma para um desenho SVG e guarda em uma variável. Depois configure seus atributos e adicione-a ao desenho.',
   },
   {
     type: 'sz_js_append_child',

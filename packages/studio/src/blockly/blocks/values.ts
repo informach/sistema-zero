@@ -200,8 +200,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     ],
     output: 'JSValue',
     colour: C,
-    tooltip:
-      'Um número da data/hora ATUAL (ex.: as horas agora). Ótimo para relógios. Vira new Date().getHours() (e similares).',
+    tooltip: 'Pega uma parte da data ou hora atual. É útil para criar relógios e calendários.',
   },
   {
     type: 'sz_val_canvas_width',
@@ -360,7 +359,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Cria uma NOVA lista transformando cada item. Use "valor da variável" com o nome do item na transformação. Vira lista.map((item) => …).',
+      'Cria uma nova lista transformando cada item. Use o valor da variável do item na transformação.',
   },
   {
     // Os espaços (ITEM0, ITEM1, …) e os botões +/− vêm do `sz_array_mutator`.
@@ -405,7 +404,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Percorre a lista e devolve o primeiro item que passa no teste (ou nada, se nenhum passar). Dentro de "em que", use "valor da variável item" ou "campo do item" para testar cada um. Vira lista.find((item) => ...).',
+      'Procura e devolve o primeiro item que passa no teste. Se nenhum passar, o resultado fica vazio.',
   },
   {
     type: 'sz_val_array_filter',
@@ -419,7 +418,7 @@ export const VALUE_BLOCKS: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Cria uma NOVA lista só com os itens que passam no teste. A lista é um soquete: encaixe uma variável ou "minha propriedade …". Dentro do "em que", use "valor da variável item" ou "propriedade … de" para testar cada um. Vira lista.filter((item) => ...).',
+      'Cria uma nova lista somente com os itens que passam no teste. Use a variável do item para testar cada um.',
   },
   {
     // Espaços ITEM0.. via `sz_array_mutator`: cada um é uma lista a juntar.

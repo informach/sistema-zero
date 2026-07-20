@@ -17,7 +17,8 @@ API global injetada como window.SZGame2D:
 - everyFrames agora aceita NÚMERO ou VARIÁVEL no intervalo (ex.: a cada [intervalo] quadros) — dá para acelerar o spawn por fase.
 - spawnAsteroid varia o tamanho de cada asteroide sozinho; showScreen escurece de leve (o jogo aparece atrás) e quebra o subtítulo em linhas.
 - isColliding(a, b): AABB.
-- onStart(fn): raiz da partida; prepara tela, objetos, eventos e loops. Roda de novo após restart().
+- onStart(fn): adapter interno usado pelo gerador para reinício; NÃO gere essa
+  chamada nem ofereça o bloco legado. Use as Áreas do projeto.
 - gameLoop(fn): adiciona fn ao agendador do jogo, com passo fixo de 60 Hz. Vários loops coexistem.
 - keys: estado das setas { left, right, up, down }.
 - setGravity(g) / applyVelocity(sprite): física simples (vy += gravidade).
@@ -157,8 +158,12 @@ HUD no canvas (v0.6.0) — desenhe DENTRO do gameLoop, depois de limpar a tela:
 Estado/telas (cenas) — início → jogando → ganhou → perdeu, ou qualquer nome livre
 inventado pela criança (ex.: ganhou1), com UM só gameLoop:
 - setScene("jogando") / sceneIs("jogando") (booleano, use no if) / showScreen(ctx, titulo, subtitulo, dica, fundo) / restart(). O titulo/subtitulo/dica aceitam texto fixo OU expressão (variável, "juntar texto", resultado de função) — ex.: "Destrua " + alvo + " asteroides" mostra a meta vinda de uma variável.
-- IMPORTANTE: variáveis, grupos, sprites e registros de evento ficam dentro de “Quando o jogo começar”, mas fora de gameLoop, para o loop enxergá-los sem recriá-los.
-- Padrão: onStart contendo setup + setScene("inicio") + eventos + um "a cada quadro" que limpa a tela e usa "se a tela atual é X" para decidir o que desenhar. Enter troca início→jogando e, no perdeu/ganhou, chama restart().
+- IMPORTANTE: variáveis, grupos e sprites ficam em “Ao iniciar”; registros de
+  evento ficam em “Eventos”; raízes gameLoop ficam em “Loop principal”. As três
+  áreas compartilham o mesmo escopo da partida sem recriar objetos a cada quadro.
+- Padrão: setup + setScene("inicio") em Ao iniciar; Enter em Eventos; um “A cada
+  quadro” em Loop principal limpa a tela e usa “se a tela atual é X” para decidir
+  o que desenhar. No perdeu/ganhou, restart() começa uma execução limpa.
 
 Cenário (v0.6.0): drawStarfield(ctx, velocidade) desenha um céu de estrelas rolando (fundo espacial; chame logo após clear); dragX(sprite) faz o sprite seguir o dedo/mouse só na horizontal (nave no celular). Existe o exemplo pronto "Nave contra Asteroides" mostrando tudo junto.
 
@@ -176,7 +181,11 @@ Quando ajudar o aluno com jogos 2D:
 - Para imagens, lembre que o aluno precisa ADICIONAR o asset na aba Assets e usar o nome dele.
 - Enquanto a imagem carrega (ou se faltar), o sprite cai num retângulo (placeholder) — nunca quebra.
 - Prefira pequenas iterações didáticas — não despeje o jogo pronto.
-- DESEMPENHO: crie sprites/grupos/objetos UMA vez dentro de onStart e fora de gameLoop. Criar dentro do loop enche a memória. Dentro do loop, use spawn/createSprite só de propósito (ex.: um tiro a cada N quadros) e SEMPRE remova da tela os objetos que já saíram, com pruneOffscreen, para o grupo não crescer sem fim e a colisão (overlapGroups) não ficar lenta.
+- DESEMPENHO: crie sprites/grupos/objetos UMA vez em Ao iniciar. Criar dentro do
+  loop enche a memória. Dentro do loop, use spawn/createSprite só de propósito
+  (ex.: um tiro a cada N quadros) e SEMPRE remova da tela os objetos que já
+  saíram, com pruneOffscreen, para o grupo não crescer sem fim e a colisão
+  (overlapGroups) não ficar lenta.
 
 KIT ESPAÇO (v0.7.0) — categoria "🚀 Kit espaço" com atalhos PRONTOS (não genéricos) para jogos de nave espacial; os blocos genéricos seguem nas categorias normais:
 - createShip({ x, y, w, h, body, wings }): nave desenhada (cabine + foguinho que pulsa sozinho); body = cor do corpo, wings = cor das asas. É um sprite normal (drawSprite desenha a nave).

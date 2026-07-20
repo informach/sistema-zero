@@ -102,6 +102,35 @@ describe('assignStableIdsToIR', () => {
     }
   })
 
+  it('atribui id ao bloco de caso dentro de uma escolha', () => {
+    const result = assignStableIdsToIR(
+      {
+        html: [],
+        css: [],
+        js: [
+          {
+            type: 'switch',
+            subject: { type: 'var', name: 'direcao' },
+            cases: [
+              {
+                match: { type: 'str', value: 'cima' },
+                body: [{ type: 'consoleLog', value: { type: 'str', value: 'subiu' } }],
+              },
+            ],
+          },
+        ],
+        extensions: [],
+      },
+      'ponte',
+    )
+
+    const statement = result.behavior.start[0]
+    expect(statement?.type).toBe('switch')
+    if (statement?.type === 'switch') {
+      expect(statement.cases[0]?.__id).toBe('ponte_start_0_cases_0')
+    }
+  })
+
   it('atribui __id de fallback às regras dentro de uma @media', () => {
     const ir: SZIR = {
       html: [],

@@ -26,7 +26,10 @@ export function installExtension(
   store: ProjectStoreApi = useProjectStore,
 ): { ok: true } | { ok: false; conflictId: string } {
   const installed = store.getState().project?.installedExtensions ?? []
-  const conflictId = ext.conflictsWith?.find((id) => installed.some((entry) => entry.id === id))
+  const conflictId = installed.find((entry) => {
+    if (ext.conflictsWith?.includes(entry.id)) return true
+    return findExtension(entry.id)?.conflictsWith?.includes(ext.manifest.id) === true
+  })?.id
   if (conflictId) return { ok: false, conflictId }
   registerExtension(ext)
   store.getState().installExtension(ext.manifest.id, ext.manifest.version)

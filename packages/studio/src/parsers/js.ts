@@ -7,6 +7,8 @@ import {
   type JSExpr,
   type JSStatement,
 } from '#ir'
+import { isGuidedDomAttributeName, isGuidedDomProperty } from '../blockly/domSafety'
+import { prepareCanvasImageSourceForParse } from '../canvasImagePreloadCodec'
 import {
   canvas3DMacroFromPlaceholder,
   prepareCanvas3DSourceForParse,
@@ -39,7 +41,7 @@ export function parseJS(source: string): JSStatement[] {
 
 export function parseJSWithDiagnostics(source: string): ParseJSResult {
   if (!source.trim()) return { statements: [], diagnostics: [] }
-  const prepared = prepareCanvas3DSourceForParse(source)
+  const prepared = prepareCanvas3DSourceForParse(prepareCanvasImageSourceForParse(source))
   const parseSource = prepared.source
   let ast: ReturnType<typeof parse>
   try {
@@ -759,7 +761,11 @@ function mapDeclarator(decl: Node, node: Node, ctx: ParseCtx): JSStatement[] | n
   }
   // newInstance: const x = new Classe(args) OU const x = new THREE.Classe(args)
   // (construtor de biblioteca importada). Date/Image têm tratamento próprio.
-  if (init?.type === 'NewExpression') {
+  const isPromiseValue =
+    init?.type === 'NewExpression' &&
+    init.callee?.type === 'Identifier' &&
+    init.callee.name === 'Promise'
+  if (init?.type === 'NewExpression' && !isPromiseValue) {
     const ctor = namespacedCtor(init.callee)
     if (
       ctor &&
@@ -1236,15 +1242,22 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
     // el.style.prop = <simples>  |  el.style['prop'] = <simples>
     const style = tryMatchSetStyle(expr, ctx)
     if (style) return style
-    // x.textContent = <simples> | x.value = <simples> | x.innerHTML = <simples>
+    // Inserir HTML como texto executável não faz parte da trilha infantil.
+    // Preserva a instrução inteira no modo avançado, sem convertê-la no bloco
+    // genérico de propriedade que aparece mais abaixo.
+    if (
+      (expr.left?.type === 'MemberExpression' || expr.left?.type === 'OptionalMemberExpression') &&
+      expr.left.property?.name === 'innerHTML'
+    ) {
+      return asRaw(source, node)
+    }
+    // x.textContent = <simples> | x.value = <simples>
     // (ou document.getElementById('id').textContent = …)
     if (
       (expr.left?.type === 'MemberExpression' || expr.left?.type === 'OptionalMemberExpression') &&
-      (expr.left.property?.name === 'textContent' ||
-        expr.left.property?.name === 'value' ||
-        expr.left.property?.name === 'innerHTML')
+      isGuidedDomProperty(expr.left.property?.name)
     ) {
-      const property = expr.left.property.name as 'textContent' | 'value' | 'innerHTML'
+      const property = expr.left.property.name
       const target = extractTarget(expr.left.object, ctx)
       const value = toExpr(expr.right, ctx)
       if (target && value) {
@@ -1406,7 +1419,15 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
     if (alias === UNSAFE_EVENT_PARAM) return asRaw(source, node)
     if (alias) ctx.eventParamAliases.push(alias)
     try {
-      const bodyStmts = bodyOfFn(evt.callback, source, ctx)
+      const parsedBody = bodyOfFn(evt.callback, source, ctx)
+      // O gerador protege formulários automaticamente. Na volta do código,
+      // remove apenas essa primeira proteção para não criar um bloco duplicado.
+      const bodyStmts =
+        evt.event === 'submit' &&
+        parsedBody[0]?.type === 'eventMethod' &&
+        parsedBody[0].method === 'preventDefault'
+          ? parsedBody.slice(1)
+          : parsedBody
       return {
         type: 'event',
         target: evt.target,
@@ -1443,9 +1464,11 @@ function mapExpressionStatement(node: Node, source: string, ctx: ParseCtx): JSSt
     }
   }
 
-  // el.setAttribute('nome', <simples>)
-  const setAttr = tryMatchSetAttribute(expr, ctx)
-  if (setAttr) return setAttr
+  // el.setAttribute('nome', <simples>). Chamadas inseguras ou não representáveis
+  // ficam inteiras no código avançado; não podem cair no matcher genérico abaixo.
+  if (isSetAttributeCall(expr)) {
+    return tryMatchSetAttribute(expr, ctx) ?? asRaw(source, node)
+  }
 
   // cancelAnimationFrame(id) — para o loop de animação.
   const cancelAnim = tryMatchCancelAnimationFrame(expr, ctx)
@@ -1657,13 +1680,20 @@ function matchCreateElement(node: Node): string | null {
   return node.arguments[0].value as string
 }
 
-/** `document.createElementNS(<ns>, 'tag')` → nome da tag (forma SVG); senão `null`. */
+/** `document.createElementNS(SVG_NS, 'tag')` → nome da tag; outros namespaces ficam raw. */
 function matchCreateElementNS(node: Node): string | null {
   if (node?.type !== 'CallExpression') return null
   const callee = node.callee
   if (callee?.type !== 'MemberExpression' || callee.computed) return null
   if (callee.object?.name !== 'document' || callee.property?.name !== 'createElementNS') return null
-  if (node.arguments?.length !== 2 || node.arguments[1].type !== 'StringLiteral') return null
+  if (
+    node.arguments?.length !== 2 ||
+    node.arguments[0].type !== 'StringLiteral' ||
+    node.arguments[0].value !== 'http://www.w3.org/2000/svg' ||
+    node.arguments[1].type !== 'StringLiteral'
+  ) {
+    return null
+  }
   return node.arguments[1].value as string
 }
 
@@ -1845,6 +1875,18 @@ function tryMatchSetStyle(expr: Node, ctx: ParseCtx): JSStatement | null {
 }
 
 /** `<alvo>.setAttribute('nome', <simples>)` → `setAttribute`. */
+function isSetAttributeCall(expr: Node): boolean {
+  if (!expr || (expr.type !== 'CallExpression' && expr.type !== 'OptionalCallExpression')) {
+    return false
+  }
+  const callee = expr.callee
+  return (
+    (callee?.type === 'MemberExpression' || callee?.type === 'OptionalMemberExpression') &&
+    !callee.computed &&
+    callee.property?.name === 'setAttribute'
+  )
+}
+
 function tryMatchSetAttribute(expr: Node, ctx: ParseCtx): JSStatement | null {
   if (!expr || (expr.type !== 'CallExpression' && expr.type !== 'OptionalCallExpression')) {
     return null
@@ -1860,13 +1902,15 @@ function tryMatchSetAttribute(expr: Node, ctx: ParseCtx): JSStatement | null {
   const target = extractTarget(callee.object, ctx)
   if (!target) return null
   if (expr.arguments?.length !== 2 || expr.arguments[0].type !== 'StringLiteral') return null
+  const name = expr.arguments[0].value as string
+  if (!isGuidedDomAttributeName(name)) return null
   const value = toExpr(expr.arguments[1], ctx)
   if (!isSimpleValue(value)) return null
   return {
     type: 'setAttribute',
     targetId: target.id,
     ...classTargetKindField(target),
-    name: expr.arguments[0].value as string,
+    name,
     value,
   }
 }
@@ -6756,6 +6800,10 @@ function tryMatchWorld3DCall(expr: Node, source: string, ctx: ParseCtx): JSState
       const y = toExpr(args[0], ctx)
       return isSimpleValue(y) ? { type: 'w3d:water', y, color: args[1].value as string } : null
     }
+    case 'skyPhoto':
+      return args.length === 1 && args[0]?.type === 'StringLiteral'
+        ? { type: 'w3d:skyPhoto', asset: args[0].value as string }
+        : null
     case 'carBoost': {
       const force = toExpr(args[0], ctx)
       return isSimpleValue(force) ? { type: 'w3d:carBoost', force } : null
@@ -9690,7 +9738,7 @@ function tryMatchCanvasCall(expr: Node, ctx: ParseCtx): JSStatement | null {
     case 'clearRect': {
       // ctx.clearRect(0, 0, <canvas>.width, <canvas>.height) → limpar a tela inteira
       const canvasVar = matchClearRectArgs(args)
-      if (canvasVar) return { type: 'canvasClear', ctxVar, canvasVar }
+      if (canvasVar) return { type: 'canvasClear', ctxVar }
       // clearRect com coordenadas quaisquer → limpar uma área
       const [crx, cry, crw, crh] = mapArgs(args, 4, ctx)
       return crx && cry && crw && crh
@@ -9803,7 +9851,10 @@ function matchClearRectArgs(args: Node[]): string | null {
  */
 function tryMatchDrawImage(block: Node, ctx: ParseCtx): JSStatement | null {
   const body = block?.body
-  if (!Array.isArray(body) || body.length !== 3) return null
+  if (!Array.isArray(body)) return null
+  const cached = tryMatchCachedDrawImage(body, ctx)
+  if (cached) return cached
+  if (body.length !== 3) return null
 
   // 1) const img = new Image();
   const decl = body[0]
@@ -9848,6 +9899,56 @@ function tryMatchDrawImage(block: Node, ctx: ParseCtx): JSStatement | null {
   const [x, y, w, h] = mapArgs(draw.args.slice(1), 4, ctx)
   if (!x || !y || !w || !h) return null
   return { type: 'canvasDrawImage', ctxVar: draw.ctxVar, src, x, y, w, h }
+}
+
+/** Bloco gerado depois do pré-carregamento: busca a imagem pronta e a desenha. */
+function tryMatchCachedDrawImage(body: Node[], ctx: ParseCtx): JSStatement | null {
+  if (body.length !== 2) return null
+  const declaration = body[0]
+  if (declaration?.type !== 'VariableDeclaration' || declaration.declarations?.length !== 1) {
+    return null
+  }
+  const id = declaration.declarations[0]?.id
+  const init = declaration.declarations[0]?.init
+  if (id?.type !== 'Identifier' || init?.type !== 'CallExpression') return null
+  const getter = init.callee
+  if (
+    getter?.type !== 'MemberExpression' ||
+    getter.computed ||
+    getter.object?.type !== 'Identifier' ||
+    !/^imagensCanvas(?:_\d+)?$/.test(getter.object.name) ||
+    getter.property?.name !== 'get' ||
+    init.arguments?.length !== 1 ||
+    init.arguments[0]?.type !== 'StringLiteral'
+  ) {
+    return null
+  }
+
+  const conditional = body[1]
+  if (conditional?.type !== 'IfStatement' || conditional.test?.name !== id.name) return null
+  const consequent = conditional.consequent
+  const expression =
+    consequent?.type === 'ExpressionStatement'
+      ? consequent.expression
+      : consequent?.type === 'BlockStatement' &&
+          consequent.body?.length === 1 &&
+          consequent.body[0]?.type === 'ExpressionStatement'
+        ? consequent.body[0].expression
+        : null
+  const draw = matchCtxCall(expression, ctx)
+  if (draw?.method !== 'drawImage' || draw.args.length !== 5) return null
+  if (draw.args[0]?.type !== 'Identifier' || draw.args[0].name !== id.name) return null
+  const [x, y, w, h] = mapArgs(draw.args.slice(1), 4, ctx)
+  if (!x || !y || !w || !h) return null
+  return {
+    type: 'canvasDrawImage',
+    ctxVar: draw.ctxVar,
+    src: String(init.arguments[0].value),
+    x,
+    y,
+    w,
+    h,
+  }
 }
 
 // ---------- canvas: matchers de fusão (vários statements → 1 IR) ----------
@@ -10319,13 +10420,13 @@ function matchGetProperty(
 ): {
   targetId: string
   targetKind?: 'var'
-  property: 'textContent' | 'value' | 'innerHTML'
+  property: 'textContent' | 'value'
 } | null {
   if (!node || (node.type !== 'MemberExpression' && node.type !== 'OptionalMemberExpression')) {
     return null
   }
   const propName = node.property?.name
-  if (propName !== 'textContent' && propName !== 'value' && propName !== 'innerHTML') return null
+  if (!isGuidedDomProperty(propName)) return null
   const target = extractTarget(node.object, ctx)
   if (!target) return null
   return { targetId: target.id, ...targetKindField(target), property: propName }

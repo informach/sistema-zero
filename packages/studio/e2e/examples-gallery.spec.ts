@@ -305,6 +305,42 @@ test.describe('KitGallery — os 67 cartões no Chromium', () => {
   }
 })
 
+test('Defesa do Reino cobra uma compra e cria uma torre após o boot automático', async ({
+  page,
+}) => {
+  const contract = EXAMPLE_QA_CONTRACTS.find(
+    (item) => item.key === 'game-2d-advanced:Defesa do Reino',
+  )
+  if (!contract) throw new Error('contrato do exemplo Defesa do Reino ausente')
+
+  await openAndExercise(page, contract)
+  const preview = page.frameLocator('iframe').first()
+  const snapshot = () =>
+    preview.locator('body').evaluate(() => {
+      const api = (
+        window as unknown as {
+          SZGameKit: { countActive: (mold: string) => number; tdCoins: () => number }
+        }
+      ).SZGameKit
+      return { coins: api.tdCoins(), towers: api.countActive('torre') }
+    })
+
+  expect(await snapshot()).toEqual({ coins: 100, towers: 0 })
+  await preview.locator('canvas').evaluate((element) => {
+    const canvas = element as HTMLCanvasElement
+    const rect = canvas.getBoundingClientRect()
+    canvas.dispatchEvent(
+      new PointerEvent('pointerdown', {
+        bubbles: true,
+        clientX: rect.left + (300 / canvas.width) * rect.width,
+        clientY: rect.top + (220 / canvas.height) * rect.height,
+      }),
+    )
+  })
+
+  await expect.poll(snapshot).toEqual({ coins: 50, towers: 1 })
+})
+
 interface RpgBrowserSnapshot {
   apiPresent: boolean
   state: string

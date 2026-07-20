@@ -1,5 +1,6 @@
+import { lifecycleContractForExtensions } from '#extensions'
 import type { AssetPlacement, SZIRInput } from '#ir'
-import { normalizeSZIR, projectLifecycleTarget } from '#ir'
+import { normalizeSZIR } from '#ir'
 import { generateCSS, generateCSSWithMap } from './css'
 import { generateHTML, generateHTMLWithMap } from './html'
 import { generateJS, generateJSWithMap } from './js'
@@ -35,7 +36,7 @@ export function generateProjectFiles(input: ProjectGenerationInput): GeneratedFi
   const jsCode = generateJS({
     behavior: ir.behavior,
     header: input.jsHeader,
-    lifecycle: projectLifecycleTarget(ir.extensions),
+    lifecycle: lifecycleContractForExtensions(ir.extensions),
   })
   return {
     'index.html': generateHTML({
@@ -73,7 +74,7 @@ export function generateProjectFilesWithMap(
   const js = generateJSWithMap({
     behavior: ir.behavior,
     header: input.jsHeader,
-    lifecycle: projectLifecycleTarget(ir.extensions),
+    lifecycle: lifecycleContractForExtensions(ir.extensions),
   })
   const html = generateHTMLWithMap({
     title: input.projectName,

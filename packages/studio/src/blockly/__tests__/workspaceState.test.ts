@@ -602,7 +602,7 @@ describe('buildWorkspaceStateFromIR', () => {
     expect(types).toContain('sz_js_append_child')
     expect(types).toContain('sz_val_class_contains')
     expect(types).toContain('sz_val_dataset')
-    expect(types).not.toContain('sz_adv_raw_js')
+    expect(types).toContain('sz_adv_raw_js')
   })
 
   it('Fase 2: forEach e setTimeout fazem roundtrip sem cair em avançado', () => {

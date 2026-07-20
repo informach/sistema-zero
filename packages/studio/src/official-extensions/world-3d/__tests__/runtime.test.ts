@@ -15,6 +15,7 @@ interface Api {
   flatten: (x?: unknown, z?: unknown, r?: unknown) => unknown
   path: (a?: unknown, b?: unknown, c?: unknown, d?: unknown, e?: unknown) => unknown
   water: (y?: unknown, color?: unknown) => unknown
+  skyPhoto: (name?: unknown) => unknown
   start: () => unknown
   worldSize: () => number
   groundHeight: (x?: unknown, z?: unknown) => number
@@ -107,6 +108,7 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
       'flatten',
       'path',
       'water',
+      'skyPhoto',
       'start',
       'worldSize',
       'groundHeight',

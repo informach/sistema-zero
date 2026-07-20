@@ -228,7 +228,9 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
                         size="sm"
                         disabled={Boolean(conflictId)}
                         title={
-                          conflictName ? `Remova ${conflictName} antes de instalar.` : undefined
+                          conflictName
+                            ? `Remova ${conflictName} antes de instalar ${ext.manifest.name}.`
+                            : undefined
                         }
                         onClick={() => handleInstall(ext)}
                       >
@@ -239,8 +241,8 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
                 </div>
                 {!installed && conflictName && (
                   <p className="mt-2 text-xs text-sz-warning">
-                    Remova {conflictName} antes de instalar: as duas extensões controlam a mesma
-                    tela.
+                    Para instalar {ext.manifest.name}, remova {conflictName}: as duas extensões
+                    controlam a mesma tela.
                   </p>
                 )}
                 <p className="mt-1 line-clamp-2 text-xs text-sz-fg-soft">

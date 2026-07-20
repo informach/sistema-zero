@@ -9,14 +9,14 @@ import { gameKitRuntime } from '../runtime'
  * ⭐ A mesma guarda do kit 3D (templateGuard de lá), agora aqui — o gk caiu na
  * crase crua 7 vezes em 4 lotes antes de o irmão ganhar o teste.
  *
- * `runtime.ts`, `ai.ts` e o `docs` do `manifest.ts` são UM template literal
- * cada. Uma crase CRUA lá dentro fecha a string no meio e o módulo inteiro
+ * `runtime.ts`, seus fragmentos, `ai.ts` e `docs.ts` usam template literals.
+ * Uma crase CRUA lá dentro fecha a string no meio e o módulo inteiro
  * deixa de parsear — e o sintoma cai longe da causa. Além da crase, este clone
- * também pega `${` cru: interpolação dentro do literal avalia no load do
- * módulo e é SEMPRE acidente aqui (o runtime é string pura de JS ES5).
+ * também pega `${` cru: só fragmentos nomeados e auditados podem ser
+ * interpolados; qualquer outra interpolação é acidente.
  *
  * A regra: DENTRO do literal, crase só escapada (\\`) e cifrão-chave só
- * escapado (\\$\{). Fora dele (o JSDoc do topo) é markdown normal e pode.
+ * escapado (\\$\{) ou allowlisted. Fora dele, o JSDoc é markdown normal.
  */
 
 const DIR = join(import.meta.dir, '..')
@@ -25,7 +25,11 @@ const DIR = join(import.meta.dir, '..')
  * Linhas (1-indexado) com crase OU `${` NÃO escapados no MIOLO do literal —
  * entre a linha que o abre e a que o fecha. Fora do intervalo é TS normal.
  */
-function rawTemplateHazardsInside(src: string, openerNeedle: string): number[] {
+function rawTemplateHazardsInside(
+  src: string,
+  openerNeedle: string,
+  allowedInterpolations: ReadonlySet<string> = new Set(),
+): number[] {
   const lines = src.split('\n')
   const opener = lines.findIndex((l) => l.includes(openerNeedle))
   if (opener < 0) throw new Error(`não achei a abertura do literal: ${openerNeedle}`)
@@ -37,16 +41,26 @@ function rawTemplateHazardsInside(src: string, openerNeedle: string): number[] {
     for (let c = 0; c < line.length; c++) {
       const escaped = c > 0 && line[c - 1] === '\\'
       if (line[c] === '`' && !escaped) out.push(i + 1) // crase CRUA antes do fecho
-      if (line[c] === '$' && line[c + 1] === '{' && !escaped) out.push(i + 1) // interpolação CRUA
+      if (line[c] === '$' && line[c + 1] === '{' && !escaped) {
+        const interpolation = line.slice(c).match(/^\$\{([A-Za-z_$][\w$]*)\}/)?.[1]
+        if (!interpolation || !allowedInterpolations.has(interpolation)) out.push(i + 1)
+      }
     }
   }
   return out
 }
 
 describe('Guarda dos template literals do gk (Jogo 2D Avançado)', () => {
-  it('runtime.ts: nenhuma crase/interpolação crua no miolo do literal', () => {
+  it('runtime.ts: só interpola fragmentos auditados, sem crase crua', () => {
     const src = readFileSync(join(DIR, 'runtime.ts'), 'utf8')
-    expect(rawTemplateHazardsInside(src, 'gameKitRuntime =')).toEqual([])
+    expect(
+      rawTemplateHazardsInside(src, 'gameKitRuntime =', new Set(['towerDefenseRuntime'])),
+    ).toEqual([])
+  })
+
+  it('fragmentos do runtime não contêm crase nem interpolação crua', () => {
+    const src = readFileSync(join(DIR, 'runtime', 'towerDefense.ts'), 'utf8')
+    expect(rawTemplateHazardsInside(src, 'towerDefenseRuntime =')).toEqual([])
   })
 
   it('ai.ts: idem (o contexto da IA também é um literal só)', () => {
@@ -54,9 +68,9 @@ describe('Guarda dos template literals do gk (Jogo 2D Avançado)', () => {
     expect(rawTemplateHazardsInside(src, 'gameKitPromptContext =')).toEqual([])
   })
 
-  it('manifest.ts: o docs escapa a crase (é markdown — a tentação é grande)', () => {
-    const src = readFileSync(join(DIR, 'manifest.ts'), 'utf8')
-    expect(rawTemplateHazardsInside(src, 'docs: ')).toEqual([])
+  it('docs.ts: o markdown escapa crases e interpolações', () => {
+    const src = readFileSync(join(DIR, 'docs.ts'), 'utf8')
+    expect(rawTemplateHazardsInside(src, 'gameKitDocs =')).toEqual([])
   })
 
   it('os três módulos avaliam e entregam string não-vazia (a prova final)', () => {
