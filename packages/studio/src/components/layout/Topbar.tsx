@@ -35,7 +35,7 @@ import { useProjectStore } from '../../state/projectStore'
 import { useSettingsStore } from '../../state/settingsStore'
 import { StudioStoresContext } from '../../state/storesContext'
 import { useStudioPersistence } from '../../state/studioStores'
-import { useUIStore } from '../../state/uiStore'
+import { resolveConsoleVisibility, useUIStore } from '../../state/uiStore'
 import { useStudioCloudSync } from '../../studio/cloud-sync'
 import { useStudioConfig } from '../../studio/config'
 import { useStudioLayout } from '../../studio/layoutContext'
@@ -105,13 +105,14 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
   const setShowAssets = useUIStore((s) => s.setShowAssets)
   const showPreview = useUIStore((s) => s.showPreview)
   const setShowPreview = useUIStore((s) => s.setShowPreview)
-  const showConsole = useUIStore((s) => s.showConsole)
-  const setShowConsole = useUIStore((s) => s.setShowConsole)
+  const consoleVisibilityOverride = useUIStore((s) => s.consoleVisibilityOverride)
+  const setConsoleVisibilityOverride = useUIStore((s) => s.setConsoleVisibilityOverride)
   const showTerminal = useUIStore((s) => s.showTerminal)
   const setShowTerminal = useUIStore((s) => s.setShowTerminal)
   const showAI = useUIStore((s) => s.showAI)
   const setShowAI = useUIStore((s) => s.setShowAI)
   const config = useStudioConfig()
+  const showConsole = resolveConsoleVisibility(projectMode, consoleVisibilityOverride)
   const { isNarrow, isCompact } = useStudioLayout()
   const theme = useStudioTheme()
   const setTheme = useSettingsStore((s) => s.setTheme)
@@ -273,11 +274,10 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
     })
   }
 
-  // Mostrar/esconder cada painel, no mesmo espírito do toggle do Preview — cada
-  // um no contexto em que aparece (Console em todo modo; Terminal/IA só no
-  // Código). As flags valem nos dois layouts (no wide a barra inferior some
-  // quando tudo é escondido; no narrow a aba some). O Preview tem ainda o ícone
-  // dedicado na própria Topbar.
+  // Mostrar/esconder cada painel. O Console deriva do modo até a primeira ação
+  // manual; depois, a preferência desta instância prevalece. As escolhas valem
+  // nos dois layouts (no wide a barra inferior some quando tudo é escondido; no
+  // narrow a aba some). O Preview tem ainda o ícone dedicado na própria Topbar.
   const viewItems: MenuItem[] = []
   if (config.console) {
     viewItems.push({
@@ -285,7 +285,7 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
       label: t('panel.console'),
       icon: <IconMessageSquare />,
       active: showConsole,
-      onSelect: () => setShowConsole(!showConsole),
+      onSelect: () => setConsoleVisibilityOverride(!showConsole),
     })
   }
   if (projectMode === 'code' && config.terminal) {

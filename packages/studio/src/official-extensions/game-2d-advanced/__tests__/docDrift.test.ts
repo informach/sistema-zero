@@ -166,4 +166,9 @@ describe('gk — a doc não pode citar categoria que não existe', () => {
     expect(docs).not.toContain('- **Quando começar ou recomeçar uma partida**')
     expect(docs).toContain('Em **⚙️ Ao iniciar**')
   })
+
+  it('não abre uma segunda citação no meio da mesma linha de destaque', () => {
+    const docs = gameKitManifest.docs ?? ''
+    expect(docs).not.toMatch(/^> .+ > /m)
+  })
 })

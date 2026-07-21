@@ -77,8 +77,9 @@ function composedTemplateHazards(
 describe('Guarda dos template literals do Jogo 2D', () => {
   it('runtime composto: limites esperados e nenhuma interpolação acidental', () => {
     const src = readFileSync(join(DIR, 'runtime.ts'), 'utf8')
-    expect(composedTemplateHazards(src, 'gameTwoDRuntime =', 4).interpolations).toEqual([])
+    expect(composedTemplateHazards(src, 'gameTwoDRuntime =', 6).interpolations).toEqual([])
     for (const [file, declaration] of [
+      ['../runtimeDomains.ts', 'gameRuntimeDomains ='],
       ['runtime/arcadeKits.ts', 'gameTwoDArcadeKitsRuntime ='],
       ['runtime/audio.ts', 'gameTwoDAudioRuntime ='],
       ['runtime/casualKits.ts', 'gameTwoDCasualKitsRuntime ='],

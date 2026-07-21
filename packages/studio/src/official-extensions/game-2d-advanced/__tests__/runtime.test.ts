@@ -19,12 +19,20 @@ const fakeCtx = {
     ctxCalls.push(['fillRect', a])
   },
   strokeRect() {},
-  drawImage() {},
+  drawImage(...a: unknown[]) {
+    ctxCalls.push([
+      'drawImage',
+      a.slice(1).map((value) => (typeof value === 'number' ? value : Number.NaN)),
+    ])
+  },
   beginPath() {},
+  closePath() {},
   moveTo() {},
   lineTo() {},
   stroke() {},
-  arc() {},
+  arc(...a: number[]) {
+    ctxCalls.push(['arc', a])
+  },
   fill() {},
   fillText(...a: number[]) {
     ctxCalls.push(['fillText', a])
@@ -419,7 +427,7 @@ function fakeTilemapAsset(
   }
 }
 
-function loadRuntime(assetMeta?: unknown): Harness {
+function loadRuntime(assetMeta?: unknown, windowOverrides: Record<string, unknown> = {}): Harness {
   const listeners: Record<string, Listener[]> = {}
   const clock = { value: 0 }
   const rafQueue: Array<(ts: number) => void> = []
@@ -447,6 +455,7 @@ function loadRuntime(assetMeta?: unknown): Harness {
       },
     },
     SZGameKit: undefined,
+    ...windowOverrides,
   } as unknown as Record<string, unknown>
   const raf = (cb: (ts: number) => void) => {
     rafQueue.push(cb)
@@ -1149,6 +1158,47 @@ describe('SZGameKit — máquina de estados', () => {
     expect(warnings).toEqual([])
   })
 
+  it('runProject descarta callbacks de mapa da factory anterior antes de entrar no mapa inicial', () => {
+    const { api } = loadRuntime()
+    const generations: number[] = []
+    const runProject = (api as unknown as { runProject(fn: () => void): void }).runProject
+    let generation = 0
+
+    runProject(() => {
+      const ownGeneration = ++generation
+      api.rpgCreateMap('vila', 10, 8, () => {})
+      api.rpgSetStartMap('vila')
+      api.rpgOnEnterMap('vila', () => generations.push(ownGeneration))
+    })
+
+    api.restartGame()
+    api.restartGame()
+
+    expect(generation).toBe(3)
+    expect(generations).toEqual([2, 3])
+  })
+
+  it('restart limpa a câmera ligada por um evento da partida anterior', () => {
+    const { api } = loadRuntime()
+    const runProject = (api as unknown as { runProject(fn: () => void): void }).runProject
+    const heroes: Array<Record<string, number>> = []
+
+    runProject(() => {
+      const hero = api.createCharacter({ w: 40, h: 40 }) as Record<string, number>
+      heroes.push(hero)
+      api.on('ligar-camera', () => api.cameraFollow(hero, 2000, 1500))
+    })
+
+    api.placeCharacter(heroes[0], 1200, 800)
+    api.emit('ligar-camera')
+    expect([api.cameraX(), api.cameraY()]).toEqual([580, 460])
+
+    api.restartGame()
+
+    expect(heroes).toHaveLength(2)
+    expect([api.cameraX(), api.cameraY()]).toEqual([0, 0])
+  })
+
   it('preserva o estado escolhido antes do boot para permitir jogo sem menu', async () => {
     const h = loadRuntime()
 
@@ -1198,7 +1248,19 @@ describe('SZGameKit — telas (happy-dom) e laço', () => {
     expect(h.api.state()).toBe('menu')
     const stage = document.querySelector('#szgk-stage')
     expect(stage).not.toBeNull()
-    expect(stage?.querySelector('#szgk-canvas')).not.toBeNull()
+    const canvas = stage?.querySelector('#szgk-canvas')
+    expect(canvas).not.toBeNull()
+    expect(canvas?.getAttribute('tabindex')).toBe('0')
+    expect(canvas?.getAttribute('aria-label')).toMatch(/jogo 2d/i)
+    const descriptionId = canvas?.getAttribute('aria-describedby')
+    expect(descriptionId).toBeTruthy()
+    expect(document.getElementById(descriptionId ?? '')?.textContent).toMatch(
+      /teclado|setas|espaço|mouse|toque/i,
+    )
+    const runtimeCss = document.querySelector('#szgk-style')?.textContent ?? ''
+    expect(runtimeCss).toContain('prefers-reduced-motion: reduce')
+    expect(runtimeCss).not.toContain('transition: all')
+    expect(runtimeCss).toContain('overflow: auto')
     const names = Array.from(stage?.querySelectorAll('[data-szgk-screen]') ?? []).map((el) =>
       el.getAttribute('data-szgk-screen'),
     )
@@ -1240,6 +1302,28 @@ describe('SZGameKit — telas (happy-dom) e laço', () => {
     expect(clicked).toBe(1)
     expect(h.api.state()).toBe('menu')
     expect(vitoria?.classList.contains('szgk-active')).toBe(false)
+  })
+
+  it('restart substitui os botões autorais em vez de acumular closures antigas', () => {
+    const h = loadRuntime()
+    const runProject = (h.api as unknown as { runProject(fn: () => void): void }).runProject
+    let generation = 0
+
+    runProject(() => {
+      const ownGeneration = ++generation
+      h.api.addButton('menu', `Extra ${ownGeneration}`, () => {})
+    })
+
+    const labels = () =>
+      Array.from(document.querySelectorAll('[data-szgk-screen="menu"] button')).map(
+        (button) => button.textContent,
+      )
+
+    expect(labels()).toEqual(['Jogar', 'Extra 1'])
+    h.api.restartGame()
+    expect(labels()).toEqual(['Jogar', 'Extra 2'])
+    h.api.restartGame()
+    expect(labels()).toEqual(['Jogar', 'Extra 3'])
   })
 
   it('🖼️ "pôr fundo na tela" pinta o painel de cor e é seguro sem imagem/tela', async () => {
@@ -1750,6 +1834,44 @@ describe('SZGameKit — R3: Kit RPG (grade, fala, flags, mapas, batalha)', () =>
     expect(heroi.x).toBeLessThan(128)
     expect(heroi.y).toBeLessThan(128)
     expect([heroi.x, heroi.y]).not.toEqual([0, 0])
+  })
+
+  it('runProject protege o herói da factory atual sem mover o herói da partida anterior', async () => {
+    const h = loadRuntime()
+    h.api.setup({ width: 960, height: 540 })
+    const runProject = (h.api as unknown as { runProject(fn: () => void): void }).runProject
+    const heroes: Array<Record<string, number>> = []
+
+    runProject(() => {
+      const hero = h.api.createCharacter({ w: 64, h: 64, speed: 200 }) as Record<string, number>
+      heroes.push(hero)
+      h.api.rpgCreateMap('sala', 2, 2, () => {})
+      h.api.rpgSetStartMap('sala')
+      h.api.onUpdate((dt: unknown) => h.api.rpgMoveGrid(hero, 64, dt))
+    })
+
+    await startGame(h)
+    h.api.restartGame()
+    h.nextFrame(16)
+
+    const firstHero = heroes[1]
+    if (!firstHero) throw new Error('a segunda execução da factory não criou o herói')
+    expect(firstHero.x).toBeGreaterThanOrEqual(0)
+    expect(firstHero.y).toBeGreaterThanOrEqual(0)
+    expect(firstHero.x).toBeLessThan(128)
+    expect(firstHero.y).toBeLessThan(128)
+
+    h.api.placeCharacter(firstHero, 448, 238)
+    h.api.restartGame()
+    h.nextFrame(32)
+
+    const currentHero = heroes[2]
+    if (!currentHero) throw new Error('a terceira execução da factory não criou o herói')
+    expect([firstHero.x, firstHero.y]).toEqual([448, 238])
+    expect(currentHero.x).toBeGreaterThanOrEqual(0)
+    expect(currentHero.y).toBeGreaterThanOrEqual(0)
+    expect(currentHero.x).toBeLessThan(128)
+    expect(currentHero.y).toBeLessThan(128)
   })
 
   it('grade: anda célula a célula, parede bloqueia, porta troca de mapa', async () => {
@@ -2300,24 +2422,44 @@ describe('SZGameKit — R6: correções de bugs', () => {
     expect(warns.filter((w) => w.includes('nao-existe')).length).toBe(1)
   })
 
-  it('H3: cutscene com NPC bloqueado completa por timeout (não trava a cena)', async () => {
+  it('H3: NPC contorna uma parede alcançável e a cena só continua quando ele chega', async () => {
     const h = loadRuntime()
     await startGame(h)
     h.api.setState('jogando')
-    h.api.rpgBlockCell(2, 0) // parede em (2,0) — bloqueia o caminho reto
-    h.api.rpgCreateNpc('bob', 0, 0, '', '')
+    h.api.rpgCreateMap('vila', 6, 3, () => {})
+    h.api.rpgOnEnterMap('vila', () => {
+      h.api.rpgBlockCell(2, 1) // bloqueia o caminho reto; linhas 0 e 2 continuam livres
+      h.api.rpgCreateNpc('bob', 0, 1, '', '')
+    })
+    h.api.rpgGoMap('vila')
     h.api.rpgCutscene(() => {
-      h.api.rpgNpcWalkTo('bob', 5, 0) // caminho passa por (2,0) → nunca chega
+      h.api.rpgNpcWalkTo('bob', 5, 1)
       h.api.rpgAddFlag('cena_terminou')
     })
     expect(h.api.rpgHasFlag('cena_terminou')).toBe(false) // ainda tocando a cena
     h.clock.value = 0
     h.nextFrame(0)
-    for (let t = 100; t <= 6400; t += 100) {
+    for (let t = 50; t <= 4000; t += 50) {
       h.clock.value = t
       h.nextFrame(t)
     }
-    expect(h.api.rpgHasFlag('cena_terminou')).toBe(true) // timeout liberou a cena
+    expect(h.api.rpgHasFlag('cena_terminou')).toBe(true)
+  })
+
+  it('H4: recriar um NPC não invade a célula reservada por outro personagem', () => {
+    const h = loadRuntime()
+    const warns: string[] = []
+    const originalWarn = console.warn
+    console.warn = (...args: unknown[]) => warns.push(args.join(' '))
+    try {
+      h.api.rpgCreateNpc('ana', 0, 0, '', '')
+      h.api.rpgCreateNpc('bia', 1, 0, '', '')
+      h.api.rpgCreateNpc('ana', 1, 0, '', '')
+    } finally {
+      console.warn = originalWarn
+    }
+
+    expect(warns.some((warning) => warning.includes('célula 1,0'))).toBe(true)
   })
 
   it('L14: rpgLoad ignora item malformado (save editado) sem quebrar', async () => {
@@ -3075,6 +3217,23 @@ describe('SZGameKit — R13: bugs do review #3', () => {
     expect(b.y).toBe(10)
   })
 
+  it('⭐ "Jogar de novo" desliga rastros de personagens da factory anterior', () => {
+    const h = loadRuntime()
+    const runProject = (h.api as unknown as { runProject(fn: () => void): void }).runProject
+    const characters: Array<Record<string, unknown>> = []
+
+    runProject(() => {
+      const character = h.api.createCharacter({ w: 32, h: 32 }) as Record<string, unknown>
+      characters.push(character)
+      h.api.trailOn(character, '#00ffff', 3, 30, 0.4)
+    })
+
+    expect(characters[0]?._trailOn).toBe(true)
+    h.api.restartGame()
+    expect(characters[0]?._trailOn).toBe(false)
+    expect(characters[1]?._trailOn).toBe(true)
+  })
+
   it('⭐ emendar a borda não gruda no mapa (teleporte zera a varredura)', async () => {
     // Chão sólido feito de molde; a nave sai pela direita e deve reaparecer na
     // esquerda — sem a varredura tentar refazer o caminho inteiro de volta.
@@ -3221,6 +3380,108 @@ describe('SZGameKit — R15: primitivos gerais', () => {
     }
     // Som não carregado → aviso claro (antes: silêncio total).
     expect(warns.some((w) => w.includes('trilha'))).toBe(true)
+  })
+
+  it('⭐ carregar/tocar música na factory é idempotente entre partidas', () => {
+    const audios: FakeAudio[] = []
+    class FakeAudio {
+      paused = true
+      loop = false
+      currentTime = 0
+      volume = 1
+      preload = ''
+      oncanplaythrough: (() => void) | null = null
+      onerror: (() => void) | null = null
+
+      constructor() {
+        audios.push(this)
+      }
+
+      set src(_value: string) {
+        this.oncanplaythrough?.()
+      }
+
+      play(): Promise<void> {
+        this.paused = false
+        return Promise.resolve()
+      }
+
+      pause(): void {
+        this.paused = true
+      }
+    }
+    const originalAudio = Object.getOwnPropertyDescriptor(globalThis, 'Audio')
+    Object.defineProperty(globalThis, 'Audio', { configurable: true, value: FakeAudio })
+
+    try {
+      const h = loadRuntime(undefined, {
+        __SZGAME_SOUNDS: { faixa: 'data:audio/ogg;base64,AA==' },
+      })
+      const runProject = (h.api as unknown as { runProject(fn: () => void): void }).runProject
+      runProject(() => {
+        h.api.loadSound('trilha', 'faixa')
+        h.api.playMusic('trilha')
+      })
+
+      const playing = () => audios.filter((audio) => !audio.paused).length
+      expect({ created: audios.length, playing: playing() }).toEqual({ created: 1, playing: 1 })
+      h.api.restartGame()
+      expect({ created: audios.length, playing: playing() }).toEqual({ created: 1, playing: 1 })
+      h.api.restartGame()
+      expect({ created: audios.length, playing: playing() }).toEqual({ created: 1, playing: 1 })
+    } finally {
+      if (originalAudio) Object.defineProperty(globalThis, 'Audio', originalAudio)
+      else Reflect.deleteProperty(globalThis, 'Audio')
+    }
+  })
+
+  it('⭐ Jogar de novo encerra tons sintetizados pertencentes à partida anterior', () => {
+    class FakeOscillator {
+      type = ''
+      frequency = { value: 0 }
+      onended: (() => void) | null = null
+      stops: number[] = []
+      disconnected = false
+
+      connect(): void {}
+      start(): void {}
+      stop(at: number): void {
+        this.stops.push(at)
+      }
+      disconnect(): void {
+        this.disconnected = true
+      }
+    }
+
+    const oscillators: FakeOscillator[] = []
+    class FakeAudioContext {
+      currentTime = 0
+      state = 'running'
+      destination = {}
+
+      createOscillator(): FakeOscillator {
+        const oscillator = new FakeOscillator()
+        oscillators.push(oscillator)
+        return oscillator
+      }
+      createGain() {
+        return {
+          gain: { value: 0, setTargetAtTime(): void {} },
+          connect(): void {},
+          disconnect(): void {},
+        }
+      }
+      resume(): void {}
+    }
+
+    const h = loadRuntime(undefined, { AudioContext: FakeAudioContext })
+    const runProject = (h.api as unknown as { runProject(fn: () => void): void }).runProject
+    runProject(() => h.api.playTone(440, 60_000))
+    h.api.restartGame()
+    h.api.restartGame()
+
+    expect(oscillators.map((oscillator) => oscillator.stops)).toEqual([[60, 0], [60, 0], [60]])
+    expect(oscillators.map((oscillator) => oscillator.disconnected)).toEqual([true, true, false])
   })
 
   it('⭐ mirar num PONTO (o mouse dá números, não um personagem)', async () => {
@@ -3864,6 +4125,31 @@ describe('SZGameKit — 🌍 mundo aberto (culling + câmera pelo mapa + tamanho
     globalWithImage.Image = RealImage
   })
 
+  it('restart recomeça o fundo rolante na origem', async () => {
+    const h = loadRuntime(undefined, {
+      __SZGAME_ASSETS: { fundo: 'data:image/png;base64,AA==' },
+    })
+    const runProject = (h.api as unknown as { runProject(fn: () => void): void }).runProject
+
+    runProject(() => {
+      h.api.loadImage('fundo', 'fundo')
+      h.api.onDraw(() => h.api.scrollImage('fundo', 100, 0))
+    })
+    await startGame(h)
+    h.api.restartGame()
+
+    ctxCalls.length = 0
+    h.nextFrame(100)
+    const movedX = ctxCalls.find(([method]) => method === 'drawImage')?.[1][0]
+    expect(movedX).toBe(-246)
+
+    ctxCalls.length = 0
+    h.api.restartGame()
+    h.nextFrame(0)
+    const restartedX = ctxCalls.find(([method]) => method === 'drawImage')?.[1][0]
+    expect(restartedX).toBe(0)
+  })
+
   function gridCheio(cols: number, rows: number): string {
     const linha = new Array(cols).fill('1').join(' ')
     return new Array(rows).fill(linha).join('\n')
@@ -4180,6 +4466,34 @@ describe('SZGameKit — R29: robustez (nomes perigosos, softlock, cura)', () => 
     expect(api.boardIn('naoexiste', 0, 0)).toBe(false)
   })
 
+  it('🛡️ limita grades, mapas, inventário e HUD antes de entrarem em laços do motor', async () => {
+    const h = loadRuntime()
+    await startGame(h)
+    const api = h.api as unknown as GameKitApi & {
+      boardCreate: (name: string, cols: number, rows: number, empty: unknown) => void
+      boardIn: (name: string, col: number, row: number) => boolean
+      drawHearts: (current: number, max: number, x: number, y: number) => void
+    }
+
+    api.boardCreate('grande', 513, 513, 0)
+    expect(api.boardIn('grande', 511, 511)).toBe(true)
+    expect(api.boardIn('grande', 512, 0)).toBe(false)
+
+    api.pkmGiveBall(1_000, 50)
+    expect(api.pkmBallCount()).toBe(999)
+
+    ctxCalls.length = 0
+    api.drawHearts(101, 101, 0, 0)
+    expect(ctxCalls.filter(([method]) => method === 'arc')).toHaveLength(200)
+
+    api.rpgCreateMap('enorme', 513, 513, () => {})
+    api.rpgGoMap('enorme')
+    const hero = api.createCharacter({ w: 64, h: 64 }) as Record<string, number>
+    api.placeCharacter(hero, 512 * 64, 0)
+    api.rpgMoveGrid(hero, 64, 0)
+    expect(hero.x).toBe(511 * 64)
+  })
+
   it('🧱 D2: rebater na raquete — inverte o vy e o ângulo vem do ponto de impacto', async () => {
     const h = loadRuntime()
     await startGame(h)
@@ -4468,9 +4782,19 @@ describe('SZGameKit — R30: 🎲 jogos de tabuleiro (dado, turnos, trilha de ca
     expect(h.api.spaceOf(peao)).toBe(0) // começa na casa 0
     h.api.moveAlongTrack(peao, 3, 'tabuleiro')
     expect(h.api.spaceOf(peao)).toBe(3) // andou 3 casas
-    expect(landed).toBe(1)
+    expect(landed).toBe(0) // ainda está deslizando
+    h.nextFrame(100)
+    h.nextFrame(200)
+    expect(landed).toBe(0)
+    h.nextFrame(300)
+    expect(landed).toBe(1) // só avisa quando chega visualmente
     h.api.moveAlongTrack(peao, 5, 'tabuleiro') // passa do fim → PARA na última (casa 4)
     expect(h.api.spaceOf(peao)).toBe(4)
+    expect(landed).toBe(1)
+    h.nextFrame(400)
+    h.nextFrame(500)
+    expect(landed).toBe(1)
+    h.nextFrame(600)
     expect(landed).toBe(2)
   })
 })

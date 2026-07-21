@@ -1619,6 +1619,36 @@ describe('gk — JOGAR uma partida inteira do 🏰 Kit Defesa de Torre (R26)', (
     expect(h.api.tdCoins()).toBe(50)
   })
 
+  it('um clique executa uma única compra mesmo se o evento foi duplicado', async () => {
+    const h = loadRuntime()
+    await arenaTd(h)
+    h.api.tdSetCoins(100)
+    h.api.tdSlot(300, 220, 60)
+    let primeira = 0
+    let segunda = 0
+    const warnings: string[] = []
+    const originalWarn = console.warn
+    console.warn = (...args: unknown[]) => warnings.push(args.join(' '))
+    try {
+      h.api.tdOnBuy(50, () => {
+        primeira += 1
+      })
+      h.api.tdOnBuy(25, () => {
+        segunda += 1
+      })
+      clickAt(300, 220)
+    } finally {
+      console.warn = originalWarn
+    }
+
+    expect({ primeira, segunda, moedas: h.api.tdCoins() }).toEqual({
+      primeira: 1,
+      segunda: 0,
+      moedas: 50,
+    })
+    expect(warnings.some((warning) => warning.includes('um bloco'))).toBe(true)
+  })
+
   it('runProject recria os registros de torre sem duplicar slots nem compras', async () => {
     const h = loadRuntime()
 

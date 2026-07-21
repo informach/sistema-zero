@@ -42,8 +42,12 @@ afterAll(() => {
 const { BottomPanel } = await import('./BottomPanel')
 
 function setCodeProject(): void {
+  setProject('code')
+}
+
+function setProject(mode: 'blocks' | 'bridge' | 'code'): void {
   useProjectStore.setState({
-    project: { ...createEmptyProject('p1', 'Projeto'), mode: 'code' },
+    project: { ...createEmptyProject('p1', 'Projeto'), mode },
     isDirty: false,
     saveError: null,
   })
@@ -53,13 +57,38 @@ describe('BottomPanel', () => {
   beforeEach(() => {
     consoleShouldThrow = false
     setCodeProject()
-    useUIStore.setState({ bottomTab: 'console' })
+    useUIStore.setState({ bottomTab: 'console', consoleVisibilityOverride: null })
   })
 
   afterEach(() => {
     cleanup()
     useProjectStore.setState({ project: null, isDirty: false, saveError: null })
-    useUIStore.setState({ bottomTab: 'console' })
+    useUIStore.setState({ bottomTab: 'console', consoleVisibilityOverride: null })
+  })
+
+  it.each(['blocks', 'bridge'] as const)('começa sem a aba Console no modo %s', (mode) => {
+    setProject(mode)
+    const { queryByRole } = render(<BottomPanel />)
+    expect(queryByRole('tab', { name: 'Console' })).toBeNull()
+  })
+
+  it('começa com a aba Console no modo code', () => {
+    const { getByRole } = render(<BottomPanel />)
+    expect(getByRole('tab', { name: 'Console' })).toBeTruthy()
+  })
+
+  it('faz a escolha manual prevalecer ao trocar de modo', () => {
+    setProject('blocks')
+    useUIStore.setState({ consoleVisibilityOverride: true })
+    const { getByRole, queryByRole } = render(<BottomPanel />)
+    expect(getByRole('tab', { name: 'Console' })).toBeTruthy()
+
+    act(() => setProject('code'))
+    act(() => useUIStore.setState({ consoleVisibilityOverride: false }))
+    expect(queryByRole('tab', { name: 'Console' })).toBeNull()
+
+    act(() => setProject('bridge'))
+    expect(queryByRole('tab', { name: 'Console' })).toBeNull()
   })
 
   it('marca as abas com role=tab e aria-selected', () => {

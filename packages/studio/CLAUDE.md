@@ -531,7 +531,7 @@ monta `m.frontRows = parseTileGrid(meta.frontGrid)`; `drawTilemap(name, 'frente'
 parser `parsers/js.ts` (`layer !== 'chão' && … && layer !== 'frente'`) PRECISA listar 'frente' (senão
 a Ponte código→blocos joga p/ rawJS e o `blockAudit` quebra). Bump manifest gk `0.32.0 → 0.33.0` +
 `docs`/`ai.ts`. Testes: `assetMeta.test.ts` (frontGrid preservado/omitido), gk `runtime.test.ts`
-(drawTilemap 'frente' desenha de frontRows; sem frontRows não desenha), `blockAudit`=329 (à época; **hoje 337**, gk `0.43.4` — full review R31 adicionou imagem/ficha/telas + correções; a revisão atual incorporou Baloo 2 às telas automáticas).
+(drawTilemap 'frente' desenha de frontRows; sem frontRows não desenha), `blockAudit`=329 (à época; **hoje 337**, gk `0.43.6` — full review R31 adicionou imagem/ficha/telas + correções; as revisões atuais incorporaram lifecycle por domínio, descarte dos recursos da factory, acessibilidade do canvas/telas e reset completo de câmera/fundos/herói RPG).
 
 **Re-derivação do ANIM (10/07):** como o campo não serializa, o nome exibido é RECALCULADO de
 FROM/TO/FPS × `asset.sprite.animations` (`deriveAnimationName`/`refreshAnimationNames` +

@@ -1,5 +1,6 @@
 import { buildProjectRunContextRuntime } from '#extensions'
 import { withGameUIFontRuntime } from '../gameUiFont'
+import { gameRuntimeDomains } from '../runtimeDomains'
 import { gameTwoDArcadeKitsRuntime } from './runtime/arcadeKits'
 import { gameTwoDAudioRuntime } from './runtime/audio'
 import { gameTwoDCasualKitsRuntime } from './runtime/casualKits'
@@ -54,24 +55,11 @@ export const gameTwoDRuntime = withGameUIFontRuntime(
   window.addEventListener('keyup', function (e) {
     _setDirectionalKey(e, false);
   });
-
-  // Cada domínio é dono do próprio estado de partida. O restart e a pausa apenas
-  // orquestram estes hooks; adicionar um domínio novo não exige editar um reset
-  // central distante.
-  var _runtimeDomains = Object.create(null);
-  var _runtimeDomainOrder = [];
-  function _registerRuntimeDomain(name, hooks) {
-    if (!_runtimeDomains[name]) _runtimeDomainOrder.push(name);
-    _runtimeDomains[name] = hooks || {};
-  }
-  function _runRuntimeDomainHook(hookName) {
-    var domains = _runtimeDomainOrder.slice();
-    for (var i = 0; i < domains.length; i++) {
-      var hooks = _runtimeDomains[domains[i]];
-      var hook = hooks && hooks[hookName];
-      if (typeof hook === 'function') hook();
-    }
-  }
+` +
+    gameRuntimeDomains +
+    `
+  // O restart e a pausa apenas orquestram os domínios registrados; adicionar
+  // um domínio novo não exige editar um reset central distante.
   function _resetRuntimeDomains() { _runRuntimeDomainHook('reset'); }
   function _pauseRuntimeDomains() { _runRuntimeDomainHook('pause'); }
   function _resumeRuntimeDomains() { _runRuntimeDomainHook('resume'); }

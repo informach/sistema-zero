@@ -91,31 +91,31 @@ export const towerDefenseRuntime = `
   function tdSetCoins(n) { td.coins = Math.round(num(n, 100)); td.coinsInit = td.coins; }
   function tdAddCoins(n) { td.coins = Math.round(td.coins + num(n, 0)); }
   function tdCoins() { return td.coins; }
-  // Os "Quando comprar" registrados: cada clique num slot livre com moedas roda o corpo.
-  var tdBuyers = [];
+  // Há um único evento de compra no kit: registrar dois corpos faria o mesmo
+  // clique cobrar duas vezes. O primeiro registro vence e o segundo ensina a
+  // criança a manter apenas um chapéu de evento.
+  var tdBuyer = null;
   function tdOnBuy(cost, fn) {
     if (typeof fn !== 'function') return;
-    tdBuyers.push({ cost: Math.max(0, num(cost, 50)), fn: fn });
+    if (tdBuyer) {
+      warnOnce('tdbuyer:duplicate', 'use apenas um bloco "Quando clicar para comprar uma torre" — o primeiro será usado');
+      return;
+    }
+    tdBuyer = { cost: Math.max(0, num(cost, 50)), fn: fn };
   }
   /** Clique no jogo: 1o slot livre sob o ponto. Paga e roda o corpo, ou avisa. */
   function tdHandleClick(px, py) {
-    if (!tdBuyers.length) return false;
+    if (!tdBuyer) return false;
     var slot = tdSlotAt(px, py);
     if (!slot) return false;
-    var did = false;
-    for (var i = 0; i < tdBuyers.length; i++) {
-      var b = tdBuyers[i];
-      if (td.coins >= b.cost) {
-        td.coins -= b.cost;
-        slot.occupied = true;
-        did = true;
-        try { b.fn(slot.x, slot.y); } catch (e) { warn('erro no "Quando comprar a torre": ' + e); }
-      } else {
-        emit('compra:negada', null);
-        did = true; // consome o clique (nao cai no "Quando clicar no jogo")
-      }
+    if (td.coins >= tdBuyer.cost) {
+      td.coins -= tdBuyer.cost;
+      slot.occupied = true;
+      try { tdBuyer.fn(slot.x, slot.y); } catch (e) { warn('erro no "Quando comprar a torre": ' + e); }
+    } else {
+      emit('compra:negada', null);
     }
-    return did;
+    return true; // consome o clique (nao cai no "Quando clicar no jogo")
   }
   /** O passo do kit (stepSystems): move as ondas pelo caminho, avisa vazamento. */
   function stepTd(dt) {
@@ -146,6 +146,10 @@ export const towerDefenseRuntime = `
     td.waves.length = 0;
     for (var i = 0; i < td.slots.length; i++) td.slots[i].occupied = false;
     td.coins = td.coinsInit;
+  }
+  function tdResetProject() {
+    td.slots.length = 0;
+    tdBuyer = null;
   }
 
 `

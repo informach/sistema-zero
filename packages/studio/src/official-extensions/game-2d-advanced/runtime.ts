@@ -1,5 +1,8 @@
 import { buildProjectRunContextRuntime } from '#extensions'
 import { withGameUIFontRuntime } from '../gameUiFont'
+import { gameRuntimeDomains } from '../runtimeDomains'
+import { gameKitAudioRuntime } from './runtime/audio'
+import { gameKitRpgNavigationRuntime } from './runtime/rpgNavigation'
 import { towerDefenseRuntime } from './runtime/towerDefense'
 
 /**
@@ -27,6 +30,7 @@ export const gameKitRuntime = withGameUIFontRuntime(
     '\n' +
     `(function () {
   var _szGameUIFont = window.SZGameUIFont.family;
+${gameRuntimeDomains}
   // ---- Config (do bloco "Preparar o jogo profissional") ----
   var config = {
     w: 1280,
@@ -56,6 +60,8 @@ export const gameKitRuntime = withGameUIFontRuntime(
   var projectFactory = null;
   var runningProjectFactory = false;
   var screens = Object.create(null);     // nome -> { el, title, text, mainBtn }
+  var projectButtons = [];               // botões criados pela factory atual
+  var projectScreens = [];               // telas autorais criadas pela factory atual
   var stageEl = null;
   var canvasEl = null;
   var ctx2d = null;
@@ -64,6 +70,12 @@ export const gameKitRuntime = withGameUIFontRuntime(
   var currentDt = 0;
   var frameCount = 0;                    // carimbo do quadro (mede "anda?" 1× por quadro)
   var MAX_ACTIVE_PER_MOLD = 300;         // teto por molde (irmão do MAX_PARTICLES)
+  // Limites de autoria: todo valor abaixo alimenta laços síncronos no mesmo
+  // thread do Studio. Mantê-los centralizados impede que um número digitado por
+  // engano congele tanto o jogo quanto o editor da criança.
+  var MAX_GRID_SIDE = 512;
+  var MAX_CAPTURE_BALLS = 999;
+  var MAX_HUD_HEARTS = 100;
   // Tamanho da PEÇA/célula na tela, em px. É NEUTRO (não vive mais dentro do rpg):
   // o mapa de tiles é GERAL — desenhar e colidir precisam do mesmo número, e antes
   // ele só existia no Kit RPG (fora dele o mapa ficava travado em 64 p/ sempre).
@@ -236,10 +248,14 @@ export const gameKitRuntime = withGameUIFontRuntime(
         'font-family: var(--sz-game-ui-font); color: #eee; }' +
       '#szgk-canvas { border: 4px solid #2e2e3e; image-rendering: pixelated; image-rendering: crisp-edges; ' +
         'background: ' + config.bg + '; }' +
+      '#szgk-canvas:focus-visible { outline: 3px solid #ffffff; outline-offset: -7px; }' +
+      '.szgk-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; ' +
+        'overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }' +
       '.szgk-panel { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); ' +
         'background: rgba(0, 0, 0, 0.35); backdrop-filter: blur(10px); ' +
         'border: 3px solid ' + config.accent + '; padding: 30px; border-radius: 15px; text-align: center; ' +
-        'box-shadow: 0 0 30px ' + glowSoft + '; z-index: 1000; display: none; max-width: 82%; }' +
+        'box-shadow: 0 0 30px ' + glowSoft + '; z-index: 1000; display: none; box-sizing: border-box; ' +
+        'max-width: 82%; max-height: calc(100% - 30px); overflow: auto; overflow-wrap: anywhere; }' +
       '.szgk-panel.szgk-active { display: block; }' +
       '.szgk-panel h1, .szgk-panel h2 { color: ' + config.accent + '; margin: 0 0 20px 0; ' +
         'text-shadow: 0 0 20px ' + glowStrong + '; }' +
@@ -248,10 +264,16 @@ export const gameKitRuntime = withGameUIFontRuntime(
       '.szgk-panel p { margin: 0 0 12px 0; font-size: 14px; min-height: 1em; }' +
       '.szgk-panel button { background: rgba(0, 0, 0, 0.4); color: white; ' +
         'border: 2px solid ' + config.accent + '; padding: 12px 24px; margin: 8px; font-size: 16px; ' +
-        'cursor: pointer; font-family: inherit; border-radius: 8px; transition: all 0.3s; ' +
+        'cursor: pointer; font-family: inherit; border-radius: 8px; ' +
+        'transition: background-color 0.3s, box-shadow 0.3s, transform 0.3s; ' +
         'box-shadow: 0 0 15px ' + hexToRgba(config.accent, 0.2) + '; }' +
       '.szgk-panel button:hover { background: ' + config.accent + '; ' +
-        'box-shadow: 0 0 25px ' + glowStrong + '; transform: translateY(-2px); }';
+        'box-shadow: 0 0 25px ' + glowStrong + '; transform: translateY(-2px); }' +
+      '.szgk-panel button:focus-visible { outline: 3px solid #ffffff; outline-offset: 2px; }' +
+      '@media (prefers-reduced-motion: reduce) { ' +
+        '.szgk-panel button { transition: none; } ' +
+        '.szgk-panel button:hover { transform: none; } ' +
+      '}';
   }
 
   /** Cria um painel de tela (título + texto + botões) já escondido. */
@@ -305,7 +327,15 @@ export const gameKitRuntime = withGameUIFontRuntime(
       canvasEl.id = 'szgk-canvas';
       canvasEl.width = config.w;
       canvasEl.height = config.h;
+      canvasEl.tabIndex = 0;
+      canvasEl.setAttribute('aria-label', 'Jogo 2D Avançado interativo');
+      canvasEl.setAttribute('aria-describedby', 'szgk-stage-description');
       stageEl.appendChild(canvasEl);
+      var stageDescription = document.createElement('p');
+      stageDescription.id = 'szgk-stage-description';
+      stageDescription.className = 'szgk-sr-only';
+      stageDescription.textContent = 'Use as setas, WASD, espaço, enter ou o mouse conforme as instruções do jogo.';
+      stageEl.appendChild(stageDescription);
       document.body.appendChild(stageEl);
       ctx2d = canvasEl.getContext('2d');
       // Pixel art nítida por padrão (P24 seta no ctor do RenderSystem). Atribuir
@@ -369,7 +399,7 @@ export const gameKitRuntime = withGameUIFontRuntime(
 
   // ---- Máquina de estados (Game.state do kit, generalizada p/ nomes livres) ----
 
-  function resetGameData() {
+  function resetCoreGameData() {
         missionDone = false;
         playTime = 0;
         killCount = 0;
@@ -377,8 +407,6 @@ export const gameKitRuntime = withGameUIFontRuntime(
         for (var si = 0; si < spawners.length; si++) spawners[si].timer = 0;
         particles.active.length = 0;
         // R21: sobras visuais da partida anterior ("+100" no ar, onda no meio).
-        // Os RASTROS ficam: o do herói (persistente) deve sobreviver ao "Jogar de
-        // novo", e o de entidade reciclada o stepTrails varre sozinho.
         while (floaties.active.length) floaties.free.push(floaties.active.pop());
         while (shockwaves.active.length) shockwaves.free.push(shockwaves.active.pop());
         while (sheetBursts.active.length) sheetBursts.free.push(sheetBursts.active.pop());
@@ -396,14 +424,6 @@ export const gameKitRuntime = withGameUIFontRuntime(
         // ⚠️ R18: um "Esperar 30 s → nasce o chefe" da partida ANTERIOR dispararia
         // no meio da partida nova. É o mesmo erro do checkpoint/tweens abaixo.
         waits.length = 0;
-        // ⚠️ idem: sem isto, "Jogar de novo" recomeçava no round 3 com 2 a 0.
-        lutaNewGame();
-        // 🚀 idem: onda/bomba/poder da partida anterior não invadem a nova.
-        naveNewGame();
-        // 🏰 idem: ondas somem, slots liberam, moedas voltam ao inicial.
-        tdNewGame();
-        // 🃏 idem: a batalha de cartas da partida anterior não sobrevive ao recomeço.
-        cardsNewGame();
         // ⚠️ TODO global de jogo entra AQUI. Os 3 abaixo escaparam quando nasceram:
         // · checkpoint — a criança marca o ponto numa bandeira no meio da fase (uso
         //   natural do bloco); sem zerar, "Jogar de novo" NASCE no meio da fase da
@@ -414,9 +434,13 @@ export const gameKitRuntime = withGameUIFontRuntime(
         // · everySeconds — mantinha a fase do relógio da partida passada.
         plat.hasCp = false; plat.cpX = 0; plat.cpY = 0;
         screenFx.alpha = 0; screenFx.target = 0; screenFx.flashes = 0;
+        resetCameraState();
+        scrolls = Object.create(null);
         tweens.length = 0;
         secondTimers = Object.create(null); // sem protótipo: a chave vem da criança
-        rpgNewGame();
+  }
+  function resetGameData() {
+    _runRuntimeDomainHook('resetGame');
   }
   function runEnterStateHooks(n, prev, force) {
     // Os hooks de "quando entrar no estado" só rodam numa ENTRADA de verdade:
@@ -451,9 +475,9 @@ export const gameKitRuntime = withGameUIFontRuntime(
     if (projectFactory) {
       resetProjectRegistrations();
       executeProjectFactory();
-      var initialMap = rpg.startMap || rpgFirstValidMap();
-      if (initialMap) rpgGoMap(initialMap);
+      rpgEnterInitialMap();
     } else {
+      rpgEnterInitialMap();
       for (var i = 0; i < gameStartHooks.length; i++) {
         try { gameStartHooks[i](); } catch (e) { warn('erro no "quando começar uma partida": ' + e); }
       }
@@ -734,6 +758,19 @@ export const gameKitRuntime = withGameUIFontRuntime(
     camera.followCols = cols;
     camera.followRows = m.rows.length;
     updateCamera();
+  }
+  function resetCameraState() {
+    camera.on = false;
+    camera.target = null;
+    camera.x = 0;
+    camera.y = 0;
+    camera.worldW = 0;
+    camera.worldH = 0;
+    camera.shakeT = 0;
+    camera.shakeMag = 0;
+    camera.followMap = '';
+    camera.followCols = 0;
+    camera.followRows = 0;
   }
   function cameraStop() {
     camera.on = false;
@@ -2299,8 +2336,11 @@ export const gameKitRuntime = withGameUIFontRuntime(
   var boards = Object.create(null); // nome -> {cols, rows, empty, cells:[]} (flat row*cols+col)
   function boardAt(name) { return boards[text(name, 'tabuleiro')] || null; }
   function boardCreate(name, cols, rows, empty) {
-    var c = Math.max(1, Math.round(num(cols, 8)));
-    var r = Math.max(1, Math.round(num(rows, 8)));
+    var c = Math.max(1, Math.min(MAX_GRID_SIDE, Math.round(num(cols, 8))));
+    var r = Math.max(1, Math.min(MAX_GRID_SIDE, Math.round(num(rows, 8))));
+    if (num(cols, 8) > MAX_GRID_SIDE || num(rows, 8) > MAX_GRID_SIDE) {
+      warnOnce('board:limit', 'o tabuleiro foi limitado a ' + MAX_GRID_SIDE + ' × ' + MAX_GRID_SIDE + ' células para o jogo continuar responsivo');
+    }
     var cells = [];
     for (var i = 0; i < c * r; i++) cells.push(empty);
     boards[text(name, 'tabuleiro')] = { cols: c, rows: r, empty: empty, cells: cells };
@@ -2452,6 +2492,10 @@ export const gameKitRuntime = withGameUIFontRuntime(
   // ficam de PÉ (o exemplo as põe no topo; quem entra em jogando re-chama cardsStart e
   // a batalha nasce do zero). Sem isto, o Kit Cartas era a ÚNICA batalha não resetada.
   function cardsNewGame() { cards.battle = null; }
+  function cardsResetProject() {
+    cards.onTurn.length = 0;
+    cards.onEnemyTurn.length = 0;
+  }
   function cardsDrawHud() {
     if (!cards.battle || !ctx2d) return;
     var b = cards.battle;
@@ -2584,19 +2628,20 @@ export const gameKitRuntime = withGameUIFontRuntime(
   var tweens = [];
   /** Uma entrada de tween por PROPRIEDADE (era só x/y juntos). Regravar a mesma
    * propriedade do mesmo personagem substitui a anterior. */
-  function pushTween(who, prop, to, secs, notify) {
+  function pushTween(who, prop, to, secs, notify, onDone) {
     for (var i = tweens.length - 1; i >= 0; i--) {
       if (tweens[i].e === who && tweens[i].p === prop) tweens.splice(i, 1);
     }
     tweens.push({
       e: who, p: prop, f: num(who[prop], 0), to: num(to, 0),
-      t: 0, d: Math.max(0.01, num(secs, 0.5)), ev: !!notify
+      t: 0, d: Math.max(0.01, num(secs, 0.5)), ev: !!notify,
+      done: typeof onDone === 'function' ? onDone : null
     });
   }
-  function tweenTo(who, x, y, secs) {
+  function tweenTo(who, x, y, secs, onDone) {
     if (!who || typeof who !== 'object') return;
     pushTween(who, 'x', x, secs, false);
-    pushTween(who, 'y', y, secs, true); // só o Y avisa: um "cheguei" por deslize
+    pushTween(who, 'y', y, secs, true, onDone); // só o Y avisa/conclui: uma vez por deslize
   }
   /** ⭐ Versões MUDAS, para uso INTERNO do motor (investida da batalha, desmaio,
    * volta ao posto). O aviso "deslizou:chegou" é da CRIANÇA: quem encadeia
@@ -2636,6 +2681,9 @@ export const gameKitRuntime = withGameUIFontRuntime(
         // ⚠️ Sem este aviso era IMPOSSÍVEL encadear (o tween sumia calado) — é o
         // que destrava caminho por pontos, torre atirando em rota, cutscene.
         if (tw.ev) emit('deslizou:chegou', tw.e);
+        if (tw.done) {
+          try { tw.done(); } catch (e2) { warn('erro ao concluir um movimento suave: ' + e2); }
+        }
       }
     }
   }
@@ -3481,7 +3529,10 @@ export const gameKitRuntime = withGameUIFontRuntime(
   function pkmGiveBall(count, power) {
     var n = Math.max(1, Math.round(num(count, 5)));
     var p = Math.max(1, Math.min(100, num(power, 60)));
-    for (var i = 0; i < n; i++) pkm.balls.push({ power: p });
+    var room = Math.max(0, MAX_CAPTURE_BALLS - pkm.balls.length);
+    var total = Math.min(n, room);
+    if (total < n) warnOnce('pkmball:limit', 'a mochila comporta até ' + MAX_CAPTURE_BALLS + ' bolas de captura');
+    for (var i = 0; i < total; i++) pkm.balls.push({ power: p });
   }
   function pkmHealTeam() {
     for (var i = 0; i < pkm.team.length; i++) pkm.team[i].hp = pkm.team[i].hpMax;
@@ -4480,7 +4531,9 @@ export const gameKitRuntime = withGameUIFontRuntime(
   // conferia o NOME do helper) — hoje há um teste que EXECUTA o código gerado.
   function drawHearts(current, max, x, y) {
     if (!ctx2d) return;
-    var total = Math.max(0, Math.floor(num(max, 3)));
+    var requested = Math.max(0, Math.floor(num(max, 3)));
+    var total = Math.min(MAX_HUD_HEARTS, requested);
+    if (requested > MAX_HUD_HEARTS) warnOnce('hearts:limit', 'o HUD mostra no máximo ' + MAX_HUD_HEARTS + ' corações');
     var cur = Math.max(0, Math.min(total, Math.floor(num(current, 0))));
     var s = 22, gap = 6, bx = num(x, 20), by = num(y, 20);
     for (var i = 0; i < total; i++) {
@@ -4925,11 +4978,12 @@ export const gameKitRuntime = withGameUIFontRuntime(
     idx = Math.max(0, Math.min(rec.pts.length - 1, idx));
     who._spaceIdx = idx; who._trackName = k;
     var p = rec.pts[idx];
-    tweenTo(who, p.x - who.w / 2, p.y - who.h / 2, 0.3); // desliza suave até a casa
-    emit('casa:parou', who);
-    for (var i = 0; i < landHooks.length; i++) {
-      try { landHooks[i](); } catch (e) { warn('erro no "Quando um peão parar numa casa": ' + e); }
-    }
+    tweenTo(who, p.x - who.w / 2, p.y - who.h / 2, 0.3, function () {
+      emit('casa:parou', who);
+      for (var i = 0; i < landHooks.length; i++) {
+        try { landHooks[i](); } catch (e) { warn('erro no "Quando um peão parar numa casa": ' + e); }
+      }
+    });
   }
   function spaceOf(who) {
     return (who && typeof who === 'object') ? Math.max(0, Math.round(num(who._spaceIdx, 0))) : 0;
@@ -5445,7 +5499,7 @@ ${towerDefenseRuntime}
     battlerDefs: nameMap()
   };
 
-  function resetProjectRegistrations() {
+  function resetCoreProjectRegistrations() {
     updateHooks.length = 0;
     drawHooks.length = 0;
     hudHooks.length = 0;
@@ -5455,10 +5509,40 @@ ${towerDefenseRuntime}
     listeners = Object.create(null);
     turnHooks.length = 0;
     landHooks.length = 0;
-    cards.onTurn.length = 0;
-    cards.onEnemyTurn.length = 0;
-    td.slots.length = 0;
-    tdBuyers.length = 0;
+  }
+
+  function resetProjectOwnedResources() {
+    for (var bi = 0; bi < projectButtons.length; bi++) {
+      var button = projectButtons[bi];
+      if (button && button.parentNode) button.parentNode.removeChild(button);
+    }
+    projectButtons.length = 0;
+    for (var screenName in screens) {
+      var screen = screens[screenName];
+      if (screen && screen.el) screen.mainBtn = screen.el.querySelector('button');
+    }
+    for (var si = 0; si < projectScreens.length; si++) {
+      var key = projectScreens[si];
+      var entry = screens[key];
+      if (entry && entry.el && entry.el.parentNode) entry.el.parentNode.removeChild(entry.el);
+      delete screens[key];
+    }
+    projectScreens.length = 0;
+    for (var ti = 0; ti < trailed.length; ti++) {
+      if (trailed[ti]) trailed[ti]._trailOn = false;
+    }
+    trailed.length = 0;
+    for (var soundName in sounds) {
+      try { sounds[soundName].pause(); sounds[soundName].currentTime = 0; } catch (e) {}
+    }
+    stopProjectTones();
+  }
+
+  function resetProjectRegistrations() {
+    _runRuntimeDomainHook('resetProject');
+  }
+
+  function rpgResetProject() {
     rpg.npcTalk = nameMap();
     rpg.maps = nameMap();
     rpg.mapEnter = nameMap();
@@ -5497,7 +5581,8 @@ ${towerDefenseRuntime}
   function rpgBlockCell(cx, cy) { var k = cellKey(cx, cy); rpg.walls[k] = true; rpg.terrain[k] = true; }
   function rpgCellPx(n) { return num(n, 0) * tilePx; }
 
-  /** Recomeço de partida: a HISTÓRIA zera e volta ao mapa inicial explícito/legado. */
+  /** Recomeço de partida: zera somente o ESTADO da história, sem executar
+   * callbacks. A entrada no mapa acontece depois que a factory atual foi montada. */
   function rpgNewGame() {
     // O time do Kit Monstrinhos morre junto: é parte do "jogo", não do motor.
     pkmNewGame();
@@ -5527,38 +5612,48 @@ ${towerDefenseRuntime}
     rpg.fade = 0;
     rpg.menu = null;
     rpg.menuBuilding = null;
+    // No ciclo gerenciado, a próxima factory é dona de um novo herói. No uso
+    // direto da API, o herói atual pertence ao chamador e deve sobreviver ao
+    // restart para ser reposicionado no mapa inicial, como ocorria antes.
+    if (projectFactory) rpg.hero = null;
+  }
+  function rpgEnterInitialMap() {
     rpgValidateMapEvents();
     var initialMap = rpg.startMap || rpgFirstValidMap();
     if (initialMap) rpgGoMap(initialMap);
-    // Se "Recomeçar" rodou NO MEIO de uma batalha, a batalha foi zerada acima —
-    // sem isto o mundo ficaria preso no estado 'batalha' (nada a desenhar/avançar).
-    // No caminho normal (setState('jogando')) o estado já é 'jogando' → no-op.
-    if (state === 'batalha') setState('jogando');
   }
 
   function rpgCreateNpc(name, cx, cy, image, look) {
     var k = text(name, '');
     if (!k) { warn('"Criar o NPC" precisa de um nome'); return; }
-    ensureImageLoaded(image);
     var s = tilePx;
+    var npcCx = Math.round(num(cx, 0));
+    var npcCy = Math.round(num(cy, 0));
+    var key = cellKey(npcCx, npcCy);
+    if (rpg.mapCols > 0 && rpg.mapRows > 0 &&
+        (npcCx < 0 || npcCx >= rpg.mapCols || npcCy < 0 || npcCy >= rpg.mapRows)) {
+      warnOnce('npccell:outside:' + key, 'a célula ' + key + ' fica fora do mapa — escolha uma célula dentro dele');
+      return;
+    }
     // Recriar um NPC com o MESMO nome deixava a reserva antiga órfã (parede
     // fantasma para sempre); dois NPCs na MESMA célula dividiam uma entrada só e o
-    // 1º a andar liberava a do outro. Libera a reserva anterior e recusa a célula
-    // já ocupada.
+    // 1º a andar liberava a do outro. Primeiro valida o novo destino; só depois
+    // libera a reserva antiga pertencente a este NPC.
     var old = rpg.npcs[k];
-    if (old && old._reservedCell && !rpg.terrain[old._reservedCell]) delete rpg.walls[old._reservedCell];
-    var key = cellKey(cx, cy);
-    if (!old && rpg.walls[key]) {
+    if (cellOccupied(npcCx, npcCy, old)) {
       warnOnce('npccell:' + key, 'já tem alguém (ou uma parede) na célula ' + key + ' — o NPC "' + k + '" precisa de uma célula livre');
       return;
     }
+    if (old && old._reservedCell && old._reservedCell !== key && !rpg.terrain[old._reservedCell]) delete rpg.walls[old._reservedCell];
+    ensureImageLoaded(image);
     rpg.npcs[k] = {
       name: k,
-      x: Math.round(num(cx, 0)) * s, y: Math.round(num(cy, 0)) * s,
+      x: npcCx * s, y: npcCy * s,
       w: s, h: s,
       image: text(image, ''), look: text(look, ''), color: '#a78bfa',
       // Anda como o herói: destino na grade, direção, velocidade e patrulha.
-      speed: s * 2.4, _gridDest: null, _walkTarget: null, _wander: false, _wanderT: 0,
+      speed: s * 2.4, _gridDest: null, _walkTarget: null,
+      _walkPath: [], _walkIndex: 0, _walkFailed: false, _wander: false, _wanderT: 0,
       _iFrames: 0, _facingLeft: false, _facingDir: 'down', _angle: 0,
       _swingStart: 0, _swingActive: 0, _swingDur: 0,
       _animOnce: false, _animState: '',
@@ -5567,9 +5662,9 @@ ${towerDefenseRuntime}
       _animFrom: 0, _animTo: 0, _animFps: 0, _animStart: 0,
       _walkImg: '', _walkFw: 0, _walkFh: 0, _walkFrames: 0, _walkFps: 6,
       _lastX: 0, _lastY: 0, _moving: false, _moveFrame: -1,
-      _reservedCell: cellKey(cx, cy) // a célula que ESTE NPC ocupa (p/ só ele liberar)
+      _reservedCell: key // a célula que ESTE NPC ocupa (p/ só ele liberar)
     };
-    rpg.walls[cellKey(cx, cy)] = true; // sólido: bloqueia a grade
+    rpg.walls[key] = true; // sólido: bloqueia a grade
   }
   function rpgDrawNpcs() { for (var k in rpg.npcs) drawEntity(rpg.npcs[k]); }
   function npcAtCell(cx, cy) {
@@ -5678,7 +5773,9 @@ ${towerDefenseRuntime}
     if (!c || typeof c !== 'object') return;
     var s = Math.max(8, num(cellPx, tilePx));
     tilePx = s;
+    var isCurrentHero = rpg.hero === c;
     rpg.hero = c;
+    if (!isCurrentHero && rpg.currentMap) rpgEnsureHeroSafe('heroi atual');
     var d = (typeof dt === 'number' && isFinite(dt) && dt >= 0) ? dt : currentDt;
     if (rpg.menu) return; // menu aberto: herói TRAVADO (o stepUiInput navega)
     // Espaço CONVERSA com o NPC à frente (a fala aberta já foi consumida pelo
@@ -5844,10 +5941,15 @@ ${towerDefenseRuntime}
   }
   function rpgCreateMap(name, cols, rows, draw, hasDrawing) {
     var k = text(name, '');
-    var c = Math.round(num(cols, 0));
-    var r = Math.round(num(rows, 0));
+    var requestedCols = Math.round(num(cols, 0));
+    var requestedRows = Math.round(num(rows, 0));
+    var c = Math.min(MAX_GRID_SIDE, requestedCols);
+    var r = Math.min(MAX_GRID_SIDE, requestedRows);
     if (!k) { warn('"Criar o mapa" precisa de um nome'); return; }
-    if (c <= 0 || r <= 0) { warn('o mapa "' + k + '" precisa ter largura e altura maiores que zero'); return; }
+    if (requestedCols <= 0 || requestedRows <= 0) { warn('o mapa "' + k + '" precisa ter largura e altura maiores que zero'); return; }
+    if (requestedCols > MAX_GRID_SIDE || requestedRows > MAX_GRID_SIDE) {
+      warnOnce('rpgmap:limit', 'o mapa foi limitado a ' + MAX_GRID_SIDE + ' × ' + MAX_GRID_SIDE + ' células para o jogo continuar responsivo');
+    }
     if (typeof draw !== 'function') { warn('o mapa "' + k + '" precisa de um corpo de desenho'); return; }
     if (rpg.maps[k]) { warn('o mapa "' + k + '" foi criado mais de uma vez — usando a primeira criação'); return; }
     var empty = hasDrawing === false;
@@ -6042,6 +6144,14 @@ ${towerDefenseRuntime}
     var n = rpg.npcs[nm];
     if (!n) { warn('o NPC "' + nm + '" não existe neste mapa'); return; }
     n._walkTarget = { cx: tx, cy: ty };
+    n._walkPath = findNpcPath(n, Math.round(n.x / tilePx), Math.round(n.y / tilePx), tx, ty);
+    n._walkIndex = 0;
+    n._walkFailed = !n._walkPath;
+    if (n._walkFailed) {
+      n._walkTarget = null;
+      n._walkPath = [];
+      warnOnce('npcpath:' + nm + ':' + tx + ',' + ty, 'o NPC "' + nm + '" não encontrou um caminho livre até a célula ' + tx + ',' + ty);
+    }
   }
   /** NPC vagueia por células vizinhas livres (vida de vila). */
   function rpgNpcWander(npcName) {
@@ -6102,12 +6212,14 @@ ${towerDefenseRuntime}
     if (st.type === 'npcWalk') {
       var n = rpg.npcs[st.npc];
       if (!n) return true;
-      // Trava de segurança: caminho em L bloqueado por parede não pode pendurar a
-      // cena (e travar o herói) para sempre — desiste depois de 6 s. Limpa a
-      // INTENÇÃO junto: senão o NPC retomaria a caminhada de uma cena já encerrada
-      // quando a parede saísse (troca de mapa, block_cell mudado).
+      if (n._walkFailed) { n._walkFailed = false; return true; }
+      // Trava de segurança para obstáculos criados enquanto o NPC já caminhava.
       st._t = num(st._t, 0) + dt;
-      if (st._t > 6) { n._walkTarget = null; n._gridDest = null; return true; }
+      if (st._t > 6) {
+        n._walkTarget = null; n._walkPath = []; n._walkIndex = 0; n._gridDest = null;
+        warnOnce('npcpath:timeout:' + st.npc, 'o NPC "' + st.npc + '" parou porque o caminho mudou durante a cena');
+        return true;
+      }
       var s = tilePx;
       return n._gridDest == null && n._walkTarget == null &&
         Math.round(n.x / s) === st.cx && Math.round(n.y / s) === st.cy;
@@ -6117,61 +6229,7 @@ ${towerDefenseRuntime}
     return true;
   }
 
-  /** Uma célula está OCUPADA (parede/NPC/herói) — reserva de intenção do Pizza. */
-  function cellOccupied(cx, cy) {
-    if (rpg.walls[cx + ',' + cy]) return true;
-    var s = tilePx;
-    if (rpg.hero) {
-      if (Math.round(rpg.hero.x / s) === cx && Math.round(rpg.hero.y / s) === cy) return true;
-      if (rpg.hero._gridDest) {
-        if (Math.round(rpg.hero._gridDest.x / s) === cx && Math.round(rpg.hero._gridDest.y / s) === cy) return true;
-      }
-    }
-    return false;
-  }
-  /** Move 1 NPC por quadro: destino da grade (moveTowards) + patrulha/andar-para. */
-  function moveNpc(n, dt) {
-    var s = tilePx;
-    if (n._gridDest == null) {
-      var cx = Math.round(num(n.x, 0) / s);
-      var cy = Math.round(num(n.y, 0) / s);
-      var dx = 0;
-      var dy = 0;
-      if (n._walkTarget) {
-        var tx = n._walkTarget.cx;
-        var ty = n._walkTarget.cy;
-        if (cx === tx && cy === ty) { n._walkTarget = null; return; }
-        // Reduz primeiro o eixo maior (caminho simples em L — basta p/ cenas).
-        if (cx !== tx) dx = tx > cx ? 1 : -1;
-        else dy = ty > cy ? 1 : -1;
-      } else if (n._wander) {
-        n._wanderT = num(n._wanderT, 0) - dt;
-        if (n._wanderT > 0) return;
-        n._wanderT = 1 + Math.random() * 2;
-        var pick = Math.floor(Math.random() * 4);
-        dx = pick === 0 ? 1 : pick === 1 ? -1 : 0;
-        dy = pick === 2 ? 1 : pick === 3 ? -1 : 0;
-        if (!dx && !dy) return;
-      } else return;
-      var nx = cx + dx;
-      var ny = cy + dy;
-      if (cellOccupied(nx, ny)) return; // bloqueado (parede/NPC/herói): espera
-      // Reserva de intenção: libera SÓ a célula que ESTE NPC reservou (nunca uma
-      // parede de terreno) e reserva a de destino ENQUANTO anda (o herói e outros
-      // NPCs veem o NPC ocupando o destino).
-      if (n._reservedCell && !rpg.terrain[n._reservedCell]) delete rpg.walls[n._reservedCell];
-      rpg.walls[nx + ',' + ny] = true;
-      n._reservedCell = nx + ',' + ny;
-      setFacing(n, dx, dy);
-      n._gridDest = { x: nx * s, y: ny * s };
-    }
-    var step = Math.max(1, num(n.speed, s * 2.4)) * dt;
-    var gx = n._gridDest.x - num(n.x, 0);
-    var gy = n._gridDest.y - num(n.y, 0);
-    var dist = Math.sqrt(gx * gx + gy * gy);
-    if (dist <= step) { n.x = n._gridDest.x; n.y = n._gridDest.y; n._gridDest = null; }
-    else { n.x += (gx / dist) * step; n.y += (gy / dist) * step; }
-  }
+${gameKitRpgNavigationRuntime}
   /** Toca a fila da cena: começa o passo, e passos INSTANTÂNEOS encadeiam no mesmo
    * quadro (o "flag" entre duas falas não custa um quadro à toa). */
   function advanceScene(dt) {
@@ -6903,77 +6961,7 @@ ${towerDefenseRuntime}
     emit('batalha:fim');
   }
 
-  // ---- 🔊 Som (importado via new Audio + sintetizado) ----
-  function loadSound(name, asset) {
-    var key = text(name, '') || text(asset, '');
-    if (!key) { warn('"Carregar o som" precisa de um nome'); return; }
-    var a = text(asset, '');
-    var src = SOUNDS[a] || (a.indexOf('data:audio/') === 0 ? a : null);
-    if (!src) { warn('o som "' + a + '" não está no projeto (importe em "Imagens e sons")'); return; }
-    pending.push(new Promise(function (resolve) {
-      try {
-        // fallback: se nunca disparar canplaythrough, não travar o start
-        var timer = setTimeout(resolve, 3000);
-        var done = function () { clearTimeout(timer); resolve(); };
-        var audio = new Audio();
-        audio.preload = 'auto';
-        audio.oncanplaythrough = done;
-        audio.onerror = function () { warn('o som "' + key + '" falhou ao carregar'); done(); };
-        audio.src = src;
-        sounds[key] = audio;
-      } catch (e) { resolve(); }
-    }));
-  }
-  function playSound(name) {
-    var a = sounds[text(name, '')];
-    if (!a) return;
-    try { a.currentTime = 0; var pr = a.play(); if (pr && pr.catch) pr.catch(function () {}); } catch (e) {}
-  }
-  var _audioCtx = null;
-  function ensureAudioCtx() {
-    if (_audioCtx) return _audioCtx;
-    try {
-      var AC = window.AudioContext || window.webkitAudioContext;
-      if (AC) _audioCtx = new AC();
-    } catch (e) { _audioCtx = null; }
-    return _audioCtx;
-  }
-  /**
-   * Acorda o áudio no primeiro GESTO (tecla/clique). Sem isto, um AudioContext
-   * criado antes do gesto fica 'suspended' p/ sempre = todos os tons MUDOS
-   * (Safari/iPad exige resume DENTRO do gesto).
-   */
-  function resumeAudio() {
-    try {
-      if (_audioCtx && _audioCtx.state === 'suspended') _audioCtx.resume();
-    } catch (e) {}
-  }
-  function playTone(freq, ms) {
-    var ac = ensureAudioCtx();
-    if (!ac) return;
-    try { if (ac.state === 'suspended') ac.resume(); } catch (e) {}
-    try {
-      var osc = ac.createOscillator();
-      var gain = ac.createGain();
-      osc.type = 'square';
-      osc.frequency.value = num(freq, 440);
-      gain.gain.value = 0.06;
-      osc.connect(gain); gain.connect(ac.destination);
-      var dur = num(ms, 200) / 1000;
-      osc.start();
-      gain.gain.setTargetAtTime(0, ac.currentTime + dur * 0.6, 0.05);
-      osc.stop(ac.currentTime + dur);
-    } catch (e) {}
-  }
-  var FX_TONES = {
-    coin: [880, 90], hit: [180, 80], explosion: [90, 260], jump: [520, 120],
-    laser: [1200, 90], hurt: [140, 160], powerup: [700, 200], win: [990, 300],
-    gameover: [120, 400], click: [440, 50]
-  };
-  function playEffect(fx) {
-    var t = FX_TONES[text(fx, '')] || FX_TONES.hit;
-    playTone(t[0], t[1]);
-  }
+${gameKitAudioRuntime}
 
   // ---- Começar (Game.init do kit: carregar -> menu -> input -> resize -> loop) ----
 
@@ -7001,6 +6989,31 @@ ${towerDefenseRuntime}
       requestAnimationFrame(gameLoop);
     });
   }
+
+  // Cada domínio declara o estado e os registros que possui. O orquestrador de
+  // restart apenas dispara a fase certa; novos kits não dependem de um checklist
+  // central que pode esquecer recursos ao crescer.
+  _registerRuntimeDomain('core', {
+    resetGame: resetCoreGameData,
+    resetProject: resetCoreProjectRegistrations
+  });
+  _registerRuntimeDomain('cards', {
+    resetGame: cardsNewGame,
+    resetProject: cardsResetProject
+  });
+  _registerRuntimeDomain('luta', { resetGame: lutaNewGame });
+  _registerRuntimeDomain('nave', { resetGame: naveNewGame });
+  _registerRuntimeDomain('tower-defense', {
+    resetGame: tdNewGame,
+    resetProject: tdResetProject
+  });
+  _registerRuntimeDomain('rpg', {
+    resetGame: rpgNewGame,
+    resetProject: rpgResetProject
+  });
+  _registerRuntimeDomain('project-resources', {
+    resetProject: resetProjectOwnedResources
+  });
 
   // ---- API pública (1 método por bloco) ----
 
@@ -7078,6 +7091,7 @@ ${towerDefenseRuntime}
         return;
       }
       makeScreen(key, 'h2', text(title, key), text(textBody, ''));
+      projectScreens.push(key);
     }),
     addButton: guard('addButton', function (screen, label, fn) {
       if (!ensureShell()) return;
@@ -7086,7 +7100,7 @@ ${towerDefenseRuntime}
         warn('a tela "' + text(screen, '') + '" não existe — crie-a antes de pôr o botão');
         return;
       }
-      makeButton(entry, text(label, 'Botão'), typeof fn === 'function' ? fn : function () {});
+      projectButtons.push(makeButton(entry, text(label, 'Botão'), typeof fn === 'function' ? fn : function () {}));
     }),
     // 🖼️ Deixar a tela (pronta ou sua) com a SUA cara: uma cor de fundo (o "quadrado
     // colorido por baixo") e/ou uma imagem do Pinta cobrindo o painel. É DOM (o painel

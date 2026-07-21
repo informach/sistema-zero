@@ -57,13 +57,29 @@ describe('Guarda dos template literals do gk (Jogo 2D Avançado)', () => {
   it('runtime.ts: só interpola fragmentos auditados, sem crase crua', () => {
     const src = readFileSync(join(DIR, 'runtime.ts'), 'utf8')
     expect(
-      rawTemplateHazardsInside(src, 'gameKitRuntime =', new Set(['towerDefenseRuntime'])),
+      rawTemplateHazardsInside(
+        src,
+        'gameKitRuntime =',
+        new Set([
+          'gameKitAudioRuntime',
+          'gameKitRpgNavigationRuntime',
+          'gameRuntimeDomains',
+          'towerDefenseRuntime',
+        ]),
+      ),
     ).toEqual([])
   })
 
   it('fragmentos do runtime não contêm crase nem interpolação crua', () => {
-    const src = readFileSync(join(DIR, 'runtime', 'towerDefense.ts'), 'utf8')
-    expect(rawTemplateHazardsInside(src, 'towerDefenseRuntime =')).toEqual([])
+    for (const [file, declaration] of [
+      ['runtime/audio.ts', 'gameKitAudioRuntime ='],
+      ['runtime/rpgNavigation.ts', 'gameKitRpgNavigationRuntime ='],
+      ['runtime/towerDefense.ts', 'towerDefenseRuntime ='],
+      ['../runtimeDomains.ts', 'gameRuntimeDomains ='],
+    ] as const) {
+      const src = readFileSync(join(DIR, file), 'utf8')
+      expect(rawTemplateHazardsInside(src, declaration)).toEqual([])
+    }
   })
 
   it('ai.ts: idem (o contexto da IA também é um literal só)', () => {

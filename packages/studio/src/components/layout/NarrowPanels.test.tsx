@@ -42,7 +42,7 @@ function setProject(mode: IDEMode): void {
 function resetUI(): void {
   useUIStore.setState({
     bottomTab: 'console',
-    showConsole: true,
+    consoleVisibilityOverride: null,
     showTerminal: true,
     showAI: true,
     showPreview: true,
@@ -78,7 +78,7 @@ describe('NarrowPanels', () => {
     expect(tabs[0]?.textContent).toContain('Código')
   })
 
-  it('no modo blocos só o Console acompanha (Terminal/IA são do Código)', () => {
+  it('no modo blocos o Console começa oculto e Terminal/IA não aparecem', () => {
     setProject('blocks')
     const { getAllByRole } = render(
       <NarrowPanels
@@ -87,8 +87,9 @@ describe('NarrowPanels', () => {
       />,
     )
     const labels = getAllByRole('tab').map((t) => t.textContent)
-    // Blocos + Pré-visualização + Console (sem Terminal/IA)
-    expect(labels.length).toBe(3)
+    // Blocos + Pré-visualização (sem Console/Terminal/IA)
+    expect(labels.length).toBe(2)
+    expect(labels.some((l) => l?.includes('Console'))).toBe(false)
     expect(labels.some((l) => l?.includes('Terminal'))).toBe(false)
     expect(labels.some((l) => l?.includes('IA'))).toBe(false)
   })
@@ -103,13 +104,21 @@ describe('NarrowPanels', () => {
     expect(previewTab.getAttribute('aria-selected')).toBe('true')
   })
 
-  it('esconder o Console (showConsole=false) remove a aba', () => {
+  it('uma escolha manual pode esconder o Console no modo Código', () => {
     const { getAllByRole } = render(<NarrowPanels editorPanes={oneEditor} preview={<div>p</div>} />)
     expect(getAllByRole('tab').length).toBe(5)
-    act(() => useUIStore.setState({ showConsole: false }))
+    act(() => useUIStore.setState({ consoleVisibilityOverride: false }))
     const labels = getAllByRole('tab').map((t) => t.textContent)
     expect(labels.length).toBe(4)
     expect(labels.some((l) => l?.includes('Console'))).toBe(false)
+  })
+
+  it('uma escolha manual pode mostrar o Console no modo Ponte', () => {
+    setProject('bridge')
+    useUIStore.setState({ consoleVisibilityOverride: true })
+    const { getAllByRole } = render(<NarrowPanels editorPanes={oneEditor} preview={<div>p</div>} />)
+    const labels = getAllByRole('tab').map((t) => t.textContent)
+    expect(labels.some((l) => l?.includes('Console'))).toBe(true)
   })
 
   it('sem preview, não há aba de Pré-visualização', () => {

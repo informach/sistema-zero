@@ -55,7 +55,7 @@ O Estúdio carrega os assets e liga o motor automaticamente depois de registrar
 as três áreas. Os antigos blocos “Começar o jogo” e “Quando começar uma
 partida” existem apenas para migrar projetos salvos e não aparecem na paleta.
 
-> ⭐ **Seu jogo abre no MENU, não jogando.** Ao rodar, você vê a tela de menu. > clique no botão **Jogar** (ele já vem pronto) para a partida começar. No menu,
+> ⭐ **Seu jogo abre no MENU, não jogando.** Ao rodar, você vê a tela de menu. Clique no botão **Jogar** (ele já vem pronto) para a partida começar. No menu,
 > o "A cada quadro" e o "Desenhar o jogo" ainda não aparecem. Mas por motivos
 > diferentes: **"A cada quadro" só roda no estado \`jogando\`**; já **"Desenhar o
 > jogo" roda em \`jogando\`, \`pausado\`, \`fim\` e nos SEUS estados inventados. Só
@@ -652,7 +652,7 @@ o que EXISTE em jogo de plataforma.
 > ⭐ **Um jogo de monstrinhos É um jogo do Kit RPG com OUTRA batalha.** O mundo já
 > está pronto lá embaixo: a grade, os NPCs, a fala, os mapas, as flags e o salvar.
 > Aqui entram só as CRIATURAS, os ENCONTROS e a batalha criatura-contra-criatura.
-> (No ⚔️ Kit RPG quem luta é o herói, com a espada dele. **Escolha um dos dois**. > misturar deixa duas vidas na tela.)
+> (No ⚔️ Kit RPG quem luta é o herói, com a espada dele. **Escolha um dos dois**. Misturar deixa duas vidas na tela.)
 
 ### As criaturas
 

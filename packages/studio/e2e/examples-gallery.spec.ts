@@ -288,7 +288,7 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
         .join('\n'),
     )
   }
-  if (contract.key.startsWith('game-2d:')) {
+  if (contract.key.startsWith('game-2d:') || contract.key.startsWith('game-2d-advanced:')) {
     const canvas = preview.locator('canvas').first()
     await expect(canvas).toHaveAttribute('aria-label', /\S/)
     await expect(canvas).toHaveAttribute('aria-describedby', /\S/)

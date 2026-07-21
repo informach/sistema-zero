@@ -30,7 +30,7 @@ export interface StudioAIConfig {
 export interface StudioFeatures {
   /** Painel de preview (iframe sandbox). Default: true. */
   preview?: boolean
-  /** Aba Console no painel inferior. Default: true. */
+  /** Capacidade do Console. Default: true; a visibilidade inicial depende do modo. */
   console?: boolean
   /** Painel de extensões + botão na Topbar. Default: true. */
   extensions?: boolean

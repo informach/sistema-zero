@@ -1,0 +1,30 @@
+import { describe, expect, it } from 'bun:test'
+import { readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
+
+const ROOT = join(import.meta.dir, '..')
+const lineCount = (file: string) => readFileSync(file, 'utf8').split('\n').length
+
+describe('gk — limites arquiteturais dos catálogos e do runtime', () => {
+  it('mantém os três pontos de entrada como composição de módulos menores', () => {
+    expect(lineCount(join(ROOT, 'runtime.ts'))).toBeLessThan(7_700)
+    expect(lineCount(join(ROOT, 'blocks.ts'))).toBeLessThan(1_300)
+    expect(lineCount(join(ROOT, 'examples.ts'))).toBeLessThan(100)
+  })
+
+  it('mantém cada catálogo extraído pequeno o bastante para revisão isolada', () => {
+    const blockModules = readdirSync(join(ROOT, 'blocks')).filter((file) => file.endsWith('.ts'))
+    const exampleModules = readdirSync(join(ROOT, 'examples')).filter((file) =>
+      file.endsWith('.ts'),
+    )
+
+    expect(blockModules.length).toBeGreaterThanOrEqual(7)
+    expect(exampleModules.length).toBeGreaterThanOrEqual(20)
+    for (const file of blockModules) {
+      expect(lineCount(join(ROOT, 'blocks', file))).toBeLessThan(1_200)
+    }
+    for (const file of exampleModules) {
+      expect(lineCount(join(ROOT, 'examples', file))).toBeLessThan(1_200)
+    }
+  })
+})

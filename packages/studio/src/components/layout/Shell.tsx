@@ -87,7 +87,12 @@ export function Shell({ onExit, canToggleTheme }: ShellProps): JSX.Element {
                   modo (e, dentro dela, Monaco e Preview) — assim os valores
                   debounced e refs começam já com o conteúdo do novo projeto, sem
                   mostrar/renderizar o projeto anterior no primeiro instante. */}
-                  <Panel id="sz-editor" order={1} defaultSize={70} minSize={30}>
+                  <Panel
+                    id="sz-editor"
+                    order={1}
+                    defaultSize={hasBottomPanel ? 70 : 100}
+                    minSize={30}
+                  >
                     {/* ActivityPanel é self-gating (null sem atividade): no
                         <StudioEditor> e nas aulas sem exercício não acrescenta
                         DOM, então o split do editor fica idêntico ao de antes.
