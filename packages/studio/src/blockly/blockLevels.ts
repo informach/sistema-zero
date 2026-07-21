@@ -108,6 +108,7 @@ const AVANCADO_2D: ReadonlySet<string> = new Set<string>([
   'sz_css_grid_template',
   'sz_css_transition',
   'sz_css_hover',
+  'sz_css_focus_visible',
   'sz_css_transform',
   'sz_css_perspective',
   'sz_css_keyframes',

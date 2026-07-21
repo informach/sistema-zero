@@ -130,6 +130,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
   // Só UMA música por vez: chamar de novo para a anterior antes de começar.
   var _musicTimer = null;
   var _musicStop = false;
+  var _musicName = null;
   var _musicState = null;
   var MUSIC_TUNES = {
     adventure: { wave: 'square', step: 200, notes: [262, 330, 392, 330, 440, 392, 330, 262] },
@@ -155,11 +156,14 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
     _scheduleMusic(_musicState.step);
   }
   function playMusic(name) {
-    stopMusic();
     if (!MUSIC_TUNES[name]) warnOnce('music:' + name, 'não conheço a música "' + name + '" — toquei "adventure". Escolha uma da lista do bloco.');
-    var tune = MUSIC_TUNES[name] || MUSIC_TUNES.adventure;
+    var resolvedName = MUSIC_TUNES[name] ? name : 'adventure';
+    if (!_musicStop && _musicState && _musicName === resolvedName) return;
+    stopMusic();
+    var tune = MUSIC_TUNES[resolvedName];
     var step = (typeof tune.step === 'number' && tune.step > 0) ? tune.step : 200;
     _musicStop = false;
+    _musicName = resolvedName;
     _musicState = { tune: tune, step: step, index: 0, remaining: 0, deadline: 0 };
     _musicNext();
   }
@@ -177,6 +181,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
     _musicStop = true;
     if (_musicTimer !== null) clearTimeout(_musicTimer);
     _musicTimer = null;
+    _musicName = null;
     _musicState = null;
   }
 

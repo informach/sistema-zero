@@ -1,4 +1,11 @@
 import { CONTINUOUS_EXTENSION_STATEMENT_TYPES } from '../official-extensions/continuousCommandContract'
+import { resolveEventTargetKind } from './eventTargets'
+import {
+  type ProgrammingBodyExecution,
+  type ProgrammingEventObjectCapability,
+  programmingChildBodyEntries,
+  programmingEmbeddedBodyEntries,
+} from './programmingExecution'
 import type { JSStatement } from './schema'
 
 export type LifecycleArea = 'start' | 'events' | 'loops'
@@ -238,7 +245,9 @@ const CORE_EVENT_TYPES = new Set([
 
 export function isLegacyLoadEvent(statement: JSStatement): boolean {
   return (
-    statement.type === 'event' && statement.event === 'load' && statement.targetKind === 'window'
+    statement.type === 'event' &&
+    statement.event === 'load' &&
+    resolveEventTargetKind(statement.target, statement.targetKind) === 'window'
   )
 }
 
@@ -290,6 +299,9 @@ export function isLifecycleRootAllowed(statement: JSStatement, area: LifecycleAr
   ) {
     return false
   }
+  // Código bruto é opaco: a área escolhida pelo projeto é parte da sua
+  // semântica e espelha o contrato multiárea do bloco `sz_adv_raw_js`.
+  if (statement.type === 'rawJS') return true
   return lifecycleAreaForStatement(statement) === area
 }
 
@@ -300,9 +312,12 @@ export interface LifecycleSemanticIssue {
 
 interface SemanticContext {
   nested: boolean
+  directEventContainer: boolean
   loopDepth: number
   continuousBody: boolean
   eventBody: boolean
+  activeEventObjectBody: boolean
+  userGestureBody: boolean
   keyboardEventBody: boolean
   pointerEventBody: boolean
   functionBody: boolean
@@ -313,21 +328,7 @@ interface SemanticContext {
   classBody: boolean
 }
 
-const STATEMENT_ARRAY_KEYS = new Set([
-  'body',
-  'bodyA',
-  'bodyB',
-  'catchBody',
-  'default',
-  'else',
-  'errorBody',
-  'finalizer',
-  'handler',
-  'statements',
-  'then',
-])
-
-const SYNTACTIC_LOOP_TYPES = new Set(['repeat', 'while', 'doWhile', 'forOf', 'forRange', 'forEach'])
+const SYNTACTIC_LOOP_TYPES = new Set(['repeat', 'while', 'doWhile', 'forOf', 'forRange'])
 
 /** Verdadeiro para raízes contínuas e para laços sintáticos aninháveis. */
 export function isLoopStatement(statement: JSStatement): boolean {
@@ -373,6 +374,12 @@ function validateContextDependentNode(
         issue(issues, path, '“await” só pode ser usado dentro de uma função assíncrona')
       }
       break
+    case 'requestFullscreen':
+    case 'toggleFullscreen':
+      if (!context.userGestureBody) {
+        issue(issues, path, 'Entrar em tela cheia exige um clique ou uma tecla ainda ativos')
+      }
+      break
     case 'superCall':
       if (!context.derivedConstructorBody) {
         issue(issues, path, '“super” só pode chamar o construtor dentro de uma classe derivada')
@@ -384,9 +391,13 @@ function validateContextDependentNode(
       }
       break
     case 'eventMethod':
+      if (!context.activeEventObjectBody) {
+        issue(issues, path, 'Este comando exige um objeto Event ainda ativo do navegador')
+      }
+      break
     case 'w3d:npcAsk':
       if (!context.eventBody) {
-        issue(issues, path, 'Este valor ou comando só existe dentro do corpo de um evento')
+        issue(issues, path, 'Este comando só existe dentro do corpo de um evento')
       }
       break
     case 'eventProp': {
@@ -418,25 +429,29 @@ function validateContextDependentNode(
   }
 }
 
-const KEYBOARD_EVENTS = new Set(['keydown', 'keyup'])
-const POINTER_EVENTS = new Set([
+const USER_GESTURE_EVENTS = new Set([
   'click',
-  'mouseover',
-  'mouseout',
-  'mousemove',
+  'keydown',
   'mousedown',
   'mouseup',
-  'contextmenu',
+  'pointerdown',
+  'pointerup',
 ])
-
-function eventCapabilities(statement: JSStatement): { keyboard: boolean; pointer: boolean } {
+function providesUserGesture(statement: JSStatement): boolean {
   if (statement.type === 'event') {
-    return {
-      keyboard: KEYBOARD_EVENTS.has(statement.event),
-      pointer: POINTER_EVENTS.has(statement.event),
-    }
+    return USER_GESTURE_EVENTS.has(statement.event)
   }
-  return { keyboard: false, pointer: statement.type === 'onClickAssign' }
+  if (statement.type === 'g2d:onKey') return true
+  if (statement.type === 'g2d:onPointer' || statement.type === 'gk:onGameClick') return true
+  if (
+    statement.type === 'gk:addButton' ||
+    statement.type === 'g3k:addButton' ||
+    statement.type === 'gk:rpgOption' ||
+    statement.type === 'gk:tdOnBuy'
+  ) {
+    return true
+  }
+  return statement.type === 'onClickAssign'
 }
 
 function visitUnknown(
@@ -456,22 +471,73 @@ function visitUnknown(
   validateContextDependentNode(record, context, path, issues)
   for (const [key, child] of Object.entries(record)) {
     if (key === '__id' || key === 'type') continue
+    // O executor da Promise é visitado como um corpo próprio, com seu limite
+    // de função síncrona, por `programmingEmbeddedBodyEntries`.
+    if (record.type === 'newPromise' && key === 'body') continue
     visitUnknown(child, context, [...path, key], issues)
   }
 }
 
-function childContext(statement: JSStatement, context: SemanticContext): SemanticContext {
-  const capabilities = eventCapabilities(statement)
+function childContext(
+  statement: JSStatement,
+  path: readonly (string | number)[],
+  execution: ProgrammingBodyExecution,
+  eventObject: ProgrammingEventObjectCapability | undefined,
+  context: SemanticContext,
+): SemanticContext {
+  const createsBoundary = execution !== 'structural'
+  const resetsActivation = execution === 'deferred-callback' || execution === 'function'
+  const providesEventObject = eventObject !== undefined
+  const isFunction = execution === 'function'
+  const isSynchronousCallback = execution === 'sync-callback'
+  const classStatement = statement.type === 'classDecl' ? statement : null
+  const isConstructor = classStatement !== null && path[0] === 'ctorBody'
+  const methodIndex = classStatement && path[0] === 'methods' ? path[1] : undefined
+  const method = typeof methodIndex === 'number' ? classStatement?.methods[methodIndex] : undefined
+  const asyncFunction =
+    statement.type === 'funcDecl' ? statement.async === true : method?.async === true
+  const derived = Boolean(classStatement?.superClass)
+
   return {
     ...context,
     nested: true,
+    directEventContainer: isFunction || isSynchronousCallback,
     // Loops do motor executam o corpo dentro de callbacks; eles não criam um
     // laço sintático JavaScript onde `break`/`continue` possam atuar.
-    loopDepth: context.loopDepth + (SYNTACTIC_LOOP_TYPES.has(statement.type) ? 1 : 0),
-    continuousBody: context.continuousBody || isLoopStatement(statement),
+    loopDepth:
+      (createsBoundary ? 0 : context.loopDepth) +
+      (execution === 'structural' && SYNTACTIC_LOOP_TYPES.has(statement.type) ? 1 : 0),
+    continuousBody:
+      (resetsActivation ? false : context.continuousBody) || isLoopStatement(statement),
     eventBody: context.eventBody || isEventStatement(statement),
-    keyboardEventBody: context.keyboardEventBody || capabilities.keyboard,
-    pointerEventBody: context.pointerEventBody || capabilities.pointer,
+    activeEventObjectBody:
+      providesEventObject || (resetsActivation ? false : context.activeEventObjectBody),
+    userGestureBody:
+      (resetsActivation ? false : context.userGestureBody) || providesUserGesture(statement),
+    keyboardEventBody: providesEventObject ? eventObject === 'keyboard' : context.keyboardEventBody,
+    pointerEventBody: providesEventObject ? eventObject === 'pointer' : context.pointerEventBody,
+    // Callbacks oficiais são arrows: encerram await/break, mas preservam `this`
+    // e o contexto léxico da função ou método que os criou.
+    functionBody: isFunction || isSynchronousCallback || context.functionBody,
+    constructorBody: isFunction ? isConstructor : context.constructorBody,
+    asyncFunctionBody: createsBoundary ? isFunction && asyncFunction : context.asyncFunctionBody,
+    derivedConstructorBody: isFunction ? isConstructor && derived : context.derivedConstructorBody,
+    derivedMethodBody: isFunction ? Boolean(method) && derived : context.derivedMethodBody,
+    classBody: classStatement !== null || (execution !== 'function' && context.classBody),
+  }
+}
+
+function embeddedCallbackContext(context: SemanticContext): SemanticContext {
+  return {
+    ...context,
+    nested: true,
+    directEventContainer: true,
+    loopDepth: 0,
+    functionBody: true,
+    constructorBody: context.constructorBody,
+    asyncFunctionBody: false,
+    derivedConstructorBody: context.derivedConstructorBody,
+    derivedMethodBody: context.derivedMethodBody,
   }
 }
 
@@ -523,12 +589,12 @@ function visitStatement(
   path: PropertyKey[],
   issues: LifecycleSemanticIssue[],
 ): void {
-  // Loops de motor e eventos aninhados no fluxo direto são raízes do lifecycle.
-  // Uma função ou classe, porém, pode encapsular o registro de um listener que
-  // depende dos seus parâmetros ou de `this`; esse registro é implementação da
-  // unidade, não uma nova raiz pedagógica do projeto.
+  // Loops de motor e eventos aninhados no fluxo são raízes do lifecycle. Uma
+  // função, método ou construtor pode encapsular diretamente um listener que
+  // depende dos seus parâmetros ou de `this`, mas nenhum comando intermediário
+  // pode esconder esse registro.
   const nestedLifecycleRoot =
-    isLoopRootStatement(statement) || (isEventStatement(statement) && !context.functionBody)
+    isLoopRootStatement(statement) || (isEventStatement(statement) && !context.directEventContainer)
   if (context.nested && nestedLifecycleRoot) {
     issue(issues, path, `A raiz “${statement.type}” deve ficar diretamente na sua Área do projeto`)
   }
@@ -542,68 +608,34 @@ function visitStatement(
     issues,
   )
 
-  if (statement.type === 'classDecl') {
-    const derived = Boolean(statement.superClass)
-    validateDerivedConstructor(statement, path, issues)
-    const constructorContext: SemanticContext = {
-      ...context,
-      nested: true,
-      functionBody: true,
-      constructorBody: true,
-      asyncFunctionBody: false,
-      derivedConstructorBody: derived,
-      derivedMethodBody: false,
-      classBody: true,
-    }
-    statement.ctorBody.forEach((child, index) => {
-      visitStatement(child, constructorContext, [...path, 'ctorBody', index], issues)
+  if (statement.type === 'classDecl') validateDerivedConstructor(statement, path, issues)
+
+  const childBodies = programmingChildBodyEntries(statement)
+  const bodyRoots = new Set(childBodies.map((entry) => String(entry.path[0])))
+  for (const entry of childBodies) {
+    const nestedContext = childContext(
+      statement,
+      entry.path,
+      entry.execution,
+      entry.eventObject,
+      context,
+    )
+    entry.body.forEach((child, index) => {
+      visitStatement(child, nestedContext, [...path, ...entry.path, index], issues)
     })
-    statement.methods.forEach((method, methodIndex) => {
-      const methodContext: SemanticContext = {
-        ...context,
-        nested: true,
-        functionBody: true,
-        constructorBody: false,
-        asyncFunctionBody: method.async === true,
-        derivedConstructorBody: false,
-        derivedMethodBody: derived,
-        classBody: true,
-      }
-      method.body.forEach((child, index) => {
-        visitStatement(
-          child,
-          methodContext,
-          [...path, 'methods', methodIndex, 'body', index],
-          issues,
-        )
-      })
-    })
-    return
   }
 
-  const nestedContext = childContext(statement, context)
-  const functionContext: SemanticContext =
-    statement.type === 'funcDecl'
-      ? {
-          ...nestedContext,
-          functionBody: true,
-          constructorBody: false,
-          asyncFunctionBody: statement.async === true,
-          derivedConstructorBody: false,
-          derivedMethodBody: false,
-          classBody: false,
-        }
-      : nestedContext
+  for (const entry of programmingEmbeddedBodyEntries(statement)) {
+    const nestedContext = embeddedCallbackContext(context)
+    entry.body.forEach((child, index) => {
+      visitStatement(child, nestedContext, [...path, ...entry.path, index], issues)
+    })
+  }
 
   for (const [key, value] of Object.entries(statement)) {
-    if (key === '__id' || key === 'type') continue
-    if (STATEMENT_ARRAY_KEYS.has(key) && Array.isArray(value)) {
-      value.forEach((child, index) => {
-        visitStatement(child as JSStatement, functionContext, [...path, key, index], issues)
-      })
-      continue
+    if (key !== '__id' && key !== 'type' && !bodyRoots.has(key)) {
+      visitUnknown(value, context, [...path, key], issues)
     }
-    visitUnknown(value, context, [...path, key], issues)
   }
 }
 
@@ -621,9 +653,12 @@ export function validateLifecycleSemantics(
     statement,
     {
       nested: false,
+      directEventContainer: false,
       loopDepth: 0,
       continuousBody: false,
       eventBody: false,
+      activeEventObjectBody: false,
+      userGestureBody: false,
       keyboardEventBody: false,
       pointerEventBody: false,
       functionBody: false,

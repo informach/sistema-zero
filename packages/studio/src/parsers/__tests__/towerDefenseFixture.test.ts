@@ -222,7 +222,7 @@ function animate() {
 }
 animate();
 
-canvas.addEventListener('mousemove', (event) => {
+canvas.addEventListener('pointermove', (event) => {
   mouse.x = event.clientX;
   mouse.y = event.clientY;
 });

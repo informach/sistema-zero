@@ -1,10 +1,10 @@
 import { compileStatements, renderNodes } from '#generators'
-import type { JSExpr, JSStatement, SZIR, SZIRInput } from '#ir'
-import { normalizeSZIR, screenTextToExpr, valueToExpr } from '#ir'
+import type { EventKind, JSExpr, JSStatement, SZIR, SZIRInput } from '#ir'
+import { normalizeSZIR, resolveEventTargetKind, screenTextToExpr, valueToExpr } from '#ir'
 import { canvasExpressionIRToBlock, canvasStatementIRToBlock } from '../codecs/web/canvasIRToBlock'
 import { createCSSIRToBlocks } from '../codecs/web/cssIRToBlocks'
 import { htmlIRToBlock } from '../codecs/web/htmlIRToBlock'
-import { htmlElementForTag } from '../html/catalog'
+import { htmlElementForTag, isSupportedHTMLImageLoading } from '../html/catalog'
 import {
   FRAME_APPEARANCE,
   FRAME_EVENTS,
@@ -16,6 +16,32 @@ import {
 import { isGuidedDomAttributeName, isGuidedDomProperty } from './domSafety'
 import { ADDON_CLASSES } from './fields/FieldClassPicker'
 import { LEGACY_VALUE_FIELDS } from './migrateValueFields'
+
+const ELEMENT_EVENT_BLOCK_TYPES: Partial<Record<EventKind, string>> = {
+  click: 'sz_js_on_click',
+  mouseover: 'sz_js_on_mouseover',
+  submit: 'sz_js_on_submit',
+  input: 'sz_js_on_input',
+}
+
+const WINDOW_EVENT_BLOCK_TYPES: Partial<Record<EventKind, string>> = {
+  resize: 'sz_js_on_resize',
+  contextmenu: 'sz_js_on_context_menu',
+  blur: 'sz_js_on_blur',
+}
+
+const NAMED_ELEMENT_EVENT_KINDS: ReadonlySet<EventKind> = new Set([
+  'click',
+  'mouseover',
+  'mouseout',
+  'pointerdown',
+  'pointerup',
+  'submit',
+  'input',
+  'change',
+  'keydown',
+  'keyup',
+])
 
 export interface SerializedBlocklyBlock {
   type: string
@@ -79,7 +105,10 @@ function extraData(node: Extract<SZIR['html'][number], { type: 'element' }>): st
   for (const [k, v] of Object.entries(node.attrs ?? {})) {
     // `class` é representado pelo campo CLASS do bloco — não vai para `data`.
     if (k === 'class') continue
-    if (!fieldKeys.includes(k)) extra[k] = v
+    const representedByField =
+      fieldKeys.includes(k) &&
+      !(node.tag === 'img' && k === 'loading' && !isSupportedHTMLImageLoading(v))
+    if (!representedByField) extra[k] = v
   }
   return Object.keys(extra).length > 0 ? JSON.stringify(extra) : undefined
 }
@@ -529,50 +558,70 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
   if (canvasBlock !== undefined) return canvasBlock
   switch (stmt.type) {
     case 'event': {
-      // Clique global no documento → bloco "clicar em qualquer lugar".
-      if (stmt.event === 'click' && stmt.targetKind === 'document') {
-        return block(
-          'sz_js_on_click_anywhere',
-          {},
-          { DO: statementsToBlocks(stmt.body) },
-          stmt.__id,
-        )
-      }
-      // Teclado global → "Quando apertar/soltar a tecla" (corpo embutido).
+      const targetKind = resolveEventTargetKind(stmt.target, stmt.targetKind)
+      const targetFields = { TARGET: stmt.target, TARGET_KIND: targetKind }
       if (stmt.event === 'keydown' || stmt.event === 'keyup') {
         return block(
           'sz_js_on_key',
-          { WHEN: stmt.event },
+          { ...targetFields, WHEN: stmt.event },
           { DO: statementsToBlocks(stmt.body) },
           stmt.__id,
         )
       }
-      // Eventos globais sem alvo de elemento (mouse na tela / janela / tela cheia).
-      const globalMap: Partial<Record<string, string>> = {
-        mousemove: 'sz_js_on_mousemove',
-        mousedown: 'sz_js_on_pointer_down',
-        mouseup: 'sz_js_on_pointer_up',
-        load: 'sz_js_on_load',
-        resize: 'sz_js_on_resize',
-        fullscreenchange: 'sz_js_on_fullscreen_change',
-        contextmenu: 'sz_js_on_context_menu',
-        blur: 'sz_js_on_blur',
+      if (stmt.event === 'pointermove' || stmt.event === 'mousemove') {
+        return block(
+          'sz_js_on_mousemove',
+          targetFields,
+          { DO: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
       }
-      const globalType = globalMap[stmt.event]
-      if (globalType) {
-        return block(globalType, {}, { DO: statementsToBlocks(stmt.body) }, stmt.__id)
+      if (stmt.event === 'pointerdown' || stmt.event === 'mousedown') {
+        return block(
+          'sz_js_on_pointer_down',
+          targetFields,
+          { DO: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
       }
-      const map: Partial<Record<string, string>> = {
-        click: 'sz_js_on_click',
-        mouseover: 'sz_js_on_mouseover',
-        submit: 'sz_js_on_submit',
-        input: 'sz_js_on_input',
+      if (stmt.event === 'pointerup' || stmt.event === 'mouseup') {
+        return block(
+          'sz_js_on_pointer_up',
+          targetFields,
+          { DO: statementsToBlocks(stmt.body) },
+          stmt.__id,
+        )
       }
-      const blockType = map[stmt.event]
+      if (targetKind === 'document') {
+        if (stmt.event === 'click') {
+          return block(
+            'sz_js_on_click_anywhere',
+            {},
+            { DO: statementsToBlocks(stmt.body) },
+            stmt.__id,
+          )
+        }
+        if (stmt.event === 'fullscreenchange') {
+          return block(
+            'sz_js_on_fullscreen_change',
+            {},
+            { DO: statementsToBlocks(stmt.body) },
+            stmt.__id,
+          )
+        }
+        return rawJSBlock(stmt)
+      }
+      if (targetKind === 'window') {
+        const blockType = WINDOW_EVENT_BLOCK_TYPES[stmt.event]
+        return blockType
+          ? block(blockType, {}, { DO: statementsToBlocks(stmt.body) }, stmt.__id)
+          : rawJSBlock(stmt)
+      }
+      const blockType = ELEMENT_EVENT_BLOCK_TYPES[stmt.event]
       if (!blockType) return rawJSBlock(stmt)
       return block(
         blockType,
-        { TARGET: stmt.target, TARGET_KIND: stmt.targetKind ?? 'id' },
+        { TARGET: stmt.target, TARGET_KIND: targetKind },
         { DO: statementsToBlocks(stmt.body) },
         stmt.__id,
       )
@@ -697,10 +746,12 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       )
     }
     case 'setText': {
-      const value = stringExpr(stmt.value)
-      return value === null
-        ? rawJSBlock(stmt)
-        : block('sz_js_set_text', { TARGET: stmt.targetId, VALUE: value }, {}, stmt.__id)
+      return statementToBlock({
+        ...stmt,
+        type: 'setProperty',
+        targetKind: 'id',
+        property: 'textContent',
+      })
     }
     case 'var': {
       const value = exprToValueBlock(stmt.value)
@@ -5813,13 +5864,20 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         stmt,
       )
     case 'eventHandler': {
-      // O bloco "listener por nome" cobre id/var; document cai em avançado (raro).
-      if (stmt.targetKind === 'document') return rawJSBlock(stmt)
+      const targetKind = resolveEventTargetKind(stmt.target, stmt.targetKind)
+      if (targetKind === 'document' || targetKind === 'window') return rawJSBlock(stmt)
+      const canonicalEvent =
+        stmt.event === 'mousedown'
+          ? 'pointerdown'
+          : stmt.event === 'mouseup'
+            ? 'pointerup'
+            : stmt.event
+      if (!NAMED_ELEMENT_EVENT_KINDS.has(canonicalEvent)) return rawJSBlock(stmt)
       return block(
         'sz_js_on_event_named',
         {
-          EVENT: stmt.event,
-          TARGET_KIND: stmt.targetKind ?? 'id',
+          EVENT: canonicalEvent,
+          TARGET_KIND: targetKind,
           TARGET: stmt.target,
           HANDLER: stmt.handlerName,
         },

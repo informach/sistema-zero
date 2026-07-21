@@ -12,7 +12,7 @@ type FieldDefinition = {
 
 function field(blockType: string, name: string): FieldDefinition | undefined {
   const block = SVG_BLOCKS.find((candidate) => candidate.type === blockType)
-  return [block?.args0, block?.args1, block?.args2]
+  return [block?.args0, block?.args1, block?.args2, block?.args3, block?.args4, block?.args5]
     .flatMap((args) => (Array.isArray(args) ? args : []))
     .find(
       (candidate): candidate is FieldDefinition =>

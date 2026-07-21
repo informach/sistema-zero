@@ -37,12 +37,19 @@ export const FORWARD_ONLY_WEB_BLOCK_TYPES = Object.freeze([
   'sz_css_use_font',
   'sz_css_transition',
   'sz_css_hover',
+  'sz_css_focus_visible',
   'sz_css_grid',
   'sz_css_apply_animation',
   'sz_css_var',
   'sz_css_transform',
   'sz_css_perspective',
   'sz_css_grid_template',
+  'sz_css_fill',
+  'sz_css_stroke',
+  'sz_css_stroke_width',
+  'sz_css_stroke_dasharray',
+  'sz_css_stroke_linecap',
+  'sz_css_text_anchor',
 ] as const)
 
 const FORWARD_ONLY_WEB_BLOCK_TYPE_SET: ReadonlySet<string> = new Set(FORWARD_ONLY_WEB_BLOCK_TYPES)

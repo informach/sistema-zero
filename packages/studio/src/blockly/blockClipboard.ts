@@ -71,6 +71,7 @@ function extensionIdForBlockType(type: string): string | null {
 }
 
 interface SerializedNode {
+  id?: string
   type?: string
   inputs?: Record<string, { block?: SerializedNode; shadow?: SerializedNode }>
   next?: { block?: SerializedNode; shadow?: SerializedNode }
@@ -109,24 +110,180 @@ function collectBlockTypes(state: unknown): string[] {
   return types
 }
 
+interface SerializedLocation {
+  detach(): SerializedNode
+  preserveAsDraft: boolean
+}
+
 /**
- * Remove (em profundidade) o `id` de cada bloco da subárvore. Sem isto, colar a
- * MESMA cópia duas vezes reusa os ids salvos e colide no workspace destino; sem
- * `id`, o Blockly gera ids novos no `append`.
+ * Dá ids novos e rastreáveis a toda a árvore. Além de impedir colisão ao colar
+ * a mesma cópia, os ids permitem identificar precisamente qual conexão o
+ * desserializador recusou e soltar somente aquela subárvore como rascunho.
  */
-function stripBlockIds(state: unknown): void {
-  if (!state || typeof state !== 'object') return
-  const node = state as SerializedNode & { id?: string }
-  node.id = undefined
-  if (node.inputs) {
-    for (const wrapper of Object.values(node.inputs)) {
-      if (wrapper?.block) stripBlockIds(wrapper.block)
-      if (wrapper?.shadow) stripBlockIds(wrapper.shadow)
+function regenerateBlockIds(
+  state: SerializedNode,
+  workspace: Blockly.Workspace,
+): Map<string, SerializedLocation> {
+  const locations = new Map<string, SerializedLocation>()
+  const assigned = new Set<string>()
+  const freshId = (): string => {
+    let id = Blockly.utils.idGenerator.genUid()
+    while (assigned.has(id) || workspace.getBlockById(id)) id = Blockly.utils.idGenerator.genUid()
+    assigned.add(id)
+    return id
+  }
+  const visit = (node: SerializedNode, location?: SerializedLocation): void => {
+    node.id = freshId()
+    if (location) locations.set(node.id, location)
+    for (const wrapper of Object.values(node.inputs ?? {})) {
+      if (wrapper.block) {
+        const child = wrapper.block
+        visit(child, {
+          detach: () => {
+            delete wrapper.block
+            return child
+          },
+          preserveAsDraft: true,
+        })
+      }
+      if (wrapper.shadow) {
+        const shadow = wrapper.shadow
+        visit(shadow, {
+          detach: () => {
+            delete wrapper.shadow
+            return shadow
+          },
+          preserveAsDraft: false,
+        })
+      }
+    }
+    if (node.next?.block) {
+      const next = node.next.block
+      visit(next, {
+        detach: () => {
+          if (node.next) delete node.next.block
+          return next
+        },
+        preserveAsDraft: true,
+      })
+    }
+    if (node.next?.shadow) {
+      const shadow = node.next.shadow
+      visit(shadow, {
+        detach: () => {
+          if (node.next) delete node.next.shadow
+          return shadow
+        },
+        preserveAsDraft: false,
+      })
     }
   }
-  if (node.next) {
-    if (node.next.block) stripBlockIds(node.next.block)
-    if (node.next.shadow) stripBlockIds(node.next.shadow)
+  visit(state)
+  return locations
+}
+
+function serializedBlockIds(state: SerializedNode): Set<string> {
+  const ids = new Set<string>()
+  const visit = (node: SerializedNode): void => {
+    if (node.id) ids.add(node.id)
+    for (const wrapper of Object.values(node.inputs ?? {})) {
+      if (wrapper.block) visit(wrapper.block)
+      if (wrapper.shadow) visit(wrapper.shadow)
+    }
+    if (node.next?.block) visit(node.next.block)
+    if (node.next?.shadow) visit(node.next.shadow)
+  }
+  visit(state)
+  return ids
+}
+
+function removePartialAppend(workspace: Blockly.Workspace, ids: ReadonlySet<string>): void {
+  const created = [...ids]
+    .map((id) => workspace.getBlockById(id))
+    .filter((block): block is Blockly.Block => Boolean(block))
+  const createdSet = new Set(created)
+  const roots = created.filter((block) => {
+    const parent = block.getParent()
+    return !parent || !createdSet.has(parent)
+  })
+  for (const block of roots) block.dispose(false)
+}
+
+function failedConnectionBlockId(error: unknown): string | null {
+  const message = error instanceof Error ? error.message : String(error)
+  return message.match(/block \(id="([^"]+)"\) could not connect/u)?.[1] ?? null
+}
+
+interface PreparedPaste {
+  states: SerializedNode[]
+  salvaged: boolean
+}
+
+/**
+ * Preserva a árvore exata no caminho normal. Se uma versão nova tornar uma
+ * conexão interna incompatível, solta apenas a subárvore recusada e tenta de
+ * novo; blocos autorais viram rascunho, enquanto sombras inválidas são apenas
+ * descartadas por serem valores padrão do bloco pai.
+ */
+function appendWithDraftSalvage(
+  state: SerializedNode,
+  workspace: Blockly.Workspace,
+  locations: ReadonlyMap<string, SerializedLocation>,
+): PreparedPaste {
+  const ids = serializedBlockIds(state)
+  const recordUndo = Blockly.Events.getRecordUndo()
+  const eventGroup = Blockly.Events.getGroup()
+  let appended: Blockly.BlockSvg | undefined
+  let appendError: unknown
+  try {
+    appended = Blockly.serialization.blocks.append(
+      state as Blockly.serialization.blocks.State,
+      workspace,
+    ) as Blockly.BlockSvg
+  } catch (error) {
+    appendError = error
+  } finally {
+    // O Blockly 12 restaura estes estados no caminho feliz, mas não quando a
+    // desserialização lança por conexão incompatível. Sem esta fronteira, uma
+    // edição posterior pode entrar no grupo errado ou perder o histórico de
+    // desfazer do Studio inteiro.
+    Blockly.Events.setGroup(eventGroup)
+    Blockly.Events.setRecordUndo(recordUndo)
+  }
+  if (appended) return { states: [state], salvaged: false }
+
+  removePartialAppend(workspace, ids)
+  const failedId = failedConnectionBlockId(appendError)
+  const location = failedId ? locations.get(failedId) : undefined
+  if (!location) throw appendError
+
+  const detached = location.detach()
+  const parentResult = appendWithDraftSalvage(state, workspace, locations)
+  if (!location.preserveAsDraft) return { ...parentResult, salvaged: true }
+  const draftResult = appendWithDraftSalvage(detached, workspace, locations)
+  return {
+    states: [...parentResult.states, ...draftResult.states],
+    salvaged: true,
+  }
+}
+
+/**
+ * Faz a desserialização potencialmente falha num workspace descartável. Assim,
+ * uma árvore antiga nunca deixa blocos parciais nem eventos pendentes no
+ * workspace real; somente os estados já compatíveis chegam à etapa de colagem.
+ */
+function preparePaste(
+  state: SerializedNode,
+  workspace: Blockly.WorkspaceSvg,
+  locations: ReadonlyMap<string, SerializedLocation>,
+): PreparedPaste {
+  const scratch = new Blockly.Workspace(workspace.options)
+  Blockly.Events.disable()
+  try {
+    return appendWithDraftSalvage(state, scratch, locations)
+  } finally {
+    scratch.dispose()
+    Blockly.Events.enable()
   }
 }
 
@@ -269,16 +426,29 @@ export function runPasteBlocks(workspace: Blockly.WorkspaceSvg): void {
 
   // 3. Cola como rascunho (append NÃO limpa o workspace) e posiciona num ponto visível.
   //    Como o bloco entra SOLTO (fora dos frames), a saída do projeto não muda até a
-  //    criança arrastá-lo para dentro de uma área. Ids removidos → colar a mesma cópia
-  //    várias vezes não colide (o Blockly atribui ids novos).
-  stripBlockIds(payload.block)
+  //    criança arrastá-lo para dentro de uma área. Ids regenerados fazem a mesma cópia
+  //    colar várias vezes sem colisão. Se uma conexão interna envelheceu, somente o
+  //    ramo incompatível é preservado como um segundo rascunho top-level.
+  const blockState = structuredClone(payload.block) as SerializedNode
+  const locations = regenerateBlockIds(blockState, workspace)
   try {
-    const appended = Blockly.serialization.blocks.append(
-      payload.block,
-      workspace,
-    ) as Blockly.BlockSvg
-    positionPastedBlock(workspace, appended)
-    handlers?.notify('Blocos colados! Arraste-os para a Área do projeto compatível para usá-los.')
+    const prepared = preparePaste(blockState, workspace, locations)
+    const roots = prepared.states.map(
+      (state) =>
+        Blockly.serialization.blocks.append(
+          state as Blockly.serialization.blocks.State,
+          workspace,
+        ) as Blockly.BlockSvg,
+    )
+    roots.forEach((block, index) => {
+      positionPastedBlock(workspace, block)
+      if (index > 0) block.moveBy(index * 32, index * 32)
+    })
+    handlers?.notify(
+      prepared.salvaged
+        ? 'Blocos colados! Uma conexão incompatível foi preservada como rascunho.'
+        : 'Blocos colados! Arraste-os para a Área do projeto compatível para usá-los.',
+    )
   } catch (error) {
     console.warn('Não foi possível recriar os blocos copiados no workspace.', error)
     handlers?.notify('Não consegui colar os blocos agora.')

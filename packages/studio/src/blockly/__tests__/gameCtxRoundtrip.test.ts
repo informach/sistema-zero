@@ -113,8 +113,8 @@ describe('Ponte — palco implícito (ctx escondido) + "Limpar a tela"', () => {
       '});',
     ].join('\n')
     const out = bridgeCycleJS(js)
-    expect(out).toContain('SZGame2D.onKey("ArrowUp", function')
-    expect(out).toContain('SZGame2D.onOverlap(() => jogador, () => inimigo, function')
+    expect(out).toContain('SZGame2D.onKey("ArrowUp", () =>')
+    expect(out).toContain('SZGame2D.onOverlap(() => jogador, () => inimigo, () =>')
     expect(out).not.toContain('rawJS')
   })
 

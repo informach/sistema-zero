@@ -13,12 +13,12 @@ import {
 } from '../registry'
 
 describe('registry dos codecs web', () => {
-  it('registra exatamente os 153 blocos aprovados, por categoria', () => {
+  it('registra exatamente os 154 blocos aprovados, por categoria', () => {
     expect(WEB_BLOCK_TYPES_BY_CATEGORY.html).toHaveLength(24)
-    expect(WEB_BLOCK_TYPES_BY_CATEGORY.css).toHaveLength(53)
+    expect(WEB_BLOCK_TYPES_BY_CATEGORY.css).toHaveLength(54)
     expect(WEB_BLOCK_TYPES_BY_CATEGORY.svg).toHaveLength(21)
     expect(WEB_BLOCK_TYPES_BY_CATEGORY.canvas).toHaveLength(55)
-    expect(WEB_BLOCK_CODECS).toHaveLength(153)
+    expect(WEB_BLOCK_CODECS).toHaveLength(154)
 
     const definitions = {
       html: HTML_BLOCKS,
@@ -52,10 +52,10 @@ describe('registry dos codecs web', () => {
     expect(codec?.compatibility).toBe('legacy-hidden')
   })
 
-  it('declara como forward-only somente os nove atalhos CSS que convergem para IR genérico', () => {
+  it('declara como forward-only somente os 16 atalhos CSS que convergem para IR genérico', () => {
     const forwardOnly = WEB_BLOCK_CODECS.filter((codec) => codec.compatibility === 'forward-only')
     expect(forwardOnly.map((codec) => codec.blockType)).toEqual([...FORWARD_ONLY_WEB_BLOCK_TYPES])
-    expect(forwardOnly).toHaveLength(9)
+    expect(forwardOnly).toHaveLength(16)
     for (const codec of forwardOnly) {
       expect(webCodecSupports(codec, 'block-to-ir')).toBe(true)
       expect(webCodecSupports(codec, 'ir-to-code')).toBe(true)

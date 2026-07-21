@@ -98,11 +98,13 @@ describe('Tela cheia (Fullscreen API)', () => {
       '    document.exitFullscreen();',
       '  }',
       '});',
-      'if (document.fullscreenElement) {',
-      '  document.exitFullscreen();',
-      '} else {',
-      '  document.documentElement.requestFullscreen();',
-      '}',
+      'document.addEventListener("click", (event) => {',
+      '  if (document.fullscreenElement) {',
+      '    document.exitFullscreen();',
+      '  } else {',
+      '    document.documentElement.requestFullscreen();',
+      '  }',
+      '});',
     ].join('\n')
     const out = bridgeCycleJS(js)
     expect(out).toContain('document.addEventListener("fullscreenchange"')

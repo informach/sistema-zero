@@ -1043,7 +1043,7 @@ export const world3DBlocks: BlockDefinition[] = [
   },
   {
     type: 'sz_w3d_ambience',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Sons do lugar: %1',
     args0: [
       {
@@ -1062,7 +1062,7 @@ export const world3DBlocks: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O som de fundo do seu mundo, feito na hora (sem arquivo): ondas do mar respirando, passarinhos de dia ou grilos à noite.',
+      'O som de fundo do seu mundo, feito na hora. Use em “Ao iniciar”, “Quando acontecer” ou numa função, nunca em “Enquanto estiver rodando”. Repetir a mesma opção mantém o som atual.',
   },
   {
     // R15: personagem a pé — o jogador Coastal-style (anda, corre, pula,
@@ -1836,14 +1836,14 @@ export const world3DBlocks: BlockDefinition[] = [
   },
   {
     type: 'sz_w3d_play_music',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Tocar a música %1 sem parar',
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'musica', kind: 'sound' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Toca uma música do projeto em loop (repete sem parar). A trilha sonora do seu mundo. Use o apelido de um som carregado.',
+      'Toca uma música do projeto em loop. Use em “Ao iniciar”, “Quando acontecer” ou numa função, nunca em “Enquanto estiver rodando”. Repetir a mesma música não recomeça a faixa.',
   },
   {
     type: 'sz_w3d_stop_music',
@@ -2132,6 +2132,7 @@ export const world3DBlocks: BlockDefinition[] = [
   {
     type: 'sz_w3d_npc_ask',
     placement: 'event-body',
+    bodyExecution: 'deferred-callback',
     message0: 'O amigo %1 pergunta: %2',
     args0: [
       { type: 'field_name_picker', name: 'NAME', text: 'Lia', kind: 'w3dnpc' },

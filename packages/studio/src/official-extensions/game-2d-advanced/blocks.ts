@@ -137,6 +137,8 @@ export const gameKitBlocks = [
   {
     type: 'sz_gk_add_button',
     placement: 'start-only-command',
+    bodyExecution: 'deferred-callback',
+    userGesture: true,
     message0: 'Botão %1 na tela %2',
     args0: [
       { type: 'input_value', name: 'LABEL', check: 'JSValue' },
@@ -622,6 +624,7 @@ export const gameKitBlocks = [
   {
     type: 'sz_gk_for_each_active',
     placement: 'command',
+    bodyExecution: 'sync-callback',
     message0: 'Para cada %1 vivo do molde %2',
     args0: [
       { type: 'field_input', name: 'ITEM', text: 'item' },
@@ -686,6 +689,7 @@ export const gameKitBlocks = [
   {
     type: 'sz_gk_define_look',
     placement: 'start-only-command',
+    bodyExecution: 'deferred-callback',
     message0: 'Criar a aparência %1 (tamanho-base %2 × %3), desenhando com o pincel %4 assim:',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'inimigo' },
@@ -950,6 +954,7 @@ export const gameKitBlocks = [
   {
     type: 'sz_gk_on_game_click',
     placement: 'event',
+    userGesture: true,
     message0: 'Quando clicar no jogo, na posição x %1 y %2',
     args0: [
       { type: 'field_input', name: 'PX', text: 'px' },
@@ -1296,6 +1301,7 @@ export const gameKitBlocks = [
   {
     type: 'sz_gk_rpg_create_map',
     placement: 'start-only-command',
+    bodyExecution: 'deferred-callback',
     message0: 'Criar o mapa-cenário %1 com %2 × %3 células',
     args0: [
       { type: 'field_input', name: 'MAP', text: 'vila' },
@@ -1746,6 +1752,7 @@ export const gameKitBlocks = [
   {
     type: 'sz_gk_rpg_cutscene',
     placement: 'command',
+    bodyExecution: 'sync-callback',
     message0: 'Fazer a cena:',
     message1: 'passo a passo %1',
     args1: [{ type: 'input_statement', name: 'BODY' }],
@@ -1840,6 +1847,7 @@ export const gameKitBlocks = [
   {
     type: 'sz_gk_rpg_menu',
     placement: 'command',
+    bodyExecution: 'sync-callback',
     message0: 'Menu de escolha %1',
     args0: [{ type: 'input_value', name: 'TITLE', check: 'JSValue' }],
     message1: 'opções %1',
@@ -1854,6 +1862,8 @@ export const gameKitBlocks = [
   {
     type: 'sz_gk_rpg_option',
     placement: 'command',
+    bodyExecution: 'deferred-callback',
+    userGesture: true,
     message0: 'Opção %1',
     args0: [{ type: 'input_value', name: 'LABEL', check: 'JSValue' }],
     message1: 'fazer %1',
@@ -2645,6 +2655,7 @@ export const gameKitBlocks = [
   {
     type: 'sz_gk_overlap_groups',
     placement: 'loop-command',
+    bodyExecution: 'sync-callback',
     message0: 'Para cada %1 do molde %2 que encostar em %3 do molde %4, fazer %5',
     args0: [
       { type: 'field_input', name: 'A_NAME', text: 'tiro' },
@@ -3717,6 +3728,7 @@ export const gameKitBlocks = [
   {
     type: 'sz_gk_pkm_battle_trainer',
     placement: 'command',
+    bodyExecution: 'sync-callback',
     message0: 'Começar a batalha contra o treinador %1, com o time dele %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'Rival' },
@@ -4011,6 +4023,7 @@ export const gameKitBlocks = [
   {
     type: 'sz_gk_wait',
     placement: 'command',
+    bodyExecution: 'deferred-callback',
     message0: 'Esperar %1 segundos e então',
     args0: [{ type: 'input_value', name: 'SECS', check: 'JSValue' }],
     message1: '%1',
@@ -4172,6 +4185,7 @@ export const gameKitBlocks = [
     // do "Menu de escolha": os "ponto" viram a polilinha.
     type: 'sz_gk_define_path',
     placement: 'start-only-command',
+    bodyExecution: 'sync-callback',
     message0: 'Criar o caminho %1, passando pelos pontos:',
     args0: [{ type: 'field_input', name: 'NAME', text: 'trilha' }],
     message1: 'fazer %1',
@@ -4719,6 +4733,7 @@ export const gameKitBlocks = [
   {
     type: 'sz_gk_td_on_buy',
     placement: 'event',
+    userGesture: true,
     message0: 'Quando clicar num lugar livre, pagando %1 moedas: com o lugar em x %2 y %3:',
     args0: [
       { type: 'input_value', name: 'COST', check: 'JSValue' },

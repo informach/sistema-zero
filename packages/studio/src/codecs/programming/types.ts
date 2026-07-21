@@ -1,41 +1,30 @@
 import type { BlockDefinition } from '../../blockly/blocks/types'
 
-export type ProgrammingCodecFamily =
+export type ProgrammingBlockFamily =
   | 'language-control'
   | 'dom-events'
   | 'values-math'
   | 'functions'
   | 'objects-classes'
 
-export type ProgrammingCodecDirection = 'block-to-ir' | 'ir-to-block' | 'ir-to-code' | 'code-to-ir'
+export type ProgrammingBlockCompatibility = 'public' | 'legacy-hidden'
 
-export type ProgrammingCodecCompatibility = 'public' | 'legacy-hidden'
-
-/** Contrato operacional que cada bloco da categoria precisa cumprir. */
-export interface ProgrammingBlockCodec {
+/** Registro de inventário; a matriz ponta a ponta valida os adapters reais. */
+export interface ProgrammingBlockRegistration {
   readonly blockType: string
-  readonly family: ProgrammingCodecFamily
+  readonly family: ProgrammingBlockFamily
   readonly definition: BlockDefinition
-  readonly directions: readonly ProgrammingCodecDirection[]
-  readonly compatibility: ProgrammingCodecCompatibility
+  readonly compatibility: ProgrammingBlockCompatibility
 }
 
-export const ALL_PROGRAMMING_CODEC_DIRECTIONS = Object.freeze<ProgrammingCodecDirection[]>([
-  'block-to-ir',
-  'ir-to-block',
-  'ir-to-code',
-  'code-to-ir',
-])
-
-export function codecsForDefinitions(
-  family: ProgrammingCodecFamily,
+export function registrationsForDefinitions(
+  family: ProgrammingBlockFamily,
   definitions: readonly BlockDefinition[],
-): ProgrammingBlockCodec[] {
+): ProgrammingBlockRegistration[] {
   return definitions.map((definition) => ({
     blockType: definition.type,
     family,
     definition,
-    directions: ALL_PROGRAMMING_CODEC_DIRECTIONS,
     compatibility: definition.hidden ? 'legacy-hidden' : 'public',
   }))
 }

@@ -324,7 +324,7 @@ export function canvasStatementToCode<TMap extends { startLine: number }>(
       )
       const compiledTarget = compileExpr(stmt.target, 20, identifiers, recAt(base))
       const target = stmt.target.type === 'objectLiteral' ? `(${compiledTarget})` : compiledTarget
-      return `${pad}${target}.onload = () => {\n${body}\n${pad}};`
+      return `${pad}${target}.onload = (event) => {\n${body}\n${pad}};`
     }
     case 'imageOnError': {
       const body = compileStatements(
@@ -335,7 +335,7 @@ export function canvasStatementToCode<TMap extends { startLine: number }>(
       )
       const compiledTarget = compileExpr(stmt.target, 20, identifiers, recAt(base))
       const target = stmt.target.type === 'objectLiteral' ? `(${compiledTarget})` : compiledTarget
-      return `${pad}${target}.onerror = () => {\n${body}\n${pad}};`
+      return `${pad}${target}.onerror = (event) => {\n${body}\n${pad}};`
     }
     case 'canvasSave':
       return `${pad}${identifiers.get(stmt.ctxVar)}.save();`

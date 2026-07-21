@@ -1,6 +1,11 @@
 import type { HTMLNode } from '#ir'
 import type { SerializedBlocklyBlock } from '../../blockly/workspaceState'
-import { htmlElementForTag, isSupportedHTMLInputType } from '../../html/catalog'
+import {
+  htmlElementForTag,
+  isSupportedHTMLImageLoading,
+  normalizeHTMLButtonType,
+  normalizeHTMLInputType,
+} from '../../html/catalog'
 
 export interface HTMLIRToBlockContext {
   block(
@@ -83,13 +88,18 @@ export function htmlIRToBlock(
   }
 
   switch (node.tag) {
-    case 'button':
+    case 'button': {
+      const buttonType = normalizeHTMLButtonType(node.attrs?.type ?? '')
+      if (buttonType === undefined) {
+        return block('sz_adv_raw_html', { CODE: context.renderNodes([node]) }, {}, node.__id)
+      }
       return block(
         'sz_html_button',
-        { ID: node.id ?? '', TEXT: node.text ?? '', TYPE: node.attrs?.type ?? '' },
+        { ID: node.id ?? '', TEXT: node.text ?? '', TYPE: buttonType },
         {},
         node.__id,
       )
+    }
     case 'a':
       return block(
         'sz_html_link',
@@ -107,14 +117,19 @@ export function htmlIRToBlock(
           ALT: alt,
           DECORATIVE: hasAlt && alt === '' ? 'TRUE' : 'FALSE',
           ID: node.id ?? '',
+          WIDTH: node.attrs?.width ?? '',
+          HEIGHT: node.attrs?.height ?? '',
+          LOADING: isSupportedHTMLImageLoading(node.attrs?.loading ?? '')
+            ? (node.attrs?.loading ?? '')
+            : 'auto',
         },
         {},
         node.__id,
       )
     }
     case 'input': {
-      const inputType = node.attrs?.type ?? ''
-      if (!isSupportedHTMLInputType(inputType)) {
+      const inputType = normalizeHTMLInputType(node.attrs?.type ?? '')
+      if (inputType === undefined) {
         return block('sz_adv_raw_html', { CODE: context.renderNodes([node]) }, {}, node.__id)
       }
       return block(
@@ -126,6 +141,7 @@ export function htmlIRToBlock(
           NAME: node.attrs?.name ?? '',
           VALUE: node.attrs?.value ?? '',
           CHECKED: node.attrs && Object.hasOwn(node.attrs, 'checked') ? 'TRUE' : 'FALSE',
+          AUTOCOMPLETE: node.attrs?.autocomplete ?? '',
         },
         {},
         node.__id,
@@ -139,6 +155,7 @@ export function htmlIRToBlock(
           NAME: node.attrs?.name ?? '',
           TEXT: node.text ?? '',
           PLACEHOLDER: node.attrs?.placeholder ?? '',
+          AUTOCOMPLETE: node.attrs?.autocomplete ?? '',
         },
         {},
         node.__id,

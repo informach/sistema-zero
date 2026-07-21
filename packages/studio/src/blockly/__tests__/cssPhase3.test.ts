@@ -183,13 +183,30 @@ describe('Fase 3 — keyframes multi-passo + atalhos CSS', () => {
     const declaration = ws.newBlock('sz_css_decl')
     declaration.setFieldValue('background-color', 'PROP')
     declaration.setFieldValue('#7c3aed', 'VALUE')
-    hover
-      .getInput('CHILDREN')
-      ?.connection?.connect(declaration.previousConnection as Blockly.Connection)
+    const declarationConnection = declaration.previousConnection
+    if (!declarationConnection) throw new Error('declaração hover sem conexão anterior')
+    hover.getInput('CHILDREN')?.connection?.connect(declarationConnection)
     const css = irInFrame(ws, 'css').css
     expect(css[0]).toMatchObject({
       selector: '#caixa:hover',
       declarations: { 'background-color': '#7c3aed' },
+    })
+
+    const focusWorkspace = new Blockly.Workspace()
+    const focus = focusWorkspace.newBlock('sz_css_focus_visible')
+    focus.setFieldValue('#caixa', 'SELECTOR')
+    const focusDeclaration = focusWorkspace.newBlock('sz_css_decl')
+    focusDeclaration.setFieldValue('outline', 'PROP')
+    focusDeclaration.setFieldValue('3px solid #fbbf24', 'VALUE')
+    const focusDeclarationConnection = focusDeclaration.previousConnection
+    if (!focusDeclarationConnection) throw new Error('declaração de foco sem conexão anterior')
+    focus.getInput('CHILDREN')?.connection?.connect(focusDeclarationConnection)
+    const focusCSS = irInFrame(focusWorkspace, 'css').css
+    expect(
+      focusCSS.find((entry) => 'selector' in entry && entry.selector === '#caixa:focus-visible'),
+    ).toMatchObject({
+      selector: '#caixa:focus-visible',
+      declarations: { outline: '3px solid #fbbf24' },
     })
   })
 })

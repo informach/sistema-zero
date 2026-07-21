@@ -161,4 +161,40 @@ describe('buildCoreToolbox — lista de blocos da aula (allowBlocks restritivo)'
       expect.objectContaining({ category: 'Funções' }),
     ])
   })
+
+  it('não mostra uma categoria Funções vazia quando só o parâmetro contextual foi liberado', () => {
+    const profile: LearningProfile = {
+      level: 'avancado-3d',
+      allowBlocks: ['sz_val_arg'],
+    }
+
+    const names = categoryNames(buildCoreToolbox([], profile).contents)
+    expect(names).not.toContain('🧩 Funções')
+    expect(names).not.toContain('Programação')
+    expect(functionCategoryBlockTypes(profile)).toEqual([])
+  })
+
+  it('mantém Funções acessível para parâmetros de métodos em aulas restritas', () => {
+    const profile: LearningProfile = {
+      level: 'avancado-3d',
+      allowBlocks: ['sz_js_class', 'sz_js_class_method', 'sz_val_arg'],
+    }
+
+    const names = categoryNames(buildCoreToolbox([], profile).contents)
+    expect(names).toContain('🧩 Funções')
+    expect(names).toContain('🏛️ Classes')
+  })
+
+  it('mantém o flyout contextual de Funções quando a aula libera somente Classes', () => {
+    const profile: LearningProfile = {
+      level: 'iniciante-2d',
+      allowCategories: ['Classes'],
+    }
+
+    const names = categoryNames(buildCoreToolbox([], profile).contents)
+    expect(names).toContain('Programação')
+    expect(names).toContain('🧩 Funções')
+    expect(names).toContain('🏛️ Classes')
+    expect(functionCategoryBlockTypes(profile)).toEqual([])
+  })
 })

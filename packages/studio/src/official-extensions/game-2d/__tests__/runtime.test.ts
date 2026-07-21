@@ -840,6 +840,42 @@ describe('gameTwoDRuntime — movimento e efeitos (v0.4.0)', () => {
 })
 
 describe('gameTwoDRuntime — música e pausa', () => {
+  it('não reinicia a mesma música quando o comando é repetido', () => {
+    let nextTimerId = 1
+    const timers = new Map<number, () => void>()
+    const setTimeoutControlled = (callback: () => void) => {
+      const id = nextTimerId
+      nextTimerId += 1
+      timers.set(id, callback)
+      return id
+    }
+    const win = {
+      addEventListener() {},
+      SZGame2D: undefined,
+      performance: { now: () => 0 },
+    } as unknown as Record<string, unknown>
+    new Function('window', 'requestAnimationFrame', 'setTimeout', 'clearTimeout', gameTwoDRuntime)(
+      win,
+      () => 0,
+      setTimeoutControlled,
+      (id: number) => timers.delete(id),
+    )
+    const api = (
+      win as unknown as {
+        SZGame2D: { playMusic: (name: string) => void; stopMusic: () => void }
+      }
+    ).SZGame2D
+
+    api.playMusic('adventure')
+    const firstTimer = timers.keys().next().value
+    api.playMusic('adventure')
+    expect(timers.keys().next().value).toBe(firstTimer)
+
+    api.playMusic('happy')
+    expect(timers.keys().next().value).not.toBe(firstTimer)
+    api.stopMusic()
+  })
+
   it('suspende o agendamento da música na pausa e continua ao retomar', () => {
     let nextTimerId = 1
     const timers = new Map<number, () => void>()

@@ -86,6 +86,7 @@ export interface WorldApi {
   terrain(h: number, s: number): void
   flatten(x: number, z: number, r: number): void
   water(y: number): void
+  ambience(kind: string): void
   start(): void
   groundHeight(x: number, z: number): number
   skyPhoto(name: string): void

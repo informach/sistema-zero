@@ -1,4 +1,8 @@
-import { HTML_BUTTON_TYPE_OPTIONS, HTML_INPUT_TYPE_OPTIONS } from '../../html/catalog'
+import {
+  HTML_BUTTON_TYPE_OPTIONS,
+  HTML_IMAGE_LOADING_OPTIONS,
+  HTML_INPUT_TYPE_OPTIONS,
+} from '../../html/catalog'
 import { CATEGORY_COLORS, categoryShades } from '../theme'
 import type { BlockDefinition } from './types'
 
@@ -291,19 +295,33 @@ export const HTML_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_html_image',
-    message0: 'Criar imagem de %1 (descrição %2, só enfeite %3, id %4)',
-    args0: [
-      { type: 'field_input', name: 'SRC', text: 'https://picsum.photos/600/400' },
-      { type: 'field_input', name: 'ALT', text: 'imagem' },
+    message0: 'Imagem de %1',
+    args0: [{ type: 'field_input', name: 'SRC', text: 'https://picsum.photos/600/400' }],
+    message1: 'descrição %1 · só enfeite %2',
+    args1: [
+      { type: 'field_input', name: 'ALT', text: '' },
       { type: 'field_checkbox', name: 'DECORATIVE', checked: false },
-      { type: 'field_input', name: 'ID', text: '' },
     ],
-    ...classMsg1,
+    message2: 'tamanho %1 × %2',
+    args2: [
+      { type: 'field_input', name: 'WIDTH', text: '600' },
+      { type: 'field_input', name: 'HEIGHT', text: '400' },
+    ],
+    message3: 'carregar %1',
+    args3: [
+      {
+        type: 'field_dropdown',
+        name: 'LOADING',
+        options: HTML_IMAGE_LOADING_OPTIONS.map(([label, value]) => [label, value]),
+      },
+    ],
+    message4: 'id (opcional) %1 · classe (opcional) %2',
+    args4: [{ type: 'field_input', name: 'ID', text: '' }, classFieldArg],
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
     tooltip:
-      'Cria uma imagem. Descreva o que ela comunica; marque “só enfeite” quando ela puder ser ignorada por leitores de tela. O id é opcional.',
+      'Cria uma imagem. Descreva o que ela comunica; marque “só enfeite” quando ela puder ser ignorada por leitores de tela. Informe largura e altura com números inteiros para a página não pular enquanto abre.',
   },
 
   // ---- Formulário (campos) ----
@@ -329,12 +347,15 @@ export const HTML_BLOCKS: BlockDefinition[] = [
       { type: 'field_input', name: 'VALUE', text: '' },
       { type: 'field_checkbox', name: 'CHECKED', checked: false },
     ],
-    message4: 'classe (opcional) %1',
-    args4: [classFieldArg],
+    message4: 'preenchimento automático %1',
+    args4: [{ type: 'field_input', name: 'AUTOCOMPLETE', text: '' }],
+    message5: 'classe (opcional) %1',
+    args5: [classFieldArg],
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Cria um campo para a pessoa preencher, escolher ou marcar uma informação.',
+    tooltip:
+      'Cria um campo para a pessoa preencher, escolher ou marcar uma informação. O preenchimento automático pode usar valores como name, email ou off.',
   },
   {
     type: 'sz_html_textarea',
@@ -348,12 +369,15 @@ export const HTML_BLOCKS: BlockDefinition[] = [
     args2: [{ type: 'field_input', name: 'TEXT', text: '' }],
     message3: 'dica %1',
     args3: [{ type: 'field_input', name: 'PLACEHOLDER', text: 'Sua mensagem' }],
-    message4: 'classe (opcional) %1',
-    args4: [classFieldArg],
+    message4: 'preenchimento automático %1',
+    args4: [{ type: 'field_input', name: 'AUTOCOMPLETE', text: '' }],
+    message5: 'classe (opcional) %1',
+    args5: [classFieldArg],
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
-    tooltip: 'Cria um campo de texto longo.',
+    tooltip:
+      'Cria um campo de texto longo. O preenchimento automático pode usar valores como street-address ou off.',
   },
 ]
 

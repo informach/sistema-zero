@@ -4,7 +4,12 @@ import {
   type RuntimeLifecycleContract,
 } from '#extensions'
 import type { BehaviorIR, JSExpr, JSStatement } from '#ir'
-import { BEHAVIOR_SECTION_MARKERS, screenTextToExpr, valueToExpr } from '#ir'
+import {
+  BEHAVIOR_SECTION_MARKERS,
+  resolveEventTargetKind,
+  screenTextToExpr,
+  valueToExpr,
+} from '#ir'
 import { CANVAS_IMAGE_PRELOAD_MARKERS } from '../canvasImagePreloadCodec'
 import { canvasStatementToCode, isCanvasStatement } from '../codecs/web/canvasStatementToCode'
 import { programmingChildBodyEntries } from '../ir/programmingExecution'
@@ -862,38 +867,29 @@ function compileStatementCode(
       return `${out};`
     }
     case 'event': {
-      const protectsForm = stmt.event === 'submit'
+      const hasExplicitFormProtection = stmt.body.some(
+        (child) => child.type === 'eventMethod' && child.method === 'preventDefault',
+      )
+      const injectsFormProtection = stmt.event === 'submit' && !hasExplicitFormProtection
       const projectRunContext = identifiers.getProjectRunContextIdentifier()
       const listenerOptions = projectRunContext ? `, { signal: ${projectRunContext}.signal }` : ''
       const body = compileStatements(
         stmt.body,
         indent + 1,
         identifiers,
-        childMapContext(mapContext, (mapContext?.startLine ?? 1) + (protectsForm ? 2 : 1)),
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + (injectsFormProtection ? 2 : 1)),
       )
-      const protectedBody = protectsForm
+      const protectedBody = injectsFormProtection
         ? `${'  '.repeat(indent + 1)}event.preventDefault();${body ? `\n${body}` : ''}`
         : body
-      // Escuta global na JANELA: eventos da página inteira (load/resize) — ou
-      // qualquer evento marcado explicitamente como targetKind 'window'.
-      if (stmt.targetKind === 'window' || stmt.event === 'load' || stmt.event === 'resize') {
+      const targetKind = resolveEventTargetKind(stmt.target, stmt.targetKind)
+      if (targetKind === 'window') {
         return `${pad}window.addEventListener(${JSON.stringify(stmt.event)}, (event) => {\n${protectedBody}\n${pad}}${listenerOptions});`
       }
-      // Eventos que pegam um alvo (target) — vão para o elemento:
-      const elementBound: ReadonlySet<string> = new Set([
-        'click',
-        'mouseover',
-        'mouseout',
-        'submit',
-        'input',
-        'change',
-      ])
-      // Escuta global no documento: clique em qualquer lugar (targetKind
-      // 'document'), eventos de teclado (keydown/keyup) ou mover o mouse.
-      if (stmt.targetKind === 'document' || !elementBound.has(stmt.event)) {
+      if (targetKind === 'document') {
         return `${pad}document.addEventListener(${JSON.stringify(stmt.event)}, (event) => {\n${protectedBody}\n${pad}}${listenerOptions});`
       }
-      return `${pad}${elementExpr(stmt.target, stmt.targetKind, identifiers)}?.addEventListener(${JSON.stringify(stmt.event)}, (event) => {\n${protectedBody}\n${pad}}${listenerOptions});`
+      return `${pad}${elementExpr(stmt.target, targetKind, identifiers)}?.addEventListener(${JSON.stringify(stmt.event)}, (event) => {\n${protectedBody}\n${pad}}${listenerOptions});`
     }
     case 'consoleLog':
       return `${pad}console.log(${compileExpr(stmt.value, 0, identifiers, recAt(base))});`
@@ -1106,7 +1102,7 @@ function compileStatementCode(
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
       const id = stmt.__id ?? identifiers.reserveInternal('eventoDeTecla')
-      return `${pad}SZGame2D.onKey(${JSON.stringify(stmt.key)}, function () {\n${body}\n${pad}}, ${JSON.stringify(id)});`
+      return `${pad}SZGame2D.onKey(${JSON.stringify(stmt.key)}, () => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
     }
     case 'g2d:onOverlap': {
       const body = compileStatements(
@@ -1118,7 +1114,7 @@ function compileStatementCode(
       // Sprites passados como thunks (() => sprite) para resolver no DISPARO, não no
       // registro — assim a ordem dos blocos no topo não causa TDZ (const léxico).
       const id = stmt.__id ?? identifiers.reserveInternal('eventoDeContato')
-      return `${pad}SZGame2D.onOverlap(() => ${identifiers.get(stmt.aVar)}, () => ${identifiers.get(stmt.bVar)}, function () {\n${body}\n${pad}}, ${JSON.stringify(id)});`
+      return `${pad}SZGame2D.onOverlap(() => ${identifiers.get(stmt.aVar)}, () => ${identifiers.get(stmt.bVar)}, () => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
     }
     case 'g2d:createImageSprite': {
       const v = identifiers.get(stmt.varName)
@@ -1135,7 +1131,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGame2D.defineShape(${JSON.stringify(stmt.shapeName)}, function (${identifiers.get('ctx')}) {\n${body}\n${pad}});`
+      return `${pad}SZGame2D.defineShape(${JSON.stringify(stmt.shapeName)}, (${identifiers.get('ctx')}) => {\n${body}\n${pad}});`
     }
     case 'g2d:createShapeSprite': {
       const v = identifiers.get(stmt.varName)
@@ -1183,7 +1179,7 @@ function compileStatementCode(
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
       const id = stmt.__id ?? identifiers.reserveInternal('eventoDeInimigoDerrotado')
-      return `${pad}SZGame2D.onEnemyDefeated(${identifiers.get(stmt.typeVar)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}}, ${JSON.stringify(id)});`
+      return `${pad}SZGame2D.onEnemyDefeated(${identifiers.get(stmt.typeVar)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
     }
     case 'g2d:onEnemyShotHit': {
       const body = compileStatements(
@@ -1192,7 +1188,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGame2D.overlapEnemyShots(() => ${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.typeVar)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGame2D.overlapEnemyShots(() => ${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.typeVar)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
     }
     case 'g2d:hurtByEnemy':
       return `${pad}SZGame2D.hurtByEnemy(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.enemyVar)});`
@@ -1257,7 +1253,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGame2D.forEachInGroup(${identifiers.get(stmt.groupVar)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGame2D.forEachInGroup(${identifiers.get(stmt.groupVar)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
     }
     case 'g2d:clearGroup':
       return `${pad}SZGame2D.clearGroup(${identifiers.get(stmt.groupVar)});`
@@ -1268,7 +1264,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGame2D.pruneOffscreen(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.groupVar)}, 40, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGame2D.pruneOffscreen(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.groupVar)}, 40, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
     }
     case 'g2d:onGroupOverlap': {
       const body = compileStatements(
@@ -1277,7 +1273,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGame2D.overlapGroups(${identifiers.get(stmt.aGroup)}, ${identifiers.get(stmt.bGroup)}, function (${identifiers.get(stmt.aName)}, ${identifiers.get(stmt.bName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGame2D.overlapGroups(${identifiers.get(stmt.aGroup)}, ${identifiers.get(stmt.bGroup)}, (${identifiers.get(stmt.aName)}, ${identifiers.get(stmt.bName)}) => {\n${body}\n${pad}});`
     }
     case 'g2d:removeFromGroup':
       return `${pad}SZGame2D.removeFromGroup(${identifiers.get(stmt.groupVar)}, ${identifiers.get(stmt.spriteVar)});`
@@ -1354,7 +1350,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGame2D.overlapSpriteGroup(() => ${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.groupVar)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGame2D.overlapSpriteGroup(() => ${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.groupVar)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
     }
     case 'g2d:steerThrust':
       return `${pad}SZGame2D.steerThrust(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.turn), 0, identifiers, recAt(base))});`
@@ -1659,7 +1655,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.addButton(${JSON.stringify(stmt.screen)}, ${compileExpr(valueToExpr(stmt.label), 0, identifiers, recAt(base))}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.addButton(${JSON.stringify(stmt.screen)}, ${compileExpr(valueToExpr(stmt.label), 0, identifiers, recAt(base))}, () => {\n${body}\n${pad}});`
     }
     case 'gk:setScreenBg':
       return `${pad}SZGameKit.setScreenBg(${JSON.stringify(stmt.screen)}, ${JSON.stringify(stmt.color)}, ${JSON.stringify(stmt.image)});`
@@ -1678,7 +1674,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.onGameStart(function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.onGameStart(() => {\n${body}\n${pad}});`
     }
     case 'gk:onEnterState': {
       const body = compileStatements(
@@ -1687,7 +1683,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.onEnterState(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.onEnterState(${JSON.stringify(stmt.name)}, () => {\n${body}\n${pad}});`
     }
     case 'gk:pause':
       return `${pad}SZGameKit.pause();`
@@ -1704,7 +1700,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.onUpdate(function (${identifiers.get(stmt.dtName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.onUpdate((${identifiers.get(stmt.dtName)}) => {\n${body}\n${pad}});`
     }
     case 'gk:onDraw': {
       const body = compileStatements(
@@ -1713,7 +1709,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.onDraw(function (${identifiers.get(stmt.ctxName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.onDraw((${identifiers.get(stmt.ctxName)}) => {\n${body}\n${pad}});`
     }
     case 'gk:onDrawHud': {
       const body = compileStatements(
@@ -1722,7 +1718,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.onDrawHud(function (${identifiers.get(stmt.ctxName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.onDrawHud((${identifiers.get(stmt.ctxName)}) => {\n${body}\n${pad}});`
     }
     case 'gk:onGameClick': {
       const body = compileStatements(
@@ -1731,7 +1727,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.onGameClick(function (${identifiers.get(stmt.xName)}, ${identifiers.get(stmt.yName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.onGameClick((${identifiers.get(stmt.xName)}, ${identifiers.get(stmt.yName)}) => {\n${body}\n${pad}});`
     }
     case 'gk:setSheet':
       return `${pad}SZGameKit.setSheet(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.image)}, ${compileExpr(valueToExpr(stmt.fw), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.fh), 0, identifiers, recAt(base))});`
@@ -1766,7 +1762,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.rpgOnTalk(${JSON.stringify(stmt.npc)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.rpgOnTalk(${JSON.stringify(stmt.npc)}, () => {\n${body}\n${pad}});`
     }
     case 'gk:rpgSay':
       return `${pad}SZGameKit.rpgSay(${compileExpr(valueToExpr(stmt.text), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.speaker), 0, identifiers, recAt(base))});`
@@ -1789,7 +1785,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.rpgCreateMap(${JSON.stringify(stmt.map)}, ${compileExpr(valueToExpr(stmt.cols), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.rows), 0, identifiers, recAt(base))}, function (${identifiers.get(stmt.ctxName)}) {\n${body}\n${pad}}, ${stmt.body.length > 0 ? 'true' : 'false'});`
+      return `${pad}SZGameKit.rpgCreateMap(${JSON.stringify(stmt.map)}, ${compileExpr(valueToExpr(stmt.cols), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.rows), 0, identifiers, recAt(base))}, (${identifiers.get(stmt.ctxName)}) => {\n${body}\n${pad}}, ${stmt.body.length > 0 ? 'true' : 'false'});`
     }
     case 'gk:rpgOnEnterMap': {
       const body = compileStatements(
@@ -1798,7 +1794,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.rpgOnEnterMap(${JSON.stringify(stmt.map)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.rpgOnEnterMap(${JSON.stringify(stmt.map)}, () => {\n${body}\n${pad}});`
     }
     case 'gk:rpgCreateDoor':
       return `${pad}SZGameKit.rpgCreateDoor(${compileExpr(valueToExpr(stmt.cx), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.cy), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.map)});`
@@ -1846,7 +1842,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.rpgOnFoeTurn(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.rpgOnFoeTurn(${JSON.stringify(stmt.name)}, () => {\n${body}\n${pad}});`
     }
     case 'gk:rpgOnBattleEnd': {
       const body = compileStatements(
@@ -1855,7 +1851,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.rpgOnBattleEnd(function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.rpgOnBattleEnd(() => {\n${body}\n${pad}});`
     }
     case 'gk:setWalkSheet':
       return `${pad}SZGameKit.setWalkSheet(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.image)}, ${compileExpr(valueToExpr(stmt.fw), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.fh), 0, identifiers, recAt(base))});`
@@ -1866,7 +1862,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.rpgCutscene(function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.rpgCutscene(() => {\n${body}\n${pad}});`
     }
     case 'gk:rpgWait':
       return `${pad}SZGameKit.rpgWait(${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))});`
@@ -1883,7 +1879,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.rpgOnStep(${compileExpr(valueToExpr(stmt.cx), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.cy), 0, identifiers, recAt(base))}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.rpgOnStep(${compileExpr(valueToExpr(stmt.cx), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.cy), 0, identifiers, recAt(base))}, () => {\n${body}\n${pad}});`
     }
     case 'gk:rpgMenu': {
       const body = compileStatements(
@@ -1892,7 +1888,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.rpgMenu(${compileExpr(valueToExpr(stmt.title), 0, identifiers, recAt(base))}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.rpgMenu(${compileExpr(valueToExpr(stmt.title), 0, identifiers, recAt(base))}, () => {\n${body}\n${pad}});`
     }
     case 'gk:rpgOption': {
       const body = compileStatements(
@@ -1901,7 +1897,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.rpgOption(${compileExpr(valueToExpr(stmt.label), 0, identifiers, recAt(base))}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.rpgOption(${compileExpr(valueToExpr(stmt.label), 0, identifiers, recAt(base))}, () => {\n${body}\n${pad}});`
     }
     case 'gk:rpgSave':
       return `${pad}SZGameKit.rpgSave();`
@@ -1946,7 +1942,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.onTurnChange(function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.onTurnChange(() => {\n${body}\n${pad}});`
     }
     case 'gk:moveAlongTrack':
       return `${pad}SZGameKit.moveAlongTrack(${identifiers.get(stmt.who)}, ${compileExpr(valueToExpr(stmt.spaces), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.path)});`
@@ -1957,7 +1953,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.onLandSpace(function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.onLandSpace(() => {\n${body}\n${pad}});`
     }
     case 'gk:pileMoveTop':
       return `${pad}SZGameKit.pileMoveTop(${identifiers.get(stmt.fromVar)}, ${identifiers.get(stmt.toVar)});`
@@ -1980,7 +1976,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.cardsOnTurn(function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.cardsOnTurn(() => {\n${body}\n${pad}});`
     }
     case 'gk:cardsEndTurn':
       return `${pad}SZGameKit.cardsEndTurn();`
@@ -2001,7 +1997,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.cardsOnEnemyTurn(function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.cardsOnEnemyTurn(() => {\n${body}\n${pad}});`
     }
     case 'gk:wrapEdges':
       return `${pad}SZGameKit.wrapEdges(${identifiers.get(stmt.charVar)});`
@@ -2016,7 +2012,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.overlapGroups(${JSON.stringify(stmt.moldA)}, ${JSON.stringify(stmt.moldB)}, function (${identifiers.get(stmt.aName)}, ${identifiers.get(stmt.bName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.overlapGroups(${JSON.stringify(stmt.moldA)}, ${JSON.stringify(stmt.moldB)}, (${identifiers.get(stmt.aName)}, ${identifiers.get(stmt.bName)}) => {\n${body}\n${pad}});`
     }
     case 'gk:everySeconds': {
       const body = compileStatements(
@@ -2116,7 +2112,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.pkmBattleTrainer(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.pkmBattleTrainer(${JSON.stringify(stmt.name)}, () => {\n${body}\n${pad}});`
     }
     case 'gk:pkmTrainerCreature':
       return `${pad}SZGameKit.pkmTrainerCreature(${JSON.stringify(stmt.creature)}, ${compileExpr(valueToExpr(stmt.level), 0, identifiers, recAt(base))});`
@@ -2165,7 +2161,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.definePath(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.definePath(${JSON.stringify(stmt.name)}, () => {\n${body}\n${pad}});`
     }
     case 'gk:pathPoint':
       return `${pad}SZGameKit.pathPoint(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))});`
@@ -2189,7 +2185,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.tdOnBuy(${compileExpr(valueToExpr(stmt.cost), 0, identifiers, recAt(base))}, function (${identifiers.get(stmt.xName)}, ${identifiers.get(stmt.yName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.tdOnBuy(${compileExpr(valueToExpr(stmt.cost), 0, identifiers, recAt(base))}, (${identifiers.get(stmt.xName)}, ${identifiers.get(stmt.yName)}) => {\n${body}\n${pad}});`
     }
     case 'gk:tdFreeSlot':
       return `${pad}SZGameKit.tdFreeSlot(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))});`
@@ -2243,7 +2239,7 @@ function compileStatementCode(
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
       return [
-        `${pad}SZGameKit.waitThen(${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))}, function () {`,
+        `${pad}SZGameKit.waitThen(${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))}, () => {`,
         espera,
         `${pad}});`,
       ].join('\n')
@@ -2300,7 +2296,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.on(${JSON.stringify(stmt.event)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.on(${JSON.stringify(stmt.event)}, () => {\n${body}\n${pad}});`
     }
     case 'gk:emit':
       return `${pad}SZGameKit.emit(${JSON.stringify(stmt.event)});`
@@ -2323,7 +2319,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit.forEachActive(${JSON.stringify(stmt.mold)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit.forEachActive(${JSON.stringify(stmt.mold)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
     }
     case 'gk:cullOffscreen':
       return `${pad}SZGameKit.cullOffscreen(${JSON.stringify(stmt.mold)}, ${compileExpr(valueToExpr(stmt.margin), 0, identifiers, recAt(base))});`
@@ -2345,7 +2341,7 @@ function compileStatementCode(
         stmt.baseW !== undefined && stmt.baseH !== undefined
           ? `, ${compileExpr(valueToExpr(stmt.baseW), 0, identifiers, recAt(baseLine))}, ${compileExpr(valueToExpr(stmt.baseH), 0, identifiers, recAt(baseLine))}`
           : ''
-      return `${pad}SZGameKit.defineLook(${JSON.stringify(stmt.name)}, function (${identifiers.get(stmt.ctxName)}) {\n${body}\n${pad}}${size});`
+      return `${pad}SZGameKit.defineLook(${JSON.stringify(stmt.name)}, (${identifiers.get(stmt.ctxName)}) => {\n${body}\n${pad}}${size});`
     }
     case 'gk:drawLook':
       return `${pad}SZGameKit.drawLook(${JSON.stringify(stmt.look)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))});`
@@ -2399,7 +2395,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.defineMold(${JSON.stringify(stmt.name)}, { health: ${compileExpr(valueToExpr(stmt.health), 0, identifiers, recAt(base))}, speed: ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))} }, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit3D.defineMold(${JSON.stringify(stmt.name)}, { health: ${compileExpr(valueToExpr(stmt.health), 0, identifiers, recAt(base))}, speed: ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))} }, () => {\n${body}\n${pad}});`
     }
     case 'g3k:part':
       return `${pad}SZGameKit3D.part({ shape: ${JSON.stringify(stmt.shape)}, material: ${JSON.stringify(stmt.material)}, color: ${JSON.stringify(stmt.color)}, texture: ${JSON.stringify(stmt.texture)}, model: ${JSON.stringify(stmt.model)}, w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, d: ${compileExpr(valueToExpr(stmt.d), 0, identifiers, recAt(base))}, x: ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, y: ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, z: ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))} });`
@@ -2422,7 +2418,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.forEachAlive(${JSON.stringify(stmt.mold)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit3D.forEachAlive(${JSON.stringify(stmt.mold)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
     }
     case 'g3k:recycle':
       return `${pad}SZGameKit3D.recycle(${identifiers.get(stmt.charVar)});`
@@ -2437,7 +2433,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.onUpdate(function (${identifiers.get(stmt.dtName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit3D.onUpdate((${identifiers.get(stmt.dtName)}) => {\n${body}\n${pad}});`
     }
     case 'g3k:moveWithKeys':
       return `${pad}SZGameKit3D.moveWithKeys(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
@@ -2510,7 +2506,7 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.onTimerEnd(function () {
+      return `${pad}SZGameKit3D.onTimerEnd(() => {
 ${body}
 ${pad}});`
     }
@@ -2533,7 +2529,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.onOverlap(${JSON.stringify(stmt.mold)}, function (${identifiers.get(stmt.zoneName)}, ${identifiers.get(stmt.whoName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit3D.onOverlap(${JSON.stringify(stmt.mold)}, (${identifiers.get(stmt.zoneName)}, ${identifiers.get(stmt.whoName)}) => {\n${body}\n${pad}});`
     }
     case 'g3k:setBounce':
       return `${pad}SZGameKit3D.setBounce(${JSON.stringify(stmt.mold)}, ${compileExpr(valueToExpr(stmt.amount), 0, identifiers, recAt(base))});`
@@ -2564,7 +2560,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.onEnterEntityState(${JSON.stringify(stmt.mold)}, ${JSON.stringify(stmt.state)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit3D.onEnterEntityState(${JSON.stringify(stmt.mold)}, ${JSON.stringify(stmt.state)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
     }
     case 'g3k:onEntityStateUpdate': {
       const body = compileStatements(
@@ -2573,7 +2569,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.onEntityStateUpdate(${JSON.stringify(stmt.mold)}, ${JSON.stringify(stmt.state)}, function (${identifiers.get(stmt.itemName)}, ${identifiers.get(stmt.dtName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit3D.onEntityStateUpdate(${JSON.stringify(stmt.mold)}, ${JSON.stringify(stmt.state)}, (${identifiers.get(stmt.itemName)}, ${identifiers.get(stmt.dtName)}) => {\n${body}\n${pad}});`
     }
     case 'g3k:onExitEntityState': {
       const body = compileStatements(
@@ -2582,7 +2578,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.onExitEntityState(${JSON.stringify(stmt.mold)}, ${JSON.stringify(stmt.state)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit3D.onExitEntityState(${JSON.stringify(stmt.mold)}, ${JSON.stringify(stmt.state)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
     }
     case 'g3k:setEntityState':
       return `${pad}SZGameKit3D.setEntityState(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.state)});`
@@ -2603,7 +2599,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.forEachNear(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.mold)}, ${compileExpr(valueToExpr(stmt.radius), 0, identifiers, recAt(base))}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit3D.forEachNear(${identifiers.get(stmt.charVar)}, ${JSON.stringify(stmt.mold)}, ${compileExpr(valueToExpr(stmt.radius), 0, identifiers, recAt(base))}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
     }
     case 'g3k:storeNearest': {
       const v = identifiers.get(stmt.varName)
@@ -2618,7 +2614,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.onEntityDeath(${JSON.stringify(stmt.mold)}, function (${identifiers.get(stmt.itemName)}) {\n${body}\n${pad}});`
+      return `${pad}SZGameKit3D.onEntityDeath(${JSON.stringify(stmt.mold)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
     }
     case 'g3k:defineEffect':
       return `${pad}SZGameKit3D.defineEffect(${JSON.stringify(stmt.name)}, { count: ${compileExpr(valueToExpr(stmt.count), 0, identifiers, recAt(base))}, colorFrom: ${JSON.stringify(stmt.colorFrom)}, colorTo: ${JSON.stringify(stmt.colorTo)}, spread: ${compileExpr(valueToExpr(stmt.spread), 0, identifiers, recAt(base))}, sizeFrom: ${compileExpr(valueToExpr(stmt.sizeFrom), 0, identifiers, recAt(base))}, sizeTo: ${compileExpr(valueToExpr(stmt.sizeTo), 0, identifiers, recAt(base))}, life: ${compileExpr(valueToExpr(stmt.life), 0, identifiers, recAt(base))}, gravity: ${compileExpr(valueToExpr(stmt.gravity), 0, identifiers, recAt(base))} });`
@@ -2647,7 +2643,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.addButton(${JSON.stringify(stmt.screen)}, ${compileExpr(valueToExpr(stmt.label), 0, identifiers, recAt(base))}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit3D.addButton(${JSON.stringify(stmt.screen)}, ${compileExpr(valueToExpr(stmt.label), 0, identifiers, recAt(base))}, () => {\n${body}\n${pad}});`
     }
     case 'g3k:showScreen':
       return `${pad}SZGameKit3D.showScreen(${JSON.stringify(stmt.name)});`
@@ -2664,7 +2660,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.onEnterState(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit3D.onEnterState(${JSON.stringify(stmt.name)}, () => {\n${body}\n${pad}});`
     }
     case 'g3k:returnToMenu':
       return `${pad}SZGameKit3D.returnToMenu();`
@@ -2677,7 +2673,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZGameKit3D.on(${JSON.stringify(stmt.event)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZGameKit3D.on(${JSON.stringify(stmt.event)}, () => {\n${body}\n${pad}});`
     }
     case 'g3k:emit':
       return `${pad}SZGameKit3D.emit(${JSON.stringify(stmt.event)});`
@@ -2731,7 +2727,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.onPoint(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.onPoint(${JSON.stringify(stmt.name)}, () => {\n${body}\n${pad}});`
     }
     case 'w3d:zone':
       return `${pad}SZWorld3D.zone(${JSON.stringify(stmt.name)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.r), 0, identifiers, recAt(base))});`
@@ -2742,7 +2738,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.onZone(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.onZone(${JSON.stringify(stmt.name)}, () => {\n${body}\n${pad}});`
     }
     case 'w3d:totemText':
       return `${pad}SZWorld3D.totemText(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.title)}, ${JSON.stringify(stmt.body)});`
@@ -2763,7 +2759,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.raceOnStart(function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.raceOnStart(() => {\n${body}\n${pad}});`
     }
     case 'w3d:raceOnCheckpoint': {
       const body = compileStatements(
@@ -2772,7 +2768,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.raceOnCheckpoint(function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.raceOnCheckpoint(() => {\n${body}\n${pad}});`
     }
     case 'w3d:raceOnFinish': {
       const body = compileStatements(
@@ -2781,7 +2777,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.raceOnFinish(function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.raceOnFinish(() => {\n${body}\n${pad}});`
     }
     case 'w3d:bowlingCreate':
       return `${pad}SZWorld3D.bowlingCreate(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))});`
@@ -2794,7 +2790,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.bowlingOnStrike(function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.bowlingOnStrike(() => {\n${body}\n${pad}});`
     }
     case 'w3d:stack':
       return `${pad}SZWorld3D.stack(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.thing)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
@@ -2821,7 +2817,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.onCrash(function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.onCrash(() => {\n${body}\n${pad}});`
     }
     case 'w3d:horn':
       return `${pad}SZWorld3D.horn();`
@@ -2832,7 +2828,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.onHorn(function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.onHorn(() => {\n${body}\n${pad}});`
     }
     case 'w3d:carLights':
       return `${pad}SZWorld3D.carLights();`
@@ -2849,7 +2845,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.onAchievement(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.onAchievement(${JSON.stringify(stmt.name)}, () => {\n${body}\n${pad}});`
     }
     case 'w3d:minimap':
       return `${pad}SZWorld3D.minimap(${JSON.stringify(stmt.mode)});`
@@ -2872,7 +2868,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.onCollect(function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.onCollect(() => {\n${body}\n${pad}});`
     }
     case 'w3d:quest':
       return `${pad}SZWorld3D.quest(${JSON.stringify(stmt.name)}, ${JSON.stringify(stmt.desc)});`
@@ -2885,7 +2881,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.onQuestDone(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.onQuestDone(${JSON.stringify(stmt.name)}, () => {\n${body}\n${pad}});`
     }
     case 'w3d:marker':
       return `${pad}SZWorld3D.marker(${JSON.stringify(stmt.icon)}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))});`
@@ -2902,7 +2898,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.npcTalk(${JSON.stringify(stmt.name)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.npcTalk(${JSON.stringify(stmt.name)}, () => {\n${body}\n${pad}});`
     }
     case 'w3d:npcSay':
       return `${pad}SZWorld3D.npcSay(${JSON.stringify(stmt.name)}, ${JSON.stringify(stmt.text)});`
@@ -2935,7 +2931,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.onVehicle(${JSON.stringify(stmt.when)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.onVehicle(${JSON.stringify(stmt.when)}, () => {\n${body}\n${pad}});`
     }
     case 'w3d:waterfall':
       return `${pad}SZWorld3D.waterfall(${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.z), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.deg), 0, identifiers, recAt(base))});`
@@ -2990,7 +2986,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 2 + stmt.bodyA.length),
       )
-      return `${pad}SZWorld3D.npcAsk(${JSON.stringify(stmt.name)}, ${JSON.stringify(stmt.question)}, ${JSON.stringify(stmt.optA)}, function () {\n${bodyA}\n${pad}}, ${JSON.stringify(stmt.optB)}, function () {\n${bodyB}\n${pad}});`
+      return `${pad}SZWorld3D.npcAsk(${JSON.stringify(stmt.name)}, ${JSON.stringify(stmt.question)}, ${JSON.stringify(stmt.optA)}, () => {\n${bodyA}\n${pad}}, ${JSON.stringify(stmt.optB)}, () => {\n${bodyB}\n${pad}});`
     }
     case 'w3d:fireflies':
       return `${pad}SZWorld3D.fireflies(${JSON.stringify(stmt.amount)});`
@@ -3011,7 +3007,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.onExplosion(function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.onExplosion(() => {\n${body}\n${pad}});`
     }
     case 'w3d:confetti':
       return `${pad}SZWorld3D.confetti();`
@@ -3044,7 +3040,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.onDayNight(${JSON.stringify(stmt.when)}, function () {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.onDayNight(${JSON.stringify(stmt.when)}, () => {\n${body}\n${pad}});`
     }
     case 'w3d:onUpdate': {
       const body = compileStatements(
@@ -3053,7 +3049,7 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}SZWorld3D.onUpdate(function (${identifiers.get(stmt.dtName)}) {\n${body}\n${pad}});`
+      return `${pad}SZWorld3D.onUpdate((${identifiers.get(stmt.dtName)}) => {\n${body}\n${pad}});`
     }
     case 'classDecl': {
       const className = identifiers.declareClassName(classKey(stmt), stmt.name)
@@ -3129,13 +3125,14 @@ ${pad}});`
       const handler = identifiers.get(stmt.handlerName)
       const projectRunContext = identifiers.getProjectRunContextIdentifier()
       const listenerOptions = projectRunContext ? `, { signal: ${projectRunContext}.signal }` : ''
-      if (stmt.targetKind === 'window') {
+      const targetKind = resolveEventTargetKind(stmt.target, stmt.targetKind)
+      if (targetKind === 'window') {
         return `${pad}window.addEventListener(${JSON.stringify(stmt.event)}, ${handler}${listenerOptions});`
       }
-      if (stmt.targetKind === 'document') {
+      if (targetKind === 'document') {
         return `${pad}document.addEventListener(${JSON.stringify(stmt.event)}, ${handler}${listenerOptions});`
       }
-      return `${pad}${elementExpr(stmt.target, stmt.targetKind, identifiers)}?.addEventListener(${JSON.stringify(stmt.event)}, ${handler}${listenerOptions});`
+      return `${pad}${elementExpr(stmt.target, targetKind, identifiers)}?.addEventListener(${JSON.stringify(stmt.event)}, ${handler}${listenerOptions});`
     }
     case 'setThisProp':
       return `${pad}this.${normalizeIdentifier(stmt.name)} = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
@@ -3172,7 +3169,7 @@ ${pad}});`
       )
       const compiledTarget = compileExpr(stmt.target, 20, identifiers, recAt(base))
       const target = stmt.target.type === 'objectLiteral' ? `(${compiledTarget})` : compiledTarget
-      return `${pad}${target}.onclick = () => {\n${body}\n${pad}};`
+      return `${pad}${target}.onclick = (event) => {\n${body}\n${pad}};`
     }
     case 'loaderLoad': {
       const body = compileStatements(

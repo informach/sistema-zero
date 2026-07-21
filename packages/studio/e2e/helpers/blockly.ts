@@ -65,8 +65,12 @@ export async function pasteBlocklyBlocks(
 
   // A colagem só está pronta para uma troca de aba/rota depois que o listener do
   // Blockly serializa o workspace e o autosave confirma esse snapshot.
-  await expect(page.getByText('Alterações não salvas', { exact: true })).toBeVisible({
+  const saveStatus = (label: string) =>
+    page
+      .getByText(label, { exact: true })
+      .or(page.getByRole('status', { name: label, exact: true }))
+  await expect(saveStatus('Alterações não salvas')).toBeVisible({
     timeout: 5_000,
   })
-  await expect(page.getByText('Salvo', { exact: true })).toBeVisible({ timeout: 15_000 })
+  await expect(saveStatus('Salvo')).toBeVisible({ timeout: 15_000 })
 }

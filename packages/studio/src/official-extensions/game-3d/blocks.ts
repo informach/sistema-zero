@@ -1685,6 +1685,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_for_each_swarm',
     placement: 'command',
+    bodyExecution: 'sync-callback',
     message0: 'Para cada %1 do enxame %2',
     args0: [
       { type: 'field_input', name: 'ITEM', text: 'item' },

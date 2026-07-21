@@ -37,7 +37,14 @@ function stripIds<T>(value: T): T {
 }
 
 function dropdowns(definition: BlockDefinition): DropdownArg[] {
-  return [definition.args0, definition.args1, definition.args2]
+  return [
+    definition.args0,
+    definition.args1,
+    definition.args2,
+    definition.args3,
+    definition.args4,
+    definition.args5,
+  ]
     .flatMap((args) => (Array.isArray(args) ? args : []))
     .filter((arg): arg is DropdownArg => Boolean(arg) && typeof arg === 'object')
     .filter((arg) => arg.type === 'field_dropdown' && typeof arg.name === 'string')

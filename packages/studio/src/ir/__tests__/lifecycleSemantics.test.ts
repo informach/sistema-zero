@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { type JSStatement, SZIRV2Schema } from '../schema'
+import { type JSExpr, type JSStatement, SZIRV2Schema } from '../schema'
 
 function parse(
   area: 'start' | 'events' | 'loops',
@@ -93,7 +93,7 @@ describe('gramática recursiva do ciclo de vida', () => {
     ).toBe(false)
   })
 
-  it('aceita registros de evento encapsulados em funções e classes', () => {
+  it('aceita registros de evento diretamente em funções e classes', () => {
     expect(
       parse('start', {
         type: 'funcDecl',
@@ -111,6 +111,157 @@ describe('gramática recursiva do ciclo de vida', () => {
         methods: [],
       }).success,
     ).toBe(true)
+  })
+
+  it.each([
+    'requestFullscreen',
+    'toggleFullscreen',
+  ] as const)('aceita %s somente enquanto o gesto ainda está ativo', (type) => {
+    expect(parse('start', { type }).success).toBe(false)
+    expect(
+      parse('events', {
+        type: 'event',
+        target: 'document',
+        targetKind: 'document',
+        event: 'click',
+        body: [{ type }],
+      }).success,
+    ).toBe(true)
+    expect(
+      parse('events', {
+        type: 'event',
+        target: 'window',
+        targetKind: 'window',
+        event: 'resize',
+        body: [{ type }],
+      }).success,
+    ).toBe(false)
+    expect(
+      parse('start', {
+        type: 'funcDecl',
+        name: 'alternarTela',
+        params: [],
+        body: [{ type }],
+      }).success,
+    ).toBe(false)
+    expect(
+      parse('events', {
+        type: 'event',
+        target: 'document',
+        targetKind: 'document',
+        event: 'click',
+        body: [
+          {
+            type: 'setTimeoutSeconds',
+            delay: { type: 'num', value: 1 },
+            body: [{ type }],
+          },
+        ],
+      }).success,
+    ).toBe(false)
+
+    const directGestures: JSStatement[] = [
+      { type: 'g2d:onPointer', xName: 'x', yName: 'y', body: [{ type }] },
+      { type: 'g2d:onKey', key: 'Enter', body: [{ type }] },
+      { type: 'gk:onGameClick', xName: 'x', yName: 'y', body: [{ type }] },
+    ]
+    for (const gesture of directGestures) {
+      expect(parse('events', gesture).success, gesture.type).toBe(true)
+    }
+
+    for (const button of [
+      { type: 'gk:addButton', screen: 'menu', label: 'Jogar', body: [{ type }] },
+      { type: 'g3k:addButton', screen: 'menu', label: 'Jogar', body: [{ type }] },
+    ] satisfies JSStatement[]) {
+      expect(parse('start', button).success, button.type).toBe(true)
+    }
+  })
+
+  it('encontra raízes de lifecycle em elseif e cases de switch', () => {
+    const event: JSStatement = {
+      type: 'event',
+      target: 'document',
+      targetKind: 'document',
+      event: 'click',
+      body: [],
+    }
+
+    expect(
+      parse('start', {
+        type: 'if',
+        cond: { type: 'bool', value: false },
+        then: [],
+        elseif: [{ cond: { type: 'bool', value: true }, then: [event] }],
+      }).success,
+    ).toBe(false)
+    expect(
+      parse('start', {
+        type: 'switch',
+        subject: { type: 'num', value: 1 },
+        cases: [{ match: { type: 'num', value: 1 }, body: [event] }],
+        default: [],
+      }).success,
+    ).toBe(false)
+  })
+
+  it('não deixa o async externo atravessar o executor de uma Promise', () => {
+    expect(
+      parse('start', {
+        type: 'funcDecl',
+        name: 'carregar',
+        params: [],
+        async: true,
+        body: [
+          {
+            type: 'consoleLog',
+            value: {
+              type: 'newPromise',
+              param: 'resolve',
+              body: [
+                {
+                  type: 'if',
+                  cond: { type: 'bool', value: true },
+                  then: [{ type: 'awaitStmt', value: { type: 'null' } }],
+                },
+              ],
+            },
+          },
+        ],
+      }).success,
+    ).toBe(false)
+  })
+
+  it('recusa eventos escondidos em comandos dentro de funções e classes', () => {
+    const event: JSStatement = {
+      type: 'event',
+      target: 'botao',
+      event: 'click',
+      body: [],
+    }
+
+    expect(
+      parse('start', {
+        type: 'funcDecl',
+        name: 'configurar',
+        params: [],
+        body: [{ type: 'repeat', times: { type: 'num', value: 2 }, body: [event] }],
+      }).success,
+    ).toBe(false)
+
+    expect(
+      parse('start', {
+        type: 'classDecl',
+        name: 'Jogo',
+        ctorBody: [
+          {
+            type: 'if',
+            cond: { type: 'bool', value: true },
+            then: [event],
+          },
+        ],
+        methods: [],
+      }).success,
+    ).toBe(false)
   })
 
   it('recusa controle de fluxo fora do contexto sintático válido', () => {
@@ -289,6 +440,53 @@ describe('gramática recursiva do ciclo de vida', () => {
     expect(parse('events', eventWithValue('click', 'clientX')).success).toBe(true)
     expect(parse('events', eventWithValue('click', 'key')).success).toBe(false)
     expect(parse('events', eventWithValue('keydown', 'clientX')).success).toBe(false)
+  })
+
+  it('não confunde callbacks de jogos com o objeto Event do navegador', () => {
+    expect(
+      parse('events', {
+        type: 'g2d:onPointer',
+        xName: 'x',
+        yName: 'y',
+        body: [{ type: 'consoleLog', value: { type: 'eventProp', prop: 'clientX' } }],
+      }).success,
+    ).toBe(false)
+    expect(
+      parse('events', {
+        type: 'g2d:onKey',
+        key: 'Enter',
+        body: [{ type: 'consoleLog', value: { type: 'eventProp', prop: 'key' } }],
+      }).success,
+    ).toBe(false)
+    expect(
+      parse('events', {
+        type: 'gk:onEvent',
+        event: 'pontuou',
+        body: [{ type: 'eventMethod', method: 'preventDefault' }],
+      }).success,
+    ).toBe(false)
+  })
+
+  it('mantém Event nos callbacks do navegador e encerra sua ativação em tarefas adiadas', () => {
+    const eventMethod: JSStatement = { type: 'eventMethod', method: 'preventDefault' }
+    const target: JSExpr = { type: 'objectLiteral', entries: [] }
+
+    expect(parse('events', { type: 'onClickAssign', target, body: [eventMethod] }).success).toBe(
+      true,
+    )
+    expect(parse('events', { type: 'imageOnLoad', target, body: [eventMethod] }).success).toBe(true)
+    expect(parse('events', { type: 'imageOnError', target, body: [eventMethod] }).success).toBe(
+      true,
+    )
+    expect(
+      parse('events', {
+        type: 'event',
+        target: 'document',
+        targetKind: 'document',
+        event: 'click',
+        body: [{ type: 'setTimeout', delay: { type: 'num', value: 10 }, body: [eventMethod] }],
+      }).success,
+    ).toBe(false)
   })
 
   it('recusa alvos this fora de funções e os aceita em funções', () => {

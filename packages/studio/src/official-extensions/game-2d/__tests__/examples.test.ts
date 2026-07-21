@@ -295,10 +295,10 @@ describe('enemyPlatformerExample (game-2d) — tipos de inimigo', () => {
     expect(code).toContain('SZGame2D.updateEnemyType(goomba, ctx, heroi)')
     expect(code).toContain('SZGame2D.drawEnemyType(ctx, canhao)')
     expect(code).toContain('SZGame2D.autoAnimate(heroi)')
-    expect(code).toContain('SZGame2D.onEnemyDefeated(goomba, function (inimigo)')
-    expect(code).toContain('SZGame2D.onEnemyDefeated(sapinho, function (inimigo)')
-    expect(code).toContain('SZGame2D.onEnemyDefeated(canhao, function (inimigo)')
-    expect(code).toContain('SZGame2D.overlapEnemyShots(() => heroi, canhao, function (tiro)')
+    expect(code).toContain('SZGame2D.onEnemyDefeated(goomba, (inimigo) =>')
+    expect(code).toContain('SZGame2D.onEnemyDefeated(sapinho, (inimigo) =>')
+    expect(code).toContain('SZGame2D.onEnemyDefeated(canhao, (inimigo) =>')
+    expect(code).toContain('SZGame2D.overlapEnemyShots(() => heroi, canhao, (tiro) =>')
     expect(code).toContain('SZGame2D.hurtByEnemy(heroi, inimigo)')
     // tipo funciona nos blocos de GRUPO: colisão grupo×tipo direto no nome
     expect(code).toContain('SZGame2D.overlapGroups(tiros, goomba,')
@@ -322,7 +322,7 @@ describe('codeDrawnExample (game-2d) — sprite desenhado por código', () => {
 
   it('NÃO usa nenhuma imagem — o jogo é 100% desenhado por código', () => {
     const code = compileStatements(behaviorStatements(codeDrawnExample.ir), 0)
-    expect(code).toContain('SZGame2D.defineShape("heroi", function (ctx)')
+    expect(code).toContain('SZGame2D.defineShape("heroi", (ctx) =>')
     expect(code).toContain('SZGame2D.paintRect(ctx,')
     expect(code).toContain('SZGame2D.paintCircle(ctx,')
     expect(code).toContain('SZGame2D.createShapeSprite("heroi",')

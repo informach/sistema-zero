@@ -1,11 +1,44 @@
 import { expect, type Page, test } from '@playwright/test'
-import { pasteBlocklyBlocks as pasteBlocks } from './helpers/blockly'
+import { openWorkspaceContextMenu, pasteBlocklyBlocks as pasteBlocks } from './helpers/blockly'
 
 async function createProject(page: Page): Promise<void> {
   await page.goto('/')
   await page.getByRole('button', { name: '+ Novo projeto' }).first().click()
   await page.getByRole('button', { name: 'Criar e abrir' }).click()
   await expect(page).toHaveURL(/\/editor\//)
+}
+
+async function dragProjectAreaFromFlyout(page: Page, label: string): Promise<void> {
+  const category = page
+    .locator('.blocklyToolboxCategory')
+    .filter({ hasText: 'Áreas do projeto' })
+    .first()
+  const source = page
+    .locator('.blocklyToolboxFlyout .blocklyDraggable')
+    .filter({ hasText: label })
+    .first()
+  if (!(await source.isVisible())) await category.click()
+  await expect(source).toBeVisible()
+
+  const sourceBox = await source.boundingBox()
+  const target = await page.evaluate(() => {
+    const background = document.querySelector('.blocklyMainBackground')?.getBoundingClientRect()
+    if (!background) return null
+    for (let y = background.bottom - 48; y > background.top + 48; y -= 32) {
+      for (let x = background.right - 48; x > background.left + 48; x -= 32) {
+        if (document.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground')) {
+          return { x, y }
+        }
+      }
+    }
+    return null
+  })
+  if (!sourceBox || !target) throw new Error('Área ou workspace sem ponto interativo')
+
+  await page.mouse.move(sourceBox.x + 5, sourceBox.y + 5)
+  await page.mouse.down()
+  await page.mouse.move(target.x, target.y, { steps: 8 })
+  await page.mouse.up()
 }
 
 const startArea = (text: string) => ({
@@ -67,6 +100,129 @@ const oneFrameLoopArea = (text: string) => ({
 })
 
 test.describe('Áreas de comportamento — lifecycle completo', () => {
+  test('cria cada área pela paleta e mantém apenas uma de cada tipo', async ({ page }) => {
+    await createProject(page)
+    const countStarts = () =>
+      page.evaluate(
+        () =>
+          [...document.querySelectorAll('.blocklyBlockCanvas .sz_frame_start')].filter(
+            (block) => !block.closest('.blocklyFlyout'),
+          ).length,
+      )
+
+    await dragProjectAreaFromFlyout(page, 'Ao iniciar')
+    await expect.poll(countStarts).toBe(1)
+
+    await dragProjectAreaFromFlyout(page, 'Ao iniciar')
+    await expect.poll(countStarts).toBe(1)
+  })
+
+  test('organiza as cinco áreas nas duas linhas pedagógicas', async ({ page }) => {
+    await createProject(page)
+    for (const [type, x, y] of [
+      ['sz_frame_loops', 640, 80],
+      ['sz_frame_structure', 620, 440],
+      ['sz_frame_events', 80, 420],
+      ['sz_frame_appearance', 100, 80],
+      ['sz_frame_start', 360, 260],
+    ] as const) {
+      await pasteBlocks(page, { type, x, y })
+    }
+
+    await openWorkspaceContextMenu(page)
+    await page.getByText('Organizar blocos', { exact: true }).click()
+
+    const blockBox = (type: string) =>
+      page
+        .locator(`.blocklyWorkspace .blocklyBlockCanvas .${type}.blocklyDraggable`)
+        .first()
+        .boundingBox()
+    await expect
+      .poll(async () => {
+        const [structure, appearance, start, events, loops] = await Promise.all([
+          blockBox('sz_frame_structure'),
+          blockBox('sz_frame_appearance'),
+          blockBox('sz_frame_start'),
+          blockBox('sz_frame_events'),
+          blockBox('sz_frame_loops'),
+        ])
+        if (!structure || !appearance || !start || !events || !loops) return null
+        const sameFirstRow = Math.abs(structure.y - appearance.y) < 12
+        const sameSecondRow =
+          Math.max(start.y, events.y, loops.y) - Math.min(start.y, events.y, loops.y) < 12
+        return {
+          firstRowOrder: structure.x < appearance.x,
+          secondRowOrder: start.x < events.x && events.x < loops.x,
+          sameFirstRow,
+          sameSecondRow,
+          secondRowBelow: start.y > Math.max(structure.y, appearance.y) + 24,
+        }
+      })
+      .toEqual({
+        firstRowOrder: true,
+        secondRowOrder: true,
+        sameFirstRow: true,
+        sameSecondRow: true,
+        secondRowBelow: true,
+      })
+  })
+
+  test('recusa evento na área de início e preserva o bloco como rascunho', async ({ page }) => {
+    await createProject(page)
+    await pasteBlocks(page, {
+      type: 'sz_frame_start',
+      inputs: {
+        CHILDREN: {
+          block: {
+            type: 'sz_js_on_click_anywhere',
+            inputs: { DO: { block: logBlock('não conectar') } },
+          },
+        },
+      },
+    })
+
+    const eventDraft = page.locator(
+      '.blocklyWorkspace .blocklyBlockCanvas .sz_js_on_click_anywhere.blocklyDraggable',
+    )
+    await expect(eventDraft).toBeVisible()
+    await expect(eventDraft).toHaveClass(/sz-draft-block/)
+    await expect(
+      page.locator('.blocklyWorkspace .blocklyBlockCanvas .sz_frame_events'),
+    ).toHaveCount(0)
+  })
+
+  test('áreas continuam navegáveis por teclado e cabem no celular', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 })
+    await createProject(page)
+
+    const areas = page.getByRole('treeitem', { name: /Áreas do projeto/ }).first()
+    await areas.focus()
+    await expect(areas).toBeFocused()
+    await page.keyboard.press('Enter')
+
+    const flyout = page.locator('.blocklyToolboxFlyout')
+    await expect(flyout).toBeVisible()
+    await expect(flyout.locator('.blocklyDraggable')).toHaveCount(5)
+    await expect(flyout).toContainText('Ao iniciar')
+    await expect(flyout).toContainText('Quando acontecer')
+    await expect(flyout).toContainText('Enquanto estiver rodando')
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const injection = document.querySelector('.injectionDiv')?.getBoundingClientRect()
+          const visibleFlyout = document
+            .querySelector('.blocklyToolboxFlyout')
+            ?.getBoundingClientRect()
+          if (!injection || !visibleFlyout) return false
+          return (
+            visibleFlyout.top >= injection.top &&
+            visibleFlyout.bottom <= Math.min(injection.bottom, window.innerHeight)
+          )
+        }),
+      )
+      .toBe(true)
+  })
+
   test('executa início, registra eventos e remonta loops ao atualizar o preview', async ({
     page,
   }) => {

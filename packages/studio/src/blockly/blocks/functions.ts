@@ -19,6 +19,7 @@ const C = CATEGORY_COLORS.functions
 export const FUNCTION_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_js_function',
+    bodyExecution: 'function',
     placement: 'start-declaration',
     message0: 'função %1 assíncrona %2',
     args0: [

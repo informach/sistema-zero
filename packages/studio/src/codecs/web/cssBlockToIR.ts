@@ -364,6 +364,19 @@ export function cssBlockToIR(
         },
       }
     }
+    case 'sz_css_focus_visible': {
+      const { declarations, declIds } = getCssDeclarations(block, 'CHILDREN')
+      return {
+        kind: 'css',
+        value: {
+          selector: `${f(block, 'SELECTOR')}:focus-visible`,
+          declarations,
+          ...(Array.isArray(declarations) || Object.keys(declIds).length === 0
+            ? {}
+            : { __declIds: declIds }),
+        },
+      }
+    }
     case 'sz_css_grid':
       return {
         kind: 'css',

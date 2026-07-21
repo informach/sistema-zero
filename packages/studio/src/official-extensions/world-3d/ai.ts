@@ -80,7 +80,7 @@ chama o ciclo de vida automaticamente. NÃO gere
 - \`SZWorld3D.islands(n, alturaDoMar)\` — vira ARQUIPÉLAGO (a água entra sozinha; você nasce na ilha 0, no centro).
 - \`SZWorld3D.boat(corHex)\` — barco dirigível: SÓ anda na água, encalha na praia; com personagem, E perto dele embarca; sem carro nem personagem, nasce pilotando.
 - \`SZWorld3D.bridge(x1, z1, x2, z2, largura)\` — ponte em arco: carro/personagem POR CIMA, barco POR BAIXO. \`SZWorld3D.lighthouse(x, z)\` — farol com luz girando à noite.
-- \`SZWorld3D.ambience('mar'|'passaros'|'grilos'|'desligado')\` — som de fundo sintetizado. scatter/placeThing agora aceitam 'palmeiras' 🌴.
+- \`SZWorld3D.ambience('mar'|'passaros'|'grilos'|'desligado')\` — som de fundo sintetizado persistente. Gere fora de 🔁 Enquanto estiver rodando; repetir a mesma opção mantém o relógio atual. scatter/placeThing agora aceitam 'palmeiras' 🌴.
 - 🏙️ \`SZWorld3D.city(x, z, 'pequena'|'media'|'grande', 'dia'|'neon')\` — a
   CIDADEZINHA completa (estilo Vocation Vista): praça com coreto + varais,
   anel de rua com faixas de pedestre, 4 ruas de entrada, casinhas/lojas/
@@ -168,7 +168,7 @@ chama o ciclo de vida automaticamente. NÃO gere
   — tremor. (Joystick mobile aparece sozinho em toque; não tem método.)
 - \`SZWorld3D.onCrash(function () { ... })\` — trombada forte do carro em coisa
   sólida (tem respiro de 0.4 s entre disparos).
-- \`SZWorld3D.loadSound(apelido, asset)\` / \`playSound(apelido)\` / \`playMusic(apelido)\` (loop) / \`stopMusic()\` — sons/música do projeto.
+- \`SZWorld3D.loadSound(apelido, asset)\` / \`playSound(apelido)\` / \`playMusic(apelido)\` (loop) / \`stopMusic()\` — sons/música do projeto. \`playMusic\` é persistente: use em ⚙️ Ao iniciar, ⚡ Quando acontecer ou diretamente numa função, nunca em 🔁 Enquanto estiver rodando. Repetir o mesmo apelido não reinicia a faixa.
 - \`SZWorld3D.hud(texto, 'topo-esquerda'|'topo-direita'|'baixo-esquerda'|'baixo-direita')\` — texto fixo num canto (vazio apaga).
 - \`SZWorld3D.say(texto, segundos)\` — balão de fala sobre o carro.
 - \`SZWorld3D.point(nome, x, z)\` — ponto interativo (pilar + badge 'E').

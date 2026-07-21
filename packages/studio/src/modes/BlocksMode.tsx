@@ -1,5 +1,5 @@
 import type { JSX } from 'react'
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useShallow } from 'zustand/react/shallow'
 import { buildWorkspaceStateFromIR, isBlocksStateEmpty } from '#blockly'
@@ -66,13 +66,10 @@ export function BlocksMode(): JSX.Element {
   // Parse falhou (código quebrado no meio da digitação)? Mantém blocos antigos
   // e a trava: os arquivos ficam intactos; uma edição REAL de blocos retoma a
   // autoridade deles (mesma precedência de sempre).
-  const recoveringRef = useRef(false)
   useEffect(() => {
     if (!hasProject || !filesAheadOfBlocks) return
-    if (recoveringRef.current) return
     const project = projectStoreApi.getState().project
     if (!project) return
-    recoveringRef.current = true
     let cancelled = false
     void import('#parsers')
       .then(({ parseProjectFiles }) => {
@@ -94,9 +91,6 @@ export function BlocksMode(): JSX.Element {
       })
       .catch((err) => {
         console.warn('[sz] não foi possível derivar os blocos do código digitado:', err)
-      })
-      .finally(() => {
-        recoveringRef.current = false
       })
     return () => {
       cancelled = true
@@ -135,7 +129,6 @@ export function BlocksMode(): JSX.Element {
   // RESOLVER ('empty'/'failed'; 'idle' = não há partição a esperar): uma
   // restauração tardia ainda vence — hydrateAfterLoad sobrepõe estado derivado
   // não-sujo. Import dinâmico: o Babel do parser não entra no chunk dos blocos.
-  const derivedFromCodeRef = useRef<string | null>(null)
   useEffect(() => {
     if (!hasProject || ir) return
     // Blocos defasados = o recovery acima já deriva do código (e MARCA a época);
@@ -147,12 +140,10 @@ export function BlocksMode(): JSX.Element {
     }
     const project = projectStoreApi.getState().project
     if (!project) return
-    if (derivedFromCodeRef.current === project.id) return
     const files = project.files
     if (!files['index.html'].trim() && !files['style.css'].trim() && !files['script.js'].trim()) {
       return
     }
-    derivedFromCodeRef.current = project.id
     let cancelled = false
     void import('#parsers')
       .then(({ parseProjectFiles }) => {

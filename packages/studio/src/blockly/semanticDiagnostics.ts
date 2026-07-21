@@ -15,6 +15,10 @@ import {
   SZIRInputSchema,
 } from '#ir'
 import { collectHTMLAccessibilityIssues } from '../html/accessibility'
+import {
+  programmingChildBodyEntries,
+  programmingEmbeddedBodyEntries,
+} from '../ir/programmingExecution'
 
 const SEMANTIC_WARNING_ID = 'sz-semantic-diagnostic'
 
@@ -106,6 +110,59 @@ function collectHtmlTargets(nodes: HTMLNode[]): {
     stack.push(...(node.children ?? []))
   }
   return { ids, classes, tags, idSymbols }
+}
+
+/**
+ * Os comandos guiados abaixo geram acesso direto ao elemento e, por isso, não
+ * podem seguir para o preview quando o id ainda não existe no HTML. A travessia
+ * usa a mesma fonte de corpos aninhados do restante do pipeline de Programação.
+ */
+function addProgrammingDomTargetMessages(
+  workspace: Blockly.Workspace,
+  input: SZIRInput,
+  messagesByBlock: Map<WarnableBlock, Set<string>>,
+): boolean {
+  const ir = normalizeSZIR(input)
+  const { ids } = collectHtmlTargets(ir.html)
+  let valid = true
+
+  const visit = (statements: typeof ir.behavior.start): void => {
+    for (const statement of statements) {
+      if (
+        (statement.type === 'setProperty' ||
+          statement.type === 'setStyle' ||
+          statement.type === 'setDataset') &&
+        (statement.targetKind === undefined || statement.targetKind === 'id') &&
+        !ids.has(statement.targetId)
+      ) {
+        valid = false
+        addBlockMessage(
+          workspace,
+          messagesByBlock,
+          statement.__id,
+          `Não achei um elemento HTML com o id “${statement.targetId}”. Crie esse id na Estrutura ou escolha outro elemento.`,
+        )
+      }
+      if (
+        statement.type === 'onClickAssign' &&
+        statement.target.type === 'getElement' &&
+        !ids.has(statement.target.id)
+      ) {
+        valid = false
+        addBlockMessage(
+          workspace,
+          messagesByBlock,
+          statement.__id,
+          `Não achei um elemento HTML com o id “${statement.target.id}”. Crie esse id na Estrutura ou escolha outro elemento.`,
+        )
+      }
+      for (const child of programmingChildBodyEntries(statement)) visit(child.body)
+      for (const child of programmingEmbeddedBodyEntries(statement)) visit(child.body)
+    }
+  }
+
+  visit(behaviorStatements(ir))
+  return valid
 }
 
 /**
@@ -347,13 +404,28 @@ function addCssSelectorMessages(
   }
 }
 
-const SVG_LENGTH_RE =
-  /^([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?)(?:px|pt|pc|cm|mm|in|em|ex|rem|%)?$/i
+const SVG_LENGTH_RE = new RegExp(
+  '^([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:e[+-]?\\d+)?)' +
+    '(?:%|px|pt|pc|cm|mm|q|in|em|ex|cap|ch|ic|rem|lh|rlh|' +
+    'vw|vh|vi|vb|vmin|vmax|' +
+    'svw|svh|svi|svb|svmin|svmax|' +
+    'lvw|lvh|lvi|lvb|lvmin|lvmax|' +
+    'dvw|dvh|dvi|dvb|dvmin|dvmax|' +
+    'cqw|cqh|cqi|cqb|cqmin|cqmax)?$',
+  'i',
+)
 const SVG_NUMBER_RE = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i
+const SVG_DYNAMIC_LENGTH_RE = /^(?:calc|var|env|min|max|clamp)\(.+\)$/i
+const SVG_CSS_WIDE_KEYWORD_RE = /^(?:inherit|initial|unset|revert|revert-layer)$/i
 
-function isSvgLength(value: string): boolean {
+function isSvgLength(value: string, acceptsAuto = false): boolean {
   const clean = value.trim()
-  return SVG_LENGTH_RE.test(clean) || /^(?:calc|var|min|max|clamp)\(.+\)$/.test(clean)
+  return (
+    SVG_LENGTH_RE.test(clean) ||
+    SVG_DYNAMIC_LENGTH_RE.test(clean) ||
+    SVG_CSS_WIDE_KEYWORD_RE.test(clean) ||
+    (acceptsAuto && /^auto$/i.test(clean))
+  )
 }
 
 /** Número literal de uma medida; expressões dinâmicas devolvem `null`. */
@@ -365,7 +437,7 @@ function svgLiteralLengthNumber(value: string): number | null {
 function hasValidSvgPoints(value: string): boolean {
   const numbers = value.trim().replace(/,/g, ' ').split(/\s+/).filter(Boolean)
   return (
-    numbers.length >= 4 &&
+    numbers.length >= 2 &&
     numbers.length % 2 === 0 &&
     numbers.every((part) => SVG_NUMBER_RE.test(part))
   )
@@ -538,11 +610,20 @@ function addSvgMessages(
     ellipse: ['rx', 'ry'],
     rect: ['width', 'height'],
   }
+  const autoLengthAttributes = new Set([
+    'svg:width',
+    'svg:height',
+    'ellipse:rx',
+    'ellipse:ry',
+    'rect:width',
+    'rect:height',
+  ])
 
   for (const { node, ancestorIds } of records) {
     for (const attribute of lengthAttributes[node.tag] ?? []) {
       const value = node.attrs?.[attribute]
-      if (value && !isSvgLength(value)) {
+      const acceptsAuto = autoLengthAttributes.has(`${node.tag}:${attribute}`)
+      if (value && !isSvgLength(value, acceptsAuto)) {
         warn(
           node.__id,
           `“${value}” não parece uma medida válida para ${attribute}. Tente um número, como 50.`,
@@ -653,6 +734,8 @@ export function applySemanticDiagnostics(workspace: Blockly.Workspace, input: SZ
     addHTMLAccessibilityMessages(workspace, parsed.data, messagesByBlock)
     semanticValid = addSvgMessages(workspace, parsed.data, messagesByBlock)
     semanticValid = addCanvasMessages(workspace, parsed.data, messagesByBlock) && semanticValid
+    semanticValid =
+      addProgrammingDomTargetMessages(workspace, parsed.data, messagesByBlock) && semanticValid
     semanticValid =
       addOutputSafetyMessages(workspace, parsed.data, messagesByBlock) && semanticValid
   } else {

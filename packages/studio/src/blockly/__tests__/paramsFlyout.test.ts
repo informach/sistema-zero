@@ -38,9 +38,55 @@ describe('flyouts escopados de Programação', () => {
     workspace.dispose()
   })
 
+  it('oferece o parâmetro do método selecionado numa aula restrita', () => {
+    const workspace = new Blockly.Workspace()
+    const method = workspace.newBlock('sz_js_class_method')
+    method.loadExtraState?.({ params: [{ id: 'p-metodo', name: 'velocidade' }] })
+
+    expect(
+      parameterNames(
+        functionFlyoutItemsForSelection(method, {
+          level: 'avancado-3d',
+          allowBlocks: ['sz_js_class', 'sz_js_class_method', 'sz_val_arg'],
+        }),
+      ),
+    ).toEqual(['velocidade'])
+    workspace.dispose()
+  })
+
+  it('oferece o parâmetro do método quando a aula libera somente Classes', () => {
+    const workspace = new Blockly.Workspace()
+    const method = workspace.newBlock('sz_js_class_method')
+    method.loadExtraState?.({ params: [{ id: 'p-metodo', name: 'velocidade' }] })
+
+    expect(
+      parameterNames(
+        functionFlyoutItemsForSelection(method, {
+          level: 'iniciante-2d',
+          allowCategories: ['Classes'],
+        }),
+      ),
+    ).toEqual(['velocidade'])
+    workspace.dispose()
+  })
+
   it('mantém parâmetros fora da categoria Classes', () => {
     expect(classFlyoutItems(FULL_LEARNING_PROFILE)).not.toContainEqual(
       expect.objectContaining({ type: 'sz_val_arg' }),
     )
+  })
+
+  it('explica o flyout contextual quando Classes não oferece blocos estáticos', () => {
+    const items = functionFlyoutItemsForSelection(null, {
+      level: 'iniciante-2d',
+      allowCategories: ['Classes'],
+    })
+
+    expect(items).toEqual([
+      expect.objectContaining({
+        kind: 'label',
+        text: expect.stringContaining('método ou construtor'),
+      }),
+    ])
   })
 })

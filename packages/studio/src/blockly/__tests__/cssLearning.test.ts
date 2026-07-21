@@ -22,7 +22,14 @@ function cssBlock(type: string) {
 
 function argsOf(type: string): JsonArg[] {
   const definition = cssBlock(type)
-  return [definition.args0, definition.args1, definition.args2]
+  return [
+    definition.args0,
+    definition.args1,
+    definition.args2,
+    definition.args3,
+    definition.args4,
+    definition.args5,
+  ]
     .flatMap((args) => args ?? [])
     .filter(isRecord)
 }
@@ -63,7 +70,7 @@ describe('CSS para crianças — contrato pedagógico e funcional', () => {
 
   it('todo campo SELECTOR usa o seletor visual com texto livre', () => {
     const selectorArgs = CSS_BLOCKS.flatMap((block) =>
-      [block.args0, block.args1, block.args2]
+      [block.args0, block.args1, block.args2, block.args3, block.args4, block.args5]
         .flatMap((args) => args ?? [])
         .filter(isRecord)
         .filter((arg) => arg.name === 'SELECTOR')
@@ -96,7 +103,7 @@ describe('CSS para crianças — contrato pedagógico e funcional', () => {
     }
   })
 
-  it('oferece fluxos completos para fonte, hover e animação', () => {
+  it('oferece fluxos completos para fonte, ponteiro, teclado e animação', () => {
     expect(argOf('sz_css_use_font', 'SELECTOR')).toMatchObject({
       type: 'field_name_picker',
       kind: 'selector',
@@ -110,6 +117,7 @@ describe('CSS para crianças — contrato pedagógico e funcional', () => {
       kind: 'animation',
     })
     expect(argsOf('sz_css_hover').some((arg) => arg.type === 'input_statement')).toBe(true)
+    expect(argsOf('sz_css_focus_visible').some((arg) => arg.type === 'input_statement')).toBe(true)
     expect(argOf('sz_css_transition', 'PROPERTY')).toMatchObject({
       type: 'field_dropdown',
     })
@@ -169,5 +177,6 @@ describe('CSS para crianças — contrato pedagógico e funcional', () => {
     expect(labels.get('sz_css_decl')).toBe('Propriedade e valor de CSS')
     expect(labels.get('sz_css_var')).toBe('Criar variável de estilo')
     expect(labels.get('sz_css_media_query')).toBe('Adaptar o estilo ao tamanho da tela')
+    expect(labels.get('sz_css_focus_visible')).toBe('Destacar uma parte ao navegar pelo teclado')
   })
 })

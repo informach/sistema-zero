@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { compileStatements } from '#generators'
-import type { JSStatement } from '#ir'
+import type { JSExpr, JSStatement } from '#ir'
 import { parseJS } from '../js'
 
 function roundtrip(ir: JSStatement[]): JSStatement[] {
@@ -88,5 +88,17 @@ describe('DOM avançado — event.preventDefault / stopPropagation', () => {
     expect(compileStatements([{ type: 'eventMethod', method: 'preventDefault' }], 0)).toBe(
       'event.preventDefault();',
     )
+  })
+
+  it('preserva Event no roundtrip de onclick, onload e onerror', () => {
+    const target: JSExpr = { type: 'var', name: 'elemento' }
+    const body: JSStatement[] = [{ type: 'eventMethod', method: 'preventDefault' }]
+    const statements: JSStatement[] = [
+      { type: 'onClickAssign', target, body },
+      { type: 'imageOnLoad', target, body },
+      { type: 'imageOnError', target, body },
+    ]
+
+    expect(roundtrip(statements)).toEqual(statements)
   })
 })

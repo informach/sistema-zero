@@ -1,4 +1,5 @@
 import { CATEGORY_COLORS } from '../theme'
+import { EVENT_TARGET_EXTENSION } from './eventTargetExtension'
 import type { BlockDefinition } from './types'
 
 const C = CATEGORY_COLORS.dom
@@ -20,6 +21,8 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_js_on_click',
     placement: 'event',
+    userGesture: true,
+    eventObject: 'pointer',
     message0: 'Quando clicarem %1 %2',
     args0: [
       {
@@ -42,6 +45,8 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_js_on_click_anywhere',
     placement: 'event',
+    userGesture: true,
+    eventObject: 'pointer',
     message0: 'Quando clicarem em qualquer lugar da tela',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
@@ -54,6 +59,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_js_on_mouseover',
     placement: 'event',
+    eventObject: 'pointer',
     message0: 'Quando o mouse passar %1 %2',
     args0: [
       {
@@ -76,6 +82,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_js_on_input',
     placement: 'event',
+    eventObject: 'generic',
     message0: 'Quando digitar %1 %2',
     args0: [
       {
@@ -98,6 +105,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_js_on_submit',
     placement: 'event',
+    eventObject: 'generic',
     message0: 'Quando enviar %1 %2',
     args0: [
       {
@@ -130,8 +138,8 @@ export const DOM_BLOCKS: BlockDefinition[] = [
           ['clicar', 'click'],
           ['passar o mouse', 'mouseover'],
           ['tirar o mouse', 'mouseout'],
-          ['apertar o mouse', 'mousedown'],
-          ['soltar o mouse', 'mouseup'],
+          ['apertar o mouse/dedo', 'pointerdown'],
+          ['soltar o mouse/dedo', 'pointerup'],
           ['enviar', 'submit'],
           ['digitar', 'input'],
           ['mudar', 'change'],
@@ -181,7 +189,10 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_js_on_key',
     placement: 'event',
-    message0: 'Quando %1',
+    userGesture: { field: 'WHEN', equals: 'keydown' },
+    eventObject: 'keyboard',
+    extensions: [EVENT_TARGET_EXTENSION],
+    message0: 'Quando %1 %2 %3',
     args0: [
       {
         type: 'field_dropdown',
@@ -191,6 +202,17 @@ export const DOM_BLOCKS: BlockDefinition[] = [
           ['soltar a tecla', 'keyup'],
         ],
       },
+      {
+        type: 'field_dropdown',
+        name: 'TARGET_KIND',
+        options: [
+          ['na página', 'document'],
+          ['na janela', 'window'],
+          ['no elemento id', 'id'],
+          ['na variável', 'var'],
+        ],
+      },
+      { type: 'field_name_picker', name: 'TARGET', text: 'document', kind: 'dom-target' },
     ],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
@@ -198,42 +220,89 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Roda os blocos de dentro quando qualquer tecla é apertada ou solta. Use o valor da tecla do evento para descobrir qual foi.',
+      'Roda os blocos de dentro quando uma tecla é apertada ou solta no alvo escolhido. Use o valor da tecla do evento para descobrir qual foi.',
   },
   {
     type: 'sz_js_on_mousemove',
     placement: 'event',
-    message0: 'Quando mover o mouse/dedo',
+    eventObject: 'pointer',
+    extensions: [EVENT_TARGET_EXTENSION],
+    message0: 'Quando mover o mouse/dedo %1 %2',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'TARGET_KIND',
+        options: [
+          ['na página', 'document'],
+          ['na janela', 'window'],
+          ['no elemento id', 'id'],
+          ['na variável', 'var'],
+        ],
+      },
+      { type: 'field_name_picker', name: 'TARGET', text: 'document', kind: 'dom-target' },
+    ],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Roda o "fazer" toda vez que o mouse/dedo se move. Use "x do mouse/dedo" e "y do mouse/dedo" para a posição atual.',
+      'Roda o "fazer" quando o mouse/dedo se move no alvo escolhido. Use "x do mouse/dedo" e "y do mouse/dedo" para a posição atual.',
   },
   {
     type: 'sz_js_on_pointer_down',
     placement: 'event',
-    message0: 'Quando apertar o mouse/dedo',
+    userGesture: true,
+    eventObject: 'pointer',
+    extensions: [EVENT_TARGET_EXTENSION],
+    message0: 'Quando apertar o mouse/dedo %1 %2',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'TARGET_KIND',
+        options: [
+          ['na janela', 'window'],
+          ['na página', 'document'],
+          ['no elemento id', 'id'],
+          ['na variável', 'var'],
+        ],
+      },
+      { type: 'field_name_picker', name: 'TARGET', text: 'window', kind: 'dom-target' },
+    ],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Roda os blocos de dentro quando apertam o mouse ou tocam a tela. É útil para ações de segurar.',
+      'Roda os blocos de dentro quando apertam o mouse ou tocam o alvo escolhido. É útil para ações de segurar.',
   },
   {
     type: 'sz_js_on_pointer_up',
     placement: 'event',
-    message0: 'Quando soltar o mouse/dedo',
+    userGesture: true,
+    eventObject: 'pointer',
+    extensions: [EVENT_TARGET_EXTENSION],
+    message0: 'Quando soltar o mouse/dedo %1 %2',
+    args0: [
+      {
+        type: 'field_dropdown',
+        name: 'TARGET_KIND',
+        options: [
+          ['na janela', 'window'],
+          ['na página', 'document'],
+          ['no elemento id', 'id'],
+          ['na variável', 'var'],
+        ],
+      },
+      { type: 'field_name_picker', name: 'TARGET', text: 'window', kind: 'dom-target' },
+    ],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Roda os blocos de dentro quando soltam o mouse ou tiram o dedo da tela.',
+    tooltip: 'Roda os blocos de dentro quando soltam o mouse ou tiram o dedo do alvo escolhido.',
   },
   {
     // Legado para abrir projetos antigos. O frame "Ao iniciar" já representa
@@ -241,6 +310,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     type: 'sz_js_on_load',
     placement: 'legacy-start',
     migration: 'unwrap-load',
+    eventObject: 'generic',
     message0: 'Quando a página terminar de carregar',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
@@ -253,6 +323,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_js_on_resize',
     placement: 'event',
+    eventObject: 'generic',
     message0: 'Quando a janela mudar de tamanho',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
@@ -264,6 +335,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_js_on_context_menu',
     placement: 'event',
+    eventObject: 'pointer',
     message0: 'Quando abrir o menu do botão direito',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
@@ -276,6 +348,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_js_on_blur',
     placement: 'event',
+    eventObject: 'generic',
     message0: 'Quando a janela perder o foco',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
@@ -288,6 +361,8 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_js_element_onclick',
     placement: 'event',
+    userGesture: true,
+    eventObject: 'pointer',
     message0: 'ao clicar no elemento %1 %2 fazer %3',
     args0: [
       { type: 'input_value', name: 'TARGET', check: 'JSValue' },
@@ -302,6 +377,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_js_on_fullscreen_change',
     placement: 'event',
+    eventObject: 'generic',
     message0: 'Quando a tela cheia mudar',
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'DO' }],
@@ -314,7 +390,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   // ---- Tela cheia (Fullscreen API) ----
   {
     type: 'sz_js_request_fullscreen',
-    placement: 'command',
+    placement: 'user-gesture-command',
     message0: 'entrar em tela cheia',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -332,7 +408,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_toggle_fullscreen',
-    placement: 'command',
+    placement: 'user-gesture-command',
     message0: 'alternar tela cheia',
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',

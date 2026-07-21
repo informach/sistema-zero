@@ -16,6 +16,11 @@ interface BuiltCase {
   targetId: string
 }
 
+interface DropdownVariant {
+  field: string
+  value: string
+}
+
 const IMPLICIT_NAMES = new Set(['ctx', 'event', 'window', 'document'])
 
 function stripIds<T>(value: T): T {
@@ -229,15 +234,80 @@ function attachInsideClass(
   }
 }
 
-function buildCase(definition: BlockDefinition): BuiltCase {
+function attachInDefaultContext(
+  workspace: Blockly.Workspace,
+  startSlot: Blockly.Connection | null,
+  target: Blockly.Block,
+  definition: BlockDefinition,
+): void {
+  if (target.outputConnection) {
+    const host = workspace.newBlock('sz_js_console_log_value')
+    connect(startSlot, host)
+    attachReporter(host, 'VALUE', target)
+    return
+  }
+  const role = inferBlockContract(definition).placement?.role
+  if (role === 'event') {
+    const events = workspace.newBlock(FRAME_EVENTS)
+    connect(events.getInput('CHILDREN')?.connection, target)
+  } else if (role === 'loop') {
+    const loops = workspace.newBlock(FRAME_LOOPS)
+    connect(loops.getInput('CHILDREN')?.connection, target)
+  } else {
+    connect(startSlot, target)
+  }
+}
+
+function dropdownVariants(definition: BlockDefinition): DropdownVariant[] {
+  const variants: DropdownVariant[] = []
+  for (const args of [
+    definition.args0,
+    definition.args1,
+    definition.args2,
+    definition.args3,
+    definition.args4,
+    definition.args5,
+  ]) {
+    for (const arg of args ?? []) {
+      if (typeof arg !== 'object' || arg === null) continue
+      const field = arg as { type?: unknown; name?: unknown; options?: unknown }
+      if (
+        field.type !== 'field_dropdown' ||
+        typeof field.name !== 'string' ||
+        !Array.isArray(field.options)
+      ) {
+        continue
+      }
+      for (const option of field.options) {
+        if (!Array.isArray(option) || typeof option[1] !== 'string') continue
+        variants.push({ field: field.name, value: option[1] })
+      }
+    }
+  }
+  return variants
+}
+
+function buildCase(
+  definition: BlockDefinition,
+  fieldValues: Readonly<Record<string, string>> = {},
+): BuiltCase {
   const workspace = new Blockly.Workspace()
   try {
     const target = workspace.newBlock(definition.type)
+    for (const [field, value] of Object.entries(fieldValues)) target.setFieldValue(value, field)
     const start = workspace.newBlock(FRAME_START)
     const startSlot = addPrelude(workspace, start, target)
 
     switch (definition.type) {
       case 'sz_js_event_method': {
+        const events = workspace.newBlock(FRAME_EVENTS)
+        const event = workspace.newBlock('sz_js_on_click_anywhere')
+        connect(events.getInput('CHILDREN')?.connection, event)
+        connect(event.getInput('DO')?.connection, target)
+        break
+      }
+      case 'sz_js_request_fullscreen':
+      case 'sz_js_toggle_fullscreen': {
         const events = workspace.newBlock(FRAME_EVENTS)
         const event = workspace.newBlock('sz_js_on_click_anywhere')
         connect(events.getInput('CHILDREN')?.connection, event)
@@ -296,23 +366,16 @@ function buildCase(definition: BlockDefinition): BuiltCase {
       case 'sz_val_this_prop':
         attachInsideClass(workspace, startSlot, target, 'method-body')
         break
-      default:
-        if (target.outputConnection) {
-          const host = workspace.newBlock('sz_js_console_log_value')
-          connect(startSlot, host)
-          attachReporter(host, 'VALUE', target)
+      case 'sz_js_class_op':
+      case 'sz_val_class_contains':
+        if (target.getFieldValue('TARGET_KIND') === 'this') {
+          attachInsideFunction(workspace, startSlot, target)
         } else {
-          const role = inferBlockContract(definition).placement?.role
-          if (role === 'event') {
-            const events = workspace.newBlock(FRAME_EVENTS)
-            connect(events.getInput('CHILDREN')?.connection, target)
-          } else if (role === 'loop') {
-            const loops = workspace.newBlock(FRAME_LOOPS)
-            connect(loops.getInput('CHILDREN')?.connection, target)
-          } else {
-            connect(startSlot, target)
-          }
+          attachInDefaultContext(workspace, startSlot, target, definition)
         }
+        break
+      default:
+        attachInDefaultContext(workspace, startSlot, target, definition)
     }
 
     return { ir: buildIRFromWorkspace(workspace), targetId: target.id }
@@ -332,6 +395,30 @@ function throughBlocks(ir: SZIRV2): SZIRV2 {
   }
 }
 
+function expectPipeline(
+  definition: BlockDefinition,
+  fieldValues: Readonly<Record<string, string>> = {},
+): void {
+  const label = `${definition.type} ${JSON.stringify(fieldValues)}`
+  const { ir, targetId } = buildCase(definition, fieldValues)
+
+  const validated = SZIRV2Schema.safeParse(ir)
+  expect(
+    validated.success,
+    validated.success ? label : validated.error.issues.map((issue) => issue.message).join('\n'),
+  ).toBe(true)
+
+  expect(stripIds(throughBlocks(ir)), label).toEqual(stripIds(ir))
+
+  const statements = behaviorStatements(ir)
+  expect(containsBlockId(ir, targetId), label).toBe(true)
+  const code = generateJS({ statements })
+  const parsed = parseJS(code)
+  expect(containsRawJS(parsed), label).toBe(false)
+  const canonicalCode = generateJS({ statements: parsed })
+  expect(generateJS({ statements: parseJS(canonicalCode) }), label).toBe(canonicalCode)
+}
+
 beforeAll(() => ensureBlocklyInitialized())
 
 describe('Programação — matriz ponta a ponta dos 149 blocos visíveis', () => {
@@ -342,25 +429,66 @@ describe('Programação — matriz ponta a ponta dos 149 blocos visíveis', () =
 
   for (const definition of PROGRAMMING_VISIBLE_DEFINITIONS) {
     it(definition.type, () => {
-      const { ir, targetId } = buildCase(definition)
-
-      const validated = SZIRV2Schema.safeParse(ir)
-      expect(
-        validated.success,
-        validated.success
-          ? definition.type
-          : validated.error.issues.map((issue) => issue.message).join('\n'),
-      ).toBe(true)
-
-      expect(stripIds(throughBlocks(ir))).toEqual(stripIds(ir))
-
-      const statements = behaviorStatements(ir)
-      expect(containsBlockId(ir, targetId)).toBe(true)
-      const code = generateJS({ statements })
-      const parsed = parseJS(code)
-      expect(containsRawJS(parsed)).toBe(false)
-      const canonicalCode = generateJS({ statements: parsed })
-      expect(generateJS({ statements: parseJS(canonicalCode) })).toBe(canonicalCode)
+      expectPipeline(definition)
     })
   }
+
+  it('preserva as 152 opções de dropdown pelo pipeline real', () => {
+    let total = 0
+    for (const definition of PROGRAMMING_VISIBLE_DEFINITIONS) {
+      for (const variant of dropdownVariants(definition)) {
+        total += 1
+        expectPipeline(definition, { [variant.field]: variant.value })
+      }
+    }
+    expect(total).toBe(152)
+  })
+
+  it('atualiza o set_text legado para o bloco público sem cair em JavaScript bruto', () => {
+    const workspace = new Blockly.Workspace()
+    try {
+      const start = workspace.newBlock(FRAME_START)
+      const legacy = workspace.newBlock('sz_js_set_text')
+      legacy.setFieldValue('saida', 'TARGET')
+      legacy.setFieldValue('Olá', 'VALUE')
+      connect(start.getInput('CHILDREN')?.connection, legacy)
+
+      const ir = buildIRFromWorkspace(workspace)
+      expect(ir.behavior.start[0]).toMatchObject({
+        type: 'setProperty',
+        targetId: 'saida',
+        property: 'textContent',
+        value: { type: 'str', value: 'Olá' },
+      })
+
+      const parsed = parseJS(generateJS({ statements: behaviorStatements(ir) }))
+      expect(containsRawJS(parsed)).toBe(false)
+      const restored = JSON.stringify(buildWorkspaceStateFromIR(ir))
+      expect(restored).toContain('sz_js_set_property_text')
+      expect(restored).not.toContain('sz_js_set_text')
+    } finally {
+      workspace.dispose()
+    }
+  })
+
+  it.each([
+    ['sz_js_on_mousemove', 'pointermove'],
+    ['sz_js_on_pointer_down', 'pointerdown'],
+    ['sz_js_on_pointer_up', 'pointerup'],
+  ] as const)('%s usa o evento de ponteiro real %s', (blockType, eventName) => {
+    const workspace = new Blockly.Workspace()
+    try {
+      const events = workspace.newBlock(FRAME_EVENTS)
+      const event = workspace.newBlock(blockType)
+      connect(events.getInput('CHILDREN')?.connection, event)
+
+      const ir = buildIRFromWorkspace(workspace)
+      expect(ir.behavior.events[0]).toMatchObject({ type: 'event', event: eventName })
+      const code = generateJS({ statements: behaviorStatements(ir) })
+      expect(code).toContain(`addEventListener("${eventName}"`)
+      expect(stripIds(throughBlocks(ir))).toEqual(stripIds(ir))
+    } finally {
+      workspace.dispose()
+    }
+  })
 })

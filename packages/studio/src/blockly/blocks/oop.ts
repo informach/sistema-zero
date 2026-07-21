@@ -38,6 +38,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_constructor',
+    bodyExecution: 'function',
     placement: 'class-member',
     message0: 'construtor',
     message1: 'fazer %1',
@@ -52,6 +53,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_class_method',
+    bodyExecution: 'function',
     placement: 'class-member',
     message0: 'método %1 assíncrono %2',
     args0: [

@@ -41,6 +41,7 @@ interface Api {
   inventoryCount: (item?: unknown) => number
   inventoryHas: (item?: unknown, n?: unknown) => boolean
   engineSound: (on?: unknown) => unknown
+  ambience: (kind?: unknown) => unknown
   loadSound: (name?: unknown, asset?: unknown) => unknown
   playSound: (name?: unknown) => unknown
   playMusic: (name?: unknown) => unknown
@@ -89,12 +90,20 @@ interface Api {
   keyPressed: (k: unknown) => boolean
 }
 
-function boot(): Api {
+function boot(options?: {
+  sounds?: Record<string, string>
+  Audio?: new (url: string) => unknown
+}): Api {
   const body = world3DRuntime.replace(/^import \* as THREE from 'three';\n/, '')
-  const win: { addEventListener: () => void; SZWorld3D?: unknown } = {
+  const win: {
+    addEventListener: () => void
+    SZWorld3D?: unknown
+    __SZGAME_SOUNDS?: Record<string, string>
+  } = {
     addEventListener: () => {},
+    __SZGAME_SOUNDS: options?.sounds,
   }
-  new Function('THREE', 'window', body)({}, win)
+  new Function('THREE', 'window', 'Audio', body)({}, win, options?.Audio)
   if (!win.SZWorld3D) throw new Error('o runtime não pendurou window.SZWorld3D')
   return win.SZWorld3D as Api
 }
@@ -284,6 +293,42 @@ describe('SZWorld3D — API pura (sem DOM/three)', () => {
     expect(() => api.stopMusic()).not.toThrow()
     expect(() => api.hud('Pontos: 5', 'topo-direita')).not.toThrow()
     expect(() => api.say('Oi!', 2)).not.toThrow()
+  })
+
+  it('mantém a mesma música tocando quando o comando é repetido', () => {
+    const instances: Array<{ url: string; pauseCalls: number; playCalls: number }> = []
+    class AudioStub {
+      loop = false
+      volume = 1
+      currentTime = 0
+      pauseCalls = 0
+      playCalls = 0
+      constructor(public readonly url: string) {
+        instances.push(this)
+      }
+      play() {
+        this.playCalls += 1
+      }
+      pause() {
+        this.pauseCalls += 1
+      }
+    }
+    const api = boot({
+      sounds: { tema: '/tema.mp3', batalha: '/batalha.mp3' },
+      Audio: AudioStub,
+    })
+
+    api.playMusic('tema')
+    api.playMusic('tema')
+    expect(instances).toHaveLength(1)
+    expect(instances[0]?.playCalls).toBe(1)
+    expect(instances[0]?.pauseCalls).toBe(0)
+
+    api.playMusic('batalha')
+    expect(instances).toHaveLength(2)
+    expect(instances[0]?.pauseCalls).toBe(1)
+    api.stopMusic()
+    expect(instances[1]?.pauseCalls).toBe(1)
   })
 
   it('pontos/áreas/totens/galeria: config pura antes do start, sem lançar', () => {

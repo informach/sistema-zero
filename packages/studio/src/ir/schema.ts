@@ -1351,6 +1351,72 @@ export function hasDuplicateCSSDeclarations(declarations: CSSDeclarations): bool
   return false
 }
 
+const CSS_SHORTHAND_COMPONENTS: Readonly<Record<string, readonly string[]>> = {
+  all: ['*'],
+  'border-color': [
+    'border-top-color',
+    'border-right-color',
+    'border-bottom-color',
+    'border-left-color',
+  ],
+  'border-style': [
+    'border-top-style',
+    'border-right-style',
+    'border-bottom-style',
+    'border-left-style',
+  ],
+  'border-width': [
+    'border-top-width',
+    'border-right-width',
+    'border-bottom-width',
+    'border-left-width',
+  ],
+  'border-block-color': ['border-block-start-color', 'border-block-end-color'],
+  'border-block-style': ['border-block-start-style', 'border-block-end-style'],
+  'border-block-width': ['border-block-start-width', 'border-block-end-width'],
+  'border-inline-color': ['border-inline-start-color', 'border-inline-end-color'],
+  'border-inline-style': ['border-inline-start-style', 'border-inline-end-style'],
+  'border-inline-width': ['border-inline-start-width', 'border-inline-end-width'],
+  columns: ['column-width', 'column-count'],
+  'contain-intrinsic-size': [
+    'contain-intrinsic-width',
+    'contain-intrinsic-height',
+    'contain-intrinsic-block-size',
+    'contain-intrinsic-inline-size',
+  ],
+  'flex-flow': ['flex-direction', 'flex-wrap'],
+  gap: ['row-gap', 'column-gap'],
+  inset: ['top', 'right', 'bottom', 'left'],
+  'place-content': ['align-content', 'justify-content'],
+  'place-items': ['align-items', 'justify-items'],
+  'place-self': ['align-self', 'justify-self'],
+  'white-space': ['white-space-collapse', 'text-wrap-mode'],
+}
+
+function cssPropertiesShareCascade(property: string, candidate: string): boolean {
+  if (property.startsWith('--') || candidate.startsWith('--')) return false
+  if (property === 'all' || candidate === 'all') return true
+  if (candidate.startsWith(`${property}-`) || property.startsWith(`${candidate}-`)) return true
+  return (
+    CSS_SHORTHAND_COMPONENTS[property]?.includes(candidate) === true ||
+    CSS_SHORTHAND_COMPONENTS[candidate]?.includes(property) === true
+  )
+}
+
+/**
+ * Detecta declarações cuja ordem participa da cascata porque uma delas expande
+ * ou redefine a outra. Separá-las em blocos dedicados distintos pode inverter
+ * o resultado visual mesmo quando os nomes das propriedades são diferentes.
+ */
+export function hasOrderDependentCSSDeclarations(declarations: CSSDeclarations): boolean {
+  const properties = cssDeclarationEntries(declarations).map(({ property }) =>
+    property.trim().toLowerCase(),
+  )
+  return properties.some((property, index) =>
+    properties.slice(index + 1).some((candidate) => cssPropertiesShareCascade(property, candidate)),
+  )
+}
+
 export interface CSSRule {
   selector: string
   declarations: CSSDeclarations
@@ -1564,7 +1630,7 @@ export const CSSEntrySchema: z.ZodType<CSSEntry> = z.union([
 
 // ---------- JS Statements ----------
 
-const eventKindSchema = z.enum([
+export const EVENT_KINDS = [
   'click',
   'keydown',
   'keyup',
@@ -1573,6 +1639,9 @@ const eventKindSchema = z.enum([
   'mousemove',
   'mousedown',
   'mouseup',
+  'pointermove',
+  'pointerdown',
+  'pointerup',
   'submit',
   'input',
   'change',
@@ -1584,7 +1653,8 @@ const eventKindSchema = z.enum([
   // zerar o estado do teclado em jogos.
   'contextmenu',
   'blur',
-])
+] as const
+const eventKindSchema = z.enum(EVENT_KINDS)
 export type EventKind = z.infer<typeof eventKindSchema>
 
 interface JSStatementCommon {

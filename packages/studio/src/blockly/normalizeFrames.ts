@@ -1,5 +1,11 @@
 import * as Blockly from 'blockly/core'
-import { areaForBlockType, getBlockContract } from './blockContracts'
+import {
+  areaForBlockType,
+  areasForBlockType,
+  contractProvidesUserGesture,
+  effectiveBodyExecution,
+  getBlockContract,
+} from './blockContracts'
 import { BEHAVIOR_AREAS_STATE_KEY, BEHAVIOR_AREAS_STATE_VERSION } from './blocksStateVersion'
 import {
   collectFlatFromWorkspace,
@@ -37,6 +43,7 @@ const START_WRAPPER_BLOCK_TYPES = new Set([
   'sz_js_on_load',
 ])
 const ENGINE_BOOT_BLOCK_TYPES = new Set(['sz_gk_start', 'sz_g3k_start', 'sz_w3d_start'])
+const USER_GESTURE_COMMAND_TYPES = new Set(['sz_js_request_fullscreen', 'sz_js_toggle_fullscreen'])
 interface SerializedBlock {
   type: string
   id?: string
@@ -113,6 +120,57 @@ function firstStatementInput(block: SerializedBlock): SerializedBlock | undefine
     if (input.block) return input.block
   }
   return undefined
+}
+
+interface UserGestureContext {
+  userGestureBody: boolean
+}
+
+function isSerializedUserGestureEvent(block: SerializedBlock): boolean {
+  const fields = block.fields
+  const record =
+    typeof fields === 'object' && fields !== null ? (fields as Record<string, unknown>) : {}
+  return contractProvidesUserGesture(getBlockContract(block.type), (name) => record[name])
+}
+
+/**
+ * Solta como rascunho comandos de tela cheia que versões anteriores deixavam
+ * salvar fora de uma ativação transitória válida. A versão 6 também aplica o
+ * contrato declarado por callbacks de extensões oficiais.
+ */
+function detachInvalidUserGestureCommands(
+  head: SerializedBlock | undefined,
+  context: UserGestureContext,
+  drafts: SerializedBlock[],
+): { head: SerializedBlock | undefined; changed: boolean } {
+  const kept: SerializedBlock[] = []
+  let changed = false
+
+  for (const block of unlinkChain(head)) {
+    if (USER_GESTURE_COMMAND_TYPES.has(block.type) && !context.userGestureBody) {
+      drafts.push(block)
+      changed = true
+      continue
+    }
+
+    const contract = getBlockContract(block.type)
+    const bodyExecution = effectiveBodyExecution(contract)
+    const resetsActivation = bodyExecution === 'deferred-callback' || bodyExecution === 'function'
+    const childContext: UserGestureContext = {
+      userGestureBody:
+        isSerializedUserGestureEvent(block) || (!resetsActivation && context.userGestureBody),
+    }
+    for (const input of Object.values(block.inputs ?? {})) {
+      if (!input.block) continue
+      const nested = detachInvalidUserGestureCommands(input.block, childContext, drafts)
+      if (nested.changed) changed = true
+      if (nested.head) input.block = nested.head
+      else delete input.block
+    }
+    kept.push(block)
+  }
+
+  return { head: linkChain(kept), changed }
 }
 
 function splitLegacySerializedBehavior(head: SerializedBlock | undefined): {
@@ -234,8 +292,8 @@ function extractStrictLifecycleRoots(
 }
 
 /**
- * Versão 3: reencaminha raízes cujo contrato mudou e ergue construtores
- * persistentes que projetos antigos permitiam salvar dentro de eventos/laços.
+ * Versão 5: reencaminha raízes cujo contrato mudou, ergue construtores
+ * persistentes e solta tela cheia inválida que projetos antigos permitiam.
  * Nada é apagado: o bloco estrito vai para o fim da sua área canônica.
  */
 function migrateCurrentLifecyclePlacements(state: unknown, force = false): unknown {
@@ -255,6 +313,7 @@ function migrateCurrentLifecyclePlacements(state: unknown, force = false): unkno
     events: [],
     loops: [],
   }
+  const gestureDrafts: SerializedBlock[] = []
   let changed = false
 
   for (const top of tops) {
@@ -264,8 +323,9 @@ function migrateCurrentLifecyclePlacements(state: unknown, force = false): unkno
     for (const child of unlinkChain(top.inputs?.CHILDREN?.block)) {
       if (extractStrictLifecycleRoots(child, collected)) changed = true
       const target = areaForBlockType(child.type)
+      const allowedAreas = areasForBlockType(child.type)
       if (target === 'start' || target === 'events' || target === 'loops') {
-        if (target !== currentArea) {
+        if (!allowedAreas?.includes(currentArea)) {
           collected[target].push(child)
           changed = true
           continue
@@ -273,7 +333,13 @@ function migrateCurrentLifecyclePlacements(state: unknown, force = false): unkno
       }
       kept.push(child)
     }
-    const head = linkChain(kept)
+    const sanitized = detachInvalidUserGestureCommands(
+      linkChain(kept),
+      { userGestureBody: false },
+      gestureDrafts,
+    )
+    if (sanitized.changed) changed = true
+    const head = sanitized.head
     if (head) {
       top.inputs = { ...(top.inputs ?? {}), CHILDREN: { block: head } }
     } else if (top.inputs?.CHILDREN) {
@@ -284,11 +350,18 @@ function migrateCurrentLifecyclePlacements(state: unknown, force = false): unkno
     }
   }
 
-  if (!changed && previousVersion !== 2) return state
+  if (!changed && previousVersion !== 2 && previousVersion !== 3 && previousVersion !== 4) {
+    return state
+  }
 
   appendChildrenToArea(tops, 'start', collected.start)
   appendChildrenToArea(tops, 'events', collected.events)
   appendChildrenToArea(tops, 'loops', collected.loops)
+  gestureDrafts.forEach((draft, index) => {
+    draft.x = draft.x ?? 32 + index * 32
+    draft.y = draft.y ?? 760 + index * 48
+    tops.push(draft)
+  })
   return markLifecycleBlocksState(cloned)
 }
 

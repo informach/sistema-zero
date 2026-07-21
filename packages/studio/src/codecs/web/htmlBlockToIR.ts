@@ -1,7 +1,11 @@
 import type * as Blockly from 'blockly/core'
 import type { HTMLNode, HTMLTag } from '#ir'
 import { HTMLNodeSchema } from '#ir'
-import { htmlElementForBlock, isSupportedHTMLInputType } from '../../html/catalog'
+import {
+  htmlElementForBlock,
+  isSupportedHTMLImageLoading,
+  normalizeHTMLInputType,
+} from '../../html/catalog'
 
 export interface HTMLBlockToIRContext {
   children(block: Blockly.Block, inputName: string, seen: Set<string>): HTMLNode[]
@@ -168,6 +172,9 @@ export function htmlBlockToIR(
       const id = field(block, 'ID')
       const alt = field(block, 'ALT')
       const decorative = field(block, 'DECORATIVE') === 'TRUE'
+      const width = field(block, 'WIDTH')
+      const height = field(block, 'HEIGHT')
+      const loading = field(block, 'LOADING')
       return {
         type: 'element',
         tag: 'img',
@@ -175,22 +182,27 @@ export function htmlBlockToIR(
         attrs: {
           src: field(block, 'SRC'),
           ...(decorative ? { alt: '' } : alt ? { alt } : {}),
+          ...(width ? { width } : {}),
+          ...(height ? { height } : {}),
+          ...(isSupportedHTMLImageLoading(loading) ? { loading } : {}),
         },
       }
     }
     case 'sz_html_input': {
       const id = field(block, 'ID')
-      const inputType = field(block, 'TYPE')
+      const inputType = normalizeHTMLInputType(field(block, 'TYPE'))
       const placeholder = field(block, 'PLACEHOLDER')
       const name = field(block, 'NAME')
       const value = field(block, 'VALUE')
       const checked = field(block, 'CHECKED') === 'TRUE'
+      const autocomplete = field(block, 'AUTOCOMPLETE')
       const attrs: Record<string, string> = {}
-      if (inputType && isSupportedHTMLInputType(inputType)) attrs.type = inputType
+      if (inputType) attrs.type = inputType
       if (placeholder) attrs.placeholder = placeholder
       if (name) attrs.name = name
       if (value) attrs.value = value
       if (checked) attrs.checked = ''
+      if (autocomplete) attrs.autocomplete = autocomplete
       return {
         type: 'element',
         tag: 'input',
@@ -202,9 +214,11 @@ export function htmlBlockToIR(
       const id = field(block, 'ID')
       const placeholder = field(block, 'PLACEHOLDER')
       const name = field(block, 'NAME')
+      const autocomplete = field(block, 'AUTOCOMPLETE')
       const attrs: Record<string, string> = {}
       if (placeholder) attrs.placeholder = placeholder
       if (name) attrs.name = name
+      if (autocomplete) attrs.autocomplete = autocomplete
       return {
         type: 'element',
         tag: 'textarea',

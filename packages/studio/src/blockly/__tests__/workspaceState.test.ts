@@ -2,7 +2,15 @@ import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
 import { generateProjectFiles, generateProjectFilesWithMap } from '#generators'
-import { assignStableIdsToIR, type SZIR, type SZIRV2 } from '#ir'
+import {
+  assignStableIdsToIR,
+  EVENT_KINDS,
+  type EventTargetKind,
+  type JSStatement,
+  type SZIR,
+  type SZIRV2,
+  SZIRV2Schema,
+} from '#ir'
 import { parseProjectFiles } from '#parsers'
 import { buildIRFromWorkspace } from '../buildIR'
 import { ensureBlocklyInitialized } from '../setup'
@@ -403,6 +411,120 @@ describe('buildWorkspaceStateFromIR', () => {
     expect(types).toContain('sz_js_on_resize')
     expect(types).toContain('sz_js_set_interval_seconds')
     expect(types).not.toContain('sz_adv_raw_js')
+  })
+
+  it.each([
+    {
+      label: 'ponteiro em variável de elemento',
+      source: 'canvas.addEventListener("pointerdown", (event) => { console.log("ok"); });',
+      expected: 'canvas?.addEventListener("pointerdown"',
+      expectedBlock: 'sz_js_on_pointer_down',
+    },
+    {
+      label: 'teclado em elemento por id',
+      source:
+        'document.getElementById("campo")?.addEventListener("keydown", (event) => { console.log(event.key); });',
+      expected: 'document.getElementById("campo")?.addEventListener("keydown"',
+      expectedBlock: 'sz_js_on_key',
+    },
+    {
+      label: 'change em variável de elemento',
+      source: 'campo.addEventListener("change", (event) => { console.log("mudou"); });',
+      expected: 'campo?.addEventListener("change"',
+      expectedBlock: 'sz_adv_raw_js',
+    },
+    {
+      label: 'clique inline na janela',
+      source: 'window.addEventListener("click", (event) => { console.log("ok"); });',
+      expected: 'window.addEventListener("click"',
+      expectedBlock: 'sz_adv_raw_js',
+    },
+    {
+      label: 'handler nomeado no documento',
+      source: 'document.addEventListener("click", tratar);',
+      expected: 'document.addEventListener("click", tratar',
+      expectedBlock: 'sz_adv_raw_js',
+    },
+  ])('preserva $label em um bloco válido na área de eventos', ({
+    source,
+    expected,
+    expectedBlock,
+  }) => {
+    const parsed = parseProjectFiles({
+      'index.html': '<!doctype html><script src="script.js"></script>',
+      'style.css': '',
+      'script.js': source,
+    })
+    const state = buildWorkspaceStateFromIR(parsed)
+    expect(collectTypes(state.blocks.blocks)).toContain(expectedBlock)
+
+    ensureBlocklyInitialized()
+    const workspace = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(state, workspace)
+      const rebuilt = buildIRFromWorkspace(workspace)
+      const validated = SZIRV2Schema.safeParse(rebuilt)
+      const lifecycleIssues = validated.success
+        ? []
+        : validated.error.issues.filter(
+            (issue) =>
+              issue.path.length === 3 &&
+              issue.path[0] === 'behavior' &&
+              issue.message.includes('não pode ficar na área'),
+          )
+      expect(lifecycleIssues).toEqual([])
+      const code = generateProjectFiles({ ir: rebuilt, projectName: 'Eventos' })['script.js']
+      expect(code).toContain(expected)
+    } finally {
+      workspace.dispose()
+    }
+  })
+
+  it('preserva o destino em toda combinação EventKind × targetKind, inline e nomeada', () => {
+    const targets: ReadonlyArray<{ kind: EventTargetKind; target: string; expected: string }> = [
+      {
+        kind: 'id',
+        target: 'alvo',
+        expected: 'document.getElementById("alvo")?.addEventListener(',
+      },
+      { kind: 'var', target: 'alvo', expected: 'alvo?.addEventListener(' },
+      { kind: 'document', target: 'document', expected: 'document.addEventListener(' },
+      { kind: 'window', target: 'window', expected: 'window.addEventListener(' },
+    ]
+
+    ensureBlocklyInitialized()
+    for (const event of EVENT_KINDS) {
+      for (const { kind, target, expected } of targets) {
+        for (const statementType of ['event', 'eventHandler'] as const) {
+          const statement: JSStatement =
+            statementType === 'event'
+              ? { type: 'event', target, targetKind: kind, event, body: [] }
+              : {
+                  type: 'eventHandler',
+                  target,
+                  targetKind: kind,
+                  event,
+                  handlerName: 'tratar',
+                }
+          const ir: SZIRV2 = {
+            version: 2,
+            html: [],
+            css: [],
+            behavior: { start: [], events: [statement], loops: [] },
+            extensions: [],
+          }
+          const workspace = new Blockly.Workspace()
+          try {
+            Blockly.serialization.workspaces.load(buildWorkspaceStateFromIR(ir), workspace)
+            const rebuilt = buildIRFromWorkspace(workspace)
+            const code = generateProjectFiles({ ir: rebuilt, projectName: 'Matriz' })['script.js']
+            expect(code, `${statementType}/${event}/${kind}`).toContain(expected)
+          } finally {
+            workspace.dispose()
+          }
+        }
+      }
+    }
   })
 
   it('faz roundtrip texto→blocos de lista (array): criar, tamanho, adicionar e remover', () => {

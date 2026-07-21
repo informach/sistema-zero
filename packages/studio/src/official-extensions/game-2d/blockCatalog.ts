@@ -278,7 +278,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_play_music',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Tocar música de fundo %1',
     args0: [
       {
@@ -296,7 +296,8 @@ export const gameTwoDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Toca uma musiquinha de fundo em loop (sintetizada). Só uma música toca por vez.',
+    tooltip:
+      'Toca uma musiquinha de fundo em loop. Use em “Ao iniciar”, “Quando acontecer” ou numa função, nunca em “Enquanto estiver rodando”. Repetir a mesma música não recomeça a faixa.',
   },
   {
     type: 'sz_g2d_stop_music',
@@ -897,6 +898,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_on_pointer',
     placement: 'event',
+    userGesture: true,
     message0: 'Quando clicar/tocar, na posição x %1 y %2',
     args0: [
       { type: 'field_input', name: 'PX', text: 'px' },
@@ -915,6 +917,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_on_key',
     placement: 'event',
+    userGesture: true,
     message0: 'Quando apertar a tecla %1',
     args0: [
       {
@@ -1262,6 +1265,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_on_enemy_shot_hit',
     placement: 'loop-command',
+    bodyExecution: 'sync-callback',
     message0: 'Para cada tiro do tipo %1 que acertar o sprite %2',
     args0: [
       { type: 'field_name_picker', name: 'TYPE', text: 'zumbi', kind: 'enemytype' },
@@ -1617,6 +1621,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_for_each_in_group',
     placement: 'command',
+    bodyExecution: 'sync-callback',
     message0: 'Para cada sprite %1 do grupo %2',
     args0: [
       { type: 'field_input', name: 'ITEM', text: 'sprite' },
@@ -1652,6 +1657,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_prune_offscreen',
     placement: 'command',
+    bodyExecution: 'sync-callback',
     message0: 'Tirar do grupo %1 quem sair da tela, para cada um (chamado %2)',
     args0: [
       { type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' },
@@ -1685,6 +1691,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_on_group_overlap',
     placement: 'loop-command',
+    bodyExecution: 'sync-callback',
     message0: 'Para cada colisão entre os grupos %1 e %2',
     args0: [
       { type: 'field_name_picker', name: 'A', text: 'tiros', kind: 'group' },
@@ -2003,6 +2010,7 @@ export const gameTwoDBlocks = [
     // ---- Figuras: sprite desenhado por código (v0.23.0) ----
     type: 'sz_g2d_define_shape',
     placement: 'start-only-command',
+    bodyExecution: 'deferred-callback',
     message0: 'Desenhar a figura %1 assim:',
     args0: [{ type: 'field_input', name: 'NAME', text: 'heroi' }],
     message1: 'fazer %1',
@@ -2226,6 +2234,7 @@ export const gameTwoDBlocks = [
   {
     type: 'sz_g2d_on_sprite_group_overlap',
     placement: 'loop-command',
+    bodyExecution: 'sync-callback',
     message0: 'Para cada sprite do grupo %1 que colidir com o sprite %2',
     args0: [
       { type: 'field_name_picker', name: 'GROUP', text: 'asteroides', kind: 'group' },

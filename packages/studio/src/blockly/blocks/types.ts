@@ -10,7 +10,9 @@ export type BehaviorArea = 'start' | 'events' | 'loops'
 export type StatementContext =
   | 'statement'
   | 'event-body'
+  | 'user-gesture-body'
   | 'loop-body'
+  | 'syntactic-loop-body'
   | 'function-body'
   | 'async-function-body'
   | 'constructor-body'
@@ -40,9 +42,11 @@ export interface BlockPlacement {
  */
 export type BlockPlacementPreset =
   | 'command'
+  | 'advanced-command'
   | 'start-declaration'
   | 'event'
   | 'event-body'
+  | 'user-gesture-command'
   | 'loop-update'
   | 'loop-periodic'
   | 'loop-draw-world'
@@ -63,6 +67,19 @@ export type BlockMigration =
   | 'unwrap-load'
   | 'remove-engine-boot'
   | 'lift-periodic-loop'
+
+/** Como um bloco executa os statements encaixados em seus inputs de corpo. */
+export type StatementBodyExecution =
+  | 'structural'
+  | 'sync-callback'
+  | 'deferred-callback'
+  | 'function'
+
+/** Evento cujo corpo nasce diretamente de uma ativação transitória do navegador. */
+export type UserGestureActivation = true | { field: string; equals: string }
+
+/** Objeto `Event` realmente recebido pelo callback, com sua especialização disponível. */
+export type EventObjectCapability = 'generic' | 'keyboard' | 'pointer'
 
 interface BlockDefinitionBase {
   type: string
@@ -92,6 +109,12 @@ interface BlockDefinitionBase {
    * Usado para blocos legados substituídos por versões mais novas.
    */
   hidden?: boolean
+  /** Limite léxico/temporal criado ao entrar nos corpos de statements do bloco. */
+  bodyExecution?: StatementBodyExecution
+  /** Declara que o callback do corpo roda diretamente durante um gesto do usuário. */
+  userGesture?: UserGestureActivation
+  /** Declara que o callback recebe um parâmetro `event` do navegador. */
+  eventObject?: EventObjectCapability
 }
 
 export type ProjectAreaBlockType =

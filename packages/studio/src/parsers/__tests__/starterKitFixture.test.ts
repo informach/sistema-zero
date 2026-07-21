@@ -327,7 +327,7 @@ describe('JS Game Starter Kit P6 (achatado) — 100% blocos do núcleo', () => {
 
     const jsOut = files1['script.js']
     expect(jsOut).toContain('class RenderSystem')
-    expect(jsOut).toContain('.onerror = () => {')
+    expect(jsOut).toContain('.onerror = (event) => {')
     expect(jsOut).toContain('requestAnimationFrame((t) => {')
     expect(jsOut).toContain('?.loaded')
     expect(jsOut).toContain('event.key')

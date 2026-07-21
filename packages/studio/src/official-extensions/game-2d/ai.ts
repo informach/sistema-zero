@@ -35,7 +35,7 @@ API global injetada como window.SZGame2D:
 - playSound(freq, ms): bip sintetizado (Web Audio).
 - playFx("coin"|"jump"|"laser"|"explosion"|"hit"|"hurt"|"powerup"|"levelup"|"win"|"gameover"|"click"|"confirm"|"error"|"coin"|...): efeito sonoro PRONTO por nome (sintetizado, sem arquivo). Veja a lista completa no bloco "Tocar efeito".
 - playNote("C"|"D"|"E"|"F"|"G"|"A"|"B"|"C5", ms): toca uma nota musical (dó ré mi…); junte várias para uma melodia.
-- playMusic("adventure"|"happy"|"tense"|"calm"|"victory") / stopMusic(): música de fundo em loop (só uma por vez). Som só toca DEPOIS de um clique/tecla (exigência do navegador).
+- playMusic("adventure"|"happy"|"tense"|"calm"|"victory") / stopMusic(): música de fundo persistente em loop (só uma por vez). Gere em ⚙️ Ao iniciar, ⚡ Quando acontecer ou diretamente numa função, nunca dentro de 🔁 Enquanto estiver rodando. Repetir a mesma música não reinicia a faixa. Som só toca DEPOIS de um clique/tecla (exigência do navegador).
 - onPointer((x, y) => {…}): callback a cada clique/toque; pointer = { x, y, down }.
 
 Eventos "Quando…" e perguntas (booleanos) — o modelo Scratch/MakeCode:
@@ -251,5 +251,5 @@ KIT BALÃO (v0.13.0) — categoria "🎈 Kit balão" com atalhos PRONTOS para um
 - updateBalloon(jogo): um passo do jogo + desenha tudo (medidor de combustível, metros e dicas). Use DENTRO do "a cada quadro". Recomeça ao tocar depois do fim.
 - balloonScore(jogo): valor — metros voados. balloonFuel(jogo): valor — combustível 0..100. balloonOver(jogo): valor (booleano) — bateu numa árvore ou acabou o combustível? restartBalloon(jogo): zera o jogo. Exemplo pronto "Balão".
 
-CANVAS NA MÃO (genérico) — novos blocos de ✏️ Traçado úteis para crateras/máscaras: ctx.rect(x,y,w,h) adiciona um retângulo ao traçado; ctx.clip() recorta o desenho pelo traçado atual; ctx.isPointInPath(x,y)/ctx.isPointInStroke(x,y) são perguntas (o ponto está dentro/na linha do traçado?). Para "furar" um buraco: traçado com o retângulo da tela inteira + um arco no sentido anti-horário, depois clip. Há também os eventos "apertar o mouse"/"soltar o mouse" (mousedown/mouseup) na programação normal, para mira por arrastar.
+CANVAS NA MÃO (genérico) — novos blocos de ✏️ Traçado úteis para crateras/máscaras: ctx.rect(x,y,w,h) adiciona um retângulo ao traçado; ctx.clip() recorta o desenho pelo traçado atual; ctx.isPointInPath(x,y)/ctx.isPointInStroke(x,y) são perguntas (o ponto está dentro/na linha do traçado?). Para "furar" um buraco: traçado com o retângulo da tela inteira + um arco no sentido anti-horário, depois clip. Há também os eventos "apertar o mouse/dedo"/"soltar o mouse/dedo" (pointerdown/pointerup) na programação normal, para mira por arrastar.
 `)

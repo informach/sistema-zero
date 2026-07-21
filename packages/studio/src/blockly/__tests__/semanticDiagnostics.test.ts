@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'bun:test'
 import type * as Blockly from 'blockly/core'
-import type { JSStatement } from '#ir'
+import type { HTMLTag, JSStatement } from '#ir'
 import { applySemanticDiagnostics } from '../semanticDiagnostics'
+
+const VALID_SVG_LENGTH_CASES: Array<[HTMLTag, Record<string, string>]> = [
+  ['circle', { r: '10vw' }],
+  ['rect', { width: '2Q', height: '20' }],
+  ['ellipse', { rx: 'auto', ry: '20' }],
+]
 
 function warningWorkspace(blockId: string) {
   const warnings: Array<string | null> = []
@@ -75,6 +81,121 @@ describe('diagnósticos semânticos nos blocos', () => {
 
     expect(valid).toBe(true)
     expect(warnings).toEqual([null])
+  })
+
+  it.each([
+    {
+      type: 'setProperty' as const,
+      property: 'textContent' as const,
+      value: { type: 'str' as const, value: 'Olá' },
+    },
+    {
+      type: 'setStyle' as const,
+      property: 'color',
+      value: { type: 'str' as const, value: 'red' },
+    },
+    {
+      type: 'setDataset' as const,
+      key: 'fase',
+      value: { type: 'str' as const, value: '1' },
+    },
+  ])('impede $type quando o id HTML alvo não existe, inclusive aninhado', (statement) => {
+    const { workspace, warnings } = warningWorkspace('comando-1')
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [],
+      css: [],
+      js: [
+        {
+          type: 'event',
+          target: 'document',
+          targetKind: 'document',
+          event: 'click',
+          body: [{ ...statement, targetId: 'saida', targetKind: 'id', __id: 'comando-1' }],
+        },
+      ],
+      extensions: [],
+    })
+
+    expect(valid).toBe(false)
+    expect(warnings.at(-1)).toContain('saida')
+  })
+
+  it('não confunde uma variável de elemento com um id HTML ausente', () => {
+    const { workspace, warnings } = warningWorkspace('comando-1')
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [],
+      css: [],
+      js: [
+        {
+          type: 'var',
+          name: 'elemento',
+          value: { type: 'num', value: 0 },
+        },
+        {
+          type: 'setProperty',
+          targetId: 'elemento',
+          targetKind: 'var',
+          property: 'textContent',
+          value: { type: 'str', value: 'Olá' },
+          __id: 'comando-1',
+        },
+      ],
+      extensions: [],
+    })
+
+    expect(valid).toBe(true)
+    expect(warnings).toEqual([null])
+  })
+
+  it('impede atribuir clique a um elemento HTML que ainda não existe', () => {
+    const { workspace, warnings } = warningWorkspace('evento-1')
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [],
+      css: [],
+      js: [
+        {
+          type: 'onClickAssign',
+          target: { type: 'getElement', id: 'botao' },
+          body: [],
+          __id: 'evento-1',
+        },
+      ],
+      extensions: [],
+    })
+
+    expect(valid).toBe(false)
+    expect(warnings.at(-1)).toContain('botao')
+  })
+
+  it('valida alvos DOM também dentro do executor de uma Promise', () => {
+    const { workspace, warnings } = warningWorkspace('comando-1')
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [],
+      css: [],
+      js: [
+        {
+          type: 'consoleLog',
+          value: {
+            type: 'newPromise',
+            param: 'resolve',
+            body: [
+              {
+                type: 'setProperty',
+                targetId: 'saida',
+                targetKind: 'id',
+                property: 'textContent',
+                value: { type: 'str', value: 'Pronto' },
+                __id: 'comando-1',
+              },
+            ],
+          },
+        },
+      ],
+      extensions: [],
+    })
+
+    expect(valid).toBe(false)
+    expect(warnings.at(-1)).toContain('saida')
   })
 
   it('avisa quando a criança esquece o # de um id HTML, sem bloquear o preview', () => {
@@ -271,6 +392,51 @@ describe('diagnósticos semânticos nos blocos', () => {
   })
 
   it.each([
+    'polyline',
+    'polygon',
+  ] as const)('aceita um único par de coordenadas em <%s> sem bloquear o preview', (tag) => {
+    const { workspace, warnings } = warningWorkspace('forma-1')
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [
+        {
+          type: 'element',
+          tag: 'svg',
+          children: [
+            { type: 'element', tag: 'title', text: 'Um ponto' },
+            { type: 'element', tag, attrs: { points: '10,20' }, __id: 'forma-1' },
+          ],
+        },
+      ],
+      css: [],
+      js: [],
+      extensions: [],
+    })
+
+    expect(valid).toBe(true)
+    expect(warnings).toEqual([null])
+  })
+
+  it('orienta SVG sem nome acessível sem bloquear o preview', () => {
+    const { workspace, warnings } = warningWorkspace('svg-1')
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [
+        {
+          type: 'element',
+          tag: 'svg',
+          __id: 'svg-1',
+          children: [{ type: 'element', tag: 'circle', attrs: { r: '20' } }],
+        },
+      ],
+      css: [],
+      js: [],
+      extensions: [],
+    })
+
+    expect(valid).toBe(true)
+    expect(warnings.at(-1)).toContain('Dar um nome ao desenho')
+  })
+
+  it.each([
     '-1px',
     '-1%',
     '-0.5rem',
@@ -298,6 +464,55 @@ describe('diagnósticos semânticos nos blocos', () => {
 
     expect(valid).toBe(false)
     expect(warnings.at(-1)).toContain('r não pode ser negativo')
+  })
+
+  it.each(VALID_SVG_LENGTH_CASES)('aceita a medida SVG válida em <%s>: %p', (tag, attrs) => {
+    const { workspace, warnings } = warningWorkspace('forma-1')
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [
+        {
+          type: 'element',
+          tag: 'svg',
+          children: [
+            { type: 'element', tag: 'title', text: 'Forma geométrica' },
+            { type: 'element', tag, attrs, __id: 'forma-1' },
+          ],
+        },
+      ],
+      css: [],
+      js: [],
+      extensions: [],
+    })
+
+    expect(valid).toBe(true)
+    expect(warnings).toEqual([null])
+  })
+
+  it('continua rejeitando unidade SVG inexistente', () => {
+    const { workspace, warnings } = warningWorkspace('forma-1')
+    const valid = applySemanticDiagnostics(workspace, {
+      html: [
+        {
+          type: 'element',
+          tag: 'svg',
+          children: [
+            { type: 'element', tag: 'title', text: 'Círculo' },
+            {
+              type: 'element',
+              tag: 'circle',
+              attrs: { r: '10bananas' },
+              __id: 'forma-1',
+            },
+          ],
+        },
+      ],
+      css: [],
+      js: [],
+      extensions: [],
+    })
+
+    expect(valid).toBe(false)
+    expect(warnings.at(-1)).toContain('medida válida')
   })
 
   it('mantém expressões SVG dinâmicas fora da validação estática de sinal', () => {
@@ -368,6 +583,7 @@ describe('diagnósticos semânticos nos blocos', () => {
           attrs: { viewBox: '0 0 200 200', transform: 'translate(10 20) scale(2)' },
           __id: 'svg-1',
           children: [
+            { type: 'element', tag: 'title', text: 'Caminho decorativo' },
             {
               type: 'element',
               tag: 'path',

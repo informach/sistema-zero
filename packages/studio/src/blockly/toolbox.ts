@@ -35,7 +35,9 @@ import {
 } from './programmingContract'
 import {
   CLASS_CATEGORY_DEFINITIONS,
-  FUNCTION_CATEGORY_DEFINITIONS,
+  classesCategoryProvidesContextualParameters,
+  FUNCTION_STATIC_DEFINITIONS,
+  restrictedFunctionsCategoryHasContent,
 } from './programmingOfferability'
 import { CATEGORY_COLORS } from './theme'
 
@@ -356,11 +358,14 @@ export function buildCoreToolbox(
     level: BlockLevel,
     custom: string,
     blocks: BlockDefinition[],
+    restrictedContentAvailable = blocks.some((block) => only.has(block.type)),
   ): void => {
-    if (!isCategoryAllowed(orig, level, profile)) return
+    const contextualFunctions =
+      orig === 'Funções' && classesCategoryProvidesContextualParameters(profile)
+    if (!isCategoryAllowed(orig, level, profile) && !contextualFunctions) return
     // Restrição: o flyout dinâmico (Funções/Classes) só entra se a aula listou ALGUM
     // bloco dele — senão vazaria (não dá p/ filtrar o conteúdo gerado pelo callback).
-    if (restrict && !blocks.some((b) => only.has(b.type))) return
+    if (restrict && !restrictedContentAvailable) return
     progSubs.push({ kind: 'category', name, colour, custom })
   }
   pushSub('Matemática', '🔢 Matemática', CATEGORY_COLORS.math, 'intermediario-2d', MATH_BLOCKS)
@@ -399,7 +404,8 @@ export function buildCoreToolbox(
     CATEGORY_COLORS.functions,
     'intermediario-2d',
     'SZ_FUNCTIONS',
-    [...FUNCTION_CATEGORY_DEFINITIONS],
+    [...FUNCTION_STATIC_DEFINITIONS],
+    restrictedFunctionsCategoryHasContent(only),
   )
   pushSubCustom('Classes', '🏛️ Classes', CATEGORY_COLORS.classes, 'avancado-2d', 'SZ_CLASSES', [
     ...CLASS_CATEGORY_DEFINITIONS,

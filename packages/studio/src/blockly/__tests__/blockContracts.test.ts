@@ -1,12 +1,25 @@
 import { describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
-import { START_ONLY_STATEMENT_TYPES, SZIRV2Schema } from '#ir'
+import {
+  behaviorStatements,
+  type JSExpr,
+  type JSStatement,
+  START_ONLY_STATEMENT_TYPES,
+  SZIRV2Schema,
+} from '#ir'
 import { OFFICIAL_CATALOG } from '#official-extensions'
+import {
+  programmingChildBodyEntries,
+  programmingEmbeddedBodyEntries,
+} from '../../ir/programmingExecution'
 import { CONTINUOUS_EXTENSION_COMMANDS } from '../../official-extensions/continuousCommandContract'
 import { PERSISTENT_EXTENSION_COMMANDS } from '../../official-extensions/persistentResourceContract'
 import { CANVAS3D_RESOURCE_CREATOR_BLOCK_TYPES } from '../../three/canvas3dContract'
 import {
   BEHAVIOR_AREA_LABELS,
+  contractEventObjectCapability,
+  contractProvidesUserGesture,
+  effectiveBodyExecution,
   getBlockContract,
   inferBlockContract,
   materializeBlockDefinition,
@@ -23,6 +36,36 @@ function definition(type: string) {
   const found = all.find((block) => block.type === type)
   if (!found) throw new Error(`Bloco ausente no teste: ${type}`)
   return found
+}
+
+function hasStatementInput(block: ReturnType<typeof definition>): boolean {
+  return [block.args0, block.args1, block.args2, block.args3, block.args4, block.args5].some(
+    (args) =>
+      args?.some(
+        (arg) =>
+          typeof arg === 'object' &&
+          arg !== null &&
+          (arg as { type?: unknown }).type === 'input_statement',
+      ),
+  )
+}
+
+function nodeWithId(value: unknown, id: string): Record<string, unknown> | null {
+  if (Array.isArray(value)) {
+    for (const child of value) {
+      const found = nodeWithId(child, id)
+      if (found) return found
+    }
+    return null
+  }
+  if (typeof value !== 'object' || value === null) return null
+  const record = value as Record<string, unknown>
+  if (record.__id === id || record.ctorId === id) return record
+  for (const child of Object.values(record)) {
+    const found = nodeWithId(child, id)
+    if (found) return found
+  }
+  return null
 }
 
 describe('contrato central de posicionamento', () => {
@@ -98,6 +141,217 @@ describe('contrato central de posicionamento', () => {
     }
   })
 
+  it('exige timing explícito em todo corpo de comando que é callback', () => {
+    const syntacticContainers = new Set([
+      'sz_legacy_nested_start',
+      'sz_legacy_nested_event',
+      'sz_legacy_nested_loop',
+      'sz_js_if_else',
+      'sz_js_repeat',
+      'sz_js_while',
+      'sz_js_do_while',
+      'sz_js_switch',
+      'sz_js_case',
+      'sz_js_for_of',
+      'sz_js_for_range',
+      'sz_js_try_catch',
+      'sz_js_class',
+    ])
+    const all = [
+      ...CORE_BLOCKS,
+      ...OFFICIAL_CATALOG.flatMap((extension) => extension.blockly.blocks),
+    ]
+    const missing = all
+      .filter((block) =>
+        [block.args0, block.args1, block.args2, block.args3, block.args4, block.args5].some(
+          (args) =>
+            args?.some(
+              (arg) =>
+                typeof arg === 'object' &&
+                arg !== null &&
+                (arg as { type?: unknown }).type === 'input_statement',
+            ),
+        ),
+      )
+      .filter((block) => {
+        const contract = inferBlockContract(block)
+        return (
+          contract.domain === 'behavior' &&
+          contract.placement?.role !== 'event' &&
+          contract.placement?.role !== 'loop' &&
+          contract.bodyExecution === 'structural' &&
+          !syntacticContainers.has(block.type)
+        )
+      })
+      .map((block) => block.type)
+
+    expect(missing).toEqual([])
+  })
+
+  it('declara gestos diretos no catálogo, inclusive a condição de keydown', () => {
+    for (const type of [
+      'sz_js_on_click',
+      'sz_js_on_click_anywhere',
+      'sz_js_element_onclick',
+      'sz_js_on_pointer_down',
+      'sz_js_on_pointer_up',
+      'sz_g2d_on_pointer',
+      'sz_g2d_on_key',
+      'sz_gk_on_game_click',
+      'sz_gk_add_button',
+      'sz_g3k_add_button',
+    ]) {
+      expect(contractProvidesUserGesture(inferBlockContract(definition(type))), type).toBe(true)
+    }
+
+    const keyboard = inferBlockContract(definition('sz_js_on_key'))
+    expect(contractProvidesUserGesture(keyboard, () => 'keydown')).toBe(true)
+    expect(contractProvidesUserGesture(keyboard, () => 'keyup')).toBe(false)
+  })
+
+  it('declara somente os callbacks que recebem um objeto Event do navegador', () => {
+    const all = [
+      ...CORE_BLOCKS,
+      ...OFFICIAL_CATALOG.flatMap((extension) => extension.blockly.blocks),
+    ]
+    const declared = Object.fromEntries(
+      all.flatMap((block) => {
+        const capability = contractEventObjectCapability(inferBlockContract(block))
+        return capability ? [[block.type, capability]] : []
+      }),
+    )
+
+    expect(declared).toEqual({
+      sz_js_on_click: 'pointer',
+      sz_js_on_click_anywhere: 'pointer',
+      sz_js_on_mouseover: 'pointer',
+      sz_js_on_input: 'generic',
+      sz_js_on_submit: 'generic',
+      sz_js_on_key: 'keyboard',
+      sz_js_on_mousemove: 'pointer',
+      sz_js_on_pointer_down: 'pointer',
+      sz_js_on_pointer_up: 'pointer',
+      sz_js_on_load: 'generic',
+      sz_js_on_resize: 'generic',
+      sz_js_on_context_menu: 'pointer',
+      sz_js_on_blur: 'generic',
+      sz_js_element_onclick: 'pointer',
+      sz_js_on_fullscreen_change: 'generic',
+      sz_js_image_onload: 'generic',
+      sz_js_image_onerror: 'generic',
+    })
+  })
+
+  it('mantém timing e objeto Event alinhados entre cada bloco-callback e a IR real', () => {
+    ensureBlocklyInitialized()
+    for (const extension of OFFICIAL_CATALOG) {
+      registerExtensionBlocks(extension.blockly.blocks)
+    }
+    const all = [
+      ...CORE_BLOCKS,
+      ...OFFICIAL_CATALOG.flatMap((extension) => extension.blockly.blocks),
+    ]
+    const callbacks = all.filter((block) => {
+      const contract = inferBlockContract(block)
+      return hasStatementInput(block) && effectiveBodyExecution(contract) !== 'structural'
+    })
+
+    expect(callbacks.length).toBeGreaterThan(100)
+    for (const block of callbacks) {
+      const workspace = new Blockly.Workspace()
+      try {
+        const target = workspace.newBlock(block.type)
+        const contract = inferBlockContract(block)
+        const expectedExecution = effectiveBodyExecution(contract)
+        const expectedEventObject = contractEventObjectCapability(contract)
+        const connect = (parent: Blockly.Block, inputName: string, child: Blockly.Block): void => {
+          const input = parent.getInput(inputName)?.connection
+          const previous = child.previousConnection
+          if (!input || !previous || !input.connect(previous)) {
+            throw new Error(`${block.type}: não conectou em ${parent.type}.${inputName}`)
+          }
+        }
+
+        if (target.outputConnection) {
+          const frame = workspace.newBlock('sz_frame_start')
+          const log = workspace.newBlock('sz_js_console_log_value')
+          connect(frame, 'CHILDREN', log)
+          const value = log.getInput('VALUE')?.connection
+          if (!value?.connect(target.outputConnection)) {
+            throw new Error(`${block.type}: não conectou como valor`)
+          }
+        } else if (
+          contract.placement?.role === 'declaration' &&
+          contract.placement.root.length === 0
+        ) {
+          const frame = workspace.newBlock('sz_frame_start')
+          const classBlock = workspace.newBlock('sz_js_class')
+          connect(frame, 'CHILDREN', classBlock)
+          connect(classBlock, 'MEMBERS', target)
+        } else if (contract.placement?.root[0]) {
+          const frame = workspace.newBlock(`sz_frame_${contract.placement.root[0]}`)
+          connect(frame, 'CHILDREN', target)
+        } else if (contract.placement?.nested.includes('loop-body')) {
+          const frame = workspace.newBlock('sz_frame_loops')
+          const loop = workspace.newBlock('sz_canvas_anim_loop')
+          connect(frame, 'CHILDREN', loop)
+          connect(loop, 'BODY', target)
+        } else if (contract.placement?.nested.includes('event-body')) {
+          const frame = workspace.newBlock('sz_frame_events')
+          const event = workspace.newBlock('sz_js_on_click_anywhere')
+          connect(frame, 'CHILDREN', event)
+          connect(event, 'DO', target)
+        } else {
+          const frame = workspace.newBlock('sz_frame_start')
+          const fn = workspace.newBlock('sz_js_function')
+          connect(frame, 'CHILDREN', fn)
+          connect(fn, 'BODY', target)
+        }
+
+        const ir = buildIRFromWorkspace(workspace)
+        const targetNode = nodeWithId(ir, target.id)
+        expect(targetNode, `${block.type}: nó da IR`).not.toBeNull()
+        if (!targetNode) throw new Error(`${block.type}: nó da IR ausente`)
+
+        if (target.outputConnection) {
+          const expression = targetNode as unknown as JSExpr
+          const entries = programmingEmbeddedBodyEntries({
+            type: 'consoleLog',
+            value: expression,
+          })
+          expect(entries.length, block.type).toBeGreaterThan(0)
+          expect(
+            entries.every((entry) => entry.execution === expectedExecution),
+            block.type,
+          ).toBe(true)
+          continue
+        }
+
+        if (block.type === 'sz_js_constructor' || block.type === 'sz_js_class_method') {
+          const classStatement = behaviorStatements(ir).find(
+            (statement) => statement.type === 'classDecl',
+          )
+          if (!classStatement) throw new Error(`${block.type}: classe ausente na IR`)
+          const entries = programmingChildBodyEntries(classStatement)
+          expect(
+            entries.some((entry) => entry.execution === expectedExecution),
+            block.type,
+          ).toBe(true)
+          continue
+        }
+
+        const entries = programmingChildBodyEntries(targetNode as unknown as JSStatement)
+        expect(entries.length, block.type).toBeGreaterThan(0)
+        for (const entry of entries) {
+          expect(entry.execution, `${block.type}: timing`).toBe(expectedExecution)
+          expect(entry.eventObject, `${block.type}: Event`).toBe(expectedEventObject)
+        }
+      } finally {
+        workspace.dispose()
+      }
+    }
+  })
+
   it('separa fisicamente início, eventos e loops', () => {
     expect(
       materializeBlockDefinition(definition('sz_js_console_log_text')).previousStatement,
@@ -105,6 +359,10 @@ describe('contrato central de posicionamento', () => {
     expect(materializeBlockDefinition(definition('sz_js_on_click')).previousStatement).toEqual([
       'JSEventRoot',
       'JSFunctionStmt',
+      'JSAsyncStmt',
+      'JSConstructorStmt',
+      'JSDerivedConstructorStmt',
+      'JSDerivedMethodStmt',
     ])
     expect(materializeBlockDefinition(definition('sz_canvas_anim_loop')).previousStatement).toEqual(
       ['JSLoopRoot'],
@@ -126,6 +384,8 @@ describe('contrato central de posicionamento', () => {
         materialized.args1,
         materialized.args2,
         materialized.args3,
+        materialized.args4,
+        materialized.args5,
       ]) {
         for (const arg of args ?? []) {
           if (typeof arg !== 'object' || arg === null) continue
@@ -155,37 +415,39 @@ describe('contrato central de posicionamento', () => {
 
     for (const definition of all) {
       const contract = inferBlockContract(definition)
-      const area = contract.placement?.root[0]
+      const areas = contract.placement?.root ?? []
       if (
         contract.domain !== 'behavior' ||
-        !area ||
+        areas.length === 0 ||
         definition.hidden ||
         !['keep', 'lift-periodic-loop'].includes(contract.migration)
       ) {
         continue
       }
-      const workspace = new Blockly.Workspace()
-      try {
-        const frame = workspace.newBlock(frameFor[area])
-        const block = workspace.newBlock(definition.type)
-        const input = frame.getInput('CHILDREN')?.connection
-        if (!input || !block.previousConnection)
-          throw new Error(`Conexão ausente: ${definition.type}`)
-        expect(input.connect(block.previousConnection), definition.type).toBe(true)
-        const ir = buildIRFromWorkspace(workspace)
-        expect(ir.behavior[area].length, definition.type).toBeGreaterThan(0)
-        const parsed = SZIRV2Schema.safeParse(ir)
-        const lifecycleIssues = parsed.success
-          ? []
-          : parsed.error.issues.filter(
-              (issue) =>
-                issue.path.length === 3 &&
-                issue.path[0] === 'behavior' &&
-                issue.message.includes('não pode ficar na área'),
-            )
-        expect(lifecycleIssues, definition.type).toEqual([])
-      } finally {
-        workspace.dispose()
+      for (const area of areas) {
+        const workspace = new Blockly.Workspace()
+        const label = `${definition.type}@${area}`
+        try {
+          const frame = workspace.newBlock(frameFor[area])
+          const block = workspace.newBlock(definition.type)
+          const input = frame.getInput('CHILDREN')?.connection
+          if (!input || !block.previousConnection) throw new Error(`Conexão ausente: ${label}`)
+          expect(input.connect(block.previousConnection), label).toBe(true)
+          const ir = buildIRFromWorkspace(workspace)
+          expect(ir.behavior[area].length, label).toBeGreaterThan(0)
+          const parsed = SZIRV2Schema.safeParse(ir)
+          const lifecycleIssues = parsed.success
+            ? []
+            : parsed.error.issues.filter(
+                (issue) =>
+                  issue.path.length === 3 &&
+                  issue.path[0] === 'behavior' &&
+                  issue.message.includes('não pode ficar na área'),
+              )
+          expect(lifecycleIssues, label).toEqual([])
+        } finally {
+          workspace.dispose()
+        }
       }
     }
   })
@@ -552,16 +814,18 @@ describe('contrato central de posicionamento', () => {
 
     expect(PERSISTENT_EXTENSION_COMMANDS).toEqual(
       expect.arrayContaining([
+        { blockType: 'sz_g2d_play_music', statementType: 'g2d:playMusic' },
         { blockType: 'sz_gk_start_spawner', statementType: 'gk:startSpawner' },
         { blockType: 'sz_g3k_start_spawner', statementType: 'g3k:startSpawner' },
         { blockType: 'sz_g3k_start_timer', statementType: 'g3k:startTimer' },
+        { blockType: 'sz_w3d_ambience', statementType: 'w3d:ambience' },
+        { blockType: 'sz_w3d_play_music', statementType: 'w3d:playMusic' },
       ]),
     )
 
-    const declaredPersistentBlocks = OFFICIAL_CATALOG.filter((extension) =>
-      ['game-2d-advanced', 'game-3d-advanced'].includes(extension.manifest.id),
+    const declaredPersistentBlocks = OFFICIAL_CATALOG.flatMap(
+      (extension) => extension.blockly.blocks,
     )
-      .flatMap((extension) => extension.blockly.blocks)
       .filter((block) => block.placement === 'resource-creator')
       .map((block) => block.type)
       .sort()
@@ -638,7 +902,7 @@ describe('contrato central de posicionamento', () => {
     }
   })
 
-  it('aceita inscrições de evento encapsuladas em funções e classes', () => {
+  it('aceita eventos diretamente em funções e classes, sem escondê-los em comandos', () => {
     const project = (ctorBody: unknown[]) => ({
       version: 2,
       html: [],
@@ -665,7 +929,63 @@ describe('contrato central de posicionamento', () => {
       SZIRV2Schema.safeParse(
         project([{ type: 'repeat', times: { type: 'num', value: 2 }, body: [event] }]),
       ).success,
-    ).toBe(true)
+    ).toBe(false)
+  })
+
+  it('aplica fisicamente a exigência de evento como filho direto de função', () => {
+    ensureBlocklyInitialized()
+    const makeWorkspace = () =>
+      new Blockly.Workspace(
+        new Blockly.Options({ plugins: { connectionChecker: HTMLConnectionChecker } }),
+      )
+
+    const directWorkspace = makeWorkspace()
+    try {
+      const frame = directWorkspace.newBlock('sz_frame_start')
+      const func = directWorkspace.newBlock('sz_js_function')
+      const event = directWorkspace.newBlock('sz_js_on_click_anywhere')
+      const frameConnection = frame.getInput('CHILDREN')?.connection
+      const funcConnection = func.previousConnection
+      const bodyConnection = func.getInput('BODY')?.connection
+      const eventConnection = event.previousConnection
+      if (!frameConnection || !funcConnection || !bodyConnection || !eventConnection) {
+        throw new Error('Conexões do evento direto ausentes')
+      }
+      expect(frameConnection.connect(funcConnection)).toBe(true)
+      expect(bodyConnection.connect(eventConnection)).toBe(true)
+    } finally {
+      directWorkspace.dispose()
+    }
+
+    const nestedWorkspace = makeWorkspace()
+    try {
+      const frame = nestedWorkspace.newBlock('sz_frame_start')
+      const func = nestedWorkspace.newBlock('sz_js_function')
+      const repeat = nestedWorkspace.newBlock('sz_js_repeat')
+      const event = nestedWorkspace.newBlock('sz_js_on_click_anywhere')
+      const frameConnection = frame.getInput('CHILDREN')?.connection
+      const funcConnection = func.previousConnection
+      const functionBodyConnection = func.getInput('BODY')?.connection
+      const repeatConnection = repeat.previousConnection
+      const repeatBodyConnection = repeat.getInput('DO')?.connection
+      const eventConnection = event.previousConnection
+      if (
+        !frameConnection ||
+        !funcConnection ||
+        !functionBodyConnection ||
+        !repeatConnection ||
+        !repeatBodyConnection ||
+        !eventConnection
+      ) {
+        throw new Error('Conexões do evento aninhado ausentes')
+      }
+      expect(frameConnection.connect(funcConnection)).toBe(true)
+      expect(functionBodyConnection.connect(repeatConnection)).toBe(true)
+      expect(repeatBodyConnection.connect(eventConnection)).toBe(false)
+      expect(event.getParent()).toBeNull()
+    } finally {
+      nestedWorkspace.dispose()
+    }
   })
 
   it('não confunde comandos que contêm “on” com eventos', () => {

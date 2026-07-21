@@ -481,7 +481,7 @@ describe('JS Game Starter Kit P9 (achatado) — 100% blocos do núcleo', () => {
     expect(jsOut).toContain('await Promise.all(')
     expect(jsOut).toContain('return new Promise((resolve) => {')
     expect(jsOut).toContain('setTimeout(resolve, 2000)')
-    expect(jsOut).toContain('.onclick = () => {')
+    expect(jsOut).toContain('.onclick = (event) => {')
     expect(jsOut).toContain('.forEach((p) => {')
     expect(files1['index.html']).toContain('<!-- Main Menu -->')
     expect(files1['style.css']).toContain('/* UI Panels */')

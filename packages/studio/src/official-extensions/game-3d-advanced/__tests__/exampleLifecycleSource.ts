@@ -4,7 +4,7 @@ import { parseJS } from '../../../parsers/js'
 /**
  * Converte o fonte de referência antigo para o mesmo contrato de ciclo de vida
  * usado pelos exemplos atuais. O boot do motor desaparece e os statements são
- * ordenados pelas áreas Ao iniciar, Eventos e Loops.
+ * ordenados pelas áreas Ao iniciar, Quando acontecer e Enquanto estiver rodando.
  */
 export function parseExampleLifecycleSource(source: string): JSStatement[] {
   const normalized = normalizeSZIR({

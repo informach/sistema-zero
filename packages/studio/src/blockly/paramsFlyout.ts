@@ -3,7 +3,12 @@ import { FULL_LEARNING_PROFILE, isBlockTypeAllowed, type LearningProfile } from 
 import { resolveBlockLevel } from './blockLevels'
 import { getParamNames } from './blocks/paramsMutator'
 import { socketInputsFor } from './blocks/valueSockets'
-import { CLASS_CATEGORY_DEFINITIONS, FUNCTION_STATIC_DEFINITIONS } from './programmingOfferability'
+import {
+  CLASS_CATEGORY_DEFINITIONS,
+  classesCategoryProvidesContextualParameters,
+  FUNCTION_STATIC_DEFINITIONS,
+  PROGRAMMING_PARAMETER_SCOPE_TYPES,
+} from './programmingOfferability'
 
 /**
  * Conteúdo dinâmico das categorias "Funções" e "Classes". Relatores de
@@ -19,13 +24,11 @@ type FlyoutItem =
   | { kind: 'block'; type: string; fields?: Record<string, string>; inputs?: unknown }
 
 /** Blocos cujos parâmetros (via `sz_params_mutator`) dão escopo aos relatores. */
-const PARAM_SCOPE_TYPES = new Set(['sz_js_class_method', 'sz_js_constructor', 'sz_js_function'])
-
 /** Sobe pelos blocos-pai até achar a função/método/construtor que dá escopo aos parâmetros. */
 function scopeParams(block: Blockly.Block): string[] | null {
   let cur: Blockly.Block | null = block
   while (cur) {
-    if (PARAM_SCOPE_TYPES.has(cur.type)) {
+    if (PROGRAMMING_PARAMETER_SCOPE_TYPES.has(cur.type)) {
       return getParamNames(cur)
     }
     cur = cur.getParent()
@@ -87,13 +90,25 @@ export function functionFlyoutItemsForSelection(
   profile: LearningProfile,
 ): FlyoutItem[] {
   const items: FlyoutItem[] = functionCategoryBlockTypes(profile).map(blockEntry)
-  const names = selectedBlock ? (scopeParams(selectedBlock) ?? []) : []
+  const selectedScope = selectedBlock ? scopeParams(selectedBlock) : null
+  const names = selectedScope ?? []
+  const contextualParametersAllowed =
+    dynamicBlockAllowed('sz_val_arg', 'Funções', profile) ||
+    classesCategoryProvidesContextualParameters(profile)
 
-  if (names.length > 0 && dynamicBlockAllowed('sz_val_arg', 'Funções', profile)) {
+  if (names.length > 0 && contextualParametersAllowed) {
     items.push({ kind: 'label', text: 'Parâmetros' })
     for (const name of names) {
       items.push({ kind: 'block', type: 'sz_val_arg', fields: { NAME: name } })
     }
+  } else if (items.length === 0 && contextualParametersAllowed) {
+    items.push({
+      kind: 'label',
+      text:
+        selectedScope === null
+          ? 'Selecione um método ou construtor com parâmetros'
+          : 'Adicione parâmetros ao método ou construtor selecionado',
+    })
   }
   return items
 }

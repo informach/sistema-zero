@@ -1,9 +1,16 @@
 import * as Blockly from 'blockly/core'
 import { htmlContentModelForBlock, isHTMLBlockChildAllowed } from '../html/catalog'
-import { areaForBlockType, getBlockContract, isProjectAreaType } from './blockContracts'
+import {
+  areaForBlockType,
+  contractEventObjectCapability,
+  contractProvidesUserGesture,
+  effectiveBodyExecution,
+  getBlockContract,
+  isProjectAreaType,
+} from './blockContracts'
 import { getSuperName } from './blocks/extendsMutator'
 import { getParamNames } from './blocks/paramsMutator'
-import type { BehaviorArea, StatementContext } from './blocks/types'
+import type { BehaviorArea, EventObjectCapability, StatementContext } from './blocks/types'
 
 function statementOwner(connection: Blockly.Connection): Blockly.Block | null {
   const source = connection.getSourceBlock()
@@ -37,9 +44,9 @@ type ProgrammingRequirement =
   | 'loop'
   | 'function'
   | 'async-function'
-  | 'event'
-  | 'keyboard-event'
-  | 'pointer-event'
+  | 'active-event-object'
+  | 'keyboard-event-object'
+  | 'pointer-event-object'
   | 'derived-constructor'
   | 'derived-method'
   | 'parameter'
@@ -56,11 +63,11 @@ function programmingRequirement(block: Blockly.Block): ProgrammingRequirement | 
     case 'sz_js_await':
       return 'async-function'
     case 'sz_js_event_method':
-      return 'event'
+      return 'active-event-object'
     case 'sz_val_event_key':
-      return 'keyboard-event'
+      return 'keyboard-event-object'
     case 'sz_val_event_pos':
-      return 'pointer-event'
+      return 'pointer-event-object'
     case 'sz_js_super_ctor':
       return 'derived-constructor'
     case 'sz_js_super_method':
@@ -86,23 +93,9 @@ const SYNTACTIC_LOOP_TYPES = new Set([
   'sz_js_do_while',
   'sz_js_for_of',
   'sz_js_for_range',
-  'sz_js_for_each',
 ])
 
 const FUNCTION_BODY_TYPES = new Set(['sz_js_function', 'sz_js_class_method', 'sz_js_constructor'])
-
-const KEYBOARD_EVENT_TYPES = new Set(['sz_js_on_key'])
-
-const POINTER_EVENT_TYPES = new Set([
-  'sz_js_on_click',
-  'sz_js_on_click_anywhere',
-  'sz_js_on_mouseover',
-  'sz_js_on_mousemove',
-  'sz_js_on_pointer_down',
-  'sz_js_on_pointer_up',
-  'sz_js_on_context_menu',
-  'sz_js_element_onclick',
-])
 
 function prospectiveAncestors(
   block: Blockly.Block,
@@ -128,8 +121,52 @@ function prospectiveAncestors(
   return ancestors
 }
 
-function isEventContainer(block: Blockly.Block): boolean {
-  return getBlockContract(block.type)?.placement?.role === 'event'
+function isUserGestureEventContainer(block: Blockly.Block): boolean {
+  return contractProvidesUserGesture(getBlockContract(block.type), (name) =>
+    block.getFieldValue(name),
+  )
+}
+
+interface EventObjectContext {
+  capability?: EventObjectCapability
+  active: boolean
+}
+
+/**
+ * Encontra o parâmetro `event` lexicalmente visível mais próximo. Um callback
+ * adiado ou uma função ainda pode capturar o objeto, mas já não pode cancelar
+ * o evento depois que a entrega síncrona do navegador terminou.
+ */
+function isWithinStatementBody(descendant: Blockly.Block, container: Blockly.Block): boolean {
+  return container.inputList.some((input) => {
+    if (input.connection?.type !== Blockly.ConnectionType.NEXT_STATEMENT) return false
+    const bodyRoot = input.connection.targetBlock()
+    return bodyRoot?.getDescendants(false).includes(descendant) === true
+  })
+}
+
+function eventObjectContext(
+  block: Blockly.Block,
+  ancestors: readonly Blockly.Block[],
+  destinationOwner: Blockly.Block,
+  entersDestinationBody: boolean,
+): EventObjectContext {
+  let active = true
+  for (const ancestor of ancestors) {
+    const crossesBody =
+      (ancestor === destinationOwner && entersDestinationBody) ||
+      isWithinStatementBody(block, ancestor) ||
+      isWithinStatementBody(destinationOwner, ancestor)
+    if (!crossesBody) continue
+
+    const contract = getBlockContract(ancestor.type)
+    const capability = contractEventObjectCapability(contract)
+    if (capability) return { capability, active }
+
+    const execution = effectiveBodyExecution(contract)
+    if (execution === 'deferred-callback' || execution === 'function') active = false
+  }
+  return { active: false }
 }
 
 function enclosingClass(ancestors: readonly Blockly.Block[]): Blockly.Block | null {
@@ -140,24 +177,24 @@ function requirementFits(
   block: Blockly.Block,
   requirement: ProgrammingRequirement,
   ancestors: readonly Blockly.Block[],
+  destinationOwner: Blockly.Block,
+  entersDestinationBody: boolean,
 ): boolean {
+  const contexts = nestedStatementContexts(ancestors)
+  const eventObject = eventObjectContext(block, ancestors, destinationOwner, entersDestinationBody)
   switch (requirement) {
     case 'loop':
-      return ancestors.some((ancestor) => SYNTACTIC_LOOP_TYPES.has(ancestor.type))
+      return contexts.has('syntactic-loop-body')
     case 'function':
-      return ancestors.some((ancestor) => FUNCTION_BODY_TYPES.has(ancestor.type))
+      return contexts.has('function-body')
     case 'async-function':
-      return ancestors.some(
-        (ancestor) =>
-          (ancestor.type === 'sz_js_class_method' || ancestor.type === 'sz_js_function') &&
-          ancestor.getFieldValue('ASYNC') === 'TRUE',
-      )
-    case 'event':
-      return ancestors.some(isEventContainer)
-    case 'keyboard-event':
-      return ancestors.some((ancestor) => KEYBOARD_EVENT_TYPES.has(ancestor.type))
-    case 'pointer-event':
-      return ancestors.some((ancestor) => POINTER_EVENT_TYPES.has(ancestor.type))
+      return contexts.has('async-function-body')
+    case 'active-event-object':
+      return eventObject.active && eventObject.capability !== undefined
+    case 'keyboard-event-object':
+      return eventObject.capability === 'keyboard'
+    case 'pointer-event-object':
+      return eventObject.capability === 'pointer'
     case 'derived-constructor':
       return (
         ancestors.some((ancestor) => ancestor.type === 'sz_js_constructor') &&
@@ -290,12 +327,18 @@ function derivedConstructorsFit(
   return prospectiveFirst.type === 'sz_js_super_ctor' && existingSuperCalls + addedSuperCalls === 1
 }
 
-function programmingTreeFits(destinationOwner: Blockly.Block, movedRoot: Blockly.Block): boolean {
+function programmingTreeFits(
+  destinationOwner: Blockly.Block,
+  movedRoot: Blockly.Block,
+  entersDestinationBody: boolean,
+): boolean {
   for (const block of movedRoot.getDescendants(false)) {
     const requirement = programmingRequirement(block)
     if (!requirement) continue
     const ancestors = prospectiveAncestors(block, movedRoot, destinationOwner)
-    if (requirementFits(block, requirement, ancestors)) continue
+    if (requirementFits(block, requirement, ancestors, destinationOwner, entersDestinationBody)) {
+      continue
+    }
     // Pilhas ainda soltas são rascunhos montáveis. A validação torna-se rígida
     // quando a árvore entra numa Área do projeto.
     if (!ancestors.some((ancestor) => isProjectAreaType(ancestor.type))) continue
@@ -306,29 +349,59 @@ function programmingTreeFits(destinationOwner: Blockly.Block, movedRoot: Blockly
 
 function nestedStatementContexts(ancestors: readonly Blockly.Block[]): Set<StatementContext> {
   const contexts = new Set<StatementContext>(['statement'])
+  let controlBoundaryReached = false
+  let activationBoundaryReached = false
+
   for (const ancestor of ancestors) {
-    const placement = getBlockContract(ancestor.type)?.placement
+    const contract = getBlockContract(ancestor.type)
+    const placement = contract?.placement
+    const bodyExecution = effectiveBodyExecution(contract)
+
     if (placement?.role === 'event') contexts.add('event-body')
-    if (placement?.role === 'loop' || SYNTACTIC_LOOP_TYPES.has(ancestor.type)) {
+    if (!activationBoundaryReached && isUserGestureEventContainer(ancestor)) {
+      contexts.add('user-gesture-body')
+    }
+    if (!controlBoundaryReached && placement?.role === 'loop') {
       contexts.add('loop-body')
+    }
+    if (!controlBoundaryReached && SYNTACTIC_LOOP_TYPES.has(ancestor.type)) {
+      contexts.add('loop-body')
+      contexts.add('syntactic-loop-body')
     }
     if (ancestor.type === 'sz_js_class_method') {
       contexts.add('function-body')
-      if (ancestor.getFieldValue('ASYNC') === 'TRUE') contexts.add('async-function-body')
-      if (getSuperName(enclosingClass(ancestors)).length > 0) contexts.add('derived-method-body')
+      if (!controlBoundaryReached && ancestor.getFieldValue('ASYNC') === 'TRUE') {
+        contexts.add('async-function-body')
+      }
+      if (!controlBoundaryReached && getSuperName(enclosingClass(ancestors)).length > 0) {
+        contexts.add('derived-method-body')
+      }
     }
     if (ancestor.type === 'sz_js_constructor') {
       contexts.add('function-body')
-      contexts.add('constructor-body')
-      if (getSuperName(enclosingClass(ancestors)).length > 0) {
-        contexts.add('derived-constructor-body')
+      if (!controlBoundaryReached) {
+        contexts.add('constructor-body')
+        if (getSuperName(enclosingClass(ancestors)).length > 0) {
+          contexts.add('derived-constructor-body')
+        }
       }
     }
     if (ancestor.type === 'sz_js_function') {
       contexts.add('function-body')
-      if (ancestor.getFieldValue('ASYNC') === 'TRUE') contexts.add('async-function-body')
+      if (!controlBoundaryReached && ancestor.getFieldValue('ASYNC') === 'TRUE') {
+        contexts.add('async-function-body')
+      }
     }
     if (ancestor.type === 'sz_js_class') contexts.add('class-member')
+
+    if (bodyExecution === 'sync-callback') contexts.add('function-body')
+
+    if (bodyExecution !== 'structural') {
+      controlBoundaryReached = true
+      if (bodyExecution === 'deferred-callback' || bodyExecution === 'function') {
+        activationBoundaryReached = true
+      }
+    }
   }
   return contexts
 }
@@ -355,7 +428,11 @@ function placementFits(destinationOwner: Blockly.Block, movedRoot: Blockly.Block
     if (placement.forbiddenDirectNested?.some((context) => directContexts.has(context))) {
       return false
     }
-    if (placement.nested.some((context) => contexts.has(context))) continue
+    // Um evento pode ser encapsulado por uma unidade reutilizável, mas precisa
+    // ser filho direto da função, método ou construtor. Isso impede esconder o
+    // registro em um if/repeat, mantendo a árvore física igual à gramática da IR.
+    const eligibleContexts = placement.role === 'event' ? directContexts : contexts
+    if (placement.nested.some((context) => eligibleContexts.has(context))) continue
 
     // Eventos e loops de raiz nunca podem ser embrulhados. Para comandos
     // dependentes de contexto (break/return/await), a pilha solta continua
@@ -396,7 +473,15 @@ export class HTMLConnectionChecker extends Blockly.ConnectionChecker {
     if (!parent) return true
     if (!constructorCardinalityFits(parent, moved.getSourceBlock())) return false
     if (!placementFits(parent, moved.getSourceBlock())) return false
-    if (!programmingTreeFits(parent, moved.getSourceBlock())) return false
+    if (
+      !programmingTreeFits(
+        parent,
+        moved.getSourceBlock(),
+        destination.type === Blockly.ConnectionType.NEXT_STATEMENT,
+      )
+    ) {
+      return false
+    }
     if (!derivedConstructorsFit(parent, moved.getSourceBlock())) return false
 
     const previous =

@@ -226,7 +226,7 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     parserShape: 'void',
     contentModel: 'none',
     categories: PHRASING,
-    modeledAttributes: ['src', 'alt'],
+    modeledAttributes: ['src', 'alt', 'width', 'height', 'loading'],
     level: 'iniciante-2d',
   },
   {
@@ -244,7 +244,7 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     parserShape: 'void',
     contentModel: 'none',
     categories: PHRASING,
-    modeledAttributes: ['type', 'placeholder', 'name', 'value', 'checked'],
+    modeledAttributes: ['type', 'placeholder', 'name', 'value', 'checked', 'autocomplete'],
     level: 'iniciante-2d',
   },
   {
@@ -253,7 +253,7 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     parserShape: 'leaf',
     contentModel: 'none',
     categories: PHRASING,
-    modeledAttributes: ['placeholder', 'name'],
+    modeledAttributes: ['placeholder', 'name', 'autocomplete'],
     level: 'iniciante-2d',
   },
   {
@@ -447,9 +447,136 @@ export const HTML_INPUT_TYPE_OPTIONS: ReadonlyArray<readonly [string, string]> =
 ]
 
 const HTML_INPUT_TYPES = new Set(HTML_INPUT_TYPE_OPTIONS.map(([, value]) => value))
+const HTML_INPUT_TYPE_STATES = new Set([...HTML_INPUT_TYPES, 'hidden', 'image'])
+
+export function normalizeHTMLInputType(value: string): string | undefined {
+  const normalized = value.toLowerCase()
+  return HTML_INPUT_TYPES.has(normalized) ? normalized : undefined
+}
+
+/** Resolve o estado real do atributo enumerado `type`; valores inválidos viram texto. */
+export function resolveHTMLInputTypeState(value: string): string {
+  const normalized = value.toLowerCase()
+  if (!normalized) return 'text'
+  return HTML_INPUT_TYPE_STATES.has(normalized) ? normalized : 'text'
+}
 
 export function isSupportedHTMLInputType(value: string): boolean {
-  return HTML_INPUT_TYPES.has(value)
+  return normalizeHTMLInputType(value) !== undefined
+}
+
+export const HTML_IMAGE_LOADING_OPTIONS: ReadonlyArray<readonly [string, string]> = [
+  ['automático', 'auto'],
+  ['quando precisar', 'lazy'],
+  ['imediato', 'eager'],
+]
+
+const HTML_IMAGE_LOADING_VALUES = new Set(['lazy', 'eager'])
+
+export function isSupportedHTMLImageLoading(value: string): boolean {
+  return HTML_IMAGE_LOADING_VALUES.has(value)
+}
+
+/** `width` e `height` da imagem guiada precisam reservar uma área real. */
+export function isValidHTMLImageDimension(value: string): boolean {
+  return /^[0-9]+$/.test(value) && /[1-9]/.test(value)
+}
+
+const HTML_AUTOCOMPLETE_GENERAL_FIELDS = new Set([
+  'name',
+  'honorific-prefix',
+  'given-name',
+  'additional-name',
+  'family-name',
+  'honorific-suffix',
+  'nickname',
+  'username',
+  'new-password',
+  'current-password',
+  'one-time-code',
+  'organization-title',
+  'organization',
+  'street-address',
+  'address-line1',
+  'address-line2',
+  'address-line3',
+  'address-level4',
+  'address-level3',
+  'address-level2',
+  'address-level1',
+  'country',
+  'country-name',
+  'postal-code',
+  'cc-name',
+  'cc-given-name',
+  'cc-additional-name',
+  'cc-family-name',
+  'cc-number',
+  'cc-exp',
+  'cc-exp-month',
+  'cc-exp-year',
+  'cc-csc',
+  'cc-type',
+  'transaction-currency',
+  'transaction-amount',
+  'language',
+  'bday',
+  'bday-day',
+  'bday-month',
+  'bday-year',
+  'sex',
+  'url',
+  'photo',
+])
+
+const HTML_AUTOCOMPLETE_CONTACT_FIELDS = new Set([
+  'tel',
+  'tel-country-code',
+  'tel-national',
+  'tel-area-code',
+  'tel-local',
+  'tel-local-prefix',
+  'tel-local-suffix',
+  'tel-extension',
+  'email',
+  'impp',
+])
+
+const HTML_AUTOCOMPLETE_CONTACT_HINTS = new Set(['home', 'work', 'mobile', 'fax', 'pager'])
+
+/**
+ * Valida a ordem dos tokens de autofill definida pelo HTML: seção, endereço,
+ * contato/campo e, por último, a credencial opcional `webauthn`.
+ */
+export function isValidHTMLAutocomplete(value: string): boolean {
+  const trimmed = value.trim()
+  if (!trimmed) return true
+  const tokens = trimmed.toLowerCase().split(/[\t\n\f\r ]+/)
+  if (tokens.length === 1 && (tokens[0] === 'on' || tokens[0] === 'off')) return true
+
+  let index = 0
+  const section = tokens[index]
+  if (section?.startsWith('section-')) {
+    if (section.length === 'section-'.length) return false
+    index += 1
+  }
+  if (tokens[index] === 'shipping' || tokens[index] === 'billing') index += 1
+
+  const hasContactHint = HTML_AUTOCOMPLETE_CONTACT_HINTS.has(tokens[index] ?? '')
+  if (hasContactHint) index += 1
+  const field = tokens[index]
+  if (
+    !field ||
+    (hasContactHint
+      ? !HTML_AUTOCOMPLETE_CONTACT_FIELDS.has(field)
+      : !HTML_AUTOCOMPLETE_GENERAL_FIELDS.has(field) &&
+        !HTML_AUTOCOMPLETE_CONTACT_FIELDS.has(field))
+  ) {
+    return false
+  }
+  index += 1
+  if (tokens[index] === 'webauthn') index += 1
+  return index === tokens.length
 }
 
 export const HTML_BUTTON_TYPE_OPTIONS: ReadonlyArray<readonly [string, string]> = [
@@ -458,6 +585,18 @@ export const HTML_BUTTON_TYPE_OPTIONS: ReadonlyArray<readonly [string, string]> 
   ['enviar formulário', 'submit'],
   ['limpar formulário', 'reset'],
 ]
+
+const HTML_BUTTON_TYPES = new Set(HTML_BUTTON_TYPE_OPTIONS.map(([, value]) => value))
+
+/**
+ * Atributos enumerados HTML comparam palavras-chave sem diferenciar maiúsculas
+ * e minúsculas. Devolve a palavra canônica aceita pelo dropdown ou `undefined`
+ * quando o código precisa permanecer como HTML avançado para não mudar de ação.
+ */
+export function normalizeHTMLButtonType(value: string): string | undefined {
+  const normalized = value.toLowerCase()
+  return HTML_BUTTON_TYPES.has(normalized) ? normalized : undefined
+}
 
 export const HTML_INTERMEDIATE_BLOCK_TYPES: ReadonlySet<string> = new Set([
   ...HTML_ELEMENT_CATALOG.filter((entry) => entry.level === 'intermediario-2d').map(

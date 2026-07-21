@@ -256,7 +256,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    placement: { root: [], nested: ['loop-body'], role: 'command' },
+    placement: { root: [], nested: ['syntactic-loop-body'], role: 'command' },
     tooltip: 'Interrompe o laço (loop) atual imediatamente.',
   },
   {
@@ -265,7 +265,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    placement: { root: [], nested: ['loop-body'], role: 'command' },
+    placement: { root: [], nested: ['syntactic-loop-body'], role: 'command' },
     tooltip: 'Pula o resto desta volta e vai direto para a próxima repetição do laço.',
   },
   {
@@ -377,6 +377,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_for_each',
+    bodyExecution: 'sync-callback',
     placement: 'command',
     message0: 'para cada item %1 (posição %2) na lista %3',
     args0: [
@@ -395,6 +396,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_set_timeout',
+    bodyExecution: 'deferred-callback',
     placement: 'command',
     message0: 'depois de %1 ms',
     args0: [{ type: 'input_value', name: 'MS', check: 'JSValue' }],
@@ -408,6 +410,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_set_interval',
+    bodyExecution: 'deferred-callback',
     placement: 'loop-periodic',
     migration: 'lift-periodic-loop',
     message0: 'repetir a cada %1 ms',
@@ -422,6 +425,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_set_timeout_seconds',
+    bodyExecution: 'deferred-callback',
     placement: 'command',
     message0: 'depois de %1 segundos',
     args0: [{ type: 'input_value', name: 'S', check: 'JSValue' }],
@@ -435,6 +439,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_set_interval_seconds',
+    bodyExecution: 'deferred-callback',
     placement: 'loop-periodic',
     migration: 'lift-periodic-loop',
     message0: 'repetir a cada %1 segundos',
@@ -475,6 +480,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_val_new_promise',
+    bodyExecution: 'sync-callback',
     message0: 'uma promessa que avisa quando terminar com %1 %2 fazendo %3',
     args0: [
       { type: 'field_input', name: 'PARAM', text: 'resolve' },
@@ -520,6 +526,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_js_fetch_json',
+    bodyExecution: 'deferred-callback',
     placement: 'command',
     message0: 'buscar JSON da URL %1',
     args0: [{ type: 'field_input', name: 'URL', text: 'https://api.exemplo.com/dados' }],

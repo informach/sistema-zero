@@ -241,6 +241,47 @@ describe('FieldNamePicker', () => {
       expect(collectScopedVariableNames(failure)).toEqual(['falha'])
     })
 
+    it('expõe o tempo local dentro do callback do próximo quadro', () => {
+      const ws = new Blockly.Workspace()
+      const callback = ws.newBlock('sz_canvas_request_frame_do')
+      callback.setFieldValue('tempoQuadro', 'PARAM')
+      const body = ws.newBlock('sz_js_console_log_var')
+      nestStmt(callback, body, 'DO')
+
+      expect(collectScopedVariableNames(body)).toEqual(['tempoQuadro'])
+    })
+
+    it('expõe controle, tempo e delta habilitados dentro do laço de animação', () => {
+      const ws = new Blockly.Workspace()
+      const loop = ws.newBlock('sz_canvas_anim_loop') as Blockly.Block & {
+        loadExtraState(state: { handle: string; timeVar: string; deltaVar: string }): void
+      }
+      loop.loadExtraState({
+        handle: 'controleAnimacao',
+        timeVar: 'tempoQuadro',
+        deltaVar: 'deltaSegundos',
+      })
+      const body = ws.newBlock('sz_js_console_log_var')
+      nestStmt(loop, body, 'BODY')
+
+      expect(collectScopedVariableNames(body)).toEqual([
+        'controleAnimacao',
+        'tempoQuadro',
+        'deltaSegundos',
+      ])
+    })
+
+    it('expõe as coordenadas locais dentro do evento de ponteiro do Jogo 2D', () => {
+      const ws = new Blockly.Workspace()
+      const pointer = ws.newBlock('sz_g2d_on_pointer')
+      pointer.setFieldValue('posicaoX', 'PX')
+      pointer.setFieldValue('posicaoY', 'PY')
+      const body = ws.newBlock('sz_js_console_log_var')
+      nestStmt(pointer, body, 'BODY')
+
+      expect(collectScopedVariableNames(body)).toEqual(['posicaoX', 'posicaoY'])
+    })
+
     it('expõe a função de conclusão somente dentro do corpo da Promise', () => {
       const ws = new Blockly.Workspace()
       const promise = ws.newBlock('sz_val_new_promise')

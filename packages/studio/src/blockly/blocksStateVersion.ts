@@ -6,7 +6,7 @@
 export const BEHAVIOR_AREAS_STATE_KEY = 'szBehaviorAreasVersion'
 /** Versão mais antiga que o normalizador atual sabe migrar sem perder o layout. */
 export const BEHAVIOR_AREAS_MIN_MIGRATABLE_STATE_VERSION = 2
-export const BEHAVIOR_AREAS_STATE_VERSION = 3
+export const BEHAVIOR_AREAS_STATE_VERSION = 6
 
 /**
  * Aceita legado sem marcador e versões conhecidas que ainda passarão pelo

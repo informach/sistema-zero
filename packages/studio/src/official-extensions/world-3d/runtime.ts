@@ -117,6 +117,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   // Sons do projeto (HTMLAudio, do __SZGAME_SOUNDS) + música.
   var sounds = Object.create(null);
   var music = null;
+  var musicName = null;
   // HUD por canto (DOM) + balão de fala que segue o carro.
   var hudEls = Object.create(null);
   var sayEl = null;
@@ -8048,6 +8049,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     engineFilter = null;
     _audioCtx = null;
     music = null;
+    musicName = null;
     points = [];
     zones = [];
     galleries = [];
@@ -8693,6 +8695,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
         warn('não conheço "' + k5 + '" — tem: mar, passaros, grilos, desligado');
         return;
       }
+      if (ambienceKind === k5) return;
       if (k5 !== 'mar') stopSeaNoise();
       ambienceKind = k5;
       _ambT = 0;
@@ -9149,14 +9152,23 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       } catch (e) {}
     }),
     playMusic: guard('playMusic', function (name) {
-      var url = SOUNDS[text(name, '')];
+      var key = text(name, '');
+      var url = SOUNDS[key];
       if (!url) {
-        warn('a música "' + text(name, '') + '" não está no projeto');
+        warn('a música "' + key + '" não está no projeto');
         return;
       }
       try {
+        if (music && musicName === key) {
+          if (music.paused === true) {
+            var retry = music.play();
+            if (retry && retry.catch) retry.catch(function () {});
+          }
+          return;
+        }
         if (music) music.pause();
         music = new Audio(url);
+        musicName = key;
         music.loop = true;
         music.volume = 0.5;
         var p = music.play();
@@ -9165,6 +9177,8 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     }),
     stopMusic: guard('stopMusic', function () {
       try { if (music) { music.pause(); music.currentTime = 0; } } catch (e) {}
+      music = null;
+      musicName = null;
     }),
 
     // ⏱️ Jogo & tela

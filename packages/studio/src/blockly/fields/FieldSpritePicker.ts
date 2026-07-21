@@ -72,6 +72,8 @@ const SPRITE_LOOP_BINDERS: Record<string, string[]> = {
   sz_g2d_prune_offscreen: ['ITEM'],
   sz_g2d_on_group_overlap: ['ANAME', 'BNAME'],
   sz_g2d_on_sprite_group_overlap: ['ANAME'],
+  sz_g2d_on_enemy_defeated: ['ANAME'],
+  sz_g2d_on_enemy_shot_hit: ['ANAME'],
 }
 
 /**

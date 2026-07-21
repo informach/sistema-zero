@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { compileStatements, generateJS } from '#generators'
 import { behaviorStatements, SZIRV2Schema } from '#ir'
+import { buildWorkspaceStateFromIR } from '../blockly/workspaceState'
 import {
   CORE_EXAMPLES,
   defesaDaTorreNaMaoExample,
@@ -80,6 +81,14 @@ describe('CORE_EXAMPLES — gorilasNaMaoExample (na mão, sem extensão)', () =>
     const code = compileStatements(behaviorStatements(gorilasNaMaoExample.ir), 0)
     expect(code).toContain('.style.animationDuration')
     expect(code).toContain("matchMedia('(prefers-color-scheme: dark)').matches")
+    for (const event of ['pointerdown', 'pointermove', 'pointerup']) {
+      expect(code).toContain(`canvas?.addEventListener("${event}"`)
+      expect(code).not.toContain(`document.addEventListener("${event}"`)
+      expect(code).not.toContain(`window.addEventListener("${event}"`)
+    }
+    expect(JSON.stringify(buildWorkspaceStateFromIR(gorilasNaMaoExample.ir))).not.toContain(
+      'sz_adv_raw_js',
+    )
   })
 })
 

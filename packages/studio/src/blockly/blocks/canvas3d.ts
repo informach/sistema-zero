@@ -436,6 +436,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     // `carregador.load(url, (modelo) => { … })` — carregamento async de um recurso.
     type: 'sz_t3d_load_model',
     placement: 'resource-creator',
+    bodyExecution: 'deferred-callback',
     message0: 'carregar modelo %1',
     args0: [
       {
@@ -472,6 +473,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     // como AudioLoader (latch `audioLoaderVars` no workspaceState).
     type: 'sz_t3d_load_sound',
     placement: 'resource-creator',
+    bodyExecution: 'deferred-callback',
     message0: 'carregar som %1',
     args0: [{ type: 'field_asset_picker', name: 'URL', text: 'som', kind: 'audio' }],
     message1: 'usando %1',
@@ -497,6 +499,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     // `objeto.traverse((parte) => { … })` — percorrer cada parte de um objeto/modelo.
     type: 'sz_t3d_traverse',
     placement: 'command',
+    bodyExecution: 'sync-callback',
     message0: 'para cada parte de %1',
     args0: [{ type: 'input_value', name: 'OBJ', check: 'JSValue' }],
     message1: 'com a parte em %1, fazer %2',

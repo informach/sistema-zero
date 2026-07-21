@@ -2,8 +2,9 @@ import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
 import { beforeAll, describe, expect, it } from 'bun:test'
 import { generateProjectFiles } from '#generators'
-import { behaviorStatements } from '#ir'
+import { behaviorStatements, SZIRV2Schema } from '#ir'
 import { gameTwoDBlocks } from '../../official-extensions/game-2d/blocks'
+import { gameKitBlocks } from '../../official-extensions/game-2d-advanced/blocks'
 import { registerExtensionBlocks } from '../blocks'
 import { buildIRFromWorkspace, collectFlatFromWorkspace } from '../buildIR'
 import {
@@ -17,6 +18,10 @@ import { buildWorkspaceStateFromIR } from '../workspaceState'
 function connectInto(parent: Blockly.Block, input: string, child: Blockly.Block): void {
   const conn = parent.getInput(input)?.connection
   if (conn && child.previousConnection) conn.connect(child.previousConnection)
+}
+
+function isSerializedWorkspaceState(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 describe('Blocos-container (frames) — só gera o que está DENTRO', () => {
@@ -103,6 +108,7 @@ describe('Migração transparente para frames (normalizeBlocksStateToFrames)', (
   beforeAll(() => {
     ensureBlocklyInitialized()
     registerExtensionBlocks(gameTwoDBlocks)
+    registerExtensionBlocks(gameKitBlocks)
   })
 
   it('projeto LEGADO (blocos soltos, sem frames) migra para os 3 frames PRESERVANDO a saída', () => {
@@ -376,6 +382,200 @@ describe('Migração transparente para frames (normalizeBlocksStateToFrames)', (
     expect(normalizeBlocksStateToFrames(current)).toBe(current)
   })
 
+  it('migra comandos antigos de tela cheia inválidos para rascunhos carregáveis', () => {
+    const previousVersion = {
+      szBehaviorAreasVersion: 3,
+      blocks: {
+        languageVersion: 0,
+        blocks: [
+          {
+            type: 'sz_frame_start',
+            inputs: {
+              CHILDREN: {
+                block: {
+                  type: 'sz_js_toggle_fullscreen',
+                  id: 'alternar-invalido',
+                  next: {
+                    block: {
+                      type: 'sz_js_console_log_text',
+                      id: 'comando-valido',
+                      fields: { VALUE: 'continua' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          {
+            type: 'sz_frame_events',
+            inputs: {
+              CHILDREN: {
+                block: {
+                  type: 'sz_js_on_resize',
+                  inputs: {
+                    DO: {
+                      block: { type: 'sz_js_request_fullscreen', id: 'entrar-invalido' },
+                    },
+                  },
+                  next: {
+                    block: {
+                      type: 'sz_js_on_click_anywhere',
+                      inputs: {
+                        DO: {
+                          block: { type: 'sz_js_toggle_fullscreen', id: 'alternar-valido' },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        ],
+      },
+    }
+
+    const migrated = normalizeBlocksStateToFrames(previousVersion) as typeof previousVersion
+    expect(migrated.szBehaviorAreasVersion).toBe(6)
+
+    const workspace = new Blockly.Workspace()
+    expect(() => Blockly.serialization.workspaces.load(migrated, workspace)).not.toThrow()
+    expect(workspace.getBlockById('alternar-invalido')?.getParent()).toBeNull()
+    expect(workspace.getBlockById('entrar-invalido')?.getParent()).toBeNull()
+    expect(workspace.getBlockById('alternar-valido')?.getParent()?.type).toBe(
+      'sz_js_on_click_anywhere',
+    )
+    const ir = buildIRFromWorkspace(workspace)
+    expect(ir.behavior.start.map((statement) => statement.type)).toEqual(['consoleLog'])
+    expect(ir.behavior.events[0]).toMatchObject({ type: 'event', body: [] })
+    workspace.dispose()
+  })
+
+  it('migra a versão 4 soltando tela cheia de funções e callbacks adiados', () => {
+    const previousVersion = {
+      szBehaviorAreasVersion: 4,
+      blocks: {
+        languageVersion: 0,
+        blocks: [
+          {
+            type: 'sz_frame_start',
+            inputs: {
+              CHILDREN: {
+                block: {
+                  type: 'sz_js_function',
+                  inputs: {
+                    BODY: {
+                      block: { type: 'sz_js_request_fullscreen', id: 'funcao-invalida' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          {
+            type: 'sz_frame_events',
+            inputs: {
+              CHILDREN: {
+                block: {
+                  type: 'sz_js_on_click_anywhere',
+                  inputs: {
+                    DO: {
+                      block: {
+                        type: 'sz_js_set_timeout_seconds',
+                        inputs: {
+                          DO: {
+                            block: { type: 'sz_js_toggle_fullscreen', id: 'timer-invalido' },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        ],
+      },
+    }
+
+    const migrated = normalizeBlocksStateToFrames(previousVersion) as typeof previousVersion
+    expect(migrated.szBehaviorAreasVersion).toBe(6)
+
+    const workspace = new Blockly.Workspace()
+    expect(() => Blockly.serialization.workspaces.load(migrated, workspace)).not.toThrow()
+    expect(workspace.getBlockById('funcao-invalida')?.getParent()).toBeNull()
+    expect(workspace.getBlockById('timer-invalido')?.getParent()).toBeNull()
+    workspace.dispose()
+  })
+
+  it('migra a versão 5 usando ativação e timing declarados pelas extensões', () => {
+    const previousVersion = {
+      szBehaviorAreasVersion: 5,
+      blocks: {
+        languageVersion: 0,
+        blocks: [
+          {
+            type: 'sz_frame_events',
+            inputs: {
+              CHILDREN: {
+                block: {
+                  type: 'sz_js_on_click_anywhere',
+                  inputs: {
+                    DO: {
+                      block: {
+                        type: 'sz_gk_wait',
+                        inputs: {
+                          DO: {
+                            block: { type: 'sz_js_request_fullscreen', id: 'espera-invalida' },
+                          },
+                        },
+                      },
+                    },
+                  },
+                  next: {
+                    block: {
+                      type: 'sz_gk_on_game_click',
+                      inputs: {
+                        BODY: {
+                          block: { type: 'sz_js_toggle_fullscreen', id: 'jogo-valido' },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          {
+            type: 'sz_frame_start',
+            inputs: {
+              CHILDREN: {
+                block: {
+                  type: 'sz_gk_add_button',
+                  inputs: {
+                    BODY: {
+                      block: { type: 'sz_js_toggle_fullscreen', id: 'botao-valido' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        ],
+      },
+    }
+
+    const migrated = normalizeBlocksStateToFrames(previousVersion) as typeof previousVersion
+    expect(migrated.szBehaviorAreasVersion).toBe(6)
+
+    const workspace = new Blockly.Workspace()
+    expect(() => Blockly.serialization.workspaces.load(migrated, workspace)).not.toThrow()
+    expect(workspace.getBlockById('espera-invalida')?.getParent()).toBeNull()
+    expect(workspace.getBlockById('jogo-valido')?.getParent()?.type).toBe('sz_gk_on_game_click')
+    expect(workspace.getBlockById('botao-valido')?.getParent()?.type).toBe('sz_gk_add_button')
+    workspace.dispose()
+  })
+
   it('migra a versão 2: reencaminha eventos e ergue preparações salvas dentro de loops', () => {
     const previousVersion = {
       szBehaviorAreasVersion: 2,
@@ -417,12 +617,69 @@ describe('Migração transparente para frames (normalizeBlocksStateToFrames)', (
       szBehaviorAreasVersion: number
       blocks: { blocks: Array<{ type: string; [key: string]: unknown }> }
     }
-    expect(migrated.szBehaviorAreasVersion).toBe(3)
+    expect(migrated.szBehaviorAreasVersion).toBe(6)
     const byType = new Map(migrated.blocks.blocks.map((block) => [block.type, block]))
     expect(JSON.stringify(byType.get('sz_frame_start'))).toContain('preparo-no-loop')
     expect(JSON.stringify(byType.get('sz_frame_events'))).toContain('evento-no-inicio')
     expect(JSON.stringify(byType.get('sz_frame_loops'))).not.toContain('preparo-no-loop')
     expect(normalizeBlocksStateToFrames(migrated)).toBe(migrated)
+  })
+
+  it('preserva código avançado na área compatível escolhida pelo projeto', () => {
+    const previousVersion = {
+      szBehaviorAreasVersion: 5,
+      blocks: {
+        languageVersion: 0,
+        blocks: [
+          {
+            type: 'sz_frame_start',
+            inputs: {
+              CHILDREN: {
+                block: { type: 'sz_adv_raw_js', id: 'raw-inicio', fields: { CODE: 'preparar();' } },
+              },
+            },
+          },
+          {
+            type: 'sz_frame_events',
+            inputs: {
+              CHILDREN: {
+                block: {
+                  type: 'sz_adv_raw_js',
+                  id: 'raw-evento',
+                  fields: { CODE: 'window.addEventListener("custom", agir);' },
+                },
+              },
+            },
+          },
+          {
+            type: 'sz_frame_loops',
+            inputs: {
+              CHILDREN: {
+                block: { type: 'sz_adv_raw_js', id: 'raw-loop', fields: { CODE: 'animar();' } },
+              },
+            },
+          },
+        ],
+      },
+    }
+
+    const migrated = normalizeBlocksStateToFrames(previousVersion)
+    if (!isSerializedWorkspaceState(migrated)) throw new Error('Estado migrado inválido')
+    const workspace = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(migrated, workspace)
+      expect(workspace.getBlockById('raw-inicio')?.getParent()?.type).toBe('sz_frame_start')
+      expect(workspace.getBlockById('raw-evento')?.getParent()?.type).toBe('sz_frame_events')
+      expect(workspace.getBlockById('raw-loop')?.getParent()?.type).toBe('sz_frame_loops')
+
+      const ir = buildIRFromWorkspace(workspace)
+      expect(ir.behavior.start.map((statement) => statement.type)).toEqual(['rawJS'])
+      expect(ir.behavior.events.map((statement) => statement.type)).toEqual(['rawJS'])
+      expect(ir.behavior.loops.map((statement) => statement.type)).toEqual(['rawJS'])
+      expect(SZIRV2Schema.safeParse(ir).success).toBe(true)
+    } finally {
+      workspace.dispose()
+    }
   })
 
   it('termina a migração v2 parcialmente framada antes de gravar a versão nova', () => {
@@ -442,7 +699,7 @@ describe('Migração transparente para frames (normalizeBlocksStateToFrames)', (
       szBehaviorAreasVersion: number
       blocks: { blocks: Array<{ type: string; [key: string]: unknown }> }
     }
-    expect(migrated.szBehaviorAreasVersion).toBe(3)
+    expect(migrated.szBehaviorAreasVersion).toBe(6)
     expect(migrated.blocks.blocks.map((block) => block.type)).toEqual([
       'sz_frame_start',
       'sz_frame_events',

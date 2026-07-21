@@ -127,6 +127,23 @@ function makeTriangleGlbDataUrl(): string {
 }
 
 describe('Mundo 3D — robustez do runtime', () => {
+  it('não reinicia o relógio do mesmo som ambiente quando o comando é repetido', async () => {
+    const { api, step } = await loadStartedWorld((world) => world.ambience('passaros'))
+    const random = Math.random
+    let calls = 0
+    Math.random = () => {
+      calls += 1
+      return 0.5
+    }
+    try {
+      api.ambience('passaros')
+      step(1)
+      expect(calls).toBe(0)
+    } finally {
+      Math.random = random
+    }
+  })
+
   it('não transforma keydown repetido pelo sistema em um novo keyPressed', async () => {
     const { api, step } = await loadStartedWorld()
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'e', code: 'KeyE' }))

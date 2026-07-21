@@ -1,4 +1,7 @@
 import { expect, type Page, test } from '@playwright/test'
+import { expectToolboxGroupsToFit } from './helpers/responsiveToolbox'
+
+const SVG_GROUPS = ['🖼️ Estrutura', '⬛ Formas', '🔤 Texto', '🎨 Aparência'] as const
 
 async function createProject(page: Page): Promise<void> {
   await page.goto('/')
@@ -41,33 +44,9 @@ test.describe('SVG — fluxo infantil', () => {
     await expect(page.locator('.blocklyToolboxFlyout')).toContainText('Desenhar círculo')
   })
 
-  test('a paleta de formas cabe na largura de um celular', async ({ page }) => {
+  test('todas as paletas SVG cabem na largura de um celular', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 })
     await createProject(page)
-    await openSvgShapes(page)
-
-    const layout = await page.evaluate(() => {
-      const blocks = Array.from(
-        document.querySelectorAll<SVGGraphicsElement>('.blocklyFlyout .blocklyDraggable'),
-      )
-      const rects = blocks.map((block) => block.getBoundingClientRect())
-      const flyout = document.querySelector('.blocklyToolboxFlyout')?.getBoundingClientRect()
-      const widest = rects.reduce(
-        (current, rect, index) =>
-          rect.width > current.width
-            ? { width: rect.width, text: blocks[index]?.textContent ?? '' }
-            : current,
-        { width: 0, text: '' },
-      )
-      return {
-        viewport: window.innerWidth,
-        flyoutWidth: flyout?.width ?? 0,
-        widest,
-      }
-    })
-
-    expect(layout.flyoutWidth, JSON.stringify(layout)).toBeGreaterThan(0)
-    expect(layout.flyoutWidth, JSON.stringify(layout)).toBeLessThanOrEqual(layout.viewport)
-    expect(layout.widest.width, JSON.stringify(layout)).toBeLessThanOrEqual(layout.flyoutWidth)
+    await expectToolboxGroupsToFit(page, 'SVG', SVG_GROUPS)
   })
 })

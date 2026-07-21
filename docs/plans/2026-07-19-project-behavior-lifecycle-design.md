@@ -150,7 +150,9 @@ dois tipos se contradisserem.
 - `Eventos` recebe somente chapéus que representam ocorrências reais.
 - `Loops` recebe somente raízes contínuas ou periódicas.
 - Corpos de eventos e loops recebem comandos `JSStmt` compatíveis com o contexto.
-- Eventos e loops não podem ser aninhados uns nos outros.
+- Eventos e loops não podem ser aninhados uns nos outros. Um evento pode ser filho
+  direto de uma função, método ou construtor, mas não pode ficar escondido sob um
+  comando ou laço dentro dessa unidade.
 - Restrições especializadas continuam tipadas: desenho de mapa, mundo, HUD,
   função, classe, construtor e métodos de evento.
 - O Blockly recusa a conexão errada; o schema repete a validação para código e

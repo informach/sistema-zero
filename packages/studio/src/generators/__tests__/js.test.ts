@@ -1,10 +1,63 @@
 import { describe, expect, it } from 'bun:test'
-import type { JSExpr, JSStatement } from '#ir'
+import type { EventKind, JSExpr, JSStatement } from '#ir'
 import { num, str, variable } from '#ir'
 import { compileExpr, GeneratorError } from '../expr'
 import { GeneratorDepthError, generateJS, MAX_GENERATOR_DEPTH } from '../js'
 
 describe('generateJS', () => {
+  it('preserva this e super em callbacks oficiais criados dentro de métodos', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'classDecl',
+          name: 'Base',
+          ctorBody: [],
+          methods: [
+            {
+              name: 'somarBonus',
+              params: [],
+              body: [{ type: 'setThisProp', name: 'bonus', value: { type: 'num', value: 2 } }],
+            },
+          ],
+        },
+        {
+          type: 'classDecl',
+          name: 'Jogo',
+          superClass: 'Base',
+          ctorBody: [],
+          methods: [
+            {
+              name: 'atualizar',
+              params: [],
+              body: [
+                {
+                  type: 'gk:forEachActive',
+                  mold: 'inimigo',
+                  itemName: 'item',
+                  body: [
+                    { type: 'setThisProp', name: 'pontos', value: { type: 'num', value: 1 } },
+                    { type: 'superMethodCall', method: 'somarBonus', args: [] },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        { type: 'newInstance', varName: 'jogo', className: 'Jogo', args: [] },
+        { type: 'callMethod', objectVar: 'jogo', method: 'atualizar', args: [] },
+      ],
+    })
+
+    const jogo = new Function('SZGameKit', `${code}\nreturn jogo;`)({
+      forEachActive: (_mold: string, callback: (item: object) => void) => callback({}),
+    }) as {
+      pontos?: number
+      bonus?: number
+    }
+
+    expect(jogo).toMatchObject({ pontos: 1, bonus: 2 })
+  })
+
   it('embaralha com Fisher-Yates sem alterar a lista original', () => {
     const expression = compileExpr({ type: 'shuffle', arrayVar: 'cartas' })
     const original = [1, 2, 3, 4]
@@ -208,6 +261,23 @@ describe('generateJS', () => {
     expect(code).toContain('document.addEventListener("click", (event) => {')
     expect(code).toContain('let mx = event.clientX;')
     expect(code).toContain('let my = event.clientY;')
+  })
+
+  it('declara Event nos callbacks DOM e de imagem que expõem o evento', () => {
+    const eventMethod: JSStatement = { type: 'eventMethod', method: 'preventDefault' }
+    const target: JSExpr = { type: 'var', name: 'elemento' }
+    const code = generateJS({
+      statements: [
+        { type: 'onClickAssign', target, body: [eventMethod] },
+        { type: 'imageOnLoad', target, body: [eventMethod] },
+        { type: 'imageOnError', target, body: [eventMethod] },
+      ],
+    })
+
+    expect(code).toContain('elemento.onclick = (event) => {')
+    expect(code).toContain('elemento.onload = (event) => {')
+    expect(code).toContain('elemento.onerror = (event) => {')
+    expect(code.match(/event\.preventDefault\(\);/g)).toHaveLength(3)
   })
 
   it('emite lista (array), tamanho, adicionar e remover', () => {
@@ -676,6 +746,24 @@ describe('generateJS', () => {
     expect(code).toContain('event.preventDefault();')
   })
 
+  it('não duplica preventDefault quando o submit já tem a proteção explícita', () => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'event',
+          target: 'meuForm',
+          event: 'submit',
+          body: [
+            { type: 'consoleLog', value: str('validando') },
+            { type: 'eventMethod', method: 'preventDefault' },
+          ],
+        },
+      ],
+    })
+
+    expect(code.match(/event\.preventDefault\(\);/g)).toHaveLength(1)
+  })
+
   it('emite querySelector com const', () => {
     const code = generateJS({
       statements: [{ type: 'querySelector', selector: '.caixa', varName: 'caixa' }],
@@ -1039,6 +1127,40 @@ describe('generateJS', () => {
 })
 
 describe('generateJS — eventos de teclado/mouse/janela + temporizadores em segundos', () => {
+  it('infere window/document apenas na IR legada sem targetKind explícito', () => {
+    const code = generateJS({
+      statements: [
+        { type: 'event', target: 'window', event: 'click', body: [] },
+        { type: 'event', target: 'window', targetKind: 'id', event: 'click', body: [] },
+      ],
+    })
+
+    expect(code).toContain('window.addEventListener("click"')
+    expect(code).toContain('document.getElementById("window")?.addEventListener("click"')
+  })
+
+  it.each([
+    ['canvas', 'var', 'pointerdown', 'canvas?.addEventListener("pointerdown"'],
+    ['campo', 'id', 'keydown', 'document.getElementById("campo")?.addEventListener("keydown"'],
+    ['imagem', 'var', 'load', 'imagem?.addEventListener("load"'],
+  ] as const)('preserva o alvo de elemento %s em eventos %s', (target, targetKind, event, expected) => {
+    const code = generateJS({
+      statements: [
+        {
+          type: 'event',
+          target,
+          targetKind,
+          event: event as EventKind,
+          body: [],
+        },
+      ],
+    })
+
+    expect(code).toContain(expected)
+    expect(code).not.toContain(`document.addEventListener("${event}"`)
+    expect(code).not.toContain(`window.addEventListener("${event}"`)
+  })
+
   it('teclado: keydown vira document.addEventListener + event.code', () => {
     const code = generateJS({
       statements: [

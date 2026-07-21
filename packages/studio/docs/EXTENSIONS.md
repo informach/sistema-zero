@@ -160,12 +160,27 @@ antes de o código do aluno rodar). Regras:
       classificador paralelo na toolbox ou no builder. O schema da IR pode
       repetir os tipos de nós para proteger projetos importados, desde que o
       teste cruzado prove que catálogo e IR continuam alinhados.
+- [ ] Todo bloco de comando ou preparo com `input_statement` que entrega esse
+      corpo a uma função declara `bodyExecution`: `sync-callback` quando o
+      runtime chama a função antes de devolver, ou `deferred-callback` quando a
+      guarda para evento, quadro, carregamento ou temporizador. Corpos puramente
+      sintáticos (`se`, repetição, `switch`) continuam `structural`; eventos e
+      loops-raiz já derivam o callback do papel declarado em `placement`. O
+      contrato da IR deve enumerar os mesmos statements explicitamente, sem
+      inferir pelo prefixo `on`.
+- [ ] Um callback disparado diretamente por clique, toque ou `keydown` declara
+      `userGesture: true` (ou a condição `{ field, equals }`). Isso é obrigatório
+      para comandos que dependem da ativação transitória do navegador, como
+      tela cheia. Não marque eventos que apenas observam um estado no próximo
+      quadro.
 - [ ] Comandos de preparo entram em **⚙️ Ao iniciar**; chapéus “Quando…” entram em
       **⚡ Quando acontecer**; atualizações contínuas e periódicas entram
       em **🔁 Enquanto estiver rodando**. Um passo contínuo usa `loop-command`:
       pode ficar no corpo de um loop ou de uma função/método, nunca diretamente
       em **Ao iniciar** nem no corpo direto de um evento ou construtor. Um loop
-      aninhado nesses fluxos continua válido. Eventos e loops-raiz não podem ser aninhados. Corpos internos
+      aninhado nesses fluxos continua válido. Eventos e loops-raiz não podem ser aninhados. Um evento pode
+      ser filho direto de uma função, método ou construtor para usar parâmetros e `this`, mas nunca pode ficar
+      escondido sob `if`, repetição, outro evento ou outro comando. Corpos internos
       usam os checks de contexto (`event-body`, `loop-body`, `function-body`,
       etc.) materializados pelo contrato. Quando um contexto mais amplo também
       for permitido, use `forbiddenNested` para registrar exclusões ancestrais;

@@ -705,7 +705,13 @@ const VARIABLE_LOOP_BINDERS: ScopedBinderRegistry = {
   sz_val_array_map: { TRANSFORM: ['ITEM'] },
   sz_val_array_find: { COND: ['ITEM'] },
   sz_val_array_filter: { COND: ['ITEM'] },
+  // Callbacks do Canvas 2D: o parâmetro do próximo quadro e os nomes opcionais
+  // do laço de animação existem somente dentro de seus respectivos corpos.
+  sz_canvas_request_frame_do: { DO: ['PARAM'] },
+  sz_canvas_anim_loop: { BODY: ['HANDLE', 'TIME_VAR', 'DELTA_VAR'] },
   ...CANVAS3D_VARIABLE_BRANCH_BINDERS,
+  // O evento de ponteiro do Jogo 2D fornece as coordenadas somente ao seu corpo.
+  sz_g2d_on_pointer: { BODY: ['PX', 'PY'] },
   // Ganchos do Jogo 2D Avançado: o tempo (dt), o pincel (ctx) e a posição do
   // clique (px/py) são nomes LOCAIS dos corpos dos ganchos.
   sz_gk_on_update: ['DT'],
@@ -1503,6 +1509,7 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         const targetKind = block?.getFieldValue('TARGET_KIND')
         if (targetKind === 'var') return collectReadableVariables(block)
         if (targetKind === 'id') return collectDomElementIds(ws)
+        if (targetKind === 'document' || targetKind === 'window') return [targetKind]
         const seen = new Set<string>()
         return [...collectDomElementIds(ws), ...collectReadableVariables(block)].filter((name) => {
           if (seen.has(name)) return false

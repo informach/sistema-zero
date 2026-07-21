@@ -4,7 +4,7 @@ import { world3DExamples } from './examples'
 export const world3DManifest: ExtensionManifest = {
   id: 'world-3d',
   name: 'Mundo 3D',
-  version: '4.1.1',
+  version: '4.1.2',
   description:
     'Crie mundos 3D abertos só com primitivas: 7 cenários, arquipélago, cidade completa, distritos, redes de ruas e casas procedurais instanciadas. Passeie a pé, de carro ou barco; use física leve própria, inventário persistente, missões, clima e qualidade adaptativa. Sem Rapier, WASM ou pacote de assets.',
   category: 'games',
@@ -364,10 +364,13 @@ Ao executar o projeto, o Studio monta e começa o passeio automaticamente.
 - **Carregar o som … do arquivo …**. Prepara um som do projeto (envie em
   "Imagens") e dá um apelido. Faça no começo.
 - **Tocar o som …**. Toca um som carregado (bom em "Quando bater forte").
-- **Tocar a música … sem parar**. A trilha sonora do seu mundo (em loop).
+- **Tocar a música … sem parar**. A trilha sonora persistente do seu mundo (em loop).
+  Inicie em **⚙️ Ao iniciar**, em **⚡ Quando acontecer** ou diretamente numa função,
+  nunca dentro de **🔁 Enquanto estiver rodando**. Repetir a mesma música não a recomeça.
 - **Parar a música**. Desliga a música.
 - **Sons do lugar: 🌊/🐦/🦗**. O fundo sonoro feito na hora (sem arquivo):
-  mar respirando, passarinhos de dia ou grilos à noite.
+  mar respirando, passarinhos de dia ou grilos à noite. É uma configuração persistente:
+  use fora de **🔁 Enquanto estiver rodando**; repetir a mesma opção mantém seu relógio.
 
 ### ⏱️ Jogo & tela
 

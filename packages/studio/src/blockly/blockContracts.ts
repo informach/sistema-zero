@@ -6,7 +6,10 @@ import type {
   BlockPlacement,
   BlockPlacementDeclaration,
   BlockPlacementPreset,
+  EventObjectCapability,
+  StatementBodyExecution,
   StatementContext,
+  UserGestureActivation,
 } from './blocks/types'
 
 export type { BlockMigration } from './blocks/types'
@@ -18,7 +21,36 @@ export interface BlockContract {
   type: string
   domain: 'frame' | 'html' | 'css' | 'behavior' | 'value'
   placement?: BlockPlacement
+  bodyExecution: StatementBodyExecution
+  userGesture?: UserGestureActivation
+  eventObject?: EventObjectCapability
   migration: BlockMigration
+}
+
+/** Eventos e loops de motor sempre entram por callback, mesmo sem anotação local. */
+export function effectiveBodyExecution(
+  contract: BlockContract | undefined,
+): StatementBodyExecution {
+  const role = contract?.placement?.role
+  if (role === 'event' || role === 'loop') return 'deferred-callback'
+  return contract?.bodyExecution ?? 'structural'
+}
+
+/** Avalia a ativação declarada sem depender de nomes de blocos. */
+export function contractProvidesUserGesture(
+  contract: BlockContract | undefined,
+  fieldValue: (name: string) => unknown = () => undefined,
+): boolean {
+  const activation = contract?.userGesture
+  if (activation === true) return true
+  return Boolean(activation && fieldValue(activation.field) === activation.equals)
+}
+
+/** Retorna a especialização do objeto `Event` entregue ao corpo do bloco. */
+export function contractEventObjectCapability(
+  contract: BlockContract | undefined,
+): EventObjectCapability | undefined {
+  return contract?.eventObject
 }
 
 /**
@@ -58,13 +90,31 @@ export const RESOURCE_CREATOR_PLACEMENT: BlockPlacement = Object.freeze({
 
 export const EVENT_ROOT_PLACEMENT: BlockPlacement = Object.freeze({
   root: ['events'] as const,
-  nested: ['function-body'] as const,
+  nested: [
+    'function-body',
+    'async-function-body',
+    'constructor-body',
+    'derived-constructor-body',
+    'derived-method-body',
+  ] as const,
+  forbiddenNested: ['loop-body'] as const,
   role: 'event',
 })
 
 export const EVENT_BODY_COMMAND_PLACEMENT: BlockPlacement = Object.freeze({
   root: [] as const,
   nested: ['event-body'] as const,
+  role: 'command',
+})
+
+/**
+ * A entrada em tela cheia exige ativação transitória do navegador. Uma função
+ * nomeada não prova que sua chamada veio de um gesto, portanto só o corpo do
+ * próprio evento libera o comando.
+ */
+export const USER_GESTURE_COMMAND_PLACEMENT: BlockPlacement = Object.freeze({
+  root: [] as const,
+  nested: ['user-gesture-body'] as const,
   role: 'command',
 })
 
@@ -104,7 +154,9 @@ export function isProjectAreaType(type: string): boolean {
 const BODY_CONTEXTS: readonly StatementContext[] = [
   'statement',
   'event-body',
+  'user-gesture-body',
   'loop-body',
+  'syntactic-loop-body',
   'function-body',
   'async-function-body',
   'constructor-body',
@@ -116,11 +168,19 @@ const BODY_CONTEXTS: readonly StatementContext[] = [
   'map-enter',
 ]
 
+export const ADVANCED_COMMAND_PLACEMENT: BlockPlacement = Object.freeze({
+  root: ['start', 'events', 'loops'] as const,
+  nested: BODY_CONTEXTS,
+  role: 'command',
+})
+
 const PLACEMENT_PRESETS: Readonly<Record<BlockPlacementPreset, BlockPlacement>> = Object.freeze({
   command: Object.freeze({ root: ['start'] as const, nested: BODY_CONTEXTS, role: 'command' }),
+  'advanced-command': ADVANCED_COMMAND_PLACEMENT,
   'start-declaration': START_ONLY_DECLARATION_PLACEMENT,
   event: EVENT_ROOT_PLACEMENT,
   'event-body': EVENT_BODY_COMMAND_PLACEMENT,
+  'user-gesture-command': USER_GESTURE_COMMAND_PLACEMENT,
   'loop-update': Object.freeze({
     root: ['loops'] as const,
     nested: [] as const,
@@ -181,7 +241,9 @@ function resolvePlacement(declaration: BlockPlacementDeclaration): BlockPlacemen
 const CHECK_BY_CONTEXT: Readonly<Record<StatementContext, string>> = {
   statement: 'JSStmt',
   'event-body': 'JSEventStmt',
+  'user-gesture-body': 'JSUserGestureStmt',
   'loop-body': 'JSLoopStmt',
+  'syntactic-loop-body': 'JSSyntacticLoopStmt',
   'function-body': 'JSFunctionStmt',
   'async-function-body': 'JSAsyncStmt',
   'constructor-body': 'JSConstructorStmt',
@@ -234,22 +296,32 @@ function materializeStatementInputs(definition: BlockDefinition): BlockDefinitio
 
 export function inferBlockContract(definition: BlockDefinition): BlockContract {
   const { type } = definition
-  if (PROJECT_AREA_TYPES.has(type)) return { type, domain: 'frame', migration: 'keep' }
+  const bodyExecution = definition.bodyExecution ?? 'structural'
+  const userGesture = definition.userGesture
+  const eventObject = definition.eventObject
+  if (PROJECT_AREA_TYPES.has(type)) {
+    return { type, domain: 'frame', bodyExecution, userGesture, eventObject, migration: 'keep' }
+  }
 
   const previous = definition.previousStatement
   const previousChecks = Array.isArray(previous) ? previous : previous ? [previous] : []
-  if (previousChecks.includes('HTMLNode')) return { type, domain: 'html', migration: 'keep' }
+  if (previousChecks.includes('HTMLNode')) {
+    return { type, domain: 'html', bodyExecution, userGesture, eventObject, migration: 'keep' }
+  }
   if (
     previousChecks.includes('CSSEntry') ||
     previousChecks.includes('CSSDecl') ||
     previousChecks.includes('KeyframeStep')
   ) {
-    return { type, domain: 'css', migration: 'keep' }
+    return { type, domain: 'css', bodyExecution, userGesture, eventObject, migration: 'keep' }
   }
   if (definition.output != null) {
     return {
       type,
       domain: 'value',
+      bodyExecution,
+      userGesture,
+      eventObject,
       migration: 'keep',
       placement: definition.placement
         ? resolvePlacement(definition.placement)
@@ -263,6 +335,9 @@ export function inferBlockContract(definition: BlockDefinition): BlockContract {
   return {
     type,
     domain: 'behavior',
+    bodyExecution,
+    userGesture,
+    eventObject,
     placement: resolvePlacement(definition.placement),
     migration: definition.migration ?? 'keep',
   }
@@ -310,15 +385,20 @@ export function materializeBlockDefinition(definition: BlockDefinition): BlockDe
   } as BlockDefinition
 }
 
-export function areaForBlockType(type: string): ProjectAreaKind | undefined {
-  if (type === FRAME_STRUCTURE) return 'structure'
-  if (type === FRAME_APPEARANCE) return 'appearance'
-  if (type === FRAME_START || type === FRAME_BEHAVIOR_LEGACY) return 'start'
-  if (type === FRAME_EVENTS) return 'events'
-  if (type === FRAME_LOOPS) return 'loops'
+export function areasForBlockType(type: string): readonly ProjectAreaKind[] | undefined {
+  if (type === FRAME_STRUCTURE) return ['structure']
+  if (type === FRAME_APPEARANCE) return ['appearance']
+  if (type === FRAME_START || type === FRAME_BEHAVIOR_LEGACY) return ['start']
+  if (type === FRAME_EVENTS) return ['events']
+  if (type === FRAME_LOOPS) return ['loops']
   const contract = contracts.get(type)
   if (!contract) return undefined
-  if (contract.domain === 'html') return 'structure'
-  if (contract.domain === 'css') return 'appearance'
-  return contract.placement?.root[0]
+  if (contract.domain === 'html') return ['structure']
+  if (contract.domain === 'css') return ['appearance']
+  return contract.placement?.root
+}
+
+/** Área canônica usada ao organizar blocos soltos ou migrar estados planos. */
+export function areaForBlockType(type: string): ProjectAreaKind | undefined {
+  return areasForBlockType(type)?.[0]
 }

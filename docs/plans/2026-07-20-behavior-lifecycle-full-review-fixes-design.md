@@ -2,13 +2,15 @@
 
 ## Objetivo
 
-Consolidar a divisão do bloco **Comportamento** nas áreas **Ao iniciar**, **Eventos** e **Durante o jogo**, corrigindo contratos de posicionamento, ciclo de vida de recursos gerados, catálogo das extensões oficiais e documentação.
+Consolidar a divisão do bloco **Comportamento** nas áreas **Ao iniciar**, **Quando acontecer** e **Enquanto estiver rodando**, corrigindo contratos de posicionamento, ciclo de vida de recursos gerados, catálogo das extensões oficiais e documentação.
 
 ## Regras aprovadas
 
 - Comandos contínuos podem aparecer no corpo de loops e no corpo de funções ou métodos.
 - Comandos contínuos não podem aparecer diretamente em **Ao iniciar**, eventos ou construtores.
 - Recursos persistentes e comandos de disparo único podem iniciar em **Ao iniciar**, eventos, funções ou métodos, mas são proibidos dentro de loops.
+- Eventos podem ser encapsulados diretamente por funções, métodos ou construtores,
+  mas não podem ficar escondidos dentro de comandos ou laços dessas unidades.
 - Reiniciar um projeto gerenciado no mesmo documento deve cancelar listeners, timers, intervalos e animações da execução anterior.
 
 ## Desenho

@@ -19,6 +19,10 @@ function stripBlocklyIds(value: unknown): unknown {
   )
 }
 
+function allBlockArgs(block: (typeof HTML_BLOCKS)[number] | undefined): unknown[] {
+  return [block?.args0, block?.args1, block?.args2, block?.args3, block?.args4, block?.args5].flat()
+}
+
 describe('HTML/Canvas — fidelidade e semântica acessível', () => {
   beforeAll(() => ensureBlocklyInitialized())
 
@@ -66,21 +70,36 @@ describe('HTML/Canvas — fidelidade e semântica acessível', () => {
 
     expect(canvas?.args2).toContainEqual(expect.objectContaining({ name: 'DESCRIPTION' }))
     expect(label?.args0).toContainEqual(expect.objectContaining({ name: 'FOR' }))
-    const inputArgs = [input?.args0, input?.args1, input?.args2, input?.args3].flat()
+    const image = HTML_BLOCKS.find((block) => block.type === 'sz_html_image')
+    const imageArgs = allBlockArgs(image)
+    expect(imageArgs).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: 'WIDTH' }),
+        expect.objectContaining({ name: 'HEIGHT' }),
+        expect.objectContaining({ name: 'LOADING' }),
+      ]),
+    )
+    const inputArgs = allBlockArgs(input)
     expect(inputArgs).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ name: 'NAME' }),
         expect.objectContaining({ name: 'VALUE' }),
         expect.objectContaining({ name: 'CHECKED' }),
+        expect.objectContaining({ name: 'AUTOCOMPLETE' }),
       ]),
     )
-    const textareaArgs = [textarea?.args0, textarea?.args1, textarea?.args2].flat()
-    expect(textareaArgs).toContainEqual(expect.objectContaining({ name: 'NAME' }))
+    const textareaArgs = allBlockArgs(textarea)
+    expect(textareaArgs).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: 'NAME' }),
+        expect.objectContaining({ name: 'AUTOCOMPLETE' }),
+      ]),
+    )
   })
 
   it('preserva associação, nome, valor e estado dos campos no round-trip Blockly', () => {
     const source =
-      '<form><label for="aceite">Aceitar?</label><input id="aceite" name="termos" type="checkbox" value="sim" checked><textarea id="recado" name="mensagem" placeholder="Conte aqui">Olá</textarea></form>'
+      '<form><label for="aceite">Aceitar?</label><input id="aceite" name="termos" type="checkbox" value="sim" autocomplete="off" checked><textarea id="recado" name="mensagem" placeholder="Conte aqui" autocomplete="shipping street-address">Olá</textarea></form>'
     const original = { html: parseHTML(source), css: [], js: [], extensions: [] }
     const state = buildWorkspaceStateFromIR(original)
     const workspace = new Blockly.Workspace()
@@ -94,13 +113,103 @@ describe('HTML/Canvas — fidelidade e semântica acessível', () => {
       expect(generated).toContain('value="sim"')
       expect(generated).toContain('checked=""')
       expect(generated).toContain('name="mensagem"')
+      expect(generated).toContain('autocomplete="off"')
+      expect(generated).toContain('autocomplete="shipping street-address"')
     } finally {
       workspace.dispose()
     }
   })
 
+  it('normaliza a capitalização dos tipos de botão sem mudar sua ação', () => {
+    const original = {
+      html: parseHTML(
+        '<form><button type="SUBMIT">Enviar</button><button type="Reset">Limpar</button><button type="BUTTON">Ação</button></form>',
+      ),
+      css: [],
+      js: [],
+      extensions: [],
+    }
+    const expected = parseHTML(
+      '<form><button type="submit">Enviar</button><button type="reset">Limpar</button><button type="button">Ação</button></form>',
+    )
+    const workspace = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(
+        buildWorkspaceStateFromIR(original) as unknown as Record<string, unknown>,
+        workspace,
+      )
+      expect(stripBlocklyIds(buildIRFromWorkspace(workspace).html)).toEqual(expected)
+    } finally {
+      workspace.dispose()
+    }
+  })
+
+  it('normaliza a capitalização dos tipos de input sem cair em HTML avançado', () => {
+    const original = {
+      html: parseHTML(
+        '<form><input type="EMAIL"><input type="SUBMIT" value="Enviar"><input type="Reset"></form>',
+      ),
+      css: [],
+      js: [],
+      extensions: [],
+    }
+    const expected = parseHTML(
+      '<form><input type="email"><input type="submit" value="Enviar"><input type="reset"></form>',
+    )
+    const workspace = new Blockly.Workspace()
+    try {
+      const state = buildWorkspaceStateFromIR(original)
+      expect(JSON.stringify(state)).not.toContain('sz_adv_raw_html')
+      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, workspace)
+      expect(stripBlocklyIds(buildIRFromWorkspace(workspace).html)).toEqual(expected)
+    } finally {
+      workspace.dispose()
+    }
+  })
+
+  it('preserva type de input com espaços como HTML avançado sem mudar o controle', () => {
+    const source = '<form><input id="contato" type=" EMAIL "></form>'
+    const original = {
+      html: parseHTML(source),
+      css: [],
+      js: [],
+      extensions: [],
+    }
+    const state = buildWorkspaceStateFromIR(original)
+
+    expect(JSON.stringify(state)).toContain('sz_adv_raw_html')
+
+    const workspace = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, workspace)
+      const rebuilt = buildIRFromWorkspace(workspace).html
+      const generated = generateHTML({ body: rebuilt })
+      expect(generated).toContain('<input id="contato" type=" EMAIL "')
+      expect(generated).not.toContain('type="email"')
+    } finally {
+      workspace.dispose()
+    }
+  })
+
+  it('preserva tipo de botão desconhecido como HTML avançado', () => {
+    const source = '<button type="menu">Abrir menu</button>'
+    const state = buildWorkspaceStateFromIR({
+      html: parseHTML(source),
+      css: [],
+      js: [],
+      extensions: [],
+    })
+    expect(JSON.stringify(state)).toContain('sz_adv_raw_html')
+    expect(JSON.stringify(state)).toContain(source.replaceAll('"', '\\"'))
+  })
+
   it('distingue imagem sem alt de imagem decorativa com alt vazio no round-trip Blockly', () => {
-    for (const source of ['<img src="foto.png">', '<img src="foto.png" alt="">']) {
+    for (const source of [
+      '<img src="foto.png">',
+      '<img src="foto.png" alt="">',
+      '<img src="foto.png" alt="Paisagem" width="640" height="360" loading="lazy">',
+      '<img src="foto.png" alt="Paisagem" loading="instant">',
+    ]) {
       const original = { html: parseHTML(source), css: [], js: [], extensions: [] }
       const state = buildWorkspaceStateFromIR(original)
       const workspace = new Blockly.Workspace()
@@ -119,7 +228,7 @@ describe('HTML/Canvas — fidelidade e semântica acessível', () => {
 
   it('expõe uma escolha explícita para imagem decorativa', () => {
     const image = HTML_BLOCKS.find((block) => block.type === 'sz_html_image')
-    const args = [image?.args0, image?.args1, image?.args2].flat()
+    const args = allBlockArgs(image)
 
     expect(args).toContainEqual(
       expect.objectContaining({ type: 'field_checkbox', name: 'DECORATIVE' }),

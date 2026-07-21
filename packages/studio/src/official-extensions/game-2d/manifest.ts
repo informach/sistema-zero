@@ -20,7 +20,7 @@ import { withGameTwoDLifecycleGuidance } from './pedagogy'
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.37.0',
+  version: '0.37.1',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, vidas automáticas em corações ou barra, colisões, mapas, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
@@ -269,7 +269,9 @@ precisar de arquivos:
 - **Tocar a nota … por … ms**. Toca uma nota musical (dó, ré, mi, fá, sol, lá, si e dó agudo);
   junte várias para montar uma melodia.
 - **Tocar música de fundo**. Uma musiquinha em loop (aventura, alegre, tensão, calma ou vitória);
-  só uma música toca por vez. **Parar a música de fundo** silencia.
+  só uma música toca por vez. Inicie em **⚙️ Ao iniciar**, em **⚡ Quando acontecer** ou
+  diretamente numa função, nunca dentro de **🔁 Enquanto estiver rodando**. Repetir o bloco
+  com a mesma música mantém a faixa atual sem recomeçar. **Parar a música de fundo** silencia.
 
 Lembrete: o navegador só deixa o som tocar **depois** de um clique ou tecla do jogador.
 

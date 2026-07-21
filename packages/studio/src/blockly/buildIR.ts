@@ -10,10 +10,7 @@ import type {
   SZIRV2,
 } from '#ir'
 import { splitLegacyBehavior } from '#ir'
-import {
-  programmingCodecForBlockType,
-  programmingCodecSupports,
-} from '../codecs/programming/registry'
+import { programmingRegistrationForBlockType } from '../codecs/programming/registry'
 import { canvasExpressionBlockToIR, canvasStatementBlockToIR } from '../codecs/web/canvasBlockToIR'
 import { cssBlockToIR } from '../codecs/web/cssBlockToIR'
 import { htmlBlockToIR } from '../codecs/web/htmlBlockToIR'
@@ -265,6 +262,19 @@ function fn(block: Blockly.Block, name: string, fallback = 0): number {
  */
 function targetKindField(block: Blockly.Block): { targetKind?: 'var' } {
   return f(block, 'TARGET_KIND') === 'var' ? { targetKind: 'var' } : {}
+}
+
+function eventTargetFields(
+  block: Blockly.Block,
+  fallback: 'document' | 'window',
+): { target: string; targetKind: 'id' | 'var' | 'document' | 'window' } {
+  const fieldKind = f(block, 'TARGET_KIND')
+  const kind =
+    fieldKind === 'id' || fieldKind === 'var' || fieldKind === 'document' || fieldKind === 'window'
+      ? fieldKind
+      : fallback
+  if (kind === 'document' || kind === 'window') return { target: kind, targetKind: kind }
+  return { target: f(block, 'TARGET'), targetKind: kind }
 }
 
 /** Como `targetKindField`, mas inclui 'this' — para blocos de classList (classOp/contains). */
@@ -1411,8 +1421,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: {
           type: 'event',
-          target: 'document',
-          targetKind: 'document',
+          ...eventTargetFields(block, 'document'),
           event: f(block, 'WHEN') as 'keydown' | 'keyup',
           body: getStatementChildren(block, 'DO', seen),
         },
@@ -1422,9 +1431,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: {
           type: 'event',
-          target: 'document',
-          targetKind: 'document',
-          event: 'mousemove',
+          ...eventTargetFields(block, 'document'),
+          event: 'pointermove',
           body: getStatementChildren(block, 'DO', seen),
         },
       }
@@ -1433,9 +1441,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: {
           type: 'event',
-          target: 'window',
-          targetKind: 'window',
-          event: 'mousedown',
+          ...eventTargetFields(block, 'window'),
+          event: 'pointerdown',
           body: getStatementChildren(block, 'DO', seen),
         },
       }
@@ -1444,9 +1451,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: {
           type: 'event',
-          target: 'window',
-          targetKind: 'window',
-          event: 'mouseup',
+          ...eventTargetFields(block, 'window'),
+          event: 'pointerup',
           body: getStatementChildren(block, 'DO', seen),
         },
       }
@@ -1658,8 +1664,10 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       return {
         kind: 'js',
         value: {
-          type: 'setText',
+          type: 'setProperty',
           targetId: f(block, 'TARGET'),
+          targetKind: 'id',
+          property: 'textContent',
           value: { type: 'str', value: f(block, 'VALUE') },
         },
       }
@@ -1970,6 +1978,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
             | 'keyup'
             | 'mouseover'
             | 'mouseout'
+            | 'pointerdown'
+            | 'pointerup'
             | 'submit'
             | 'input'
             | 'change',
@@ -9365,12 +9375,12 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       }
 
     default: {
-      // Um bloco ofertado por Programação sem adapter é violação do contrato e
+      // Um bloco ofertado por Programação sem implementação é violação do contrato e
       // nunca pode virar perda silenciosa de trabalho. Extensões desconhecidas
       // continuam toleradas para compatibilidade com estados externos.
-      const programmingCodec = programmingCodecForBlockType(block.type)
-      if (programmingCodec && programmingCodecSupports(programmingCodec, 'block-to-ir')) {
-        throw new Error(`Bloco de Programação sem adapter de IR: ${block.type}`)
+      const programmingRegistration = programmingRegistrationForBlockType(block.type)
+      if (programmingRegistration) {
+        throw new Error(`Bloco de Programação sem implementação de IR: ${block.type}`)
       }
       console.warn('Bloco desconhecido ignorado:', block.type)
       return null

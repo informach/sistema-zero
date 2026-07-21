@@ -11,7 +11,14 @@ interface BlockArg {
 }
 
 function valueInputs(definition: (typeof CANVAS_BLOCKS)[number]): string[] {
-  return [definition.args0, definition.args1, definition.args2]
+  return [
+    definition.args0,
+    definition.args1,
+    definition.args2,
+    definition.args3,
+    definition.args4,
+    definition.args5,
+  ]
     .flatMap((args) => (Array.isArray(args) ? args : []))
     .filter((arg): arg is BlockArg => Boolean(arg) && typeof arg === 'object')
     .filter((arg) => arg.type === 'input_value' && typeof arg.name === 'string')
@@ -69,12 +76,27 @@ describe('Auditoria Canvas — inventário e experiência infantil', () => {
     const forbidden =
       /requestAnimationFrame|ctx\.|img\.|\bImage\b|\bcanvas\b|coluna de HTML|nível principal|\bframe\b/i
     const exposed = CANVAS_BLOCKS.flatMap((definition) =>
-      [definition.message0, definition.message1, definition.message2, definition.tooltip]
+      [
+        definition.message0,
+        definition.message1,
+        definition.message2,
+        definition.message3,
+        definition.message4,
+        definition.message5,
+        definition.tooltip,
+      ]
         .filter((text): text is string => typeof text === 'string')
         .filter((text) => forbidden.test(text))
         .map((text) => `${definition.type}: ${text}`),
     )
     expect(exposed).toEqual([])
+  })
+
+  it('apresenta a descrição da tela como parte necessária da acessibilidade', () => {
+    const canvas = CANVAS_BLOCKS.find((definition) => definition.type === 'sz_html_canvas')
+    expect(canvas?.message2).toContain('descrição acessível')
+    expect(canvas?.message2).not.toContain('opcional')
+    expect(canvas?.tooltip).toContain('quem não consegue ver')
   })
 
   it('quebra os blocos largos em linhas confortáveis no celular', () => {

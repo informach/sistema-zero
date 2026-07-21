@@ -1,5 +1,30 @@
 import { expect, type Page, test } from '@playwright/test'
 import { pasteBlocklyBlocks as pasteBlocks } from './helpers/blockly'
+import { expectToolboxGroupsToFit } from './helpers/responsiveToolbox'
+
+const RESPONSIVE_GROUPS = {
+  HTML: ['📝 Texto', '📦 Estrutura', '📋 Listas', '🖼️ Mídia & Links', '✏️ Formulário'],
+  CSS: [
+    '🧰 Regra',
+    '🎨 Cores & Fundo',
+    '🔤 Texto',
+    '📐 Tamanho & Caixa',
+    '🧩 Layout',
+    '✨ Efeitos',
+    '📱 Responsivo',
+    '🎮 Posição & jogo',
+  ],
+  Canvas: [
+    '🖥️ Tela',
+    '🎨 Pincel',
+    '⬛ Formas',
+    '✏️ Traçado',
+    '🔤 Texto',
+    '🔄 Transformar',
+    '🖼️ Imagem',
+    '🎞️ Animação & entrada',
+  ],
+} as const
 
 async function createProject(page: Page): Promise<void> {
   await page.goto('/')
@@ -43,6 +68,7 @@ function structureArea(): Record<string, unknown> {
                           PLACEHOLDER: '',
                           VALUE: 'sim',
                           CHECKED: 'TRUE',
+                          AUTOCOMPLETE: 'off',
                         },
                         next: {
                           block: {
@@ -52,6 +78,7 @@ function structureArea(): Record<string, unknown> {
                               NAME: 'mensagem',
                               TEXT: 'Olá',
                               PLACEHOLDER: 'Conte aqui',
+                              AUTOCOMPLETE: 'shipping street-address',
                             },
                           },
                         },
@@ -188,8 +215,13 @@ test.describe('HTML, CSS, SVG e Canvas — blocos reais', () => {
     await expect(preview.locator('label[for="aceite"]')).toHaveText('Aceitar as regras?')
     await expect(preview.locator('input#aceite')).toHaveAttribute('name', 'termos')
     await expect(preview.locator('input#aceite')).toHaveAttribute('value', 'sim')
+    await expect(preview.locator('input#aceite')).toHaveAttribute('autocomplete', 'off')
     await expect(preview.locator('input#aceite')).toBeChecked()
     await expect(preview.locator('textarea#recado')).toHaveAttribute('name', 'mensagem')
+    await expect(preview.locator('textarea#recado')).toHaveAttribute(
+      'autocomplete',
+      'shipping street-address',
+    )
     await expect(preview.locator('svg#vetor use#copia')).toHaveAttribute('href', '#bola')
     await expect
       .poll(() =>
@@ -235,33 +267,15 @@ test.describe('HTML, CSS, SVG e Canvas — blocos reais', () => {
     await expect(page.getByText(/Não achei uma tela Canvas com o id “tela”/)).toBeVisible()
   })
 
-  for (const [category, group] of [
-    ['HTML', '✏️ Formulário'],
-    ['CSS', '🧰 Regra'],
-    ['Canvas', '🖥️ Tela'],
+  for (const [category, groups] of [
+    ['HTML', RESPONSIVE_GROUPS.HTML],
+    ['CSS', RESPONSIVE_GROUPS.CSS],
+    ['Canvas', RESPONSIVE_GROUPS.Canvas],
   ] as const) {
-    test(`${category} cabe no layout estreito`, async ({ page }) => {
+    test(`todos os grupos de ${category} cabem no layout estreito`, async ({ page }) => {
       await page.setViewportSize({ width: 375, height: 812 })
       await createProject(page)
-      await page.getByRole('treeitem', { name: category, exact: true }).click()
-      await page.getByRole('treeitem', { name: group, exact: true }).click()
-      const flyout = page.locator('.blocklyToolboxFlyout:visible')
-      await expect(flyout).toBeVisible()
-      const layout = await flyout.evaluate((element) => {
-        const bounds = element.getBoundingClientRect()
-        const widest = [...element.querySelectorAll<SVGGraphicsElement>('.blocklyDraggable')]
-          .map((block) => ({
-            width: block.getBoundingClientRect().width,
-            text: block.textContent ?? '',
-          }))
-          .reduce((max, current) => (current.width > max.width ? current : max), {
-            width: 0,
-            text: '',
-          })
-        return { viewport: window.innerWidth, flyout: bounds.width, widest }
-      })
-      expect(layout.flyout, JSON.stringify(layout)).toBeLessThanOrEqual(layout.viewport)
-      expect(layout.widest.width, JSON.stringify(layout)).toBeLessThanOrEqual(layout.flyout)
+      await expectToolboxGroupsToFit(page, category, groups)
     })
   }
 })

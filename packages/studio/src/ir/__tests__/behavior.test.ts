@@ -40,6 +40,37 @@ describe('IR de comportamento v2', () => {
     expect(behavior.loops.map((statement) => statement.type)).toEqual(['g2d:updateEachFrame'])
   })
 
+  it('desembrulha window.load legado mesmo quando targetKind ainda não existia', () => {
+    const behavior = splitLegacyBehavior([
+      { type: 'event', target: 'window', event: 'load', body: [log('dom antigo')] },
+    ])
+
+    expect(behavior.start).toEqual([log('dom antigo')])
+    expect(behavior.events).toEqual([])
+    expect(behavior.loops).toEqual([])
+  })
+
+  it('não confunde um elemento chamado window nem document.load com o load global legado', () => {
+    const elementLoad: JSStatement = {
+      type: 'event',
+      targetKind: 'id',
+      target: 'window',
+      event: 'load',
+      body: [log('elemento')],
+    }
+    const documentLoad: JSStatement = {
+      type: 'event',
+      target: 'document',
+      event: 'load',
+      body: [log('documento')],
+    }
+    const behavior = splitLegacyBehavior([elementLoad, documentLoad])
+
+    expect(behavior.start).toEqual([])
+    expect(behavior.events).toEqual([elementLoad, documentLoad])
+    expect(behavior.loops).toEqual([])
+  })
+
   it('eleva repetições periódicas diretas para raízes independentes', () => {
     const behavior = splitLegacyBehavior([
       {

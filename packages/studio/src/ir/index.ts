@@ -1,5 +1,6 @@
 export * from './behavior'
 export * from './canvasContexts'
+export * from './eventTargets'
 export * from './helpers'
 export * from './ids'
 export * from './lifecycle'

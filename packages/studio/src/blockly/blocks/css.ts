@@ -136,9 +136,10 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   // ---- Layout flex ----
   {
     type: 'sz_css_display_flex',
-    message0: 'Organizar os itens de %1 em %2',
-    args0: [
-      { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
+    message0: 'Organizar os itens de %1',
+    args0: [{ type: 'field_input', name: 'SELECTOR', text: '#caixa' }],
+    message1: 'em %1',
+    args1: [
       {
         type: 'field_dropdown',
         name: 'DIR',
@@ -169,9 +170,10 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_justify',
-    message0: 'Arrumar no eixo principal de %1 como %2',
-    args0: [
-      { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
+    message0: 'eixo principal de %1',
+    args0: [{ type: 'field_input', name: 'SELECTOR', text: '#caixa' }],
+    message1: 'arrumar no %1',
+    args1: [
       {
         type: 'field_dropdown',
         name: 'VALUE',
@@ -192,9 +194,10 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_align',
-    message0: 'Arrumar no eixo transversal de %1 como %2',
-    args0: [
-      { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
+    message0: 'eixo transversal de %1',
+    args0: [{ type: 'field_input', name: 'SELECTOR', text: '#caixa' }],
+    message1: 'arrumar como %1',
+    args1: [
       {
         type: 'field_dropdown',
         name: 'VALUE',
@@ -405,11 +408,10 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_width_percent',
-    message0: 'Largura de %1 como %2 % da caixa onde está',
-    args0: [
-      { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
-      { type: 'field_number', name: 'VALUE', value: 100, min: 0, max: 100 },
-    ],
+    message0: 'Largura de %1',
+    args0: [{ type: 'field_input', name: 'SELECTOR', text: '#caixa' }],
+    message1: 'usar %1 % da caixa onde está',
+    args1: [{ type: 'field_number', name: 'VALUE', value: 100, min: 0, max: 100 }],
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
@@ -419,8 +421,9 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   // ---- Responsividade (media query) ----
   {
     type: 'sz_css_media_query',
-    message0: 'Responsivo: quando a tela tiver %1 %2 px',
-    args0: [
+    message0: 'Responsivo',
+    message1: 'quando a tela tiver %1 %2 px',
+    args1: [
       {
         type: 'field_dropdown',
         name: 'DIR',
@@ -433,8 +436,8 @@ export const CSS_BLOCKS: BlockDefinition[] = [
       },
       { type: 'field_number', name: 'PX', value: 768, min: 0 },
     ],
-    message1: 'aplicar estas regras %1',
-    args1: [{ type: 'input_statement', name: 'RULES', check: 'CSSEntry' }],
+    message2: 'aplicar estas regras %1',
+    args2: [{ type: 'input_statement', name: 'RULES', check: 'CSSEntry' }],
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
@@ -470,13 +473,16 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   // ---- CSS moderno ----
   {
     type: 'sz_css_transition',
-    message0: 'Suavizar %1 de %2 por %3 ms',
+    message0: 'Suavizar %1',
     args0: [
       {
         type: 'field_dropdown',
         name: 'PROPERTY',
         options: CSS_TRANSITION_PROPERTY_OPTIONS.map(([label, value]) => [label, value]),
       },
+    ],
+    message1: 'em %1 por %2 ms',
+    args1: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'MS', value: 300, min: 0 },
     ],
@@ -509,10 +515,23 @@ export const CSS_BLOCKS: BlockDefinition[] = [
       'É uma reação ao mouse: enquanto a setinha estiver em cima, as mudanças encaixadas aqui aparecem. No CSS, esse estado se chama hover.',
   },
   {
+    type: 'sz_css_focus_visible',
+    message0: 'Quando %1 receber foco pelo teclado',
+    args0: [{ type: 'field_input', name: 'SELECTOR', text: '#caixa' }],
+    message1: 'mudar o estilo %1',
+    args1: [{ type: 'input_statement', name: 'CHILDREN', check: 'CSSDecl' }],
+    previousStatement: 'CSSEntry',
+    nextStatement: 'CSSEntry',
+    colour: C,
+    tooltip:
+      'Mostra onde a pessoa está ao navegar com o teclado. Encaixe uma borda de destaque; no CSS, esse estado se chama focus-visible.',
+  },
+  {
     type: 'sz_css_grid',
-    message0: 'Organizar %1 numa grade com %2 colunas e espaço %3 px',
-    args0: [
-      { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
+    message0: 'Organizar %1 numa grade',
+    args0: [{ type: 'field_input', name: 'SELECTOR', text: '#caixa' }],
+    message1: '%1 colunas · espaço %2 px',
+    args1: [
       { type: 'field_number', name: 'COLS', value: 3, min: 1, precision: 1 },
       { type: 'field_number', name: 'GAP', value: 16, min: 0 },
     ],
@@ -538,7 +557,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_keyframes_steps',
-    message0: 'Criar animação com vários passos chamada %1',
+    message0: 'Criar animação em passos chamada %1',
     args0: [{ type: 'field_input', name: 'NAME', text: 'girar' }],
     message1: 'passos %1',
     args1: [{ type: 'input_statement', name: 'STEPS', check: 'KeyframeStep' }],
@@ -562,10 +581,13 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_apply_animation',
-    message0: 'Animar %1 com %2 por %3 segundos e repetir %4',
+    message0: 'Animar %1 com %2',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_name_picker', name: 'NAME', text: 'pulsar', kind: 'animation' },
+    ],
+    message1: 'duração %1 s · repetir %2',
+    args1: [
       { type: 'field_number', name: 'SECONDS', value: 1, min: 0.1, precision: 0.1 },
       {
         type: 'field_dropdown',
@@ -601,11 +623,10 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_transform',
-    message0: 'Mover, girar ou esticar %1 com %2',
-    args0: [
-      { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
-      { type: 'field_input', name: 'VALUE', text: 'rotate(10deg)' },
-    ],
+    message0: 'Mover, girar ou esticar %1',
+    args0: [{ type: 'field_input', name: 'SELECTOR', text: '#caixa' }],
+    message1: 'usando %1',
+    args1: [{ type: 'field_input', name: 'VALUE', text: 'rotate(10deg)' }],
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
@@ -627,12 +648,12 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_grid_template',
-    message0: 'Grade de %1 com colunas %2 e linhas %3',
-    args0: [
-      { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
-      { type: 'field_input', name: 'COLS', text: 'repeat(3, 1fr)' },
-      { type: 'field_input', name: 'ROWS', text: '' },
-    ],
+    message0: 'Grade de %1',
+    args0: [{ type: 'field_input', name: 'SELECTOR', text: '#caixa' }],
+    message1: 'colunas %1',
+    args1: [{ type: 'field_input', name: 'COLS', text: 'repeat(3, 1fr)' }],
+    message2: 'linhas %1',
+    args2: [{ type: 'field_input', name: 'ROWS', text: '' }],
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
@@ -643,9 +664,10 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   // ---- 🎮 Posição & jogo (as propriedades que os jogos mais usam) ----
   {
     type: 'sz_css_position',
-    message0: 'Posicionamento de %1 como %2',
-    args0: [
-      { type: 'field_input', name: 'SELECTOR', text: '#canvas1' },
+    message0: 'Posicionamento de %1',
+    args0: [{ type: 'field_input', name: 'SELECTOR', text: '#canvas1' }],
+    message1: 'usar %1',
+    args1: [
       {
         type: 'field_dropdown',
         name: 'VALUE',
@@ -666,7 +688,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_offset',
-    message0: 'Distância do %1 até %2 como %3',
+    message0: 'Distância do %1 até %2',
     args0: [
       {
         type: 'field_dropdown',
@@ -679,8 +701,9 @@ export const CSS_BLOCKS: BlockDefinition[] = [
         ],
       },
       { type: 'field_input', name: 'SELECTOR', text: '#canvas1' },
-      { type: 'field_input', name: 'VALUE', text: '50%' },
     ],
+    message1: 'usar %1',
+    args1: [{ type: 'field_input', name: 'VALUE', text: '50%' }],
     previousStatement: 'CSSEntry',
     nextStatement: 'CSSEntry',
     colour: C,
@@ -711,9 +734,10 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_overflow',
-    message0: 'O que passar da borda de %1 deve %2',
-    args0: [
-      { type: 'field_input', name: 'SELECTOR', text: 'body' },
+    message0: 'O que passar da borda de %1',
+    args0: [{ type: 'field_input', name: 'SELECTOR', text: 'body' }],
+    message1: 'deve %1',
+    args1: [
       {
         type: 'field_dropdown',
         name: 'VALUE',
@@ -733,9 +757,10 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_cursor',
-    message0: 'Ponteiro do mouse sobre %1 como %2',
-    args0: [
-      { type: 'field_input', name: 'SELECTOR', text: 'canvas' },
+    message0: 'Ponteiro do mouse sobre %1',
+    args0: [{ type: 'field_input', name: 'SELECTOR', text: 'canvas' }],
+    message1: 'mostrar %1',
+    args1: [
       {
         type: 'field_dropdown',
         name: 'VALUE',
@@ -757,9 +782,10 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_image_rendering',
-    message0: 'Desenho dos pixels de %1 como %2',
-    args0: [
-      { type: 'field_input', name: 'SELECTOR', text: 'canvas' },
+    message0: 'Desenho dos pixels de %1',
+    args0: [{ type: 'field_input', name: 'SELECTOR', text: 'canvas' }],
+    message1: 'mostrar %1',
+    args1: [
       {
         type: 'field_dropdown',
         name: 'VALUE',
@@ -778,9 +804,10 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_object_fit',
-    message0: 'Encaixar a imagem de %1 como %2',
-    args0: [
-      { type: 'field_input', name: 'SELECTOR', text: 'img' },
+    message0: 'Encaixar a imagem de %1',
+    args0: [{ type: 'field_input', name: 'SELECTOR', text: 'img' }],
+    message1: 'modo %1',
+    args1: [
       {
         type: 'field_dropdown',
         name: 'VALUE',
@@ -908,6 +935,7 @@ export const CSS_GROUPS: { name: string; colour: string; types: string[] }[] = [
     types: [
       'sz_css_transition',
       'sz_css_hover',
+      'sz_css_focus_visible',
       'sz_css_transform',
       'sz_css_perspective',
       'sz_css_keyframes',

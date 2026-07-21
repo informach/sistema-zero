@@ -1,6 +1,11 @@
 import { generateCSS } from '#generators'
 import type { CSSDeclarations, CSSEntry, KeyframesCSS } from '#ir'
-import { cssDeclarationEntries, cssDeclarationsRecord, hasDuplicateCSSDeclarations } from '#ir'
+import {
+  cssDeclarationEntries,
+  cssDeclarationsRecord,
+  hasDuplicateCSSDeclarations,
+  hasOrderDependentCSSDeclarations,
+} from '#ir'
 import type { SerializedBlocklyBlock } from '../../blockly/workspaceState'
 import { SHADOW_PRESETS } from './cssBlockToIR'
 import { isLosslessColor } from './losslessValues'
@@ -123,7 +128,10 @@ export function createCSSIRToBlocks(context: CSSIRToBlocksContext) {
     const orderedDeclarations = cssDeclarationEntries(sourceRule.declarations, sourceRule.__declIds)
     // Fallbacks repetidos dependem da ordem. Mantemos todos dentro de UMA regra
     // genérica, sem promover alguns para blocos dedicados que poderiam reordená-los.
-    if (hasDuplicateCSSDeclarations(sourceRule.declarations)) {
+    if (
+      hasDuplicateCSSDeclarations(sourceRule.declarations) ||
+      hasOrderDependentCSSDeclarations(sourceRule.declarations)
+    ) {
       return [
         block(
           'sz_css_rule',

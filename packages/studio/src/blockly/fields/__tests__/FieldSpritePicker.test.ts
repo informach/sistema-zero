@@ -82,6 +82,19 @@ describe('collectScopedSpriteNames — sprites LOCAIS do laço-pai em escopo', (
     expect(collectScopedSpriteNames(leaf)).toEqual(['cada', 'tiro', 'alvo'])
   })
 
+  it.each([
+    ['sz_g2d_on_enemy_defeated', 'inimigoDerrotado'],
+    ['sz_g2d_on_enemy_shot_hit', 'tiroInimigo'],
+  ])('vê o sprite local declarado pelo callback %s', (type, localName) => {
+    const ws = new Blockly.Workspace()
+    const callback = ws.newBlock(type)
+    callback.setFieldValue(localName, 'ANAME')
+    const body = ws.newBlock('sz_g2d_remove_from_group')
+    nestInBody(callback, body)
+
+    expect(collectScopedSpriteNames(body)).toEqual([localName])
+  })
+
   it('fora de qualquer laço → nenhum sprite local', () => {
     const ws = new Blockly.Workspace()
     const solto = ws.newBlock('sz_g2d_remove_from_group')

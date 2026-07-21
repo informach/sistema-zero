@@ -2,12 +2,12 @@ import {
   PROGRAMMING_CATALOG_GROUPS,
   PROGRAMMING_COMPATIBILITY_DEFINITIONS,
 } from '../../blockly/programmingContract'
-import { codecsForDefinitions } from './types'
+import { registrationsForDefinitions } from './types'
 
 const LANGUAGE_KEYS = new Set(['language'])
 const LEGACY_LANGUAGE_TYPES = new Set(['sz_js_expr_statement'])
 
-export const LANGUAGE_CONTROL_CODECS = codecsForDefinitions('language-control', [
+export const LANGUAGE_CONTROL_REGISTRATIONS = registrationsForDefinitions('language-control', [
   ...PROGRAMMING_CATALOG_GROUPS.filter((group) => LANGUAGE_KEYS.has(group.key)).flatMap((group) =>
     group.definitions.filter((definition) => !definition.hidden),
   ),

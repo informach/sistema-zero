@@ -177,6 +177,9 @@ const KNOWN_EVENT_KINDS: ReadonlySet<EventKind> = new Set([
   'mousemove',
   'mousedown',
   'mouseup',
+  'pointermove',
+  'pointerdown',
+  'pointerup',
   'submit',
   'input',
   'change',
@@ -535,6 +538,17 @@ type InlineFunction = Babel.ArrowFunctionExpression | Babel.FunctionExpression
 
 function isInlineFunction(node: Node | null | undefined): node is InlineFunction {
   return node?.type === 'ArrowFunctionExpression' || node?.type === 'FunctionExpression'
+}
+
+/** Callback legado sem parâmetro ou callback atual com o `event` canônico. */
+function hasCompatibleEventParameter(node: Node | null | undefined): node is InlineFunction {
+  if (!isInlineFunction(node)) return false
+  if (node.params.length === 0) return true
+  return (
+    node.params.length === 1 &&
+    node.params[0]?.type === 'Identifier' &&
+    node.params[0].name === 'event'
+  )
 }
 
 /** `cancelAnimationFrame(<id>)` → `cancelAnimationFrame`, se o id for um valor simples. */
@@ -1438,17 +1452,15 @@ function mapExpressionStatement(
       }
       return asRaw(source, node)
     }
-    // <img>.onload = () => {…} → imageOnLoad ("quando a imagem carregar, fazer …").
-    // Só a arrow/função SEM parâmetros (o gerador re-emite `() =>`); com parâmetro
-    // (`(e) => …`) cai no avançado p/ não perder o argumento.
+    // <img>.onload = (event) => {…} → imageOnLoad ("quando a imagem carregar, fazer …").
+    // Aceita também a forma legada sem parâmetro; outro nome continua avançado
+    // para não perder referências que o bloco canônico não conseguiria manter.
     if (
       (expr.left?.type === 'MemberExpression' || expr.left?.type === 'OptionalMemberExpression') &&
       !expr.left.computed &&
       expr.left.property?.type === 'Identifier' &&
       expr.left.property.name === 'onload' &&
-      (expr.right?.type === 'ArrowFunctionExpression' ||
-        expr.right?.type === 'FunctionExpression') &&
-      (expr.right.params?.length ?? 0) === 0 &&
+      hasCompatibleEventParameter(expr.right) &&
       !isGlobalObject(expr.left.object)
     ) {
       const target = toExpr(expr.left.object, ctx)
@@ -1457,16 +1469,13 @@ function mapExpressionStatement(
       }
       return asRaw(source, node)
     }
-    // <img>.onerror = () => {…} → imageOnError ("se a imagem falhar, fazer …").
-    // Mesma regra do onload: só a arrow/função SEM parâmetros.
+    // <img>.onerror = (event) => {…} → imageOnError ("se a imagem falhar, fazer …").
     if (
       (expr.left?.type === 'MemberExpression' || expr.left?.type === 'OptionalMemberExpression') &&
       !expr.left.computed &&
       expr.left.property?.type === 'Identifier' &&
       expr.left.property.name === 'onerror' &&
-      (expr.right?.type === 'ArrowFunctionExpression' ||
-        expr.right?.type === 'FunctionExpression') &&
-      (expr.right.params?.length ?? 0) === 0 &&
+      hasCompatibleEventParameter(expr.right) &&
       !isGlobalObject(expr.left.object)
     ) {
       const target = toExpr(expr.left.object, ctx)
@@ -1475,17 +1484,14 @@ function mapExpressionStatement(
       }
       return asRaw(source, node)
     }
-    // <el>.onclick = () => {…} → onClickAssign ("quando clicar em <el>, fazer …").
-    // Mesma regra: só arrow/função SEM parâmetros (o gerador re-emite `() =>`);
-    // corpo conciso `() => f()` é normalizado p/ bloco (via bodyOfFn).
+    // <el>.onclick = (event) => {…} → onClickAssign ("quando clicar em <el>, fazer …").
+    // Corpo conciso também é normalizado para bloco (via bodyOfFn).
     if (
       (expr.left?.type === 'MemberExpression' || expr.left?.type === 'OptionalMemberExpression') &&
       !expr.left.computed &&
       expr.left.property?.type === 'Identifier' &&
       expr.left.property.name === 'onclick' &&
-      (expr.right?.type === 'ArrowFunctionExpression' ||
-        expr.right?.type === 'FunctionExpression') &&
-      (expr.right.params?.length ?? 0) === 0 &&
+      hasCompatibleEventParameter(expr.right) &&
       !isGlobalObject(expr.left.object)
     ) {
       const target = toExpr(expr.left.object, ctx)

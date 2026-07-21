@@ -89,7 +89,7 @@ describe('tempo do quadro: performance.now + a cada frame com tempo/delta', () =
   })
 })
 
-describe('apertar/soltar o mouse (corpo embutido)', () => {
+describe('apertar/soltar o ponteiro (corpo embutido)', () => {
   beforeAll(() => {
     ensureBlocklyInitialized()
   })
@@ -103,7 +103,7 @@ describe('apertar/soltar o mouse (corpo embutido)', () => {
     ])
   })
 
-  it('os blocos sobrevivem ao ciclo blocos<->código (sem rawJS)', () => {
+  it('o ciclo atualiza eventos antigos para Pointer Events sem rawJS', () => {
     const js = [
       'window.addEventListener("mousedown", (event) => {',
       '  alert("apertou");',
@@ -113,8 +113,8 @@ describe('apertar/soltar o mouse (corpo embutido)', () => {
       '});',
     ].join('\n')
     const out = bridgeCycleJS(js)
-    expect(out).toContain('window.addEventListener("mousedown"')
-    expect(out).toContain('window.addEventListener("mouseup"')
+    expect(out).toContain('window.addEventListener("pointerdown"')
+    expect(out).toContain('window.addEventListener("pointerup"')
     expect(out).not.toContain('rawJS')
   })
 })

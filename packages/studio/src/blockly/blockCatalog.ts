@@ -70,6 +70,7 @@ const LABEL_OVERRIDES: Record<string, string> = {
   sz_css_decl: 'Propriedade e valor de CSS',
   sz_css_var: 'Criar variável de estilo',
   sz_css_media_query: 'Adaptar o estilo ao tamanho da tela',
+  sz_css_focus_visible: 'Destacar uma parte ao navegar pelo teclado',
   // Matemática — o `%1` é um dropdown de função; o `message0` é só "%1 de %2".
   sz_math_function: 'Função matemática (arredondar, raiz, absoluto…)',
   sz_math_trig: 'Trigonometria (seno, cosseno, tangente…)',

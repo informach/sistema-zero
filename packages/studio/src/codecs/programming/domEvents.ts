@@ -2,12 +2,12 @@ import {
   PROGRAMMING_CATALOG_GROUPS,
   PROGRAMMING_COMPATIBILITY_DEFINITIONS,
 } from '../../blockly/programmingContract'
-import { codecsForDefinitions } from './types'
+import { registrationsForDefinitions } from './types'
 
 const DOM_EVENT_KEYS = new Set(['page-events'])
 const LEGACY_DOM_EVENT_TYPES = new Set(['sz_js_on_load', 'sz_js_set_text'])
 
-export const DOM_EVENT_CODECS = codecsForDefinitions('dom-events', [
+export const DOM_EVENT_REGISTRATIONS = registrationsForDefinitions('dom-events', [
   ...PROGRAMMING_CATALOG_GROUPS.filter((group) => DOM_EVENT_KEYS.has(group.key)).flatMap((group) =>
     group.definitions.filter((definition) => !definition.hidden),
   ),

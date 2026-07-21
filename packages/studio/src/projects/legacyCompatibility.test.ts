@@ -44,7 +44,7 @@ describe('compatibilidade do projeto real do curso — game-2d 0.19.0', () => {
       szBehaviorAreasVersion: number
       blocks: { blocks: Array<{ type: string }> }
     }
-    expect(migrated.szBehaviorAreasVersion).toBe(3)
+    expect(migrated.szBehaviorAreasVersion).toBe(6)
     expect(migrated.blocks.blocks.map((block) => block.type)).toEqual([
       'sz_frame_start',
       'sz_frame_events',

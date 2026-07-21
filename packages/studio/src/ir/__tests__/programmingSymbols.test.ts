@@ -95,6 +95,42 @@ describe('símbolos léxicos da Programação', () => {
     expect(parsed.success).toBe(true)
   })
 
+  it('não libera declaração posterior para callback síncrono de colisão', () => {
+    const parsed = SZIRV2Schema.safeParse({
+      version: 2,
+      html: [],
+      css: [],
+      behavior: {
+        start: [
+          { type: 'var', name: 'heroi', value: { type: 'objectLiteral', entries: [] } },
+          { type: 'var', name: 'inimigos', value: { type: 'array', items: [] } },
+        ],
+        events: [],
+        loops: [
+          {
+            type: 'g2d:updateEachFrame',
+            body: [
+              {
+                type: 'g2d:onSpriteGroupOverlap',
+                spriteVar: 'heroi',
+                groupVar: 'inimigos',
+                itemName: 'inimigo',
+                body: [{ type: 'consoleLog', value: { type: 'var', name: 'pontos' } }],
+              },
+              { type: 'var', name: 'pontos', value: { type: 'num', value: 0 } },
+            ],
+          },
+        ],
+      },
+      extensions: [{ extensionId: 'game-2d' }],
+    })
+
+    expect(parsed.success).toBe(false)
+    if (!parsed.success) {
+      expect(parsed.error.issues.some((issue) => issue.message.includes('pontos'))).toBe(true)
+    }
+  })
+
   it('reconhece id, tempo e delta declarados pelo próprio loop de animação', () => {
     const parsed = SZIRV2Schema.safeParse({
       version: 2,

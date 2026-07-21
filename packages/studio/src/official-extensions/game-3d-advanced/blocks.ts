@@ -94,6 +94,7 @@ export const gameKit3DBlocks = [
   {
     type: 'sz_g3k_define_mold',
     placement: 'start-only-command',
+    bodyExecution: 'sync-callback',
     message0: 'Criar o molde 3D %1 com vida %2 e velocidade %3',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'inimigo' },
@@ -254,6 +255,7 @@ export const gameKit3DBlocks = [
   {
     type: 'sz_g3k_for_each_alive',
     placement: 'command',
+    bodyExecution: 'sync-callback',
     message0: 'Para cada %1 vivo do molde %2',
     args0: [
       { type: 'field_input', name: 'ITEM', text: 'item' },
@@ -849,6 +851,7 @@ export const gameKit3DBlocks = [
   {
     type: 'sz_g3k_for_each_near',
     placement: 'command',
+    bodyExecution: 'sync-callback',
     message0: 'Para cada %1 do molde %2 a até %3 de %4',
     args0: [
       { type: 'field_input', name: 'ITEM', text: 'vizinho' },
@@ -1733,6 +1736,8 @@ export const gameKit3DBlocks = [
   {
     type: 'sz_g3k_add_button',
     placement: 'start-only-command',
+    bodyExecution: 'deferred-callback',
+    userGesture: true,
     message0: 'Botão %1 na tela %2',
     args0: [
       { type: 'input_value', name: 'LABEL', check: 'JSValue' },
