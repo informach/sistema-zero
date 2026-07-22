@@ -26,6 +26,21 @@ export class LessonLockedError extends DomainError {
   }
 }
 
+/** Curso futuro na Carreira do Criador ou aguardando o curso-base. → 423. */
+export class CourseCareerLockedError extends DomainError {
+  readonly code = 'COURSE_CAREER_LOCKED'
+  constructor(
+    readonly reason: 'future-tier' | 'foundation-first',
+    readonly requiredLevel?: string,
+  ) {
+    super(
+      reason === 'foundation-first'
+        ? 'Conclua e publique o curso-base desta etapa para liberar este curso'
+        : 'Continue sua carreira para liberar este curso',
+    )
+  }
+}
+
 /** Anexo inexistente na aula (rota de download do aluno). → 404. */
 export class AttachmentNotFoundError extends DomainError {
   readonly code = 'ATTACHMENT_NOT_FOUND'
@@ -54,6 +69,14 @@ export class ContentNotFoundError extends DomainError {
 export class DuplicateSlugError extends DomainError {
   readonly code = 'DUPLICATE_SLUG'
   constructor(message = 'Slug já está em uso') {
+    super(message)
+  }
+}
+
+/** Já existe outro curso no mesmo slot da etapa da carreira. → 409. */
+export class CareerSlotConflictError extends DomainError {
+  readonly code = 'CAREER_SLOT_CONFLICT'
+  constructor(message = 'Já existe um curso nesta posição da carreira') {
     super(message)
   }
 }

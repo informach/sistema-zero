@@ -20,7 +20,7 @@ import { withGameTwoDLifecycleGuidance } from './pedagogy'
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.37.1',
+  version: '0.37.10',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, vidas automáticas em corações ou barra, colisões, mapas, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
@@ -115,10 +115,10 @@ quadros (o **tileset**). Escolha um da aba **Assets** (ex.: \`tileset\`).
   como \`32\` fixa o tamanho do tile na tela (controle de zoom do mapa).
 - **Impedir de atravessar tiles sólidos**. O sprite pousa no chão e bate nas paredes;
   use a cada quadro, depois de mover o sprite.
-- **Impedir de atravessar os sprites de um grupo** (em 📦 Muitos). Mesma colisão, mas
+- **Impedir de atravessar os sprites de um grupo** (em **💥 Colisões**). Mesma colisão, mas
   contra obstáculos SEM mapa: jogue as pedras/casas (até desenhadas por figura) num grupo
   e o sprite não atravessa nenhuma delas, deslizando pela beirada.
-- **Impedir de atravessar o sprite** (em 📦 Muitos). A mesma ideia, mas contra UM sprite
+- **Impedir de atravessar o sprite** (em **💥 Colisões**). A mesma ideia, mas contra UM sprite
   só (uma parede, uma plataforma solta), sem precisar montar um grupo.
 
 Enquanto o tileset carrega (ou se faltar), os tiles aparecem como retângulos. O jogo
@@ -138,13 +138,14 @@ Para jogos com MUITOS sprites (tiros, inimigos, estrelas) e telas de início/vit
   compara um sprite com qualquer grupo. Os dois ficam em **💥 Colisões** e são usados dentro
   do "a cada quadro".
 - **Temporizadores**. \`A cada N quadros/segundos fazer\` (ótimo para criar inimigos). Essas raízes rodam em todas as telas; coloque \`se a tela atual é jogando?\` dentro delas quando o comando só deve acontecer durante a partida.
-- **HUD no canvas**. \`Mostrar placar\`, \`Escrever\` e \`Barra de … / …\`. Para vidas, prefira **Desenhar as vidas do sprite** em **❤️ Vida**: escolha corações ou barra e o bloco lê o sprite sozinho.
+- **HUD no canvas**. \`Mostrar placar\`, \`Escrever\` e \`Barra de … / …\`. Esses textos também são anunciados por leitores de tela, e a troca de cena limpa os valores da tela anterior. Para vidas, prefira **Desenhar as vidas do sprite** em **❤️ Vida**: escolha corações ou barra e o bloco lê o sprite sozinho.
 - **Telas/cenas**. \`Ir para a tela\` e \`a tela atual é … ?\` aceitam tanto os
   nomes prontos quanto nomes inventados (como \`ganhou1\`); \`Mostrar tela (título/subtítulo/dica)\`,
   \`Reiniciar o jogo\`. Prepare grupos, sprites, variáveis e a tela inicial em **⚙️ Ao iniciar**;
   registre teclas, cliques e contatos em **⚡ Quando acontecer**; coloque cada atualização periódica
   como uma raiz de **🔁 Enquanto estiver rodando**. As três áreas compartilham o estado da partida.
-  Reiniciar limpa tudo e executa novamente as áreas usadas pelo projeto.
+  Use Reiniciar dentro de um evento, laço ou função, nunca em **⚙️ Ao iniciar**. Ele limpa tudo,
+  encerra a pilha antiga e executa novamente as áreas usadas pelo projeto.
 - **Cenário**. \`Desenhar fundo de estrelas\` e \`Mover o sprite com o dedo (só na horizontal)\`.
 
 ### Monte um jogo espacial
@@ -235,7 +236,8 @@ derruba. Não precisa registrar teclas. Melhor num canvas **em pé** (ex.: 360×
   (ex.: \`jogo\`). Faça UMA vez, FORA do "a cada quadro do jogo".
 - **Atualizar o equilibrista**. Um passo do jogo + desenha tudo (placar e dicas).
   Use DENTRO do "a cada quadro do jogo". Acertar o meio (faixa vermelha) vale 2 pontos;
-  ele recomeça sozinho quando você toca depois de cair.
+  ele recomeça sozinho quando você toca depois de cair. Placar, instruções e fim de
+  jogo também são anunciados por leitores de tela.
 - **pontos do equilibrista** / **o equilibrista caiu?**. Para o placar e o fim de jogo.
 - **Recomeçar o equilibrista**. Zera o jogo (bom para um botão "de novo").
 
@@ -252,6 +254,7 @@ suba segurando o ponteiro (gasta combustível), voe baixo para economizar e desv
   da tela. Guarde numa variável. Faça UMA vez.
 - **Atualizar o balão**. Um passo do jogo + desenha tudo (medidor de combustível,
   metros e dicas). Use DENTRO do "a cada quadro do jogo". Recomeça ao tocar depois do fim.
+  Distância, combustível, instruções e fim de jogo também são anunciados por leitores de tela.
 - **metros do balão** / **combustível do balão** (0 a 100) / **o balão bateu/acabou?**. Para o placar, a barra de combustível e o fim de jogo.
 - **Recomeçar o balão**. Zera o jogo.
 

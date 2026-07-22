@@ -551,6 +551,55 @@ function hasCompatibleEventParameter(node: Node | null | undefined): node is Inl
   )
 }
 
+/**
+ * Desembrulha somente a forma interna emitida pelo lifecycle:
+ * `(args) => contexto.run(() => { ... })`. Código escrito pelo aluno com outro
+ * alvo ou outro método continua preservado como código avançado.
+ */
+function unwrapGeneratedProjectRunCallback(node: Node | null | undefined): InlineFunction | null {
+  if (!isInlineFunction(node)) return null
+  const invocation = node.body
+  if (invocation.type !== 'CallExpression' || invocation.arguments.length !== 1) return null
+  const callee = invocation.callee
+  if (
+    !isNamedMemberExpression(callee) ||
+    callee.property.name !== 'run' ||
+    callee.object.type !== 'Identifier' ||
+    !GENERATED_PROJECT_RUN_CONTEXT_IDENTIFIER.test(callee.object.name)
+  ) {
+    return null
+  }
+  const callback = invocation.arguments[0]
+  return isInlineFunction(callback) && callback.params.length === 0 ? callback : null
+}
+
+function tryMatchGeneratedProjectRunPropertyHandler(
+  expr: Node,
+  source: string,
+  ctx: ParseCtx,
+): JSStatement | null {
+  if (expr?.type !== 'CallExpression' || expr.arguments.length !== 3) return null
+  const callee = expr.callee
+  if (
+    !isNamedMemberExpression(callee) ||
+    callee.property.name !== 'setEventHandler' ||
+    callee.object.type !== 'Identifier' ||
+    !GENERATED_PROJECT_RUN_CONTEXT_IDENTIFIER.test(callee.object.name)
+  ) {
+    return null
+  }
+  const property = expr.arguments[1]
+  const callback = expr.arguments[2]
+  if (property?.type !== 'StringLiteral' || !hasCompatibleEventParameter(callback)) return null
+  const target = toExpr(expr.arguments[0], ctx)
+  if (!target || !isSimpleValue(target)) return null
+  const body = bodyOfFn(callback, source, ctx)
+  if (property.value === 'onclick') return { type: 'onClickAssign', target, body }
+  if (property.value === 'onload') return { type: 'imageOnLoad', target, body }
+  if (property.value === 'onerror') return { type: 'imageOnError', target, body }
+  return null
+}
+
 /** `cancelAnimationFrame(<id>)` → `cancelAnimationFrame`, se o id for um valor simples. */
 function tryMatchCancelAnimationFrame(expr: Node, ctx: ParseCtx): JSStatement | null {
   if (expr?.type !== 'CallExpression' || expr.callee?.type !== 'Identifier') return null
@@ -1193,6 +1242,8 @@ function mapExpressionStatement(
     const value = toExpr(expr.argument, ctx)
     return value && isSimpleValue(value) ? { type: 'awaitStmt', value } : asRaw(source, node)
   }
+  const managedPropertyHandler = tryMatchGeneratedProjectRunPropertyHandler(expr, source, ctx)
+  if (managedPropertyHandler) return managedPropertyHandler
   // console.log(...)
   if (
     expr?.type === 'CallExpression' &&
@@ -3781,6 +3832,12 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         hint,
         bg: args[4].value as string,
       }
+    }
+    case 'showGameOver': {
+      const ctxVar = identifierName(args[0])
+      if (!ctxVar || !args[1]) return null
+      const text = toExpr(args[1], ctx)
+      return text ? { type: 'g2d:gameOver', ctxVar, text } : null
     }
     case 'restart':
       return { type: 'g2d:restart' }
@@ -10448,12 +10505,9 @@ function tryFuseCanvasGradient(nodes: Node[], i: number, ctx: ParseCtx): FusedSt
   }
 }
 
-/** `requestAnimationFrame(<name>)` como expressão. */
+/** `requestAnimationFrame(<name>)` ou `contexto.requestFrame(<name>)`. */
 function isRafCall(expr: Node, name: string): boolean {
-  if (expr?.type !== 'CallExpression') return false
-  if (expr.callee?.type !== 'Identifier' || expr.callee.name !== 'requestAnimationFrame') {
-    return false
-  }
+  if (!isGlobalOrManagedProjectRunCall(expr, 'requestAnimationFrame', 'requestFrame')) return false
   const arg = expr.arguments?.[0]
   return expr.arguments?.length === 1 && arg?.type === 'Identifier' && arg.name === name
 }
@@ -10471,6 +10525,21 @@ function isPlainCallStatement(node: Node | null | undefined, name: string): bool
     expr.callee?.type === 'Identifier' &&
     expr.callee.name === name &&
     (expr.arguments?.length ?? 0) === 0
+  )
+}
+
+/** `contexto.run(<name>)` — pontapé síncrono gerenciado do loop. */
+function isManagedProjectRunCallStatement(node: Node | null | undefined, name: string): boolean {
+  if (node?.type !== 'ExpressionStatement') return false
+  const expr = node.expression
+  if (expr?.type !== 'CallExpression' || expr.arguments.length !== 1) return false
+  const callee = expr.callee
+  return (
+    isNamedMemberExpression(callee) &&
+    callee.property.name === 'run' &&
+    callee.object.type === 'Identifier' &&
+    GENERATED_PROJECT_RUN_CONTEXT_IDENTIFIER.test(callee.object.name) &&
+    isIdentifierNamed(expr.arguments[0], name)
   )
 }
 
@@ -10521,6 +10590,159 @@ function projectRunFrameCleanupHandle(node: Node | null | undefined): string | n
   return handle?.type === 'Identifier' ? handle.name : null
 }
 
+/** Declaração interna `let lastFrameTime[_N];` usada só para calcular delta. */
+function generatedLastFrameName(node: Node | null | undefined): string | null {
+  const name = declaredVarName(node)
+  return name && /^lastFrameTime(?:_\d+)?$/.test(name) ? name : null
+}
+
+/**
+ * Reconhece exatamente as duas linhas geradas para `delta`:
+ * `const dt = last === undefined ? 0 : (time - last) / 1000; last = time;`.
+ */
+function generatedAnimationDelta(
+  body: Node[],
+  index: number,
+  timeName: string,
+  lastTimeName: string,
+): string | null {
+  const declaration = body[index]
+  const assignmentStatement = body[index + 1]
+  if (
+    declaration?.type !== 'VariableDeclaration' ||
+    declaration.kind !== 'const' ||
+    declaration.declarations.length !== 1
+  ) {
+    return null
+  }
+  const declarator = declaration.declarations[0]
+  const deltaName = declarator?.id.type === 'Identifier' ? declarator.id.name : null
+  const conditional = declarator?.init
+  if (!deltaName || conditional?.type !== 'ConditionalExpression') return null
+  const test = conditional.test
+  const alternate = conditional.alternate
+  if (
+    test.type !== 'BinaryExpression' ||
+    test.operator !== '===' ||
+    !isIdentifierNamed(test.left, lastTimeName) ||
+    !isIdentifierNamed(test.right, 'undefined') ||
+    conditional.consequent.type !== 'NumericLiteral' ||
+    conditional.consequent.value !== 0 ||
+    alternate.type !== 'BinaryExpression' ||
+    alternate.operator !== '/' ||
+    alternate.right.type !== 'NumericLiteral' ||
+    alternate.right.value !== 1_000 ||
+    alternate.left.type !== 'BinaryExpression' ||
+    alternate.left.operator !== '-' ||
+    !isIdentifierNamed(alternate.left.left, timeName) ||
+    !isIdentifierNamed(alternate.left.right, lastTimeName)
+  ) {
+    return null
+  }
+  if (assignmentStatement?.type !== 'ExpressionStatement') return null
+  const assignment = assignmentStatement.expression
+  if (
+    assignment.type !== 'AssignmentExpression' ||
+    assignment.operator !== '=' ||
+    !isIdentifierNamed(assignment.left, lastTimeName) ||
+    !isIdentifierNamed(assignment.right, timeName)
+  ) {
+    return null
+  }
+  return deltaName
+}
+
+function animationTimeFields(
+  timeName: string,
+  deltaName?: string,
+): Pick<Extract<JSStatement, { type: 'animationLoop' }>, 'timeVar' | 'deltaVar'> {
+  const generatedTime = deltaName && /^frameTime(?:_\d+)?$/.test(timeName)
+  return {
+    ...(!generatedTime ? { timeVar: timeName } : {}),
+    ...(deltaName ? { deltaVar: deltaName } : {}),
+  }
+}
+
+/** Formas com relógio/delta, inclusive a variante cancelável com handle. */
+function tryFuseTimedAnimationLoop(
+  nodes: Node[],
+  i: number,
+  source: string,
+  ctx: ParseCtx,
+): FusedStatement | null {
+  const firstDeclaration = declaredVarName(nodes[i])
+  if (firstDeclaration) {
+    let functionIndex = i + 1
+    const lastTimeName = generatedLastFrameName(nodes[functionIndex])
+    if (lastTimeName) functionIndex += 1
+    const fn = nodes[functionIndex]
+    if (
+      fn?.type === 'FunctionDeclaration' &&
+      fn.id?.type === 'Identifier' &&
+      fn.params.length === 1 &&
+      fn.params[0]?.type === 'Identifier'
+    ) {
+      const frameName = fn.id.name
+      const externalIndex = functionIndex + 1
+      const bodyNodes = fn.body.body
+      if (
+        rafAssignmentHandle(nodes[externalIndex], frameName) === firstDeclaration &&
+        rafAssignmentHandle(bodyNodes[0], frameName) === firstDeclaration
+      ) {
+        const timeName = fn.params[0].name
+        let bodyStart = 1
+        let deltaName: string | undefined
+        if (lastTimeName) {
+          deltaName =
+            generatedAnimationDelta(bodyNodes, bodyStart, timeName, lastTimeName) ?? undefined
+          if (!deltaName) return null
+          bodyStart += 2
+        }
+        const body = mapStatementList(bodyNodes.slice(bodyStart), source, ctx)
+        const hasManagedCleanup =
+          projectRunFrameCleanupHandle(nodes[externalIndex + 1]) === firstDeclaration
+        const generatedHandle =
+          hasManagedCleanup && /^__szProjectRunFrame(?:_\d+)?$/.test(firstDeclaration)
+        return {
+          stmt: {
+            type: 'animationLoop',
+            ...(!generatedHandle ? { handle: firstDeclaration } : {}),
+            ...animationTimeFields(timeName, deltaName),
+            body,
+          },
+          consumed: externalIndex - i + 1 + (hasManagedCleanup ? 1 : 0),
+        }
+      }
+    }
+  }
+
+  const lastTimeName = generatedLastFrameName(nodes[i])
+  if (!lastTimeName) return null
+  const fn = nodes[i + 1]
+  if (
+    fn?.type !== 'FunctionDeclaration' ||
+    fn.id?.type !== 'Identifier' ||
+    fn.params.length !== 1 ||
+    fn.params[0]?.type !== 'Identifier' ||
+    !isRafCallStatement(nodes[i + 2], fn.id.name)
+  ) {
+    return null
+  }
+  const bodyNodes = fn.body.body
+  if (!isRafCallStatement(bodyNodes.at(-1), fn.id.name)) return null
+  const timeName = fn.params[0].name
+  const deltaName = generatedAnimationDelta(bodyNodes, 0, timeName, lastTimeName)
+  if (!deltaName) return null
+  return {
+    stmt: {
+      type: 'animationLoop',
+      ...animationTimeFields(timeName, deltaName),
+      body: mapStatementList(bodyNodes.slice(2, -1), source, ctx),
+    },
+    consumed: 3,
+  }
+}
+
 /**
  * `function F() { ...corpo...; requestAnimationFrame(F); }` seguido do pontapé
  * externo `F();` (ou, em projetos antigos, `requestAnimationFrame(F);`) →
@@ -10535,6 +10757,9 @@ function tryFuseAnimationLoop(
   source: string,
   ctx: ParseCtx,
 ): FusedStatement | null {
+  const timedLoop = tryFuseTimedAnimationLoop(nodes, i, source, ctx)
+  if (timedLoop) return timedLoop
+
   const declName = declaredVarName(nodes[i])
   if (declName) {
     const decl = nodes[i + 1]
@@ -10542,7 +10767,8 @@ function tryFuseAnimationLoop(
       const name = decl.id.name
       const bodyNodes = decl.body?.body
       if (
-        isPlainCallStatement(nodes[i + 2], name) &&
+        (isPlainCallStatement(nodes[i + 2], name) ||
+          isManagedProjectRunCallStatement(nodes[i + 2], name)) &&
         Array.isArray(bodyNodes) &&
         bodyNodes.length > 0
       ) {
@@ -10574,14 +10800,23 @@ function tryFuseAnimationLoop(
   const name = fn.id.name
   // Pontapé externo: `frame()` (forma atual) ou `requestAnimationFrame(frame)`
   // (forma antiga, mantida para projetos já salvos).
-  if (!isPlainCallStatement(nodes[i + 1], name) && !isRafCallStatement(nodes[i + 1], name)) {
+  if (
+    !isPlainCallStatement(nodes[i + 1], name) &&
+    !isManagedProjectRunCallStatement(nodes[i + 1], name) &&
+    !isRafCallStatement(nodes[i + 1], name)
+  ) {
     return null
   }
   const bodyNodes = fn.body?.body
   if (!Array.isArray(bodyNodes) || bodyNodes.length === 0) return null
   if (!isRafCallStatement(bodyNodes[bodyNodes.length - 1], name)) return null
   const body = mapStatementList(bodyNodes.slice(0, -1), source, ctx)
-  return { stmt: { type: 'animationLoop', body }, consumed: 2 }
+  if (fn.params.length > 1 || (fn.params[0] && fn.params[0].type !== 'Identifier')) return null
+  const timeVar = fn.params[0]?.type === 'Identifier' ? fn.params[0].name : undefined
+  return {
+    stmt: { type: 'animationLoop', ...(timeVar ? { timeVar } : {}), body },
+    consumed: 2,
+  }
 }
 
 /** Objeto de estado de teclado: `{ left:false, right:false, up:false, down:false }`. */
@@ -11053,15 +11288,38 @@ function mapTry(node: Babel.TryStatement, source: string, ctx: ParseCtx): JSStat
   if (!node.handler) return asRaw(source, node)
   const param = node.handler.param
   if (param && param.type !== 'Identifier') return asRaw(source, node)
-  const errorName: string | undefined = param ? param.name : undefined
+  const handlerNodes = node.handler.body.body
+  const hasControlGuard =
+    param?.type === 'Identifier' && isGeneratedProjectControlGuard(handlerNodes[0], param.name)
+  const generatedInternalParam = hasControlGuard && /^__szRestartSignal(?:_\d+)?$/.test(param.name)
+  const errorName: string | undefined = param && !generatedInternalParam ? param.name : undefined
   const finalizer = node.finalizer ? bodyOfBlock(node.finalizer, source, ctx) : undefined
   return {
     type: 'tryCatch',
     body: bodyOfBlock(node.block, source, ctx),
     ...(errorName ? { errorName } : {}),
-    handler: bodyOfBlock(node.handler.body, source, ctx),
+    handler: mapStatementList(hasControlGuard ? handlerNodes.slice(1) : handlerNodes, source, ctx),
     ...(finalizer ? { finalizer } : {}),
   }
+}
+
+function isGeneratedProjectControlGuard(node: Node | null | undefined, errorName: string): boolean {
+  if (node?.type !== 'IfStatement' || node.alternate) return false
+  const test = node.test
+  if (test.type !== 'CallExpression' || test.arguments.length !== 1) return false
+  const callee = test.callee
+  if (!isNamedMemberExpression(callee) || callee.property.name !== 'isControlSignal') return false
+  if (
+    callee.object.type !== 'Identifier' ||
+    !/^__szProjectRunContext(?:_\d+)?$/.test(callee.object.name) ||
+    !isIdentifierNamed(test.arguments[0], errorName)
+  ) {
+    return false
+  }
+  return (
+    node.consequent.type === 'ThrowStatement' &&
+    isIdentifierNamed(node.consequent.argument, errorName)
+  )
 }
 
 // ---------- helpers de matching ----------
@@ -12581,19 +12839,34 @@ interface MatchedListenerBase {
   event: EventKind
 }
 
-type MatchedListener = MatchedListenerBase &
-  (
-    | {
-        /** Callback inline (arrow/função anônima) — vira corpo de `event`. */
-        callback: Babel.ArrowFunctionExpression | Babel.FunctionExpression
-        handlerName?: never
-      }
-    | {
-        /** Função nomeada passada por referência — vira `eventHandler`. */
-        handlerName: string
-        callback?: never
-      }
-  )
+type MatchedListenerHandler =
+  | {
+      /** Callback inline (arrow/função anônima) — vira corpo de `event`. */
+      callback: Babel.ArrowFunctionExpression | Babel.FunctionExpression
+      handlerName?: never
+    }
+  | {
+      /** Função nomeada passada por referência — vira `eventHandler`. */
+      handlerName: string
+      callback?: never
+    }
+
+type MatchedListener = MatchedListenerBase & MatchedListenerHandler
+
+function unwrapGeneratedProjectRunListener(
+  node: Node | null | undefined,
+): MatchedListenerHandler | null {
+  if (node?.type !== 'ArrowFunctionExpression' || node.params.length !== 1) return null
+  const eventParam = node.params[0]
+  if (eventParam?.type !== 'Identifier') return null
+  const callback = unwrapGeneratedProjectRunCallback(node)
+  if (!callback) return null
+  if (callback.body.type === 'BlockStatement') return { callback }
+  if (callback.body.type !== 'CallExpression' || callback.body.arguments.length !== 1) return null
+  if (callback.body.callee.type !== 'Identifier') return null
+  if (!isIdentifierNamed(callback.body.arguments[0], eventParam.name)) return null
+  return { handlerName: callback.body.callee.name }
+}
 
 function tryMatchEventListener(expr: Node, ctx: ParseCtx): MatchedListener | null {
   if (!expr || (expr.type !== 'CallExpression' && expr.type !== 'OptionalCallExpression')) {
@@ -12610,10 +12883,12 @@ function tryMatchEventListener(expr: Node, ctx: ParseCtx): MatchedListener | nul
   if (eventArg?.type !== 'StringLiteral') return null
   if (!KNOWN_EVENT_KINDS.has(eventArg.value as EventKind)) return null
   // Callback inline (arrow/função) ou referência a uma função nomeada.
-  const isFn = isInlineFunction(cbArg)
-  const isNamed = cbArg?.type === 'Identifier'
-  if (!isFn && !isNamed) return null
-  const handler = isNamed ? { handlerName: cbArg.name as string } : { callback: cbArg }
+  const generatedHandler = unwrapGeneratedProjectRunListener(cbArg)
+  let handler: MatchedListenerHandler
+  if (generatedHandler) handler = generatedHandler
+  else if (cbArg?.type === 'Identifier') handler = { handlerName: cbArg.name }
+  else if (isInlineFunction(cbArg)) handler = { callback: cbArg }
+  else return null
 
   // Escuta global na janela: `window.addEventListener(...)`. Para teclado e mouse,
   // window e document são equivalentes (eventos borbulham); aceitamos os dois e
@@ -12777,7 +13052,8 @@ function bodyOfBlock(node: Node | null | undefined, source: string, ctx: ParseCt
 
 function bodyOfFn(fn: Node | null | undefined, source: string, ctx: ParseCtx): JSStatement[] {
   if (fn?.type !== 'ArrowFunctionExpression' && fn?.type !== 'FunctionExpression') return []
-  if (fn.body.type === 'BlockStatement') return bodyOfBlock(fn.body, source, ctx)
+  const callback = unwrapGeneratedProjectRunCallback(fn) ?? fn
+  if (callback.body.type === 'BlockStatement') return bodyOfBlock(callback.body, source, ctx)
   // Arrow function com expressão direta (sem chaves): trata o corpo como UM
   // statement. O ExpressionStatement sintético PRECISA herdar as posições de
   // origem (start/end/loc/range) do corpo: sem elas, qualquer statement que caia
@@ -12786,7 +13062,7 @@ function bodyOfFn(fn: Node | null | undefined, source: string, ctx: ParseCtx): J
   // com `start` indefinido → `snippet` devolve '' → o statement SUMIA do
   // round-trip (era o bug do "tiro que não anda": `bullets.forEach(b => b.y -=
   // b.speed)` virava um forEach de corpo vazio).
-  const exprStatement = syntheticExpressionStatement(fn.body)
+  const exprStatement = syntheticExpressionStatement(callback.body)
   return mapStatementList([exprStatement], source, ctx)
 }
 

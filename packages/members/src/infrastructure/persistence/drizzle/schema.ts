@@ -101,6 +101,10 @@ export const courses = members.table(
     // Eixo 2D/3D (par com `level` = degrau pedagógico). Mesma régua de autoria do
     // `audience`/`level`: UPDATE sem o campo PRESERVA o atual.
     track: courseTrackEnum('track').notNull().default('2d'),
+    // Posição do curso na etapa da Carreira do Criador. NULL = curso bônus;
+    // 1 = curso-base. O teto por etapa (6 no Iniciante 2D; 5 nas demais) é
+    // validado no domínio, enquanto o banco garante a faixa física e unicidade.
+    careerSlot: smallint('career_slot'),
     // Trava sequencial estilo Duolingo: a próxima aula só libera quando a anterior
     // está concluída. Default `true` = backfill LIGADO p/ os cursos já existentes
     // (decisão da usuária: padrão ligado, com toggle por curso no admin).
@@ -109,7 +113,16 @@ export const courses = members.table(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
-  (t) => [uniqueIndex('courses_slug_uq').on(t.slug)],
+  (t) => [
+    uniqueIndex('courses_slug_uq').on(t.slug),
+    uniqueIndex('courses_career_slot_uq')
+      .on(t.audience, t.level, t.track, t.careerSlot)
+      .where(sql`${t.careerSlot} is not null`),
+    check(
+      'courses_career_slot_check',
+      sql`${t.careerSlot} is null or ${t.careerSlot} between 1 and 6`,
+    ),
+  ],
 )
 
 export const modules = members.table(
@@ -516,6 +529,9 @@ export const xpEvents = members.table(
     // `coalesce(source_track, courses.track, '2d')` — re-taggear um curso 3D no
     // admin corrige os marcos legados sozinho; congelar '2d' aqui impediria isso.
     sourceTrack: courseTrackEnum('source_track'),
+    // Snapshot do slot da carreira nos marcos de curso. Linhas anteriores ficam
+    // NULL e usam `courses.career_slot` como fallback até o primeiro snapshot.
+    sourceCareerSlot: smallint('source_career_slot'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   },
   (t) => [

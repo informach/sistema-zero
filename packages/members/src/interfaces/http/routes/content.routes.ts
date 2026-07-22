@@ -67,6 +67,9 @@ const courseFields = (b: CourseInput): CourseFields => ({
   level: b.level ?? null,
   // `null` = não informado (create → 2d; update → preserva).
   track: b.track ?? null,
+  // Aqui `undefined` e `null` são diferentes: ausente preserva no PATCH;
+  // null explícito remove o curso da carreira.
+  careerSlot: Object.hasOwn(b, 'careerSlot') ? b.careerSlot : undefined,
 })
 const moduleFields = (b: ModuleInput): ModuleFields => ({
   title: b.title,

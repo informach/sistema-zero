@@ -33,7 +33,8 @@ export default async function EstudioProPage({ params }: { params: Promise<{ id:
   if (res.status !== 200) return <KidsStudioUnavailable />
   if (res.body?.access?.['estudio-completo'] !== true) return <KidsLockedStudio />
 
-  const levelSlug = gam?.status === 200 ? (gam.body?.level?.slug ?? 'noob') : 'noob'
+  if (gam?.status !== 200) return <KidsStudioUnavailable />
+  const levelSlug = gam.body?.level?.slug ?? 'noob'
   const tier = resolveStudioTier(levelSlug, session?.role)
   // Modo Código é SÓ da Lenda/admin — defesa em profundidade contra acesso por URL.
   if (!tier.pro) redirect('/estudio')

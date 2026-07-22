@@ -26,6 +26,7 @@
     "@cantoo/pdf-lib": "^2.7.1",
     "@react-three/drei": "^10",
     "@react-three/fiber": "^9",
+    "@sistemazero/core": "workspace:*",
     "@sistemazero/studio": "workspace:*",
     "@sistemazero/ui": "workspace:*",
     "@tiptap/pm": "^3.22.2",

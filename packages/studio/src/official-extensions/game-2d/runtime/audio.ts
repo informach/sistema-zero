@@ -1,5 +1,36 @@
 export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) ----
   var audioCtx = null;
+  var _activeAudioSources = new Set();
+  function _trackAudioSource(source) {
+    if (!source) return source;
+    _activeAudioSources.add(source);
+    var release = function () { _activeAudioSources.delete(source); };
+    if (typeof source.addEventListener === 'function') {
+      source.addEventListener('ended', release, { once: true });
+    } else {
+      source.onended = release;
+    }
+    return source;
+  }
+  function _startAudioSource(source, when) {
+    _trackAudioSource(source);
+    try {
+      if (when === undefined) source.start();
+      else source.start(when);
+    } catch (error) {
+      _activeAudioSources.delete(source);
+      throw error;
+    }
+  }
+  function _stopActiveAudioSources() {
+    var sources = Array.from(_activeAudioSources);
+    _activeAudioSources.clear();
+    for (var i = 0; i < sources.length; i++) {
+      var source = sources[i];
+      try { source.stop(0); } catch (ignored) {}
+      try { if (typeof source.disconnect === 'function') source.disconnect(); } catch (ignored) {}
+    }
+  }
   // O Chromium proíbe criar/iniciar AudioContext antes de um gesto. Exemplos
   // podem declarar música no topo, então o motor espera o primeiro teclado/toque
   // em vez de gerar warning e deixar o contexto suspenso.
@@ -19,6 +50,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
     try {
       if (ctx && ctx.state === 'suspended' && ctx.resume) ctx.resume();
     } catch (e) {}
+    if (ctx && !_musicStop && _musicState && !_paused && _musicTimer === null) _musicNext();
   }
   if (window.addEventListener) {
     window.addEventListener('pointerdown', unlockAudio);
@@ -40,7 +72,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
       var t = ctx.currentTime;
       gain.gain.setValueAtTime(0.12, t);
       gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-      osc.start(t);
+      _startAudioSource(osc, t);
       osc.stop(t + dur);
     } catch (e) {}
   }
@@ -63,7 +95,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
       gain.gain.setValueAtTime(pk, t);
       gain.gain.exponentialRampToValueAtTime(0.0001, t + durSec);
       osc.connect(gain); gain.connect(ctx.destination);
-      osc.start(t); osc.stop(t + durSec);
+      _startAudioSource(osc, t); osc.stop(t + durSec);
     } catch (e) {}
   }
   // Uma sequência de notas: cada nota é [freqHz, inícioSeg, duraçãoSeg].
@@ -83,7 +115,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
         gain.gain.exponentialRampToValueAtTime(pk, t0 + n[1] + 0.01);
         gain.gain.exponentialRampToValueAtTime(0.0001, t0 + n[1] + n[2]);
         osc.connect(gain); gain.connect(ctx.destination);
-        osc.start(t0 + n[1]); osc.stop(t0 + n[1] + n[2]);
+        _startAudioSource(osc, t0 + n[1]); osc.stop(t0 + n[1] + n[2]);
       }
     } catch (e) {}
   }
@@ -132,13 +164,12 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
   var _musicStop = false;
   var _musicName = null;
   var _musicState = null;
-  var MUSIC_TUNES = {
-    adventure: { wave: 'square', step: 200, notes: [262, 330, 392, 330, 440, 392, 330, 262] },
-    happy: { wave: 'triangle', step: 180, notes: [523, 587, 659, 784, 659, 587, 523, 587] },
-    tense: { wave: 'sawtooth', step: 160, notes: [220, 233, 220, 207, 220, 247, 220, 196] },
-    calm: { wave: 'sine', step: 320, notes: [392, 440, 523, 440, 392, 349, 392, 0] },
-    victory: { wave: 'square', step: 200, notes: [523, 523, 523, 659, 784, 0, 784, 1047] }
-  };
+  var MUSIC_TUNES = Object.create(null);
+  MUSIC_TUNES.adventure = { wave: 'square', step: 200, notes: [262, 330, 392, 330, 440, 392, 330, 262] };
+  MUSIC_TUNES.happy = { wave: 'triangle', step: 180, notes: [523, 587, 659, 784, 659, 587, 523, 587] };
+  MUSIC_TUNES.tense = { wave: 'sawtooth', step: 160, notes: [220, 233, 220, 207, 220, 247, 220, 196] };
+  MUSIC_TUNES.calm = { wave: 'sine', step: 320, notes: [392, 440, 523, 440, 392, 349, 392, 0] };
+  MUSIC_TUNES.victory = { wave: 'square', step: 200, notes: [523, 523, 523, 659, 784, 0, 784, 1047] };
   function _scheduleMusic(delay) {
     if (_musicStop || !_musicState || _paused) return;
     var wait = Math.max(0, typeof delay === 'number' ? delay : _musicState.step);
@@ -149,6 +180,9 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
   function _musicNext() {
     _musicTimer = null;
     if (_musicStop || !_musicState || _paused) return;
+    // Não deixe a melodia avançar em silêncio enquanto o navegador ainda
+    // aguarda o primeiro gesto que permite criar o AudioContext.
+    if (!ensureAudio()) return;
     var tune = _musicState.tune;
     var f = tune.notes[_musicState.index % tune.notes.length];
     if (f > 0) _fxBeep(tune.wave, f, f, _musicState.step / 1000 * 0.9, 'none', 0.05);
@@ -175,6 +209,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
   }
   function _resumeMusic() {
     if (_musicStop || !_musicState || _musicTimer !== null) return;
+    if (!ensureAudio()) return;
     _scheduleMusic(_musicState.remaining);
   }
   function stopMusic() {
@@ -183,6 +218,10 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
     _musicTimer = null;
     _musicName = null;
     _musicState = null;
+  }
+  function _resetAudio() {
+    stopMusic();
+    _stopActiveAudioSources();
   }
 
   // ---- Notas musicais por nome (dó ré mi…) → frequência ----
@@ -193,7 +232,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
   }
 
   _registerRuntimeDomain('audio', {
-    reset: stopMusic,
+    reset: _resetAudio,
     pause: _pauseMusic,
     resume: _resumeMusic
   });

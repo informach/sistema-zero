@@ -7,7 +7,7 @@ import type {
   LessonBlock,
   Module,
 } from '../../../domain/course/course'
-import { DuplicateSlugError } from '../../../domain/course/course.errors'
+import { CareerSlotConflictError, DuplicateSlugError } from '../../../domain/course/course.errors'
 import type { LessonBlockContent, LessonBlockKind } from '../../../domain/course/lesson-block'
 import type {
   AttachmentFields,
@@ -47,6 +47,7 @@ const toCourse = (r: CourseRow): Course => ({
   sequentialLock: r.sequentialLock,
   level: r.level,
   track: r.track,
+  careerSlot: r.careerSlot,
   metadata: r.metadata ?? null,
   createdAt: r.createdAt,
   updatedAt: r.updatedAt,
@@ -99,6 +100,7 @@ const SORT_ORDER_UNIQUE_CONSTRAINTS = new Set([
 ])
 
 const SLUG_UNIQUE_CONSTRAINTS = new Set(['courses_slug_uq', 'lessons_course_slug_uq'])
+const CAREER_SLOT_UNIQUE_CONSTRAINT = 'courses_career_slot_uq'
 
 // Deslocamento p/ "estacionar" linhas num intervalo negativo disjunto durante a
 // reordenação (ver os métodos `reorder*`). Maior que qualquer nº realista de
@@ -121,6 +123,10 @@ function uniqueViolationConstraint(error: unknown): string | null {
 function isSlugUniqueViolation(error: unknown): boolean {
   const constraint = uniqueViolationConstraint(error)
   return constraint === '' || (constraint !== null && SLUG_UNIQUE_CONSTRAINTS.has(constraint))
+}
+
+function isCareerSlotUniqueViolation(error: unknown): boolean {
+  return uniqueViolationConstraint(error) === CAREER_SLOT_UNIQUE_CONSTRAINT
 }
 
 function isSortOrderUniqueViolation(error: unknown): boolean {
@@ -213,6 +219,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       level: fields.level ?? ('iniciante' as const),
       // Idem: `?? '2d'` cobre chamada direta.
       track: fields.track ?? ('2d' as const),
+      careerSlot: fields.careerSlot ?? null,
       // `salesPageUrl` mora no metadata (jsonb) — única chave gerida pelo form.
       metadata: fields.salesPageUrl ? { salesPageUrl: fields.salesPageUrl } : null,
       createdAt: now,
@@ -221,6 +228,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     try {
       await this.db.insert(courses).values(row)
     } catch (error) {
+      if (isCareerSlotUniqueViolation(error)) throw new CareerSlotConflictError()
       if (isSlugUniqueViolation(error))
         throw new DuplicateSlugError('Já existe um curso com esse slug')
       throw error
@@ -246,6 +254,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
           sequentialLock: course.sequentialLock,
           level: course.level,
           track: course.track,
+          careerSlot: course.careerSlot,
           metadata: course.metadata,
           updatedAt: new Date(),
           version: expectedVersion + 1,
@@ -254,6 +263,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         .returning({ id: courses.id })
       return updated.length > 0
     } catch (error) {
+      if (isCareerSlotUniqueViolation(error)) throw new CareerSlotConflictError()
       if (isSlugUniqueViolation(error))
         throw new DuplicateSlugError('Já existe um curso com esse slug')
       throw error

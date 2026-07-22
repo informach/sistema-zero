@@ -1,7 +1,7 @@
 import type { JSX, ReactNode } from 'react'
 import { useContext, useEffect, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { MODE_LABELS, modesForKind, t } from '#core'
+import { MODE_LABELS, modesForKind, type Project, t } from '#core'
 import {
   Badge,
   BrandLogo,
@@ -47,6 +47,8 @@ import { ShareDialog } from './ShareDialog'
 export interface TopbarProps {
   /** Sai do editor (host decide o destino). Sem ela, logo vira estático e o item "Projetos" some. */
   onExit?: () => void
+  /** Executado após a promoção já ter sido salva no adapter. */
+  onPromoteToPro?: (project: Project) => void | Promise<void>
   /** Mostra o controle claro/escuro (false quando o host fixa o tema via prop). */
   canToggleTheme?: boolean
 }
@@ -84,7 +86,7 @@ function IconButton({
   )
 }
 
-export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
+export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps): JSX.Element {
   const { hasProject, projectName, projectMode, projectKind } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(s.project),
@@ -207,6 +209,13 @@ export function Topbar({ onExit, canToggleTheme }: TopbarProps): JSX.Element {
     setConverting(true)
     try {
       await convertToPro()
+      // O callback do host costuma fazer uma navegação completa para a rota
+      // COOP/COEP. Salva antes para essa navegação nunca interromper a promoção.
+      await persistence.save()
+      const promoted = stores
+        ? stores.project.getState().project
+        : useProjectStore.getState().project
+      if (promoted?.kind === 'pro') await onPromoteToPro?.(promoted)
       setShowConvert(false)
     } finally {
       setConverting(false)

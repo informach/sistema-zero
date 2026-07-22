@@ -128,13 +128,27 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       const courseMarcoIds = input.events
         .filter((e) => e.sourceType === 'course_complete' || e.sourceType === 'course_showcased')
         .map((e) => e.sourceId)
-      const tierByCourseId = new Map<string, { level: CourseLevel; track: CourseTrack }>()
+      const tierByCourseId = new Map<
+        string,
+        { level: CourseLevel; track: CourseTrack; careerSlot: number | null }
+      >()
       if (courseMarcoIds.length > 0) {
         const tierRows = await tx
-          .select({ id: courses.id, level: courses.level, track: courses.track })
+          .select({
+            id: courses.id,
+            level: courses.level,
+            track: courses.track,
+            careerSlot: courses.careerSlot,
+          })
           .from(courses)
           .where(inArray(courses.id, courseMarcoIds))
-        for (const r of tierRows) tierByCourseId.set(r.id, { level: r.level, track: r.track })
+        for (const r of tierRows) {
+          tierByCourseId.set(r.id, {
+            level: r.level,
+            track: r.track,
+            careerSlot: r.careerSlot,
+          })
+        }
       }
 
       // Ledger idempotente: só os eventos realmente NOVOS voltam do RETURNING.
@@ -152,6 +166,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
                   amount: e.amount,
                   sourceLevel: tierByCourseId.get(e.sourceId)?.level ?? null,
                   sourceTrack: tierByCourseId.get(e.sourceId)?.track ?? null,
+                  sourceCareerSlot: tierByCourseId.get(e.sourceId)?.careerSlot ?? null,
                   createdAt: input.now,
                 })),
               )
@@ -728,7 +743,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     return rows
   }
 
-  async countQualifyingCoursesByTier(
+  async listQualifyingCareerSlots(
     userId: string,
     audience: CourseAudience,
   ): Promise<QualifyingByTier> {
@@ -743,8 +758,11 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     const showcased = alias(xpEvents, 'sc')
     const level = sql<CourseLevel>`coalesce(${showcased.sourceLevel}, ${xpEvents.sourceLevel}, ${courses.level})`
     const track = sql<CourseTrack>`coalesce(${showcased.sourceTrack}, ${xpEvents.sourceTrack}, ${courses.track}, '2d')`
+    const careerSlot = sql<
+      number | null
+    >`coalesce(${showcased.sourceCareerSlot}, ${xpEvents.sourceCareerSlot}, ${courses.careerSlot})`
     const rows = await this.db
-      .select({ level, track, qualifying: countDistinct(xpEvents.sourceId) })
+      .select({ level, track, careerSlot })
       .from(xpEvents)
       .leftJoin(courses, eq(courses.id, xpEvents.sourceId))
       .innerJoin(
@@ -763,36 +781,41 @@ export class DrizzleGamificationRepository implements GamificationRepository {
           eq(xpEvents.sourceType, 'course_complete'),
         ),
       )
-      .groupBy(level, track)
+      .groupBy(level, track, careerSlot)
     const result = emptyQualifyingByTier()
     // `level` nunca é null na prática (todo marco pós-deploy tem snapshot); o guard
     // descarta uma linha residual sem dificuldade (curso apagado + snapshot legado null).
     for (const row of rows) {
-      if (!row.level || !row.track) continue
-      result[courseTier(row.level, row.track)] = Number(row.qualifying)
+      if (!row.level || !row.track || row.careerSlot === null) continue
+      const slots = result[courseTier(row.level, row.track)]
+      const slot = Number(row.careerSlot)
+      if (!slots.includes(slot)) slots.push(slot)
     }
     return result
   }
 
-  async countQualifyingByTierForProfiles(
+  async listQualifyingCareerSlotsForProfiles(
     profileIds: string[],
     audience: CourseAudience,
   ): Promise<Map<string, QualifyingByTier>> {
     // MESMA interseção `course_complete` ∩ `course_showcased` do single-profile, só que
     // agrupada TAMBÉM por `user_id` (um GROUP BY a mais) e filtrada por `IN (ids)` — 1
     // query serve a página inteira do fórum. Degrau vem do SNAPSHOT do ledger
-    // (fallback curso ao vivo p/ legado), como no `countQualifyingCoursesByTier`.
+    // (fallback curso ao vivo p/ legado), como no `listQualifyingCareerSlots`.
     const result = new Map<string, QualifyingByTier>()
     if (profileIds.length === 0) return result
     const showcased = alias(xpEvents, 'sc')
     const level = sql<CourseLevel>`coalesce(${showcased.sourceLevel}, ${xpEvents.sourceLevel}, ${courses.level})`
     const track = sql<CourseTrack>`coalesce(${showcased.sourceTrack}, ${xpEvents.sourceTrack}, ${courses.track}, '2d')`
+    const careerSlot = sql<
+      number | null
+    >`coalesce(${showcased.sourceCareerSlot}, ${xpEvents.sourceCareerSlot}, ${courses.careerSlot})`
     const rows = await this.db
       .select({
         userId: xpEvents.userId,
         level,
         track,
-        qualifying: countDistinct(xpEvents.sourceId),
+        careerSlot,
       })
       .from(xpEvents)
       .leftJoin(courses, eq(courses.id, xpEvents.sourceId))
@@ -812,15 +835,17 @@ export class DrizzleGamificationRepository implements GamificationRepository {
           eq(xpEvents.sourceType, 'course_complete'),
         ),
       )
-      .groupBy(xpEvents.userId, level, track)
+      .groupBy(xpEvents.userId, level, track, careerSlot)
     for (const row of rows) {
-      if (!row.level || !row.track) continue
+      if (!row.level || !row.track || row.careerSlot === null) continue
       let q = result.get(row.userId)
       if (!q) {
         q = emptyQualifyingByTier()
         result.set(row.userId, q)
       }
-      q[courseTier(row.level, row.track)] = Number(row.qualifying)
+      const slots = q[courseTier(row.level, row.track)]
+      const slot = Number(row.careerSlot)
+      if (!slots.includes(slot)) slots.push(slot)
     }
     return result
   }

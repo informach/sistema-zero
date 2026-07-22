@@ -121,7 +121,7 @@ interface ProjectStore {
   /** Mescla estado derivado do load/rehydrate SEM marcar como edição do aluno. */
   hydrateProjectState: (patch: ProjectStatePatch) => void
   unloadProject: () => void
-  createProject: (name: string) => Promise<Project>
+  createProject: (name: string, initialExtensionIds?: readonly string[]) => Promise<Project>
   /** Cria e persiste um projeto PROFISSIONAL a partir de um template. */
   createProProject: (name: string, templateId: string) => Promise<Project>
   duplicateProject: (id: string) => Promise<Project | null>
@@ -1869,8 +1869,15 @@ export function createProjectStore(
         bridgeCodeEditEpoch: 0,
         bridgeBlocksSyncedEpoch: 0,
       }),
-    createProject: async (name) => {
-      const p = createEmptyProject(ulid(), sanitizeProjectName(name))
+    createProject: async (name, initialExtensionIds) => {
+      const base = createEmptyProject(ulid(), sanitizeProjectName(name))
+      const installedExtensions = [...new Set(initialExtensionIds ?? [])].flatMap((id) => {
+        const definition = findExtension(id)
+        return definition
+          ? [{ id, version: definition.manifest.version, installedAt: Date.now() }]
+          : []
+      })
+      const p: Project = { ...base, installedExtensions }
       await persistProject(p)
       return p
     },

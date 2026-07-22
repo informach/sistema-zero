@@ -4,6 +4,7 @@ import type { StudioPersistence } from '../persistence/types'
 import type { StudioLimits } from '../state/projectStore'
 import type { ActivityRunResult, LessonActivity } from './activity'
 import type { StudioFeatures } from './config'
+import type { StudioProRuntimeAdapter } from './pro-runtime'
 import type { StudioShareAdapter } from './share'
 import type { StudioTheme } from './theme'
 
@@ -96,6 +97,17 @@ export interface StudioCommonProps {
    */
   onExit?: () => void
   /**
+   * Chamado depois de converter e persistir um projeto básico como Pro. O host
+   * pode navegar para a rota isolada do WebContainer sem perder a conversão.
+   */
+  onPromoteToPro?: (project: Project) => void | Promise<void>
+  /**
+   * Compilador remoto opcional do modo Pro. Usado nas aulas para manter o
+   * runtime pesado e não confiável fora do navegador da criança. Sem ele, o
+   * modo Pro usa o WebContainer local do Estúdio Completo.
+   */
+  proRuntime?: StudioProRuntimeAdapter
+  /**
    * Registra beforeunload enquanto houver mudanças não salvas (default true).
    * Hosts SPA com navegação própria podem desligar e usar handle.isDirty().
    */
@@ -155,6 +167,8 @@ export interface StudioLearningProps {
   level?: AnyBlockLevel
   /** Tipos de bloco sempre visíveis, independente do nível (allowlist da aula). */
   allowBlocks?: readonly string[]
+  /** IDs de extensões que a carreira/aula permite oferecer para instalação. */
+  allowExtensions?: readonly string[]
   /** Nomes de categoria sempre visíveis, independente do nível. */
   allowCategories?: readonly string[]
   /**

@@ -193,6 +193,8 @@ export function StudioFullClient({
           onOpenProject={openProject}
           theme={studioTheme}
           professional={proAvailable}
+          initialExtensions={tier.initialExtensions}
+          allowedExtensions={tier.allowedExtensions}
           showExamples={showExamples}
         />
       ) : (
@@ -204,6 +206,7 @@ export function StudioFullClient({
           theme={studioTheme}
           tier={tier}
           showExamples={showExamples}
+          professional={proAvailable && tier.canPromoteToPro}
         />
       )}
     </div>
@@ -219,6 +222,7 @@ function EditorScreen({
   theme,
   tier,
   showExamples,
+  professional,
 }: {
   mod: StudioModule
   projectId: string
@@ -227,6 +231,7 @@ function EditorScreen({
   theme: 'light' | 'dark'
   tier: StudioTier
   showExamples: boolean
+  professional: boolean
 }) {
   const adapter = useMemo(() => mod.createLocalPersistenceAdapter(), [mod])
   const [state, setState] = useState<EditorState>({ status: 'loading' })
@@ -251,6 +256,9 @@ function EditorScreen({
     },
     [router],
   )
+  const handlePromoteToPro = useCallback((project: Project) => {
+    window.location.assign(`/estudio/pro/${encodeURIComponent(project.id)}`)
+  }, [])
 
   useEffect(() => {
     let active = true
@@ -321,12 +329,16 @@ function EditorScreen({
       theme={theme}
       // Modos + degrau de blocos pelo RANK do aluno (carreira de 8, Faísca→Lenda;
       // admin=Lenda): cada nível libera o degrau que vai estudar em seguida; a
-      // Ponte abre no Mestre dos Jogos e o PRO no Gênio da Criação (ver
+      // Ponte abre no Mestre dos Jogos e o PRO somente na Lenda (ver
       // member-shell/lib/studio-tier.ts). Sem "Mostrar blocos avançados" — o rank
       // é o portão estrito.
       level={tier.level}
+      allowBlocks={tier.allowBlocks}
+      allowExtensions={tier.allowedExtensions}
       allowedModes={tier.allowedModes}
       allowLevelReveal={tier.allowLevelReveal}
+      features={{ professional }}
+      onPromoteToPro={handlePromoteToPro}
       // Exemplos "clássicos" no painel de Extensões — só p/ a equipe (ver a página).
       showExamples={showExamples}
     />

@@ -170,7 +170,7 @@ export function buildApp(
     clock,
   })
 
-  const checkAccess = new CheckAccessService(courses, entitlements, clock)
+  const checkAccess = new CheckAccessService(courses, entitlements, gamification, clock)
   const awardGamification = new AwardGamificationService(gamification, clock, silentLogger)
   const accessCheck = new AccessCheckService(entitlements, clock)
   const grant = new GrantEntitlementService({
@@ -240,8 +240,15 @@ export function buildApp(
     logger: silentLogger,
     readiness: opts.readiness ?? (async () => ({ ready: true, checks: { db: 'ok' } })),
     members: {
-      listMyCourses: new ListMyCoursesService(entitlements, courses, progress, positions, clock),
-      listCatalog: new ListCatalogService(courses, entitlements, clock),
+      listMyCourses: new ListMyCoursesService(
+        entitlements,
+        courses,
+        progress,
+        positions,
+        gamification,
+        clock,
+      ),
+      listCatalog: new ListCatalogService(courses, entitlements, gamification, clock),
       accessCheck: new AccessCheckService(entitlements, clock),
       getMyCourse: new GetMyCourseService(checkAccess, courses, progress, positions, ratings),
       getLesson: new GetLessonService(
@@ -487,6 +494,7 @@ export function seedSampleCourse(
   sequentialLock = false,
   level: CourseLevel = 'iniciante',
   track: CourseTrack = '2d',
+  careerSlot: number | null = null,
 ) {
   const now = new Date('2026-06-01T00:00:00.000Z')
   const courseId = randomUUID()
@@ -506,6 +514,7 @@ export function seedSampleCourse(
     sequentialLock,
     level,
     track,
+    careerSlot,
     metadata: null,
     createdAt: now,
     updatedAt: now,

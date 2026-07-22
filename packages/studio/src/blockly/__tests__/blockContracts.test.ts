@@ -5,6 +5,7 @@ import {
   type JSExpr,
   type JSStatement,
   START_ONLY_STATEMENT_TYPES,
+  SZIRSchema,
   SZIRV2Schema,
 } from '#ir'
 import { OFFICIAL_CATALOG } from '#official-extensions'
@@ -514,6 +515,22 @@ describe('contrato central de posicionamento', () => {
         }
         expect(SZIRV2Schema.safeParse(nestedInEvent).success, definition.type).toBe(false)
         expect(SZIRV2Schema.safeParse(nestedInLoop).success, definition.type).toBe(false)
+
+        const legacyNested = SZIRSchema.safeParse({
+          html: ir.html,
+          css: ir.css,
+          js: [{ type: 'event', target: 'window', event: 'click', body: [statement] }],
+          extensions: ir.extensions,
+        })
+        expect(legacyNested.success, `${definition.type}: IR legada`).toBe(false)
+        if (!legacyNested.success) {
+          expect(
+            legacyNested.error.issues.some((issue) =>
+              issue.message.includes('só pode ser usado diretamente em Ao iniciar'),
+            ),
+            `${definition.type}: diagnóstico da IR legada`,
+          ).toBe(true)
+        }
       } finally {
         workspace.dispose()
       }

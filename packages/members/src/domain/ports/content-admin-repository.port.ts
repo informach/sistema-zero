@@ -43,6 +43,8 @@ export interface CourseFields {
    * no CREATE vira `2d`; no UPDATE **preserva o atual** (régua do `audience`).
    */
   track: CourseTrack | null
+  /** Ausente no PATCH preserva; `null` remove da carreira; número define o slot. */
+  careerSlot?: number | null
 }
 
 export interface ModuleFields {

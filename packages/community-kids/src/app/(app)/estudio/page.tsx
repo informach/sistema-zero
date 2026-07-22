@@ -1,4 +1,5 @@
 import { isPrivilegedRole, resolveStudioTier } from '@sistemazero/member-shell/lib/studio-tier'
+import { KidsCareerLockedStudio } from '@/components/kids/kids-career-locked-studio'
 import { KidsLockedStudio } from '@/components/kids/kids-locked-studio'
 import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable'
 import { StudioFullClient } from '@/components/kids/studio-full-client'
@@ -38,10 +39,14 @@ export default async function EstudioPage() {
   if (res.status !== 200) return <KidsStudioUnavailable />
   const hasAccess = res.body?.access?.['estudio-completo'] === true
   if (!hasAccess) return <KidsLockedStudio />
-  // Modos (Blocos/Ponte) + degrau de blocos (escada de 6, 2D/3D) pelo RANK
-  // (carreira de 8); admin/staff = Lenda. Soluço/ausência → noob (degrada seguro).
-  const levelSlug = gam?.status === 200 ? (gam.body?.level?.slug ?? 'noob') : 'noob'
+  // Falha ao consultar o rank não pode virar Faísca: isso esconderia ferramentas de
+  // uma criança que já as conquistou. Mantemos o mesmo estado honesto de indisponibilidade.
+  if (gam?.status !== 200) return <KidsStudioUnavailable />
+  const levelSlug = gam.body?.level?.slug ?? 'noob'
   const tier = resolveStudioTier(levelSlug, session?.role)
+  // O produto pode estar comprado pela conta, mas a criação livre só começa após
+  // concluir+publicar o primeiro curso. Dentro das aulas, o Estúdio segue disponível.
+  if (!tier.freeStudio) return <KidsCareerLockedStudio />
   const challengeEligible =
     challengeAccess?.status === 200 &&
     challengeAccess.body?.access?.['clube-dos-criadores'] === true &&

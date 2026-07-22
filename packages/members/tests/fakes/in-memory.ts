@@ -15,7 +15,7 @@ import {
   type Module,
   type ModuleWithLessons,
 } from '../../src/domain/course/course'
-import { DuplicateSlugError } from '../../src/domain/course/course.errors'
+import { CareerSlotConflictError, DuplicateSlugError } from '../../src/domain/course/course.errors'
 import type { LessonBlockContent, LessonBlockKind } from '../../src/domain/course/lesson-block'
 import { isCompletionGatingBlock } from '../../src/domain/course/lesson-block'
 import type { QuizAttemptSummary } from '../../src/domain/course/quiz'
@@ -527,10 +527,22 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
 
   async createCourse(fields: CourseFields): Promise<Course> {
     if (this.courses.some((c) => c.slug === fields.slug)) throw new DuplicateSlugError()
+    if (
+      fields.careerSlot != null &&
+      this.courses.some(
+        (course) =>
+          course.audience === fields.audience &&
+          course.level === fields.level &&
+          course.track === fields.track &&
+          course.careerSlot === fields.careerSlot,
+      )
+    ) {
+      throw new CareerSlotConflictError()
+    }
     const now = new Date()
     // Mirror do SQL: `salesPageUrl` vira a chave do metadata (jsonb), não coluna;
     // `audience` ausente cai no default da coluna (`adult`).
-    const { salesPageUrl, audience, sequentialLock, level, track, ...rest } = fields
+    const { salesPageUrl, audience, sequentialLock, level, track, careerSlot, ...rest } = fields
     const course: Course = {
       id: randomUUID(),
       ...rest,
@@ -538,6 +550,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       sequentialLock: sequentialLock ?? true,
       level: level ?? 'iniciante',
       track: track ?? '2d',
+      careerSlot: careerSlot ?? null,
       metadata: salesPageUrl ? { salesPageUrl } : null,
       createdAt: now,
       updatedAt: now,
@@ -551,6 +564,19 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     if (idx === -1) return false
     if (this.courses.some((c) => c.id !== course.id && c.slug === course.slug)) {
       throw new DuplicateSlugError()
+    }
+    if (
+      course.careerSlot != null &&
+      this.courses.some(
+        (other) =>
+          other.id !== course.id &&
+          other.audience === course.audience &&
+          other.level === course.level &&
+          other.track === course.track &&
+          other.careerSlot === course.careerSlot,
+      )
+    ) {
+      throw new CareerSlotConflictError()
     }
     this.courses[idx] = { ...course, updatedAt: new Date() }
     return true
@@ -1583,6 +1609,8 @@ interface XpEventRow extends XpEventInput {
   sourceLevel?: CourseLevel | null
   /** Snapshot do eixo 2D/3D (mirror de `xp_events.source_track` — par do sourceLevel). */
   sourceTrack?: CourseTrack | null
+  /** Snapshot do slot da carreira (mirror de `xp_events.source_career_slot`). */
+  sourceCareerSlot?: number | null
   createdAt: Date
 }
 
@@ -1703,6 +1731,7 @@ export class InMemoryGamificationRepository implements GamificationRepository {
         audience: input.audience,
         sourceLevel: marcoCourse?.level ?? null,
         sourceTrack: marcoCourse?.track ?? null,
+        sourceCareerSlot: marcoCourse?.careerSlot ?? null,
         createdAt: input.now,
       })
       newEvents.push(e)
@@ -2016,7 +2045,7 @@ export class InMemoryGamificationRepository implements GamificationRepository {
   }
 
   /** Mirror do SQL: cursos com AMBOS os marcos (complete ∩ showcased) por DEGRAU (nível×eixo). */
-  async countQualifyingCoursesByTier(
+  async listQualifyingCareerSlots(
     userId: string,
     audience: CourseAudience,
   ): Promise<QualifyingByTier> {
@@ -2035,19 +2064,23 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       // legado sem curso cai em '2d' (literal final do coalesce do SQL).
       const level = sc.sourceLevel ?? ce.sourceLevel ?? course?.level
       const track = sc.sourceTrack ?? ce.sourceTrack ?? course?.track ?? '2d'
-      if (level) result[courseTier(level, track)] += 1
+      const careerSlot = sc.sourceCareerSlot ?? ce.sourceCareerSlot ?? course?.careerSlot
+      if (level && careerSlot != null) {
+        const slots = result[courseTier(level, track)]
+        if (!slots.includes(careerSlot)) slots.push(careerSlot)
+      }
     }
     return result
   }
 
-  async countQualifyingByTierForProfiles(
+  async listQualifyingCareerSlotsForProfiles(
     profileIds: string[],
     audience: CourseAudience,
   ): Promise<Map<string, QualifyingByTier>> {
     const map = new Map<string, QualifyingByTier>()
     for (const id of new Set(profileIds)) {
-      const q = await this.countQualifyingCoursesByTier(id, audience)
-      if (Object.values(q).some((n) => n > 0)) map.set(id, q)
+      const q = await this.listQualifyingCareerSlots(id, audience)
+      if (Object.values(q).some((slots) => slots.length > 0)) map.set(id, q)
     }
     return map
   }

@@ -17,7 +17,7 @@ import {
   TableRow,
 } from '@sistemazero/ui/table'
 import { Textarea } from '@sistemazero/ui/textarea'
-import { Pencil, Plus, Search, SquarePen } from 'lucide-react'
+import { CheckCircle2, CircleDashed, Pencil, Plus, Search, SquarePen } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -51,6 +51,7 @@ interface FormState {
   audience: string
   level: string
   track: string
+  careerSlot: string
   sequentialLock: boolean
 }
 
@@ -66,6 +67,7 @@ const EMPTY: FormState = {
   // Padrão: todo curso nasce Iniciante 2D (espelha os defaults das colunas no members).
   level: 'iniciante',
   track: '2d',
+  careerSlot: '',
   // Padrão LIGADO (decisão da usuária): curso novo já trava as aulas em sequência.
   sequentialLock: true,
 }
@@ -79,6 +81,8 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
   const [q, setQ] = useState('')
   const [status, setStatus] = useState('')
   const [loading, setLoading] = useState(true)
+  const [careerItems, setCareerItems] = useState<CourseView[]>([])
+  const [careerLoading, setCareerLoading] = useState(true)
 
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<CourseView | null>(null)
@@ -105,10 +109,28 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
     }
   }, [offset, q, status])
 
+  const loadCareer = useCallback(async () => {
+    setCareerLoading(true)
+    try {
+      const page = await apiGet<Paginated<CourseView>>(
+        '/api/members/courses?audience=kids&limit=100&offset=0',
+      )
+      setCareerItems(page.items)
+    } catch (err) {
+      toast.error((err as ApiError).message ?? 'Falha ao conferir a Carreira do Criador.')
+    } finally {
+      setCareerLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
     const t = setTimeout(load, 250)
     return () => clearTimeout(t)
   }, [load])
+
+  useEffect(() => {
+    void loadCareer()
+  }, [loadCareer])
 
   function openCreate() {
     setEditing(null)
@@ -130,6 +152,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
       audience: c.audience ?? 'adult',
       level: c.level ?? 'iniciante',
       track: c.track ?? '2d',
+      careerSlot: c.careerSlot == null ? '' : String(c.careerSlot),
       sequentialLock: c.sequentialLock ?? true,
     })
     setOpen(true)
@@ -158,6 +181,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         audience: form.audience,
         level: form.level,
         track: form.track,
+        careerSlot: form.audience === 'kids' && form.careerSlot ? Number(form.careerSlot) : null,
         sequentialLock: form.sequentialLock,
       }
       if (editing) {
@@ -168,7 +192,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         toast.success('Curso criado.')
       }
       setOpen(false)
-      await load()
+      await Promise.all([load(), loadCareer()])
     } catch (err) {
       toast.error((err as ApiError).message ?? 'Não foi possível salvar.')
     } finally {
@@ -191,7 +215,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         try {
           await apiSend(`/api/members/courses/${c.id}`, 'DELETE')
           toast.success('Curso excluído.')
-          await load()
+          await Promise.all([load(), loadCareer()])
         } catch (err) {
           toast.error((err as ApiError).message ?? 'Não foi possível excluir.')
         }
@@ -213,6 +237,8 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
           ) : undefined
         }
       />
+
+      <CareerReadiness courses={careerItems} loading={careerLoading} />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
@@ -276,6 +302,13 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
                       ) : null}
                     </div>
                     <div className="text-xs text-muted-foreground">{c.slug}</div>
+                    {c.audience === 'kids' ? (
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        {c.careerSlot == null
+                          ? 'Curso bônus — não conta para subir de nível'
+                          : `Carreira: ${COURSE_TIER_OPTIONS.find((option) => option.level === c.level && option.track === c.track)?.label ?? `${c.level} ${c.track}`} · posição ${c.careerSlot}`}
+                      </div>
+                    ) : null}
                   </TableCell>
                   <TableCell>
                     <StatusBadge status={c.status} />
@@ -393,6 +426,21 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
             </Select>
           </Field>
           <Field
+            label="Posição na Carreira do Criador"
+            htmlFor="career-slot"
+            hint="1 é o curso-base da etapa. Deixe vazio para cursos bônus."
+          >
+            <Input
+              id="career-slot"
+              type="number"
+              min={1}
+              max={form.level === 'iniciante' && form.track === '2d' ? 6 : 5}
+              value={form.careerSlot}
+              onChange={(e) => setForm((f) => ({ ...f, careerSlot: e.target.value }))}
+              disabled={form.audience !== 'kids'}
+            />
+          </Field>
+          <Field
             label="Nível do curso"
             htmlFor="clevel"
             tooltip="Degrau do curso: dificuldade (Iniciante/Intermediário/Avançado) × eixo (2D/3D). Conta para a CARREIRA do aluno: concluir e publicar no Mural cursos de cada degrau, na ordem da escada (2D antes do 3D em cada dificuldade), faz o aluno subir de Faísca até Lenda."
@@ -474,5 +522,102 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         </div>
       </Dialog>
     </div>
+  )
+}
+
+function CareerReadiness({ courses, loading }: { courses: CourseView[]; loading: boolean }) {
+  const tiers = COURSE_TIER_OPTIONS.map((tier, index) => {
+    const required = index === 0 ? 6 : 5
+    const slots = Array.from({ length: required }, (_, slotIndex) => {
+      const slot = slotIndex + 1
+      const course = courses.find(
+        (item) =>
+          item.level === tier.level &&
+          (item.track ?? '2d') === tier.track &&
+          item.careerSlot === slot,
+      )
+      return { slot, course }
+    })
+    return {
+      ...tier,
+      slots,
+      ready: slots.every((item) => item.course?.status === 'published'),
+    }
+  })
+  const readyCount = tiers.reduce(
+    (total, tier) =>
+      total + tier.slots.filter((item) => item.course?.status === 'published').length,
+    0,
+  )
+  const requiredCount = tiers.reduce((total, tier) => total + tier.slots.length, 0)
+
+  return (
+    <Card className="p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="font-semibold text-base">Carreira do Criador</h2>
+          <p className="mt-1 text-muted-foreground text-sm">
+            Confira se todos os cursos obrigatórios estão posicionados e publicados antes do
+            lançamento.
+          </p>
+        </div>
+        <div
+          className={`rounded-full px-3 py-1 font-medium text-sm ${
+            readyCount === requiredCount
+              ? 'bg-success/15 text-success-foreground'
+              : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
+          }`}
+        >
+          {loading ? 'Conferindo…' : `${readyCount} de ${requiredCount} prontos`}
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
+        {tiers.map((tier) => (
+          <div key={`${tier.level}:${tier.track}`} className="rounded-lg border p-3">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <span className="font-medium text-sm">{tier.label}</span>
+              {tier.ready ? (
+                <span className="inline-flex items-center gap-1 text-success-foreground text-xs">
+                  <CheckCircle2 className="size-3.5" /> Pronto
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-muted-foreground text-xs">
+                  <CircleDashed className="size-3.5" /> Incompleto
+                </span>
+              )}
+            </div>
+            <div className="space-y-1.5">
+              {tier.slots.map(({ slot, course }) => (
+                <div
+                  key={slot}
+                  className="flex min-w-0 items-center gap-2 rounded-md bg-muted/50 px-2 py-1.5 text-xs"
+                >
+                  <span className="grid size-5 shrink-0 place-items-center rounded-full bg-background font-medium">
+                    {slot}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-foreground">
+                    {course?.title ?? 'Posição ainda vazia'}
+                  </span>
+                  {course ? (
+                    <span
+                      className={
+                        course.status === 'published'
+                          ? 'text-success-foreground'
+                          : 'text-amber-700 dark:text-amber-300'
+                      }
+                    >
+                      {course.status === 'published' ? 'Publicado' : 'Falta publicar'}
+                    </span>
+                  ) : (
+                    <span className="text-destructive">Falta curso</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </Card>
   )
 }

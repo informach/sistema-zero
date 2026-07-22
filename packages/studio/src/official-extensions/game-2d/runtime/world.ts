@@ -244,10 +244,20 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
     // calculado no desenho) — a colisão usaria o canto (0,0) e ficaria torta.
     if (map && !map._drawn) warnOnce('colmapfirst', 'desenhe o mapa (bloco "Desenhar o mapa") ANTES de "Impedir de atravessar os tiles" — senão a colisão fica fora do lugar no 1º quadro.');
     var t = tileScreenSize(map), ox = map.ox || 0, oy = map.oy || 0;
-    var c0 = Math.floor((sprite.x - ox) / t);
-    var c1 = Math.floor((sprite.x + sprite.w - 1 - ox) / t);
-    var r0 = Math.floor((sprite.y - oy) / t);
-    var r1 = Math.floor((sprite.y + sprite.h - 1 - oy) / t);
+    if (!_isFiniteNumber(t) || t <= 0 ||
+        !_isFiniteNumber(sprite.x) || !_isFiniteNumber(sprite.y) ||
+        !_isFiniteNumber(sprite.w) || !_isFiniteNumber(sprite.h)) return;
+    var rowsN = map.rows.length;
+    var colsN = tileMapCols(map);
+    if (!rowsN || !colsN) return;
+    // A busca pertence ao MAPA, nunca ao tamanho arbitrário do sprite. Além de
+    // evitar trabalho inútil fora da grade, isto torna o laço finitamente
+    // limitado mesmo quando a criança usa dimensões enormes.
+    var c0 = Math.max(0, Math.floor((sprite.x - ox) / t));
+    var c1 = Math.min(colsN - 1, Math.floor((sprite.x + sprite.w - 1 - ox) / t));
+    var r0 = Math.max(0, Math.floor((sprite.y - oy) / t));
+    var r1 = Math.min(rowsN - 1, Math.floor((sprite.y + sprite.h - 1 - oy) / t));
+    if (c0 > c1 || r0 > r1) return;
     for (var r = r0; r <= r1; r++) {
       for (var c = c0; c <= c1; c++) {
         // Peça PLATAFORMA (one-way): só segura o sprite CAINDO (vy>0) e quando o
@@ -329,9 +339,13 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
   var keyHandlers = Object.create(null);
   var keyHandlerOrder = [];
   window.addEventListener('keydown', function (e) {
+    _setDirectionalKey(e, true);
+    pressedKeys[_normalizeGameKey(e.key)] = true;
+    pressedKeys[_normalizeGameKey(e.code)] = true;
     // O sistema REPETE keydown enquanto a tecla fica segurada; "quando apertar" só
     // dispara no toque, então ignoramos as repetições (senão vira metralhadora).
     if (e.repeat) return;
+    var generation = _driverGeneration;
     var handlers = keyHandlerOrder.slice();
     for (var i = 0; i < handlers.length; i++) {
       var id = handlers[i];
@@ -339,11 +353,12 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
       if (!h) continue;
       var hit = _eventMatchesGameKey(e, h.key);
       if (!hit) continue;
-      try { h.fn(); }
+      try { _invokeProjectCallback(h.fn, h, []); }
       catch (error) {
         _reportHandlerError('“Quando apertar a tecla”', id, error);
-        _removeOrdered(keyHandlers, keyHandlerOrder, id);
+        _removeOrderedIfCurrent(keyHandlers, keyHandlerOrder, id, h);
       }
+      if (_runGenerationChanged(generation)) return;
     }
   });
   /** Roda fn toda vez que a tecla é apertada (compara e.key e e.code). */
@@ -368,25 +383,32 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
     // sprites parados encostados seguiriam disparando o "quando encostar", e ao
     // despausar viria uma borda FALSA. Congelar o wasOverlapping preserva o estado.
     if (!_paused) {
+      var generation = _driverGeneration;
       var handlers = _overlapOrder.slice();
       for (var i = 0; i < handlers.length; i++) {
         var id = handlers[i];
         var h = overlapHandlers[id];
         if (!h) continue;
         var a = null, b = null;
-        try { a = h.getA(); b = h.getB(); }
+        try {
+          a = _invokeProjectCallback(h.getA, h, []);
+          b = _invokeProjectCallback(h.getB, h, []);
+        }
         catch (error) {
           _reportHandlerError('“Quando encostar”', id, error);
-          _removeOrdered(overlapHandlers, _overlapOrder, id);
+          _removeOrderedIfCurrent(overlapHandlers, _overlapOrder, id, h);
+          if (_runGenerationChanged(generation)) return;
           continue;
         }
+        if (_runGenerationChanged(generation)) return;
         var over = isColliding(a, b);
         if (over && !h.wasOverlapping) {
-          try { h.fn(); }
+          try { _invokeProjectCallback(h.fn, h, []); }
           catch (error) {
             _reportHandlerError('“Quando encostar”', id, error);
-            _removeOrdered(overlapHandlers, _overlapOrder, id);
+            _removeOrderedIfCurrent(overlapHandlers, _overlapOrder, id, h);
           }
+          if (_runGenerationChanged(generation)) return;
         }
         h.wasOverlapping = over;
       }
@@ -407,11 +429,8 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
   // ---- Perguntas (booleanos): "tecla apertada?" e "sprites se tocando?" ----
   // Estado de TODAS as teclas seguradas (o "keys" lá de cima só cobre as setas).
   var pressedKeys = Object.create(null);
-  window.addEventListener('keydown', function (e) {
-    pressedKeys[_normalizeGameKey(e.key)] = true;
-    pressedKeys[_normalizeGameKey(e.code)] = true;
-  });
   window.addEventListener('keyup', function (e) {
+    _setDirectionalKey(e, false);
     pressedKeys[_normalizeGameKey(e.key)] = false;
     pressedKeys[_normalizeGameKey(e.code)] = false;
   });
@@ -444,12 +463,85 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
   // cada item, sem motor novo. Teto rígido p/ não vazar memória se o aluno
   // criar sprites sem parar (ex.: um tiro por quadro).
   var MAX_GROUP = 400;
-  /** Cria um grupo vazio. */
-  function createGroup() { return { items: [], _revision: 0 }; }
   /** Marca uma mudança de pertencimento/ordem para varreduras com snapshot. */
   function _touchGroup(group) {
     if (!group) return;
     group._revision = (typeof group._revision === 'number' ? group._revision : 0) + 1;
+  }
+  /**
+   * O array do grupo faz parte da API pública no modo Código. Rastreá-lo aqui
+   * mantém as varreduras corretas tanto pelos blocos quanto por push/splice,
+   * atribuição por índice ou substituição direta de items feita pela criança.
+   */
+  function _trackGroupItems(group, initialItems) {
+    return new Proxy(initialItems, {
+      set: function (target, property, value) {
+        var hadProperty = Object.prototype.hasOwnProperty.call(target, property);
+        var previous = target[property];
+        target[property] = value;
+        if (!hadProperty || previous !== value) _touchGroup(group);
+        return true;
+      },
+      deleteProperty: function (target, property) {
+        if (!Object.prototype.hasOwnProperty.call(target, property)) return true;
+        delete target[property];
+        _touchGroup(group);
+        return true;
+      },
+      defineProperty: function (target, property, descriptor) {
+        var hadProperty = Object.prototype.hasOwnProperty.call(target, property);
+        var previous = target[property];
+        Object.defineProperty(target, property, descriptor);
+        if (!hadProperty || previous !== target[property]) _touchGroup(group);
+        return true;
+      }
+    });
+  }
+  /** Cria um grupo vazio com pertencimento observável inclusive no modo Código. */
+  function createGroup() {
+    var group = { _revision: 0 };
+    var items = _trackGroupItems(group, []);
+    Object.defineProperty(group, 'items', {
+      enumerable: true,
+      get: function () { return items; },
+      set: function (nextItems) {
+        if (nextItems === items) return;
+        items = _trackGroupItems(group, Array.isArray(nextItems) ? nextItems : []);
+        _touchGroup(group);
+      }
+    });
+    return group;
+  }
+  /** Snapshot estável: itens novos ficam para a próxima passada e removidos não rodam. */
+  function _beginGroupTraversal(group) {
+    return {
+      items: group.items.slice(),
+      revision: typeof group._revision === 'number' ? group._revision : 0,
+      members: new Set(group.items)
+    };
+  }
+  function _refreshGroupTraversal(group, traversal) {
+    var revision = typeof group._revision === 'number' ? group._revision : 0;
+    if (revision === traversal.revision) return;
+    traversal.revision = revision;
+    traversal.members = new Set(group.items);
+  }
+  /** Remove pertencimento e libera o trabalho assíncrono do sprite uma única vez. */
+  function _removeGroupItemAt(group, index) {
+    if (!group || !group.items || index < 0 || index >= group.items.length) return null;
+    var sprite = group.items[index];
+    if (sprite) _disposeSprite(sprite);
+    group.items.splice(index, 1);
+    _touchGroup(group);
+    return sprite;
+  }
+  function _clearGroupItems(group) {
+    if (!group || !group.items || !group.items.length) return;
+    for (var i = 0; i < group.items.length; i++) {
+      if (group.items[i]) _disposeSprite(group.items[i]);
+    }
+    group.items.length = 0;
+    _touchGroup(group);
   }
   /**
    * Cria um sprite (colorido OU com imagem, conforme opts) e o coloca no grupo.
@@ -543,24 +635,27 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
    */
   function forEachInGroup(group, fn) {
     if (!group || !group.items || typeof fn !== 'function') return;
-    for (var i = group.items.length - 1; i >= 0; i--) {
-      fn(group.items[i], i);
+    var generation = _driverGeneration;
+    var traversal = _beginGroupTraversal(group);
+    for (var i = traversal.items.length - 1; i >= 0; i--) {
+      _refreshGroupTraversal(group, traversal);
+      var sprite = traversal.items[i];
+      if (!sprite || !traversal.members.has(sprite)) continue;
+      _invokeProjectCallback(fn, undefined, [sprite, i]);
+      if (_runGenerationChanged(generation)) return;
     }
   }
   /** Quantos sprites o grupo tem agora. */
   function countGroup(group) { return (group && group.items) ? group.items.length : 0; }
   /** Esvazia o grupo (tira todos os sprites). */
   function clearGroup(group) {
-    if (group && group.items && group.items.length) {
-      group.items.length = 0;
-      _touchGroup(group);
-    }
+    _clearGroupItems(group);
   }
   /** Tira um sprite específico do grupo (por referência). */
   function removeFromGroup(group, sprite) {
     if (!group || !group.items) return;
     var idx = group.items.indexOf(sprite);
-    if (idx !== -1) { group.items.splice(idx, 1); _touchGroup(group); }
+    if (idx !== -1) _removeGroupItemAt(group, idx);
   }
   /**
    * Remove do grupo os sprites que saíram da tela (com uma margem). Para cada
@@ -569,15 +664,18 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
    */
   function pruneOffscreen(ctx, group, margin, onLeave) {
     if (!ctx || !ctx.canvas || !group || !group.items) return;
+    var generation = _driverGeneration;
     var m = typeof margin === 'number' ? margin : 40;
     var visible = _visibleWorldRect(ctx);
     for (var i = group.items.length - 1; i >= 0; i--) {
       var s = group.items[i];
-      if (!s) { group.items.splice(i, 1); _touchGroup(group); continue; }
+      if (!s) { _removeGroupItemAt(group, i); continue; }
       if (s.x + s.w < visible.left - m || s.x > visible.right + m || s.y + s.h < visible.top - m || s.y > visible.bottom + m) {
-        group.items.splice(i, 1);
-        _touchGroup(group);
-        if (typeof onLeave === 'function') onLeave(s);
+        _removeGroupItemAt(group, i);
+        if (typeof onLeave === 'function') {
+          _invokeProjectCallback(onLeave, undefined, [s]);
+          if (_runGenerationChanged(generation)) return;
+        }
       }
     }
   }
@@ -627,6 +725,7 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
   }
   function overlapGroups(a, b, fn) {
     if (!a || !a.items || !b || !b.items || typeof fn !== 'function') return;
+    var generation = _driverGeneration;
     var sameGroup = a === b;
     var firstItems = a.items.slice();
     var secondItems = sameGroup ? firstItems : b.items.slice();
@@ -660,7 +759,8 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
         var bj = secondItems[j];
         if (!bj || !secondMembers.has(bj)) continue;
         if (isColliding(ai, bj)) {
-          fn(ai, bj);
+          _invokeProjectCallback(fn, undefined, [ai, bj]);
+          if (_runGenerationChanged(generation)) return;
           refreshMembership();
           // Se o corpo REMOVEU ai (ex.: "remova o tiro"), ele não deve acertar mais
           // ninguém neste quadro — senão um tiro só derrubaria TODOS os inimigos

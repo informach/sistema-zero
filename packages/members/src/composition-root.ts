@@ -198,7 +198,7 @@ export async function createApplication(env: Env): Promise<Application> {
     : noopHubGateway
 
   // Casos de uso do aluno
-  const checkAccess = new CheckAccessService(courses, entitlements, clock)
+  const checkAccess = new CheckAccessService(courses, entitlements, gamificationRepo, clock)
   // S2S: resolução de acesso em lote (consumido pela comunidade @sistemazero/hub).
   const accessCheck = new AccessCheckService(entitlements, clock)
   // S2S: teto de perfis kids da conta (consumido pelo `auth` ao criar perfil).
@@ -286,8 +286,15 @@ export async function createApplication(env: Env): Promise<Application> {
           },
         )
       : null
-  const listMyCourses = new ListMyCoursesService(entitlements, courses, progress, positions, clock)
-  const listCatalog = new ListCatalogService(courses, entitlements, clock)
+  const listMyCourses = new ListMyCoursesService(
+    entitlements,
+    courses,
+    progress,
+    positions,
+    gamificationRepo,
+    clock,
+  )
+  const listCatalog = new ListCatalogService(courses, entitlements, gamificationRepo, clock)
   const getMyCourse = new GetMyCourseService(checkAccess, courses, progress, positions, ratings)
   const getLesson = new GetLessonService(
     checkAccess,

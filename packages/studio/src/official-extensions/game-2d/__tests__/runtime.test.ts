@@ -1,6 +1,53 @@
 import { beforeEach, describe, expect, it, spyOn } from 'bun:test'
 import { gameTwoDRuntime } from '../runtime'
 
+async function runtimeWorkerCompletes(operation: string): Promise<boolean> {
+  const source = `
+    var gameTwoDRuntime = ${JSON.stringify(gameTwoDRuntime)};
+    var noop = function () {};
+    globalThis.document = {
+      addEventListener: noop,
+      hidden: false,
+      querySelector: function () { return null; }
+    };
+    var win = {
+      addEventListener: noop,
+      SZGame2D: undefined,
+      performance: { now: function () { return 0; } },
+      devicePixelRatio: 1
+    };
+    new Function('window', 'requestAnimationFrame', gameTwoDRuntime)(win, function () { return 0; });
+    var api = win.SZGame2D;
+    var gradient = { addColorStop: noop };
+    var ctx = new Proxy({
+      canvas: { width: 320, height: 240 },
+      createLinearGradient: function () { return gradient; }
+    }, {
+      get: function (target, key) { return key in target ? target[key] : noop; }
+    });
+    ${operation}
+    postMessage('completed');
+  `
+  const url = URL.createObjectURL(new Blob([source], { type: 'text/javascript' }))
+  const worker = new Worker(url)
+
+  return await new Promise<boolean>((resolve, reject) => {
+    let settled = false
+    const finish = (result: boolean, error?: Error) => {
+      if (settled) return
+      settled = true
+      clearTimeout(timeout)
+      worker.terminate()
+      URL.revokeObjectURL(url)
+      if (error) reject(error)
+      else resolve(result)
+    }
+    const timeout = setTimeout(() => finish(false), 1_000)
+    worker.onmessage = () => finish(true)
+    worker.onerror = (event) => finish(false, new Error(event.message))
+  })
+}
+
 interface SZGame2DSurface {
   SZGame2D: {
     createSprite: (
@@ -372,6 +419,10 @@ describe('gameTwoDRuntime — Kit dino + pulo no chão (v0.9.0)', () => {
     expect(() => sz.drawForest(ctx, 5)).not.toThrow()
   })
 
+  it('drawForest termina mesmo quando a velocidade calculada não é finita', async () => {
+    expect(await runtimeWorkerCompletes('api.drawForest(ctx, Infinity);')).toBe(true)
+  })
+
   it('controlDino aplica gravidade e pousa na linha do chão (não atravessa o piso)', () => {
     const sz = dinoApi()
     const ctx = fakeDinoCtx(480, 270)
@@ -405,11 +456,15 @@ describe('gameTwoDRuntime — imagens / spritesheet / animação', () => {
     naturalWidth: number
     width: number
     addEventListener: (type: string, fn: () => void) => void
+    removeEventListener: (type: string, fn: () => void) => void
     /** Helper de teste: dispara o `load` (onload + listeners addEventListener). */
     fireLoad: () => void
     fireError: () => void
+    listenerCount: (type: 'load' | 'error') => number
   }
   interface ImageApi {
+    onStart: (fn: () => void, id?: string) => void
+    restart: () => void
     createSprite: (o: Record<string, unknown>) => {
       image: { img: FakeImg; loaded: boolean } | null
       anim: unknown
@@ -418,12 +473,15 @@ describe('gameTwoDRuntime — imagens / spritesheet / animação', () => {
       name: string,
     ) => { img: FakeImg | null; loaded: boolean; failed: boolean; url: string } | null
     setImage: (s: unknown, name: string | null) => void
+    setShape: (s: unknown, name: string) => void
     loadSpriteSheet: (
       name: string,
       fw: number,
       fh: number,
     ) => { image: { img: FakeImg; loaded: boolean }; frameW: number; frameH: number }
     setAnimation: (s: unknown, sheet: unknown, from: number, to: number, fps: number) => void
+    clearGroup: (group: { items: unknown[] }) => void
+    removeFromGroup: (group: { items: unknown[] }, sprite: unknown) => void
     drawSprite: (ctx: unknown, s: unknown) => void
     drawFrame: (
       ctx: unknown,
@@ -460,15 +518,22 @@ describe('gameTwoDRuntime — imagens / spritesheet / animação', () => {
           if (type === 'load') loadListeners.push(fn)
           if (type === 'error') errorListeners.push(fn)
         }
+        this.removeEventListener = (type, fn) => {
+          const listeners = type === 'load' ? loadListeners : errorListeners
+          const index = listeners.indexOf(fn)
+          if (index !== -1) listeners.splice(index, 1)
+        }
         this.fireLoad = () => {
           if (!this.naturalWidth) this.naturalWidth = 32
           this.onload?.()
-          for (const fn of loadListeners) fn()
+          for (const fn of [...loadListeners]) fn()
         }
         this.fireError = () => {
           this.onerror?.()
-          for (const fn of errorListeners) fn()
+          for (const fn of [...errorListeners]) fn()
         }
+        this.listenerCount = (type) =>
+          type === 'load' ? loadListeners.length : errorListeners.length
         Object.defineProperty(this, 'src', {
           set() {
             // Não dispara onload sozinho: o teste controla via fireLoad().
@@ -554,6 +619,31 @@ describe('gameTwoDRuntime — imagens / spritesheet / animação', () => {
     expect(calls.map((c) => c.fn)).not.toContain('clearRect')
   })
 
+  it('o reinício descarta o redraw de imagem pertencente à partida anterior', () => {
+    const { api, created } = loadImaging({ heroi: 'data:image/png;base64,AAAA' })
+    const { ctx, calls } = fakeCtx()
+    let starts = 0
+
+    api.onStart(() => {
+      starts += 1
+      const sprite = api.createSprite({
+        x: starts * 10,
+        y: 0,
+        w: 20,
+        h: 20,
+        image: 'heroi',
+      })
+      api.drawSprite(ctx, sprite)
+    }, 'inicio')
+
+    api.restart()
+    created[0]?.fireLoad()
+
+    const redrawXs = calls.filter((call) => call.fn === 'drawImage').map((call) => call.args[1])
+    expect(starts).toBe(2)
+    expect(redrawXs).toEqual([20])
+  })
+
   it('falha de carga desenha o retângulo de fallback sem apagar o cenário', () => {
     const { api, created } = loadImaging({ heroi: 'data:image/png;base64,AAAA' })
     const sprite = api.createSprite({ x: 5, y: 6, w: 20, h: 20, image: 'heroi' })
@@ -576,6 +666,66 @@ describe('gameTwoDRuntime — imagens / spritesheet / animação', () => {
 
     created[0]?.fireLoad()
 
+    expect(calls.filter((call) => call.fn === 'drawImage')).toEqual([])
+  })
+
+  it('trocar a imagem por figura ou animação libera o redraw pendente imediatamente', () => {
+    const shapeCase = loadImaging({ heroi: 'data:image/png;base64,AAAA' })
+    const shapeSprite = shapeCase.api.createSprite({
+      x: 5,
+      y: 6,
+      w: 20,
+      h: 20,
+      image: 'heroi',
+    })
+    const shapeDraw = fakeCtx()
+    shapeCase.api.drawSprite(shapeDraw.ctx, shapeSprite)
+    expect(shapeCase.created[0]?.listenerCount('load')).toBe(1)
+
+    shapeCase.api.setShape(shapeSprite, 'heroi-em-codigo')
+
+    expect(shapeCase.created[0]?.listenerCount('load')).toBe(0)
+    expect(shapeCase.created[0]?.listenerCount('error')).toBe(0)
+    shapeCase.created[0]?.fireLoad()
+    expect(shapeDraw.calls.filter((call) => call.fn === 'drawImage')).toEqual([])
+
+    const animationCase = loadImaging({
+      heroi: 'data:image/png;base64,BBBB',
+      folha: 'data:image/png;base64,CCCC',
+    })
+    const animationSprite = animationCase.api.createSprite({
+      x: 5,
+      y: 6,
+      w: 20,
+      h: 20,
+      image: 'heroi',
+    })
+    animationCase.api.drawSprite(fakeCtx().ctx, animationSprite)
+    const sheet = animationCase.api.loadSpriteSheet('folha', 16, 16)
+
+    animationCase.api.setAnimation(animationSprite, sheet, 0, 1, 8)
+
+    expect(animationCase.created[0]?.listenerCount('load')).toBe(0)
+    expect(animationCase.created[0]?.listenerCount('error')).toBe(0)
+  })
+
+  it('remover sprites do grupo cancela o redraw e impede desenho fantasma', () => {
+    const { api, created } = loadImaging({ heroi: 'data:image/png;base64,AAAA' })
+    const first = api.createSprite({ x: 5, y: 6, w: 20, h: 20, image: 'heroi' })
+    const second = api.createSprite({ x: 30, y: 6, w: 20, h: 20, image: 'heroi' })
+    const { ctx, calls } = fakeCtx()
+    api.drawSprite(ctx, first)
+    api.drawSprite(ctx, second)
+    const group = { items: [first, second] }
+    expect(created[0]?.listenerCount('load')).toBe(2)
+
+    api.removeFromGroup(group, first)
+    api.clearGroup(group)
+
+    expect(group.items).toEqual([])
+    expect(created[0]?.listenerCount('load')).toBe(0)
+    expect(created[0]?.listenerCount('error')).toBe(0)
+    created[0]?.fireLoad()
     expect(calls.filter((call) => call.fn === 'drawImage')).toEqual([])
   })
 
@@ -840,17 +990,67 @@ describe('gameTwoDRuntime — movimento e efeitos (v0.4.0)', () => {
 })
 
 describe('gameTwoDRuntime — música e pausa', () => {
-  it('não reinicia a mesma música quando o comando é repetido', () => {
+  function loadMusicRuntime() {
+    type Listener = (event: { key: string; code: string; repeat: boolean }) => void
     let nextTimerId = 1
     const timers = new Map<number, () => void>()
+    const listeners: Record<string, Listener[]> = {}
+    const frequencies: number[] = []
+    const sourceStops: number[][] = []
     const setTimeoutControlled = (callback: () => void) => {
       const id = nextTimerId
       nextTimerId += 1
       timers.set(id, callback)
       return id
     }
+    const clearTimeoutControlled = (id: number) => timers.delete(id)
+
+    class FakeAudioContext {
+      state: string = 'suspended'
+      currentTime = 0
+      destination = {}
+
+      resume() {
+        this.state = 'running'
+      }
+
+      createOscillator() {
+        const stops: number[] = []
+        sourceStops.push(stops)
+        return {
+          type: 'square',
+          frequency: {
+            setValueAtTime(value: number) {
+              frequencies.push(value)
+            },
+            exponentialRampToValueAtTime() {},
+            linearRampToValueAtTime() {},
+          },
+          connect() {},
+          start() {},
+          stop(time = 0) {
+            stops.push(time)
+          },
+        }
+      }
+
+      createGain() {
+        return {
+          gain: {
+            setValueAtTime() {},
+            exponentialRampToValueAtTime() {},
+          },
+          connect() {},
+        }
+      }
+    }
+
     const win = {
-      addEventListener() {},
+      addEventListener(name: string, listener: Listener) {
+        listeners[name] ??= []
+        listeners[name].push(listener)
+      },
+      AudioContext: FakeAudioContext,
       SZGame2D: undefined,
       performance: { now: () => 0 },
     } as unknown as Record<string, unknown>
@@ -858,15 +1058,48 @@ describe('gameTwoDRuntime — música e pausa', () => {
       win,
       () => 0,
       setTimeoutControlled,
-      (id: number) => timers.delete(id),
+      clearTimeoutControlled,
     )
+
     const api = (
       win as unknown as {
-        SZGame2D: { playMusic: (name: string) => void; stopMusic: () => void }
+        SZGame2D: {
+          playMusic: (name: string) => void
+          playSound: (frequency: number, durationMs: number) => void
+          pauseGame: () => void
+          resumeGame: () => void
+          restart: () => void
+          onStart: (callback: () => void, id: string) => void
+          stopMusic: () => void
+        }
       }
     ).SZGame2D
 
+    return {
+      api,
+      frequencies,
+      sourceStops,
+      timers,
+      fireKeydown() {
+        for (const listener of listeners.keydown ?? []) {
+          listener({ key: 'ArrowRight', code: 'ArrowRight', repeat: false })
+        }
+      },
+      runNextTimer() {
+        const next = timers.entries().next().value as [number, () => void] | undefined
+        if (!next) return false
+        timers.delete(next[0])
+        next[1]()
+        return true
+      },
+    }
+  }
+
+  it('não reinicia a mesma música quando o comando é repetido', () => {
+    const { api, fireKeydown, timers } = loadMusicRuntime()
+
     api.playMusic('adventure')
+    fireKeydown()
     const firstTimer = timers.keys().next().value
     api.playMusic('adventure')
     expect(timers.keys().next().value).toBe(firstTimer)
@@ -877,50 +1110,62 @@ describe('gameTwoDRuntime — música e pausa', () => {
   })
 
   it('suspende o agendamento da música na pausa e continua ao retomar', () => {
-    let nextTimerId = 1
-    const timers = new Map<number, () => void>()
-    const setTimeoutControlled = (callback: () => void) => {
-      const id = nextTimerId
-      nextTimerId += 1
-      timers.set(id, callback)
-      return id
-    }
-    const clearTimeoutControlled = (id: number) => timers.delete(id)
-    const win = {
-      addEventListener() {},
-      SZGame2D: undefined,
-      performance: { now: () => 0 },
-    } as unknown as Record<string, unknown>
-    new Function('window', 'requestAnimationFrame', 'setTimeout', 'clearTimeout', gameTwoDRuntime)(
-      win,
-      () => 0,
-      setTimeoutControlled,
-      clearTimeoutControlled,
-    )
-    const api = (
-      win as unknown as {
-        SZGame2D: {
-          playMusic: (name: string) => void
-          pauseGame: () => void
-          resumeGame: () => void
-          stopMusic: () => void
-        }
-      }
-    ).SZGame2D
+    const { api, fireKeydown, runNextTimer, timers } = loadMusicRuntime()
 
     api.playMusic('adventure')
+    fireKeydown()
     expect(timers.size).toBe(1)
     api.pauseGame()
     expect(timers.size).toBe(0)
     api.resumeGame()
     expect(timers.size).toBe(1)
-    const next = timers.values().next().value
-    if (typeof next !== 'function') throw new Error('próxima nota não foi agendada')
-    timers.clear()
-    next()
+    expect(runNextTimer()).toBe(true)
     expect(timers.size).toBe(1)
     api.stopMusic()
     expect(timers.size).toBe(0)
+  })
+
+  it('começa pela primeira nota quando a música é declarada antes do primeiro gesto', () => {
+    const { api, fireKeydown, frequencies, runNextTimer } = loadMusicRuntime()
+
+    api.playMusic('adventure')
+    expect(frequencies).toEqual([])
+
+    // Reproduz a passagem do tempo antes da criança interagir com o jogo.
+    expect(runNextTimer()).toBe(false)
+    fireKeydown()
+
+    expect(frequencies[0]).toBe(262)
+    api.stopMusic()
+  })
+
+  it('interrompe fontes de áudio ainda ativas quando a partida reinicia', () => {
+    const { api, fireKeydown, sourceStops } = loadMusicRuntime()
+    fireKeydown()
+    api.onStart(() => undefined, 'audio-reset')
+
+    api.playSound(440, 10_000)
+    expect(sourceStops).toEqual([[10]])
+    api.restart()
+
+    expect(sourceStops).toEqual([[10, 0]])
+  })
+
+  it('trata nomes herdados do protótipo como músicas desconhecidas', () => {
+    const { api, fireKeydown, frequencies } = loadMusicRuntime()
+    const warning = spyOn(console, 'warn').mockImplementation(() => {})
+    fireKeydown()
+
+    try {
+      for (const name of ['constructor', 'toString', '__proto__']) {
+        const notesBefore = frequencies.length
+        expect(() => api.playMusic(name)).not.toThrow()
+        expect(frequencies[notesBefore]).toBe(262)
+        api.stopMusic()
+      }
+    } finally {
+      warning.mockRestore()
+    }
   })
 })
 
@@ -1089,6 +1334,21 @@ describe('gameTwoDRuntime — tiles / tilemaps (v0.5.0)', () => {
     expect(sprite.x).toBe(10)
     expect(sprite.y).toBe(10)
     expect(sprite.vy).toBe(5)
+  })
+
+  it('collideTileMap termina com geometria não finita e limita a busca ao mapa real', async () => {
+    expect(
+      await runtimeWorkerCompletes(`
+        api.collideTileMap(
+          { x: 0, y: 0, w: Infinity, h: 16, vx: 0, vy: 0 },
+          { rows: [[1]], solid: [1], platform: [], tile: 32, draw: 32, ox: 0, oy: 0, _drawn: true }
+        );
+        api.collideTileMap(
+          { x: -1e12, y: -1e12, w: 2e12, h: 2e12, vx: 0, vy: 0 },
+          { rows: [[1, 1], [1, 1]], solid: [1], platform: [], tile: 32, draw: 32, ox: 0, oy: 0, _drawn: true }
+        );
+      `),
+    ).toBe(true)
   })
 
   it('createTileMap chamado 61+ vezes (sinal de laço no "a cada quadro") avisa uma única vez', () => {
@@ -1439,6 +1699,49 @@ describe('gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0)', () =
     expect(api.countGroup(g)).toBe(0)
   })
 
+  it('forEachInGroup não repete o item atual quando o corpo remove outro sprite', () => {
+    const api = load()
+    const g = api.createGroup()
+    for (let i = 0; i < 3; i++) api.spawn(g, { x: i, y: 0, color: '#fff' })
+    const first = g.items[0]
+    const visited: number[] = []
+
+    api.forEachInGroup(g, (sprite) => {
+      visited.push(sprite.x)
+      if (sprite.x === 2 && first) api.removeFromGroup(g, first)
+    })
+
+    expect(visited).toEqual([2, 1])
+  })
+
+  it('forEachInGroup não visita item removido por mutação pública de group.items', () => {
+    const api = load()
+    const g = api.createGroup()
+    for (let i = 0; i < 3; i++) api.spawn(g, { x: i, y: 0, color: '#fff' })
+    const visited: number[] = []
+
+    api.forEachInGroup(g, (sprite) => {
+      visited.push(sprite.x)
+      if (sprite.x === 2) g.items.splice(0, 1)
+    })
+
+    expect(visited).toEqual([2, 1])
+  })
+
+  it('forEachInGroup encerra com segurança quando o corpo esvazia o grupo', () => {
+    const api = load()
+    const g = api.createGroup()
+    for (let i = 0; i < 3; i++) api.spawn(g, { x: i, y: 0, color: '#fff' })
+    const visited: number[] = []
+
+    api.forEachInGroup(g, (sprite) => {
+      visited.push(sprite.x)
+      api.clearGroup(g)
+    })
+
+    expect(visited).toEqual([2])
+  })
+
   it('pruneOffscreen tira quem saiu da tela e chama onLeave para cada um', () => {
     const api = load()
     const g = api.createGroup()
@@ -1550,6 +1853,26 @@ describe('gameTwoDRuntime — grupos de sprites + temporizadores (v0.6.0)', () =
     })
 
     expect(pairs).toEqual(['a49:b49', 'a0:b49', 'a0:b0'])
+  })
+
+  it('overlapGroups ignora item substituído diretamente no array durante o callback', () => {
+    const api = load()
+    const a = api.createGroup()
+    const b = api.createGroup()
+    api.spawn(a, { x: 0, y: 0, w: 20, h: 20, color: '#fff' })
+    const first = api.spawn(b, { x: 0, y: 0, w: 20, h: 20, color: '#fff' }) as Sprite
+    const second = api.spawn(b, { x: 0, y: 0, w: 20, h: 20, color: '#fff' }) as Sprite
+    const replacement: Sprite = { x: 100, y: 100, w: 20, h: 20, vx: 0, vy: 0 }
+    const visited: Sprite[] = []
+
+    api.overlapGroups(a, b, (_sprite, item) => {
+      visited.push(item)
+      if (item === second) b.items[0] = replacement
+    })
+
+    expect(visited).toEqual([second])
+    expect(b.items).toEqual([replacement, second])
+    expect(first).toBeTruthy()
   })
 
   it('overlapGroups no mesmo grupo ignora o próprio sprite e visita cada par uma vez', () => {
@@ -1790,6 +2113,7 @@ describe('gameTwoDRuntime — Kit espaço (v0.7.0): nave, asteroide, explosão, 
       g: { items: unknown[] },
       fn: (it: unknown) => void,
     ) => void
+    removeFromGroup: (g: { items: unknown[] }, sprite: unknown) => void
   }
 
   function load(): KitApi {
@@ -1883,6 +2207,83 @@ describe('gameTwoDRuntime — Kit espaço (v0.7.0): nave, asteroide, explosão, 
       },
     )
     expect(hits).toBe(1)
+  })
+
+  it('overlapSpriteGroup não repete uma colisão quando o corpo remove outro sprite', () => {
+    const api = load()
+    const nave = api.createShip({ x: 0, y: 0, w: 40, h: 40, body: '#0ff', wings: '#00f' })
+    const g = api.createGroup()
+    const first = api.spawnAsteroid(g, {
+      x: 1,
+      y: 1,
+      size: 20,
+      color: '#999',
+      vx: 0,
+      vy: 0,
+    })
+    const second = api.spawnAsteroid(g, {
+      x: 2,
+      y: 2,
+      size: 20,
+      color: '#999',
+      vx: 0,
+      vy: 0,
+    })
+    const third = api.spawnAsteroid(g, {
+      x: 3,
+      y: 3,
+      size: 20,
+      color: '#999',
+      vx: 0,
+      vy: 0,
+    })
+    const visited: unknown[] = []
+
+    api.overlapSpriteGroup(
+      () => nave,
+      g,
+      (sprite) => {
+        visited.push(sprite)
+        if (sprite === third) api.removeFromGroup(g, first)
+      },
+    )
+
+    expect(visited).toEqual([third, second])
+  })
+
+  it('overlapSpriteGroup ignora item removido diretamente do array durante o callback', () => {
+    const api = load()
+    const nave = api.createShip({ x: 0, y: 0, w: 40, h: 40, body: '#0ff', wings: '#00f' })
+    const g = api.createGroup()
+    const first = api.spawnAsteroid(g, {
+      x: 1,
+      y: 1,
+      size: 20,
+      color: '#999',
+      vx: 0,
+      vy: 0,
+    })
+    const second = api.spawnAsteroid(g, {
+      x: 2,
+      y: 2,
+      size: 20,
+      color: '#999',
+      vx: 0,
+      vy: 0,
+    })
+    const visited: unknown[] = []
+
+    api.overlapSpriteGroup(
+      () => nave,
+      g,
+      (sprite) => {
+        visited.push(sprite)
+        if (sprite === second) g.items.splice(0, 1)
+      },
+    )
+
+    expect(visited).toEqual([second])
+    expect(first).toBeTruthy()
   })
 })
 

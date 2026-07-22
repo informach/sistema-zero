@@ -48,6 +48,8 @@ interface EnemyType {
 }
 
 interface Api {
+  onStart: (fn: () => void, id?: string) => void
+  restart: () => void
   createSprite: (opts: Record<string, unknown>) => Sprite
   createEnemyType: (opts: Record<string, unknown>) => EnemyType
   setEnemyStateAnimation: (
@@ -369,6 +371,40 @@ describe('morte e dano', () => {
     expect(healthy).toHaveLength(2)
     expect(messages).toHaveLength(1)
     expect(t.items).toHaveLength(0)
+  })
+
+  it('interrompe os callbacks de derrota quando um deles reinicia a partida', () => {
+    const api = load()
+    const ctx = fakeCtx()
+    let starts = 0
+    let currentType = api.createEnemyType({ hp: 1 })
+    let shouldRestart = true
+    const secondDefeatRuns: number[] = []
+
+    api.onStart(() => {
+      const run = ++starts
+      const type = api.createEnemyType({ hp: 1 })
+      currentType = type
+      api.onEnemyDefeated(
+        type,
+        () => {
+          if (!shouldRestart) return
+          shouldRestart = false
+          api.restart()
+        },
+        'primeira-derrota',
+      )
+      api.onEnemyDefeated(type, () => secondDefeatRuns.push(run), 'segunda-derrota')
+      api.spawnEnemy(type, 0, 0)
+    }, 'inicio')
+
+    const defeatedEnemy = currentType.items[0]
+    if (!defeatedEnemy) throw new Error('O inimigo do cenário de regressão não foi criado.')
+    defeatedEnemy.hp = 0
+    api.updateEnemyType(currentType, ctx, null)
+
+    expect(starts).toBe(2)
+    expect(secondDefeatRuns).toEqual([])
   })
 
   it('hurtByEnemy: tira o dano do inimigo, pisca e dá i-frames', () => {

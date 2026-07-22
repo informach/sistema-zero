@@ -1,91 +1,58 @@
 import { describe, expect, test } from 'bun:test'
+import { ESSENTIAL_2D_ALLOW_BLOCKS } from '@sistemazero/studio'
 import { resolveStudioTier } from '../src/lib/studio-tier'
 
-describe('resolveStudioTier — gate do Estúdio Completo por rank (escada de 8)', () => {
-  test('noob/coder (Faísca/Construtor) → só Blocos + iniciante-2d, SEM pro', () => {
-    for (const slug of ['noob', 'coder']) {
-      const t = resolveStudioTier(slug, undefined)
-      expect(t.level).toBe('iniciante-2d')
-      expect(t.allowedModes).toEqual(['blocks'])
-      expect(t.allowLevelReveal).toBe(false)
-      expect(t.pro).toBe(false)
-    }
+describe('resolveStudioTier — ferramentas conquistadas', () => {
+  test('Faísca usa o Estúdio apenas dentro das aulas', () => {
+    const tier = resolveStudioTier('noob', undefined)
+    expect(tier.freeStudio).toBe(false)
+    expect(tier.blockProfileId).toBe('lesson-only')
+    expect(tier.pro).toBe(false)
   })
 
-  test('hacker (Inventor) → só Blocos + iniciante-3d (a porta do 3D abre aqui)', () => {
-    const t = resolveStudioTier('hacker', undefined)
-    expect(t.level).toBe('iniciante-3d')
-    expect(t.allowedModes).toEqual(['blocks'])
-    expect(t.pro).toBe(false)
+  test('Construtor recebe somente o Jogo 2D Essencial', () => {
+    const tier = resolveStudioTier('coder', undefined)
+    expect(tier.freeStudio).toBe(true)
+    expect(tier.level).toBe('iniciante-2d')
+    expect(tier.allowBlocks).toEqual(ESSENTIAL_2D_ALLOW_BLOCKS)
+    expect(tier.allowedExtensions).toEqual(['game-2d'])
+    expect(tier.initialExtensions).toEqual(['game-2d'])
   })
 
-  test('explorer (Explorador de Mundos) → só Blocos + intermediario-2d', () => {
-    const t = resolveStudioTier('explorer', undefined)
-    expect(t.level).toBe('intermediario-2d')
-    expect(t.allowedModes).toEqual(['blocks'])
-    expect(t.pro).toBe(false)
+  test.each([
+    ['hacker', 'iniciante-2d'],
+    ['explorer', 'iniciante-3d'],
+    ['elite', 'intermediario-2d'],
+    ['architect', 'intermediario-3d'],
+    ['champion', 'avancado-2d'],
+    ['god', 'avancado-3d'],
+  ] as const)('%s recebe somente o conteúdo já concluído (%s)', (slug, level) => {
+    expect(resolveStudioTier(slug, undefined).level).toBe(level)
   })
 
-  test('elite (Mestre dos Jogos) → a PONTE abre aqui + intermediario-3d, SEM pro', () => {
-    const t = resolveStudioTier('elite', undefined)
-    expect(t.level).toBe('intermediario-3d')
-    expect(t.allowedModes).toEqual(['blocks', 'bridge'])
-    expect(t.pro).toBe(false)
+  test('Ponte abre no Mestre e PRO somente na Lenda', () => {
+    expect(resolveStudioTier('explorer', undefined).bridge).toBe(false)
+    expect(resolveStudioTier('elite', undefined).allowedModes).toEqual(['blocks', 'bridge'])
+    expect(resolveStudioTier('champion', undefined).pro).toBe(false)
+    const legend = resolveStudioTier('god', undefined)
+    expect(legend.pro).toBe(true)
+    expect(legend.canCreateProProject).toBe(true)
+    expect(legend.canPromoteToPro).toBe(true)
   })
 
-  test('architect (Arquiteto de Mundos) → Blocos + Ponte + avancado-2d, SEM pro', () => {
-    const t = resolveStudioTier('architect', undefined)
-    expect(t.level).toBe('avancado-2d')
-    expect(t.allowedModes).toEqual(['blocks', 'bridge'])
-    expect(t.pro).toBe(false)
-  })
-
-  test('champion (Gênio da Criação) → topo da paleta + PRO (um degrau antes da Lenda)', () => {
-    const t = resolveStudioTier('champion', undefined)
-    expect(t.level).toBe('avancado-3d')
-    expect(t.allowedModes).toEqual(['blocks', 'bridge'])
-    expect(t.pro).toBe(true)
-  })
-
-  test('god (Lenda) → Blocos + Ponte + avancado-3d + PRO (modo Código)', () => {
-    const t = resolveStudioTier('god', undefined)
-    expect(t.level).toBe('avancado-3d')
-    expect(t.allowedModes).toEqual(['blocks', 'bridge'])
-    expect(t.pro).toBe(true)
-  })
-
-  test('equipe (superadmin/admin/staff) = god, qualquer que seja o rank', () => {
+  test('equipe recebe o perfil máximo; papel comum não recebe bypass', () => {
     for (const role of ['superadmin', 'admin', 'staff']) {
-      const t = resolveStudioTier('noob', role)
-      expect(t.level).toBe('avancado-3d')
-      expect(t.allowedModes).toEqual(['blocks', 'bridge'])
-      expect(t.pro).toBe(true)
+      expect(resolveStudioTier('noob', role).blockProfileId).toBe('avancado-3d')
+      expect(resolveStudioTier('noob', role).pro).toBe(true)
     }
-    // Papel de aluno comum NÃO vira god.
-    expect(resolveStudioTier('noob', 'member').level).toBe('iniciante-2d')
+    expect(resolveStudioTier('noob', 'member').freeStudio).toBe(false)
   })
 
-  test('slug desconhecido/ausente → noob (degrada seguro)', () => {
-    for (const slug of [undefined, 'banana', '']) {
-      const t = resolveStudioTier(slug, undefined)
-      expect(t.level).toBe('iniciante-2d')
-      expect(t.allowedModes).toEqual(['blocks'])
-      expect(t.pro).toBe(false)
-    }
-  })
-
-  test('allowLevelReveal é SEMPRE false (o rank é o portão estrito)', () => {
-    for (const slug of [
-      'noob',
-      'coder',
-      'hacker',
-      'explorer',
-      'elite',
-      'architect',
-      'champion',
-      'god',
-    ]) {
-      expect(resolveStudioTier(slug, undefined).allowLevelReveal).toBe(false)
+  test('slug ausente ou desconhecido falha fechado como Faísca', () => {
+    for (const slug of [undefined, '', 'banana']) {
+      const tier = resolveStudioTier(slug, undefined)
+      expect(tier.freeStudio).toBe(false)
+      expect(tier.pro).toBe(false)
     }
   })
 })

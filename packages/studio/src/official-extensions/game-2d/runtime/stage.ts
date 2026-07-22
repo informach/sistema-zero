@@ -16,6 +16,11 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
   var _hudDirty = false;
   var _lastHudSignature = '';
   var _lastHudAnnouncementAt = -HUD_ANNOUNCE_INTERVAL_MS;
+  var _hudTimer = null;
+  var _hudFrame = 0;
+  var _hudSeenAt = Object.create(null);
+  var _hudFramePending = false;
+  var _hudLifecycleGeneration = 0;
 
   function _defaultStageDescription() {
     var title = '';
@@ -73,13 +78,36 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     return node;
   }
 
+  function _cancelAccessibleHudTimer() {
+    if (_hudTimer === null) return;
+    clearTimeout(_hudTimer);
+    _hudTimer = null;
+  }
+
+  function _scheduleAccessibleHudFlush() {
+    if (!_hudDirty || _hudTimer !== null || _paused) return;
+    var remaining = HUD_ANNOUNCE_INTERVAL_MS - (now() - _lastHudAnnouncementAt);
+    if (remaining <= 0) {
+      _flushAccessibleHudIfDue();
+      return;
+    }
+    _hudTimer = setTimeout(function () {
+      _hudTimer = null;
+      _flushAccessibleHudIfDue();
+    }, Math.max(1, Math.ceil(remaining)));
+  }
+
   function _flushAccessibleHudIfDue() {
-    if (!_hudDirty) return;
+    if (!_hudDirty || _hudFramePending) return;
     var current = now();
-    if (current - _lastHudAnnouncementAt < HUD_ANNOUNCE_INTERVAL_MS) return;
+    if (current - _lastHudAnnouncementAt < HUD_ANNOUNCE_INTERVAL_MS) {
+      _scheduleAccessibleHudFlush();
+      return;
+    }
+    _cancelAccessibleHudTimer();
     var keys = Object.keys(_hudValues).sort();
     var signature = keys.map(function (key) { return _hudValues[key]; }).filter(Boolean).join('. ');
-    if (signature && signature !== _lastHudSignature) {
+    if (signature !== _lastHudSignature) {
       var node = _ensureHudStatusNode();
       if (node) node.textContent = signature;
       _lastHudSignature = signature;
@@ -90,7 +118,17 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
 
   function _updateAccessibleHud(key, text) {
     var value = String(text || '').trim();
-    if (!key || !value) return;
+    if (!key) return;
+    if (!value) {
+      if (Object.prototype.hasOwnProperty.call(_hudValues, key)) {
+        delete _hudValues[key];
+        delete _hudSeenAt[key];
+        _hudDirty = true;
+      }
+      _flushAccessibleHudIfDue();
+      return;
+    }
+    _hudSeenAt[key] = _hudFrame;
     if (_hudValues[key] !== value) {
       _hudValues[key] = value;
       _hudDirty = true;
@@ -98,9 +136,38 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     _flushAccessibleHudIfDue();
   }
 
+  function _finalizeAccessibleHudFrame() {
+    var keys = Object.keys(_hudValues);
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
+      if (_hudSeenAt[key] === _hudFrame) continue;
+      delete _hudValues[key];
+      delete _hudSeenAt[key];
+      _hudDirty = true;
+    }
+    _flushAccessibleHudIfDue();
+  }
+
+  function _beginAccessibleHudFrame() {
+    _hudFrame++;
+    if (_hudFramePending) return;
+    _hudFramePending = true;
+    var generation = _hudLifecycleGeneration;
+    Promise.resolve().then(function () {
+      if (generation !== _hudLifecycleGeneration) return;
+      _hudFramePending = false;
+      _finalizeAccessibleHudFrame();
+    });
+  }
+
   function _resetAccessibleHud() {
+    _cancelAccessibleHudTimer();
+    _hudLifecycleGeneration++;
     _hudValues = Object.create(null);
+    _hudSeenAt = Object.create(null);
     _hudDirty = false;
+    _hudFrame = 0;
+    _hudFramePending = false;
     _lastHudSignature = '';
     _lastHudAnnouncementAt = -HUD_ANNOUNCE_INTERVAL_MS;
     var node = null;
@@ -208,6 +275,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
   }
   /** Limpa a tela inteira do palco (use no começo de cada quadro). */
   function clear() {
+    _beginAccessibleHudFrame();
     var c = ensureStage();
     if (!c || !c.canvas) return;
     if (_logicalW) {
@@ -347,6 +415,10 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
   defineLazyGlobal('ctx', function () { return ensureStage(); });
   defineLazyGlobal('tela', function () { ensureStage(); return _stageCanvas; });
 
-  _registerRuntimeDomain('stage-accessibility', { reset: _resetAccessibleHud });
+  _registerRuntimeDomain('stage-accessibility', {
+    reset: _resetAccessibleHud,
+    pause: _cancelAccessibleHudTimer,
+    resume: _flushAccessibleHudIfDue
+  });
 
 `

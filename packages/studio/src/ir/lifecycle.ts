@@ -59,6 +59,7 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'g2d:createShip',
   'g2d:createDino',
   'g2d:createCity',
+  'g2d:placeThrower',
   'g2d:createStickHero',
   'g2d:createBalloon',
   'g2d:createGroup',

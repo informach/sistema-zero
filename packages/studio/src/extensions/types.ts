@@ -20,9 +20,22 @@ export type ProjectRunIntervalHandle = number | ReturnType<typeof setInterval>
 export interface ProjectRunContext {
   signal: AbortSignal
   scheduler: ProjectRunScheduler
+  /** Executa um callback dentro da fronteira terminal da partida atual. */
+  run<T>(callback: () => T): T | undefined
+  /** Distingue o sinal interno de reinício de erros reais do projeto. */
+  isControlSignal(error: unknown): boolean
   setTimeout(callback: () => void, delayMs: number): ProjectRunTimeoutHandle
   setInterval(callback: () => void, delayMs: number): ProjectRunIntervalHandle
   requestFrame(callback: FrameRequestCallback): number
+  /**
+   * Instala um handler de propriedade DOM (onclick/onload/onerror) que deixa de
+   * executar e é removido quando a partida atual termina.
+   */
+  setEventHandler(
+    target: object | null | undefined,
+    property: string,
+    callback: (event: Event) => unknown,
+  ): void
   registerResource(dispose: () => void): void
   requestRestart(): void
 }

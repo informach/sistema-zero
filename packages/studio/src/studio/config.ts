@@ -89,6 +89,8 @@ export interface LearningConfig {
   level: BlockLevel
   /** Tipos de bloco sempre visíveis (allowlist da aula). */
   allowBlocks?: readonly string[]
+  /** IDs de extensões que podem ser oferecidas para instalação. */
+  allowExtensions?: readonly string[]
   /** Nomes de categoria sempre visíveis. */
   allowCategories?: readonly string[]
   /** Se o aluno pode revelar o avançado (toggle nas configurações). */
@@ -99,6 +101,7 @@ export interface LearningConfigInput {
   /** Aceita a escala LEGADA de 3 níveis (jsonb de aulas antigas, embutidores antigos). */
   level?: AnyBlockLevel
   allowBlocks?: readonly string[]
+  allowExtensions?: readonly string[]
   allowCategories?: readonly string[]
   allowLevelReveal?: boolean
 }
@@ -113,6 +116,7 @@ export function resolveLearning(input?: LearningConfigInput): LearningConfig {
   return {
     level: normalizeBlockLevel(input?.level) ?? DEFAULT_LEARNING_LEVEL,
     allowBlocks: input?.allowBlocks,
+    allowExtensions: input?.allowExtensions,
     allowCategories: input?.allowCategories,
     allowLevelReveal: input?.allowLevelReveal ?? true,
   }
@@ -167,7 +171,7 @@ export function resolveStudioConfig(
     export: features?.export ?? true,
     download: features?.download ?? true,
     // Profissional EXIGE o terminal (é onde roda o dev-server).
-    terminal: professional ? true : (features?.terminal ?? false),
+    terminal: professional ? (features?.terminal ?? true) : (features?.terminal ?? false),
     ai: ai !== false,
     professional,
     aiConfig: {

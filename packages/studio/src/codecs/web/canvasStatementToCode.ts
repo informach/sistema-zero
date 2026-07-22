@@ -148,10 +148,7 @@ export function canvasStatementToCode<TMap extends { startLine: number }>(
       const frame = identifiers.reserveInternal('frame')
       const startLine = mapContext?.startLine ?? 1
       const projectRunContext = identifiers.getProjectRunContextIdentifier()
-      const managedHandle =
-        projectRunContext && !stmt.handle
-          ? identifiers.reserveInternal('__szProjectRunFrame')
-          : undefined
+      const requestFrame = lifecycleResourceFunction(identifiers, 'requestAnimationFrame')
       // Forma com TEMPO: expõe o relógio do requestAnimationFrame (ms) e o tempo
       // desde o quadro anterior em SEGUNDOS, para APIs de movimento/física
       // movimento independente de FPS. O loop é iniciado com requestAnimationFrame
@@ -162,13 +159,13 @@ export function canvasStatementToCode<TMap extends { startLine: number }>(
           : identifiers.reserveInternal('frameTime')
         const dVar = stmt.deltaVar ? identifiers.get(stmt.deltaVar) : null
         const lastT = dVar ? identifiers.reserveInternal('lastFrameTime') : null
-        const handle = stmt.handle ? identifiers.get(stmt.handle) : managedHandle
+        const handle = stmt.handle ? identifiers.get(stmt.handle) : undefined
         const pre: string[] = []
         if (handle) pre.push(`${pad}let ${handle};`)
         if (lastT) pre.push(`${pad}let ${lastT};`)
         pre.push(`${pad}function ${frame}(${tVar}) {`)
         if (stmt.handle && handle) {
-          pre.push(`${pad}  ${handle} = requestAnimationFrame(${frame});`)
+          pre.push(`${pad}  ${handle} = ${requestFrame}(${frame});`)
         }
         if (dVar && lastT) {
           pre.push(
@@ -184,15 +181,10 @@ export function canvasStatementToCode<TMap extends { startLine: number }>(
         )
         const post: string[] = []
         if (!stmt.handle) {
-          post.push(`${pad}  ${handle ? `${handle} = ` : ''}requestAnimationFrame(${frame});`)
+          post.push(`${pad}  ${requestFrame}(${frame});`)
         }
         post.push(`${pad}}`)
-        post.push(`${pad}${handle ? `${handle} = ` : ''}requestAnimationFrame(${frame});`)
-        if (projectRunContext && handle) {
-          post.push(
-            `${pad}${projectRunContext}.registerResource(() => cancelAnimationFrame(${handle}));`,
-          )
-        }
+        post.push(`${pad}${handle ? `${handle} = ` : ''}${requestFrame}(${frame});`)
         return [...pre, body, ...post].join('\n')
       }
       // Forma cancelável: guarda o id do requestAnimationFrame numa variável do
@@ -213,32 +205,25 @@ export function canvasStatementToCode<TMap extends { startLine: number }>(
         return [
           `${pad}let ${handle};`,
           `${pad}function ${frame}() {`,
-          `${pad}  ${handle} = requestAnimationFrame(${frame});`,
+          `${pad}  ${handle} = ${requestFrame}(${frame});`,
           body,
           `${pad}}`,
-          `${pad}${frame}();`,
-          ...(projectRunContext
-            ? [
-                `${pad}${projectRunContext}.registerResource(() => cancelAnimationFrame(${handle}));`,
-              ]
-            : []),
+          projectRunContext ? `${pad}${projectRunContext}.run(${frame});` : `${pad}${frame}();`,
         ].join('\n')
       }
-      if (projectRunContext && managedHandle) {
+      if (projectRunContext) {
         const body = compileStatements(
           stmt.body,
           indent + 1,
           identifiers,
-          childMapContext(mapContext, startLine + 2),
+          childMapContext(mapContext, startLine + 1),
         )
         return [
-          `${pad}let ${managedHandle};`,
           `${pad}function ${frame}() {`,
           body,
-          `${pad}  ${managedHandle} = requestAnimationFrame(${frame});`,
+          `${pad}  ${requestFrame}(${frame});`,
           `${pad}}`,
-          `${pad}${frame}();`,
-          `${pad}${projectRunContext}.registerResource(() => cancelAnimationFrame(${managedHandle}));`,
+          `${pad}${projectRunContext}.run(${frame});`,
         ].join('\n')
       }
       const body = compileStatements(
@@ -324,6 +309,10 @@ export function canvasStatementToCode<TMap extends { startLine: number }>(
       )
       const compiledTarget = compileExpr(stmt.target, 20, identifiers, recAt(base))
       const target = stmt.target.type === 'objectLiteral' ? `(${compiledTarget})` : compiledTarget
+      const projectRunContext = identifiers.getProjectRunContextIdentifier()
+      if (projectRunContext) {
+        return `${pad}${projectRunContext}.setEventHandler(${target}, "onload", (event) => {\n${body}\n${pad}});`
+      }
       return `${pad}${target}.onload = (event) => {\n${body}\n${pad}};`
     }
     case 'imageOnError': {
@@ -335,6 +324,10 @@ export function canvasStatementToCode<TMap extends { startLine: number }>(
       )
       const compiledTarget = compileExpr(stmt.target, 20, identifiers, recAt(base))
       const target = stmt.target.type === 'objectLiteral' ? `(${compiledTarget})` : compiledTarget
+      const projectRunContext = identifiers.getProjectRunContextIdentifier()
+      if (projectRunContext) {
+        return `${pad}${projectRunContext}.setEventHandler(${target}, "onerror", (event) => {\n${body}\n${pad}});`
+      }
       return `${pad}${target}.onerror = (event) => {\n${body}\n${pad}};`
     }
     case 'canvasSave':

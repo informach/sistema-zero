@@ -10,10 +10,14 @@ export const gameTwoDLifecycleRuntime = `  // ---- Ciclo de vida da partida ----
   var _handlerIds = new WeakMap();
   var _nextHandlerId = 1;
   var _driverFrame = 0;
+  var _driverTickActive = false;
+  var _driverGeneration = 0;
   var _lastDriverTime = null;
   var _frameAccumulator = 0;
   var _consecutiveDroppedTicks = 0;
   var _runningLoopId = null;
+  var _activeProjectCallbacks = 0;
+  var _restartBoundarySignal = {};
   var FIXED_FRAME_MS = 1000 / 60;
   var MAX_CATCH_UP_STEPS = 5;
 
@@ -24,11 +28,48 @@ export const gameTwoDLifecycleRuntime = `  // ---- Ciclo de vida da partida ----
   }
 
   function _suspendDriver() {
+    _driverGeneration++;
     if (_driverFrame && typeof cancelAnimationFrame === 'function') {
       cancelAnimationFrame(_driverFrame);
     }
     _driverFrame = 0;
     _resetDriverClock();
+  }
+
+  /** A partida mudou enquanto um callback da criança estava em execução. */
+  function _runGenerationChanged(generation) {
+    return generation !== _driverGeneration;
+  }
+
+  /**
+   * Toda função entregue pela criança ao runtime atravessa esta fronteira. Um
+   * restart lança um sinal privado que sobe por callbacks compostos e só é
+   * consumido na chamada raiz, encerrando a pilha antiga por completo.
+   */
+  function _invokeProjectCallback(fn, thisArg, args) {
+    var projectLifecycle = window.__SZProjectLifecycle;
+    if (projectLifecycle && typeof projectLifecycle.run === 'function') {
+      return projectLifecycle.run(fn, thisArg, args);
+    }
+    var isRootCallback = _activeProjectCallbacks === 0;
+    _activeProjectCallbacks++;
+    try {
+      return fn.apply(thisArg, args || []);
+    } catch (error) {
+      if (error === _restartBoundarySignal && isRootCallback) return;
+      throw error;
+    } finally {
+      _activeProjectCallbacks--;
+    }
+  }
+
+  function _endRestartedCallback() {
+    var projectLifecycle = window.__SZProjectLifecycle;
+    if (projectLifecycle && typeof projectLifecycle.endCallback === 'function') {
+      projectLifecycle.endCallback();
+      return;
+    }
+    if (_activeProjectCallbacks > 0) throw _restartBoundarySignal;
   }
 
   function _stableHandlerId(prefix, explicitId, fn) {
@@ -48,6 +89,12 @@ export const gameTwoDLifecycleRuntime = `  // ---- Ciclo de vida da partida ----
     if (index !== -1) order.splice(index, 1);
   }
 
+  /** Remove só a inscrição que realmente falhou, mesmo se o driver mudou no callback. */
+  function _removeOrderedIfCurrent(registry, order, id, expected) {
+    if (registry[id] !== expected) return;
+    _removeOrdered(registry, order, id);
+  }
+
   function _reportHandlerError(kind, id, error) {
     var message = error && error.message ? error.message : String(error);
     var key = 'erro:' + kind + ':' + id + ':' + message;
@@ -64,6 +111,7 @@ export const gameTwoDLifecycleRuntime = `  // ---- Ciclo de vida da partida ----
 
   function _runSimulationFrame() {
     if (_paused) return;
+    var generation = _driverGeneration;
     _frameStamp++;
     _particlesDrawnThisFrame = false;
     var loops = _loopOrder.slice();
@@ -72,14 +120,16 @@ export const gameTwoDLifecycleRuntime = `  // ---- Ciclo de vida da partida ----
       var fn = _loopHandlers[id];
       if (typeof fn !== 'function') continue;
       _runningLoopId = id;
-      try { fn(); }
+      try { _invokeProjectCallback(fn, undefined, []); }
       catch (error) {
         _reportHandlerError('“A cada quadro”', id, error);
-        _removeOrdered(_loopHandlers, _loopOrder, id);
+        _removeOrderedIfCurrent(_loopHandlers, _loopOrder, id, fn);
       }
       _runningLoopId = null;
+      if (_runGenerationChanged(generation)) return;
     }
     _runOverlapHandlers();
+    if (_runGenerationChanged(generation)) return;
     // Partículas são desenhadas uma vez depois de TODOS os blocos de quadro.
     if (!_particlesDrawnThisFrame && particles.length) {
       try { _camWrap(drawParticles)(ensureStage()); }
@@ -89,45 +139,54 @@ export const gameTwoDLifecycleRuntime = `  // ---- Ciclo de vida da partida ----
 
   function _driverTick(timestamp) {
     _driverFrame = 0;
-    if (!_driverHasWork()) {
-      _resetDriverClock();
-      return;
-    }
-    if (typeof timestamp !== 'number') {
-      _runSimulationFrame();
-    } else {
-      if (_lastDriverTime === null) {
-        _lastDriverTime = timestamp;
-        _frameAccumulator += FIXED_FRAME_MS;
-      } else {
-        var elapsed = Math.max(0, Math.min(250, timestamp - _lastDriverTime));
-        _lastDriverTime = timestamp;
-        _frameAccumulator += elapsed;
+    _driverTickActive = true;
+    var generation = _driverGeneration;
+    try {
+      if (!_driverHasWork()) {
+        _resetDriverClock();
+        return;
       }
-      var steps = 0;
-      while (_frameAccumulator + 0.0001 >= FIXED_FRAME_MS && steps < MAX_CATCH_UP_STEPS) {
-        _frameAccumulator -= FIXED_FRAME_MS;
+      if (typeof timestamp !== 'number') {
         _runSimulationFrame();
-        steps++;
-      }
-      if (steps === MAX_CATCH_UP_STEPS && _frameAccumulator >= FIXED_FRAME_MS) {
-        _frameAccumulator = _frameAccumulator % FIXED_FRAME_MS;
-        _consecutiveDroppedTicks++;
-        // Um frame isolado pode atrasar por DevTools, resize ou trabalho do próprio
-        // navegador. Só há problema pedagógico quando o jogo perde tempo em vários
-        // ticks visíveis seguidos. Troca de aba/blur zera o relógio logo abaixo.
-        if (_consecutiveDroppedTicks >= 3 && !(typeof document !== 'undefined' && document.hidden)) {
-          warnOnce('quadros-atrasados', 'o jogo está demorando para desenhar há vários quadros; descartei atualizações atrasadas para ele continuar responsivo.');
-        }
       } else {
-        _consecutiveDroppedTicks = 0;
+        if (_lastDriverTime === null) {
+          _lastDriverTime = timestamp;
+          _frameAccumulator += FIXED_FRAME_MS;
+        } else {
+          var elapsed = Math.max(0, Math.min(250, timestamp - _lastDriverTime));
+          _lastDriverTime = timestamp;
+          _frameAccumulator += elapsed;
+        }
+        var steps = 0;
+        while (_frameAccumulator + 0.0001 >= FIXED_FRAME_MS && steps < MAX_CATCH_UP_STEPS) {
+          _frameAccumulator -= FIXED_FRAME_MS;
+          _runSimulationFrame();
+          steps++;
+          if (_runGenerationChanged(generation)) return;
+        }
+        if (steps === MAX_CATCH_UP_STEPS && _frameAccumulator >= FIXED_FRAME_MS) {
+          _frameAccumulator = _frameAccumulator % FIXED_FRAME_MS;
+          _consecutiveDroppedTicks++;
+          // Um frame isolado pode atrasar por DevTools, resize ou trabalho do próprio
+          // navegador. Só há problema pedagógico quando o jogo perde tempo em vários
+          // ticks visíveis seguidos. Troca de aba/blur zera o relógio logo abaixo.
+          if (_consecutiveDroppedTicks >= 3 && !(typeof document !== 'undefined' && document.hidden)) {
+            warnOnce('quadros-atrasados', 'o jogo está demorando para desenhar há vários quadros; descartei atualizações atrasadas para ele continuar responsivo.');
+          }
+        } else {
+          _consecutiveDroppedTicks = 0;
+        }
       }
+    } finally {
+      _driverTickActive = false;
+      _ensureDriver();
     }
-    if (!_paused && _driverHasWork()) _driverFrame = requestAnimationFrame(_driverTick);
   }
 
   function _ensureDriver() {
-    if (!_paused && !_driverFrame && _driverHasWork()) _driverFrame = requestAnimationFrame(_driverTick);
+    if (!_paused && !_driverTickActive && !_driverFrame && _driverHasWork()) {
+      _driverFrame = requestAnimationFrame(_driverTick);
+    }
   }
 
   /** Registra um comportamento de quadro. Blocos diferentes rodam juntos. */
@@ -158,10 +217,10 @@ export const gameTwoDLifecycleRuntime = `  // ---- Ciclo de vida da partida ----
     var id = _stableHandlerId('inicio', explicitId, fn);
     if (!_startHandlers[id]) _startOrder.push(id);
     _startHandlers[id] = fn;
-    try { fn(); }
+    try { _invokeProjectCallback(fn, undefined, []); }
     catch (error) {
       _reportHandlerError('“Ao iniciar”', id, error);
-      _removeOrdered(_startHandlers, _startOrder, id);
+      _removeOrderedIfCurrent(_startHandlers, _startOrder, id, fn);
     }
   }
 

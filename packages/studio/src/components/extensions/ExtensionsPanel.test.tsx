@@ -112,6 +112,26 @@ describe('ExtensionsPanel — extensões para instalar gated por nível', () => 
     expect(screen.getByText(ext2d.manifest.name)).not.toBeNull()
     expect(screen.getByText(ext3d.manifest.name)).not.toBeNull()
   })
+
+  it('allowExtensions da carreira restringe o catálogo mesmo quando allowBlocks está ativo', () => {
+    seedProject()
+    const config = {
+      ...STANDALONE_CONFIG,
+      learning: resolveLearning({
+        level: 'iniciante-2d',
+        allowBlocks: ['sz_g2d_create_ship'],
+        allowExtensions: ['game-2d'],
+        allowLevelReveal: false,
+      }),
+    }
+    render(
+      <StudioConfigProvider value={config}>
+        <ExtensionsPanel open onClose={() => {}} />
+      </StudioConfigProvider>,
+    )
+    expect(screen.getByText(ext2d.manifest.name)).not.toBeNull()
+    expect(screen.queryByText(ext3d.manifest.name)).toBeNull()
+  })
 })
 
 describe('ExtensionsPanel — "Saiba mais" expande a docs do manifest', () => {

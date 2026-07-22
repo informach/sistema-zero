@@ -459,6 +459,7 @@ export interface GameTwoDHudAndSceneApi {
     hint: string,
     background: string,
   ): void
+  showGameOver(ctx: GameTwoDContext, text: string): void
   drawStarfield(ctx: GameTwoDContext, speed: number): void
   dragX(sprite: GameTwoDSprite): void
 }
@@ -689,6 +690,7 @@ export const GAME_TWO_D_API_KEYS = [
   'getScene',
   'sceneIs',
   'showScreen',
+  'showGameOver',
   'restart',
   'drawStarfield',
   'dragX',

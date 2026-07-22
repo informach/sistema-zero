@@ -8,9 +8,12 @@ import { PERSISTENT_EXTENSION_STATEMENT_TYPES } from '../official-extensions/per
 import { CANVAS3D_RESOURCE_CREATOR_TYPES } from '../three/canvas3dContract'
 import { GAME3D_RESOURCE_CREATOR_TYPES } from '../three/game3dContract'
 import {
+  isLegacyLoadEvent,
   isLifecycleRootAllowed,
   isLoopStatement,
+  LEGACY_START_WRAPPER_TYPES,
   type LifecycleArea,
+  START_ONLY_STATEMENT_TYPES,
   validateLifecycleSemantics,
 } from './lifecycle'
 import { cssCommentRejectionReason, cssSelectorRejectionReason } from './outputSafety'
@@ -10328,11 +10331,12 @@ const LOOP_FORBIDDEN_RESOURCE_TYPES: ReadonlySet<string> = new Set([
   ...PERSISTENT_EXTENSION_STATEMENT_TYPES,
 ])
 
-function validateResourceLifecycle(
+function validateLegacyLifecycle(
   statements: JSStatement[],
   ctx: z.RefinementCtx,
   path: (string | number)[],
   insideLoop = false,
+  nested = false,
 ): void {
   for (let index = 0; index < statements.length; index += 1) {
     const statement = statements[index]
@@ -10343,10 +10347,24 @@ function validateResourceLifecycle(
         path: [...path, index],
         message: `Mova ${statement.type} para fora do laço; este recurso ou configuração deve ser criado uma vez`,
       })
+    } else if (nested && START_ONLY_STATEMENT_TYPES.has(statement.type)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: [...path, index],
+        message: `“${statement.type}” só pode ser usado diretamente em Ao iniciar`,
+      })
     }
     const childInsideLoop = insideLoop || isLoopStatement(statement)
+    const childNested =
+      nested || (!LEGACY_START_WRAPPER_TYPES.has(statement.type) && !isLegacyLoadEvent(statement))
     for (const child of childStatementEntries(statement)) {
-      validateResourceLifecycle(child.body, ctx, [...path, index, ...child.path], childInsideLoop)
+      validateLegacyLifecycle(
+        child.body,
+        ctx,
+        [...path, index, ...child.path],
+        childInsideLoop,
+        childNested,
+      )
     }
   }
 }
@@ -10443,7 +10461,7 @@ export const SZIRSchema = z
   })
 
   .superRefine((ir, ctx) => {
-    validateResourceLifecycle(ir.js, ctx, ['js'])
+    validateLegacyLifecycle(ir.js, ctx, ['js'])
     for (const issue of collectProgrammingReferenceIssues(ir.js, ['js'])) {
       ctx.addIssue({ code: 'custom', path: issue.path, message: issue.message })
     }

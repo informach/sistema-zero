@@ -49,12 +49,12 @@ export const gameTwoDRuntime = withGameUIFontRuntime(
     if (key === 'ArrowUp' || key === 'w') keys.up = down;
     if (key === 'ArrowDown' || key === 's') keys.down = down;
   }
-  window.addEventListener('keydown', function (e) {
-    _setDirectionalKey(e, true);
-  });
-  window.addEventListener('keyup', function (e) {
-    _setDirectionalKey(e, false);
-  });
+  function _isFiniteNumber(value) {
+    return typeof value === 'number' && Number.isFinite(value);
+  }
+  function _finiteNumber(value, fallback) {
+    return _isFiniteNumber(value) ? value : fallback;
+  }
 ` +
     gameRuntimeDomains +
     `

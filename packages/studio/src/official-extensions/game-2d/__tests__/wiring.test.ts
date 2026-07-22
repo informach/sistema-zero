@@ -84,6 +84,21 @@ function drawViaGenerator(
 const N = (value: number) => ({ type: 'num', value }) as unknown
 
 describe('g2d — fiação bloco→gerador→runtime (executa de verdade)', () => {
+  it('gameOver usa o helper acessível do runtime e preserva o bloco na Ponte', () => {
+    const code = compileStatements(
+      [
+        {
+          type: 'g2d:gameOver',
+          ctxVar: 'ctx',
+          text: { type: 'str', value: 'Fim de jogo' },
+        },
+      ],
+      0,
+    )
+
+    expect(code).toBe('SZGame2D.showGameOver(ctx, "Fim de jogo");')
+  })
+
   it('drawScore: "Placar:" 7 em (11,22) → fillText("Placar: 7", 11, 22)', () => {
     const stmt = {
       type: 'g2d:drawScore',

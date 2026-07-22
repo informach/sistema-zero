@@ -192,7 +192,13 @@ export function ExtensionsPanel({ open, onClose }: ExtensionsPanelProps): JSX.El
           {OFFICIAL_CATALOG.filter(
             (ext) =>
               installedIds.has(ext.manifest.id) ||
-              isCategoryAllowed(ext.blockly.toolboxCategory.name, extensionMinLevel(ext), profile),
+              ((learning.allowExtensions === undefined ||
+                learning.allowExtensions.includes(ext.manifest.id)) &&
+                isCategoryAllowed(
+                  ext.blockly.toolboxCategory.name,
+                  extensionMinLevel(ext),
+                  profile,
+                )),
           ).map((ext) => {
             const installed = installedIds.has(ext.manifest.id)
             const conflictId = ext.conflictsWith?.find((id) => installedIds.has(id))

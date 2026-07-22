@@ -722,6 +722,8 @@ export const CourseBody = t.Object({
   level: t.Optional(t.Union([COURSE_LEVEL, t.Null()])),
   // Eixo 2D/3D. AUSENTE: create → `2d`; update → PRESERVA o atual (mesma régua).
   track: t.Optional(t.Union([COURSE_TRACK, t.Null()])),
+  // Slot da Carreira do Criador: 1 = curso-base; null = bônus/fora da carreira.
+  careerSlot: t.Optional(t.Union([t.Integer({ minimum: 1, maximum: 6 }), t.Null()])),
 })
 
 /** Query de `GET /members/admin/courses`. */

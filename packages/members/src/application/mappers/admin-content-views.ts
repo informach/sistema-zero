@@ -27,6 +27,8 @@ export interface CourseView {
   level: string
   /** Eixo 2D/3D do curso (`2d` | `3d`) — par com `level` = degrau pedagógico. */
   track: string
+  /** Posição na etapa da carreira; `null` = curso bônus. */
+  careerSlot: number | null
   /** Trava sequencial das aulas (estilo Duolingo) ligada para este curso. */
   sequentialLock: boolean
   createdAt: string
@@ -46,6 +48,7 @@ export function toCourseView(c: Course): CourseView {
     audience: c.audience,
     level: c.level,
     track: c.track,
+    careerSlot: c.careerSlot,
     sequentialLock: c.sequentialLock,
     createdAt: c.createdAt.toISOString(),
     updatedAt: c.updatedAt.toISOString(),

@@ -1,5 +1,6 @@
 import { Check, Gamepad2, Lock } from 'lucide-react'
 import Link from 'next/link'
+import { CAREER_REWARD_INFO } from '@/lib/career-rewards'
 import { cn } from '@/lib/cn'
 import { LEVEL_INFO, LEVEL_ORDER, nextLevelHint } from '@/lib/level-info'
 import { TROPHY_BADGE_SLUGS } from '@/lib/room-catalog'
@@ -89,6 +90,7 @@ export function CareerTimeline({
         {LEVEL_ORDER.map((slug, index) => {
           const info = LEVEL_INFO[slug]
           const Icon = info.icon
+          const reward = CAREER_REWARD_INFO[slug]
           const done = index < currentIndex
           const current = index === currentIndex
           return (
@@ -129,6 +131,17 @@ export function CareerTimeline({
                     {hint ?? info.blurb}
                   </p>
                 ) : null}
+                <p className="mt-1 text-xs leading-snug">
+                  <span className="font-bold text-primary">
+                    {done || current ? 'Liberado: ' : 'Ao chegar aqui: '}
+                  </span>
+                  <span className="text-muted-foreground">{reward.title}</span>
+                </p>
+                {(done || current) && (
+                  <p className="mt-0.5 text-muted-foreground text-xs leading-snug">
+                    {reward.description}
+                  </p>
+                )}
               </div>
             </li>
           )

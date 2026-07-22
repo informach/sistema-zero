@@ -1878,14 +1878,26 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_restart',
-    placement: 'command',
+    placement: {
+      root: [],
+      nested: [
+        'event-body',
+        'user-gesture-body',
+        'loop-body',
+        'syntactic-loop-body',
+        'function-body',
+        'async-function-body',
+        'derived-method-body',
+      ],
+      role: 'command',
+    },
     message0: 'Reiniciar o jogo',
     args0: [],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Limpa a partida e executa novamente ⚙️ Ao iniciar, ⚡ Quando acontecer e 🔁 Enquanto estiver rodando.',
+      'Use dentro de um evento, laço ou função. Limpa a partida e executa novamente as três áreas do projeto.',
   },
 
   // ---- Cenário: fundo de estrelas + arrastar com o dedo (v0.6.0) ----
@@ -2536,7 +2548,7 @@ export const gameTwoDBlocks = [
   },
   {
     type: 'sz_g2d_place_thrower',
-    placement: 'command',
+    placement: 'start-only-command',
     message0: 'Pôr o gorila %1 na cidade %2 no lado %3 cor %4',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'gorila1' },

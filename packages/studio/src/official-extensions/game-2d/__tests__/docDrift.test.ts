@@ -85,6 +85,19 @@ function chipsCitadosNaIA(texto: string): string[] {
   return [...texto.matchAll(/categorias?\s+"([^"]+)"/g)].map((m) => (m[1] ?? '').trim())
 }
 
+const TIPO_POR_ROTULO_DOCUMENTADO = new Map<string, string>([
+  ['Impedir de atravessar os sprites de um grupo', 'sz_g2d_collide_group'],
+  ['Impedir de atravessar o sprite', 'sz_g2d_collide_sprite'],
+])
+
+/** Citações `**Nome do bloco** (em **💥 Categoria**)` no manual do aluno. */
+function categoriasDeBlocosCitadasNasDocs(texto: string): { label: string; category: string }[] {
+  return [...texto.matchAll(/\*\*([^*]+)\*\* \(em \*\*([^*]+)\*\*\)/g)].map((match) => ({
+    label: (match[1] ?? '').trim(),
+    category: (match[2] ?? '').trim(),
+  }))
+}
+
 describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   const reais = new Set(nomesDeCategoria(gameTwoDToolboxCategory))
 
@@ -99,6 +112,18 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
     const citados = chipsCitadosNaIA(gameTwoDPromptContext)
     expect(citados.length).toBeGreaterThan(3)
     expect(citados.filter((c) => !reais.has(c) && !EXTERNAS_OK.has(c))).toEqual([])
+  })
+
+  it('cada bloco que o manual localiza está realmente na categoria citada', () => {
+    const references = categoriasDeBlocosCitadasNasDocs(gameTwoDManifest.docs ?? '')
+    expect(references.length).toBeGreaterThan(0)
+
+    for (const { label, category } of references) {
+      const type = TIPO_POR_ROTULO_DOCUMENTADO.get(label)
+      expect(type, `rótulo sem tipo no contrato documental: ${label}`).toBeDefined()
+      if (!type) continue
+      expect(tiposDaCategoria(category), `${label} não pertence a ${category}`).toContain(type)
+    }
   })
 
   it('todo bloco visível está na toolbox, e em UM lugar só (sem balde "Mais")', () => {
@@ -131,6 +156,23 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
     expect(audit).toContain(`${gameTwoDBlocks.length} definições de bloco`)
     expect(audit).toContain(`${visibleBlocks} visíveis e ${hiddenBlocks} legadas ocultas`)
     expect(audit).toContain(`${GAME_TWO_D_API_KEYS.length} métodos e valores públicos`)
+  })
+
+  it('mantém a versão atual do guia interno sincronizada com o manifesto', () => {
+    const guide = readFileSync(join(import.meta.dir, '../../../../CLAUDE.md'), 'utf8')
+    const documentedVersion = guide.match(/manifest atual está em \*\*`([^`]+)`\*\*/)?.[1]
+
+    expect(documentedVersion).toBe(gameTwoDManifest.version)
+  })
+
+  it('mantém a versão vigente do relatório de auditoria sincronizada com o manifesto', () => {
+    const audit = readFileSync(
+      join(import.meta.dir, '../../../../docs/game-2d-audit-2026-07-20.md'),
+      'utf8',
+    )
+    const documentedVersion = audit.match(/manifesto vigente está em \*\*([^*]+)\*\*/)?.[1]
+
+    expect(documentedVersion).toBe(gameTwoDManifest.version)
   })
 
   it('organiza controles, colisões e tempo por assunto, não pela Área do projeto', () => {

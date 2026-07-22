@@ -37,6 +37,7 @@ export class GetLessonService {
       accountId ?? userId,
       courseSlug,
       privileged,
+      userId,
     )
     const lesson = await this.courses.findLessonWithContent(lessonId)
     // Aula rascunho é invisível ao aluno (mesmo por URL direta) → 404.

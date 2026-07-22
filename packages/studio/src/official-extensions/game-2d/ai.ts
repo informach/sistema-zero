@@ -181,7 +181,8 @@ inventado pela criança (ex.: ganhou1), com UM só gameLoop:
   Ao iniciar, eventos ou construtores.
 - Padrão: setup + setScene("inicio") em ⚙️ Ao iniciar; Enter em ⚡ Quando acontecer; um “A cada
   quadro” em 🔁 Enquanto estiver rodando limpa a tela e usa “se a tela atual é X” para decidir
-  o que desenhar. No perdeu/ganhou, restart() começa uma execução limpa.
+  o que desenhar. No perdeu/ganhou, restart() dentro de evento, laço ou função encerra a execução
+  antiga e começa uma limpa; nunca coloque restart() em ⚙️ Ao iniciar.
 
 Cenário (v0.6.0): drawStarfield(ctx, velocidade) desenha um céu de estrelas rolando (fundo espacial; chame logo após clear); dragX(sprite) faz o sprite seguir o dedo/mouse só na horizontal (nave no celular). Existe o exemplo pronto "Nave contra Asteroides" mostrando tudo junto.
 

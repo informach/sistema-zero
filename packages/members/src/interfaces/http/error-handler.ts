@@ -9,7 +9,7 @@ import {
   UnauthorizedError,
 } from '@sistemazero/core/http'
 import { type Logger, serializeError } from '@sistemazero/core/logging'
-import { QuizCooldownError } from '../../domain/course/course.errors'
+import { CourseCareerLockedError, QuizCooldownError } from '../../domain/course/course.errors'
 import { PensaGateNotReadyError } from '../../domain/pensa/pensa.errors'
 
 export type { ErrorEnvelope }
@@ -21,6 +21,7 @@ const DOMAIN_STATUS: Record<string, number> = {
   COURSE_NOT_FOUND: 404,
   LESSON_NOT_FOUND: 404,
   LESSON_LOCKED: 423,
+  COURSE_CAREER_LOCKED: 423,
   ATTACHMENT_NOT_FOUND: 404,
   CONTENT_NOT_FOUND: 404,
   ENTITLEMENT_NOT_FOUND: 404,
@@ -35,6 +36,7 @@ const DOMAIN_STATUS: Record<string, number> = {
   INVALID_STATE_TRANSITION: 409,
   ENTITLEMENT_CONFLICT: 409,
   DUPLICATE_SLUG: 409,
+  CAREER_SLOT_CONFLICT: 409,
   CONCURRENCY_CONFLICT: 409,
   NO_PUBLISHED_LESSON: 409,
   QUIZ_GATE_NOT_PASSED: 409,
@@ -80,9 +82,26 @@ export function buildErrorResponse(input: {
   body: ErrorEnvelope & {
     retryAvailableAt?: string
     details?: { gate: string; missing: string[] }
+    careerLock?: {
+      reason: 'future-tier' | 'foundation-first'
+      requiredLevel?: string
+    }
   }
 } {
   const { error, code } = input
+
+  if (error instanceof CourseCareerLockedError) {
+    return {
+      status: 423,
+      body: {
+        ...envelope(error.code, error.message),
+        careerLock: {
+          reason: error.reason,
+          ...(error.requiredLevel ? { requiredLevel: error.requiredLevel } : {}),
+        },
+      },
+    }
+  }
 
   // Cooldown do quiz: além do code/message, expõe `retryAvailableAt` ESTRUTURADO
   // (o cliente inicia o countdown sem reler a aula — útil no 429 de corrida).

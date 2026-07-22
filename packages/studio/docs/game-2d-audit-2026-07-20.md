@@ -11,16 +11,16 @@ A paleta permanece extensa por decisão de produto: são 196 definições de blo
 sendo responsabilidade do perfil de aprendizagem e de cada aula.
 
 A correção técnica desta auditoria foi publicada como **Jogo 2D 0.34.0**. O
-manifesto vigente está em **0.37.1** após o fechamento do full review: consulta
-de invencibilidade, tremor sem overflow, correções de movimento e entrada,
-culling de tilemap e HUD acessível.
+manifesto vigente está em **0.37.10** após os fechamentos subsequentes: grupos
+seguros também no modo Código, ciclo de vida gerenciado e HUD acessível em todos
+os caminhos públicos e legados.
 Não há achados abertos no escopo desta revisão.
 
 ## Escopo revisado
 
 - 42 arquivos próprios da extensão;
 - 196 definições de blocos e 24 subcategorias;
-- 194 métodos e valores públicos em `window.SZGame2D`;
+- 195 métodos e valores públicos em `window.SZGame2D`;
 - dez fragmentos que compõem o runtime injetado;
 - definição → Blockly → IR → JavaScript → parser → workspace state;
 - manifesto, permissões, documentação do aluno e contexto da IA;
@@ -132,7 +132,7 @@ magnitude, produto vetorial e sentido do vetor.
 
 ### P2 — Contrato público tipado
 
-`runtimeContract.ts` deixou de reduzir 194 membros a
+`runtimeContract.ts` deixou de reduzir os membros públicos a
 `(...args: unknown[]) => unknown`. A API foi dividida em contratos explícitos de
 ciclo de vida, palco, sprites, física, áudio, matemática/estado, entrada/movimento,
 mundo, HUD/cenas e kits.
@@ -162,7 +162,7 @@ próximo do ponto médio. Tooltip e manual descrevem o mesmo contrato.
 ### P3 — Fonte de verdade da documentação interna
 
 A seção de Jogo 2D 0.23.0 em `CLAUDE.md` está identificada como registro
-histórico. A versão vigente aparece como 0.37.1, e o limite de documentação é
+histórico. Naquela rodada, a versão vigente passou a 0.37.1, e o limite de documentação é
 obtido do schema em `src/extensions/manifest.ts` (`MAX_DOCS_CHARS = 60_000`), sem
 manter um segundo teto divergente no guia.
 
@@ -235,7 +235,7 @@ arquiteturais de reset. Depois das alterações, os mesmos cenários passaram.
 - **Suíte completa do Studio:** 4.571 aprovados, 0 falhas, 43.145 asserções,
   296 arquivos;
 - **Contrato público:** compilação TypeScript isolada aprovada e inventário
-  exato das 194 chaves aprovado;
+  exato das 195 chaves aprovado;
 - **TypeScript global:** `tsc --noEmit` aprovado;
 - **Biome global:** 692 arquivos aprovados, sem correções pendentes;
 - **Chromium:** 24 cenários focados aprovados — todos os exemplos introdutórios,
@@ -291,6 +291,26 @@ no boot do Vite com `process is not defined` antes de abrir a galeria.
   primeira nota;
 - o teste de conformidade agora deriva todos os `resource-creator` das cinco
   extensões oficiais, evitando que novas categorias escapem do registro central.
+
+### Fechamento do full review — 0.37.9
+
+- grupos criados pelo runtime rastreiam também mutações diretas de `items` no
+  modo Código, mantendo snapshots e colisões coerentes;
+- “Mostrar fim de jogo” usa um helper acessível do runtime e preserva o mesmo
+  bloco no round-trip Blocos → Código → Blocos;
+- o bloco legado de corações continua compatível visualmente e agora anuncia a
+  quantidade de vidas para leitores de tela;
+- relatório, manifesto e guia interno compartilham a mesma versão vigente, com
+  regressão automática contra novo drift.
+
+### Fechamento dos achados de posicionamento e documentação — 0.37.10
+
+- `Pôr o gorila` segue o mesmo contrato dos demais criadores nomeados de sprite e
+  só encaixa em **Ao iniciar**, impedindo recriação e perda de estado a cada quadro;
+- o manual localiza as duas colisões sólidas em **💥 Colisões**, a categoria que
+  realmente contém esses blocos;
+- regressões cruzam todos os criadores nomeados com o contrato de posicionamento e
+  cada localização explícita do manual com a categoria real da toolbox.
 
 ## Conclusão
 

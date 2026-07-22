@@ -6,8 +6,10 @@ import { useMeasuredWidth } from '../../hooks/useMeasuredWidth'
 import { useLogsStore } from '../../state/logsStore'
 import { useProjectStore } from '../../state/projectStore'
 import { useStudioConfig } from '../../studio/config'
+import { useStudioProRuntime } from '../../studio/pro-runtime'
 import { useProWebContainer } from './ProWebContainerProvider'
 import { buildProConsoleBridgeScript, isProConsoleMessage } from './proConsoleBridge'
+import { RemoteProPreview } from './RemoteProPreview'
 
 type Phase = 'booting' | 'installing' | 'starting' | 'ready' | 'error' | 'unsupported'
 
@@ -39,6 +41,11 @@ function capLogString(value: string): string {
  * Exceções do app cross-origin chegam via `preview-message` e vão ao Console.
  */
 export function ProPreview(): JSX.Element {
+  const remoteRuntime = useStudioProRuntime()
+  return remoteRuntime ? <RemoteProPreview runtime={remoteRuntime} /> : <WebContainerProPreview />
+}
+
+function WebContainerProPreview(): JSX.Element {
   const { ensureMounted, error: mountError, state: mountState } = useProWebContainer()
   // Espelho em ref para ler o estado de mount ATUAL dentro do efeito sem torná-lo
   // dependência (depender dele rerodaria boot/install/dev a cada transição).

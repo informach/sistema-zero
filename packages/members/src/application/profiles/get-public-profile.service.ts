@@ -28,7 +28,7 @@ export class GetPublicProfileService {
       await Promise.all([
         this.gamification.getProfile(profileId, audience),
         this.gamification.listBadges(profileId, audience),
-        this.gamification.countQualifyingCoursesByTier(profileId, audience),
+        this.gamification.listQualifyingCareerSlots(profileId, audience),
         this.avatar.getConfig(profileId, audience),
         this.avatar.getPhotoUrl(profileId, audience),
         this.room.getState(profileId, audience),

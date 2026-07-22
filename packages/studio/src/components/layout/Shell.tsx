@@ -2,6 +2,7 @@ import type { JSX } from 'react'
 import { lazy, Suspense, useId, useRef } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useShallow } from 'zustand/react/shallow'
+import type { Project } from '#core'
 import { ErrorBoundary } from '#ui'
 import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
@@ -26,11 +27,13 @@ const AssetsPanel = lazy(() =>
 export interface ShellProps {
   /** Sai do editor (ex.: volta à lista de projetos do host). Sem ela, a Topbar esconde a navegação. */
   onExit?: () => void
+  /** Executado após a promoção já ter sido salva no adapter. */
+  onPromoteToPro?: (project: Project) => void | Promise<void>
   /** Mostra o toggle claro/escuro na Topbar (false quando o host fixa o tema via prop). */
   canToggleTheme?: boolean
 }
 
-export function Shell({ onExit, canToggleTheme }: ShellProps): JSX.Element {
+export function Shell({ onExit, onPromoteToPro, canToggleTheme }: ShellProps): JSX.Element {
   const { hasProject, projectId, projectMode } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(s.project),
@@ -73,7 +76,11 @@ export function Shell({ onExit, canToggleTheme }: ShellProps): JSX.Element {
             Studio só ganhar tamanho depois (ex.: montado oculto). */}
         {layout.width > 0 && (
           <>
-            <Topbar onExit={onExit} canToggleTheme={canToggleTheme} />
+            <Topbar
+              onExit={onExit}
+              onPromoteToPro={onPromoteToPro}
+              canToggleTheme={canToggleTheme}
+            />
             {layout.isNarrow ? (
               <NarrowLayout projectMode={projectMode} projectId={projectId} />
             ) : (

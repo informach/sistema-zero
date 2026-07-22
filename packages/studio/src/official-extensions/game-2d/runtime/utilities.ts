@@ -150,9 +150,9 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
     var t = now();
     for (var i = group.items.length - 1; i >= 0; i--) {
       var s = group.items[i];
-      if (!s) { group.items.splice(i, 1); _touchGroup(group); continue; }
+      if (!s) { _removeGroupItemAt(group, i); continue; }
       if (typeof s._born !== 'number') s._born = t;
-      if (t - s._born > max) { group.items.splice(i, 1); _touchGroup(group); }
+      if (t - s._born > max) _removeGroupItemAt(group, i);
     }
   }
   // ---- Aparência do sprite (espelhar, transparência, tamanho) ----

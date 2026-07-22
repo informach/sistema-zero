@@ -371,6 +371,10 @@ export interface MyCourseView {
   level: string
   /** Eixo 2D/3D do curso (`2d` | `3d`) — par com `level` = degrau pedagógico. */
   track: string
+  /** Posição na etapa da carreira; `null` = curso bônus. */
+  careerSlot: number | null
+  /** Trava pedagógica da carreira; independente da matrícula comercial. */
+  careerLock: CareerCourseLockView
   access: AccessView
   progress: CourseProgress
   /** Atalho seguro do card: última aula acessada, ou a próxima liberada se a última travou. */
@@ -382,6 +386,7 @@ export function toMyCourseView(
   entitlement: EntitlementAggregate,
   progress: CourseProgress,
   continueLessonId: string | null,
+  careerLock: CareerCourseLockView = { locked: false },
 ): MyCourseView {
   return {
     courseSlug: course.slug,
@@ -391,6 +396,8 @@ export function toMyCourseView(
     audience: course.audience,
     level: course.level,
     track: course.track,
+    careerSlot: course.careerSlot,
+    careerLock,
     access: toAccessView(entitlement),
     progress,
     continueLessonId,
@@ -412,6 +419,10 @@ export interface CatalogCourseView {
   level: string
   /** Eixo 2D/3D do curso (`2d` | `3d`) — par com `level` = degrau pedagógico. */
   track: string
+  /** Posição na etapa da carreira; `null` = curso bônus. */
+  careerSlot: number | null
+  /** Trava pedagógica da carreira; `hasAccess` continua representando só a matrícula. */
+  careerLock: CareerCourseLockView
   hasAccess: boolean
   /** URL da página de vendas (funil) — de `course.metadata.salesPageUrl`; `null` se não setada. */
   salesPageUrl: string | null
@@ -419,7 +430,11 @@ export interface CatalogCourseView {
   createdAt: string
 }
 
-export function toCatalogCourseView(course: Course, hasAccess: boolean): CatalogCourseView {
+export function toCatalogCourseView(
+  course: Course,
+  hasAccess: boolean,
+  careerLock: CareerCourseLockView = { locked: false },
+): CatalogCourseView {
   return {
     courseSlug: course.slug,
     title: course.title,
@@ -428,10 +443,20 @@ export function toCatalogCourseView(course: Course, hasAccess: boolean): Catalog
     audience: course.audience,
     level: course.level,
     track: course.track,
+    careerSlot: course.careerSlot,
+    careerLock,
     hasAccess,
     salesPageUrl: resolveSalesPageUrl(course),
     createdAt: course.createdAt.toISOString(),
   }
+}
+
+export interface CareerCourseLockView {
+  locked: boolean
+  reason?: 'future-tier' | 'foundation-first'
+  requiredLevel?: StudentLevelSlug
+  /** Curso-base (posição 1) que explica e resolve a trava, quando publicado. */
+  foundationCourseSlug?: string
 }
 
 /** URL da página de vendas (funil) — `metadata.salesPageUrl` string não-vazia, senão `null`. */
@@ -494,6 +519,8 @@ export interface CourseDetailView {
   level: string
   /** Eixo 2D/3D do curso (`2d` | `3d`) — par com `level` = degrau pedagógico. */
   track: string
+  /** Posição na etapa da carreira; `null` = curso bônus. */
+  careerSlot: number | null
   access: AccessView
   progress: CourseProgressView
   /** Aula-alvo do CTA "Continuar de onde parou" (ver `resolveContinueLesson`). */
@@ -526,6 +553,7 @@ export function toCourseDetailView(
     audience: course.audience,
     level: course.level,
     track: course.track,
+    careerSlot: course.careerSlot,
     access: toAccessView(entitlement),
     progress,
     continueLessonId,

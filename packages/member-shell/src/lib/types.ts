@@ -118,6 +118,10 @@ export interface CatalogCourseView {
   level?: CourseLevelSlug
   /** Eixo 2D/3D — opcional p/ tolerar members antigo (ausente ≙ `2d`). */
   track?: CourseTrack
+  /** Posição na etapa da carreira; `null`/ausente = curso bônus. */
+  careerSlot?: number | null
+  /** Trava pedagógica da carreira, separada da posse comercial. */
+  careerLock?: CareerCourseLockView
   /** URL da página de vendas (funil); `null` → fallback FUNNEL_URL no server. */
   salesPageUrl: string | null
   /** Criação do curso (ISO) — ordena o seletor por data; opcional p/ members antigo. */
@@ -215,10 +219,21 @@ export interface MyCourseView {
   level?: CourseLevelSlug
   /** Eixo 2D/3D — opcional p/ tolerar members antigo (ausente ≙ `2d`). */
   track?: CourseTrack
+  /** Posição na etapa da carreira; `null`/ausente = curso bônus. */
+  careerSlot?: number | null
+  /** Trava pedagógica da carreira, separada da posse comercial. */
+  careerLock?: CareerCourseLockView
   access: AccessView
   progress: CourseProgress
   /** Atalho seguro do card: última aula acessada, ou a próxima liberada se a última travou. */
   continueLessonId: string | null
+}
+
+export interface CareerCourseLockView {
+  locked: boolean
+  reason?: 'future-tier' | 'foundation-first'
+  requiredLevel?: StudentLevelSlug
+  foundationCourseSlug?: string
 }
 
 export interface LessonOutlineView {
@@ -279,6 +294,8 @@ export interface CourseDetailView {
   level?: CourseLevelSlug
   /** Eixo 2D/3D — opcional p/ tolerar members antigo (ausente ≙ `2d`). */
   track?: CourseTrack
+  /** Posição na etapa da carreira; `null`/ausente = curso bônus. */
+  careerSlot?: number | null
   access: AccessView
   progress: CourseProgressView
   /** Aula-alvo do "Continuar de onde parei" (última acessada > 1ª não concluída > 1ª). */

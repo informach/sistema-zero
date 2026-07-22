@@ -28,6 +28,8 @@ interface Game2DApi {
   balloonFuel: (g: unknown) => number
   balloonOver: (g: unknown) => boolean
   restartBalloon: (g: unknown) => void
+  drawWind: (ctx: unknown, city: { W: number; H: number; wind: number }) => void
+  drawAimReadout: (ctx: unknown) => void
 }
 
 function loadRuntime(devicePixelRatio = 1): Game2DApi {
@@ -194,6 +196,56 @@ describe('Kit equilibrista / Kit balão — fumaça do runtime', () => {
     expect(api.balloonOver(jogo)).toBe(false)
     expect(() => api.updateBalloon(jogo)).not.toThrow()
     expect(() => api.restartBalloon(jogo)).not.toThrow()
+  })
+
+  it('expõe placar e estado do Equilibrista no HUD acessível', () => {
+    document.body.innerHTML = ''
+    const api = loadRuntime()
+    const jogo = api.createStickHero(mockCtx(360, 480)) as { phase: string; score: number }
+    jogo.score = 2
+    jogo.phase = 'over'
+
+    api.updateStickHero(jogo)
+
+    const hud = document.getElementById('sz-game-hud-status')
+    expect(hud?.textContent).toContain('Pontos: 2')
+    expect(hud?.textContent).toContain('Caiu! Toque para recomeçar')
+  })
+
+  it('expõe distância, combustível e estado do Balão no HUD acessível', () => {
+    document.body.innerHTML = ''
+    const api = loadRuntime()
+    const jogo = api.createBalloon(mockCtx(560, 360)) as {
+      fuel: number
+      meters: number
+      over: boolean
+    }
+    jogo.fuel = 27
+    jogo.meters = 12
+    jogo.over = true
+
+    api.updateBalloon(jogo)
+
+    const hud = document.getElementById('sz-game-hud-status')
+    expect(hud?.textContent).toContain('Distância: 12 metros')
+    expect(hud?.textContent).toContain('Combustível: 27 de 100')
+    expect(hud?.textContent).toContain('Fim! Toque para recomeçar')
+  })
+
+  it('expõe vento e leitura da mira do kit Gorilas no HUD acessível', () => {
+    document.body.innerHTML = ''
+    let api = loadRuntime()
+    api.drawWind(mockCtx(480, 270), { W: 480, H: 270, wind: 0.03 })
+    expect(document.getElementById('sz-game-hud-status')?.textContent).toContain(
+      'Vento para a direita: 50%',
+    )
+
+    document.body.innerHTML = ''
+    api = loadRuntime()
+    api.drawAimReadout(mockCtx(480, 270))
+    expect(document.getElementById('sz-game-hud-status')?.textContent).toContain(
+      'Ângulo: 0 graus. Força: 0',
+    )
   })
 
   it('Stick Hero acompanha a mudança do palco sem zerar fase, placar ou progresso', () => {

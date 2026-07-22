@@ -67,7 +67,6 @@ Gateway. Cada serviço é um pacote em `packages/*`, deployável de forma indepe
 | [`@sistemazero/studio`](packages/studio) | — | IDE educacional embarcável (Blocos/Código/Ponte + preview sandbox + jogos 2D/3D) — lib interna |
 | [`@sistemazero/pensa`](packages/pensa) | — | Planejamento guiado (metodologia ZERO) p/ crianças planejarem jogos antes do Estúdio — lib (TS source) embarcada nos apps |
 | [`@sistemazero/pinta`](packages/pinta) | — | Editor de assets de jogos p/ crianças (pixel art, animações, tiles, vetor) — lib (TS source) embarcada nos apps |
-| [`@sistemazero/studio-aulas`](packages/studio-aulas) | — | Pipeline de produção de aulas (roteiro → voz → avatar → tela do Estúdio → vídeo) — ferramenta isolada (CLI) |
 | [`@sistemazero/ui`](packages/ui) | — | Componentes compartilhados (admin + community) |
 | [`@sistemazero/tui`](packages/tui) | — | UI de terminal (React + OpenTUI) |
 

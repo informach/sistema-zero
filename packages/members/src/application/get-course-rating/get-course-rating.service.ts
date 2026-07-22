@@ -20,6 +20,7 @@ export class GetCourseRatingService {
       accountId ?? userId,
       courseSlug,
       privileged,
+      userId,
     )
     const rating = await this.ratings.find(userId, course.id)
     return rating ? toCourseRatingView(rating) : null

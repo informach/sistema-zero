@@ -14,6 +14,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     ? window.__SZGAME_ASSET_META
     : {};
   var imageCache = Object.create(null);
+  var _pendingImageRedraws = new Set();
 
   // Aviso DEDUPADO por chave: um nome errado (de figura/imagem/som/mapa) chamado
   // DENTRO do "a cada quadro" afogaria o console 60×/s. warnOnce fala UMA vez por
@@ -115,9 +116,24 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     };
   }
 
+  /** Invalida qualquer redraw automático ligado ao modo visual atual. */
+  function _cancelSpriteImageRedraw(sprite) {
+    if (!sprite) return;
+    var cancel = sprite._cancelImageRedraw;
+    sprite._cancelImageRedraw = null;
+    sprite._imgHooked = false;
+    if (typeof cancel === 'function') cancel();
+  }
+
+  /** Libera trabalho assíncrono de um sprite que deixou seu dono atual. */
+  function _disposeSprite(sprite) {
+    _cancelSpriteImageRedraw(sprite);
+  }
+
   /** Troca a imagem fixa do sprite (e cancela a animação atual). */
   function setImage(sprite, name) {
     if (!sprite) return;
+    _cancelSpriteImageRedraw(sprite);
     sprite.skin = null;
     sprite.image = name ? loadImage(name) : null;
     sprite.anim = null;
@@ -141,6 +157,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   /** Faz o sprite usar uma figura (cancela imagem/animacao — uma coisa por vez). */
   function setShape(sprite, name) {
     if (!sprite) return;
+    _cancelSpriteImageRedraw(sprite);
     sprite.skin = { kind: 'custom', shape: name };
     sprite.image = null;
     sprite.anim = null;
@@ -175,7 +192,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     _shapeH = sprite.h;
     ctx.save();
     ctx.translate(sprite.x, sprite.y);
-    try { fn(ctx); }
+    try { _invokeProjectCallback(fn, undefined, [ctx]); }
     finally { ctx.restore(); }
   }
 
@@ -222,6 +239,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    */
   function setAnimation(sprite, sheet, from, to, fps) {
     if (!sprite || !sheet) return;
+    _cancelSpriteImageRedraw(sprite);
     sprite.skin = null;
     sprite.image = null;
     sprite._imgHooked = false;
@@ -415,25 +433,36 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     var fixed = sprite.image;
     if (fixed && fixed.img && !fixed.loaded && !sprite._imgHooked) {
       sprite._imgHooked = true;
+      var generation = _driverGeneration;
+      var redrawFinishedImage = null;
+      var detachFinishedImage = function () {
+        if (fixed.img && typeof fixed.img.removeEventListener === 'function' && redrawFinishedImage) {
+          fixed.img.removeEventListener('load', redrawFinishedImage);
+          fixed.img.removeEventListener('error', redrawFinishedImage);
+        }
+        _pendingImageRedraws.delete(detachFinishedImage);
+        if (sprite._cancelImageRedraw === detachFinishedImage) sprite._cancelImageRedraw = null;
+      };
+      redrawFinishedImage = function () {
+        detachFinishedImage();
+        if (_runGenerationChanged(generation)) return;
+        // O sprite pode ter trocado de imagem enquanto esta carga estava pendente.
+        if (sprite.image !== fixed) return;
+        try {
+          _camWrap(function (redrawCtx, redrawSprite) {
+            drawSprite(redrawCtx, redrawSprite);
+          })(ctx, sprite);
+        } catch (e) {
+          warnOnce('imgredraw:' + fixed.url, 'não consegui redesenhar a imagem que terminou de carregar.');
+        }
+      };
+      sprite._cancelImageRedraw = detachFinishedImage;
+      _pendingImageRedraws.add(detachFinishedImage);
       try {
-        var redrawFinishedImage = function () {
-          if (fixed.img && typeof fixed.img.removeEventListener === 'function') {
-            fixed.img.removeEventListener('load', redrawFinishedImage);
-            fixed.img.removeEventListener('error', redrawFinishedImage);
-          }
-          // O sprite pode ter trocado de imagem enquanto esta carga estava pendente.
-          if (sprite.image !== fixed) return;
-          try {
-            _camWrap(function (redrawCtx, redrawSprite) {
-              drawSprite(redrawCtx, redrawSprite);
-            })(ctx, sprite);
-          } catch (e) {
-            warnOnce('imgredraw:' + fixed.url, 'não consegui redesenhar a imagem que terminou de carregar.');
-          }
-        };
         fixed.img.addEventListener('load', redrawFinishedImage, { once: true });
         fixed.img.addEventListener('error', redrawFinishedImage, { once: true });
       } catch (e) {
+        detachFinishedImage();
         warnOnce('imghook:' + fixed.url, 'não consegui acompanhar o carregamento da imagem.');
       }
     }
@@ -454,6 +483,8 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
 
   _registerRuntimeDomain('sprites', {
     reset: function () {
+      _pendingImageRedraws.forEach(function (detach) { detach(); });
+      _pendingImageRedraws.clear();
       _warnedOnce = Object.create(null);
       _shapes = Object.create(null);
       _shapeW = 0;

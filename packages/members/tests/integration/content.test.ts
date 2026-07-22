@@ -130,6 +130,65 @@ describe('Members HTTP — autoria: cursos', () => {
     expect(onlyKids.items[0].slug).toBe('curso-kids')
   })
 
+  test('careerSlot: só Kids, respeita o teto da etapa, preserva e pode ser removido', async () => {
+    const { app } = buildApp()
+
+    const adult = await send(app, '/members/admin/courses', 'POST', {
+      ...COURSE,
+      careerSlot: 1,
+    })
+    expect(adult.status).toBe(400)
+
+    const created = await createCourse(app, {
+      slug: 'base-kids',
+      audience: 'kids',
+      level: 'iniciante',
+      track: '2d',
+      careerSlot: 1,
+    })
+    expect(created.careerSlot).toBe(1)
+
+    const preserved = await send(app, `/members/admin/courses/${created.id}`, 'PATCH', {
+      ...COURSE,
+      slug: 'base-kids',
+      audience: 'kids',
+      level: 'iniciante',
+      track: '2d',
+    })
+    expect((await readJson(preserved)).careerSlot).toBe(1)
+
+    const invalidSix = await send(app, `/members/admin/courses/${created.id}`, 'PATCH', {
+      ...COURSE,
+      slug: 'base-kids',
+      audience: 'kids',
+      level: 'intermediario',
+      track: '2d',
+      careerSlot: 6,
+    })
+    expect(invalidSix.status).toBe(400)
+
+    const removed = await send(app, `/members/admin/courses/${created.id}`, 'PATCH', {
+      ...COURSE,
+      slug: 'base-kids',
+      audience: 'kids',
+      careerSlot: null,
+    })
+    expect((await readJson(removed)).careerSlot).toBeNull()
+  })
+
+  test('careerSlot duplicado na mesma etapa → 409 amigável', async () => {
+    const { app } = buildApp()
+    await createCourse(app, { slug: 'base-a', audience: 'kids', careerSlot: 1 })
+    const conflict = await send(app, '/members/admin/courses', 'POST', {
+      ...COURSE,
+      slug: 'base-b',
+      audience: 'kids',
+      careerSlot: 1,
+    })
+    expect(conflict.status).toBe(409)
+    expect((await readJson(conflict)).error.code).toBe('CAREER_SLOT_CONFLICT')
+  })
+
   test('slug de curso duplicado → 409 DUPLICATE_SLUG', async () => {
     const { app } = buildApp()
     await createCourse(app)

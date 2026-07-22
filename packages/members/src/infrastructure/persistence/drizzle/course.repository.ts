@@ -27,6 +27,7 @@ function toCourse(row: typeof courses.$inferSelect): Course {
     sequentialLock: row.sequentialLock,
     level: row.level,
     track: row.track,
+    careerSlot: row.careerSlot,
     metadata: row.metadata ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,

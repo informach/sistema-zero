@@ -29,6 +29,8 @@ export const PROJECT_RUN_LIFECYCLE_GLOBAL = '__SZProjectLifecycle'
  */
 export function createProjectRunContext(options: {
   requestRestart: () => void
+  runCallback?: <T>(callback: () => T) => T | undefined
+  isControlSignal?: (error: unknown) => boolean
   clock?: ProjectRunClock
   timers?: ProjectRunTimers
 }): ManagedProjectRun {
@@ -58,6 +60,11 @@ export function createProjectRunContext(options: {
   let schedulerDisposed = false
   let disposed = false
 
+  const runCallback = <T>(callback: () => T): T | undefined => {
+    if (disposed) return undefined
+    return options.runCallback ? options.runCallback(callback) : callback()
+  }
+
   const schedule = (): void => {
     if (disposed || schedulerDisposed || paused || frameId !== null || frameCallbacks.size === 0)
       return
@@ -69,7 +76,10 @@ export function createProjectRunContext(options: {
     if (disposed || schedulerDisposed || paused) return
     const deltaSeconds = previousTime === null ? 0 : Math.max(0, (time - previousTime) / 1_000)
     previousTime = time
-    for (const callback of [...frameCallbacks]) callback(deltaSeconds)
+    for (const callback of [...frameCallbacks]) {
+      runCallback(() => callback(deltaSeconds))
+      if (disposed) break
+    }
     schedule()
   }
 
@@ -132,12 +142,16 @@ export function createProjectRunContext(options: {
   return {
     signal: controller.signal,
     scheduler,
+    run: runCallback,
+    isControlSignal(error) {
+      return options.isControlSignal?.(error) ?? false
+    },
     setTimeout(callback, delayMs) {
       if (disposed) return -1
       let id: ProjectRunTimeoutHandle = -1
       id = timers.setTimeout(() => {
         pendingTimeouts.delete(id)
-        if (!disposed) callback()
+        if (!disposed) runCallback(callback)
       }, delayMs)
       pendingTimeouts.add(id)
       return id
@@ -145,7 +159,7 @@ export function createProjectRunContext(options: {
     setInterval(callback, delayMs) {
       if (disposed) return -1
       const id = timers.setInterval(() => {
-        if (!disposed) callback()
+        if (!disposed) runCallback(callback)
       }, delayMs)
       activeIntervals.add(id)
       return id
@@ -155,10 +169,22 @@ export function createProjectRunContext(options: {
       let id = -1
       id = clock.requestFrame((time) => {
         pendingFrames.delete(id)
-        if (!disposed) callback(time)
+        if (!disposed) runCallback(() => callback(time))
       })
       pendingFrames.add(id)
       return id
+    },
+    setEventHandler(target, property, callback) {
+      if (disposed || !target) return
+      const managedHandler = function (this: unknown, event: Event): unknown {
+        return runCallback(() => callback.call(this, event))
+      }
+      Reflect.set(target, property, managedHandler)
+      resources.push(() => {
+        if (Reflect.get(target, property) === managedHandler) {
+          Reflect.set(target, property, null)
+        }
+      })
     },
     registerResource(dispose) {
       if (disposed) {
@@ -209,6 +235,30 @@ export function buildProjectRunContextRuntime(): string {
   return `(function () {
   const createProjectRunContext = ${createRunSource};
   let currentRun;
+  let activeCallbacks = 0;
+  const controlSignal = Object.freeze({ kind: 'sz-project-restart' });
+
+  function isControlSignal(error) {
+    return error === controlSignal;
+  }
+
+  function run(callback, thisArg, args) {
+    if (typeof callback !== 'function') return;
+    const isRootCallback = activeCallbacks === 0;
+    activeCallbacks++;
+    try {
+      return callback.apply(thisArg, args || []);
+    } catch (error) {
+      if (isRootCallback && isControlSignal(error)) return;
+      throw error;
+    } finally {
+      activeCallbacks--;
+    }
+  }
+
+  function endCallback() {
+    if (activeCallbacks > 0) throw controlSignal;
+  }
 
   function disposeCurrentRun() {
     if (!currentRun) return;
@@ -220,6 +270,8 @@ export function buildProjectRunContextRuntime(): string {
     disposeCurrentRun();
     currentRun = createProjectRunContext({
       requestRestart: typeof requestRestart === 'function' ? requestRestart : function () {},
+      runCallback: run,
+      isControlSignal: isControlSignal,
     });
     return currentRun;
   }
@@ -228,6 +280,9 @@ export function buildProjectRunContextRuntime(): string {
   window[${JSON.stringify(PROJECT_RUN_LIFECYCLE_GLOBAL)}] = Object.freeze({
     begin: begin,
     dispose: disposeCurrentRun,
+    run: run,
+    endCallback: endCallback,
+    isControlSignal: isControlSignal,
   });
 })();`
 }

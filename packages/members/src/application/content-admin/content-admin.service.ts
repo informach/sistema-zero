@@ -78,15 +78,16 @@ export class CourseAdminService {
     // Curso novo nasce sem aulas → nunca pode nascer `published`.
     if (fields.status === 'published') throw new NoPublishedLessonError()
     // Audiência ausente → `adult`; trava sequencial ausente → `true` (padrão LIGADO).
-    return toCourseView(
-      await this.content.createCourse({
-        ...fields,
-        audience: fields.audience ?? 'adult',
-        sequentialLock: fields.sequentialLock ?? true,
-        level: fields.level ?? 'iniciante',
-        track: fields.track ?? '2d',
-      }),
-    )
+    const normalized = {
+      ...fields,
+      audience: fields.audience ?? 'adult',
+      sequentialLock: fields.sequentialLock ?? true,
+      level: fields.level ?? 'iniciante',
+      track: fields.track ?? '2d',
+      careerSlot: fields.careerSlot ?? null,
+    }
+    assertCareerSlot(normalized)
+    return toCourseView(await this.content.createCourse(normalized))
   }
 
   async get(id: string): Promise<CourseTreeView> {
@@ -110,7 +111,7 @@ export class CourseAdminService {
     // `sequentialLock` AUSENTE também PRESERVA a atual (mesma régua do audience).
     // `level` AUSENTE idem (build antigo do admin sem o campo não rebaixa a dificuldade).
     // `track` AUSENTE idem (build antigo sem o eixo 2D/3D não re-tagueia o curso).
-    const { salesPageUrl, audience, sequentialLock, level, track, ...rest } = fields
+    const { salesPageUrl, audience, sequentialLock, level, track, careerSlot, ...rest } = fields
     const merged = {
       ...existing,
       ...rest,
@@ -118,8 +119,10 @@ export class CourseAdminService {
       sequentialLock: sequentialLock ?? existing.sequentialLock,
       level: level ?? existing.level,
       track: track ?? existing.track,
+      careerSlot: careerSlot === undefined ? existing.careerSlot : careerSlot,
       metadata: withSalesPageUrl(existing.metadata, salesPageUrl),
     }
+    assertCareerSlot(merged)
     const ok = await this.content.updateCourse(merged)
     if (!ok) throw new CourseConflictError()
     const fresh = await this.courses.findCourseById(id)
@@ -129,6 +132,26 @@ export class CourseAdminService {
   async remove(id: string): Promise<{ ok: true }> {
     if (!(await this.content.deleteCourse(id))) throw new CourseNotFoundError()
     return { ok: true }
+  }
+}
+
+function assertCareerSlot(course: {
+  audience: string
+  level: string
+  track: string
+  careerSlot: number | null
+}): void {
+  if (course.careerSlot === null) return
+  if (course.audience !== 'kids') {
+    throw new InvalidContentCommandError('Somente cursos Kids podem ocupar a carreira')
+  }
+  const maximum = course.level === 'iniciante' && course.track === '2d' ? 6 : 5
+  if (
+    !Number.isInteger(course.careerSlot) ||
+    course.careerSlot < 1 ||
+    course.careerSlot > maximum
+  ) {
+    throw new InvalidContentCommandError(`Esta etapa aceita posições de 1 a ${maximum} na carreira`)
   }
 }
 

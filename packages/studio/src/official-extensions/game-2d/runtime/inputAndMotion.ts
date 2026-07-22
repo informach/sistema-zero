@@ -45,16 +45,18 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
         try { target.setPointerCapture(e.pointerId); } catch (ignored) {}
       }
     }
+    var generation = _driverGeneration;
     var handlers = pointerHandlerOrder.slice();
     for (var i = 0; i < handlers.length; i++) {
       var id = handlers[i];
       var handler = pointerHandlers[id];
       if (typeof handler !== 'function') continue;
-      try { handler(p.x, p.y); }
+      try { _invokeProjectCallback(handler, undefined, [p.x, p.y]); }
       catch (error) {
         _reportHandlerError('“Quando clicar/tocar”', id, error);
-        _removeOrdered(pointerHandlers, pointerHandlerOrder, id);
+        _removeOrderedIfCurrent(pointerHandlers, pointerHandlerOrder, id, handler);
       }
+      if (_runGenerationChanged(generation)) return;
     }
   });
   /**

@@ -352,6 +352,8 @@ export interface CourseView {
   level: CourseLevel
   /** Eixo 2D/3D (par com `level` = degrau). Opcional p/ tolerar members antigo. */
   track?: CourseTrack
+  /** Posição na etapa da carreira; `null` = curso bônus. */
+  careerSlot: number | null
   /** Trava sequencial das aulas (estilo Duolingo) ligada para este curso. */
   sequentialLock: boolean
   createdAt: string

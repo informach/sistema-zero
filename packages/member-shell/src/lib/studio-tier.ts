@@ -1,81 +1,68 @@
+import {
+  type CareerLevelSlug,
+  type CareerStudioBlockProfileId,
+  type CareerStudioRewardId,
+  creatorCareerLevel,
+} from '@sistemazero/core/career'
 import type { BlockLevel, IDEMode } from '@sistemazero/studio'
+import { ESSENTIAL_2D_ALLOW_BLOCKS } from '@sistemazero/studio/career'
 
-/**
- * Config do Estúdio Completo derivada do RANK do aluno. Reusável entre os apps
- * (kids hoje; adulto quando o Estúdio Completo virar produto dele).
- */
+/** Capacidades do Estúdio Completo já conquistadas pelo aluno. */
 export interface StudioTier {
-  /** Perfil de blocos (curadoria da paleta) do editor CLÁSSICO. */
+  freeStudio: boolean
+  rewardId: CareerStudioRewardId
+  blockProfileId: CareerStudioBlockProfileId
   level: BlockLevel
-  /** Modos liberados na barra do editor CLÁSSICO. */
+  allowBlocks?: readonly string[]
+  allowedExtensions: readonly string[]
+  initialExtensions: readonly string[]
   allowedModes: IDEMode[]
-  /** Sempre `false`: o rank é o portão ESTRITO (sem "Mostrar blocos avançados"). */
-  allowLevelReveal: boolean
-  /**
-   * O aluno pode criar/abrir projetos PRO (modo Código / WebContainer)? Do
-   * **Gênio da Criação** (`champion`) em diante + a EQUIPE. É a CAPACIDADE (o
-   * host oferece a escolha "Básico/PRO" e roteia projetos pro para a rota
-   * isolada com COOP/COEP); NÃO é um modo do editor clássico.
-   */
+  allowLevelReveal: false
+  bridge: boolean
   pro: boolean
+  canCreateProProject: boolean
+  canPromoteToPro: boolean
 }
 
-/** Papéis de EQUIPE tratados como `god` (acesso máximo) — espelha o members. */
 const PRIVILEGED_ROLES = new Set(['superadmin', 'admin', 'staff'])
 
-/**
- * O ator é EQUIPE interna (superadmin/admin/staff)? Deriva direto do PAPEL da
- * conta — NÃO do rank `god` (uma criança que chegou a Lenda também é `god` no
- * `resolveStudioTier`, mas NÃO é equipe). Use este helper quando o gate é "só
- * admin de verdade" (ex.: exemplos do Estúdio visíveis só p/ a equipe enquanto
- * a usuária valida o catálogo).
- */
 export function isPrivilegedRole(role: string | undefined): boolean {
   return !!role && PRIVILEGED_ROLES.has(role)
 }
 
-/**
- * Degrau de blocos + modos por RANK (escada de 8 — reforma 2D/3D 07/2026).
- * Cada nível de carreira libera o degrau que o aluno vai ESTUDAR em seguida:
- * concluiu os requisitos do degrau N → a paleta abre o N+1.
- * - Ponte (código junto dos blocos) libera no **Mestre dos Jogos** (`elite`).
- * - PRO libera no **Gênio da Criação** (`champion`) — um degrau antes da Lenda.
- * (Decisões da usuária 17/07; Inventor/Explorador perderam a Ponte que tinham —
- * regressão aceita junto com a da carreira.)
- */
-const TIER_BY_SLUG: Record<string, Pick<StudioTier, 'level' | 'allowedModes'> & { pro?: true }> = {
-  /* Faísca        */ noob: { level: 'iniciante-2d', allowedModes: ['blocks'] },
-  /* Construtor(a) */ coder: { level: 'iniciante-2d', allowedModes: ['blocks'] },
-  /* Inventor(a)   */ hacker: { level: 'iniciante-3d', allowedModes: ['blocks'] },
-  /* Explorador(a) */ explorer: { level: 'intermediario-2d', allowedModes: ['blocks'] },
-  /* Mestre        */ elite: { level: 'intermediario-3d', allowedModes: ['blocks', 'bridge'] },
-  /* Arquiteto(a)  */ architect: { level: 'avancado-2d', allowedModes: ['blocks', 'bridge'] },
-  /* Gênio         */ champion: {
-    level: 'avancado-3d',
-    allowedModes: ['blocks', 'bridge'],
-    pro: true,
-  },
-  /* Lenda         */ god: { level: 'avancado-3d', allowedModes: ['blocks', 'bridge'], pro: true },
+const EXTENSIONS_BY_PROFILE: Record<CareerStudioBlockProfileId, readonly string[]> = {
+  'lesson-only': [],
+  '2d-essential': ['game-2d'],
+  'iniciante-2d': ['game-2d'],
+  'iniciante-3d': ['game-2d', 'game-3d'],
+  'intermediario-2d': ['game-2d', 'game-3d', 'game-2d-advanced'],
+  'intermediario-3d': ['game-2d', 'game-3d', 'game-2d-advanced', 'world-3d'],
+  'avancado-2d': ['game-2d', 'game-3d', 'game-2d-advanced', 'world-3d'],
+  'avancado-3d': ['game-2d', 'game-3d', 'game-2d-advanced', 'world-3d', 'game-3d-advanced'],
 }
 
-/**
- * Deriva os MODOS + o PERFIL de blocos + a capacidade PRO do Estúdio Completo a
- * partir do rank do aluno (gamificação kids, 8 níveis: `noob→coder→hacker→
- * explorer→elite→architect→champion→god`) e do papel. Equipe
- * (admin/staff/superadmin) = `god`. Slug desconhecido/ausente → `noob`
- * (degrada seguro — cobre também um members antigo emitindo só os 5 slugs).
- */
 export function resolveStudioTier(
   levelSlug: string | undefined,
   role: string | undefined,
 ): StudioTier {
-  const rank = role && PRIVILEGED_ROLES.has(role) ? 'god' : (levelSlug ?? 'noob')
-  const tier = TIER_BY_SLUG[rank] ?? TIER_BY_SLUG.noob
-  if (!tier) throw new Error('studio-tier: escada sem degrau noob')
+  const effectiveSlug: CareerLevelSlug = isPrivilegedRole(role)
+    ? 'god'
+    : creatorCareerLevel(levelSlug).slug
+  const reward = creatorCareerLevel(effectiveSlug).reward
+  const pro = reward.pro
   return {
-    level: tier.level,
-    allowedModes: [...tier.allowedModes],
+    freeStudio: reward.freeStudio,
+    rewardId: reward.id,
+    blockProfileId: reward.blockProfileId,
+    level: reward.blockLevel,
+    ...(reward.blockProfileId === '2d-essential' ? { allowBlocks: ESSENTIAL_2D_ALLOW_BLOCKS } : {}),
+    allowedExtensions: EXTENSIONS_BY_PROFILE[reward.blockProfileId] ?? [],
+    initialExtensions: reward.freeStudio ? ['game-2d'] : [],
+    allowedModes: [...reward.modes],
     allowLevelReveal: false,
-    pro: tier.pro ?? false,
+    bridge: reward.bridge,
+    pro,
+    canCreateProProject: pro,
+    canPromoteToPro: pro,
   }
 }

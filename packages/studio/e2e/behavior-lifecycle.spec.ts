@@ -248,6 +248,9 @@ test.describe('Áreas de comportamento — lifecycle completo', () => {
       )
       .toEqual([true, true, true])
 
+    await page.getByRole('button', { name: 'Mais opções' }).click()
+    await page.getByRole('menuitem', { name: 'Console' }).click()
+    await expect(page.getByRole('tab', { name: 'Console' })).toBeVisible()
     await page.getByRole('button', { name: 'Limpar' }).click()
     await page.getByRole('button', { name: 'Atualizar o preview' }).click()
     await expect

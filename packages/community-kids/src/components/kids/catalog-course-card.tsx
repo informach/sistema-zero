@@ -21,11 +21,13 @@ interface CatalogCourseCardProps {
  * Rodapé ShieldCheck "Liberado" / Lock "Bloqueado".
  */
 export function CatalogCourseCard({ course, salesUrl, theme = 'cyan' }: CatalogCourseCardProps) {
+  const careerLocked = course.hasAccess && course.careerLock?.locked === true
+  const available = course.hasAccess && !careerLocked
   const body = (
     <Card
       className={cn(
         'h-full overflow-hidden p-0 dark:group-hover:brand-glow',
-        course.hasAccess
+        available
           ? cn('kids-card kid-pop', UNIT_THEME_CLASS[theme])
           : 'transition-shadow group-hover:shadow-lg',
       )}
@@ -50,7 +52,7 @@ export function CatalogCourseCard({ course, salesUrl, theme = 'cyan' }: CatalogC
             <BookOpen className="size-10 text-muted-foreground" />
           </div>
         )}
-        {!course.hasAccess ? (
+        {!available ? (
           <div className="absolute inset-0 flex items-center justify-center bg-background/55 backdrop-blur-[2px]">
             <span className="flex size-12 items-center justify-center rounded-full border border-border bg-background/90 shadow-sm">
               <Lock className="size-5 text-muted-foreground" />
@@ -71,10 +73,17 @@ export function CatalogCourseCard({ course, salesUrl, theme = 'cyan' }: CatalogC
           ) : null}
         </div>
         <div className="mt-auto flex items-center justify-between gap-3 border-t border-border pt-3 text-sm">
-          {course.hasAccess ? (
+          {available ? (
             <span className="inline-flex items-center gap-1.5 text-muted-foreground">
               <ShieldCheck className="size-4 text-primary" />
               Liberado
+            </span>
+          ) : careerLocked ? (
+            <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+              <Lock className="size-4 text-primary" />
+              {course.careerLock?.reason === 'foundation-first'
+                ? 'Faça o curso-base'
+                : 'Avance na carreira'}
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 text-muted-foreground">
@@ -83,14 +92,20 @@ export function CatalogCourseCard({ course, salesUrl, theme = 'cyan' }: CatalogC
             </span>
           )}
           <span className="sz-btn-gradient h-8 px-3 text-xs">
-            {course.hasAccess ? 'Acessar curso' : 'Quero acesso'}
+            {available
+              ? 'Acessar curso'
+              : careerLocked
+                ? course.careerLock?.reason === 'foundation-first'
+                  ? 'Ir para o curso-base'
+                  : 'Em breve para você'
+                : 'Quero acesso'}
           </span>
         </div>
       </div>
     </Card>
   )
 
-  if (course.hasAccess) {
+  if (available) {
     return (
       <Link
         href={`/cursos/${encodeURIComponent(course.courseSlug)}`}
@@ -100,6 +115,17 @@ export function CatalogCourseCard({ course, salesUrl, theme = 'cyan' }: CatalogC
       </Link>
     )
   }
+  if (careerLocked && course.careerLock?.foundationCourseSlug) {
+    return (
+      <Link
+        href={`/cursos/${encodeURIComponent(course.careerLock.foundationCourseSlug)}`}
+        className="group block h-full"
+      >
+        {body}
+      </Link>
+    )
+  }
+  if (careerLocked) return <div className="group block h-full">{body}</div>
   if (salesUrl) {
     // Página de vendas é EXTERNA (funil) → <a> em NOVA aba (aluno não sai da plataforma).
     return (

@@ -156,7 +156,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
       gain.gain.setValueAtTime(0.08, t);
       gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.1);
       osc.connect(gain); gain.connect(ctx.destination);
-      osc.start(t); osc.stop(t + 0.1);
+      _startAudioSource(osc, t); osc.stop(t + 0.1);
     } catch (e) {}
   }
   /** Som de explosão: rajada de ruído filtrado que decai. */
@@ -181,7 +181,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
       gain.gain.setValueAtTime(0.25, t);
       gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
       src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
-      src.start();
+      _startAudioSource(src);
     } catch (e) {}
   }
 
@@ -191,11 +191,19 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
    */
   function overlapSpriteGroup(getSprite, group, fn) {
     if (typeof getSprite !== 'function' || !group || !group.items || typeof fn !== 'function') return;
-    var sprite = getSprite();
+    var generation = _driverGeneration;
+    var sprite = _invokeProjectCallback(getSprite, undefined, []);
+    if (_runGenerationChanged(generation)) return;
     if (!sprite) return;
-    for (var i = group.items.length - 1; i >= 0; i--) {
-      var it = group.items[i];
-      if (it && isColliding(sprite, it)) fn(it);
+    var traversal = _beginGroupTraversal(group);
+    for (var i = traversal.items.length - 1; i >= 0; i--) {
+      _refreshGroupTraversal(group, traversal);
+      var it = traversal.items[i];
+      if (!it || !traversal.members.has(it)) continue;
+      if (it && isColliding(sprite, it)) {
+        _invokeProjectCallback(fn, undefined, [it]);
+        if (_runGenerationChanged(generation)) return;
+      }
     }
   }
 
@@ -216,11 +224,9 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
         'SZGame2D: "Criar tipo de inimigo" está rodando sem parar: ele provavelmente está DENTRO do "A cada quadro do jogo". Monte esse bloco FORA do laço (ele roda uma vez só); dentro do laço a lista é recriada a cada quadro e os inimigos soltos somem da tela.'
       );
     }
-    return {
-      items: [],
-      _revision: 0,
-      bullets: createGroup(),
-      config: {
+    var type = createGroup();
+    type.bullets = createGroup();
+    type.config = {
         behavior: opts.behavior || 'patrulha',
         color: opts.color || '#e4573d',
         image: (typeof opts.image === 'string') ? opts.image : '',
@@ -236,11 +242,11 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
         rate: 90,
         shotSpeed: 4,
         animStates: null
-      },
-      onDefeat: null,
-      _defeatHandlers: Object.create(null),
-      _defeatOrder: []
     };
+    type.onDefeat = null;
+    type._defeatHandlers = Object.create(null);
+    type._defeatOrder = [];
+    return type;
   }
 
   /** Guarda a animação de UM estado no TIPO (vale p/ todos os inimigos dele). */
@@ -319,12 +325,13 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
   function updateEnemyType(type, ctx, target) {
     warnEnemyTypeEmptyOnce(type);
     if (!type || !type.items || !ctx || !ctx.canvas) return;
+    var generation = _driverGeneration;
     var c = type.config || {};
     var visible = _visibleWorldRect(ctx);
     var g = world.gravity > 0 ? world.gravity : 0.6;
     for (var i = type.items.length - 1; i >= 0; i--) {
       var s = type.items[i];
-      if (!s) { type.items.splice(i, 1); _touchGroup(type); continue; }
+      if (!s) { _removeGroupItemAt(type, i); continue; }
       // Animações registradas DEPOIS do spawn ainda alcançam este inimigo.
       if (c.animStates && !s.animStates) s.animStates = c.animStates;
       var b = c.behavior;
@@ -414,10 +421,10 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
       autoAnimate(s);
       // Derrotado: some soltando particulas e avisa o "quando for derrotado".
       if (typeof s.hp === 'number' && s.hp <= 0) {
-        type.items.splice(i, 1);
-        _touchGroup(type);
+        _removeGroupItemAt(type, i);
         emitParticles(s.x + s.w / 2, s.y + s.h / 2, 12, s.color || c.color);
         _runEnemyDefeatHandlers(type, s);
+        if (_runGenerationChanged(generation)) return;
       }
     }
     // Tiros dos atiradores: linha RETA (sem a gravidade do mundo — nao usar
@@ -426,10 +433,10 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     if (bs) {
       for (var k = bs.length - 1; k >= 0; k--) {
         var shot2 = bs[k];
-        if (!shot2) { bs.splice(k, 1); _touchGroup(type.bullets); continue; }
+        if (!shot2) { _removeGroupItemAt(type.bullets, k); continue; }
         shot2.x += shot2.vx || 0;
         shot2.y += shot2.vy || 0;
-        if (shot2.x < visible.left - 40 || shot2.y < visible.top - 40 || shot2.x > visible.right + 40 || shot2.y > visible.bottom + 40) { bs.splice(k, 1); _touchGroup(type.bullets); }
+        if (shot2.x < visible.left - 40 || shot2.y < visible.top - 40 || shot2.x > visible.right + 40 || shot2.y > visible.bottom + 40) _removeGroupItemAt(type.bullets, k);
       }
     }
   }
@@ -444,6 +451,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
 
   function _runEnemyDefeatHandlers(type, sprite) {
     if (!type) return;
+    var generation = _driverGeneration;
     var order = type._defeatOrder ? type._defeatOrder.slice() : [];
     // Compatibilidade com código antigo que atribuía type.onDefeat diretamente.
     if (!order.length && typeof type.onDefeat === 'function') order.push('__legacy__');
@@ -451,12 +459,16 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
       var id = order[i];
       var handler = id === '__legacy__' ? type.onDefeat : type._defeatHandlers[id];
       if (typeof handler !== 'function') continue;
-      try { handler(sprite); }
+      try { _invokeProjectCallback(handler, undefined, [sprite]); }
       catch (error) {
         _reportHandlerError('“Quando um inimigo for derrotado”', id, error);
-        if (id === '__legacy__') type.onDefeat = null;
-        else _removeOrdered(type._defeatHandlers, type._defeatOrder, id);
+        if (id === '__legacy__') {
+          if (type.onDefeat === handler) type.onDefeat = null;
+        } else {
+          _removeOrderedIfCurrent(type._defeatHandlers, type._defeatOrder, id, handler);
+        }
       }
+      if (_runGenerationChanged(generation)) return;
     }
   }
 
@@ -477,15 +489,17 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
   function overlapEnemyShots(getSprite, type, fn) {
     if (typeof getSprite !== 'function' || typeof fn !== 'function') return;
     if (!type || !type.bullets || !type.bullets.items) return;
-    var sprite = getSprite();
+    var generation = _driverGeneration;
+    var sprite = _invokeProjectCallback(getSprite, undefined, []);
+    if (_runGenerationChanged(generation)) return;
     if (!sprite) return;
     var items = type.bullets.items;
     for (var i = items.length - 1; i >= 0; i--) {
       var shot = items[i];
       if (shot && isColliding(sprite, shot)) {
-        items.splice(i, 1);
-        _touchGroup(type.bullets);
-        fn(shot);
+        _removeGroupItemAt(type.bullets, i);
+        _invokeProjectCallback(fn, undefined, [shot]);
+        if (_runGenerationChanged(generation)) return;
       }
     }
   }
@@ -522,12 +536,14 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
   /** Escreve um texto na tela (com alinhamento esquerda/centro/direita). */
   function drawLabel(ctx, text, x, y, color, size, align) {
     if (!ctx) return;
+    var labelText = String(text === undefined || text === null ? '' : text);
     ctx.save();
     ctx.fillStyle = color || '#ffffff';
     ctx.font = 'bold ' + ((typeof size === 'number' && size > 0) ? size : 20) + 'px ' + _szGameUIFont;
     ctx.textAlign = align || 'left';
-    ctx.fillText(String(text === undefined || text === null ? '' : text), x || 0, y || 0);
+    ctx.fillText(labelText, x || 0, y || 0);
     ctx.restore();
+    _updateAccessibleHud('label:' + String(x || 0) + ':' + String(y || 0), labelText);
   }
   /** Desenha UM coração de tamanho s, canto superior-esquerdo em (x,y). */
   function drawHeart(ctx, x, y, s) {
@@ -541,8 +557,8 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     ctx.closePath();
     ctx.fill();
   }
-  /** Desenha "count" corações em linha (ex.: vidas). Teto de 20. */
-  function drawHearts(ctx, count, x, y, size, color) {
+  /** Desenha somente a parte visual dos corações; os chamadores publicam a semântica. */
+  function _drawHeartsVisual(ctx, count, x, y, size, color) {
     if (!ctx) return;
     var n = Math.max(0, Math.min(typeof count === 'number' ? Math.floor(count) : 0, 20));
     var s = (typeof size === 'number' && size > 0) ? size : 22;
@@ -550,6 +566,13 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     ctx.fillStyle = color || '#ff5d5d';
     for (var i = 0; i < n; i++) drawHeart(ctx, (x || 0) + i * (s + 6), y || 0, s);
     ctx.restore();
+  }
+  /** Desenha "count" corações em linha (ex.: vidas). Teto de 20. */
+  function drawHearts(ctx, count, x, y, size, color) {
+    if (!ctx) return;
+    _drawHeartsVisual(ctx, count, x, y, size, color);
+    var n = Math.max(0, Math.min(typeof count === 'number' ? Math.floor(count) : 0, 20));
+    _updateAccessibleHud('hearts:' + String(x || 0) + ':' + String(y || 0), 'Vidas: ' + n);
   }
   /** Barra de progresso/vida: fundo + preenchimento proporcional a value/max. */
   function _drawBarVisual(ctx, value, max, x, y, w, h, color) {
@@ -582,7 +605,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
       var height = Math.max(8, Math.round(width / 10));
       _drawBarVisual(ctx, sprite.hp, sprite.hpMax, x, y, width, height, color);
     } else {
-      drawHearts(ctx, sprite.hp, x, y, size, color);
+      _drawHeartsVisual(ctx, sprite.hp, x, y, size, color);
     }
     _updateAccessibleHud('health:' + String(x || 0) + ':' + String(y || 0), 'Vidas: ' + sprite.hp + ' de ' + sprite.hpMax);
   }
@@ -591,7 +614,9 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
   var _scene = 'inicio';
   /** Troca a tela/cena atual. */
   function setScene(name) {
-    _scene = String(name || 'inicio');
+    var nextScene = String(name || 'inicio');
+    if (nextScene !== _scene) _resetAccessibleHud();
+    _scene = nextScene;
     _announceScreen('Tela ' + _scene, '', '');
   }
   /** Cena atual (string). */
@@ -647,6 +672,21 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     }
     ctx.restore();
   }
+  /** Mensagem terminal simples, preservada para o bloco introdutório de fim de jogo. */
+  function showGameOver(ctx, text) {
+    if (!ctx || !ctx.canvas) return;
+    var message = String(text === undefined || text === null ? '' : text);
+    _announceScreen(message, '', '');
+    var w = stageW(ctx), h = stageH(ctx);
+    var size = Math.max(24, Math.round(Math.min(w, h) * 0.12));
+    ctx.save();
+    ctx.fillStyle = '#f87171';
+    ctx.font = 'bold ' + size + 'px ' + _szGameUIFont;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(message, w / 2, h / 2);
+    ctx.restore();
+  }
   /**
    * Reinicia uma partida em memória. O canvas e os assets carregados são
    * reaproveitados; estado, eventos e quadros da partida anterior são limpos e
@@ -672,15 +712,16 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
         var id = starts[i];
         var start = _startHandlers[id];
         if (typeof start !== 'function') continue;
-        try { start(); }
+        try { _invokeProjectCallback(start, undefined, []); }
         catch (error) {
           _reportHandlerError('“Ao iniciar”', id, error);
-          _removeOrdered(_startHandlers, _startOrder, id);
+          _removeOrderedIfCurrent(_startHandlers, _startOrder, id, start);
         }
       }
     } finally {
       _restarting = false;
     }
+    _endRestartedCallback();
   }
 
   // ---- Cenário: fundo de estrelas rolando + arrastar nave com o dedo ----
@@ -1092,7 +1133,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
    */
   function drawForest(ctx, speed) {
     if (!ctx || !ctx.canvas) return;
-    var sp = (typeof speed === 'number') ? speed : 4;
+    var sp = _finiteNumber(speed, 4);
     var w = stageW(ctx), h = stageH(ctx);
     var gy = dinoGround(ctx);
     ctx.save();
@@ -1134,8 +1175,9 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     ctx.fillStyle = '#9d7346';
     ctx.fillRect(0, gy + band * 0.55, w, h - (gy + band * 0.55));
     // tracinhos do chão rolando (sensação de velocidade)
-    F.gx = F.gx - sp;
-    while (F.gx <= -40) F.gx += 40;
+    // Módulo é constante no tamanho da velocidade; a normalização antiga por
+    // adições repetidas podia travar a thread com valores enormes/Infinity.
+    F.gx = (_finiteNumber(F.gx, 0) - sp) % 40;
     ctx.strokeStyle = 'rgba(255,255,255,0.18)';
     ctx.lineWidth = 3;
     for (var gx = F.gx; gx < w; gx += 40) {
@@ -1161,7 +1203,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
       g.gain.setValueAtTime(0.08, t);
       g.gain.exponentialRampToValueAtTime(0.0001, t + 0.14);
       o.connect(g); g.connect(ctx.destination);
-      o.start(t); o.stop(t + 0.14);
+      _startAudioSource(o, t); o.stop(t + 0.14);
     } catch (e) {}
   }
   /** Som de dano: rosnado grave que decai. */
@@ -1178,7 +1220,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
       g.gain.setValueAtTime(0.18, t);
       g.gain.exponentialRampToValueAtTime(0.0001, t + 0.28);
       o.connect(g); g.connect(ctx.destination);
-      o.start(t); o.stop(t + 0.3);
+      _startAudioSource(o, t); o.stop(t + 0.3);
     } catch (e) {}
   }
   /** Som de coletar: duas notinhas alegres (ovo bônus). */
@@ -1196,7 +1238,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
         g.gain.exponentialRampToValueAtTime(0.12, t + start + 0.01);
         g.gain.exponentialRampToValueAtTime(0.0001, t + start + dur);
         o.connect(g); g.connect(ctx.destination);
-        o.start(t + start); o.stop(t + start + dur);
+        _startAudioSource(o, t + start); o.stop(t + start + dur);
       }
       note(660, 0, 0.12);
       note(990, 0.09, 0.16);
@@ -1380,6 +1422,9 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     ctx.textAlign = 'center';
     ctx.fillText('vento', cx, cy - 9);
     ctx.restore();
+    var strength = Math.round(Math.min(1, Math.abs(city.wind || 0) / GORILLA_WIND) * 100);
+    var direction = city.wind > 0 ? 'para a direita' : (city.wind < 0 ? 'para a esquerda' : 'parado');
+    _updateAccessibleHud('kit:gorilas:vento', 'Vento ' + direction + ': ' + strength + '%');
   }
 
   /**
@@ -1520,6 +1565,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     ctx.textAlign = 'left';
     ctx.fillText('angulo ' + deg + ' / forca ' + pow, 12, stageH(ctx) - 12);
     ctx.restore();
+    _updateAccessibleHud('kit:gorilas:mira', 'Ângulo: ' + deg + ' graus. Força: ' + pow);
   }
 
   /** Move a banana: gravidade + vento da cidade (use a cada quadro). */
@@ -1613,7 +1659,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
       g.gain.setValueAtTime(0.06, t);
       g.gain.exponentialRampToValueAtTime(0.0001, t + 0.55);
       o.connect(g); g.connect(ctx.destination);
-      o.start(t); o.stop(t + 0.55);
+      _startAudioSource(o, t); o.stop(t + 0.55);
     } catch (e) {}
   }
 

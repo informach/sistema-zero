@@ -638,6 +638,22 @@ function lifecycleResourceFunction(
   return `${projectRunContext}.${method}`
 }
 
+/**
+ * Mantém todo callback adiado dentro da fronteira terminal da partida. Se o
+ * próprio callback reiniciar o projeto, nenhuma instrução posterior do callback
+ * antigo continua executando.
+ */
+function lifecycleCallback(
+  identifiers: IdentifierScope,
+  parameters: string,
+  body: string,
+  closingIndent: string,
+): string {
+  const projectRunContext = identifiers.getProjectRunContextIdentifier()
+  if (!projectRunContext) return `(${parameters}) => {\n${body}\n${closingIndent}}`
+  return `(${parameters}) => ${projectRunContext}.run(() => {\n${body}\n${closingIndent}})`
+}
+
 function compileStatement(
   stmt: JSStatement,
   indent: number,
@@ -817,16 +833,27 @@ function compileStatementCode(
       )
       // `} catch (erro) {` fica na linha base + 1 (try) + linhas do corpo.
       const catchHeaderLine = startLine + 1 + countLines(body)
+      const projectRunContext = identifiers.getProjectRunContextIdentifier()
+      const catchIdentifier = stmt.errorName
+        ? identifiers.get(stmt.errorName)
+        : projectRunContext
+          ? identifiers.reserveInternal('__szRestartSignal')
+          : undefined
+      const controlGuard =
+        projectRunContext && catchIdentifier
+          ? `${'  '.repeat(indent + 1)}if (${projectRunContext}.isControlSignal(${catchIdentifier})) throw ${catchIdentifier};`
+          : ''
       const handler = compileStatements(
         stmt.handler,
         indent + 1,
         identifiers,
-        childMapContext(mapContext, catchHeaderLine + 1),
+        childMapContext(mapContext, catchHeaderLine + 1 + (controlGuard ? 1 : 0)),
       )
-      const param = stmt.errorName ? `(${identifiers.get(stmt.errorName)}) ` : ''
-      let out = `${pad}try {\n${body}\n${pad}} catch ${param}{\n${handler}\n${pad}}`
+      const param = catchIdentifier ? `(${catchIdentifier}) ` : ''
+      const guardedHandler = [controlGuard, handler].filter(Boolean).join('\n')
+      let out = `${pad}try {\n${body}\n${pad}} catch ${param}{\n${guardedHandler}\n${pad}}`
       if (stmt.finalizer) {
-        const finallyHeaderLine = catchHeaderLine + 1 + countLines(handler)
+        const finallyHeaderLine = catchHeaderLine + 1 + countLines(guardedHandler)
         const finalizer = compileStatements(
           stmt.finalizer,
           indent + 1,
@@ -851,7 +878,8 @@ function compileStatementCode(
         identifiers,
         childMapContext(mapContext, startLine + 8),
       )
-      let out = `${pad}fetch(${url})\n${pad}  .then((${resp}) => {\n${pad}    if (!${resp}.ok) {\n${pad}      throw new Error("Falha HTTP " + ${resp}.status);\n${pad}    }\n${pad}    return ${resp}.json();\n${pad}  })\n${pad}  .then((${ok}) => {\n${body}\n${pad}  })`
+      const successCallback = lifecycleCallback(identifiers, ok, body, `${pad}  `)
+      let out = `${pad}fetch(${url})\n${pad}  .then((${resp}) => {\n${pad}    if (!${resp}.ok) {\n${pad}      throw new Error("Falha HTTP " + ${resp}.status);\n${pad}    }\n${pad}    return ${resp}.json();\n${pad}  })\n${pad}  .then(${successCallback})`
       if (stmt.catchBody) {
         const catchVar = stmt.catchName
           ? identifiers.get(stmt.catchName)
@@ -862,7 +890,8 @@ function compileStatementCode(
           identifiers,
           childMapContext(mapContext, startLine + 10 + countLines(body)),
         )
-        out += `\n${pad}  .catch((${catchVar}) => {\n${catchBody}\n${pad}  })`
+        const errorCallback = lifecycleCallback(identifiers, catchVar, catchBody, `${pad}  `)
+        out += `\n${pad}  .catch(${errorCallback})`
       }
       return `${out};`
     }
@@ -883,13 +912,14 @@ function compileStatementCode(
         ? `${'  '.repeat(indent + 1)}event.preventDefault();${body ? `\n${body}` : ''}`
         : body
       const targetKind = resolveEventTargetKind(stmt.target, stmt.targetKind)
+      const callback = lifecycleCallback(identifiers, 'event', protectedBody, pad)
       if (targetKind === 'window') {
-        return `${pad}window.addEventListener(${JSON.stringify(stmt.event)}, (event) => {\n${protectedBody}\n${pad}}${listenerOptions});`
+        return `${pad}window.addEventListener(${JSON.stringify(stmt.event)}, ${callback}${listenerOptions});`
       }
       if (targetKind === 'document') {
-        return `${pad}document.addEventListener(${JSON.stringify(stmt.event)}, (event) => {\n${protectedBody}\n${pad}}${listenerOptions});`
+        return `${pad}document.addEventListener(${JSON.stringify(stmt.event)}, ${callback}${listenerOptions});`
       }
-      return `${pad}${elementExpr(stmt.target, targetKind, identifiers)}?.addEventListener(${JSON.stringify(stmt.event)}, (event) => {\n${protectedBody}\n${pad}}${listenerOptions});`
+      return `${pad}${elementExpr(stmt.target, targetKind, identifiers)}?.addEventListener(${JSON.stringify(stmt.event)}, ${callback}${listenerOptions});`
     }
     case 'consoleLog':
       return `${pad}console.log(${compileExpr(stmt.value, 0, identifiers, recAt(base))});`
@@ -1017,11 +1047,7 @@ function compileStatementCode(
     case 'g2d:score':
       return `${pad}let ${identifiers.get(stmt.varName)} = ${compileExpr(valueToExpr(stmt.initial), 0, identifiers, recAt(base))};`
     case 'g2d:gameOver':
-      return [
-        `${pad}${identifiers.get(stmt.ctxVar)}.fillStyle = '#f87171';`,
-        `${pad}${identifiers.get(stmt.ctxVar)}.font = '32px sans-serif';`,
-        `${pad}${identifiers.get(stmt.ctxVar)}.fillText(${compileExpr(valueToExpr(stmt.text), 0, identifiers, recAt(base))}, 40, 80);`,
-      ].join('\n')
+      return `${pad}SZGame2D.showGameOver(${identifiers.get(stmt.ctxVar)}, ${compileExpr(valueToExpr(stmt.text), 0, identifiers, recAt(base))});`
     case 'g2d:clear':
       return `${pad}SZGame2D.clear();`
     case 'g2d:setGravity':
@@ -3125,14 +3151,17 @@ ${pad}});`
       const handler = identifiers.get(stmt.handlerName)
       const projectRunContext = identifiers.getProjectRunContextIdentifier()
       const listenerOptions = projectRunContext ? `, { signal: ${projectRunContext}.signal }` : ''
+      const callback = projectRunContext
+        ? `(event) => ${projectRunContext}.run(() => ${handler}(event))`
+        : handler
       const targetKind = resolveEventTargetKind(stmt.target, stmt.targetKind)
       if (targetKind === 'window') {
-        return `${pad}window.addEventListener(${JSON.stringify(stmt.event)}, ${handler}${listenerOptions});`
+        return `${pad}window.addEventListener(${JSON.stringify(stmt.event)}, ${callback}${listenerOptions});`
       }
       if (targetKind === 'document') {
-        return `${pad}document.addEventListener(${JSON.stringify(stmt.event)}, ${handler}${listenerOptions});`
+        return `${pad}document.addEventListener(${JSON.stringify(stmt.event)}, ${callback}${listenerOptions});`
       }
-      return `${pad}${elementExpr(stmt.target, targetKind, identifiers)}?.addEventListener(${JSON.stringify(stmt.event)}, ${handler}${listenerOptions});`
+      return `${pad}${elementExpr(stmt.target, targetKind, identifiers)}?.addEventListener(${JSON.stringify(stmt.event)}, ${callback}${listenerOptions});`
     }
     case 'setThisProp':
       return `${pad}this.${normalizeIdentifier(stmt.name)} = ${compileExpr(stmt.value, 0, identifiers, recAt(base))};`
@@ -3169,6 +3198,10 @@ ${pad}});`
       )
       const compiledTarget = compileExpr(stmt.target, 20, identifiers, recAt(base))
       const target = stmt.target.type === 'objectLiteral' ? `(${compiledTarget})` : compiledTarget
+      const projectRunContext = identifiers.getProjectRunContextIdentifier()
+      if (projectRunContext) {
+        return `${pad}${projectRunContext}.setEventHandler(${target}, "onclick", (event) => {\n${body}\n${pad}});`
+      }
       return `${pad}${target}.onclick = (event) => {\n${body}\n${pad}};`
     }
     case 'loaderLoad': {
@@ -3187,7 +3220,9 @@ ${pad}});`
       const url = compileExpr(stmt.url, 0, identifiers, recAt(base))
       const errorParam = identifiers.get(stmt.errorParam ?? 'erro')
       const onError = errorBody || `${'  '.repeat(indent + 1)}console.log(${errorParam});`
-      return `${pad}${identifiers.get(stmt.loaderVar)}.load(${url}, (${identifiers.get(stmt.param)}) => {\n${body}\n${pad}}, undefined, (${errorParam}) => {\n${onError}\n${pad}});`
+      const onLoadCallback = lifecycleCallback(identifiers, identifiers.get(stmt.param), body, pad)
+      const onErrorCallback = lifecycleCallback(identifiers, errorParam, onError, pad)
+      return `${pad}${identifiers.get(stmt.loaderVar)}.load(${url}, ${onLoadCallback}, undefined, ${onErrorCallback});`
     }
     case 'traverseEach': {
       const body = compileStatements(
@@ -3899,7 +3934,13 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}${identifiers.get(stmt.world)}.onCollision((${identifiers.get(stmt.bodyParam)}, ${identifiers.get(stmt.colliderParam)}) => {\n${body}\n${pad}});`
+      const callback = lifecycleCallback(
+        identifiers,
+        `${identifiers.get(stmt.bodyParam)}, ${identifiers.get(stmt.colliderParam)}`,
+        body,
+        pad,
+      )
+      return `${pad}${identifiers.get(stmt.world)}.onCollision(${callback});`
     }
     case 'physicsLiteTriggerEvent': {
       const body = compileStatements(
@@ -3908,7 +3949,13 @@ ${pad}});`
         identifiers,
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
-      return `${pad}${identifiers.get(stmt.world)}.onTrigger((${identifiers.get(stmt.bodyParam)}, ${identifiers.get(stmt.triggerParam)}, ${identifiers.get(stmt.enteringParam)}) => {\n${body}\n${pad}});`
+      const callback = lifecycleCallback(
+        identifiers,
+        `${identifiers.get(stmt.bodyParam)}, ${identifiers.get(stmt.triggerParam)}, ${identifiers.get(stmt.enteringParam)}`,
+        body,
+        pad,
+      )
+      return `${pad}${identifiers.get(stmt.world)}.onTrigger(${callback});`
     }
     case 'physicsLiteRaycast': {
       const args = [stmt.ox, stmt.oy, stmt.oz, stmt.dx, stmt.dy, stmt.dz, stmt.maxDistance]

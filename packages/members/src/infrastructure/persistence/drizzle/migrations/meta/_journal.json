@@ -330,6 +330,13 @@
       "when": 1784414477318,
       "tag": "0046_light_runaways",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1784740692948,
+      "tag": "0047_panoramic_jack_power",
+      "breakpoints": true
     }
   ]
 }

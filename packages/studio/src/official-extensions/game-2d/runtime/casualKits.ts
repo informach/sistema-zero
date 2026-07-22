@@ -3,6 +3,7 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
   // Estica o bastão segurando o mouse/dedo, solta para derrubar e atravessar.
   // Lê o estado do ponteiro global (pointer.down) — sem listeners próprios.
   // ============================================================
+  var _casualKitSequence = 0;
   function shRoundRect(ctx, x, y, w, h, r) {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
@@ -63,7 +64,14 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
   function createStickHero(ctx) {
     if (!ctx || !ctx.canvas) return null;
     var w = stageW(ctx), h = stageH(ctx);
-    var game = { ctx: ctx, w: w, h: h, cfg: shConfig(w, h), paddingX: Math.round(w * 0.27) };
+    var game = {
+      ctx: ctx,
+      w: w,
+      h: h,
+      cfg: shConfig(w, h),
+      paddingX: Math.round(w * 0.27),
+      _hudKey: 'kit:equilibrista:' + (++_casualKitSequence)
+    };
     shReset(game);
     return game;
   }
@@ -276,6 +284,11 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
       ctx.fillText('Caiu! Toque para recomeçar', w / 2, h * 0.45);
     }
     ctx.restore();
+    var hudParts = ['Pontos: ' + game.score];
+    if (game.perfectFlash > 0) hudParts.push('Perfeito! Mais 2 pontos');
+    if (game.phase === 'waiting') hudParts.push('Segure para esticar o bastão');
+    else if (game.phase === 'over') hudParts.push('Caiu! Toque para recomeçar');
+    _updateAccessibleHud(game._hudKey, hudParts.join('. '));
   }
   function stickHeroScore(game) { return game ? game.score : 0; }
   function stickHeroOver(game) { return game ? game.phase === 'over' : false; }
@@ -311,7 +324,12 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
   function createBalloon(ctx) {
     if (!ctx || !ctx.canvas) return null;
     var w = stageW(ctx), h = stageH(ctx);
-    var game = { ctx: ctx, w: w, h: h };
+    var game = {
+      ctx: ctx,
+      w: w,
+      h: h,
+      _hudKey: 'kit:balao:' + (++_casualKitSequence)
+    };
     blReset(game);
     return game;
   }
@@ -468,10 +486,23 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
       ctx.fillText('Segure para subir · voe baixo p/ poupar combustível', w / 2, h * 0.45);
     }
     ctx.restore();
+    var hudParts = [
+      'Distância: ' + game.meters + ' metros',
+      'Combustível: ' + Math.round(game.fuel) + ' de 100'
+    ];
+    if (game.over) hudParts.push('Fim! Toque para recomeçar');
+    else if (game.by >= game.groundY - 1 && game.dist === 0) {
+      hudParts.push('Segure para subir; voe baixo para poupar combustível');
+    }
+    _updateAccessibleHud(game._hudKey, hudParts.join('. '));
   }
   function balloonScore(game) { return game ? game.meters : 0; }
   function balloonFuel(game) { return game ? Math.round(game.fuel) : 0; }
   function balloonOver(game) { return game ? !!game.over : false; }
   function restartBalloon(game) { if (game) blReset(game); }
+
+  _registerRuntimeDomain('casual-kits', {
+    reset: function () { _casualKitSequence = 0; }
+  });
 
 `

@@ -58,6 +58,11 @@ export interface Course {
   /** Eixo 2D/3D (par com `level` = degrau pedagógico). Default `2d`. */
   track: CourseTrack
   /**
+   * Posição obrigatória na etapa da Carreira do Criador. `1` é o curso-base;
+   * `null` identifica curso bônus/fora da carreira.
+   */
+  careerSlot: number | null
+  /**
    * Trava sequencial (estilo Duolingo): quando `true`, uma aula só fica acessível
    * depois que TODAS as aulas publicadas anteriores (ordem do curso) estão
    * concluídas. Default LIGADO; desligável por curso no admin.

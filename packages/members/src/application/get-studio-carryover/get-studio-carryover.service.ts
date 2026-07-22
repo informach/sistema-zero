@@ -46,6 +46,7 @@ export class GetStudioCarryoverService {
       accountId ?? userId,
       lesson.courseId,
       privileged,
+      userId,
     )
     await assertLessonUnlocked(this.courses, this.progress, course, lessonId, userId, privileged)
 

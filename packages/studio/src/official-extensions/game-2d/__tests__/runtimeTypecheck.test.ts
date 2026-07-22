@@ -18,6 +18,14 @@ interface SZGameTileMapAssetMetadata {
 interface Window {
   SZGame2D: unknown
   SZGameUIFont: { family: string; install(): void }
+  __SZProjectLifecycle?: {
+    run(
+      callback: (...args: never[]) => unknown,
+      thisArg?: unknown,
+      args?: unknown[],
+    ): unknown
+    endCallback(): void
+  }
   __SZGAME_ASSETS?: Record<string, string>
   __SZGAME_ASSET_META?: Record<string, SZGameTileMapAssetMetadata>
   webkitAudioContext?: typeof AudioContext

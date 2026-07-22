@@ -4,7 +4,7 @@ import { compileStatements } from '#generators'
 import { behaviorStatements, type JSStatement, JSStatementSchema } from '#ir'
 import 'blockly/blocks'
 import { attachBlockInContractContext } from '../../../blockly/__tests__/blockContractTestUtils'
-import { inferBlockContract } from '../../../blockly/blockContracts'
+import { inferBlockContract, materializeBlockDefinition } from '../../../blockly/blockContracts'
 import { registerExtensionBlocks } from '../../../blockly/blocks'
 import { buildIRFromWorkspace } from '../../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../../blockly/setup'
@@ -49,7 +49,6 @@ const FORWARD_ONLY: Record<string, string> = {
   sz_g2d_set_position: 'sprite.x = …; sprite.y = … → 2 blocos de propriedade',
   sz_g2d_set_velocity: 'sprite.vx = …; sprite.vy = … → 2 blocos de propriedade',
   sz_g2d_score: 'let pontos = … → bloco de criar variável (fusão seria ambígua)',
-  sz_g2d_game_over: 'ctx.fillStyle/font/fillText → blocos de canvas/objeto',
   sz_g2d_play_boom: 'o bloco temático usa a implementação canônica playExplosion',
 }
 
@@ -167,6 +166,41 @@ describe('Auditoria Jogo 2D — inventário', () => {
     expect(statementDefs.length + exprDefs.length).toBe(gameTwoDBlocks.length)
     for (const def of statementDefs) expect(def.previousStatement).toBe('JSStmt')
     for (const def of exprDefs) expect(def.output).toBe('JSValue')
+  })
+
+  it('reiniciar é terminal: cabe em callbacks e funções, nunca na preparação da partida', () => {
+    const definition = gameTwoDBlocks.find((block) => block.type === 'sz_g2d_restart')
+    if (!definition) throw new Error('catálogo não registrou sz_g2d_restart')
+    const placement = inferBlockContract(definition).placement
+
+    expect(placement?.root).toEqual([])
+    expect(placement?.nested).toEqual(
+      expect.arrayContaining(['event-body', 'loop-body', 'function-body', 'async-function-body']),
+    )
+    expect(placement?.nested).not.toContain('statement')
+  })
+
+  it('mantém todos os criadores nomeados de sprite somente em Ao iniciar', () => {
+    const creatorTypes = [
+      'sz_g2d_create_sprite',
+      'sz_g2d_create_image_sprite',
+      'sz_g2d_create_shape_sprite',
+      'sz_g2d_create_ship',
+      'sz_g2d_create_dino',
+      'sz_g2d_place_thrower',
+    ]
+
+    for (const type of creatorTypes) {
+      const definition = gameTwoDBlocks.find((block) => block.type === type)
+      if (!definition) throw new Error(`catálogo não registrou ${type}`)
+      const placement = inferBlockContract(definition).placement
+
+      expect(placement?.root, type).toEqual(['start'])
+      expect(placement?.nested, type).toEqual([])
+      expect(materializeBlockDefinition(definition).previousStatement, type).toEqual([
+        'JSStartRoot',
+      ])
+    }
   })
 })
 

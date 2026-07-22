@@ -17,7 +17,7 @@ export const ptBR: Record<string, string> = {
   'topbar.export': 'Exportar para publicar',
   'topbar.exportStudio': 'Exportar para o Estúdio',
   'topbar.cloudSync': 'Sincronizar com o enviado',
-  'topbar.convertPro': 'Virar profissional',
+  'topbar.convertPro': 'Promover para Pro',
   'topbar.ai': 'IA',
   'topbar.rename': 'Renomear projeto',
   'topbar.projects': 'Meus projetos',
@@ -153,16 +153,16 @@ export const ptBR: Record<string, string> = {
   'export.zipping': 'Compactando…',
   'export.error': 'Não foi possível exportar: {reason}',
 
-  'convert.title': 'Transformar em projeto profissional?',
+  'convert.title': 'Promover este projeto para Pro?',
   'convert.body':
     'No projeto profissional você programa como os profissionais de verdade: vários arquivos e pastas, editando tudo pelo Código. Os blocos ficam para trás. Esta ação não pode ser desfeita.',
   'convert.legacyTitle': 'Este projeto precisa virar profissional',
   'convert.legacyBody':
     'Este projeto tem {count} arquivo(s) além dos três básicos, que o modo Blocos e Ponte não edita. Quer transformá-lo num projeto profissional (Vite) para trabalhar com todos eles? Esta ação não pode ser desfeita.',
-  'convert.confirm': 'Transformar',
+  'convert.confirm': 'Promover para Pro',
   'convert.cancel': 'Cancelar',
   'convert.later': 'Agora não',
-  'convert.working': 'Transformando…',
+  'convert.working': 'Promovendo…',
 
   'share.action': 'Compartilhar',
   'share.title': 'Compartilhar no Mural dos Criadores',
