@@ -34,7 +34,7 @@ export const gameKitBlockDefinitions04: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Desenha as barras de vida (sua e do inimigo), a energia, o escudo e a INTENÇÃO do inimigo. Use no "Desenhar o jogo" (a mão você desenha com "Desenhar a pilha").',
+      'Desenha as barras de vida (sua e do inimigo), a energia, o escudo e a INTENÇÃO do inimigo. Use no "Desenhar por cima (HUD)"; desenhe a mão no mesmo lugar com "Desenhar a pilha".',
   },
 
   {
@@ -939,7 +939,7 @@ export const gameKitBlockDefinitions04: BlockDefinition[] = [
   {
     type: 'sz_gk_saved_value',
     message0: 'o valor guardado %1',
-    args0: [{ type: 'field_input', name: 'NAME', text: 'recorde' }],
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'recorde', kind: 'stored-value' }],
     output: 'JSValue',
     colour: C,
     tooltip: 'Lê o que você guardou. Nunca guardou nada com esse nome? Devolve 0.',

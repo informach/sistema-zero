@@ -44,7 +44,7 @@ export const gameKitBlockDefinitions05: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Um mapa feito por CÓDIGO, não desenhado. É assim que se faz masmorra sorteada e mundo gerado. Depois use "Trocar a peça" num laço para cavar os corredores. Peça -1 = vazio.',
+      'Um mapa de até 512 × 512 peças feito por CÓDIGO, não desenhado. É assim que se faz masmorra sorteada e mundo gerado. Depois use "Trocar a peça" num laço para cavar os corredores. Peça -1 = vazio.',
   },
 
   {
@@ -222,7 +222,7 @@ export const gameKitBlockDefinitions05: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'A força é a chance base de pegar. 60 é a bola comum; 100 é a bola mestra (pega quase sempre). Bola melhor = recompensa/loja = progressão.',
+      'A força é a chance base de pegar. 60 é a bola comum; 100 é a bola mestra (pega quase sempre). A mochila guarda até 999 bolas. Bola melhor = recompensa/loja = progressão.',
   },
 
   {
@@ -277,7 +277,7 @@ export const gameKitBlockDefinitions05: BlockDefinition[] = [
 
   {
     type: 'sz_gk_pkm_grass_cells',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Grama alta da célula %1 , %2 até %3 , %4',
     args0: [
       { type: 'input_value', name: 'X1', check: 'JSValue' },
@@ -295,7 +295,7 @@ export const gameKitBlockDefinitions05: BlockDefinition[] = [
 
   {
     type: 'sz_gk_pkm_grass_tiles',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Grama alta: a peça %1 do mapa %2',
     args0: [
       { type: 'input_value', name: 'INDEX', check: 'JSValue' },
@@ -311,7 +311,7 @@ export const gameKitBlockDefinitions05: BlockDefinition[] = [
 
   {
     type: 'sz_gk_pkm_wild',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Na grama alta deste mapa pode aparecer %1 do nível %2 ao %3',
     args0: [
       { type: 'field_name_picker', name: 'CREATURE', text: 'Folhinha', kind: 'pkmcreature' },
@@ -359,6 +359,7 @@ export const gameKitBlockDefinitions05: BlockDefinition[] = [
     type: 'sz_gk_pkm_battle_trainer',
     placement: 'command',
     bodyExecution: 'sync-callback',
+    bodyContext: 'trainer-team',
     message0: 'Começar a batalha contra o treinador %1, com o time dele %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'Rival' },
@@ -373,7 +374,12 @@ export const gameKitBlockDefinitions05: BlockDefinition[] = [
 
   {
     type: 'sz_gk_pkm_trainer_creature',
-    placement: 'command',
+    placement: {
+      root: [],
+      nested: ['trainer-team'],
+      directNested: true,
+      role: 'command',
+    },
     message0: 'Criatura do treinador: %1 no nível %2',
     args0: [
       { type: 'field_name_picker', name: 'CREATURE', text: 'Folhinha', kind: 'pkmcreature' },
@@ -460,7 +466,7 @@ export const gameKitBlockDefinitions05: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Desenha uma fileira de corações (os cheios = vida atual, os apagados = vida que falta). É a "vidinha" dos jogos de aventura. Fica ótimo no "Desenhar por cima (HUD)".',
+      'Desenha até 100 corações (os cheios = vida atual, os apagados = vida que falta). É a "vidinha" dos jogos de aventura. Fica ótimo no "Desenhar por cima (HUD)".',
   },
 
   // ---- 🥷 Ação: a JANELA do golpe (recuo + ativo) ----
@@ -547,7 +553,7 @@ export const gameKitBlockDefinitions05: BlockDefinition[] = [
   {
     type: 'sz_gk_state_anim',
     placement: 'start-only-command',
-    message0: 'Animação de %1 no estado %2: quadros %3 a %4, %5 por segundo %6',
+    message0: 'Animação de %1 no estado %2: quadros %3 a %4, %5 por segundo, uma vez? %6',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
       {
@@ -572,7 +578,7 @@ export const gameKitBlockDefinitions05: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Diga uma vez qual animação é de cada estado; o "Animar sozinho" troca na hora certa. Marque a caixinha para ela NÃO poder ser interrompida (golpe, morrer).',
+      'Diga uma vez qual animação é de cada estado; o "Animar sozinho" troca na hora certa. Marque a caixinha para tocar uma vez e parar no último quadro. Para impedir que outro estado interrompa, use "Pôr no estado por N segundos".',
   },
 
   {
@@ -671,7 +677,7 @@ export const gameKitBlockDefinitions05: BlockDefinition[] = [
   // ---- ⏱️ Tempo: esperar UMA vez ----
   {
     type: 'sz_gk_wait',
-    placement: 'command',
+    placement: 'resource-creator',
     bodyExecution: 'deferred-callback',
     message0: 'Esperar %1 segundos e então',
     args0: [{ type: 'input_value', name: 'SECS', check: 'JSValue' }],
@@ -680,7 +686,7 @@ export const gameKitBlockDefinitions05: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Faz o que estiver dentro DEPOIS do tempo, uma vez só. ("A cada N segundos" repete para sempre.) Conta no relógio do jogo: se pausar, para de contar.',
+      'Faz o que estiver dentro DEPOIS do tempo, uma vez só. Use na preparação, num evento ou numa função; não dentro de um laço. ("A cada N segundos" repete para sempre.) Conta no relógio do jogo: se pausar, para de contar.',
   },
 
   // ---- 👾 Moldes & enxames: o mais perto ----
@@ -702,7 +708,7 @@ export const gameKitBlockDefinitions05: BlockDefinition[] = [
   {
     type: 'sz_gk_count_item',
     message0: 'quantos %1 eu tenho',
-    args0: [{ type: 'field_input', name: 'NAME', text: 'madeira' }],
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'madeira', kind: 'item' }],
     output: 'JSValue',
     tooltip:
       'A quantidade daquele item (0 = nenhum). "Ganhar o item" soma de um em um, então dá para pedir 3 madeiras para construir.',
@@ -846,6 +852,7 @@ export const gameKitBlockDefinitions05: BlockDefinition[] = [
     type: 'sz_gk_define_path',
     placement: 'start-only-command',
     bodyExecution: 'sync-callback',
+    bodyContext: 'path-builder',
     message0: 'Criar o caminho %1, passando pelos pontos:',
     args0: [{ type: 'field_input', name: 'NAME', text: 'trilha' }],
     message1: 'fazer %1',
@@ -859,7 +866,12 @@ export const gameKitBlockDefinitions05: BlockDefinition[] = [
 
   {
     type: 'sz_gk_path_point',
-    placement: 'command',
+    placement: {
+      root: [],
+      nested: ['path-builder'],
+      directNested: true,
+      role: 'command',
+    },
     message0: 'ponto x %1 y %2',
     args0: [
       { type: 'input_value', name: 'X', check: 'JSValue' },

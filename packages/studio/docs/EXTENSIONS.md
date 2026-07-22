@@ -160,6 +160,10 @@ antes de o código do aluno rodar). Regras:
       classificador paralelo na toolbox ou no builder. O schema da IR pode
       repetir os tipos de nós para proteger projetos importados, desde que o
       teste cruzado prove que catálogo e IR continuam alinhados.
+- [ ] Contêiner cujo corpo interpreta blocos auxiliares declara `bodyContext`.
+      Os auxiliares usam `root: []`, o mesmo contexto em `nested` e
+      `directNested: true`; a validação da IR deve espelhar a contenção para que
+      importações e a Ponte não aceitem uma árvore que o Blockly rejeita.
 - [ ] Todo bloco de comando ou preparo com `input_statement` que entrega esse
       corpo a uma função declara `bodyExecution`: `sync-callback` quando o
       runtime chama a função antes de devolver, ou `deferred-callback` quando a

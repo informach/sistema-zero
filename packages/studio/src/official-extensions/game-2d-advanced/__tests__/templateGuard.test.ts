@@ -62,7 +62,13 @@ describe('Guarda dos template literals do gk (Jogo 2D Avançado)', () => {
         'gameKitRuntime =',
         new Set([
           'gameKitAudioRuntime',
+          'gameKitAnimationRuntime',
+          'gameKitCardsRuntime',
+          'gameKitMonsterBattleRuntime',
+          'gameKitPlatformerRuntime',
+          'gameKitRpgBattleRuntime',
           'gameKitRpgNavigationRuntime',
+          'gameKitVisualEffectsRuntime',
           'gameRuntimeDomains',
           'towerDefenseRuntime',
         ]),
@@ -72,9 +78,15 @@ describe('Guarda dos template literals do gk (Jogo 2D Avançado)', () => {
 
   it('fragmentos do runtime não contêm crase nem interpolação crua', () => {
     for (const [file, declaration] of [
+      ['runtime/animation.ts', 'gameKitAnimationRuntime ='],
       ['runtime/audio.ts', 'gameKitAudioRuntime ='],
+      ['runtime/cards.ts', 'gameKitCardsRuntime ='],
+      ['runtime/monsterBattle.ts', 'gameKitMonsterBattleRuntime ='],
+      ['runtime/platformer.ts', 'gameKitPlatformerRuntime ='],
+      ['runtime/rpgBattle.ts', 'gameKitRpgBattleRuntime ='],
       ['runtime/rpgNavigation.ts', 'gameKitRpgNavigationRuntime ='],
       ['runtime/towerDefense.ts', 'towerDefenseRuntime ='],
+      ['runtime/visualEffects.ts', 'gameKitVisualEffectsRuntime ='],
       ['../runtimeDomains.ts', 'gameRuntimeDomains ='],
     ] as const) {
       const src = readFileSync(join(DIR, file), 'utf8')

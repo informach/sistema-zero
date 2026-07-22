@@ -234,6 +234,46 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
 
 const EVENT_BODY_ONLY_TYPES = new Set(['w3d:npcAsk'])
 
+type SpecializedBodyContext =
+  | 'draw-world'
+  | 'draw-hud'
+  | 'map-draw'
+  | 'map-enter'
+  | 'path-builder'
+  | 'menu-options'
+  | 'cutscene-steps'
+  | 'trainer-team'
+
+const SPECIALIZED_BODY_CONTEXTS: ReadonlyMap<string, SpecializedBodyContext> = new Map([
+  ['gk:onDraw', 'draw-world'],
+  ['gk:onDrawHud', 'draw-hud'],
+  ['gk:rpgCreateMap', 'map-draw'],
+  ['gk:rpgOnEnterMap', 'map-enter'],
+  ['gk:definePath', 'path-builder'],
+  ['gk:rpgMenu', 'menu-options'],
+  ['gk:rpgCutscene', 'cutscene-steps'],
+  ['gk:pkmBattleTrainer', 'trainer-team'],
+])
+
+const CONTAINER_ONLY_STATEMENTS: ReadonlyMap<string, SpecializedBodyContext> = new Map([
+  ['gk:rpgOnStep', 'map-enter'],
+  ['gk:pathPoint', 'path-builder'],
+  ['gk:rpgOption', 'menu-options'],
+  ['gk:rpgWait', 'cutscene-steps'],
+  ['gk:pkmTrainerCreature', 'trainer-team'],
+])
+
+const SPECIALIZED_BODY_LABELS: Readonly<Record<SpecializedBodyContext, string>> = {
+  'draw-world': 'Desenhar o jogo',
+  'draw-hud': 'Desenhar por cima (HUD)',
+  'map-draw': 'Criar o mapa-cenário',
+  'map-enter': 'Quando entrar no mapa-cenário',
+  'path-builder': 'Criar o caminho',
+  'menu-options': 'Menu de escolha',
+  'cutscene-steps': 'Fazer a cena',
+  'trainer-team': 'batalha contra o treinador',
+}
+
 const CORE_EVENT_TYPES = new Set([
   'eventHandler',
   'imageOnLoad',
@@ -295,7 +335,8 @@ export function isLifecycleRootAllowed(statement: JSStatement, area: LifecycleAr
     LEGACY_ENGINE_BOOT_TYPES.has(statement.type) ||
     isLegacyLoadEvent(statement) ||
     CONTINUOUS_EXTENSION_STATEMENT_TYPES.has(statement.type) ||
-    EVENT_BODY_ONLY_TYPES.has(statement.type)
+    EVENT_BODY_ONLY_TYPES.has(statement.type) ||
+    CONTAINER_ONLY_STATEMENTS.has(statement.type)
   ) {
     return false
   }
@@ -326,6 +367,7 @@ interface SemanticContext {
   derivedConstructorBody: boolean
   derivedMethodBody: boolean
   classBody: boolean
+  directSpecializedBody?: SpecializedBodyContext
 }
 
 const SYNTACTIC_LOOP_TYPES = new Set(['repeat', 'while', 'doWhile', 'forOf', 'forRange'])
@@ -345,6 +387,15 @@ function validateContextDependentNode(
   path: PropertyKey[],
   issues: LifecycleSemanticIssue[],
 ): void {
+  const requiredBody = CONTAINER_ONLY_STATEMENTS.get(String(node.type))
+  if (requiredBody && context.directSpecializedBody !== requiredBody) {
+    issue(
+      issues,
+      path,
+      `“${String(node.type)}” só pode ser usado diretamente dentro de “${SPECIALIZED_BODY_LABELS[requiredBody]}”`,
+    )
+  }
+
   if (
     CONTINUOUS_EXTENSION_STATEMENT_TYPES.has(String(node.type)) &&
     !context.continuousBody &&
@@ -524,6 +575,8 @@ function childContext(
     derivedConstructorBody: isFunction ? isConstructor && derived : context.derivedConstructorBody,
     derivedMethodBody: isFunction ? Boolean(method) && derived : context.derivedMethodBody,
     classBody: classStatement !== null || (execution !== 'function' && context.classBody),
+    directSpecializedBody:
+      path[0] === 'body' ? SPECIALIZED_BODY_CONTEXTS.get(statement.type) : undefined,
   }
 }
 
@@ -538,6 +591,7 @@ function embeddedCallbackContext(context: SemanticContext): SemanticContext {
     asyncFunctionBody: false,
     derivedConstructorBody: context.derivedConstructorBody,
     derivedMethodBody: context.derivedMethodBody,
+    directSpecializedBody: undefined,
   }
 }
 
@@ -594,7 +648,10 @@ function visitStatement(
   // depende dos seus parâmetros ou de `this`, mas nenhum comando intermediário
   // pode esconder esse registro.
   const nestedLifecycleRoot =
-    isLoopRootStatement(statement) || (isEventStatement(statement) && !context.directEventContainer)
+    isLoopRootStatement(statement) ||
+    (isEventStatement(statement) &&
+      !context.directEventContainer &&
+      !(statement.type === 'gk:rpgOnStep' && context.directSpecializedBody === 'map-enter'))
   if (context.nested && nestedLifecycleRoot) {
     issue(issues, path, `A raiz “${statement.type}” deve ficar diretamente na sua Área do projeto`)
   }
@@ -667,6 +724,7 @@ export function validateLifecycleSemantics(
       derivedConstructorBody: false,
       derivedMethodBody: false,
       classBody: false,
+      directSpecializedBody: undefined,
     },
     path,
     issues,

@@ -127,9 +127,10 @@ API global injetada como window.SZGameKit:
   normalizado × v); moveByVelocity(quem, dt) aplica × dt a cada quadro. Com
   const tiro = spawnFromMold(...) fecha tiro reto E mirado. setAngle(c, graus)
   gira o desenho em volta do centro.
-- 🖱️ Mouse/toque (em 🎮 Controles) — coords do JOGO, letterbox e câmera resolvidos:
-  onGameClick(fn(px, py)) roda a cada clique/toque no canvas; mouseX()/
-  mouseY()/mouseDown() para mirar e arrastar.
+- 🖱️ Mouse/toque (em 🎮 Controles): onGameClick(fn(worldX, worldY, screenX,
+  screenY)) roda a cada clique/toque sem quebrar callbacks antigos de 2 parâmetros.
+  mouseX()/mouseY() são coordenadas do MUNDO; mouseScreenX()/mouseScreenY() são
+  coordenadas da TELA para HUD, cartas e botões; mouseDown() serve para arrastar.
 - 📊 drawBar(atual, max, x, y, w, h, cor): barra proporcional (vida/mana/
   progresso) — ideal dentro do onDrawHud.
 - 👾 Kit Monstrinhos (o gênero "pegue e treine bichinhos"). ⭐ TESE: é um jogo do
@@ -213,11 +214,13 @@ API global injetada como window.SZGameKit:
   (painel de info) e destaca; no turno de cada aliado o painel de ação lista Atacar
   (força ± 20% − defesa/2) + os golpes nomeados + Defender/Item/Fugir, e o alvo é
   escolhido clicando num inimigo (com vários) ou automático (com um). Os inimigos
-  agem por IA. rpgAddAlly(nome, vida, força, defesa, cor) = aliado no SEU time
-  (persiste; o herói já entra); rpgAddFoe(nome, vida, força, defesa, cor) = MAIS um
-  inimigo na próxima batalha; rpgTeachMove("Você"|nomeDoAliado, "golpe", dano, custo)
-  = golpes NOMEADOS (vários por lutador; gastam energia). rpgTeachHeal("Você"|
-  nomeDoAliado, "golpe", cura, custo) = golpe de CURA (devolve VIDA em vez de ferir —
+  agem por IA. Limites: 5 aliados além do herói, 5 inimigos extras além do principal
+  e 99 poções; os blocos que acrescentam esses recursos nunca ficam em laços.
+  rpgAddAlly(nome, vida, força, defesa, cor) = aliado no SEU time (persiste; o herói
+  já entra); rpgAddFoe(nome, vida, força, defesa, cor) = MAIS um inimigo na próxima
+  batalha; rpgTeachMove("Você"|nomeDoAliado|nomeDoInimigo, "golpe", dano, custo)
+  = golpes NOMEADOS (vários por lutador; todos gastam energia). rpgTeachHeal("Você"|
+  nomeDoAliado|nomeDoInimigo, "golpe", cura, custo) = golpe de CURA (devolve VIDA em vez de ferir —
   a Curandeira; aparece no mesmo painel de ação). rpgSetSpecial(nome, dano,
   custo) = 1 golpe do herói (compat); rpgGivePotion(nome, cura) abastece o Item;
   rpgBattleReward(xp) no rpgOnBattleEnd (se ganhou) → sobe de nível (+vida/força/
@@ -228,8 +231,9 @@ API global injetada como window.SZGameKit:
   endBattle grava de volta ao sobreviver; morrer reseta cheio). rpgHealHero() = curar ao
   máximo FORA da luta (estalagem/save) — a recuperação, já que poção só vale na batalha;
   subir de nível também cura. Aliados ainda entram cheios.
-  👑 CHEFES (R30): ⭐ o inimigo AGORA usa os golpes ensinados a ele (rpgTeachMove/
-  rpgTeachHeal pelo NOME do foe; antes o foeStep só batia pela força). rpgAddBoss(nome,
+  👑 CHEFES (R30): o inimigo usa os golpes ensinados a ele (rpgTeachMove/
+  rpgTeachHeal pelo NOME do foe), paga o custo e recupera 2 de energia por rodada;
+  sem energia para nenhum golpe, ataca com a força básica. rpgAddBoss(nome,
   vida, força, defesa) = inimigo MAIOR com barra proeminente + coroa. battlerLife(nome)/
   battlerMaxLife(nome) = a vida de QUALQUER combatente (herói "Você", aliados/inimigos
   por nome; 0 fora) → a receita de FASE: "se battlerLife('Chefe') < battlerMaxLife(
@@ -303,7 +307,7 @@ API global injetada como window.SZGameKit:
   evento é setVelocityAngle · applyFriction(quem,
   fator, dt) = atrito (0.9 chão, 0.1 gelo) · angleOf(quem)/angleTo(a, b) = LER o
   ângulo (torre que gira até mirar, leque de tiros, stealth).
-- ⏱️ waitThen(segundos, fn) = esperar UMA vez, no relógio do jogo (o everySeconds
+- ⏱️ waitThen(segundos, fn) = esperar UMA vez, no relógio do jogo; use fora de laços (o everySeconds
   REPETE; o rpgWait só vale dentro de "Fazer a cena").
 - 👾 nearestActive(molde, x, y) = o vivo mais perto de um ponto (tower defense, IA
   de horda que escolhe alvo).
@@ -399,12 +403,12 @@ API global injetada como window.SZGameKit:
   Carta de 2 faces: card(frente, verso) (nasce virada pra baixo) · cardFlip(carta) ·
   cardIsUp(carta) · cardFace(carta) (frente se pra cima, verso se pra baixo — compare
   para achar o par). Mão clicável: handDraw(lista, x, y, leque?) desenha a fileira e
-  guarda os retângulos · cardAt(mouseX, mouseY, lista) = o índice da carta clicada (−1
+  guarda os retângulos · cardAt(mouseScreenX, mouseScreenY, lista) no HUD = o índice da carta clicada (−1
   = nenhuma). Memória: lista de pares + shuffle → onGameClick vira; 2 viradas → compara
   cardFace → par fica, senão waitThen(0.6) e desvira as duas.
 - 🥊 Kit Luta (Street Fighter — o ATALHO do gênero; luta "na unha" segue possível
   com personagem + applyGravity + attackFacing + didHit + hurt + knockback):
-  lutaMatch(a, b, rounds, segundos) casa os DOIS e grava o "home" de cada um da
+  lutaMatch(a, b, rounds, segundos) casa os DOIS (rounds é limitado de 1 a 9) e grava o "home" de cada um da
   posição ATUAL — vem DEPOIS do placeCharacter (o respawn geral não serve: o
   _bornX nasce 0 e o placeCharacter não o atualiza). lutaFighter(quem, esq, dir,
   pular, agachar, defender, dt) = tudo-em-um com as TECLAS DELE → dois blocos =
@@ -508,7 +512,7 @@ API global injetada como window.SZGameKit:
   no começo do meu turno). Intenção (o telegrafo): cardsEnemyIntent("atacar", n) anuncia
   · cardsDrawHud() desenha vidas/energia/escudo/intenção · cardsIntentAction()/
   cardsIntentValue() a criança LÊ no cardsOnEnemyTurn(fn) p/ resolver ("se action==
-  'atacar': cardsHurtMe(value)") e anunciar a próxima. Jogar carta = onGameClick + cardAt
+  'atacar': cardsHurtMe(value)") e anunciar a próxima. Jogar carta no HUD = onGameClick + cardAt(mouseScreenX(), mouseScreenY())
   (Fase 🎴 Cartas) + cardsSpend + efeito + pileMoveTop mão→descarte. Exemplo "Duelo de
   Cartas".
 - 🥷 Ação em tempo real (Zelda; Ninja Adventure): attackFacing(quem, alcance,

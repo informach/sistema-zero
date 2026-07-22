@@ -121,6 +121,24 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
   },
 
   {
+    type: 'sz_gk_mouse_screen_x',
+    message0: 'o mouse x na tela',
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Onde o mouse (ou o dedo) está na largura da TELA. Use para clicar em cartas, botões e painéis desenhados no HUD, mesmo com a câmera ligada.',
+  },
+
+  {
+    type: 'sz_gk_mouse_screen_y',
+    message0: 'o mouse y na tela',
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Onde o mouse (ou o dedo) está na altura da TELA. Use junto de “o mouse x na tela” para interagir com o HUD.',
+  },
+
+  {
     type: 'sz_gk_mouse_down',
     message0: 'o mouse está apertado ?',
     output: 'JSValue',
@@ -144,7 +162,7 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Roda o "fazer" a cada clique/toque no jogo, com a posição já nas coordenadas do JOGO (px e py). É a base de tower defense, point-and-click e botões desenhados.',
+      'Roda o "fazer" a cada clique/toque, com px e py nas coordenadas do MUNDO. Para cartas, botões e painéis presos no HUD, use “o mouse x/y na tela” dentro deste evento.',
   },
 
   // ---- ❤️ Combate ----
@@ -499,6 +517,7 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     type: 'sz_gk_rpg_create_map',
     placement: 'start-only-command',
     bodyExecution: 'deferred-callback',
+    bodyContext: 'map-draw',
     message0: 'Criar o mapa-cenário %1 com %2 × %3 células',
     args0: [
       { type: 'field_input', name: 'MAP', text: 'vila' },
@@ -515,12 +534,13 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria o lugar onde a aventura acontece. Dentro de “desenhar”, você decide a aparência com formas vetoriais, um mapa de peças feito no Pinta ou uma imagem importada. Nada é criado automaticamente.',
+      'Cria o lugar onde a aventura acontece, com até 512 × 512 células. Dentro de “desenhar”, você decide a aparência com formas vetoriais, um mapa de peças feito no Pinta ou uma imagem importada. Nada é criado automaticamente.',
   },
 
   {
     type: 'sz_gk_rpg_on_enter_map',
     placement: 'event',
+    bodyContext: 'map-enter',
     message0: 'Quando entrar no mapa-cenário %1',
     args0: [{ type: 'field_name_picker', name: 'MAP', text: 'vila', kind: 'map' }],
     message1: 'fazer %1',
@@ -612,7 +632,7 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Define a vida, a força e a DEFESA do SEU lado nas batalhas (a defesa reduz o dano recebido). Cada batalha começa com a vida e a energia cheias. Use uma vez, no começo. É o seu nível 1.',
+      'Define a vida, a força e a DEFESA do SEU lado nas batalhas (a defesa reduz o dano recebido). A energia começa cheia; a vida atravessa as batalhas até você curar, perder ou subir de nível. Use uma vez, no começo. É o seu nível 1.',
   },
 
   {
@@ -653,7 +673,7 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
 
   {
     type: 'sz_gk_rpg_give_potion',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Ganhar a poção %1 que cura %2',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'Poção' },
@@ -664,7 +684,7 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Põe uma poção no estoque de batalha (empilha). Na luta, o botão "Item" usa uma e recupera vida.',
+      'Põe uma poção no estoque de batalha (empilha até 99). Na luta, o botão "Item" usa uma e recupera vida. Pode ficar no começo, numa reação ou função, mas nunca dentro de um laço.',
   },
 
   {
@@ -741,12 +761,12 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Põe um aliado no SEU time de batalha (o herói já entra sozinho). Na batalha em equipe você comanda cada um: escolhe o golpe e o alvo. A imagem é um desenho do Pinta. Escolha direto, não precisa "Carregar" antes (vazio = retângulo da cor). O time fica salvo entre batalhas. Use no começo.',
+      'Põe um aliado no SEU time de batalha (até 5 além do herói, que já entra sozinho). Na batalha em equipe você comanda cada um: escolhe o golpe e o alvo. A imagem é um desenho do Pinta. Escolha direto, não precisa "Carregar" antes (vazio = retângulo da cor). O time fica salvo entre batalhas. Use no começo, nunca num laço.',
   },
 
   {
     type: 'sz_gk_rpg_add_foe',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Adicionar inimigo %1 com vida %2, força %3, defesa %4, cor %5, imagem %6',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'Capanga' },
@@ -761,7 +781,7 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Adiciona MAIS um inimigo à PRÓXIMA batalha (além do que você nomeia em "Começar a batalha"). Assim a luta vira vários contra vários. A imagem é um desenho do Pinta. Escolha direto, não precisa "Carregar" antes (vazio = retângulo da cor). Use antes de "Começar a batalha".',
+      'Adiciona um dos até 5 inimigos extras da PRÓXIMA batalha (além do principal). Assim a luta vira vários contra vários. A imagem é um desenho do Pinta. Escolha direto, não precisa "Carregar" antes (vazio = retângulo da cor). Use antes de "Começar a batalha", nunca num laço.',
   },
 
   {
@@ -779,7 +799,7 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Ensina um golpe NOMEADO a alguém do time (o herói é "Você"; os aliados pelo nome). Cada um pode ter vários golpes, e eles aparecem no painel de ação da batalha. Gasta energia. Use no começo.',
+      'Ensina um golpe NOMEADO ao herói ("Você"), a aliados ou inimigos pelo nome. Cada combatente pode ter vários golpes; o golpe gasta energia quando é usado. Os golpes do time aparecem no painel, e os inimigos escolhem apenas os que conseguem pagar. Use no começo.',
   },
 
   {
@@ -797,7 +817,7 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Como "Ensinar o golpe", mas de CURA: em vez de ferir o inimigo, devolve vida a quem usou. Ótimo para um aliado curandeiro. Aparece no painel de ação e gasta energia. Use no começo.',
+      'Como "Ensinar o golpe", mas de CURA: em vez de ferir, devolve vida a quem usou. Serve para aliados curandeiros e inimigos que se recuperam; aparece no painel do time e gasta energia. Use no começo.',
   },
 
   {
@@ -841,7 +861,7 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
   // ---- 👑 R30: chefes e chefões da batalha por turnos ----
   {
     type: 'sz_gk_rpg_add_boss',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Pôr o CHEFÃO %1 (vida %2, força %3, defesa %4, imagem %5)',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'Dragão' },
@@ -855,7 +875,7 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Como "Adicionar inimigo", mas um CHEFÃO: aparece MAIOR, com barra de vida grande e o nome com coroa. A imagem é um desenho do Pinta. Escolha direto, não precisa "Carregar" antes (vazio = retângulo da cor). Ensine golpes a ele pelo nome. Use antes de "Começar a batalha".',
+      'Como "Adicionar inimigo", ocupa uma das 5 vagas de inimigos extras, mas aparece MAIOR, com barra de vida grande e o nome com coroa. A imagem é um desenho do Pinta. Ensine golpes a ele pelo nome. Use antes de "Começar a batalha", nunca num laço.',
   },
 
   // ---- ⚔️ Fichas reutilizáveis: crie o inimigo separado e escolha na hora ----

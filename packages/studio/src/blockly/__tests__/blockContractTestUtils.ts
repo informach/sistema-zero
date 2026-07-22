@@ -1,5 +1,11 @@
 import type * as Blockly from 'blockly/core'
-import { FRAME_EVENTS, FRAME_LOOPS, FRAME_START, requireBlockContract } from '../blockContracts'
+import {
+  blockTypeProvidingBodyContext,
+  FRAME_EVENTS,
+  FRAME_LOOPS,
+  FRAME_START,
+  requireBlockContract,
+} from '../blockContracts'
 
 interface AttachOptions {
   workspace: Blockly.Workspace
@@ -49,7 +55,21 @@ export function attachBlockInContractContext(options: AttachOptions): Blockly.Bl
     frame.getInput('CHILDREN')?.connection?.connect(host.previousConnection as Blockly.Connection)
     slot = host.getInput(eventInput)?.connection
   } else {
-    throw new Error(`${statementType}: o teste não conhece um contexto raiz permitido`)
+    const specializedContext = contract.placement?.nested.find((context) =>
+      blockTypeProvidingBodyContext(context),
+    )
+    const hostType = specializedContext
+      ? blockTypeProvidingBodyContext(specializedContext)
+      : undefined
+    const hostContract = hostType ? requireBlockContract(hostType) : undefined
+    const hostRoot = hostContract?.placement?.root[0]
+    if (!hostType || !hostRoot) {
+      throw new Error(`${statementType}: o teste não conhece um contexto raiz permitido`)
+    }
+    const frame = workspace.newBlock(ROOT_FRAME[hostRoot])
+    const host = workspace.newBlock(hostType)
+    frame.getInput('CHILDREN')?.connection?.connect(host.previousConnection as Blockly.Connection)
+    slot = host.getInput('BODY')?.connection
   }
 
   if (!slot) throw new Error(`${statementType}: contexto sem conexão de statements`)

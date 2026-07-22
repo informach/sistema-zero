@@ -110,7 +110,7 @@ beforeAll(() => {
 describe('Auditoria Jogo 2D Avançado — inventário', () => {
   it('todo def é statement (previousStatement) ou reporter (output)', () => {
     expect(statementDefs.length + exprDefs.length).toBe(gameKitBlocks.length)
-    expect(gameKitBlocks.length).toBe(337)
+    expect(gameKitBlocks.length).toBe(339)
     for (const def of statementDefs) expect(def.previousStatement).toBe('JSStmt')
     for (const def of exprDefs) expect(def.output).toBe('JSValue')
   })
@@ -168,6 +168,13 @@ describe('Auditoria Jogo 2D Avançado — inventário', () => {
     }
     walkNamed(gameKitToolboxCategory.contents)
     expect(visibleDefTypes.filter((t) => !named.has(t))).toEqual([])
+  })
+
+  it('explica que a animação marcada toca uma vez, sem prometer uma trava que pertence ao estado', () => {
+    const def = gameKitBlocks.find((block) => block.type === 'sz_gk_state_anim')
+    expect(def?.message0).toContain('uma vez?')
+    expect(def?.tooltip).toContain('último quadro')
+    expect(def?.tooltip).not.toContain('NÃO poder ser interrompida')
   })
 })
 

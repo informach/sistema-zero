@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import type { JSExpr, JSStatement } from '#ir'
-import { GK_STATEMENT_TYPES, SZIRSchema, statementIsExtension } from '#ir'
+import { GK_STATEMENT_TYPES, SZIRSchema, SZIRV2Schema, statementIsExtension } from '#ir'
 
 /**
  * F1 do Jogo 2D Avançado: todo nó `gk:` do IR valida no schema zod (união TS e
@@ -75,6 +75,8 @@ const GK_EXPRS: JSExpr[] = [
   { type: 'gk:charX', charVar: 'heroi' },
   { type: 'gk:charY', charVar: 'heroi' },
   { type: 'gk:keyDown', key: 'w' },
+  { type: 'gk:mouseScreenX' },
+  { type: 'gk:mouseScreenY' },
 ]
 
 describe('game-2d-advanced — IR no schema', () => {
@@ -152,5 +154,95 @@ describe('game-2d-advanced — IR no schema', () => {
       ],
     })
     expect(parsed.success).toBe(false)
+  })
+
+  it('aceita gatilho de célula somente dentro da entrada do mapa', () => {
+    const nested = SZIRV2Schema.safeParse({
+      version: 2,
+      html: [],
+      css: [],
+      extensions: [{ extensionId: 'game-2d-advanced' }],
+      behavior: {
+        start: [],
+        events: [
+          {
+            type: 'gk:rpgOnEnterMap',
+            map: 'vila',
+            body: [{ type: 'gk:rpgOnStep', cx: 2, cy: 3, body: [] }],
+          },
+        ],
+        loops: [],
+      },
+    })
+    expect(nested.success).toBe(true)
+
+    const atRoot = SZIRV2Schema.safeParse({
+      version: 2,
+      html: [],
+      css: [],
+      extensions: [{ extensionId: 'game-2d-advanced' }],
+      behavior: {
+        start: [],
+        events: [{ type: 'gk:rpgOnStep', cx: 2, cy: 3, body: [] }],
+        loops: [],
+      },
+    })
+    expect(atRoot.success).toBe(false)
+  })
+
+  it('rejeita auxiliares de construção fora do contêiner correspondente', () => {
+    const cases: Array<{ child: JSStatement; container: JSStatement }> = [
+      {
+        child: { type: 'gk:pathPoint', x: 10, y: 20 },
+        container: {
+          type: 'gk:definePath',
+          name: 'trilha',
+          body: [{ type: 'gk:pathPoint', x: 10, y: 20 }],
+        },
+      },
+      {
+        child: { type: 'gk:rpgOption', label: { type: 'str', value: 'Sim' }, body: [] },
+        container: {
+          type: 'gk:rpgMenu',
+          title: { type: 'str', value: 'Escolha' },
+          body: [{ type: 'gk:rpgOption', label: { type: 'str', value: 'Sim' }, body: [] }],
+        },
+      },
+      {
+        child: { type: 'gk:rpgWait', seconds: 1 },
+        container: { type: 'gk:rpgCutscene', body: [{ type: 'gk:rpgWait', seconds: 1 }] },
+      },
+      {
+        child: { type: 'gk:pkmTrainerCreature', creature: 'Folhinha', level: 5 },
+        container: {
+          type: 'gk:pkmBattleTrainer',
+          name: 'Rival',
+          body: [{ type: 'gk:pkmTrainerCreature', creature: 'Folhinha', level: 5 }],
+        },
+      },
+    ]
+
+    const parseStart = (statements: JSStatement[]) =>
+      SZIRV2Schema.safeParse({
+        version: 2,
+        html: [],
+        css: [],
+        extensions: [{ extensionId: 'game-2d-advanced' }],
+        behavior: { start: statements, events: [], loops: [] },
+      })
+
+    for (const [index, entry] of cases.entries()) {
+      expect(parseStart([entry.container]).success, entry.container.type).toBe(true)
+      expect(parseStart([entry.child]).success, entry.child.type).toBe(false)
+
+      const wrongContainer = cases[(index + 1) % cases.length]?.container
+      if (!wrongContainer || !('body' in wrongContainer)) {
+        throw new Error(`${entry.child.type}: contêiner incorreto ausente`)
+      }
+      expect(
+        parseStart([{ ...wrongContainer, body: [entry.child] } as JSStatement]).success,
+        `${entry.child.type} no contêiner incorreto`,
+      ).toBe(false)
+    }
   })
 })

@@ -343,14 +343,8 @@ export const dueloDeCartasExample: ExtensionExample = {
               name: 'i',
               value: {
                 type: 'gk:cardAt',
-                x: {
-                  type: 'var',
-                  name: 'px',
-                },
-                y: {
-                  type: 'var',
-                  name: 'py',
-                },
+                x: { type: 'gk:mouseScreenX' },
+                y: { type: 'gk:mouseScreenY' },
                 pileVar: 'mao',
               },
               kind: 'const',
@@ -529,6 +523,12 @@ export const dueloDeCartasExample: ExtensionExample = {
               color: '#191426',
               grid: true,
             },
+          ],
+        },
+        {
+          type: 'gk:onDrawHud',
+          ctxName: 'ctx',
+          body: [
             {
               type: 'gk:cardsDrawHud',
             },

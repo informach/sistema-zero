@@ -77,9 +77,9 @@ jobs:
         working-directory: packages/studio
         run: bunx playwright install --with-deps chromium
 
-      - name: E2E Jogo 2D (Chromium)
+      - name: E2E Jogo 2D e Jogo 2D Avançado (Chromium)
         working-directory: packages/studio
-        run: bunx playwright test e2e/examples-gallery.spec.ts --grep "game-2d:"
+        run: bunx playwright test e2e/examples-gallery.spec.ts --grep "game-2d(?:-advanced)?:"
 
   deploy-staging:
     name: deploy-staging

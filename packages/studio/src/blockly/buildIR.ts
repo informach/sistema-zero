@@ -737,6 +737,10 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'gk:mouseX' }
     case 'sz_gk_mouse_y':
       return { type: 'gk:mouseY' }
+    case 'sz_gk_mouse_screen_x':
+      return { type: 'gk:mouseScreenX' }
+    case 'sz_gk_mouse_screen_y':
+      return { type: 'gk:mouseScreenY' }
     case 'sz_gk_mouse_down':
       return { type: 'gk:mouseDown' }
     case 'sz_gk_rpg_cell':

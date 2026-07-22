@@ -27,7 +27,7 @@ Regras práticas:
   reapareceriam no diff do PR seguinte.
 - O CI (`.github/workflows/ci.yml`) roda `biome ci` + `bun test` + `typecheck` de
   **todos** os pacotes (bun 1.3.11) e os cenários Playwright focados do Jogo 2D
-  em Chromium, em PR para a main e em push na staging.
+  e Jogo 2D Avançado em Chromium, em PR para a main e em push na staging.
   ⚠️ As suítes passam **sem nenhum `.env`** (fakes; `tests/db` do auth se auto-pulam
   sem banco) — teste novo não pode depender de env local.
 

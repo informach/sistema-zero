@@ -11,6 +11,6 @@ describe('game-2d-advanced — capacidades declaradas', () => {
   })
 
   it('mantém margem para evoluir a documentação dentro do limite do manifest', () => {
-    expect(gameKitManifest.docs?.length ?? 0).toBeLessThanOrEqual(55_000)
+    expect(gameKitManifest.docs?.length ?? 0).toBeLessThanOrEqual(48_000)
   })
 })

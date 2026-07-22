@@ -41,6 +41,8 @@ type ScopedBinderRegistry = Readonly<Record<string, ScopedBinder>>
  *  - `animation` → animações CSS declaradas por blocos de keyframes;
  *  - `spritesheet` → folha de quadros do Jogo 2D (`sz_g2d_load_spritesheet`);
  *  - `tilemap`  → mapa de tiles do Jogo 2D (`sz_g2d_create_tilemap`);
+ *  - `board` / `stored-value` → tabuleiros e valores persistidos do Jogo 2D Avançado;
+ *  - `combat-move` / `fight-move` → golpes declarados nos dois sistemas de luta;
  *  - `scene3d`  → cena/mundo do Jogo 3D (blocos `criar cena…`);
  *  - `object3d` → objeto/malha do Jogo 3D (caixa/bola/modelo…); tem locais de laço
  *                 (o "item" do "para cada no enxame");
@@ -73,6 +75,10 @@ export type NameKind =
   | 'animation'
   | 'spritesheet'
   | 'tilemap'
+  | 'board'
+  | 'stored-value'
+  | 'combat-move'
+  | 'fight-move'
   | 'enemytype'
   | 'shape'
   | 'scene3d'
@@ -84,6 +90,7 @@ export type NameKind =
   | 'mold'
   | 'battler'
   | 'combatant'
+  | 'enemy-combatant'
   | 'effect'
   | 'event'
   | 'look'
@@ -113,6 +120,11 @@ const DECLARED_NAME_KINDS: ReadonlySet<NameKind> = new Set([
   'function',
   'dom-target',
   'canvas-context',
+  'board',
+  'stored-value',
+  'combat-move',
+  'fight-move',
+  'enemy-combatant',
 ])
 
 export function nameKindAllowsFreeText(kind: NameKind): boolean {
@@ -145,6 +157,10 @@ const NAME_KINDS: readonly NameKind[] = [
   'animation',
   'spritesheet',
   'tilemap',
+  'board',
+  'stored-value',
+  'combat-move',
+  'fight-move',
   'enemytype',
   'shape',
   'scene3d',
@@ -156,6 +172,7 @@ const NAME_KINDS: readonly NameKind[] = [
   'mold',
   'battler',
   'combatant',
+  'enemy-combatant',
   'effect',
   'event',
   'look',
@@ -485,6 +502,17 @@ function collectCombatants(workspace: Blockly.Workspace | null | undefined): str
   for (const n of collectDeclaredNames(workspace, COMBATANT_DECL_BLOCKS)) seen.add(n)
   return [...seen]
 }
+// ⚔️ Somente o lado INIMIGO. Os blocos de IA não podem oferecer "Você" nem
+// aliados: além de confundir a criança, os comandos de ataque têm outro alvo.
+const ENEMY_COMBATANT_DECL_BLOCKS: Record<string, string[]> = {
+  sz_gk_rpg_add_foe: ['NAME'],
+  sz_gk_rpg_add_boss: ['NAME'],
+  sz_gk_rpg_battle_start: ['NAME'],
+  sz_gk_rpg_define_battler: ['NAME'],
+}
+export function collectEnemyCombatants(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, ENEMY_COMBATANT_DECL_BLOCKS)
+}
 
 /** Efeitos de faísca (partículas data-driven) — fonte do seletor EFFECT. */
 const EFFECT_DECL_BLOCKS: Record<string, string[]> = { sz_gk_define_effect: ['NAME'] }
@@ -557,6 +585,48 @@ function collectItems(workspace: Blockly.Workspace | null | undefined): string[]
 const MAP_DECL_BLOCKS: Record<string, string[]> = { sz_gk_rpg_create_map: ['MAP'] }
 function collectMaps(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, MAP_DECL_BLOCKS)
+}
+
+/** Recursos nomeados do Jogo 2D Avançado que antes exigiam redigitação exata. */
+const BOARD_DECL_BLOCKS: NameFieldRegistry = { sz_gk_board_create: ['NAME'] }
+export function collectBoards(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, BOARD_DECL_BLOCKS)
+}
+const STORED_VALUE_DECL_BLOCKS: NameFieldRegistry = { sz_gk_save_value: ['NAME'] }
+export function collectStoredValues(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, STORED_VALUE_DECL_BLOCKS)
+}
+const COMBAT_MOVE_DECL_BLOCKS: NameFieldRegistry = {
+  sz_gk_rpg_teach_move: ['MOVE'],
+  sz_gk_rpg_teach_heal: ['MOVE'],
+}
+const COMBAT_MOVE_OWNER_FIELDS: Readonly<Record<string, string>> = {
+  sz_gk_rpg_teach_move: 'WHO',
+  sz_gk_rpg_teach_heal: 'WHO',
+}
+export function collectCombatMoves(
+  workspace: Blockly.Workspace | null | undefined,
+  consumer?: Blockly.Block | null,
+): string[] {
+  return collectOwnedDeclaredNames(
+    workspace,
+    COMBAT_MOVE_DECL_BLOCKS,
+    COMBAT_MOVE_OWNER_FIELDS,
+    consumer?.getFieldValue('NAME'),
+  )
+}
+const FIGHT_MOVE_DECL_BLOCKS: NameFieldRegistry = { sz_gk_luta_move: ['NAME'] }
+const FIGHT_MOVE_OWNER_FIELDS: Readonly<Record<string, string>> = { sz_gk_luta_move: 'WHO' }
+export function collectFightMoves(
+  workspace: Blockly.Workspace | null | undefined,
+  consumer?: Blockly.Block | null,
+): string[] {
+  return collectOwnedDeclaredNames(
+    workspace,
+    FIGHT_MOVE_DECL_BLOCKS,
+    FIGHT_MOVE_OWNER_FIELDS,
+    consumer?.getFieldValue('WHO'),
+  )
 }
 
 /**
@@ -894,6 +964,26 @@ const KIND_UI: Record<NameKind, KindUI> = {
     placeholder: 'nome do mapa de tiles',
     empty: 'Nenhum mapa de tiles ainda — crie um ("Criar mapa de tiles") ou digite o nome abaixo.',
   },
+  board: {
+    icon: '🧩',
+    placeholder: 'nome do tabuleiro',
+    empty: 'Nenhum tabuleiro ainda — crie um com “Criar o tabuleiro”.',
+  },
+  'stored-value': {
+    icon: '💾',
+    placeholder: 'nome do valor guardado',
+    empty: 'Nenhum valor guardado ainda — use “Guardar o valor” primeiro.',
+  },
+  'combat-move': {
+    icon: '⚔️',
+    placeholder: 'nome do golpe da batalha',
+    empty: 'Nenhum golpe de batalha ainda — ensine um golpe a um combatente primeiro.',
+  },
+  'fight-move': {
+    icon: '🥊',
+    placeholder: 'nome do golpe de luta',
+    empty: 'Nenhum golpe de luta ainda — crie um com o bloco “Golpe”.',
+  },
   shape: {
     icon: '🎨',
     placeholder: 'nome da figura',
@@ -955,6 +1045,11 @@ const KIND_UI: Record<NameKind, KindUI> = {
     placeholder: 'nome do combatente',
     empty:
       'O herói é "Você". Aliados e inimigos aparecem quando você os adiciona/cria — ou digite o nome abaixo.',
+  },
+  'enemy-combatant': {
+    icon: '👿',
+    placeholder: 'nome do inimigo',
+    empty: 'Nenhum inimigo ainda — adicione um inimigo, um chefão ou crie uma ficha primeiro.',
   },
   effect: {
     icon: '✨',
@@ -1069,6 +1164,34 @@ function collectDeclaredNames(
     for (const f of fields) {
       if (!block.getField(f)) continue
       const name = block.getFieldValue(f)
+      if (!name || seen.has(name)) continue
+      seen.add(name)
+      ordered.push(name)
+    }
+  }
+  return ordered
+}
+
+/** Variante para recursos que pertencem a outro nome (golpe → combatente). */
+function collectOwnedDeclaredNames(
+  workspace: Blockly.Workspace | null | undefined,
+  registry: NameFieldRegistry,
+  ownerFields: Readonly<Record<string, string>>,
+  requestedOwner: unknown,
+): string[] {
+  if (!workspace) return []
+  const owner = `${requestedOwner ?? ''}`.trim()
+  if (!owner) return collectDeclaredNames(workspace, registry)
+  const seen = new Set<string>()
+  const ordered: string[] = []
+  for (const block of workspace.getAllBlocks(false)) {
+    const fields = registry[block.type]
+    const ownerField = ownerFields[block.type]
+    if (!fields || !ownerField || `${block.getFieldValue(ownerField) ?? ''}`.trim() !== owner)
+      continue
+    for (const field of fields) {
+      if (!block.getField(field)) continue
+      const name = `${block.getFieldValue(field) ?? ''}`.trim()
       if (!name || seen.has(name)) continue
       seen.add(name)
       ordered.push(name)
@@ -1547,6 +1670,8 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectBattlers(ws)
       case 'combatant':
         return collectCombatants(ws)
+      case 'enemy-combatant':
+        return collectEnemyCombatants(ws)
       case 'effect':
         return collectEffects(ws)
       case 'event':
@@ -1571,6 +1696,14 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectItems(ws)
       case 'map':
         return collectMaps(ws)
+      case 'board':
+        return collectBoards(ws)
+      case 'stored-value':
+        return collectStoredValues(ws)
+      case 'combat-move':
+        return collectCombatMoves(ws, block)
+      case 'fight-move':
+        return collectFightMoves(ws, block)
       case 'entity3d':
         return collectEntities3d(ws)
       case 'mold3d':

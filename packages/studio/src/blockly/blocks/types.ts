@@ -23,6 +23,10 @@ export type StatementContext =
   | 'draw-hud'
   | 'map-draw'
   | 'map-enter'
+  | 'path-builder'
+  | 'menu-options'
+  | 'cutscene-steps'
+  | 'trainer-team'
 
 export interface BlockPlacement {
   root: readonly BehaviorArea[]
@@ -31,6 +35,8 @@ export interface BlockPlacement {
   forbiddenNested?: readonly StatementContext[]
   /** Contextos que invalidam apenas quando são o contêiner direto do bloco. */
   forbiddenDirectNested?: readonly StatementContext[]
+  /** Exige que um dos contextos permitidos pertença ao contêiner direto. */
+  directNested?: boolean
   role: 'declaration' | 'command' | 'event' | 'loop' | 'value'
   phase?: 'update' | 'periodic' | 'draw-world' | 'draw-hud'
 }
@@ -111,6 +117,8 @@ interface BlockDefinitionBase {
   hidden?: boolean
   /** Limite léxico/temporal criado ao entrar nos corpos de statements do bloco. */
   bodyExecution?: StatementBodyExecution
+  /** Contexto semântico adicional criado no corpo de statements do bloco. */
+  bodyContext?: StatementContext
   /** Declara que o callback do corpo roda diretamente durante um gesto do usuário. */
   userGesture?: UserGestureActivation
   /** Declara que o callback recebe um parâmetro `event` do navegador. */

@@ -567,6 +567,11 @@ export const vilaDoDragaoExample: ExtensionExample = {
                       speaker: { type: 'str', value: 'Ferreiro' },
                     },
                     { type: 'gk:rpgAddFlag', flag: 'missao-pronta' },
+                    {
+                      type: 'gk:rpgGivePotion',
+                      name: 'Poção',
+                      heal: { type: 'num', value: 20 },
+                    },
                   ],
                 },
                 {
@@ -646,22 +651,11 @@ export const vilaDoDragaoExample: ExtensionExample = {
               },
               map: 'vila',
             },
-          ],
-        },
-        {
-          type: 'gk:rpgOnStep',
-          cx: { type: 'num', value: 4 },
-          cy: { type: 'num', value: 5 },
-          body: [
             {
-              type: 'if',
-              cond: {
-                type: 'binop',
-                op: '===',
-                left: { type: 'gk:rpgCurrentMap' },
-                right: { type: 'str', value: 'caverna' },
-              },
-              then: [
+              type: 'gk:rpgOnStep',
+              cx: { type: 'num', value: 4 },
+              cy: { type: 'num', value: 5 },
+              body: [
                 {
                   type: 'gk:rpgSay',
                   text: {
@@ -823,7 +817,6 @@ export const vilaDoDragaoExample: ExtensionExample = {
               },
               then: [
                 { type: 'gk:rpgGiveItem', item: 'chave', image: '' },
-                { type: 'gk:rpgGivePotion', name: 'Poção', heal: { type: 'num', value: 20 } },
                 { type: 'gk:rpgAddFlag', flag: 'aceitou-missao' },
                 {
                   type: 'gk:rpgCreateDoor',

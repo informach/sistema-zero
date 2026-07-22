@@ -29,40 +29,46 @@ export const gameKitRpgNavigationRuntime = `
     if (maxX - minX + 1 > MAX_GRID_SIDE || maxY - minY + 1 > MAX_GRID_SIDE) return null;
     if (targetCx < minX || targetCx > maxX || targetCy < minY || targetCy > maxY) return null;
     if (cellOccupied(targetCx, targetCy, n)) return null;
-    var startKey = startCx + ',' + startCy;
-    var targetKey = targetCx + ',' + targetCy;
-    var parents = Object.create(null);
-    var seen = Object.create(null);
-    var queueX = [startCx];
-    var queueY = [startCy];
+    // A grade pode chegar a 512 × 512. Chaves "x,y", arrays que crescem e
+    // unshift na reconstrução criavam centenas de milhares de strings/objetos e
+    // paravam o quadro. Índices inteiros em buffers contíguos mantêm a mesma BFS
+    // determinística sem pressionar o coletor de lixo.
+    var width = maxX - minX + 1;
+    var height = maxY - minY + 1;
+    var total = width * height;
+    var startIndex = (startCy - minY) * width + (startCx - minX);
+    var targetIndex = (targetCy - minY) * width + (targetCx - minX);
+    var parents = new Int32Array(total);
+    parents.fill(-2); // -2 = não visitado; -1 = raiz
+    parents[startIndex] = -1;
+    var queue = new Int32Array(total);
     var head = 0;
-    seen[startKey] = true;
-    var dirs = [[1, 0], [0, 1], [-1, 0], [0, -1]];
-    while (head < queueX.length) {
-      var cx = queueX[head];
-      var cy = queueY[head];
-      head += 1;
-      var hereKey = cx + ',' + cy;
-      for (var di = 0; di < dirs.length; di++) {
-        var nx = cx + dirs[di][0];
-        var ny = cy + dirs[di][1];
+    var tail = 1;
+    queue[0] = startIndex;
+    var dirsX = [1, 0, -1, 0];
+    var dirsY = [0, 1, 0, -1];
+    while (head < tail) {
+      var hereIndex = queue[head++];
+      var cx = (hereIndex % width) + minX;
+      var cy = Math.floor(hereIndex / width) + minY;
+      for (var di = 0; di < 4; di++) {
+        var nx = cx + dirsX[di];
+        var ny = cy + dirsY[di];
         if (nx < minX || nx > maxX || ny < minY || ny > maxY) continue;
-        var nextKey = nx + ',' + ny;
-        if (seen[nextKey] || cellOccupied(nx, ny, n)) continue;
-        seen[nextKey] = true;
-        parents[nextKey] = hereKey;
-        if (nextKey === targetKey) {
-          var path = [{ cx: nx, cy: ny }];
-          var cursor = hereKey;
-          while (cursor !== startKey) {
-            var comma = cursor.indexOf(',');
-            path.unshift({ cx: Number(cursor.slice(0, comma)), cy: Number(cursor.slice(comma + 1)) });
+        var nextIndex = (ny - minY) * width + (nx - minX);
+        if (parents[nextIndex] !== -2 || cellOccupied(nx, ny, n)) continue;
+        parents[nextIndex] = hereIndex;
+        if (nextIndex === targetIndex) {
+          var path = [];
+          var cursor = targetIndex;
+          while (cursor !== startIndex) {
+            path.push({ cx: (cursor % width) + minX, cy: Math.floor(cursor / width) + minY });
             cursor = parents[cursor];
           }
+          path.reverse();
           return path;
         }
-        queueX.push(nx);
-        queueY.push(ny);
+        queue[tail++] = nextIndex;
       }
     }
     return null;

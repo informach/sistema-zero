@@ -331,6 +331,7 @@ export const gameKitBlockDefinitions01: BlockDefinition[] = [
   {
     type: 'sz_gk_on_draw',
     placement: 'loop-draw-world',
+    bodyContext: 'draw-world',
     message0: 'Desenhar o jogo com o pincel %1',
     args0: [{ type: 'field_input', name: 'PARAM', text: 'ctx' }],
     message1: 'fazer %1',
@@ -346,6 +347,7 @@ export const gameKitBlockDefinitions01: BlockDefinition[] = [
   {
     type: 'sz_gk_on_draw_hud',
     placement: 'loop-draw-hud',
+    bodyContext: 'draw-hud',
     message0: 'Desenhar por cima (HUD) com o pincel %1',
     args0: [{ type: 'field_input', name: 'PARAM', text: 'ctx' }],
     message1: 'fazer %1',

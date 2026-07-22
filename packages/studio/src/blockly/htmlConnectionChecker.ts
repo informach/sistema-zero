@@ -351,11 +351,16 @@ function nestedStatementContexts(ancestors: readonly Blockly.Block[]): Set<State
   const contexts = new Set<StatementContext>(['statement'])
   let controlBoundaryReached = false
   let activationBoundaryReached = false
+  let bodyContextBoundaryReached = false
 
   for (const ancestor of ancestors) {
     const contract = getBlockContract(ancestor.type)
     const placement = contract?.placement
     const bodyExecution = effectiveBodyExecution(contract)
+
+    if (!bodyContextBoundaryReached && contract?.bodyContext) {
+      contexts.add(contract.bodyContext)
+    }
 
     if (placement?.role === 'event') contexts.add('event-body')
     if (!activationBoundaryReached && isUserGestureEventContainer(ancestor)) {
@@ -402,6 +407,9 @@ function nestedStatementContexts(ancestors: readonly Blockly.Block[]): Set<State
         activationBoundaryReached = true
       }
     }
+    if (bodyExecution === 'deferred-callback' || bodyExecution === 'function') {
+      bodyContextBoundaryReached = true
+    }
   }
   return contexts
 }
@@ -431,7 +439,8 @@ function placementFits(destinationOwner: Blockly.Block, movedRoot: Blockly.Block
     // Um evento pode ser encapsulado por uma unidade reutilizável, mas precisa
     // ser filho direto da função, método ou construtor. Isso impede esconder o
     // registro em um if/repeat, mantendo a árvore física igual à gramática da IR.
-    const eligibleContexts = placement.role === 'event' ? directContexts : contexts
+    const eligibleContexts =
+      placement.role === 'event' || placement.directNested ? directContexts : contexts
     if (placement.nested.some((context) => eligibleContexts.has(context))) continue
 
     // Eventos e loops de raiz nunca podem ser embrulhados. Para comandos

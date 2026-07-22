@@ -259,11 +259,13 @@ export type JSExpr =
   | (JSExprCommon & { type: 'gk:countItem'; name: string })
   | (JSExprCommon & { type: 'gk:timeSurvived' })
   | (JSExprCommon & { type: 'gk:kills' })
-  // R2: câmera (canto visível do mundo) e mouse em coords do JOGO.
+  // R2: câmera e mouse em coordenadas do mundo e da tela.
   | (JSExprCommon & { type: 'gk:cameraX' })
   | (JSExprCommon & { type: 'gk:cameraY' })
   | (JSExprCommon & { type: 'gk:mouseX' })
   | (JSExprCommon & { type: 'gk:mouseY' })
+  | (JSExprCommon & { type: 'gk:mouseScreenX' })
+  | (JSExprCommon & { type: 'gk:mouseScreenY' })
   | (JSExprCommon & { type: 'gk:mouseDown' })
   // 🧙 Kit RPG — valores: célula→px, flags, itens e resultado da batalha.
   | (JSExprCommon & { type: 'gk:rpgCell'; n: number | JSExpr })
@@ -780,6 +782,8 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('gk:cameraY'), ...idField }),
     z.object({ type: z.literal('gk:mouseX'), ...idField }),
     z.object({ type: z.literal('gk:mouseY'), ...idField }),
+    z.object({ type: z.literal('gk:mouseScreenX'), ...idField }),
+    z.object({ type: z.literal('gk:mouseScreenY'), ...idField }),
     z.object({ type: z.literal('gk:mouseDown'), ...idField }),
     z.object({
       type: z.literal('gk:rpgCell'),

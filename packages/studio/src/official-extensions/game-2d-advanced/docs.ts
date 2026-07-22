@@ -1,68 +1,35 @@
 export const gameKitDocs = `## Jogo 2D Avançado
 
-Esta extensão te dá a **base de um jogo profissional de verdade**, com a mesma
-estrutura que estúdios usam. Ela usa \`window.SZGameKit\`. Diferente do "Jogo 2D"
-(que traz comportamentos prontos), aqui o motor cuida só do que **nunca muda**
-num jogo profissional, e **as regras são suas**: você escreve a mecânica dentro
-dos ganchos, com blocos de matemática, "se", variáveis e Canvas.
-As telas, diálogos e HUDs que o motor desenha sozinhos usam Baloo 2, uma fonte
-arredondada incorporada no jogo e disponível mesmo offline. Uma fonte que você
-escolher explicitamente nos seus blocos de desenho continua valendo.
-
-O que o motor já faz por você (cada um tem a sua seção mais abaixo):
-
-- **Máquina de estados**. O jogo vive em UM estado por vez, e as telas prontas
-  aparecem sozinhas no estado certo.
-- **Laço com delta-time (dt)**. O "A cada quadro" diz quanto tempo durou o
-  último quadro, em segundos. Velocidade × \`dt\` = o jogo anda igual em qualquer
-  computador. É assim que os profissionais fazem.
-- **Carregamento com tela de espera**. As imagens carregam ANTES de começar.
-- **Telas de UI prontas**. Menu, pausa, carregando, fim e vitória (e dá para
-  criar as suas, com botões que rodam blocos).
-- **Canvas responsivo com resolução fixa**. A tela tem SEMPRE a mesma resolução
-  por dentro e se ajusta sozinha à janela: suas contas nunca mudam.
-- **Teclado profissional**. Teclas seguradas, sem tecla "presa" ao perder o
-  foco, e a tecla de pausa.
+Esta extensão traz uma base reutilizável: o motor cuida de telas, estados,
+tempo, entrada, carregamento e canvas; você cria as regras. O movimento usa
+velocidade × \`dt\`, por isso mantém o ritmo em computadores diferentes. Menu,
+pausa, carregando, fim e vitória já vêm prontos, e a UI usa Baloo 2 offline sem
+substituir fontes escolhidas.
 
 ### Começando (a receita)
 
-1. **Preparar o jogo profissional**. Uma vez, no começo: resolução, cor de
-   fundo e cor de destaque das telas. (Ou **Preparar o jogo para ocupar a tela
-   toda**. Sem dimensões: o canvas preenche a tela inteira e a área do jogo
-   ACOMPANHA a janela. Nesse modo "a largura/altura do jogo" mudam com a tela,
-   então centralize por eles, não por números fixos; combine com "entrar em tela
-   cheia" para tomar o monitor todo. Use UM dos dois "Preparar".)
-2. **Escolher a imagem no próprio bloco**. Personagem, NPC, item e animação
-   carregam o desenho automaticamente. **Carregar a imagem** é opcional: use
-   apenas para pré-carregar ou dar um apelido diferente ao asset.
-3. **Criar o personagem**. Quantos quiser. Nasce no centro; sem imagem, vira um
-   retângulo da cor. Crie na preparação ou em uma reação que acontece uma vez,
-   nunca dentro de um laço.
-4. Em **⚙️ Ao iniciar**, declare dados, personagens, mapas e estado inicial. A
-   área roda novamente quando uma partida é reiniciada.
-5. Em **⚡ Quando acontecer**, coloque os chapéus de clique, aviso, entrada de estado,
-   mapa e demais reações. Cada registro é recriado uma vez por partida.
-6. Em **🔁 Enquanto estiver rodando**, coloque **A cada quadro (dt)**, **Desenhar o jogo
-   (ctx)**, **Desenhar o HUD** e loops periódicos independentes.
+1. Use uma vez **Preparar o jogo profissional** (resolução fixa) ou **Preparar o
+   jogo para ocupar a tela toda**. Na tela cheia, calcule posições pela
+   largura/altura do jogo.
+2. Escolha a imagem no próprio bloco: personagem, NPC, item e animação carregam
+   a arte sozinhos. **Carregar a imagem** serve para pré-carregar ou criar apelido.
+3. Em **⚙️ Ao iniciar**, declare dados, personagens, mapas e estado inicial. A
+   área roda de novo em cada Jogar/Jogar de novo.
+4. Em **⚡ Quando acontecer**, registre clique, aviso, entrada de estado/mapa e
+   outras reações da partida.
+5. Em **🔁 Enquanto estiver rodando**, use **A cada quadro (dt)**, **Desenhar o
+   jogo (ctx)**, **Desenhar o HUD** e ritmos periódicos.
 
-Comandos que fazem um passo contínuo podem ficar no corpo desses loops ou em uma
-função/método chamado por eles, mas nunca diretamente em **Ao iniciar** ou num
-evento. Já **Mover suavemente**, **Sumir**, **Deslizar propriedade**, **Ligar o
-rastro**, **Inclinar ao andar** e **A cada N s, um invasor atira** são ligados uma
-vez em **Ao iniciar**, numa reação ou numa função; não os coloque dentro de loops.
+Passos contínuos ficam nesses laços ou em funções chamadas por eles. Ações que já
+duram sozinhas (**Mover suavemente**, **Sumir**, **Deslizar propriedade**,
+**Ligar o rastro**, **Inclinar ao andar** e o atirador de invasores) são ligadas
+uma vez, fora de laços. O Estúdio carrega assets e inicia o motor automaticamente;
+os blocos antigos de início aparecem apenas ao migrar projetos salvos.
 
-O Estúdio carrega os assets e liga o motor automaticamente depois de registrar
-as três áreas. Os antigos blocos “Começar o jogo” e “Quando começar uma
-partida” existem apenas para migrar projetos salvos e não aparecem na paleta.
-
-> ⭐ **Seu jogo abre no MENU, não jogando.** Ao rodar, você vê a tela de menu. Clique no botão **Jogar** (ele já vem pronto) para a partida começar. No menu,
-> o "A cada quadro" e o "Desenhar o jogo" ainda não aparecem. Mas por motivos
-> diferentes: **"A cada quadro" só roda no estado \`jogando\`**; já **"Desenhar o
-> jogo" roda em \`jogando\`, \`pausado\`, \`fim\` e nos SEUS estados inventados. Só
-> NÃO no \`menu\` nem no \`carregando\`** (por isso dá para desenhar uma tela de
-> pausa ou de fim, mas para um menu 100% seu use um estado inventado). Sem tela
-> de menu? Em **⚙️ Ao iniciar**, mude o estado para \`jogando\`; depois da tela de
-> carregamento, o motor entra direto na partida.
+> ⭐ O jogo abre no \`menu\`; o botão **Jogar** inicia a partida. **A cada quadro**
+> só roda em \`jogando\`. **Desenhar o jogo** também roda em pausa, fim e estados
+> inventados, mas não em menu/carregamento. Para pular o menu, mude para
+> \`jogando\` em **⚙️ Ao iniciar**.
 
 ### Qual kit para qual jogo? 🎮
 
@@ -83,15 +50,12 @@ três batalhas DIFERENTES. Não misture.
 
 ### Onde faço um inimigo? (são coisas diferentes!) 👾
 
-A palavra "inimigo" aparece em vários lugares porque cada gênero tem o SEU tipo. Não são intercambiáveis:
+Cada gênero tem seu próprio tipo de oponente:
 
-- **Inimigo que ANDA no mapa e nasce em enxame** (o comum de ação) → 🐛 **molde**
-  ("Criar o molde" + "Fazer nascer do molde").
-- **Oponente da batalha por TURNOS** (⚔️ Kit RPG) → "Adicionar inimigo" (na hora)
-  OU **"Criar a ficha do inimigo"** (reutilizável, com imagem) + "batalha contra a ficha".
-- **Bichinho que você pega e treina** (👾 Kit Monstrinhos) → **criatura**.
-- **Personagem do mundo que CONVERSA** (não luta) → 💬 **NPC**.
-- O inimigo da 🃏 batalha de cartas já vem embutido no Kit Cartas (vida + intenção).
+- Ação no mapa/enxame → 🐛 **molde**.
+- Batalha por turnos → **Adicionar inimigo** ou **Criar a ficha do inimigo**.
+- Bichinho capturável → 👾 **criatura**; personagem que conversa → 💬 **NPC**.
+- No 🃏 Kit Cartas, vida e intenção do oponente já fazem parte da batalha.
 
 ### Estados
 
@@ -147,46 +111,40 @@ A palavra "inimigo" aparece em vários lugares porque cada gênero tem o SEU tip
   (segurar não repete). O jeito certo de fazer golpe e tiro: um aperto, uma
   ação.
 - **Usar a tecla … para pausar**. Troca a tecla de pausa (padrão: Esc).
-- **Quando clicar no jogo**. Roda os blocos com a posição já nas coordenadas do
-  JOGO (o esticado da tela e a câmera resolvidos por você). **o mouse x/y** e **o
-  mouse está apertado?** completam: tower defense, point-and-click, desenhar com
-  o dedo.
+- **Quando clicar no jogo**. Roda os blocos com a posição nas coordenadas do
+  MUNDO (o esticado da tela e a câmera já resolvidos). **o mouse x/y** mira no
+  mundo. Para cartas, botões e painéis desenhados em **Desenhar o HUD**, use **o
+  mouse x/y na tela**. **o mouse está apertado?** completa o controle por mouse
+  ou toque.
 
-### Dicas de quem faz jogo de verdade
+### Dicas rápidas
 
-- O desenho recomeça do zero a cada quadro: pinte o fundo primeiro ("Pintar o
-  fundo" já apaga o quadro anterior).
-- A largura/altura do jogo são fixas: use "a largura do jogo" nas contas de
-  limite e de posição aleatória.
+- Cada quadro redesenha tudo: pinte o fundo primeiro.
+- Use a largura/altura do jogo em limites e posições aleatórias.
 
 > ⚠️ Use o Jogo 2D Avançado **ou** o Jogo 2D no mesmo projeto. Os dois criam a
 > própria tela e podem brigar pelo canvas.
 
-## A arquitetura de verdade (como o Frank monta)
+## Peças de arquitetura
 
-Estes blocos são as PEÇAS que os programadores de jogo usam de verdade. Você as
-liga do seu jeito. É assim que se aprende a construir jogos grandes.
+Combine estes blocos para criar mecânicas próprias.
 
 ### 📢 Avisos (eventos)
 
-O jeito profissional de ligar as partes do jogo sem elas se conhecerem: uma
-"avisa" que algo aconteceu, outra "escuta". Ex.: quando um inimigo morre, avise
-\`inimigo:morreu\`; noutro canto, "Quando chegar o aviso inimigo:morreu" soma 1
-ponto e toca um som. Assim o código não vira um nó.
+Uma parte avisa e outra escuta. Ex.: ao morrer, avise \`inimigo:morreu\`; o evento
+correspondente soma pontos e toca o som sem acoplar as duas regras.
 
 ### 🐛 Moldes & enxames
 
-- **Criar o molde**. Os DADOS de um tipo de personagem (inimigo, moeda, tiro):
-  tamanho, vida, velocidade, dano, cor/imagem/aparência. Defina UMA vez.
-- **Nascer 1 do molde** / **…e chamar de**. Quantos quiser; "e chamar de" dá um
-  APELIDO ao que nasceu, e aí os blocos de personagem funcionam nele (tiro mirado
-  e chefão).
+- **Criar o molde**. Define tamanho, vida, velocidade, dano e visual de um tipo.
+- **Nascer 1 do molde** / **…e chamar de**. Cria um vivo; o apelido permite usar
+  nele os blocos de personagem.
 - **A cada N s, nascer numa borda** / **Parar a fábrica**. O "spawner" solta
   inimigos sem parar; pare-o entre fases ou no chefão.
 - **Para cada vivo do molde… fazer**. Repete para todos do enxame. "item" é o da
   vez.
-- **Recolher** / **Recolher quem saiu da tela**. Guarda personagens para
-  reaproveitar (pooling). O segredo para o jogo não engasgar com muitos.
+- **Recolher** / **Recolher quem saiu da tela**. Reaproveita personagens sem
+  acumular objetos.
 - **Desenhar todos vivos** / **quantos vivos**. Desenha e conta o enxame.
 
 ### 🎯 Comportamentos
@@ -195,17 +153,16 @@ Movimentos prontos que os inimigos usam: **perseguir** o herói, **vaguear** ao
 acaso, **virar** para o lado do alvo. Use dentro do "Para cada vivo" no "A cada
 quadro". É o mesmo cálculo que se faz à mão (ir na direção × velocidade × tempo).
 
-**Atirar um leque** solta N tiros do molde num arco (rumo −90 = para cima): o
-tiro triplo, a shotgun, o cone do mago, a chuva do chefe. Os tiros nascem com
-velocidade. Mova-os com "Mover pela velocidade" e recolha com "Recolher quem
-saiu da tela", como qualquer tiro.
+**Atirar um leque** solta N tiros num arco (rumo −90 = para cima). Mova-os pela
+velocidade e recolha quem sair da tela.
 
 ### ⏱️ Esperar (em ⏱️ Tempo)
 
 **Esperar N segundos e então…** faz o que estiver dentro DEPOIS do tempo, uma vez
 só. "o chefe aparece aos 30 s", "a mensagem some em 2 s", o próximo golpe do
 combo. ("A cada N segundos" repete para sempre; este acontece uma vez.) Conta no
-relógio do jogo: se pausar, para de contar.
+relógio do jogo: se pausar, para de contar. Use na preparação, num evento ou numa
+função, nunca dentro de um laço.
 
 ### 🗡️ Combate
 
@@ -267,41 +224,22 @@ desliga); convive com o "Girar" (um soma no outro).
 
 ### 📽️ Animação
 
-**Tocar a animação** roda uma faixa de quadros em loop. Pode chamar TODO quadro
-("se andando, tocar andar; senão, tocar parado"): repetir a mesma não reinicia.
-Desenhou no Pinta? O seletor lista as animações da folha e preenche os números.
+**Tocar a animação** roda quadros em loop e pode ser chamado a cada quadro sem
+reiniciar. **Tocar … uma vez só** para no último; **a animação acabou?** avisa o
+fim. O seletor do Pinta preenche os quadros.
 
-**O problema quando o jogo cresce:** você manda golpear e, no quadro seguinte, a
-animação de andar apaga o golpe. Toda animação atropela a anterior. A saída é
-dizer que aquela **não pode ser interrompida**:
-
-- **Tocar a animação … uma vez só** toca e PARA no último quadro (golpe, morrer,
-  abrir o baú), e **a animação de … acabou?** diz quando terminou.
-- **Pôr … no estado … por N s** é a TRAVA: enquanto durar, nada rouba a animação.
-- **Animação de … no estado …** (marque a caixinha para não poder interromper) e
-  **Aparência de … no estado …** dizem, UMA vez, qual visual é de cada estado. Com folha de quadros ou com desenho.
-- **Animar … sozinho** faz o resto, todo quadro: escolhe o estado pelo que ele
-  está fazendo (a ordem é morte > golpe > dano > no ar > andando > parado) e vira
-  o desenho para o lado que ele anda. Estado sem visual declarado usa o parente
-  mais próximo (caindo parece pular; pular parece andar).
-- **o estado de …** conta o que ele está fazendo agora, para o resto do jogo.
-
-Quem usa "Atacar na direção" ganha a trava de graça: o golpe já entra no estado
-"golpe" sozinho e a animação dura exatamente o golpe (um quadro pulado não estraga).
+Para um andar não apagar o golpe, use **Pôr no estado por N s**. Declare uma vez
+**Animação/Aparência no estado** e marque as que não podem ser interrompidas;
+**Animar sozinho** prioriza morte > golpe > dano > ar > andando > parado.
+**o estado de …** permite criar outras regras. "Atacar na direção" já trava o
+estado golpe pelo tempo certo.
 
 ### 🎥 Câmera (mundos maiores que a tela)
 
-**Fazer a câmera seguir** liga um mundo maior: a tela vira uma janela que segue o
-personagem, presa nas bordas do mundo. O "Desenhar o jogo" passa a desenhar o
-MUNDO; **Desenhar por cima (HUD)** desenha DEPOIS, preso na tela (placar, barras).
-**o canto x/y da câmera** dizem que pedaço aparece. **Tremer a câmera** dá o abalo
-de impacto (explosão, o chefe pisando), com a câmera ligada ou não.
-
-**Fazer a câmera seguir … pelo mapa** é o atalho do MUNDO GIGANTE: o tamanho do
-mundo vem do próprio mapa de tiles (colunas × célula). Sem fazer conta. E o
-motor faz como os jogos profissionais: desenha SÓ o pedaço do mapa e os
-personagens que estão na janela da câmera (um mapa 512×512 custa o mesmo que uma
-telinha). Pode fazer o mundo do tamanho que quiser.
+**Fazer a câmera seguir** transforma a tela numa janela presa às bordas do mundo.
+**Desenhar por cima (HUD)** mantém placar e barras na tela; **o canto x/y** informa
+o trecho visível e **Tremer** dá impacto. **Seguir pelo mapa** calcula o mundo
+pelas células e desenha apenas tiles/personagens visíveis, mesmo em mapas grandes.
 
 ### ➡️ Tiro e giro (em 🎯 Comportamentos)
 
@@ -339,29 +277,19 @@ Para o mundo ter cara de jogo de verdade (vale para QUALQUER jogo, não só RPG)
 
 ### ⚙️ Física
 
-As peças de QUALQUER jogo com gravidade (plataforma, quicar, tiro com arco). São
-primitivos: você liga do seu jeito, na ordem de verdade.
+Peças gerais para gravidade, plataforma, quique e projéteis:
 
 1. **Aplicar a gravidade em … (força)**. Puxa para baixo (padrão 2160 px/s²).
 2. **Mover pela velocidade** (em 🎯 Comportamentos). Anda com o que a gravidade e
    as setas escreveram.
 3. **Fazer … colidir com o mapa/enxame** (🧱 abaixo). PARA no chão.
 
-> ⭐ **A ordem importa** (é assim nos jogos de verdade): *gravidade → mover →
-> colidir*. A gravidade desliga o "está no chão"; só o pouso da colisão liga de
-> volta. Fora dessa ordem o personagem vibra ou atravessa.
+> ⭐ A ordem é *gravidade → mover → colidir*. Só o pouso marca "está no chão".
 
-- **Definir a velocidade de … (x, y)** e **a velocidade x/y de …**. Escreve e
-  LÊ. Ler destrava o resto: "se a velocidade y de heroi > 0, tocar cair".
-- **Fazer … pular (força)**. Só NO CHÃO (é o que impede o pulo infinito).
-- **… está no chão?**. Verdadeiro no quadro em que pousou.
-- **Velocidade máxima de queda**. O limite da queda livre (padrão 900); também
-  impede atravessar o chão numa queda longa.
-- **Fazer … quicar nas bordas** / **… atravessar para o outro lado**. A bolinha
-  do pong e o Pac-Man saindo pela lateral.
-- **Rebater … na raquete …**. A bola quica na raquete e o ÂNGULO muda pelo ponto
-  que bateu (meio = reto, beirada = aberto). Com o "quicar nas bordas" nas paredes,
-  É o Breakout e o Pong inteiros.
+- **Definir/Ler velocidade x,y** permite animar e decidir pelo movimento.
+- **Pular** só funciona no chão; **Velocidade máxima de queda** limita quedas.
+- **Quicar nas bordas** e **atravessar para o outro lado** fazem Pong/Pac-Man.
+- **Rebater na raquete** muda o ângulo pelo ponto de impacto (meio reto, beira aberto).
 
 ### 🚀 Inércia e atrito (em ⚙️ Física)
 
@@ -427,7 +355,7 @@ O jeito de lutar sem turnos, no mapa aberto (aventura, beat-em-up. Geral):
 - **Fazer … patrulhar em volta de x y (raio)**. O inimigo vagueia sozinho perto
   do posto e nunca se afasta demais. Use no "A cada quadro".
 - **Desenhar corações: … de …**. A "vidinha" dos jogos de aventura (cheios = vida
-  atual). Fica ótima no HUD.
+  atual). Fica ótima no HUD; o HUD desenha até **100 corações**.
 
 ### 🗨️ Fala & escolhas
 
@@ -486,7 +414,8 @@ Uma grade NOMEADA de células que você lê e escreve por (coluna, linha). A pe�
 que faltava para Cobrinha, Match-3, Sokoban, campo-minado e puzzles.
 
 - **Criar o tabuleiro … com … colunas × … linhas (vazio = …)**. No começo; o
-  "vazio" preenche toda célula (0, \`""\`, "grama"…).
+  "vazio" preenche toda célula (0, \`""\`, "grama"…). Cada tabuleiro vai até
+  **512 × 512** células para o jogo continuar rápido.
 - **No tabuleiro …, pôr … na coluna …, linha …**. Grava um valor numa célula.
 - **o valor do tabuleiro … em (coluna …, linha …)**. Lê (fora da grade = o vazio).
 - **quantas células … têm o valor …**. Conta (minas restantes, peças de uma cor).
@@ -514,8 +443,9 @@ delas:
   para achar o par).
 - **Desenhar a pilha … como fileira em x,y** mostra as cartas (marque a caixinha
   para um leque) e guarda onde cada uma ficou; **a carta clicada em x,y da pilha …**
-  devolve o índice da carta sob o clique (−1 = nenhuma). Com "o mouse x/y" +
-  "Quando clicar no jogo" você joga uma carta clicando nela.
+  devolve o índice da carta sob o clique (−1 = nenhuma). Se a fileira estiver no
+  HUD, use "o mouse x/y na tela" dentro de "Quando clicar no jogo"; se estiver no
+  mundo, use "o mouse x/y".
 
 Receita do jogo da memória: uma lista de cartas pareadas + "embaralhar" (Valores);
 no clique, vire a carta; quando duas estão viradas, compare "o que aparece". Par
@@ -611,6 +541,7 @@ cabeça (é o erro clássico). Largura/altura 0 = o desenho inteiro.
 
 **Criar o mapa vazio** faz o mapa por CÓDIGO em vez de desenhado. Masmorra
 sorteada, mundo gerado. Depois "Trocar a peça" num laço cava os corredores.
+Mapas de peças e mapas-cenário vão até **512 × 512** células.
 
 ### 🎮 2º jogador (em 🎮 Controles)
 
@@ -673,7 +604,8 @@ o que EXISTE em jogo de plataforma.
 
 **Ganhar a criatura … no nível …** (até 6) é o inicial que a professora dá.
 **Ganhar … bola(s) de captura de força … %**. A força é a chance base: 60 é a
-comum, 100 é a bola mestra. **Curar todas as minhas criaturas** é o Centro de Cura
+comum, 100 é a bola mestra; a mochila guarda até **999 bolas de captura**.
+**Curar todas as minhas criaturas** é o Centro de Cura
 inteiro num bloco (pendure na enfermeira). **eu tenho a criatura …?**, **quantas
 criaturas eu tenho** e **Desenhar o meu time** completam.
 
@@ -714,7 +646,7 @@ do outro lado. O que NÃO é só de luta vem do motor geral: gravidade, pulo (o
 lutador é fixa do kit), chão (molde + nascer + colidir), dano, empurrão,
 telas de fim, tremor e faíscas.
 
-**Luta de A × B, melhor de N rounds de N s** casa os dois. Ponha DEPOIS de
+**Luta de A × B, melhor de N rounds de N s** casa os dois (de 1 a 9 rounds). Ponha DEPOIS de
 posicionar cada um: é dali que sai o lugar onde eles voltam a cada round. No fim
 do tempo, quem tem mais vida ganha o round; vida igual = empate.
 
@@ -833,9 +765,10 @@ música da praia" e o nome no HUD.
   batalha contra…** abre o combate em
   equipe. No painel, escolha Atacar, um golpe, Defender, Item ou Fugir; depois
   clique no alvo. A defesa reduz dano, e os inimigos agem sozinhos.
-- **Adicionar aliado/inimigo** monta confrontos com vários lutadores. Ensine
-  golpes nomeados, inclusive cura; cada golpe usa energia. Os campos de imagem
-  mostram a arte do Pinta e usam a cor como fallback.
+- **Adicionar aliado/inimigo** monta confrontos com vários lutadores. O time aceita
+  até **5 aliados além do herói**. A fila aceita até **5 inimigos extras** além do
+  principal, e o estoque vai até **99 poções**. Monte tudo antes da batalha, nunca
+  dentro de um laço. Os campos de imagem usam a arte do Pinta.
 - **Criar a ficha do inimigo** guarda vida, força, defesa, visual e a marca de
   chefão. Depois, comece a batalha contra a ficha ou adicione cópias pelo nome.
 - **Golpe especial**, **poção** e **Curar o herói** sustentam a aventura entre
@@ -874,17 +807,13 @@ qualquer jogo; aqui ele combina lindo com o "Quando conversar" e as cenas.)
 
 ## 🚀 Kit Nave
 
-O atalho do jogo de nave (Space Invaders e primos). O que NÃO é só de nave vem
-do motor geral, e é você quem monta: o SEU tiro (molde + "Atirar um leque" ou
-nascer + velocidade), a colisão ("Quando se tocarem"), o placar, o dano com
-invencibilidade, o som e as telas. O kit traz o que SÓ existe no gênero. E a
-joia é a formação que marcha em BLOCO, impossível de montar peça por peça.
+O kit traz nave, formações, invasores e bombas. Tiros, colisão, placar, dano,
+som e telas usam as peças gerais do motor.
 
 ### 🚀 a nave
 
-**Pilotar a nave** anda só de lado (setas ou A/D), preso na tela, já com a
-inclinação de curva. Use no "A cada quadro". E o tiro é seu: *"se apertou
-espaço E recarregou: Atirar um leque de 1"*.
+**Pilotar a nave** anda de lado (setas ou A/D), preso à tela. Use no "A cada
+quadro"; para atirar: *se apertou espaço e recarregou, Atirar um leque de 1*.
 
 **Dar o poder de tiro … por N s** é o power-up TEMPORÁRIO (acaba sozinho):
 **metralhadora** = atire com recarga bem menor segurando espaço; **leque** =
@@ -892,13 +821,9 @@ espaço E recarregou: Atirar um leque de 1"*.
 
 ### 🛸 a invasão
 
-**Invadir: onda do molde …** cria a formação (colunas × linhas) e o MOTOR marcha
-o bloco inteiro: bate na borda → todo mundo DESCE um passo e ACELERA. Se a grade
-que você pediu não couber na tela, o motor ESPREME o espaço entre as colunas
-para caber (as colunas que você pediu são respeitadas). Os
-invasores são vivos NORMAIS do molde. Seu tiro os derrota com o "Quando se
-tocarem" de sempre, e a formação encolhe sozinha. ⚠️ Não mova os invasores você
-mesmo (perseguir/deslizar neles briga com a marcha).
+**Invadir: onda do molde …** cria uma formação que marcha, desce na borda e
+acelera. Ela ajusta o espaço para caber. Os invasores continuam sendo vivos
+normais do molde; não aplique outro movimento neles.
 
 Derrotou todos? Sai o aviso \`onda:limpa\`. Escute e crie a PRÓXIMA mais
 rápida: *"velocidade = velocidade × 1.2; Invadir de novo"*. A dificuldade
@@ -917,10 +842,8 @@ aviso \`onda:invadiu\` → *"Quando o aviso chegar: Terminar o jogo"*.
 "Desenhar o jogo"). Para fundo com IMAGEM, o geral "Pintar o fundo rolando" faz
 até paralaxe.
 
-**Soltar uma bomba**. Ela quica pela tela; quando o SEU tiro a recolher (no
-"Quando se tocarem": Recolher a bomba), o motor solta a onda de choque, recolhe
-o molde-alvo no raio e avisa \`bomba:acertou\` por vítima (some +50 lá). Máximo
-de 3 no ar.
+**Soltar uma bomba** quica até seu tiro recolhê-la; então atinge o molde no raio
+e avisa \`bomba:acertou\` por vítima. Máximo de 3 no ar.
 
 ### Receitas do gênero de nave (com os blocos gerais)
 
@@ -935,15 +858,8 @@ de 3 no ar.
 
 ## 🏰 Kit Defesa de Torre
 
-O atalho do jogo de defesa de torre (tower defense). Pela mesma regra dos outros
-kits, o que NÃO é só do gênero vem do motor geral e é você quem monta: o
-**caminho** (🛤️ Caminhos, que já era geral), a mira no **alvo mais avançado**
-("o vivo do molde … com a MAIOR *progresso no caminho*", da 🎲 Sorte & medida), o
-**tiro** da torre, a **barra de vida** do invasor, os **corações** e a
-**explosão** ao derrotar. O kit traz só o que SÓ existe em defesa de torre: os
-**lugares** de torre (a grade de compra que acende sob o mouse), a **compra** que
-valida moeda e lugar, a **onda** que nasce espaçada e marcha o caminho, e a
-**carteira** de moedas.
+O kit traz lugares de torre, compra, ondas e moedas. Caminho, mira, tiros, vida,
+corações e explosões são peças gerais combinadas na receita abaixo.
 
 ### 🏰 as torres
 
@@ -953,12 +869,9 @@ comprar (faça no "Preparar"). Marque vários flanqueando o caminho.
 **Desenhar os lugares de torre** mostra os livres (o de baixo do mouse acende,
 convidando ao clique); os ocupados somem. Use no "Desenhar o jogo".
 
-**Quando clicar num lugar livre, pagando … moedas** é o coração da compra: a cada
-clique num lugar livre COM moedas, o motor cobra o preço, ocupa o lugar e roda o
-"fazer" com o centro dele em **lugarX** e **lugarY**. Nasça a torre aí (*"Nascer
-com apelido 'torre' em lugarX − 20, lugarY − 20"*). Sem moedas, sai o aviso
-\`compra:negada\` e nada acontece. Clique num lugar OCUPADO ou fora dos lugares
-cai no "Quando clicar no jogo" comum (dá para melhorar a torre ali).
+**Quando clicar num lugar livre, pagando … moedas** cobra, ocupa e roda o corpo
+com o centro em **lugarX/lugarY**. Sem saldo, avisa \`compra:negada\`. Cliques fora
+ou em lugar ocupado seguem para "Quando clicar no jogo".
 
 **Liberar o lugar de torre em x … y …** solta o lugar (a torre foi vendida ou
 destruída), deixando comprar de novo ali.
@@ -968,13 +881,8 @@ para desenhar sob a torre que o mouse está tocando.
 
 ### 👹 a invasão & as moedas
 
-**Invadir pelo caminho …: … inimigos do molde …** solta uma fila de inimigos
-entrando pelo começo do caminho, espaçados, marchando até o fim. Chegou algum ao
-fim? Sai \`invasor:passou\`. Tire uma vida no "Quando o aviso chegar". Acabou a
-onda? Sai \`onda:limpa\` (o MESMO aviso do Kit Nave, de propósito: vocabulário
-único. Se usar os dois no mesmo jogo, um "Quando \`onda:limpa\`" responde aos
-dois). Solte a próxima, maior: *"leva = leva + 2; Invadir de novo"*. A
-dificuldade infinita em dois blocos.
+**Invadir pelo caminho …** solta inimigos espaçados. Ao chegar, avisa
+\`invasor:passou\`; ao limpar a onda, avisa \`onda:limpa\`, igual ao Kit Nave.
 
 **Começar com … moedas** enche a carteira no "Preparar" e deve ficar fora dos
 laços (o "Jogar de novo"
@@ -984,54 +892,37 @@ placar e teste antes de deixar comprar.
 
 ### A torre que atira (a receita, com os blocos gerais)
 
-O tiro NÃO é um bloco do kit. É a mesma receita de sempre, e é ela que ensina a
-lógica de jogo:
+O kit cuida de lugar, alcance, caminho e moedas; o tiro usa as peças gerais:
 
 \`\`\`
-no "A cada quadro", para cada vivo do molde "torre":
-  se recarregou (0.8 s):
-    alvo = o vivo do molde "invasor" com a MAIOR progresso no caminho
-    se alvo existe:
-      se a distância entre a torre e o alvo < 220:
-        tiro = Nascer com apelido "tiro" na posição da torre
-        lançar o tiro na direção do alvo a 420
-para cada vivo do molde "tiro": Mover pela velocidade; Recolher quem saiu
-quando "tiro" e "invasor" se sobrepõem:
-  recolher o tiro; Machucar o invasor 15
-  se o invasor morreu: faíscas + Ganhar 25 moedas + Recolher o invasor
+para cada torre, se recarregou:
+  alvo = invasor com MAIOR progresso no caminho
+  se existe e está no alcance: nascer tiro; lançar até alvo
+para cada tiro: mover pela velocidade; recolher se saiu
+ao sobrepor tiro e invasor: recolher tiro; machucar invasor
+  se morreu: faíscas; ganhar moedas; recolher invasor
 \`\`\`
 
-O exemplo "Defesa do Reino" monta exatamente isso. Torre de gelo? Some um
-"deslizar até" com fator baixo no invasor atingido. Torre de área? No acerto,
-"para cada vivo perto" leva dano. Vender? **Liberar o lugar** + devolver metade
-das moedas. Tudo receita. O kit dá só o esqueleto do gênero.
+O exemplo "Defesa do Reino" monta a receita. Para variar: gelo reduz a
+velocidade, área atinge vivos próximos e vender usa **Liberar o lugar** + devolve
+parte das moedas.
 
 ## 🃏 Kit Cartas
 
-O atalho do RPG DE CARTAS (deck-battler, estilo Slay the Spire). Pela regra dos
-kits, o kit dá só o ANDAIME (vida, energia, escudo, intenção e turnos); o DECK, a
-MÃO e **o que cada carta faz** são seus. Montados com as 🎴 Cartas (que são listas
-do núcleo) e blocos gerais.
+O kit entrega vida, energia, escudo, intenção e turnos; você monta baralho, mão
+e efeitos com 🎴 Cartas e listas.
 
-- **Começar uma batalha de cartas: você com … de vida, inimigo com …** abre a arena
-  (roda no "jogando"; não mexe no estado). **A cada turno, começar com … de energia** é o diferencial
-  do gênero: a energia RESETA todo turno (não acumula). **a minha energia** / **Gastar
-  … de energia** controlam o custo das cartas.
-- **Quando começar o meu turno** roda no início de cada turno seu (energia e escudo já
-  resetaram): é aqui que você COMPRA a mão. "Mover a carta do topo do baralho para a
-  mão" umas 5 vezes (rebaralhe com "Remontar" se o baralho zerou). **Passar o turno**
-  dá a vez ao inimigo e volta pra você.
-- **A vida:** **a minha vida** / **a vida do inimigo** (na batalha) + **Tirar … de
-  vida do inimigo** (ataque) / **Tirar … da minha vida** (o inimigo bate; o ESCUDO
-  absorve primeiro) / **Ganhar … de escudo** (defesa; some no começo do seu turno).
-- **A intenção (o telegrafo, a alma do gênero):** **O inimigo vai … de … no próximo
-  turno** anuncia o que ele fará (a ação é uma palavra que VOCÊ inventa: atacar,
-  defender…). **Desenhar o painel da batalha de cartas** mostra as vidas, energia,
-  escudo e essa intenção. No **Quando for a vez do inimigo** você RESOLVE a intenção
-  ("se o inimigo vai atacar: Tirar a minha vida do valor dele") e anuncia a próxima.
-- **Jogar uma carta** é receita das 🃏 Cartas: no "Quando clicar no jogo", "a carta
-  clicada em (mouse x, mouse y) da mão"; se tem energia, "Gastar" o custo, aplique o
-  efeito (Tirar vida do inimigo / Ganhar escudo) e "Mover" a carta da mão pro descarte.
-- Vitória: "se a vida do inimigo ≤ 0: Mudar o estado para vitória". Derrota: "se a
-  minha vida ≤ 0: Terminar o jogo". O exemplo "Duelo de Cartas" monta tudo isso.
+- **Começar uma batalha de cartas** abre a arena sem mudar o estado. **A cada
+  turno, começar com energia** define o valor que RESETA; leia e **Gaste energia**
+  ao jogar.
+- Em **Quando começar o meu turno**, compre do baralho para a mão e remonte com o
+  descarte quando necessário. **Passar o turno** chama o inimigo e volta para você.
+- Ataques tiram vida; **Ganhar escudo** absorve dano até o próximo turno seu.
+- **O inimigo vai … de …** anuncia a intenção. O painel mostra intenção, vidas,
+  energia e escudo; em **Quando for a vez do inimigo**, resolva a ação e anuncie
+  a próxima.
+- No clique, descubra a carta da mão; se houver energia, pague, aplique seu efeito
+  e mova-a ao descarte. Vida inimiga 0 → vitória; sua vida 0 → fim.
+
+O exemplo "Duelo de Cartas" monta o ciclo completo.
 `

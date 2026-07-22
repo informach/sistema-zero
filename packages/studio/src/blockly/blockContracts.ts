@@ -22,6 +22,7 @@ export interface BlockContract {
   domain: 'frame' | 'html' | 'css' | 'behavior' | 'value'
   placement?: BlockPlacement
   bodyExecution: StatementBodyExecution
+  bodyContext?: StatementContext
   userGesture?: UserGestureActivation
   eventObject?: EventObjectCapability
   migration: BlockMigration
@@ -166,6 +167,10 @@ const BODY_CONTEXTS: readonly StatementContext[] = [
   'draw-hud',
   'map-draw',
   'map-enter',
+  'path-builder',
+  'menu-options',
+  'cutscene-steps',
+  'trainer-team',
 ]
 
 export const ADVANCED_COMMAND_PLACEMENT: BlockPlacement = Object.freeze({
@@ -254,6 +259,10 @@ const CHECK_BY_CONTEXT: Readonly<Record<StatementContext, string>> = {
   'draw-hud': 'JSStmt',
   'map-draw': 'JSStmt',
   'map-enter': 'JSStmt',
+  'path-builder': 'JSStmt',
+  'menu-options': 'JSStmt',
+  'cutscene-steps': 'JSStmt',
+  'trainer-team': 'JSStmt',
 }
 
 export const NESTED_STATEMENT_CHECKS = [
@@ -297,29 +306,55 @@ function materializeStatementInputs(definition: BlockDefinition): BlockDefinitio
 export function inferBlockContract(definition: BlockDefinition): BlockContract {
   const { type } = definition
   const bodyExecution = definition.bodyExecution ?? 'structural'
+  const bodyContext = definition.bodyContext
   const userGesture = definition.userGesture
   const eventObject = definition.eventObject
   if (PROJECT_AREA_TYPES.has(type)) {
-    return { type, domain: 'frame', bodyExecution, userGesture, eventObject, migration: 'keep' }
+    return {
+      type,
+      domain: 'frame',
+      bodyExecution,
+      bodyContext,
+      userGesture,
+      eventObject,
+      migration: 'keep',
+    }
   }
 
   const previous = definition.previousStatement
   const previousChecks = Array.isArray(previous) ? previous : previous ? [previous] : []
   if (previousChecks.includes('HTMLNode')) {
-    return { type, domain: 'html', bodyExecution, userGesture, eventObject, migration: 'keep' }
+    return {
+      type,
+      domain: 'html',
+      bodyExecution,
+      bodyContext,
+      userGesture,
+      eventObject,
+      migration: 'keep',
+    }
   }
   if (
     previousChecks.includes('CSSEntry') ||
     previousChecks.includes('CSSDecl') ||
     previousChecks.includes('KeyframeStep')
   ) {
-    return { type, domain: 'css', bodyExecution, userGesture, eventObject, migration: 'keep' }
+    return {
+      type,
+      domain: 'css',
+      bodyExecution,
+      bodyContext,
+      userGesture,
+      eventObject,
+      migration: 'keep',
+    }
   }
   if (definition.output != null) {
     return {
       type,
       domain: 'value',
       bodyExecution,
+      bodyContext,
       userGesture,
       eventObject,
       migration: 'keep',
@@ -336,6 +371,7 @@ export function inferBlockContract(definition: BlockDefinition): BlockContract {
     type,
     domain: 'behavior',
     bodyExecution,
+    bodyContext,
     userGesture,
     eventObject,
     placement: resolvePlacement(definition.placement),
@@ -364,6 +400,14 @@ export function requireBlockContract(type: string): BlockContract {
   const contract = contracts.get(type)
   if (!contract) throw new Error(`O bloco “${type}” não foi registrado no catálogo semântico`)
   return contract
+}
+
+/** Localiza o bloco que cria um contexto de corpo especializado. */
+export function blockTypeProvidingBodyContext(context: StatementContext): string | undefined {
+  for (const contract of contracts.values()) {
+    if (contract.bodyContext === context) return contract.type
+  }
+  return undefined
 }
 
 export function materializeBlockDefinition(definition: BlockDefinition): BlockDefinition {

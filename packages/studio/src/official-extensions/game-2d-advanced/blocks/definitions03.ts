@@ -4,7 +4,7 @@ import { GAME_KIT_COLOUR as C } from './shared'
 export const gameKitBlockDefinitions03: BlockDefinition[] = [
   {
     type: 'sz_gk_rpg_add_foe_named',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'Adicionar o inimigo da ficha %1',
     args0: [{ type: 'field_name_picker', name: 'NAME', text: 'Capanga', kind: 'battler' }],
     inputsInline: true,
@@ -12,7 +12,7 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Põe mais um inimigo na PRÓXIMA batalha escolhendo uma FICHA que você já criou (com imagem e atributos). Use antes de "Começar a batalha".',
+      'Põe um dos até 5 inimigos extras da PRÓXIMA batalha escolhendo uma FICHA já criada. Use antes de "Começar a batalha", nunca num laço.',
   },
 
   {
@@ -39,7 +39,7 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
     type: 'sz_gk_rpg_on_foe_turn',
     placement: 'event',
     message0: 'Quando for a vez do inimigo %1',
-    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'Dragão', kind: 'combatant' }],
+    args0: [{ type: 'field_name_picker', name: 'NAME', text: 'Dragão', kind: 'enemy-combatant' }],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'BODY' }],
     previousStatement: 'JSStmt',
@@ -54,15 +54,15 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
     placement: 'command',
     message0: 'O inimigo %1 usa o golpe %2',
     args0: [
-      { type: 'field_name_picker', name: 'NAME', text: 'Dragão', kind: 'combatant' },
-      { type: 'field_input', name: 'MOVE', text: 'Baforada' },
+      { type: 'field_name_picker', name: 'NAME', text: 'Dragão', kind: 'enemy-combatant' },
+      { type: 'field_name_picker', name: 'MOVE', text: 'Baforada', kind: 'combat-move' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O inimigo usa um golpe que você ENSINOU a ele (com "Ensinar o golpe" para o nome dele). Use dentro de "Quando for a vez do inimigo".',
+      'O inimigo usa um golpe que você ENSINOU a ele (com "Ensinar o golpe" para o nome dele), gastando a energia configurada. Sem energia suficiente, o golpe não acontece. Use dentro de "Quando for a vez do inimigo".',
   },
 
   {
@@ -70,7 +70,7 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
     placement: 'command',
     message0: 'O inimigo %1 acerta TODO o time (dano %2)',
     args0: [
-      { type: 'field_name_picker', name: 'NAME', text: 'Dragão', kind: 'combatant' },
+      { type: 'field_name_picker', name: 'NAME', text: 'Dragão', kind: 'enemy-combatant' },
       { type: 'input_value', name: 'DMG', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -86,6 +86,7 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
     type: 'sz_gk_rpg_cutscene',
     placement: 'command',
     bodyExecution: 'sync-callback',
+    bodyContext: 'cutscene-steps',
     message0: 'Fazer a cena:',
     message1: 'passo a passo %1',
     args1: [{ type: 'input_statement', name: 'BODY' }],
@@ -99,7 +100,12 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
 
   {
     type: 'sz_gk_rpg_wait',
-    placement: 'command',
+    placement: {
+      root: [],
+      nested: ['cutscene-steps'],
+      directNested: true,
+      role: 'command',
+    },
     message0: 'Esperar %1 s (na cena)',
     args0: [{ type: 'input_value', name: 'SECONDS', check: 'JSValue' }],
     inputsInline: true,
@@ -165,7 +171,7 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
 
   {
     type: 'sz_gk_rpg_on_step',
-    placement: 'event',
+    placement: { root: [], nested: ['map-enter'], role: 'event' },
     message0: 'Quando o herói pisar na célula %1 , %2',
     args0: [
       { type: 'input_value', name: 'CX', check: 'JSValue' },
@@ -186,6 +192,7 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
     type: 'sz_gk_rpg_menu',
     placement: 'command',
     bodyExecution: 'sync-callback',
+    bodyContext: 'menu-options',
     message0: 'Menu de escolha %1',
     args0: [{ type: 'input_value', name: 'TITLE', check: 'JSValue' }],
     message1: 'opções %1',
@@ -200,7 +207,12 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
 
   {
     type: 'sz_gk_rpg_option',
-    placement: 'command',
+    placement: {
+      root: [],
+      nested: ['menu-options'],
+      directNested: true,
+      role: 'command',
+    },
     bodyExecution: 'deferred-callback',
     userGesture: true,
     message0: 'Opção %1',
@@ -637,7 +649,7 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria uma GRADE de células por nome (colunas × linhas), tudo começando com o valor "vazio" (ex.: 0). É o coração dos jogos de grade: Cobrinha, Match-3, Sokoban, campo-minado, quebra-cabeças. Você varre a grade com "repita" e lê/escreve por (coluna, linha).',
+      'Cria uma GRADE de até 512 × 512 células por nome (colunas × linhas), tudo começando com o valor "vazio" (ex.: 0). É o coração dos jogos de grade: Cobrinha, Match-3, Sokoban, campo-minado, quebra-cabeças. Você varre a grade com "repita" e lê/escreve por (coluna, linha).',
   },
 
   {
@@ -645,7 +657,7 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
     placement: 'command',
     message0: 'No tabuleiro %1, pôr %2 na coluna %3, linha %4',
     args0: [
-      { type: 'field_input', name: 'NAME', text: 'tabuleiro' },
+      { type: 'field_name_picker', name: 'NAME', text: 'tabuleiro', kind: 'board' },
       { type: 'input_value', name: 'VALUE', check: 'JSValue' },
       { type: 'input_value', name: 'COL', check: 'JSValue' },
       { type: 'input_value', name: 'ROW', check: 'JSValue' },
@@ -661,7 +673,7 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
     type: 'sz_gk_board_get',
     message0: 'o valor do tabuleiro %1 em (coluna %2, linha %3)',
     args0: [
-      { type: 'field_input', name: 'NAME', text: 'tabuleiro' },
+      { type: 'field_name_picker', name: 'NAME', text: 'tabuleiro', kind: 'board' },
       { type: 'input_value', name: 'COL', check: 'JSValue' },
       { type: 'input_value', name: 'ROW', check: 'JSValue' },
     ],
@@ -675,7 +687,7 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
     type: 'sz_gk_board_count',
     message0: 'quantas células do tabuleiro %1 têm o valor %2',
     args0: [
-      { type: 'field_input', name: 'NAME', text: 'tabuleiro' },
+      { type: 'field_name_picker', name: 'NAME', text: 'tabuleiro', kind: 'board' },
       { type: 'input_value', name: 'VALUE', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -688,7 +700,7 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
     type: 'sz_gk_board_in',
     message0: 'a (coluna %2, linha %3) cabe no tabuleiro %1 ?',
     args0: [
-      { type: 'field_input', name: 'NAME', text: 'tabuleiro' },
+      { type: 'field_name_picker', name: 'NAME', text: 'tabuleiro', kind: 'board' },
       { type: 'input_value', name: 'COL', check: 'JSValue' },
       { type: 'input_value', name: 'ROW', check: 'JSValue' },
     ],
@@ -828,7 +840,7 @@ export const gameKitBlockDefinitions03: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Qual carta da mão foi clicada (o índice, 0 = a primeira; -1 = nenhuma). Junte com "o mouse x/y" e "Quando clicar no jogo" para jogar uma carta clicando nela.',
+      'Qual carta da mão foi clicada (o índice, 0 = a primeira; -1 = nenhuma). No HUD, junte com "o mouse x/y na tela"; no mundo, use "o mouse x/y".',
   },
 
   // ---- 🃏 R30: KIT CARTAS (o RPG de cartas / deck-battler) ----

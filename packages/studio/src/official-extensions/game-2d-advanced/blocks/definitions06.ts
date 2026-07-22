@@ -284,7 +284,7 @@ export const gameKitBlockDefinitions06: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Casa os dois lutadores. Ponha DEPOIS de "Posicionar o personagem": é dali que sai o lugar onde cada um volta a cada round. Ganha quem levar a maioria (melhor de 3 = quem fizer 2).',
+      'Casa os dois lutadores em uma partida de 1 a 9 rounds. Ponha DEPOIS de "Posicionar o personagem": é dali que sai o lugar onde cada um volta a cada round. Ganha quem levar a maioria (melhor de 3 = quem fizer 2).',
   },
 
   {
@@ -368,7 +368,7 @@ export const gameKitBlockDefinitions06: BlockDefinition[] = [
     placement: 'command',
     message0: 'A animação do golpe %1 de %2 são os quadros %3 a %4',
     args0: [
-      { type: 'field_input', name: 'NAME', text: 'soco' },
+      { type: 'field_name_picker', name: 'NAME', text: 'soco', kind: 'fight-move' },
       { type: 'field_name_picker', name: 'WHO', text: 'jogador1', kind: 'character' },
       { type: 'input_value', name: 'FROM', check: 'JSValue' },
       { type: 'input_value', name: 'TO', check: 'JSValue' },
@@ -386,7 +386,7 @@ export const gameKitBlockDefinitions06: BlockDefinition[] = [
     message0: 'Fazer %1 dar o golpe %2',
     args0: [
       { type: 'field_name_picker', name: 'WHO', text: 'jogador1', kind: 'character' },
-      { type: 'field_input', name: 'MOVE', text: 'soco' },
+      { type: 'field_name_picker', name: 'MOVE', text: 'soco', kind: 'fight-move' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',

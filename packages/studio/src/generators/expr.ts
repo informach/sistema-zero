@@ -530,6 +530,10 @@ export function compileExpr(
       return 'SZGameKit.mouseX()'
     case 'gk:mouseY':
       return 'SZGameKit.mouseY()'
+    case 'gk:mouseScreenX':
+      return 'SZGameKit.mouseScreenX()'
+    case 'gk:mouseScreenY':
+      return 'SZGameKit.mouseScreenY()'
     case 'gk:mouseDown':
       return 'SZGameKit.mouseDown()'
     case 'gk:rpgCell':

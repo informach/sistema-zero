@@ -4694,6 +4694,8 @@ function matchGameKitExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (method === 'cameraY' && args.length === 0) return { type: 'gk:cameraY' }
   if (method === 'mouseX' && args.length === 0) return { type: 'gk:mouseX' }
   if (method === 'mouseY' && args.length === 0) return { type: 'gk:mouseY' }
+  if (method === 'mouseScreenX' && args.length === 0) return { type: 'gk:mouseScreenX' }
+  if (method === 'mouseScreenY' && args.length === 0) return { type: 'gk:mouseScreenY' }
   if (method === 'mouseDown' && args.length === 0) return { type: 'gk:mouseDown' }
   return null
 }
@@ -11940,6 +11942,8 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'gk:cameraY':
     case 'gk:mouseX':
     case 'gk:mouseY':
+    case 'gk:mouseScreenX':
+    case 'gk:mouseScreenY':
     case 'gk:mouseDown':
     case 'gk:rpgHasFlag':
     case 'gk:rpgHasItem':

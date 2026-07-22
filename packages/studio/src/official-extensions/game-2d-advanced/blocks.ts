@@ -99,6 +99,8 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
       'sz_gk_on_game_click',
       'sz_gk_mouse_x',
       'sz_gk_mouse_y',
+      'sz_gk_mouse_screen_x',
+      'sz_gk_mouse_screen_y',
       'sz_gk_mouse_down',
       'sz_gk_move_with_custom_keys',
     ],

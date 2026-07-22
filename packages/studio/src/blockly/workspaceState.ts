@@ -6909,6 +6909,10 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return block('sz_gk_mouse_x', {})
     case 'gk:mouseY':
       return block('sz_gk_mouse_y', {})
+    case 'gk:mouseScreenX':
+      return block('sz_gk_mouse_screen_x', {})
+    case 'gk:mouseScreenY':
+      return block('sz_gk_mouse_screen_y', {})
     case 'gk:mouseDown':
       return block('sz_gk_mouse_down', {})
     case 'gk:rpgCell': {

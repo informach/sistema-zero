@@ -408,7 +408,7 @@ test('Jogo 2D mantém o viewport sem barras durante o tremor da tela', async ({ 
   })
 })
 
-test('Defesa do Reino cobra uma compra e cria uma torre após o boot automático', async ({
+test('game-2d-advanced: Defesa do Reino cobra uma compra e cria uma torre após o boot automático', async ({
   page,
 }) => {
   const contract = EXAMPLE_QA_CONTRACTS.find(
@@ -521,7 +521,7 @@ async function rpgSnapshot(preview: FrameLocator): Promise<RpgBrowserSnapshot> {
   })
 }
 
-test('Vila do Dragão — fluxo visual completo no Chromium', async ({ page }) => {
+test('game-2d-advanced: Vila do Dragão — fluxo visual completo no Chromium', async ({ page }) => {
   test.setTimeout(60_000)
   const diagnostics: string[] = []
   page.on('pageerror', (error) => diagnostics.push(`pageerror: ${error.message}`))

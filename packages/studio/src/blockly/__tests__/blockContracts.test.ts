@@ -815,7 +815,11 @@ describe('contrato central de posicionamento', () => {
     expect(PERSISTENT_EXTENSION_COMMANDS).toEqual(
       expect.arrayContaining([
         { blockType: 'sz_g2d_play_music', statementType: 'g2d:playMusic' },
+        { blockType: 'sz_gk_pkm_grass_cells', statementType: 'gk:pkmGrassCells' },
+        { blockType: 'sz_gk_pkm_grass_tiles', statementType: 'gk:pkmGrassTiles' },
+        { blockType: 'sz_gk_pkm_wild', statementType: 'gk:pkmWild' },
         { blockType: 'sz_gk_start_spawner', statementType: 'gk:startSpawner' },
+        { blockType: 'sz_gk_wait', statementType: 'gk:waitThen' },
         { blockType: 'sz_g3k_start_spawner', statementType: 'g3k:startSpawner' },
         { blockType: 'sz_g3k_start_timer', statementType: 'g3k:startTimer' },
         { blockType: 'sz_w3d_ambience', statementType: 'w3d:ambience' },
@@ -995,6 +999,94 @@ describe('contrato central de posicionamento', () => {
       expect(contract.placement?.root, type).toEqual(['start'])
     }
     expect(inferBlockContract(definition('sz_gk_rpg_on_step')).placement?.role).toBe('event')
+  })
+
+  it('restringe os blocos auxiliares do GK aos contêineres que os interpretam', () => {
+    ensureBlocklyInitialized()
+    for (const extension of OFFICIAL_CATALOG) {
+      registerExtensionBlocks(extension.blockly.blocks)
+    }
+
+    const scenarios = [
+      {
+        area: 'sz_frame_events',
+        container: 'sz_gk_rpg_on_enter_map',
+        child: 'sz_gk_rpg_on_step',
+      },
+      { area: 'sz_frame_start', container: 'sz_gk_define_path', child: 'sz_gk_path_point' },
+      { area: 'sz_frame_start', container: 'sz_gk_rpg_menu', child: 'sz_gk_rpg_option' },
+      { area: 'sz_frame_start', container: 'sz_gk_rpg_cutscene', child: 'sz_gk_rpg_wait' },
+      {
+        area: 'sz_frame_start',
+        container: 'sz_gk_pkm_battle_trainer',
+        child: 'sz_gk_pkm_trainer_creature',
+      },
+    ] as const
+
+    for (const [index, scenario] of scenarios.entries()) {
+      const nested = new Blockly.Workspace(
+        new Blockly.Options({ plugins: { connectionChecker: HTMLConnectionChecker } }),
+      )
+      try {
+        const frame = nested.newBlock(scenario.area)
+        const container = nested.newBlock(scenario.container)
+        const child = nested.newBlock(scenario.child)
+        const rootConnection = frame.getInput('CHILDREN')?.connection
+        const containerConnection = container.previousConnection
+        const bodyConnection = container.getInput('BODY')?.connection
+        const childConnection = child.previousConnection
+        if (!rootConnection || !containerConnection || !bodyConnection || !childConnection) {
+          throw new Error(`${scenario.child}: conexões do contêiner ausentes`)
+        }
+        expect(rootConnection.connect(containerConnection), scenario.container).toBe(true)
+        expect(bodyConnection.connect(childConnection), scenario.child).toBe(true)
+        const sibling = nested.newBlock(scenario.child)
+        if (!child.nextConnection || !sibling.previousConnection) {
+          throw new Error(`${scenario.child}: conexões da sequência ausentes`)
+        }
+        expect(child.nextConnection.connect(sibling.previousConnection), scenario.child).toBe(true)
+      } finally {
+        nested.dispose()
+      }
+
+      const atRoot = new Blockly.Workspace(
+        new Blockly.Options({ plugins: { connectionChecker: HTMLConnectionChecker } }),
+      )
+      try {
+        const frame = atRoot.newBlock(scenario.area)
+        const child = atRoot.newBlock(scenario.child)
+        const rootConnection = frame.getInput('CHILDREN')?.connection
+        const childConnection = child.previousConnection
+        if (!rootConnection || !childConnection) {
+          throw new Error(`${scenario.child}: conexões da raiz ausentes`)
+        }
+        expect(rootConnection.connect(childConnection), scenario.child).toBe(false)
+      } finally {
+        atRoot.dispose()
+      }
+
+      const wrongHost = scenarios[(index + 1) % scenarios.length]
+      if (!wrongHost) throw new Error('cenário de contêiner incorreto ausente')
+      const inWrongContainer = new Blockly.Workspace(
+        new Blockly.Options({ plugins: { connectionChecker: HTMLConnectionChecker } }),
+      )
+      try {
+        const frame = inWrongContainer.newBlock(wrongHost.area)
+        const container = inWrongContainer.newBlock(wrongHost.container)
+        const child = inWrongContainer.newBlock(scenario.child)
+        const rootConnection = frame.getInput('CHILDREN')?.connection
+        const containerConnection = container.previousConnection
+        const bodyConnection = container.getInput('BODY')?.connection
+        const childConnection = child.previousConnection
+        if (!rootConnection || !containerConnection || !bodyConnection || !childConnection) {
+          throw new Error(`${scenario.child}: conexões do contêiner incorreto ausentes`)
+        }
+        expect(rootConnection.connect(containerConnection), wrongHost.container).toBe(true)
+        expect(bodyConnection.connect(childConnection), scenario.child).toBe(false)
+      } finally {
+        inWrongContainer.dispose()
+      }
+    }
   })
 
   it('marca wrappers e boots antigos para migração, não para projetos novos', () => {

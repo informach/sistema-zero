@@ -9,12 +9,16 @@ import { CANVAS_BLOCKS } from '../../blocks/canvas'
 import { VALUE_BLOCKS } from '../../blocks/values'
 import { ensureBlocklyInitialized } from '../../setup'
 import {
+  collectBoards,
   collectCanvasContexts,
   collectCanvasIds,
   collectClassNames,
+  collectCombatMoves,
   collectCSSAnimations,
   collectCSSFonts,
   collectCSSSelectors,
+  collectEnemyCombatants,
+  collectFightMoves,
   collectFunctionNames,
   collectGroups3d,
   collectGroupsAndLists,
@@ -27,6 +31,7 @@ import {
   collectScopedFunctionNames,
   collectScopedVariableNames,
   collectSpritesheets,
+  collectStoredValues,
   collectSVGReferences,
   collectTilemaps,
   collectVariables,
@@ -867,6 +872,86 @@ describe('FieldNamePicker', () => {
       const ws = new Blockly.Workspace()
       expect(kindOf(ws.newBlock('sz_g2d_draw_tilemap'), 'MAP')).toBe('tilemap')
       expect(kindOf(ws.newBlock('sz_g2d_tilemap_collide'), 'MAP')).toBe('tilemap')
+    })
+  })
+
+  describe('Jogo 2D Avançado (recursos nomeados)', () => {
+    const kindOf = (block: Blockly.Block, field: string): string | undefined => {
+      const value = block.getField(field)
+      return value instanceof FieldNamePicker ? value.kind : undefined
+    }
+
+    it('todos os consumidores usam o seletor do recurso que já foi declarado', () => {
+      const ws = new Blockly.Workspace()
+      const consumers = [
+        ['sz_gk_count_item', 'NAME', 'item'],
+        ['sz_gk_board_set', 'NAME', 'board'],
+        ['sz_gk_board_get', 'NAME', 'board'],
+        ['sz_gk_board_count', 'NAME', 'board'],
+        ['sz_gk_board_in', 'NAME', 'board'],
+        ['sz_gk_saved_value', 'NAME', 'stored-value'],
+        ['sz_gk_battler_life', 'NAME', 'combatant'],
+        ['sz_gk_battler_max_life', 'NAME', 'combatant'],
+        ['sz_gk_rpg_on_foe_turn', 'NAME', 'enemy-combatant'],
+        ['sz_gk_rpg_foe_use', 'NAME', 'enemy-combatant'],
+        ['sz_gk_rpg_foe_hit_all', 'NAME', 'enemy-combatant'],
+        ['sz_gk_rpg_foe_use', 'MOVE', 'combat-move'],
+        ['sz_gk_luta_move_anim', 'NAME', 'fight-move'],
+        ['sz_gk_luta_attack', 'MOVE', 'fight-move'],
+      ] as const
+
+      for (const [type, field, kind] of consumers) {
+        expect(kindOf(ws.newBlock(type), field)).toBe(kind)
+      }
+    })
+
+    it('os novos seletores listam seus declaradores sem misturar domínios', () => {
+      const ws = new Blockly.Workspace()
+      ws.newBlock('sz_gk_board_create').setFieldValue('arena', 'NAME')
+      ws.newBlock('sz_gk_save_value').setFieldValue('recorde', 'NAME')
+      ws.newBlock('sz_gk_rpg_teach_move').setFieldValue('Baforada', 'MOVE')
+      ws.newBlock('sz_gk_luta_move').setFieldValue('soco', 'NAME')
+
+      expect(collectBoards(ws)).toEqual(['arena'])
+      expect(collectStoredValues(ws)).toEqual(['recorde'])
+      expect(collectCombatMoves(ws)).toEqual(['Baforada'])
+      expect(collectFightMoves(ws)).toEqual(['soco'])
+    })
+
+    it('o seletor de IA lista somente inimigos declarados', () => {
+      const ws = new Blockly.Workspace()
+      ws.newBlock('sz_gk_rpg_add_ally').setFieldValue('Amiga', 'NAME')
+      ws.newBlock('sz_gk_rpg_add_foe').setFieldValue('Slime', 'NAME')
+      ws.newBlock('sz_gk_rpg_add_boss').setFieldValue('Dragão', 'NAME')
+      ws.newBlock('sz_gk_rpg_battle_start').setFieldValue('Ogro', 'NAME')
+      ws.newBlock('sz_gk_rpg_define_battler').setFieldValue('Bruxa', 'NAME')
+
+      expect(collectEnemyCombatants(ws)).toEqual(['Slime', 'Dragão', 'Ogro', 'Bruxa'])
+      expect(nameKindAllowsFreeText('enemy-combatant')).toBe(false)
+    })
+
+    it('filtra os golpes pelo combatente ou lutador escolhido no bloco consumidor', () => {
+      const ws = new Blockly.Workspace()
+      const espada = ws.newBlock('sz_gk_rpg_teach_move')
+      espada.setFieldValue('Espadada', 'MOVE')
+      espada.setFieldValue('Você', 'WHO')
+      const baforada = ws.newBlock('sz_gk_rpg_teach_move')
+      baforada.setFieldValue('Baforada', 'MOVE')
+      baforada.setFieldValue('Dragão', 'WHO')
+      const golpeDoDragao = ws.newBlock('sz_gk_rpg_foe_use')
+      golpeDoDragao.setFieldValue('Dragão', 'NAME')
+
+      const soco = ws.newBlock('sz_gk_luta_move')
+      soco.setFieldValue('soco', 'NAME')
+      soco.setFieldValue('jogador1', 'WHO')
+      const chute = ws.newBlock('sz_gk_luta_move')
+      chute.setFieldValue('chute', 'NAME')
+      chute.setFieldValue('jogador2', 'WHO')
+      const ataqueDoJogador2 = ws.newBlock('sz_gk_luta_attack')
+      ataqueDoJogador2.setFieldValue('jogador2', 'WHO')
+
+      expect(collectCombatMoves(ws, golpeDoDragao)).toEqual(['Baforada'])
+      expect(collectFightMoves(ws, ataqueDoJogador2)).toEqual(['chute'])
     })
   })
 
