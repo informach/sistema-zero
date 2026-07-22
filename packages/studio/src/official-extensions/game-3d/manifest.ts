@@ -13,7 +13,7 @@ import {
 export const gameThreeDManifest: ExtensionManifest = {
   id: 'game-3d',
   name: 'Jogo 3D',
-  version: '0.12.2',
+  version: '0.13.0',
   description:
     'Blocos e comandos para criar jogos 3D com Three.js: cena/câmera/luz (e cena em tela cheia responsiva), cubos/esferas/caixas, posição/rotação/escala, física (velocidade, gravidade, pulo, colisão), teclado, câmera que segue, genéricos de grade isométrica e de movimento (círculo, distância, cair girando, deslizar, girar) e Kits prontos: "Desvie", "Travessia", "Corrida" e "Empilhar". Three.js carrega de um CDN fixado.',
   category: 'games',
@@ -35,7 +35,8 @@ cenas e **jogos** 3D sobre WebGL. O Three.js é carregado de um CDN **fixado**
 - Em **🔁 Enquanto estiver rodando**, coloque **A cada frame 3D** e
   atualizações periódicas. Dentro do quadro, mova, anime, aplique física, teste
   colisões e crie somente itens temporários que tenham poda ou remoção definida.
-- Notas e efeitos sonoros podem responder a eventos ou a condições do quadro.
+- Notas e efeitos sonoros podem responder diretamente a clique/tecla ou a
+  condições do quadro, mas não são iniciados diretamente em **Ao iniciar**.
 
 Comandos que representam um passo contínuo cabem no corpo desses loops ou em
 funções/métodos chamados por eles. Eles não entram diretamente em **Ao iniciar**,
@@ -48,12 +49,14 @@ em um evento ou em um construtor.
 - **Cor de fundo** / **Posicionar câmera**.
 - **Criar cubo** / **Criar esfera** / **Criar caixa** (largura/altura/profundidade. Ótima p/ o chão).
 - **Posição** / **Rotação** (radianos) / **Tamanho (escala)** do objeto.
-- **A cada frame 3D**. Loop de animação (\`setAnimationLoop\`) que redesenha a cena.
+- **A cada frame 3D**. Loop de animação que redesenha a cena. Se o projeto usar
+  mais de um bloco de quadro na mesma cena, os corpos rodam juntos na ordem em
+  que foram registrados e a cena é desenhada uma vez.
 
 ### Formas, modelos & aparência
 
 - Cilindro, cone, plano e anel completam as primitivas; os exemplos não dependem de assets externos.
-- **Criar modelo** agrupa peças: cor, opacidade, material e visibilidade funcionam no grupo inteiro.
+- **Criar modelo** agrupa peças da mesma cena: cor, opacidade, material e visibilidade funcionam no grupo inteiro.
 - Texturas são opcionais e usam um asset escolhido no projeto; remover um objeto também libera seus recursos de GPU.
 - Remover um modelo desregistra também suas peças. Objetos que terminam uma queda deixam de ocupar o limite da cena.
 - Luz ambiente, sol, luz pontual, neblina, céu em degradê e sombras montam a atmosfera.
@@ -63,7 +66,7 @@ em um evento ou em um construtor.
 - **Mover com o teclado (WASD/setas)**. Anda no plano.
 - **Definir velocidade** / **Fazer pular** (só no chão) / **Mover com gravidade (chão)**.
 - **A câmera segue o objeto**. Acompanha mantendo o enquadramento.
-- Movimento relativo, olhar/mira e câmeras em primeira pessoa, terceira pessoa e orbital.
+- Movimento relativo, olhar/mira e câmeras em primeira pessoa, terceira pessoa e orbital. O último modo de câmera escolhido substitui o anterior.
 - **Corpo + sólido + atualizar corpo**. Física AABB leve da própria plataforma, sem biblioteca externa pesada.
 
 ### Perguntas (booleanos. Caem num "se")
@@ -80,8 +83,9 @@ em um evento ou em um construtor.
 
 ### Enxames & som
 
-- Crie um enxame, solte cópias de uma primitiva, percorra, conte e remova as que saíram da área.
-- Toque notas e efeitos curtos depois da primeira interação do jogador.
+- **Grupo de objetos** e **enxame** são recursos diferentes e aparecem em seletores separados. O grupo guarda inimigos do Kit Desvie; o enxame administra cópias ligadas a uma cena.
+- O enxame compartilha a geometria do molde com segurança. Remover o molde não invalida cópias que ainda estão na cena; o recurso é liberado depois da última cópia.
+- Toque notas e efeitos curtos depois da primeira interação do jogador. O runtime limita a 32 sons simultâneos e descarta as conexões no reinício.
 
 ### Câmera & grade 3D (genéricos. Para jogos de grade/isométrico)
 
@@ -96,7 +100,7 @@ em um evento ou em um construtor.
 - **Criar mundo Travessia** + **Criar personagem** que pula de casa em casa.
 - **Criar faixa** (grama/floresta/carros/caminhões) / **Gerar linhas aleatórias**.
 - **Atualizar o personagem** (setas + grade) / **Mover os veículos**.
-- **bateu num veículo?** / **pontuação (linha)** / **Recomeçar**.
+- **bateu num veículo?** / **pontuação (linha)** / **Recomeçar**. Depois da batida, personagem e trânsito ficam congelados até recomeçar.
 
 ### Kit "Corrida" (correr numa pista) + genéricos top-down
 
@@ -104,7 +108,7 @@ em um evento ou em um construtor.
 - **a distância entre … / está perto de … ?**. Proximidade (p/ colisão de qualquer jogo).
 - **Criar mundo de corrida** + **Criar a pista** (oval) + **Criar carro do jogador**.
 - **Dirigir o carro** (↑ acelera / ↓ freia, dá voltas) / **Soltar e mover rivais** / **marcha** (botões).
-- **bateu num rival?** / **voltas (pontuação)** / **Recomeçar**.
+- **bateu num rival?** / **voltas (pontuação)** / **Recomeçar**. Depois da batida, carro e rivais ficam congelados até recomeçar.
 
 ### Kit "Empilhar" (torre de blocos) + genéricos de movimento
 
@@ -124,6 +128,7 @@ em um evento ou em um construtor.
   projeto é validado antes de executar para impedir construções persistentes no loop.
 - Eixos genéricos: x = direita, y = cima, z = profundidade; distância, círculo e grade usam o chão X-Z. Os kits Travessia/Corrida mantêm sua convenção interna sem mudar os blocos genéricos. Rotação em radianos.
 - Movimento e física usam o tempo real do quadro, mantendo a velocidade em telas de 60/120/144 Hz.
+- Os seletores separam o mundo completo do Jogo 3D de uma cena Three.js crua do Canvas 3D. Objetos, modelos e enxames não podem misturar cenas diferentes.
 - Há limites didáticos de segurança para objetos, luzes, enxames, linhas e andares; remova ou faça a poda de itens temporários. Ao reiniciar o preview, o runtime também encerra WebGL, listeners e áudio.
 - Todos os blocos desta categoria são **iniciante-3d**. A aula usa \`allowBlocks\` para revelar somente os necessários, sem retirar capacidade da extensão.
 - Comece por **"Cubo girando"**; depois avance para **"Desvie dos blocos"**, **"Atravesse a rua"**, **"Corrida maluca"** e **"Torre maluca"**.

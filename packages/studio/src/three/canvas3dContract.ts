@@ -84,6 +84,12 @@ export type Canvas3DSymbolKind =
   | 'composer3d'
   | 'object3d'
   | 'loader3d'
+  | 'model-loader3d'
+  | 'audio-loader3d'
+  | 'water3d'
+  | 'grass3d'
+  | 'instanced-mesh3d'
+  | 'color-target3d'
   | 'physics-world'
 
 export type Canvas3DReferenceKind = Canvas3DSymbolKind | 'canvas' | 'function'
@@ -122,6 +128,12 @@ export const CANVAS3D_BLOCK_DECLARATIONS_BY_KIND: Readonly<
     sz_t3d_city: ['CITY'],
   },
   loader3d: {},
+  'model-loader3d': {},
+  'audio-loader3d': {},
+  water3d: { sz_t3d_water: ['WATER'] },
+  grass3d: { sz_t3d_grass: ['GRASS'] },
+  'instanced-mesh3d': { sz_t3d_grass: ['GRASS'] },
+  'color-target3d': { sz_t3d_light_create: ['LIGHT'] },
   'physics-world': { sz_t3d_physics_setup: ['WORLD'] },
 }
 
@@ -132,11 +144,11 @@ export const CANVAS3D_SEMANTIC_DECLARATION_FIELDS: Readonly<
   threeSceneSetup: [{ field: 'scene', kinds: ['scene3d', 'object3d'] }],
   threeRendererSetup: [{ field: 'renderer', kinds: ['renderer3d'] }],
   threeCameraSetup: [{ field: 'camera', kinds: ['camera3d', 'object3d'] }],
-  threeLightSetup: [{ field: 'light', kinds: ['light3d', 'object3d'] }],
+  threeLightSetup: [{ field: 'light', kinds: ['light3d', 'object3d', 'color-target3d'] }],
   bloomSetup: [{ field: 'composer', kinds: ['composer3d'] }],
   particlesSetup: [{ field: 'particles', kinds: ['object3d'] }],
-  waterSetup: [{ field: 'water', kinds: ['object3d'] }],
-  grassSetup: [{ field: 'grass', kinds: ['object3d'] }],
+  waterSetup: [{ field: 'water', kinds: ['object3d', 'water3d'] }],
+  grassSetup: [{ field: 'grass', kinds: ['object3d', 'grass3d', 'instanced-mesh3d'] }],
   signSetup: [{ field: 'sign', kinds: ['object3d'] }],
   primitiveSetup: [{ field: 'mesh', kinds: ['object3d'] }],
   terrainSetup: [{ field: 'terrain', kinds: ['object3d'] }],
@@ -169,9 +181,9 @@ export const CANVAS3D_SEMANTIC_REFERENCE_FIELDS: Readonly<
   ],
   particlesSetup: [{ field: 'scene', kind: 'scene3d' }],
   waterSetup: [{ field: 'scene', kind: 'scene3d' }],
-  waterTime: [{ field: 'water', kind: 'object3d' }],
+  waterTime: [{ field: 'water', kind: 'water3d' }],
   grassSetup: [{ field: 'scene', kind: 'scene3d' }],
-  grassTime: [{ field: 'grass', kind: 'object3d' }],
+  grassTime: [{ field: 'grass', kind: 'grass3d' }],
   signSetup: [{ field: 'scene', kind: 'scene3d' }],
   primitiveSetup: [{ field: 'scene', kind: 'scene3d' }],
   terrainSetup: [
@@ -219,7 +231,6 @@ export const CANVAS3D_SEMANTIC_REFERENCE_FIELDS: Readonly<
   physicsLiteRaycast: [{ field: 'world', kind: 'physics-world' }],
   physicsLiteBodyState: [{ field: 'world', kind: 'physics-world' }],
   physicsLiteStats: [{ field: 'world', kind: 'physics-world' }],
-  loaderLoad: [{ field: 'loaderVar', kind: 'loader3d' }],
   mountRenderer: [{ field: 'renderer', kind: 'renderer3d' }],
 }
 
@@ -249,6 +260,15 @@ const OBJECT3D_CLASS_NAMES = new Set([
   'Line2',
 ])
 
+const MODEL_LOADER_CLASS_NAMES = new Set([
+  'GLTFLoader',
+  'FBXLoader',
+  'OBJLoader',
+  'ColladaLoader',
+  'PLYLoader',
+  'STLLoader',
+])
+
 /** Classifica o construtor técnico sem depender da UI do seletor de classes. */
 export function canvas3DSymbolKindsForClass(rawClass: string): readonly Canvas3DSymbolKind[] {
   const className = rawClass.trim().split('.').at(-1) ?? ''
@@ -256,10 +276,14 @@ export function canvas3DSymbolKindsForClass(rawClass: string): readonly Canvas3D
   if (className.endsWith('Camera')) return ['camera3d', 'object3d']
   if (className === 'WebGLRenderer' || className === 'WebGPURenderer') return ['renderer3d']
   if (className.endsWith('Light') || className.endsWith('LightProbe')) {
-    return ['light3d', 'object3d']
+    return ['light3d', 'object3d', 'color-target3d']
   }
   if (className === 'EffectComposer') return ['composer3d']
+  if (className === 'AudioLoader') return ['loader3d', 'audio-loader3d']
+  if (MODEL_LOADER_CLASS_NAMES.has(className)) return ['loader3d', 'model-loader3d']
   if (className.endsWith('Loader')) return ['loader3d']
+  if (className.endsWith('Material')) return ['color-target3d']
+  if (className === 'InstancedMesh') return ['object3d', 'instanced-mesh3d']
   return OBJECT3D_CLASS_NAMES.has(className) ? ['object3d'] : []
 }
 
@@ -434,7 +458,6 @@ export const CANVAS3D_OBJECT_BRANCH_BINDERS: Readonly<
   Partial<Record<Canvas3DBlockType, Canvas3DBranchBinders>>
 > = {
   sz_t3d_traverse: { DO: ['PARAM'] },
-  sz_t3d_load_model: { DO: ['PARAM'] },
 }
 
 export const CANVAS3D_SEMANTIC_STATEMENT_TYPES = [
@@ -500,6 +523,7 @@ export function statementUsesCanvas3D(statement: {
   module?: string
   namespace?: string
 }): boolean {
+  if (statement.type === 'loaderLoad' || statement.type === 'traverseEach') return false
   return (
     CANVAS3D_SEMANTIC_STATEMENT_TYPE_SET.has(statement.type) ||
     (statement.type === 'importStar' && statement.module === 'three') ||

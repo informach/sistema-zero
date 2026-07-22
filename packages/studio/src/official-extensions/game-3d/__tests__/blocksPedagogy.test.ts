@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+import { inferBlockContract } from '../../../blockly/blockContracts'
 import type { BlockDefinition } from '../../../blockly/blocks/types'
 import { G3D_SOCKET_SHADOW_TYPES, gameThreeDBlocks, gameThreeDToolboxCategory } from '../blocks'
 
@@ -36,5 +37,17 @@ describe('game-3d — ergonomia dos blocos para iniciantes', () => {
       .map((entry) => ('name' in entry ? entry.name : ''))
       .filter(Boolean)
     expect(names.some((name) => /avançad/i.test(name))).toBe(false)
+  })
+
+  it('só permite iniciar áudio dentro de uma interação ou de um loop já ativo', () => {
+    for (const type of ['sz_g3d_play_note', 'sz_g3d_play_effect']) {
+      const definition = gameThreeDBlocks.find((block) => block.type === type)
+      if (!definition) throw new Error(`bloco ${type} não encontrado`)
+      const placement = inferBlockContract(definition).placement
+      expect(placement?.root).toEqual([])
+      expect(placement?.nested).toContain('user-gesture-body')
+      expect(placement?.nested).toContain('loop-body')
+      expect(placement?.nested).not.toContain('event-body')
+    }
   })
 })

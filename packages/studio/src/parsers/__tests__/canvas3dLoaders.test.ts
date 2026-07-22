@@ -61,12 +61,17 @@ describe('Canvas 3D Fase 2 — loaderLoad (carregamento async)', () => {
   it('loader.load(url, (gltf) => {…}) → loaderLoad (0 raw, regen igual, bloco)', () => {
     const src = [
       'const scene = new THREE.Scene();',
+      'const loader = new GLTFLoader();',
       "loader.load('m.glb', (gltf) => {",
       '  scene.add(gltf.scene);',
       '});',
     ].join('\n')
     // com o import p/ ligar o gate (scene.add vira "adicionar" amigável)
-    const full = `import * as THREE from 'three';\n${src}`
+    const full = [
+      "import * as THREE from 'three';",
+      "import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';",
+      src,
+    ].join('\n')
     const ir = parseJS(full)
     expect(JSON.stringify(ir)).not.toContain('"rawJS"')
     expect(ir.some((s) => s.type === 'loaderLoad')).toBe(true)
@@ -86,7 +91,13 @@ describe('Canvas 3D Fase 2 — loaderLoad (carregamento async)', () => {
 
 describe('Canvas 3D — traverse (percorrer cada parte)', () => {
   it('modelo.traverse((parte) => {…}) com var → traverseEach (0 raw, regen igual, bloco)', () => {
-    const src = ['modelo.traverse((parte) => {', '  parte.castShadow = true;', '});'].join('\n')
+    const src = [
+      "import * as THREE from 'three';",
+      'const modelo = new THREE.Group();',
+      'modelo.traverse((parte) => {',
+      '  parte.castShadow = true;',
+      '});',
+    ].join('\n')
     const ir = parseJS(src)
     expect(JSON.stringify(ir)).not.toContain('"rawJS"')
     expect(ir.some((s) => s.type === 'traverseEach')).toBe(true)
@@ -99,12 +110,19 @@ describe('Canvas 3D — traverse (percorrer cada parte)', () => {
   })
 
   it('gltf.scene.traverse((peca) => {…}) com PROPRIEDADE no objeto → traverseEach', () => {
-    const src = ['gltf.scene.traverse((peca) => {', '  peca.receiveShadow = true;', '});'].join(
-      '\n',
-    )
+    const src = [
+      "import * as THREE from 'three';",
+      "import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';",
+      'const loader = new GLTFLoader();',
+      "loader.load('modelo.glb', (gltf) => {",
+      '  gltf.scene.traverse((peca) => {',
+      '    peca.receiveShadow = true;',
+      '  });',
+      '});',
+    ].join('\n')
     const ir = parseJS(src)
     expect(JSON.stringify(ir)).not.toContain('"rawJS"')
-    expect(ir.some((s) => s.type === 'traverseEach')).toBe(true)
+    expect(JSON.stringify(ir)).toContain('"type":"traverseEach"')
     const code = generateJS({ statements: ir })
     const { rebuiltCode } = roundtripBlocks(code)
     expect(rebuiltCode).toBe(code)
@@ -139,7 +157,9 @@ describe('Canvas 3D — som na unha (load_sound discriminado por AudioLoader)', 
   it('contraprova: SEM AudioLoader declarado, x.load decai p/ o bloco de MODELO', () => {
     const src = [
       "import * as THREE from 'three';",
+      "import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';",
       'const scene = new THREE.Scene();',
+      'const loader = new GLTFLoader();',
       "loader.load('m.glb', (gltf) => {",
       '  scene.add(gltf.scene);',
       '});',
@@ -147,6 +167,28 @@ describe('Canvas 3D — som na unha (load_sound discriminado por AudioLoader)', 
     const { stateJson } = roundtripBlocks(generateJS({ statements: parseJS(src) }))
     expect(stateJson).toContain('"sz_t3d_load_model"')
     expect(stateJson).not.toContain('"sz_t3d_load_sound"')
+  })
+
+  it('métodos homônimos continuam genéricos mesmo dentro de um projeto Three.js', () => {
+    const src = [
+      "import * as THREE from 'three';",
+      'const scene = new THREE.Scene();',
+      'class DadosLoader {',
+      '  load(url, pronto) { pronto(url); }',
+      '}',
+      'const dados = new DadosLoader();',
+      "dados.load('dados.json', (resultado) => {",
+      '  console.log(resultado);',
+      '});',
+      'const arvore = { traverse: (visitar) => visitar(1) };',
+      'arvore.traverse((item) => {',
+      '  console.log(item);',
+      '});',
+    ].join('\n')
+
+    const stateJson = roundtripBlocks(generateJS({ statements: parseJS(src) })).stateJson
+    expect(stateJson).not.toContain('"sz_t3d_load_model"')
+    expect(stateJson).not.toContain('"sz_t3d_traverse"')
   })
 
   it('AudioLoader declarado DENTRO de um corpo (recursão) também discrimina', () => {

@@ -2397,6 +2397,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: {
           type: 'loaderLoad',
+          resourceKind: 'model',
           loaderVar: f(block, 'LOADER'),
           url: { type: 'str', value: f(block, 'URL') },
           param: f(block, 'PARAM') || 'modelo',
@@ -2406,12 +2407,13 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         },
       }
     case 'sz_t3d_load_sound':
-      // Irmão do load_model p/ ÁUDIO (AudioLoader): MESMO nó IR `loaderLoad` —
-      // só o rótulo/asset picker mudam; o reverso discrimina pelo tipo do loader.
+      // Irmão do load_model p/ ÁUDIO (AudioLoader). O papel explícito mantém a
+      // validação e o seletor alinhados mesmo antes do round-trip pelo código.
       return {
         kind: 'js',
         value: {
           type: 'loaderLoad',
+          resourceKind: 'audio',
           loaderVar: f(block, 'LOADER'),
           url: { type: 'str', value: f(block, 'URL') },
           param: f(block, 'PARAM') || 'buffer',

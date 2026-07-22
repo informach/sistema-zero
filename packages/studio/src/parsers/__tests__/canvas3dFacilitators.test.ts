@@ -186,7 +186,7 @@ describe('Canvas 3D — facilitadores (round-trip completo)', () => {
     }
   })
 
-  it('GATE: projeto SEM three NÃO vira bloco 3D (Set.add, .visible ficam genéricos)', () => {
+  it('GATE: projeto SEM three NÃO vira bloco 3D (.add, .visible, .load e .traverse)', () => {
     ensureBlocklyInitialized()
     // Mesmas FORMAS que os facilitadores reconhecem, mas sem importar three.
     const src = [
@@ -194,6 +194,13 @@ describe('Canvas 3D — facilitadores (round-trip completo)', () => {
       'time.add(jogador);',
       'const caixa = document.getElementById("c");',
       'caixa.visible = false;',
+      'const dados = new DadosLoader();',
+      'dados.load("dados.json", (resultado) => {',
+      '  console.log(resultado);',
+      '});',
+      'arvore.traverse((item) => {',
+      '  console.log(item);',
+      '});',
     ].join('\n')
     const state = buildWorkspaceStateFromIR({
       html: [],
@@ -206,5 +213,7 @@ describe('Canvas 3D — facilitadores (round-trip completo)', () => {
     // continuam nos blocos genéricos
     expect(json).toContain('"sz_js_method_on"') // time.add(jogador)
     expect(json).toContain('"sz_js_member_set"') // caixa.visible = false
+    expect(json).not.toContain('"sz_t3d_load_model"')
+    expect(json).not.toContain('"sz_t3d_traverse"')
   })
 })

@@ -10,6 +10,7 @@ import {
 } from '#ir'
 import { prepareCanvasImageSourceForParse } from '../canvasImagePreloadCodec'
 import { isGuidedDomAttributeName, isGuidedDomElementTag, isGuidedDomProperty } from '../domSafety'
+import { canvas3DSymbolKindsForClass } from '../three/canvas3dContract'
 import {
   canvas3DMacroFromPlaceholder,
   prepareCanvas3DSourceForParse,
@@ -68,9 +69,16 @@ export function parseJSWithDiagnostics(source: string): ParseJSResult {
     }
   }
 
+  const canvas3dImportedNames = collectCanvas3DImportedNames(ast.program.body)
   const ctx: ParseCtx = {
     source: parseSource,
     canvas3dMacros: prepared.macros,
+    usesCanvas3D: programUsesCanvas3D(ast.program.body),
+    canvas3dImportedNames,
+    canvas3dLoaderVars: new Set(),
+    canvas3dObjectVars: new Set(),
+    canvas3dModelResultVars: new Set(),
+    audioLoaderVars: new Set(),
     elementVars: new Map(),
     createdElementVars: new Set(),
     canvasElementVars: new Set(),
@@ -113,6 +121,19 @@ interface ParseCtx {
   source: string
   /** Macros Canvas 3D íntegros extraídos de marcadores com checksum. */
   canvas3dMacros: Map<string, JSStatement>
+  /** Sinal estrutural de que o programa usa Three.js; evita promover JS comum
+   * com métodos homônimos (`load`/`traverse`) para blocos Canvas 3D. */
+  usesCanvas3D: boolean
+  /** Classes importadas de `three`/`three/addons`, disponíveis sem namespace. */
+  canvas3dImportedNames: Set<string>
+  /** Variáveis comprovadamente criadas por um construtor Loader do Three.js. */
+  canvas3dLoaderVars: Set<string>
+  /** Variáveis comprovadamente compatíveis com Object3D. */
+  canvas3dObjectVars: Set<string>
+  /** Parâmetros locais que recebem o wrapper retornado por carregadores de modelo. */
+  canvas3dModelResultVars: Set<string>
+  /** Carregadores declarados como AudioLoader antes do uso. */
+  audioLoaderVars: Set<string>
   elementVars: Map<string, string>
   /**
    * Variáveis que vieram de `document.createElement[NS](...)` (não de
@@ -192,6 +213,55 @@ const KNOWN_EVENT_KINDS: ReadonlySet<EventKind> = new Set([
 ])
 
 type Node = Babel.Node
+
+function collectCanvas3DImportedNames(nodes: readonly Node[]): Set<string> {
+  const names = new Set<string>()
+  for (const node of nodes) {
+    if (node.type !== 'ImportDeclaration' || typeof node.source.value !== 'string') continue
+    if (node.source.value !== 'three' && !node.source.value.startsWith('three/addons/')) continue
+    for (const specifier of node.specifiers) {
+      if (specifier.type === 'ImportSpecifier') names.add(specifier.local.name)
+    }
+  }
+  return names
+}
+
+function programUsesCanvas3D(nodes: readonly Node[]): boolean {
+  const pending: unknown[] = [...nodes]
+  while (pending.length > 0) {
+    const value = pending.pop()
+    if (!value || typeof value !== 'object') continue
+    if (Array.isArray(value)) {
+      pending.push(...value)
+      continue
+    }
+    const node = value as Record<string, unknown>
+    if (
+      node.type === 'ImportDeclaration' &&
+      typeof (node.source as { value?: unknown } | undefined)?.value === 'string'
+    ) {
+      const module = (node.source as { value: string }).value
+      if (module === 'three' || module.startsWith('three/addons/')) return true
+    }
+    if (node.type === 'NewExpression') {
+      const callee = node.callee as
+        | { type?: string; computed?: boolean; object?: { type?: string; name?: string } }
+        | undefined
+      if (
+        callee?.type === 'MemberExpression' &&
+        !callee.computed &&
+        callee.object?.type === 'Identifier' &&
+        callee.object.name === 'THREE'
+      ) {
+        return true
+      }
+    }
+    for (const [key, child] of Object.entries(node)) {
+      if (key !== 'loc' && key !== 'start' && key !== 'end') pending.push(child)
+    }
+  }
+  return false
+}
 
 /** Cria um statement sintético sem carregar os builders Node-only no bundle do navegador. */
 function syntheticExpressionStatement(expression: Babel.Expression): Babel.ExpressionStatement {
@@ -815,8 +885,13 @@ function mapStatementList(nodes: Node[], source: string, ctx: ParseCtx): JSState
       continue
     }
     const stmt = mapStatement(nodes[i], source, ctx)
-    if (Array.isArray(stmt)) out.push(...stmt)
-    else if (stmt) out.push(stmt)
+    if (Array.isArray(stmt)) {
+      for (const child of stmt) rememberCanvas3DDeclaration(child, ctx)
+      out.push(...stmt)
+    } else if (stmt) {
+      rememberCanvas3DDeclaration(stmt, ctx)
+      out.push(stmt)
+    }
     i += 1
   }
   // Remove os `getElementById` soltos absorvidos por um `canvasSetup` NESTE
@@ -835,6 +910,21 @@ function mapStatementList(nodes: Node[], source: string, ctx: ParseCtx): JSState
       isGeneratedCanvasSetupGuard(statement, previous.varName, previous.canvasId)
     )
   })
+}
+
+function rememberCanvas3DDeclaration(statement: JSStatement, ctx: ParseCtx): void {
+  if (!ctx.usesCanvas3D || statement.type !== 'newInstance') return
+  const classIsFromThree =
+    statement.namespace === 'THREE' ||
+    (!statement.namespace && ctx.canvas3dImportedNames.has(statement.className))
+  if (!classIsFromThree) return
+  const classReference = statement.namespace
+    ? `${statement.namespace}.${statement.className}`
+    : statement.className
+  const kinds = canvas3DSymbolKindsForClass(classReference)
+  if (kinds.includes('loader3d')) ctx.canvas3dLoaderVars.add(statement.varName)
+  if (kinds.includes('object3d')) ctx.canvas3dObjectVars.add(statement.varName)
+  if (kinds.includes('audio-loader3d')) ctx.audioLoaderVars.add(statement.varName)
 }
 
 function isGeneratedCanvasSetupGuard(
@@ -1219,6 +1309,16 @@ function expandCompoundTarget(
   return null
 }
 
+function isKnownCanvas3DTraversalTarget(value: Node, ctx: ParseCtx): boolean {
+  if (value.type === 'Identifier') return ctx.canvas3dObjectVars.has(value.name)
+  return (
+    isNamedMemberExpression(value) &&
+    value.object?.type === 'Identifier' &&
+    value.property.name === 'scene' &&
+    ctx.canvas3dModelResultVars.has(value.object.name)
+  )
+}
+
 function mapExpressionStatement(
   node: Babel.ExpressionStatement,
   source: string,
@@ -1322,9 +1422,11 @@ function mapExpressionStatement(
   // recurso async: modelo GLTF, textura, HDR…). Aceita tanto a forma legada com
   // 2 args quanto a forma segura com callback de erro no 4º argumento.
   if (
+    ctx.usesCanvas3D &&
     expr?.type === 'CallExpression' &&
     isNamedMemberExpression(expr.callee) &&
     expr.callee.object?.type === 'Identifier' &&
+    ctx.canvas3dLoaderVars.has(expr.callee.object.name) &&
     expr.callee.property.name === 'load' &&
     (expr.arguments?.length === 2 ||
       (expr.arguments?.length === 4 &&
@@ -1346,17 +1448,25 @@ function mapExpressionStatement(
       params.length === 1 &&
       params[0]?.type === 'Identifier'
     ) {
+      const loaderVar = expr.callee.object.name
+      const param = params[0].name
+      const resourceKind = ctx.audioLoaderVars.has(loaderVar) ? 'audio' : 'model'
       const errorFn = expr.arguments.length === 4 ? expr.arguments[3] : undefined
       const errorParams =
         errorFn?.type === 'ArrowFunctionExpression' || errorFn?.type === 'FunctionExpression'
           ? errorFn.params
           : []
+      const alreadyKnownResult = ctx.canvas3dModelResultVars.has(param)
+      if (resourceKind === 'model') ctx.canvas3dModelResultVars.add(param)
+      const body = bodyOfFn(fn, source, ctx)
+      if (resourceKind === 'model' && !alreadyKnownResult) ctx.canvas3dModelResultVars.delete(param)
       return {
         type: 'loaderLoad',
-        loaderVar: expr.callee.object.name as string,
-        url: { type: 'str', value: urlArg.value as string },
-        param: params[0].name as string,
-        body: bodyOfFn(fn, source, ctx),
+        loaderVar,
+        resourceKind,
+        url: { type: 'str', value: urlArg.value },
+        param,
+        body,
         ...(errorFn && errorParams[0]?.type === 'Identifier'
           ? {
               errorParam: errorParams[0].name,
@@ -1372,9 +1482,11 @@ function mapExpressionStatement(
   // O objeto pode ser variável (modelo) OU propriedade (modelo.scene) — qualquer
   // valor simples. Precede o matcher genérico de método (que rejeitaria o callback).
   if (
+    ctx.usesCanvas3D &&
     expr?.type === 'CallExpression' &&
     isNamedMemberExpression(expr.callee) &&
     expr.callee.property.name === 'traverse' &&
+    isKnownCanvas3DTraversalTarget(expr.callee.object, ctx) &&
     expr.arguments?.length === 1 &&
     (expr.arguments[0]?.type === 'ArrowFunctionExpression' ||
       expr.arguments[0]?.type === 'FunctionExpression')
@@ -1384,11 +1496,16 @@ function mapExpressionStatement(
     if (params.length === 1 && params[0]?.type === 'Identifier') {
       const object = toExpr(expr.callee.object, ctx)
       if (isSimpleValue(object)) {
+        const param = params[0].name
+        const alreadyKnownObject = ctx.canvas3dObjectVars.has(param)
+        ctx.canvas3dObjectVars.add(param)
+        const body = bodyOfFn(fn, source, ctx)
+        if (!alreadyKnownObject) ctx.canvas3dObjectVars.delete(param)
         return {
           type: 'traverseEach',
           object,
-          param: params[0].name as string,
-          body: bodyOfFn(fn, source, ctx),
+          param,
+          body,
         }
       }
     }

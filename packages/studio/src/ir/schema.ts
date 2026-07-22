@@ -4760,6 +4760,8 @@ export type JSStatement =
   // `loaderVar` = a var do carregador; `param` = o nome do recurso no corpo.
   | (JSStatementCommon & {
       type: 'loaderLoad'
+      /** Papel do carregador. Ausente em snapshots antigos significa modelo. */
+      resourceKind?: 'model' | 'audio'
       loaderVar: string
       url: JSExpr
       param: string
@@ -9673,6 +9675,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     }),
     z.object({
       type: z.literal('loaderLoad'),
+      resourceKind: z.enum(['model', 'audio']).default('model'),
       loaderVar: irText(),
       url: JSExprSchema,
       param: irText(),

@@ -4,6 +4,7 @@ COMEÇO RÁPIDO: prefira “Criar cena 3D em tela cheia”; ele cria e redimensi
 canvas sozinho. Use “Criar cena no canvas” somente quando o projeto precisar de um
 canvas HTML específico. Crie cena, objetos, luzes, modelos e enxames uma única vez,
 fora de “A cada quadro 3D”. Dentro do quadro, mova, anime, aplique física e teste colisões.
+Vários blocos “A cada quadro 3D” da mesma cena são combinados e rodam em ordem.
 
 ÁREAS: crie os recursos em “⚙️ Ao iniciar”; coloque chapéus de tecla/clique em
 “⚡ Quando acontecer”; coloque “A cada quadro 3D” e cadências em
@@ -16,13 +17,17 @@ Movimento no chão e distância usam X-Z. Os kits Travessia e Corrida preservam 
 coordenadas internas de grade, mas os blocos genéricos continuam seguindo X-Z.
 
 DESEMPENHO E SEGURANÇA: o runtime ajusta movimento ao tempo do quadro, descarta GPU,
-eventos e áudio ao reiniciar, e limita objetos, luzes, enxames, linhas e andares.
+eventos e áudio ao reiniciar, e limita objetos, luzes, enxames, linhas, andares e
+sons simultâneos. Grupo de inimigos e enxame são recursos diferentes e usam
+seletores separados.
 Crie recursos persistentes fora do loop. Cópias temporárias de enxame podem nascer
 no quadro quando remove/prune também fizer parte do fluxo. A física é AABB leve,
 feita na plataforma, sem biblioteca externa pesada.
 
 RECURSOS: há primitivas, modelos compostos, materiais, luz/céu, controles, câmeras,
-mira, corpos/colisões, enxames/som e kits Desvie, Travessia, Corrida e Empilhar. Use
+mira, corpos/colisões, enxames/som e kits Desvie, Travessia, Corrida e Empilhar.
+O último modo de câmera escolhido substitui o anterior. Travessia e Corrida
+congelam depois da derrota até o comando de recomeçar. Use
 assets apenas quando a criança escolher textura/modelo; exemplos visuais são feitos
 com primitivas. Todos os blocos são iniciante-3d; cada aula filtra o subconjunto que
 quer apresentar. Não use JS cru quando houver um bloco equivalente.`

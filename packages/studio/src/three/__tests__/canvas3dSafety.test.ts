@@ -225,6 +225,7 @@ describe('Canvas 3D — limites, lifecycle e carregamento', () => {
   it('gera callback de erro para loaders e o parser o preserva', () => {
     const statement: JSStatement = {
       type: 'loaderLoad',
+      resourceKind: 'model',
       loaderVar: 'carregador',
       url: { type: 'str', value: 'modelo.glb' },
       param: 'modelo',
@@ -232,10 +233,21 @@ describe('Canvas 3D — limites, lifecycle e carregamento', () => {
       errorParam: 'erro',
       errorBody: [{ type: 'consoleLog', value: { type: 'var', name: 'erro' } }],
     }
-    const code = generateJS({ statements: [statement] })
+    const statements: JSStatement[] = [
+      { type: 'importStar', name: 'THREE', module: 'three' },
+      {
+        type: 'newInstance',
+        varName: 'carregador',
+        className: 'GLTFLoader',
+        args: [],
+        namespace: 'THREE',
+      },
+      statement,
+    ]
+    const code = generateJS({ statements })
     const back = parseJS(code)
 
     expect(code).toContain('}, undefined, (erro) => {')
-    expect(back).toEqual([statement])
+    expect(back).toEqual(statements)
   })
 })

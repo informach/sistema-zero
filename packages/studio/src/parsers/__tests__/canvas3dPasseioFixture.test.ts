@@ -196,6 +196,9 @@ describe('Canvas 3D — Passeio 3D (na mão) fixture', () => {
 
   it('a IR embutida em examples/core.ts NÃO desviou do parser (drift guard)', () => {
     const live = parseProjectFiles({ 'index.html': HTML, 'style.css': CSS, 'script.js': JS })
-    expect(normalizeSZIR(passeio3dNaMaoExample.ir)).toEqual(live)
+    const withoutUndefined = (value: unknown) => JSON.parse(JSON.stringify(value))
+    expect(withoutUndefined(normalizeSZIR(passeio3dNaMaoExample.ir))).toEqual(
+      withoutUndefined(live),
+    )
   })
 })

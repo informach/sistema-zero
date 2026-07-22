@@ -12,6 +12,7 @@ describe('game-3d — contrato de ciclo de vida', () => {
   it('recusa criação de recursos dentro de “a cada quadro 3D”', () => {
     const parsed = SZIRSchema.safeParse(
       project([
+        { type: 'g3d:createScene', canvasId: 'tela', varName: 'cena' },
         {
           type: 'g3d:animate',
           worldVar: 'cena',
@@ -40,7 +41,17 @@ describe('game-3d — contrato de ciclo de vida', () => {
       { type: 'g3d:setTexture', objVar: 'cubo', asset: 'parede' },
     ]) {
       const result = SZIRSchema.safeParse(
-        project([{ type: 'g3d:animate', worldVar: 'cena', body: [statement] }]),
+        project([
+          { type: 'g3d:createScene', canvasId: 'tela', varName: 'cena' },
+          {
+            type: 'g3d:createBox',
+            varName: 'cubo',
+            worldVar: 'cena',
+            size: 1,
+            color: '#22d3ee',
+          },
+          { type: 'g3d:animate', worldVar: 'cena', body: [statement] },
+        ]),
       )
       expect(result.success).toBe(false)
     }
@@ -49,6 +60,7 @@ describe('game-3d — contrato de ciclo de vida', () => {
   it('aceita criar cópias e tocar sons em resposta ao jogo dentro de cada quadro', () => {
     const parsed = SZIRSchema.safeParse(
       project([
+        { type: 'g3d:createScene', canvasId: 'tela', varName: 'cena' },
         {
           type: 'g3d:animate',
           worldVar: 'cena',
@@ -74,6 +86,7 @@ describe('game-3d — contrato de ciclo de vida', () => {
   it('aceita criação antes do loop e movimento dentro dele', () => {
     const parsed = SZIRSchema.safeParse(
       project([
+        { type: 'g3d:createScene', canvasId: 'tela', varName: 'cena' },
         {
           type: 'g3d:createBox',
           varName: 'caixa',

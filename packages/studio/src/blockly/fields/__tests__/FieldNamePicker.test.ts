@@ -41,6 +41,7 @@ import {
   collectSpritesheets,
   collectStoredValues,
   collectSVGReferences,
+  collectSwarms3d,
   collectTilemaps,
   collectVariables,
   FieldNamePicker,
@@ -407,6 +408,24 @@ describe('FieldNamePicker', () => {
       expect(collectLoaders3d(ws)).toEqual(['carregador'])
       expect(collectPhysicsWorlds(ws)).toEqual(['fisica'])
     })
+
+    it('mostra recursos Canvas 3D somente depois da declaração e no mesmo escopo', () => {
+      const ws = new Blockly.Workspace()
+      const before = ws.newBlock('sz_t3d_renderer_create')
+      before.setFieldValue('antes', 'RENDERER')
+      const use = ws.newBlock('sz_t3d_renderer_responsive')
+      const after = ws.newBlock('sz_t3d_renderer_create')
+      after.setFieldValue('depois', 'RENDERER')
+      before.nextConnection?.connect(use.previousConnection as Blockly.Connection)
+      use.nextConnection?.connect(after.previousConnection as Blockly.Connection)
+
+      const fn = ws.newBlock('sz_js_function')
+      const local = ws.newBlock('sz_t3d_renderer_create')
+      local.setFieldValue('localDaFuncao', 'RENDERER')
+      fn.getInput('BODY')?.connection?.connect(local.previousConnection as Blockly.Connection)
+
+      expect(collectRenderers3d(ws, use)).toEqual(['antes'])
+    })
   })
 
   describe('tipos de seletor para leitura e escrita', () => {
@@ -433,6 +452,10 @@ describe('FieldNamePicker', () => {
       expect(nameKindAllowsFreeText('super-method')).toBe(false)
       expect(nameKindAllowsFreeText('physics-body')).toBe(false)
       expect(nameKindAllowsFreeText('physics-resource')).toBe(false)
+      expect(nameKindAllowsFreeText('canvas3d-canvas')).toBe(false)
+      expect(nameKindAllowsFreeText('g3d-world')).toBe(false)
+      expect(nameKindAllowsFreeText('water3d')).toBe(false)
+      expect(nameKindAllowsFreeText('model-loader3d')).toBe(false)
     })
 
     it('IDs da física são filtrados pelo mundo e pelo tipo do recurso', () => {
@@ -1026,7 +1049,7 @@ describe('FieldNamePicker', () => {
       return f instanceof FieldNamePicker ? f.kind : undefined
     }
 
-    it('collectScenes3d / collectObjects3d / collectGroups3d listam os nomes declarados', () => {
+    it('cenas Three.js não se misturam com mundos do Jogo 3D', () => {
       const ws = new Blockly.Workspace()
       ws.newBlock('sz_g3d_create_scene').setFieldValue('mundo', 'NAME')
       ws.newBlock('sz_g3d_create_box').setFieldValue('caixa', 'NAME')
@@ -1034,23 +1057,44 @@ describe('FieldNamePicker', () => {
       ws.newBlock('sz_g3d_create_group').setFieldValue('inimigos', 'NAME')
       ws.newBlock('sz_g3d_create_swarm').setFieldValue('estrelas', 'NAME')
 
-      expect(collectScenes3d(ws)).toEqual(['mundo'])
+      expect(collectScenes3d(ws)).toEqual([])
       expect(collectObjects3d(ws)).toEqual(['caixa', 'nave'])
-      expect(collectGroups3d(ws)).toEqual(['inimigos', 'estrelas'])
+      expect(collectGroups3d(ws)).toEqual(['inimigos'])
+      expect(collectSwarms3d(ws)).toEqual(['estrelas'])
+
+      const coreWs = new Blockly.Workspace()
+      coreWs.newBlock('sz_t3d_scene_create').setFieldValue('cena', 'SCENE')
+      expect(collectScenes3d(coreWs)).toEqual(['cena'])
     })
 
-    it('WORLD = scene3d; NAME que declara a cena segue texto', () => {
+    it('WORLD = g3d-world; NAME que declara a cena segue texto', () => {
       const ws = new Blockly.Workspace()
       expect(ws.newBlock('sz_g3d_create_scene').getField('NAME')).not.toBeInstanceOf(
         FieldNamePicker,
       )
-      expect(kindOf(ws.newBlock('sz_g3d_create_box'), 'WORLD')).toBe('scene3d')
+      expect(kindOf(ws.newBlock('sz_g3d_create_box'), 'WORLD')).toBe('g3d-world')
     })
 
-    it('OBJ/A/B = object3d; GROUP = group3d; textura ASSET = seletor de imagem', () => {
+    it('usa capacidades específicas nos comandos Canvas 3D especializados', () => {
+      const ws = new Blockly.Workspace()
+      expect(kindOf(ws.newBlock('sz_t3d_renderer_create'), 'CANVAS')).toBe('canvas3d-canvas')
+      expect(kindOf(ws.newBlock('sz_t3d_load_model'), 'LOADER')).toBe('model-loader3d')
+      expect(kindOf(ws.newBlock('sz_t3d_load_sound'), 'LOADER')).toBe('audio-loader3d')
+      expect(kindOf(ws.newBlock('sz_t3d_water_wave'), 'WATER')).toBe('water3d')
+      expect(kindOf(ws.newBlock('sz_t3d_grass_wave'), 'GRASS')).toBe('grass3d')
+      expect(kindOf(ws.newBlock('sz_t3d_set_matrix_at'), 'MESH')).toBe('instanced-mesh3d')
+      expect(kindOf(ws.newBlock('sz_t3d_set_color'), 'OBJ')).toBe('color-target3d')
+    })
+
+    it('separa seletores de grupo simples e enxame', () => {
       const ws = new Blockly.Workspace()
       expect(kindOf(ws.newBlock('sz_g3d_set_position'), 'OBJ')).toBe('object3d')
       expect(kindOf(ws.newBlock('sz_g3d_run_enemies'), 'GROUP')).toBe('group3d')
+      expect(kindOf(ws.newBlock('sz_g3d_spawn_in_swarm'), 'SWARM')).toBe('swarm3d')
+      expect(kindOf(ws.newBlock('sz_g3d_count_swarm'), 'SWARM')).toBe('swarm3d')
+      expect(kindOf(ws.newBlock('sz_g3d_for_each_swarm'), 'SWARM')).toBe('swarm3d')
+      expect(kindOf(ws.newBlock('sz_g3d_remove_from_swarm'), 'SWARM')).toBe('swarm3d')
+      expect(kindOf(ws.newBlock('sz_g3d_prune_swarm'), 'SWARM')).toBe('swarm3d')
       // A textura vira o MESMO seletor de imagem já usado (field_asset_picker), não um FieldNamePicker.
       const tex = ws.newBlock('sz_g3d_set_texture')
       expect(tex.getField('ASSET')).not.toBeInstanceOf(FieldNamePicker)

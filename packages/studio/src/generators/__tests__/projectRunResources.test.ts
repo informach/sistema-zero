@@ -96,6 +96,13 @@ const DEFERRED_CALLBACKS_BEHAVIOR: BehaviorIR = {
   start: [
     { type: 'importStar', name: 'THREE', module: 'three' },
     {
+      type: 'newInstance',
+      varName: 'carregador',
+      className: 'GLTFLoader',
+      args: [],
+      namespace: 'THREE',
+    },
+    {
       type: 'fetchJson',
       url: { type: 'str', value: '/dados.json' },
       okName: 'dados',
@@ -105,6 +112,7 @@ const DEFERRED_CALLBACKS_BEHAVIOR: BehaviorIR = {
     },
     {
       type: 'loaderLoad',
+      resourceKind: 'model',
       loaderVar: 'carregador',
       url: { type: 'str', value: 'modelo.glb' },
       param: 'modelo',

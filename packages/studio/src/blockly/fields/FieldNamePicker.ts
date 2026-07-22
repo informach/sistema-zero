@@ -50,10 +50,12 @@ type ScopedBinderRegistry = Readonly<Record<string, ScopedBinder>>
  *  - `tilemap`  → mapa de tiles do Jogo 2D (`sz_g2d_create_tilemap`);
  *  - `board` / `stored-value` → tabuleiros e valores persistidos do Jogo 2D Avançado;
  *  - `combat-move` / `fight-move` → golpes declarados nos dois sistemas de luta;
- *  - `scene3d`  → cena/mundo do Jogo 3D (blocos `criar cena…`);
+ *  - `scene3d`  → cena Three.js crua criada pelos blocos Canvas 3D;
+ *  - `g3d-world` → mundo completo criado pela extensão Jogo 3D;
  *  - `object3d` → objeto/malha do Jogo 3D (caixa/bola/modelo…); tem locais de laço
  *                 (o "item" do "para cada no enxame");
- *  - `group3d`  → grupo/enxame do Jogo 3D (`criar grupo`/`criar enxame`).
+ *  - `group3d`  → grupo simples do Jogo 3D (`criar grupo de objetos`).
+ *  - `swarm3d`  → enxame de cópias do Jogo 3D (`criar enxame`).
  *  - `physics-body` / `physics-resource` → IDs declarados na física leve do
  *                 Canvas 3D, filtrados pelo mundo físico escolhido.
  *
@@ -76,6 +78,7 @@ export type NameKind =
   | 'method'
   | 'super-method'
   | 'canvas'
+  | 'canvas3d-canvas'
   | 'canvas-context'
   | 'form-control'
   | 'dom-target'
@@ -92,14 +95,22 @@ export type NameKind =
   | 'enemytype'
   | 'shape'
   | 'scene3d'
+  | 'g3d-world'
   | 'renderer3d'
   | 'camera3d'
   | 'light3d'
   | 'composer3d'
   | 'loader3d'
+  | 'model-loader3d'
+  | 'audio-loader3d'
+  | 'water3d'
+  | 'grass3d'
+  | 'instanced-mesh3d'
+  | 'color-target3d'
   | 'physics-world'
   | 'object3d'
   | 'group3d'
+  | 'swarm3d'
   | 'physics-body'
   | 'physics-resource'
   | 'character'
@@ -138,6 +149,7 @@ const DECLARED_NAME_KINDS: ReadonlySet<NameKind> = new Set([
   'function',
   'super-method',
   'dom-target',
+  'canvas3d-canvas',
   'canvas-context',
   'board',
   'stored-value',
@@ -145,13 +157,22 @@ const DECLARED_NAME_KINDS: ReadonlySet<NameKind> = new Set([
   'fight-move',
   'enemy-combatant',
   'scene3d',
+  'g3d-world',
   'renderer3d',
   'camera3d',
   'light3d',
   'composer3d',
   'loader3d',
+  'model-loader3d',
+  'audio-loader3d',
+  'water3d',
+  'grass3d',
+  'instanced-mesh3d',
+  'color-target3d',
   'physics-world',
   'object3d',
+  'group3d',
+  'swarm3d',
   'physics-body',
   'physics-resource',
 ])
@@ -178,6 +199,7 @@ const NAME_KINDS: readonly NameKind[] = [
   'method',
   'super-method',
   'canvas',
+  'canvas3d-canvas',
   'canvas-context',
   'form-control',
   'dom-target',
@@ -194,14 +216,22 @@ const NAME_KINDS: readonly NameKind[] = [
   'enemytype',
   'shape',
   'scene3d',
+  'g3d-world',
   'renderer3d',
   'camera3d',
   'light3d',
   'composer3d',
   'loader3d',
+  'model-loader3d',
+  'audio-loader3d',
+  'water3d',
+  'grass3d',
+  'instanced-mesh3d',
+  'color-target3d',
   'physics-world',
   'object3d',
   'group3d',
+  'swarm3d',
   'physics-body',
   'physics-resource',
   'character',
@@ -783,8 +813,8 @@ function collectEntityStates(workspace: Blockly.Workspace | null | undefined): s
   return [...G3K_BUILTIN_ENTITY_STATES, ...used.filter((n) => !seen.has(n))]
 }
 
-/** Cenas/mundos do Jogo 3D (fonte do seletor WORLD). */
-const SCENE3D_DECL_BLOCKS: Record<string, string[]> = {
+/** Mundos completos da extensão Jogo 3D (fonte do seletor WORLD). */
+const G3D_WORLD_DECL_BLOCKS: Record<string, string[]> = {
   sz_g3d_create_scene: ['NAME'],
   sz_g3d_create_fullscreen_scene: ['NAME'],
   sz_g3d_create_crossing_scene: ['NAME'],
@@ -809,9 +839,12 @@ const OBJECT3D_LOOP_BINDERS: ScopedBinderRegistry = {
   sz_g3d_for_each_swarm: ['ITEM'],
   ...CANVAS3D_OBJECT_BRANCH_BINDERS,
 }
-/** Grupos/enxames do Jogo 3D (fonte dos seletores GROUP/SWARM). */
+/** Grupos simples do kit Desvie (fonte do seletor GROUP). */
 const GROUP3D_DECL_BLOCKS: Record<string, string[]> = {
   sz_g3d_create_group: ['NAME'],
+}
+/** Enxames de cópias (fonte dos seletores SWARM). */
+const SWARM3D_DECL_BLOCKS: Record<string, string[]> = {
   sz_g3d_create_swarm: ['NAME'],
 }
 /** Métodos declarados (fallback global do seletor de método, quando não há classe em contexto). */
@@ -986,6 +1019,11 @@ const KIND_UI: Record<NameKind, KindUI> = {
     empty:
       'Nenhuma tela de desenho ainda — crie uma ("Criar tela de desenho") ou digite o id abaixo.',
   },
+  'canvas3d-canvas': {
+    icon: '🖼️',
+    placeholder: 'tela para o mundo 3D',
+    empty: 'Nenhuma tela disponível. Crie uma tela de desenho antes de preparar o 3D.',
+  },
   'canvas-context': {
     icon: '🖌️',
     placeholder: 'pincel da tela',
@@ -1069,8 +1107,13 @@ const KIND_UI: Record<NameKind, KindUI> = {
   },
   scene3d: {
     icon: '🌐',
-    placeholder: 'nome da cena / mundo',
-    empty: 'Nenhuma cena 3D ainda — crie uma antes de usar este bloco.',
+    placeholder: 'nome da cena Three.js',
+    empty: 'Nenhuma cena Three.js ainda. Crie uma cena com os blocos Canvas 3D.',
+  },
+  'g3d-world': {
+    icon: '🌍',
+    placeholder: 'nome do mundo do jogo',
+    empty: 'Nenhum mundo do Jogo 3D ainda. Crie uma cena 3D antes de usar este bloco.',
   },
   renderer3d: {
     icon: '🖼️',
@@ -1097,6 +1140,37 @@ const KIND_UI: Record<NameKind, KindUI> = {
     placeholder: 'carregador 3D',
     empty: 'Nenhum carregador ainda — crie um carregador com as peças técnicas.',
   },
+  'model-loader3d': {
+    icon: '📦',
+    placeholder: 'carregador de modelo 3D',
+    empty:
+      'Nenhum carregador de modelo disponível. Crie um GLTFLoader ou outro carregador de modelo.',
+  },
+  'audio-loader3d': {
+    icon: '🔊',
+    placeholder: 'carregador de áudio 3D',
+    empty: 'Nenhum carregador de áudio disponível. Crie um AudioLoader primeiro.',
+  },
+  water3d: {
+    icon: '🌊',
+    placeholder: 'água 3D',
+    empty: 'Nenhuma água 3D disponível. Crie a água antes de animar as ondas.',
+  },
+  grass3d: {
+    icon: '🌿',
+    placeholder: 'grama 3D',
+    empty: 'Nenhuma grama 3D disponível. Crie a grama antes de animá-la.',
+  },
+  'instanced-mesh3d': {
+    icon: '🧩',
+    placeholder: 'malha com cópias',
+    empty: 'Nenhuma malha com cópias disponível. Crie uma InstancedMesh primeiro.',
+  },
+  'color-target3d': {
+    icon: '🎨',
+    placeholder: 'objeto com cor',
+    empty: 'Nenhum material, luz ou objeto compatível com cor está disponível.',
+  },
   'physics-world': {
     icon: '🧲',
     placeholder: 'mundo físico',
@@ -1109,9 +1183,13 @@ const KIND_UI: Record<NameKind, KindUI> = {
   },
   group3d: {
     icon: '👾',
-    placeholder: 'nome do grupo / enxame',
-    empty:
-      'Nenhum grupo ou enxame 3D ainda — crie um ("Criar grupo/enxame") ou digite o nome abaixo.',
+    placeholder: 'nome do grupo de objetos',
+    empty: 'Nenhum grupo de objetos ainda. Crie um com "Criar grupo de objetos".',
+  },
+  swarm3d: {
+    icon: '👯',
+    placeholder: 'nome do enxame',
+    empty: 'Nenhum enxame ainda. Crie um com "Criar enxame".',
   },
   'physics-body': {
     icon: '🧍',
@@ -1410,7 +1488,11 @@ function declarationPrecedesUse(
 
   const declarationArea = enclosingProjectArea(declarationAtScope)
   const useArea = enclosingProjectArea(useAtScope)
-  if (!declarationArea && !useArea) return true
+  if (!declarationArea && !useArea) {
+    if (appearsBeforeInStatementChain(declarationAtScope, useAtScope)) return true
+    if (appearsBeforeInStatementChain(useAtScope, declarationAtScope)) return false
+    return true
+  }
   if (scope === 'global' && declarationArea !== useArea) {
     return declarationArea?.type === 'sz_frame_start'
   }
@@ -1616,19 +1698,46 @@ export function collectTilemaps(workspace: Blockly.Workspace | null | undefined)
   return collectDeclaredNames(workspace, TILEMAP_DECL_BLOCKS)
 }
 
-/** Nomes das cenas/mundos 3D declarados. */
-export function collectScenes3d(workspace: Blockly.Workspace | null | undefined): string[] {
-  return mergeNames(
-    collectDeclaredNames(workspace, SCENE3D_DECL_BLOCKS),
-    collectCanvas3DSymbolNames(workspace, 'scene3d'),
+/** Nomes das cenas Three.js cruas declaradas pelos blocos Canvas 3D. */
+export function collectScenes3d(
+  workspace: Blockly.Workspace | null | undefined,
+  useBlock?: Blockly.Block | null,
+): string[] {
+  return collectCanvas3DSymbolNames(useBlock ?? workspace, 'scene3d')
+}
+
+/** Nomes dos mundos completos criados pela extensão Jogo 3D. */
+export function collectGame3DWorlds(
+  workspace: Blockly.Workspace | null | undefined,
+  useBlock?: Blockly.Block | null,
+): string[] {
+  const target = useBlock ?? workspace
+  const context = nameLookupContext(target)
+  if (!context.workspace) return []
+  return collectVariableDeclarations(
+    context.workspace,
+    G3D_WORLD_DECL_BLOCKS,
+    new Set(context.useBlock ? variableScopeKeys(context.useBlock) : ['global']),
+    context.useBlock,
   )
 }
 
 /** Nomes dos objetos/malhas 3D declarados. */
-export function collectObjects3d(workspace: Blockly.Workspace | null | undefined): string[] {
+export function collectObjects3d(
+  workspace: Blockly.Workspace | null | undefined,
+  useBlock?: Blockly.Block | null,
+): string[] {
+  const target = useBlock ?? workspace
+  const context = nameLookupContext(target)
+  if (!context.workspace) return []
   return mergeNames(
-    collectDeclaredNames(workspace, OBJECT3D_DECL_BLOCKS),
-    collectCanvas3DSymbolNames(workspace, 'object3d'),
+    collectVariableDeclarations(
+      context.workspace,
+      OBJECT3D_DECL_BLOCKS,
+      new Set(context.useBlock ? variableScopeKeys(context.useBlock) : ['global']),
+      context.useBlock,
+    ),
+    collectCanvas3DSymbolNames(target, 'object3d'),
   )
 }
 
@@ -1641,15 +1750,22 @@ function mergeNames(...groups: readonly string[][]): string[] {
   })
 }
 
-function collectCanvas3DSymbolNames(
-  workspace: Blockly.Workspace | null | undefined,
-  kind: Canvas3DSymbolKind,
-): string[] {
-  const declared = collectDeclaredNames(workspace, CANVAS3D_BLOCK_DECLARATIONS_BY_KIND[kind])
-  if (!workspace) return declared
+function collectCanvas3DSymbolNames(target: NameLookupTarget, kind: Canvas3DSymbolKind): string[] {
+  const { workspace, useBlock } = nameLookupContext(target)
+  if (!workspace) return []
+  const visibleScopes = new Set(useBlock ? variableScopeKeys(useBlock) : ['global'])
+  const declared = collectVariableDeclarations(
+    workspace,
+    CANVAS3D_BLOCK_DECLARATIONS_BY_KIND[kind],
+    visibleScopes,
+    useBlock,
+  )
   const advanced: string[] = []
   const seen = new Set(declared)
   for (const block of workspace.getBlocksByType('sz_t3d_new_var', false)) {
+    const declarationScope = variableScopeKeys(block)[0] ?? 'global'
+    if (!visibleScopes.has(declarationScope)) continue
+    if (useBlock && !declarationPrecedesUse(block, useBlock, declarationScope)) continue
     const className = `${block.getFieldValue('CLASS') ?? ''}`
     if (!canvas3DSymbolKindsForClass(className).includes(kind)) continue
     const name = `${block.getFieldValue('VARNAME') ?? ''}`.trim()
@@ -1660,33 +1776,56 @@ function collectCanvas3DSymbolNames(
   return [...declared, ...advanced]
 }
 
-export function collectRenderers3d(workspace: Blockly.Workspace | null | undefined): string[] {
-  return collectCanvas3DSymbolNames(workspace, 'renderer3d')
+export function collectRenderers3d(
+  workspace: Blockly.Workspace | null | undefined,
+  useBlock?: Blockly.Block | null,
+): string[] {
+  return collectCanvas3DSymbolNames(useBlock ?? workspace, 'renderer3d')
 }
 
-export function collectCameras3d(workspace: Blockly.Workspace | null | undefined): string[] {
-  return collectCanvas3DSymbolNames(workspace, 'camera3d')
+export function collectCameras3d(
+  workspace: Blockly.Workspace | null | undefined,
+  useBlock?: Blockly.Block | null,
+): string[] {
+  return collectCanvas3DSymbolNames(useBlock ?? workspace, 'camera3d')
 }
 
-export function collectLights3d(workspace: Blockly.Workspace | null | undefined): string[] {
-  return collectCanvas3DSymbolNames(workspace, 'light3d')
+export function collectLights3d(
+  workspace: Blockly.Workspace | null | undefined,
+  useBlock?: Blockly.Block | null,
+): string[] {
+  return collectCanvas3DSymbolNames(useBlock ?? workspace, 'light3d')
 }
 
-export function collectComposers3d(workspace: Blockly.Workspace | null | undefined): string[] {
-  return collectCanvas3DSymbolNames(workspace, 'composer3d')
+export function collectComposers3d(
+  workspace: Blockly.Workspace | null | undefined,
+  useBlock?: Blockly.Block | null,
+): string[] {
+  return collectCanvas3DSymbolNames(useBlock ?? workspace, 'composer3d')
 }
 
-export function collectLoaders3d(workspace: Blockly.Workspace | null | undefined): string[] {
-  return collectCanvas3DSymbolNames(workspace, 'loader3d')
+export function collectLoaders3d(
+  workspace: Blockly.Workspace | null | undefined,
+  useBlock?: Blockly.Block | null,
+): string[] {
+  return collectCanvas3DSymbolNames(useBlock ?? workspace, 'loader3d')
 }
 
-export function collectPhysicsWorlds(workspace: Blockly.Workspace | null | undefined): string[] {
-  return collectCanvas3DSymbolNames(workspace, 'physics-world')
+export function collectPhysicsWorlds(
+  workspace: Blockly.Workspace | null | undefined,
+  useBlock?: Blockly.Block | null,
+): string[] {
+  return collectCanvas3DSymbolNames(useBlock ?? workspace, 'physics-world')
 }
 
-/** Nomes dos grupos/enxames 3D declarados. */
+/** Nomes dos grupos simples 3D declarados. */
 export function collectGroups3d(workspace: Blockly.Workspace | null | undefined): string[] {
   return collectDeclaredNames(workspace, GROUP3D_DECL_BLOCKS)
+}
+
+/** Nomes dos enxames 3D declarados. */
+export function collectSwarms3d(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectDeclaredNames(workspace, SWARM3D_DECL_BLOCKS)
 }
 
 /**
@@ -1794,6 +1933,8 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectFunctionNames(block)
       case 'canvas':
         return collectCanvasIds(ws)
+      case 'canvas3d-canvas':
+        return collectCanvasIds(ws)
       case 'canvas-context':
         return collectVisibleVariables(block, CANVAS_CONTEXT_DECL_BLOCKS)
       case 'form-control':
@@ -1823,23 +1964,34 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
       case 'tilemap':
         return collectTilemaps(ws)
       case 'scene3d':
-        return collectScenes3d(ws)
+        return collectScenes3d(ws, block)
+      case 'g3d-world':
+        return collectGame3DWorlds(ws, block)
       case 'renderer3d':
-        return collectRenderers3d(ws)
+        return collectRenderers3d(ws, block)
       case 'camera3d':
-        return collectCameras3d(ws)
+        return collectCameras3d(ws, block)
       case 'light3d':
-        return collectLights3d(ws)
+        return collectLights3d(ws, block)
       case 'composer3d':
-        return collectComposers3d(ws)
+        return collectComposers3d(ws, block)
       case 'loader3d':
-        return collectLoaders3d(ws)
+        return collectLoaders3d(ws, block)
+      case 'model-loader3d':
+      case 'audio-loader3d':
+      case 'water3d':
+      case 'grass3d':
+      case 'instanced-mesh3d':
+      case 'color-target3d':
+        return collectCanvas3DSymbolNames(block ?? ws, this.kind)
       case 'physics-world':
-        return collectPhysicsWorlds(ws)
+        return collectPhysicsWorlds(ws, block)
       case 'object3d':
-        return collectObjects3d(ws)
+        return collectObjects3d(ws, block)
       case 'group3d':
         return collectGroups3d(ws)
+      case 'swarm3d':
+        return collectSwarms3d(ws)
       case 'physics-body':
         return collectCanvas3DPhysicsBodies(ws, block)
       case 'physics-resource':

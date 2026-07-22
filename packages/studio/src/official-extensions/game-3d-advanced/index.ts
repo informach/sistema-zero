@@ -29,7 +29,7 @@ validateManifest(gameKit3DManifest)
  * ⚠️ KTX2/Draco ficam de fora: transcoder WASM + Workers, ambos barrados.
  */
 const GLTF_LOADER_CDN = `${THREE_CDN}/examples/jsm/loaders/GLTFLoader.js?external=three`
-const RGBE_LOADER_CDN = `${THREE_CDN}/examples/jsm/loaders/RGBELoader.js?external=three`
+const HDR_LOADER_CDN = `${THREE_CDN}/examples/jsm/loaders/HDRLoader.js?external=three`
 // SkeletonUtils.clone REAMARRA o esqueleto do clone aos ossos dele — o clone comum
 // do Object3D deixa o boneco preso ao esqueleto do original. É a mesma troca que o
 // curso fez ao passar a animar personagens.
@@ -52,7 +52,7 @@ export const gameKit3DExtension: ExtensionDefinition = {
     esmImports: {
       three: THREE_CDN,
       'three/addons/loaders/GLTFLoader.js': GLTF_LOADER_CDN,
-      'three/addons/loaders/RGBELoader.js': RGBE_LOADER_CDN,
+      'three/addons/loaders/HDRLoader.js': HDR_LOADER_CDN,
       'three/addons/utils/SkeletonUtils.js': SKELETON_UTILS_CDN,
     },
   },

@@ -53,21 +53,84 @@ function manualCanvas3DStartArea(): Record<string, unknown> {
                   },
                   next: {
                     block: {
-                      type: 'sz_t3d_light_create',
-                      fields: {
-                        LIGHT: 'luz',
-                        SCENE: 'cena',
-                        KIND: 'ambient',
-                      },
+                      type: 'sz_t3d_set_position',
+                      fields: { OBJ: 'camera' },
                       inputs: {
-                        COLOR: {
-                          shadow: { type: 'sz_val_color', fields: { COLOR: '#ffffff' } },
+                        X: numberShadow(0),
+                        Y: numberShadow(1),
+                        Z: numberShadow(5),
+                      },
+                      next: {
+                        block: {
+                          type: 'sz_t3d_light_create',
+                          fields: {
+                            LIGHT: 'luz',
+                            SCENE: 'cena',
+                            KIND: 'ambient',
+                          },
+                          inputs: {
+                            COLOR: {
+                              shadow: { type: 'sz_val_color', fields: { COLOR: '#ffffff' } },
+                            },
+                            INTENSITY: numberShadow(1),
+                          },
+                          next: {
+                            block: {
+                              type: 'sz_t3d_set_background',
+                              fields: { SCENE: 'cena' },
+                              inputs: {
+                                COLOR: {
+                                  shadow: {
+                                    type: 'sz_val_color',
+                                    fields: { COLOR: '#102030' },
+                                  },
+                                },
+                              },
+                              next: {
+                                block: {
+                                  type: 'sz_t3d_primitive',
+                                  fields: { SHAPE: 'box', SCENE: 'cena', MESH: 'cubo' },
+                                  inputs: {
+                                    W: numberShadow(1.5),
+                                    H: numberShadow(1.5),
+                                    D: numberShadow(1.5),
+                                    COLOR: {
+                                      shadow: {
+                                        type: 'sz_val_color',
+                                        fields: { COLOR: '#ff8844' },
+                                      },
+                                    },
+                                  },
+                                },
+                              },
+                            },
+                          },
                         },
-                        INTENSITY: numberShadow(1),
                       },
                     },
                   },
                 },
+              },
+            },
+          },
+        },
+      },
+    },
+  }
+}
+
+function manualCanvas3DLoopArea(): Record<string, unknown> {
+  return {
+    type: 'sz_frame_loops',
+    inputs: {
+      CHILDREN: {
+        block: {
+          type: 'sz_canvas_anim_loop',
+          inputs: {
+            BODY: {
+              block: {
+                type: 'sz_t3d_render',
+                fields: { SCENE: 'cena', CAMERA: 'camera', R: 'renderizador' },
               },
             },
           },
@@ -119,13 +182,14 @@ async function flyoutLayout(page: Page): Promise<{
 }
 
 test.describe('Canvas 3D — experiência infantil', () => {
-  test('monta cena, renderizador, câmera e luz sobre o canvas do núcleo', async ({ page }) => {
+  test('monta e desenha uma cena real sobre o canvas do núcleo', async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (error) => errors.push(error.message))
 
     await createProject(page)
     await pasteBlocks(page, canvasStructureArea())
     await pasteBlocks(page, manualCanvas3DStartArea())
+    await pasteBlocks(page, manualCanvas3DLoopArea())
 
     const canvas = page.frameLocator('iframe[title="Pré-visualização"]').locator('canvas#tela')
     await expect(canvas).toBeVisible({ timeout: 15_000 })
@@ -139,6 +203,36 @@ test.describe('Canvas 3D — experiência infantil', () => {
         { timeout: 15_000 },
       )
       .toBe(true)
+    await expect
+      .poll(
+        async () => {
+          const screenshot = await canvas.screenshot()
+          const dataUrl = `data:image/png;base64,${screenshot.toString('base64')}`
+          return page.evaluate(async (source) => {
+            const image = new Image()
+            image.src = source
+            await image.decode()
+
+            const snapshot = document.createElement('canvas')
+            snapshot.width = image.naturalWidth
+            snapshot.height = image.naturalHeight
+            const context = snapshot.getContext('2d')
+            if (!context) return 0
+
+            context.drawImage(image, 0, 0)
+            const pixels = context.getImageData(0, 0, snapshot.width, snapshot.height).data
+            const colors = new Set<string>()
+            for (let index = 0; index < pixels.length; index += 4) {
+              if (pixels[index + 3] === 0) continue
+              colors.add(`${pixels[index]},${pixels[index + 1]},${pixels[index + 2]}`)
+              if (colors.size > 1) break
+            }
+            return colors.size
+          }, dataUrl)
+        },
+        { timeout: 15_000 },
+      )
+      .toBeGreaterThan(1)
     expect(errors).toEqual([])
   })
 

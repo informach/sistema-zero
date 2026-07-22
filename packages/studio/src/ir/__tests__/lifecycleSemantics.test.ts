@@ -403,7 +403,9 @@ describe('gramática recursiva do ciclo de vida', () => {
       }).success,
     ).toBe(true)
     expect(
-      parse('loops', { type: 'g3d:animate', worldVar: 'cena', body: [continuous] }).success,
+      parse('loops', { type: 'g3d:animate', worldVar: 'cena', body: [continuous] }, [
+        { type: 'g3d:createScene', canvasId: 'tela', varName: 'cena' },
+      ]).success,
     ).toBe(true)
     expect(
       parse('start', {

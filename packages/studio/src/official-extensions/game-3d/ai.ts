@@ -7,7 +7,7 @@ API global injetada como window.SZGame3D (wrapper sobre Three.js):
 - createBox(world, { size, color }) -> mesh ; createSphere(world, { radius, color }) -> mesh.
 - createBlock(world, { width, height, depth, color }) -> mesh (caixa retangular; ótima p/ o chão).
 - setPosition(obj, x, y, z) / setRotation(obj, x, y, z) (radianos) / setScale(obj, fator).
-- animate(world, fn): loop com setAnimationLoop; redesenha a cena a cada quadro.
+- animate(world, fn): registra uma atualização. Várias atualizações da mesma cena rodam em ordem e produzem um único desenho por quadro.
 
 Física (chamar DENTRO do animate):
 - setVelocity(obj, x, y, z): define a velocidade base em cada eixo; o runtime ajusta pelo tempo do quadro.
@@ -43,7 +43,7 @@ Kit "Travessia" (atravessar a rua / Crossy Road):
 - crosserStep(player, world): a cada quadro — setas em grade + estende/limpa o mapa + segue câmera.
 - moveTraffic(world): move os veículos (dão a volta). crosserMove(player, dir): passo p/ botões.
 - crosserHit(player, world): bateu num veículo? crosserRow(player): pontuação (linha).
-- crosserReset(player, world): recomeça.
+- crosserReset(player, world): recomeça. Depois de crosserHit, personagem e trânsito ficam congelados até o reset.
 
 Genéricos top-down/circular (chão X-Z, y = altura — p/ jogos de pista/relógio/órbita):
 - topCamera(world, followObj | null): câmera ortográfica aérea (de cima); segue o objeto se dado. Configure uma vez em Ao iniciar; o resize atualiza o enquadramento.
@@ -56,7 +56,7 @@ Kit "Corrida" (correr numa pista top-down):
 - createRaceCar(world, { color }) -> car: carro do jogador na largada.
 - raceStep(car, world): a cada quadro — dá voltas (↑ acelera, ↓ freia) e conta voltas.
 - runRivals(world): solta/move carros rivais pela pista. raceControl(car, "accelerate"|"decelerate"|"normal"): p/ botões.
-- raceHit(car, world): bateu num rival? raceLaps(car): voltas (pontuação). raceReset(car, world): recomeça.
+- raceHit(car, world): bateu num rival? raceLaps(car): voltas (pontuação). Depois da batida, carro e rivais ficam congelados. raceReset(car, world): recomeça.
 
 Genéricos de movimento/física (SEM lib de física — feita na mão; p/ queda/plataforma/giro):
 - fall(obj): a cada quadro, solta o objeto em queda livre girando (gravidade) e o remove ao sumir.
@@ -76,7 +76,7 @@ Mira & clique (raycast — valores p/ "se"/variável; combine com o evento CORE 
 - pointerOver(world, obj): o mouse está sobre aquele objeto? (bool). aimAhead(world, obj, dist): o objeto à
   frente, na direção que "obj" olha (tiro/mira; null se nada).
 - onGround(world, obj): tem chão logo abaixo? (bool — sensor de plataforma). groundHeight(world, obj): a
-  altura (y) do topo do que está abaixo. Os objetos de mira/chão são os criados (createBox/createBlock/...).
+  altura (y) do topo do que está abaixo. Mira e chão ignoram as próprias peças de um modelo composto.
 
 Física genérica (SEM lib; gravidade + colisão AABB de empurrar-para-fora):
 - body(obj, gravity): liga a física (gravidade, número negativo). setSolid(obj): marca como parede/chão.
@@ -90,6 +90,7 @@ Câmeras vivas (manuais, sem addon):
 - orbitCamera(world, target): gira ao redor do alvo arrastando o mouse (roda = zoom).
 - thirdPersonCamera(world, obj, dist, height): câmera atrás/acima do objeto (atualizada a cada frame pelo animate).
 - cameraLookAt(world, obj): aponta a câmera p/ um objeto. setFOV(world, graus): "zoom" (menos graus = mais zoom).
+- Só existe um modo de câmera ativo por cena. O último escolhido substitui o anterior, e repetir fpsCamera não zera a rotação.
 
 Formas, materiais e texturas (Fase 6 — montar qualquer visual; criar UMA vez, fora do animate):
 - createCylinder(world, { radius, height, color }) / createCone(...) / createTorus(world, { radius, tube, color }):
@@ -99,7 +100,7 @@ Formas, materiais e texturas (Fase 6 — montar qualquer visual; criar UMA vez, 
   mudam a aparência da superfície.
 - setTexture(obj, "nomeDoAsset"): veste o objeto com uma imagem embutida (asset adicionado ao projeto).
 - setVisible(obj, "show"|"hide"): mostra/esconde e também retira o objeto das consultas de mira enquanto estiver oculto. remove(world, obj): tira da cena e dos registros de física e seleção.
-- createModel(world) -> grupo vazio; addToModel(model, peca): junta peças num modelo (mover o modelo move tudo junto).
+- createModel(world) -> grupo vazio; addToModel(model, peca): junta peças da mesma cena num modelo (mover o modelo move tudo junto).
 
 Luz & céu (Fase 7 — atmosfera; criar UMA vez, fora do animate):
 - addAmbientLight(world, "#cor", forca): luz suave geral (sem sombra). addSunLight(world, "#cor", forca): sol (direcional, faz sombra).
@@ -108,10 +109,10 @@ Luz & céu (Fase 7 — atmosfera; criar UMA vez, fora do animate):
 - setShadows(world, "on"|"off"): liga/desliga as sombras da cena (desligar = mais leve).
 
 Enxames & som (Fase 8 — grupos genéricos de cópias + áudio):
-- createSwarm(world) -> enxame: um grupo p/ muitas cópias. spawnInSwarm(enxame, original, x, y, z): cria uma cópia visualmente independente do original. Pode rodar no quadro quando houver remove/prune para limitar os itens.
+- createSwarm(world) -> enxame: administra muitas cópias e não é o mesmo recurso que createGroup(). spawnInSwarm exige um molde da mesma cena. Pode rodar no quadro quando houver remove/prune para limitar os itens.
 - forEachInSwarm(enxame, (item) => {...}): repete os blocos p/ cada cópia (a da vez é "item"); itera ao contrário, então pode remover dentro. countSwarm(enxame): quantas cópias tem.
 - removeFromSwarm(enxame, item): tira uma cópia. pruneSwarm(enxame, "x"|"y"|"z", min, max): limpa as cópias que saíram dos limites (higiene de GPU).
-- playNote(freqHz, ms): um bip (mais Hz = mais agudo). playEffect("coin"|"jump"|"explosion"|"hit"): efeito pronto. Som só toca DEPOIS de um clique/tecla (exigência do navegador).
+- playNote(freqHz, ms): um bip (mais Hz = mais agudo). playEffect("coin"|"jump"|"explosion"|"hit"): efeito pronto. Use diretamente em clique/tecla ou numa condição do quadro, nunca diretamente em Ao iniciar. O runtime aceita no máximo 32 vozes ao mesmo tempo.
 - Áreas: crie cena e recursos em **⚙️ Ao iniciar**; use os chapéus de tecla/clique
   do núcleo em **⚡ Quando acontecer**; coloque “A cada frame 3D” e “A
   cada N segundos” em **🔁 Enquanto estiver rodando**. Para colisão, use

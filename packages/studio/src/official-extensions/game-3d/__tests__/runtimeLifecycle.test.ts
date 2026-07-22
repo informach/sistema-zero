@@ -47,7 +47,8 @@ class FakeCanvas {
 
 class FakeRenderer {
   shadowMap = { enabled: false, type: 0 }
-  loop: unknown = null
+  loop: ((time: number) => void) | null = null
+  renderCalls = 0
   sizes: Array<[number, number, boolean]> = []
 
   setPixelRatio() {}
@@ -56,11 +57,13 @@ class FakeRenderer {
     this.sizes.push([width, height, updateStyle])
   }
 
-  setAnimationLoop(loop: unknown) {
+  setAnimationLoop(loop: ((time: number) => void) | null) {
     this.loop = loop
   }
 
-  render() {}
+  render() {
+    this.renderCalls += 1
+  }
   dispose() {}
   forceContextLoss() {}
 }
@@ -73,6 +76,17 @@ interface RuntimeWorld {
   _objects: RealThree.Object3D[]
   _models: RealThree.Object3D[]
   _solids: RealThree.Object3D[]
+  _crossing?: {
+    gameOver: boolean
+    nextRow: number
+    rowByIndex: Record<string, { vehicles: Array<{ ref: RealThree.Object3D }>; type: string }>
+  }
+  _race?: {
+    gameOver: boolean
+    totalAngle: number
+    spawnElapsed: number
+    rivals: Array<{ mesh: RealThree.Object3D; angle: number }>
+  }
 }
 
 interface RuntimeApi {
@@ -80,12 +94,20 @@ interface RuntimeApi {
   createBox(world: RuntimeWorld, options?: { size?: number; color?: string }): RealThree.Mesh
   createModel(world: RuntimeWorld): RealThree.Group
   addToModel(model: RealThree.Group, part: RealThree.Object3D): void
+  animate(world: RuntimeWorld, callback: (delta: number) => void): void
   remove(world: RuntimeWorld, object: RealThree.Object3D): void
   setSolid(object: RealThree.Object3D): void
   setPosition(object: RealThree.Object3D, x: number, y: number, z: number): void
   fall(object: RealThree.Object3D): void
   isometricCamera(world: RuntimeWorld, follow: RealThree.Object3D | null): void
   topCamera(world: RuntimeWorld, follow: RealThree.Object3D | null): void
+  orbitCamera(world: RuntimeWorld, follow: RealThree.Object3D | null): void
+  thirdPersonCamera(
+    world: RuntimeWorld,
+    follow: RealThree.Object3D,
+    distance: number,
+    height: number,
+  ): void
   createSwarm(world: RuntimeWorld): { items: RealThree.Object3D[]; world: RuntimeWorld }
   spawnInSwarm(
     swarm: { items: RealThree.Object3D[]; world: RuntimeWorld },
@@ -93,19 +115,50 @@ interface RuntimeApi {
     x: number,
     y: number,
     z: number,
-  ): RealThree.Object3D
+  ): RealThree.Object3D | null
+  removeFromSwarm(
+    swarm: { items: RealThree.Object3D[]; world: RuntimeWorld },
+    item: RealThree.Object3D,
+  ): void
   setColor(object: RealThree.Object3D, color: string): void
   setVisible(object: RealThree.Object3D, mode: string): void
   pickAtMouse(world: RuntimeWorld): RealThree.Object3D | null
   playNote(frequency: number, milliseconds: number): void
   disposeAll(): void
   fpsCamera(world: RuntimeWorld, object: RealThree.Object3D): void
+  aimAhead(
+    world: RuntimeWorld,
+    object: RealThree.Object3D,
+    distance: number,
+  ): RealThree.Object3D | null
+  onGround(world: RuntimeWorld, object: RealThree.Object3D): boolean
+  groundHeight(world: RuntimeWorld, object: RealThree.Object3D): number
+  createCrossingScene(canvasId: string): RuntimeWorld
+  createCrosser(world: RuntimeWorld, options?: { color?: string }): RealThree.Object3D
+  crosserMove(object: RealThree.Object3D, direction: string): void
+  crosserStep(object: RealThree.Object3D, world: RuntimeWorld): void
+  crosserReset(object: RealThree.Object3D, world: RuntimeWorld): void
+  addRow(world: RuntimeWorld, row: number, kind: string, direction: string, speed: number): void
+  moveTraffic(world: RuntimeWorld): void
+  createRaceScene(canvasId: string): RuntimeWorld
+  createRaceTrack(world: RuntimeWorld): void
+  createRaceCar(world: RuntimeWorld, options?: { color?: string }): RealThree.Object3D
+  raceStep(car: RealThree.Object3D, world: RuntimeWorld): void
+  raceControl(car: RealThree.Object3D, mode: string): void
+  runRivals(world: RuntimeWorld): void
+  raceReset(car: RealThree.Object3D, world: RuntimeWorld): void
 }
 
 function loadRuntime() {
   const listeners = new Map<string, Set<Listener>>()
   const canvases = new Map<string, FakeCanvas>()
   let audioCloseCalls = 0
+  let audioDisconnectCalls = 0
+  const oscillators: Array<{
+    onended: (() => void) | null
+    stopCalls: number
+    disconnect(): void
+  }> = []
 
   class FakeAudioContext {
     state = 'running'
@@ -113,8 +166,10 @@ function loadRuntime() {
     destination = {}
 
     createOscillator() {
-      return {
+      const oscillator = {
         type: 'square',
+        onended: null as (() => void) | null,
+        stopCalls: 0,
         frequency: {
           setValueAtTime() {},
           exponentialRampToValueAtTime() {},
@@ -122,14 +177,24 @@ function loadRuntime() {
         },
         connect() {},
         start() {},
-        stop() {},
+        stop() {
+          oscillator.stopCalls += 1
+        },
+        disconnect() {
+          audioDisconnectCalls += 1
+        },
       }
+      oscillators.push(oscillator)
+      return oscillator
     }
 
     createGain() {
       return {
         gain: { setValueAtTime() {}, exponentialRampToValueAtTime() {} },
         connect() {},
+        disconnect() {
+          audioDisconnectCalls += 1
+        },
       }
     }
 
@@ -188,6 +253,8 @@ function loadRuntime() {
       for (const listener of listeners.get(name) ?? []) listener(event)
     },
     audioCloseCalls: () => audioCloseCalls,
+    audioOscillatorCount: () => oscillators.length,
+    audioDisconnectCalls: () => audioDisconnectCalls,
   }
 }
 
@@ -276,6 +343,8 @@ describe('gameThreeDRuntime - ciclo de vida real com Three.js', () => {
     const first = api.spawnInSwarm(swarm, model, -1, 0, 0)
     const second = api.spawnInSwarm(swarm, model, 1, 0, 0)
 
+    if (!first || !second) throw new Error('Era esperado criar os dois itens do enxame')
+
     api.setColor(first, '#ff0000')
 
     expect(meshColor(first)).toBe('ff0000')
@@ -288,6 +357,38 @@ describe('gameThreeDRuntime - ciclo de vida real com Three.js', () => {
     runtime.api.playNote(440, 100)
     runtime.api.disposeAll()
     expect(runtime.audioCloseCalls()).toBe(1)
+  })
+
+  it('limita as vozes simultâneas e desconecta todas no descarte', () => {
+    const runtime = loadRuntime()
+
+    for (let note = 0; note < 100; note += 1) runtime.api.playNote(440, 10_000)
+
+    expect(runtime.audioOscillatorCount()).toBe(32)
+    runtime.api.disposeAll()
+    expect(runtime.audioDisconnectCalls()).toBeGreaterThanOrEqual(64)
+  })
+
+  it('mantém a geometria do molde enquanto houver cópias no enxame', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const original = api.createBox(world)
+    const geometry = original.geometry
+    let disposeCalls = 0
+    geometry.dispose = () => {
+      disposeCalls += 1
+    }
+    const swarm = api.createSwarm(world)
+    const first = api.spawnInSwarm(swarm, original, -1, 0, 0)
+    const second = api.spawnInSwarm(swarm, original, 1, 0, 0)
+    if (!first || !second) throw new Error('esperava duas cópias no enxame')
+
+    api.remove(world, original)
+    expect(disposeCalls).toBe(0)
+    api.removeFromSwarm(swarm, first)
+    expect(disposeCalls).toBe(0)
+    api.removeFromSwarm(swarm, second)
+    expect(disposeCalls).toBe(1)
   })
 
   it('ignora objetos invisíveis e ancestrais escondidos no raycast', () => {
@@ -316,5 +417,148 @@ describe('gameThreeDRuntime - ciclo de vida real com Three.js', () => {
 
     expect(firstPlayer.rotation.y).not.toBe(0)
     expect(secondPlayer.rotation.y).toBe(0)
+  })
+
+  it('executa todos os blocos a cada quadro ligados à mesma cena', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const chamadas: string[] = []
+
+    api.animate(world, () => chamadas.push('primeiro'))
+    api.animate(world, () => chamadas.push('segundo'))
+    world.renderer.loop?.(16)
+
+    expect(chamadas).toEqual(['primeiro', 'segundo'])
+    expect(world.renderer.renderCalls).toBe(1)
+  })
+
+  it('remove o objeto de seu mundo real mesmo quando recebe outra cena', () => {
+    const { api } = loadRuntime()
+    const firstWorld = api.createScene('primeiro')
+    const secondWorld = api.createScene('segundo')
+    const object = api.createBox(firstWorld)
+
+    api.remove(secondWorld, object)
+
+    expect(firstWorld._objects).not.toContain(object)
+    expect(object.parent).toBeNull()
+  })
+
+  it('não mistura modelos, peças e enxames de cenas diferentes', () => {
+    const { api } = loadRuntime()
+    const firstWorld = api.createScene('primeiro')
+    const secondWorld = api.createScene('segundo')
+    const part = api.createBox(firstWorld)
+    const model = api.createModel(secondWorld)
+
+    api.addToModel(model, part)
+
+    expect(part.parent).toBe(firstWorld.scene)
+    expect(firstWorld._objects).toContain(part)
+
+    const swarm = api.createSwarm(secondWorld)
+    expect(api.spawnInSwarm(swarm, part, 0, 0, 0)).toBeNull()
+    expect(swarm.items).toHaveLength(0)
+  })
+
+  it('mantém apenas o modo de câmera escolhido por último', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const player = api.createBox(world)
+
+    api.thirdPersonCamera(world, player, 6, 3)
+    api.orbitCamera(world, player)
+    const orbitPosition = world.camera.position.clone()
+    api.animate(world, () => undefined)
+    world.renderer.loop?.(16)
+
+    expect(world.camera.position.distanceTo(orbitPosition)).toBeLessThan(0.0001)
+  })
+
+  it('não reinicia a rotação quando a câmera FPS é chamada novamente no quadro', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const player = api.createBox(world)
+    api.fpsCamera(world, player)
+    player.rotation.y = 0.8
+    world.camera.rotation.x = 0.4
+
+    api.fpsCamera(world, player)
+
+    expect(player.rotation.y).toBe(0.8)
+    expect(world.camera.rotation.x).toBe(0.4)
+  })
+
+  it('ignora as próprias peças de um modelo ao mirar e procurar o chão', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const model = api.createModel(world)
+    const frontPart = api.createBox(world)
+    api.setPosition(frontPart, 0, 0, 1)
+    api.addToModel(model, frontPart)
+    const target = api.createBox(world)
+    api.setPosition(target, 0, 0, 3)
+
+    expect(api.aimAhead(world, model, 10)).toBe(target)
+
+    const foot = api.createBox(world)
+    api.setPosition(foot, 0, -1, 0)
+    api.addToModel(model, foot)
+    api.setPosition(model, 0, 1.5, 0)
+    const ground = api.createBox(world)
+    api.setPosition(ground, 0, -0.5, 0)
+
+    expect(api.groundHeight(world, model)).toBeCloseTo(0)
+    expect(api.onGround(world, model)).toBe(true)
+  })
+
+  it('congela a travessia depois do fim de jogo', () => {
+    const { api } = loadRuntime()
+    const world = api.createCrossingScene('travessia')
+    const player = api.createCrosser(world)
+    api.crosserStep(player, world)
+    api.crosserMove(player, 'forward')
+    api.addRow(world, 1, 'car', 'right', 150)
+    const traffic = world._crossing?.rowByIndex['1']?.vehicles[0]?.ref
+    expect(traffic).toBeDefined()
+    world._crossing!.gameOver = true
+    const playerPosition = player.position.clone()
+    const trafficPosition = traffic!.position.clone()
+
+    for (let frame = 0; frame < 20; frame += 1) api.crosserStep(player, world)
+    api.moveTraffic(world)
+
+    expect(player.position.distanceTo(playerPosition)).toBe(0)
+    expect(traffic!.position.distanceTo(trafficPosition)).toBe(0)
+
+    api.crosserReset(player, world)
+    api.crosserMove(player, 'forward')
+    for (let frame = 0; frame < 20; frame += 1) api.crosserStep(player, world)
+    expect(player.position.distanceTo(playerPosition)).toBeGreaterThan(0)
+  })
+
+  it('congela a corrida depois do fim de jogo', () => {
+    const { api } = loadRuntime()
+    const world = api.createRaceScene('corrida')
+    api.createRaceTrack(world)
+    const car = api.createRaceCar(world)
+    world._race!.gameOver = true
+    const position = car.position.clone()
+    const angle = world._race!.totalAngle
+
+    api.raceControl(car, 'accelerate')
+    api.raceStep(car, world)
+    api.runRivals(world)
+
+    expect(car.position.distanceTo(position)).toBe(0)
+    expect(world._race!.totalAngle).toBe(angle)
+    expect(world._race!.rivals).toHaveLength(0)
+    expect(car.userData.throttle).toBe('normal')
+
+    api.raceReset(car, world)
+    api.raceControl(car, 'accelerate')
+    api.raceStep(car, world)
+    expect(world._race!.totalAngle).toBeGreaterThan(angle)
+    expect(car.userData.throttle).toBe('accelerate')
   })
 })

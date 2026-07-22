@@ -5956,12 +5956,15 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     case 'mountRenderer':
       return block('sz_t3d_mount_renderer', { R: stmt.renderer }, {}, stmt.__id)
     case 'loaderLoad': {
+      if (!recognizeThree) return rawJSBlock(stmt)
       // URL é o NOME do asset (campo seletor) — sempre string (o parser só casa
       // literal de string). Round-trip fiel com o `field_asset_picker`. O TIPO do
       // bloco é discriminado pelo loader: declarado como AudioLoader → bloco de SOM.
       const url = stmt.url.type === 'str' ? stmt.url.value : ''
       return block(
-        audioLoaderVars.has(stmt.loaderVar) ? 'sz_t3d_load_sound' : 'sz_t3d_load_model',
+        stmt.resourceKind === 'audio' || audioLoaderVars.has(stmt.loaderVar)
+          ? 'sz_t3d_load_sound'
+          : 'sz_t3d_load_model',
         {
           LOADER: stmt.loaderVar,
           PARAM: stmt.param,
@@ -5976,6 +5979,7 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       )
     }
     case 'traverseEach': {
+      if (!recognizeThree) return rawJSBlock(stmt)
       // `objeto.traverse((parte) => { … })` — o objeto vem no soquete OBJ.
       const obj = exprToValueBlock(stmt.object)
       if (!obj) return rawJSBlock(stmt)

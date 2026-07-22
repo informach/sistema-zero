@@ -137,7 +137,7 @@ describe('Auditoria Canvas 3D — inventário e progressão', () => {
       .find(
         (arg) => Boolean(arg) && typeof arg === 'object' && (arg as BlockArg).name === 'CANVAS',
       ) as { type?: string; kind?: string } | undefined
-    expect(canvasField).toMatchObject({ type: 'field_name_picker', kind: 'canvas' })
+    expect(canvasField).toMatchObject({ type: 'field_name_picker', kind: 'canvas3d-canvas' })
   })
 
   it('usa o mesmo id de tela no caminho padrão', () => {
@@ -168,7 +168,13 @@ describe('Auditoria Canvas 3D — inventário e progressão', () => {
         { R: 'renderer3d', CAMERA: 'camera3d', COMPOSER: 'composer3d' },
       ],
       ['sz_t3d_render', { SCENE: 'scene3d', CAMERA: 'camera3d', R: 'renderer3d' }],
-      ['sz_t3d_load_model', { LOADER: 'loader3d' }],
+      ['sz_t3d_load_model', { LOADER: 'model-loader3d' }],
+      ['sz_t3d_load_sound', { LOADER: 'audio-loader3d' }],
+      ['sz_t3d_water_wave', { WATER: 'water3d' }],
+      ['sz_t3d_grass_wave', { GRASS: 'grass3d' }],
+      ['sz_t3d_set_matrix_at', { MESH: 'instanced-mesh3d' }],
+      ['sz_t3d_instances_dirty', { MESH: 'instanced-mesh3d' }],
+      ['sz_t3d_set_color', { OBJ: 'color-target3d' }],
       ['sz_t3d_physics_step', { WORLD: 'physics-world' }],
     ])
 

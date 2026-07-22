@@ -1,6 +1,7 @@
 import {
   CANVAS3D_SEMANTIC_DECLARATION_FIELDS,
   CANVAS3D_SEMANTIC_REFERENCE_FIELDS,
+  type Canvas3DReferenceField,
   type Canvas3DSymbolKind,
   canvas3DSymbolKindsForClass,
 } from '../three/canvas3dContract'
@@ -80,6 +81,14 @@ const VARIABLE_DECLARATION_FIELDS: Readonly<Record<string, string>> = {
   'g3d:createSwarm': 'varName',
 }
 
+const GAME3D_WORLD_DECLARATION_TYPES = new Set([
+  'g3d:createScene',
+  'g3d:createFullscreenScene',
+  'g3d:createCrossingScene',
+  'g3d:createRaceScene',
+  'g3d:createStackScene',
+])
+
 const IMPLICIT_VARIABLES = new Set([
   'window',
   'document',
@@ -151,6 +160,7 @@ interface ProgrammingSymbols {
   canvasContexts: Set<string>
   canvasIds: Set<string>
   canvas3d: Record<Canvas3DSymbolKind, Set<string>>
+  game3dWorlds: Set<string>
   classes: Set<string>
   functions: Set<string>
   functionDefinitions: Map<string, FunctionDefinition>
@@ -166,6 +176,7 @@ function cloneSymbols(symbols: ProgrammingSymbols): ProgrammingSymbols {
     canvasContexts: new Set(symbols.canvasContexts),
     canvasIds: new Set(symbols.canvasIds),
     canvas3d: cloneCanvas3DSymbols(symbols.canvas3d),
+    game3dWorlds: new Set(symbols.game3dWorlds),
     classes: new Set(symbols.classes),
     functions: new Set(symbols.functions),
     functionDefinitions: new Map(symbols.functionDefinitions),
@@ -192,6 +203,7 @@ function mergeFutureSymbols(
   for (const kind of CANVAS3D_SYMBOL_KINDS) {
     for (const name of future.canvas3d[kind]) merged.canvas3d[kind].add(name)
   }
+  for (const name of future.game3dWorlds) merged.game3dWorlds.add(name)
   for (const name of future.classes) merged.classes.add(name)
   for (const name of future.functions) merged.functions.add(name)
   future.functionDefinitions.forEach((definition, name) => {
@@ -222,6 +234,12 @@ const CANVAS3D_SYMBOL_KINDS: readonly Canvas3DSymbolKind[] = [
   'composer3d',
   'object3d',
   'loader3d',
+  'model-loader3d',
+  'audio-loader3d',
+  'water3d',
+  'grass3d',
+  'instanced-mesh3d',
+  'color-target3d',
   'physics-world',
 ]
 
@@ -351,6 +369,12 @@ const CANVAS3D_REFERENCE_LABELS: Readonly<Record<Canvas3DSymbolKind, string>> = 
   composer3d: 'compositor de efeitos',
   object3d: 'objeto 3D',
   loader3d: 'carregador 3D',
+  'model-loader3d': 'carregador de modelo 3D',
+  'audio-loader3d': 'carregador de áudio 3D',
+  water3d: 'água 3D',
+  grass3d: 'grama 3D',
+  'instanced-mesh3d': 'malha de cópias 3D',
+  'color-target3d': 'material ou luz 3D',
   'physics-world': 'mundo físico',
 }
 
@@ -361,7 +385,13 @@ function validateCanvas3DReferences(
   path: (string | number)[],
   issues: ProgrammingReferenceIssue[],
 ): void {
-  for (const reference of CANVAS3D_SEMANTIC_REFERENCE_FIELDS[type] ?? []) {
+  const loaderKind: Canvas3DSymbolKind =
+    record.resourceKind === 'audio' ? 'audio-loader3d' : 'model-loader3d'
+  const references: readonly Canvas3DReferenceField[] =
+    type === 'loaderLoad'
+      ? [{ field: 'loaderVar', kind: loaderKind }]
+      : (CANVAS3D_SEMANTIC_REFERENCE_FIELDS[type] ?? [])
+  for (const reference of references) {
     const value = record[reference.field]
     if (typeof value !== 'string' || !value.trim()) continue
     const name = value.trim()
@@ -387,6 +417,23 @@ function validateCanvas3DReferences(
   }
 }
 
+function validateGame3DWorldReference(
+  type: string,
+  record: Record<string, unknown>,
+  symbols: ProgrammingSymbols,
+  path: (string | number)[],
+  issues: ProgrammingReferenceIssue[],
+): void {
+  if (!type.startsWith('g3d:') || typeof record.worldVar !== 'string') return
+  const name = record.worldVar.trim()
+  if (name && !symbols.game3dWorlds.has(name)) {
+    issues.push({
+      path: [...path, 'worldVar'],
+      message: `O mundo do Jogo 3D “${name}” ainda não foi criado neste ponto`,
+    })
+  }
+}
+
 function validateValue(
   value: unknown,
   symbols: ProgrammingSymbols,
@@ -405,6 +452,7 @@ function validateValue(
   const type = typeof record.type === 'string' ? record.type : ''
 
   validateCanvas3DReferences(type, record, symbols, path, issues)
+  validateGame3DWorldReference(type, record, symbols, path, issues)
 
   if (type.startsWith('canvas') && type !== 'canvasSetup') {
     validateCanvasContext(record.ctxVar, symbols, [...path, 'ctxVar'], issues)
@@ -641,10 +689,14 @@ function hoistFunctions(statements: readonly JSStatement[], symbols: Programming
       })
     }
     if (statement.type === 'terrainSetup') addName(symbols.functions, statement.heightFunction)
-    if (statement.type === 'importNamed')
+    if (statement.type === 'importNamed') {
       statement.names.forEach((name) => {
         addName(symbols.functions, name)
+        addName(symbols.variables, name)
+        addName(symbols.classes, name)
       })
+    }
+    if (statement.type === 'importStar') addName(symbols.variables, statement.name)
   }
 }
 
@@ -654,6 +706,9 @@ function addStatementDeclarations(statement: JSStatement, symbols: ProgrammingSy
   if (field) {
     addName(symbols.variables, record[field])
     if (typeof record[field] === 'string') symbols.instances.delete(record[field].trim())
+  }
+  if (GAME3D_WORLD_DECLARATION_TYPES.has(statement.type)) {
+    addName(symbols.game3dWorlds, record.varName)
   }
   if (statement.type === 'importNamed') {
     statement.names.forEach((name) => {
@@ -745,6 +800,9 @@ function statementDeclarations(statement: JSStatement): StatementDeclaration[] {
   const declarations: StatementDeclaration[] = []
   if (field && typeof record[field] === 'string' && record[field].trim()) {
     declarations.push({ name: record[field].trim(), path: [field] })
+  }
+  if (statement.type === 'terrainSetup' && statement.heightFunction.trim()) {
+    declarations.push({ name: statement.heightFunction.trim(), path: ['heightFunction'] })
   }
 
   if (statement.type === 'importNamed') {
@@ -892,6 +950,7 @@ export function validateProgrammingReferences(
     canvasContexts: new Set(),
     canvasIds: new Set(options.canvasIds ?? []),
     canvas3d: emptyCanvas3DSymbols(),
+    game3dWorlds: new Set(),
     classes: new Set(IMPLICIT_CLASSES),
     functions: new Set(IMPLICIT_FUNCTIONS),
     functionDefinitions: new Map(),

@@ -1,13 +1,32 @@
 /**
- * Bloco compartilhado de shaders usado pelos runtimes oficiais baseados em Three.
+ * Infraestrutura compartilhada de pós-processamento usada pelos runtimes oficiais
+ * baseados em Three.
  *
  * Os runtimes são strings de JavaScript executadas dentro do iframe. O marcador
- * mantém essas strings literais e auditáveis, enquanto esta composição impede que
- * os mesmos shaders evoluam de forma diferente entre as extensões 3D.
+ * mantém essas strings literais e auditáveis, enquanto esta composição garante que
+ * shaders, render targets, passes e descarte evoluam juntos entre as extensões 3D.
+ * O host fornece `THREE`, `config`, `composer`, `composerFailed`, `renderer`,
+ * `scene`, `camera` e `warn`; o trecho injetado possui todo o restante do composer.
  */
-export const THREE_POST_PROCESSING_MARKER = '/*__SZ_THREE_POST_PROCESSING_SHADERS__*/'
+export const THREE_POST_PROCESSING_MARKER = '/*__SZ_THREE_POST_PROCESSING_RUNTIME__*/'
 
 const THREE_POST_PROCESSING_SOURCE = `
+  var BLOOM_LEVELS = 4;
+
+  var QUAD_VSH = [
+    'varying vec2 vUvs;',
+    'void main() {',
+    '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+    '  vUvs = uv;',
+    '}'
+  ].join(' ');
+
+  var COPY_FSH = [
+    'uniform sampler2D tDiffuse;',
+    'varying vec2 vUvs;',
+    'void main() { gl_FragColor = texture2D(tDiffuse, vUvs); }'
+  ].join(' ');
+
   var DOWNSAMPLE_FSH = [
     'uniform sampler2D frameTexture;',
     'uniform bool useKaris;',
@@ -138,6 +157,163 @@ const THREE_POST_PROCESSING_SOURCE = `
     '  gl_FragColor = vec4(col, 1.0);',
     '}'
   ].join(' ');
+
+  function makeTarget(w, h) {
+    return new THREE.WebGLRenderTarget(Math.max(1, Math.round(w)), Math.max(1, Math.round(h)), {
+      type: THREE.HalfFloatType,
+      magFilter: THREE.LinearFilter,
+      minFilter: THREE.LinearFilter,
+      wrapS: THREE.ClampToEdgeWrapping,
+      wrapT: THREE.ClampToEdgeWrapping,
+      generateMipmaps: false,
+      depthBuffer: false,
+      stencilBuffer: false
+    });
+  }
+
+  function quadMaterial(fsh, uniforms) {
+    return new THREE.ShaderMaterial({
+      uniforms: uniforms,
+      vertexShader: QUAD_VSH,
+      fragmentShader: fsh,
+      depthTest: false,
+      depthWrite: false
+    });
+  }
+
+  function initComposer() {
+    if (composer || composerFailed) return;
+    try {
+      var quadScene = new THREE.Scene();
+      var quadCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+      var quadGeo = new THREE.PlaneGeometry(2, 2);
+      var quadMesh = new THREE.Mesh(quadGeo, null);
+      quadScene.add(quadMesh);
+
+      // Alvo da cena com DEPTH (o mundo 3D precisa dele); os da cascata não.
+      var rtScene = new THREE.WebGLRenderTarget(config.w, config.h, {
+        type: THREE.HalfFloatType,
+        magFilter: THREE.LinearFilter,
+        minFilter: THREE.LinearFilter,
+        depthBuffer: true,
+        stencilBuffer: false
+      });
+      var rtGrade = makeTarget(config.w, config.h);
+      var down = [null];
+      var up = [null];
+      for (var i = 1; i <= BLOOM_LEVELS; i++) {
+        var scaleDiv = Math.pow(2, i);
+        down.push(makeTarget(config.w / scaleDiv, config.h / scaleDiv));
+        up.push(makeTarget(config.w / scaleDiv, config.h / scaleDiv));
+      }
+
+      var matCopy = quadMaterial(COPY_FSH, { tDiffuse: { value: null } });
+      var matDown = quadMaterial(DOWNSAMPLE_FSH, {
+        frameTexture: { value: null },
+        useKaris: { value: false },
+        resolution: { value: new THREE.Vector2(1, 1) }
+      });
+      var matUp = quadMaterial(UPSAMPLE_FSH, {
+        frameTexture: { value: null },
+        mipTexture: { value: null },
+        resolution: { value: new THREE.Vector2(1, 1) }
+      });
+      var matComposite = quadMaterial(COMPOSITE_FSH, {
+        frameTexture: { value: null },
+        bloomTexture: { value: null },
+        bloomStrength: { value: config.bloomStrength },
+        bloomMix: { value: 0.08 }
+      });
+      var matFinal = quadMaterial(FINAL_FSH, {
+        tDiffuse: { value: null },
+        intensity: { value: 0.35 },
+        dropoff: { value: 0.35 }
+      });
+
+      composer = {
+        quadScene: quadScene,
+        quadCam: quadCam,
+        quadGeo: quadGeo,
+        quadMesh: quadMesh,
+        rtScene: rtScene,
+        rtGrade: rtGrade,
+        down: down,
+        up: up,
+        matCopy: matCopy,
+        matDown: matDown,
+        matUp: matUp,
+        matComposite: matComposite,
+        matFinal: matFinal
+      };
+    } catch (e) {
+      composerFailed = true;
+      composer = null;
+      warn('efeitos de cinema indisponíveis neste computador — seguindo sem eles: ' + e);
+    }
+  }
+
+  function quadPass(material, target) {
+    composer.quadMesh.material = material;
+    renderer.setRenderTarget(target);
+    renderer.render(composer.quadScene, composer.quadCam);
+  }
+
+  function renderWithComposer() {
+    var c = composer;
+    // Cena em LINEAR (o ACES roda no passe final).
+    if (THREE.NoToneMapping != null) renderer.toneMapping = THREE.NoToneMapping;
+    renderer.setRenderTarget(c.rtScene);
+    renderer.render(scene, camera);
+
+    var graded = c.rtScene;
+    if (config.bloom) {
+      // Cascata para baixo (Karis no primeiro nível, contra vagalumes).
+      var src = c.rtScene;
+      for (var i = 1; i <= BLOOM_LEVELS; i++) {
+        c.matDown.uniforms.frameTexture.value = src.texture;
+        c.matDown.uniforms.useKaris.value = i === 1;
+        c.matDown.uniforms.resolution.value.set(src.width, src.height);
+        quadPass(c.matDown, c.down[i]);
+        src = c.down[i];
+      }
+      // Semente do caminho de volta + cascata para cima (tent 3×3 + mip).
+      c.matCopy.uniforms.tDiffuse.value = c.down[BLOOM_LEVELS].texture;
+      quadPass(c.matCopy, c.up[BLOOM_LEVELS]);
+      for (var j = BLOOM_LEVELS - 1; j >= 1; j--) {
+        c.matUp.uniforms.frameTexture.value = c.up[j + 1].texture;
+        c.matUp.uniforms.mipTexture.value = c.down[j + 1].texture;
+        c.matUp.uniforms.resolution.value.set(c.up[j + 1].width, c.up[j + 1].height);
+        quadPass(c.matUp, c.up[j]);
+      }
+      c.matComposite.uniforms.frameTexture.value = c.rtScene.texture;
+      c.matComposite.uniforms.bloomTexture.value = c.up[1].texture;
+      c.matComposite.uniforms.bloomStrength.value = config.bloomStrength;
+      quadPass(c.matComposite, c.rtGrade);
+      graded = c.rtGrade;
+    }
+    // Passe final SEMPRE roda no caminho do composer: vinheta (intensity 1 =
+    // desligada) + ACES + sRGB, direto na tela.
+    c.matFinal.uniforms.tDiffuse.value = graded.texture;
+    c.matFinal.uniforms.intensity.value = config.vignette ? 0.35 : 1.0;
+    quadPass(c.matFinal, null);
+  }
+
+  function disposeComposer() {
+    var c = composer;
+    if (!c) return;
+    composer = null;
+    try {
+      var all = [c.rtScene, c.rtGrade].concat(c.down.slice(1)).concat(c.up.slice(1));
+      for (var i = 0; i < all.length; i++) {
+        if (all[i] && all[i].dispose) all[i].dispose();
+      }
+      var mats = [c.matCopy, c.matDown, c.matUp, c.matComposite, c.matFinal];
+      for (var m = 0; m < mats.length; m++) {
+        if (mats[m] && mats[m].dispose) mats[m].dispose();
+      }
+      if (c.quadGeo && c.quadGeo.dispose) c.quadGeo.dispose();
+    } catch (e) {}
+  }
 `.trim()
 
 export function withThreePostProcessingRuntime(source: string): string {
