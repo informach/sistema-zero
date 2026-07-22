@@ -6,7 +6,7 @@ import { isGuidedDomElementTag } from '../domSafety'
 import { HTML_TAGS, isHTMLElementChildAllowed } from '../html/catalog'
 import { PERSISTENT_EXTENSION_STATEMENT_TYPES } from '../official-extensions/persistentResourceContract'
 import { isCanvas3DResourceCreatorStatement } from '../three/canvas3dContract'
-import { GAME3D_RESOURCE_CREATOR_TYPES } from '../three/game3dContract'
+import { GAME3D_START_ONLY_STATEMENT_TYPES } from '../three/game3dContract'
 import {
   isLegacyLoadEvent,
   isLifecycleRootAllowed,
@@ -10380,7 +10380,7 @@ function validateG2DDeclarations(
 }
 
 const LOOP_FORBIDDEN_RESOURCE_TYPES: ReadonlySet<string> = new Set([
-  ...GAME3D_RESOURCE_CREATOR_TYPES,
+  ...GAME3D_START_ONLY_STATEMENT_TYPES,
   ...PERSISTENT_EXTENSION_STATEMENT_TYPES,
 ])
 
@@ -10390,11 +10390,24 @@ function validateLegacyLifecycle(
   path: (string | number)[],
   insideLoop = false,
   nested = false,
+  directG3kMoldBody = false,
 ): void {
   for (let index = 0; index < statements.length; index += 1) {
     const statement = statements[index]
     if (!statement) continue
-    if (
+    if (statement.type === 'g3k:part' && !directG3kMoldBody) {
+      ctx.addIssue({
+        code: 'custom',
+        path: [...path, index],
+        message: '“g3k:part” só pode ser usado diretamente dentro de “Criar o molde 3D”',
+      })
+    } else if (directG3kMoldBody && statement.type !== 'g3k:part') {
+      ctx.addIssue({
+        code: 'custom',
+        path: [...path, index],
+        message: 'O corpo de “Criar o molde 3D” aceita somente blocos “Peça” diretos',
+      })
+    } else if (
       insideLoop &&
       (LOOP_FORBIDDEN_RESOURCE_TYPES.has(statement.type) ||
         isCanvas3DResourceCreatorStatement(statement))
@@ -10415,12 +10428,14 @@ function validateLegacyLifecycle(
     const childNested =
       nested || (!LEGACY_START_WRAPPER_TYPES.has(statement.type) && !isLegacyLoadEvent(statement))
     for (const child of childStatementEntries(statement)) {
+      const childIsG3kMoldBody = statement.type === 'g3k:defineMold' && child.path[0] === 'body'
       validateLegacyLifecycle(
         child.body,
         ctx,
         [...path, index, ...child.path],
         childInsideLoop,
         childNested,
+        childIsG3kMoldBody,
       )
     }
   }
@@ -10508,6 +10523,14 @@ function validateG2DReferences(
   }
 }
 
+function collectCanvasIds(nodes: readonly HTMLNode[], ids = new Set<string>()): Set<string> {
+  for (const node of nodes) {
+    if (node.type === 'canvas' && node.id?.trim()) ids.add(node.id.trim())
+    if ('children' in node && node.children) collectCanvasIds(node.children, ids)
+  }
+  return ids
+}
+
 export const SZIRSchema = z
   .object({
     html: z.array(HTMLNodeSchema),
@@ -10519,7 +10542,9 @@ export const SZIRSchema = z
 
   .superRefine((ir, ctx) => {
     validateLegacyLifecycle(ir.js, ctx, ['js'])
-    for (const issue of collectProgrammingReferenceIssues(ir.js, ['js'])) {
+    for (const issue of collectProgrammingReferenceIssues(ir.js, ['js'], {
+      canvasIds: collectCanvasIds(ir.html),
+    })) {
       ctx.addIssue({ code: 'custom', path: issue.path, message: issue.message })
     }
     const starts = ir.js

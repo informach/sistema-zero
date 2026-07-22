@@ -75,6 +75,194 @@ export const CANVAS3D_BLOCK_TYPES = [
 
 export type Canvas3DBlockType = (typeof CANVAS3D_BLOCK_TYPES)[number]
 
+/** Papéis dos recursos do Canvas 3D. Um nome pode cumprir mais de um papel. */
+export type Canvas3DSymbolKind =
+  | 'scene3d'
+  | 'renderer3d'
+  | 'camera3d'
+  | 'light3d'
+  | 'composer3d'
+  | 'object3d'
+  | 'loader3d'
+  | 'physics-world'
+
+export type Canvas3DReferenceKind = Canvas3DSymbolKind | 'canvas' | 'function'
+
+export interface Canvas3DSymbolField {
+  field: string
+  kinds: readonly Canvas3DSymbolKind[]
+}
+
+export interface Canvas3DReferenceField {
+  field: string
+  kind: Canvas3DReferenceKind
+}
+
+/** Declarações dos blocos amigáveis, usadas pelos seletores e pela validação da IR. */
+export const CANVAS3D_BLOCK_DECLARATIONS_BY_KIND: Readonly<
+  Record<Canvas3DSymbolKind, Readonly<Record<string, readonly string[]>>>
+> = {
+  scene3d: { sz_t3d_scene_create: ['SCENE'] },
+  renderer3d: { sz_t3d_renderer_create: ['RENDERER'] },
+  camera3d: { sz_t3d_camera_create: ['CAMERA'] },
+  light3d: { sz_t3d_light_create: ['LIGHT'] },
+  composer3d: { sz_t3d_bloom_setup: ['COMPOSER'] },
+  object3d: {
+    sz_t3d_scene_create: ['SCENE'],
+    sz_t3d_camera_create: ['CAMERA'],
+    sz_t3d_light_create: ['LIGHT'],
+    sz_t3d_particles: ['PARTICLES'],
+    sz_t3d_water: ['WATER'],
+    sz_t3d_grass: ['GRASS'],
+    sz_t3d_sign: ['SIGN'],
+    sz_t3d_primitive: ['MESH'],
+    sz_t3d_terrain: ['TERRAIN'],
+    sz_t3d_road: ['ROAD'],
+    sz_t3d_building: ['BUILDING'],
+    sz_t3d_city: ['CITY'],
+  },
+  loader3d: {},
+  'physics-world': { sz_t3d_physics_setup: ['WORLD'] },
+}
+
+/** Declarações equivalentes depois que os blocos viram IR semântica. */
+export const CANVAS3D_SEMANTIC_DECLARATION_FIELDS: Readonly<
+  Record<string, readonly Canvas3DSymbolField[]>
+> = {
+  threeSceneSetup: [{ field: 'scene', kinds: ['scene3d', 'object3d'] }],
+  threeRendererSetup: [{ field: 'renderer', kinds: ['renderer3d'] }],
+  threeCameraSetup: [{ field: 'camera', kinds: ['camera3d', 'object3d'] }],
+  threeLightSetup: [{ field: 'light', kinds: ['light3d', 'object3d'] }],
+  bloomSetup: [{ field: 'composer', kinds: ['composer3d'] }],
+  particlesSetup: [{ field: 'particles', kinds: ['object3d'] }],
+  waterSetup: [{ field: 'water', kinds: ['object3d'] }],
+  grassSetup: [{ field: 'grass', kinds: ['object3d'] }],
+  signSetup: [{ field: 'sign', kinds: ['object3d'] }],
+  primitiveSetup: [{ field: 'mesh', kinds: ['object3d'] }],
+  terrainSetup: [{ field: 'terrain', kinds: ['object3d'] }],
+  roadSetup: [{ field: 'road', kinds: ['object3d'] }],
+  buildingSetup: [{ field: 'building', kinds: ['object3d'] }],
+  citySetup: [{ field: 'city', kinds: ['object3d'] }],
+  physicsLiteSetup: [{ field: 'world', kinds: ['physics-world'] }],
+}
+
+/** Referências que só aceitam recursos do papel indicado. */
+export const CANVAS3D_SEMANTIC_REFERENCE_FIELDS: Readonly<
+  Record<string, readonly Canvas3DReferenceField[]>
+> = {
+  threeRendererSetup: [{ field: 'canvas', kind: 'canvas' }],
+  threeCameraSetup: [{ field: 'canvas', kind: 'canvas' }],
+  threeLightSetup: [{ field: 'scene', kind: 'scene3d' }],
+  rendererConfig: [{ field: 'renderer', kind: 'renderer3d' }],
+  rendererResponsive: [
+    { field: 'renderer', kind: 'renderer3d' },
+    { field: 'camera', kind: 'camera3d' },
+    { field: 'composer', kind: 'composer3d' },
+  ],
+  environmentLoad: [{ field: 'scene', kind: 'scene3d' }],
+  disposeObject: [{ field: 'object', kind: 'object3d' }],
+  lerpPosition: [{ field: 'object', kind: 'object3d' }],
+  bloomSetup: [
+    { field: 'renderer', kind: 'renderer3d' },
+    { field: 'scene', kind: 'scene3d' },
+    { field: 'camera', kind: 'camera3d' },
+  ],
+  particlesSetup: [{ field: 'scene', kind: 'scene3d' }],
+  waterSetup: [{ field: 'scene', kind: 'scene3d' }],
+  waterTime: [{ field: 'water', kind: 'object3d' }],
+  grassSetup: [{ field: 'scene', kind: 'scene3d' }],
+  grassTime: [{ field: 'grass', kind: 'object3d' }],
+  signSetup: [{ field: 'scene', kind: 'scene3d' }],
+  primitiveSetup: [{ field: 'scene', kind: 'scene3d' }],
+  terrainSetup: [
+    { field: 'scene', kind: 'scene3d' },
+    { field: 'heightFunction', kind: 'function' },
+  ],
+  roadSetup: [
+    { field: 'scene', kind: 'scene3d' },
+    { field: 'heightFunction', kind: 'function' },
+  ],
+  buildingSetup: [
+    { field: 'scene', kind: 'scene3d' },
+    { field: 'heightFunction', kind: 'function' },
+  ],
+  citySetup: [
+    { field: 'scene', kind: 'scene3d' },
+    { field: 'heightFunction', kind: 'function' },
+  ],
+  physicsLiteSetup: [{ field: 'heightFunction', kind: 'function' }],
+  physicsLiteStaticBox: [{ field: 'world', kind: 'physics-world' }],
+  physicsLiteStaticSphere: [{ field: 'world', kind: 'physics-world' }],
+  physicsLiteStaticObject: [
+    { field: 'world', kind: 'physics-world' },
+    { field: 'object', kind: 'object3d' },
+  ],
+  physicsLiteStaticCity: [
+    { field: 'world', kind: 'physics-world' },
+    { field: 'city', kind: 'object3d' },
+  ],
+  physicsLiteBody: [
+    { field: 'world', kind: 'physics-world' },
+    { field: 'object', kind: 'object3d' },
+  ],
+  physicsLiteMove: [{ field: 'world', kind: 'physics-world' }],
+  physicsLiteJump: [{ field: 'world', kind: 'physics-world' }],
+  physicsLiteTrigger: [{ field: 'world', kind: 'physics-world' }],
+  physicsLiteStep: [{ field: 'world', kind: 'physics-world' }],
+  physicsLiteVelocity: [{ field: 'world', kind: 'physics-world' }],
+  physicsLiteImpulse: [{ field: 'world', kind: 'physics-world' }],
+  physicsLiteTeleport: [{ field: 'world', kind: 'physics-world' }],
+  physicsLiteRemove: [{ field: 'world', kind: 'physics-world' }],
+  physicsLiteClear: [{ field: 'world', kind: 'physics-world' }],
+  physicsLiteCollisionEvent: [{ field: 'world', kind: 'physics-world' }],
+  physicsLiteTriggerEvent: [{ field: 'world', kind: 'physics-world' }],
+  physicsLiteRaycast: [{ field: 'world', kind: 'physics-world' }],
+  physicsLiteBodyState: [{ field: 'world', kind: 'physics-world' }],
+  physicsLiteStats: [{ field: 'world', kind: 'physics-world' }],
+  loaderLoad: [{ field: 'loaderVar', kind: 'loader3d' }],
+  mountRenderer: [{ field: 'renderer', kind: 'renderer3d' }],
+}
+
+const OBJECT3D_CLASS_NAMES = new Set([
+  'Scene',
+  'PerspectiveCamera',
+  'OrthographicCamera',
+  'Mesh',
+  'Group',
+  'Object3D',
+  'InstancedMesh',
+  'Points',
+  'LineSegments',
+  'Sprite',
+  'DirectionalLight',
+  'AmbientLight',
+  'HemisphereLight',
+  'PointLight',
+  'SpotLight',
+  'AudioListener',
+  'Audio',
+  'PositionalAudio',
+  'Water',
+  'Sky',
+  'CSS2DObject',
+  'Reflector',
+  'Line2',
+])
+
+/** Classifica o construtor técnico sem depender da UI do seletor de classes. */
+export function canvas3DSymbolKindsForClass(rawClass: string): readonly Canvas3DSymbolKind[] {
+  const className = rawClass.trim().split('.').at(-1) ?? ''
+  if (className === 'Scene') return ['scene3d', 'object3d']
+  if (className.endsWith('Camera')) return ['camera3d', 'object3d']
+  if (className === 'WebGLRenderer' || className === 'WebGPURenderer') return ['renderer3d']
+  if (className.endsWith('Light') || className.endsWith('LightProbe')) {
+    return ['light3d', 'object3d']
+  }
+  if (className === 'EffectComposer') return ['composer3d']
+  if (className.endsWith('Loader')) return ['loader3d']
+  return OBJECT3D_CLASS_NAMES.has(className) ? ['object3d'] : []
+}
+
 /** Facilitadores oferecidos a partir do intermediário 3D. */
 export const CANVAS3D_INTERMEDIATE_BLOCK_TYPES: readonly Canvas3DBlockType[] = [
   'sz_t3d_scene_create',
@@ -98,11 +286,8 @@ export const CANVAS3D_INTERMEDIATE_BLOCK_TYPES: readonly Canvas3DBlockType[] = [
   'sz_t3d_renderer_config',
   'sz_t3d_renderer_responsive',
   'sz_t3d_enable_shadows',
-  'sz_t3d_mount_renderer',
   'sz_t3d_render',
-  'sz_t3d_load_model',
   'sz_t3d_load_environment',
-  'sz_t3d_load_sound',
   'sz_t3d_traverse',
   'sz_t3d_dispose_object',
   'sz_t3d_particles',
@@ -142,6 +327,13 @@ export const CANVAS3D_START_ONLY_BLOCK_TYPES: readonly Canvas3DBlockType[] = [
   'sz_t3d_import',
   'sz_t3d_import_named',
 ]
+
+/** Atualizações que precisam de um loop ou de uma função chamada por um loop. */
+export const CANVAS3D_CONTINUOUS_BLOCK_TYPES = [
+  'sz_t3d_water_wave',
+  'sz_t3d_grass_wave',
+  'sz_t3d_physics_step',
+] as const satisfies readonly Canvas3DBlockType[]
 
 /** Blocos que mantêm recursos e, portanto, não podem ser recriados por quadro. */
 export const CANVAS3D_RESOURCE_CREATOR_BLOCK_TYPES: readonly Canvas3DBlockType[] = [
@@ -288,6 +480,33 @@ export const CANVAS3D_SEMANTIC_STATEMENT_TYPES = [
   'physicsLiteBodyState',
   'physicsLiteStats',
 ] as const
+
+export const CANVAS3D_SEMANTIC_STATEMENT_TYPE_SET: ReadonlySet<string> = new Set(
+  CANVAS3D_SEMANTIC_STATEMENT_TYPES,
+)
+
+export const CANVAS3D_CONTINUOUS_STATEMENT_TYPES: ReadonlySet<string> = new Set([
+  'waterTime',
+  'grassTime',
+  'physicsLiteStep',
+])
+
+/**
+ * Sinal estável usado pela volta IR → Blockly. A geração injeta imports depois,
+ * portanto a própria IR semântica precisa ativar os facilitadores 3D.
+ */
+export function statementUsesCanvas3D(statement: {
+  type: string
+  module?: string
+  namespace?: string
+}): boolean {
+  return (
+    CANVAS3D_SEMANTIC_STATEMENT_TYPE_SET.has(statement.type) ||
+    (statement.type === 'importStar' && statement.module === 'three') ||
+    (statement.type === 'importNamed' && statement.module?.startsWith('three/addons/')) ||
+    (statement.type === 'newInstance' && statement.namespace === 'THREE')
+  )
+}
 
 export const CANVAS3D_RESOURCE_CREATOR_TYPES: ReadonlySet<string> = new Set([
   'threeSceneSetup',

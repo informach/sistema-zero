@@ -288,16 +288,36 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
         .join('\n'),
     )
   }
-  if (contract.key.startsWith('game-2d:') || contract.key.startsWith('game-2d-advanced:')) {
+  if (
+    contract.key.startsWith('game-2d:') ||
+    contract.key.startsWith('game-2d-advanced:') ||
+    contract.key.startsWith('game-3d:')
+  ) {
     const canvas = preview.locator('canvas').first()
-    await expect(canvas).toHaveAttribute('aria-label', /\S/)
-    await expect(canvas).toHaveAttribute('aria-describedby', /\S/)
-    await expect(canvas).toHaveAttribute('tabindex', '0')
-    const descriptionId = await canvas.getAttribute('aria-describedby')
-    if (!descriptionId) throw new Error(`canvas sem descrição acessível: ${contract.key}`)
-    await expect(preview.locator(`#${descriptionId}`)).toContainText(
-      /setas|espaço|enter|arraste|segurando|mouse|dedo|toque|↑|←/i,
-    )
+    await expect
+      .poll(async () => {
+        try {
+          return await canvas.evaluate((element) => {
+            const descriptionId = element.getAttribute('aria-describedby') ?? ''
+            return {
+              label: element.getAttribute('aria-label') ?? '',
+              descriptionId,
+              tabIndex: element.getAttribute('tabindex') ?? '',
+              description: document.getElementById(descriptionId)?.textContent ?? '',
+            }
+          })
+        } catch {
+          return { label: '', descriptionId: '', tabIndex: '', description: '' }
+        }
+      })
+      .toEqual({
+        label: expect.stringMatching(/\S/),
+        descriptionId: expect.stringMatching(/\S/),
+        tabIndex: '0',
+        description: expect.stringMatching(
+          /setas|espaço|enter|arraste|segurando|mouse|dedo|toque|↑|←/i,
+        ),
+      })
   }
   await focusPreview(page, preview)
   for (const interaction of contract.interactions) {
@@ -685,6 +705,7 @@ test('game-2d-advanced: Vila do Dragão — fluxo visual completo no Chromium', 
 const NARROW_FAMILY_SAMPLES = [
   'game-2d:Herói que anda',
   'game-2d-advanced:Reino Aberto',
+  'game-3d:Desvie dos blocos',
   'game-3d:Torre maluca',
   'game-3d-advanced:Tiro ao Alvo',
   'world-3d:Fazendinha',

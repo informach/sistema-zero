@@ -351,7 +351,7 @@ export const EXAMPLE_QA_CONTRACTS = [
     name: 'Desvie dos blocos',
     experience: 'game',
     promise: 'Correr e pular de blocos que aceleram.',
-    scenario: 'Mover, pular, sobreviver, colidir e reiniciar.',
+    scenario: 'Mover, pular, sobreviver e colidir para encerrar a partida.',
     interactions: ['wasd', 'space'],
   },
   {

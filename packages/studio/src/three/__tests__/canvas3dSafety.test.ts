@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { parse } from '@babel/parser'
 import { generateJS } from '../../generators/js'
+import { isLifecycleRootAllowed, validateLifecycleSemantics } from '../../ir/lifecycle'
 import { type JSStatement, SZIRSchema } from '../../ir/schema'
 import { parseJS } from '../../parsers/js'
 
@@ -8,6 +9,22 @@ const n = (value: number) => ({ type: 'num' as const, value })
 const color = (value: string) => ({ type: 'color' as const, value })
 
 describe('Canvas 3D — limites, lifecycle e carregamento', () => {
+  it('restringe água, grama e passo da física a contextos contínuos', () => {
+    const statements: JSStatement[] = [
+      { type: 'waterTime', water: 'agua', dt: n(1 / 60) },
+      { type: 'grassTime', grass: 'grama', dt: n(1 / 60) },
+      { type: 'physicsLiteStep', world: 'fisica', dt: n(1 / 60) },
+    ]
+
+    for (const statement of statements) {
+      expect(isLifecycleRootAllowed(statement, 'start'), statement.type).toBe(false)
+      expect(
+        validateLifecycleSemantics(statement, ['behavior', 'start', 0]),
+        statement.type,
+      ).not.toEqual([])
+    }
+  })
+
   it('limita densidade, tesselação, DPR e tamanho da cidade no código executável', () => {
     const statements: JSStatement[] = [
       {

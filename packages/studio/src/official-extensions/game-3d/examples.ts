@@ -1,4 +1,34 @@
 import type { ExtensionExample } from '#extensions'
+import type { CSSRule } from '#ir'
+
+function centeredCanvasLayout(background: string): CSSRule[] {
+  return [
+    {
+      selector: 'body',
+      declarations: {
+        background,
+        display: 'flex',
+        'align-items': 'center',
+        'justify-content': 'center',
+        'box-sizing': 'border-box',
+        'min-height': '100vh',
+        padding: '12px',
+        margin: '0',
+        overflow: 'hidden',
+      },
+    },
+    {
+      selector: 'canvas',
+      declarations: {
+        display: 'block',
+        width: 'min(480px, calc(100vw - 24px))',
+        height: 'auto',
+        'max-height': 'calc(100vh - 24px)',
+        'object-fit': 'contain',
+      },
+    },
+  ]
+}
 
 /**
  * Exemplo bundlado: "Cubo girando". Cria uma cena 3D, um cubo e gira-o a cada
@@ -64,19 +94,7 @@ export const shapesExample: ExtensionExample = {
     'Um boneco montado com esferas, cone e cilindro (um modelo) sobre o chão, girando — mostra formas, materiais e montar modelo.',
   ir: {
     html: [{ type: 'canvas', id: 'tela', width: 480, height: 360 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#1e293b',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-    ],
+    css: centeredCanvasLayout('#1e293b'),
     version: 2,
     behavior: {
       start: [
@@ -208,19 +226,7 @@ export const nightExample: ExtensionExample = {
     'Cena à noite: céu degradê, neblina, sombras e uma luz pontual (tocha) sobre um cubo girando — mostra luz & céu.',
   ir: {
     html: [{ type: 'canvas', id: 'tela', width: 480, height: 360 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#05070f',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-    ],
+    css: centeredCanvasLayout('#05070f'),
     version: 2,
     behavior: {
       start: [
@@ -293,19 +299,7 @@ export const swarmExample: ExtensionExample = {
     'Um molde escondido vira 5 cópias num enxame, e o "para cada" gira todas juntas — mostra criar enxame, soltar cópias e repetir para cada uma.',
   ir: {
     html: [{ type: 'canvas', id: 'tela', width: 480, height: 360 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#0b1020',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-    ],
+    css: centeredCanvasLayout('#0b1020'),
     version: 2,
     behavior: {
       start: [
@@ -374,19 +368,7 @@ export const dodgeExample: ExtensionExample = {
     'Cubo que anda (WASD), pula e desvia de blocos que avançam acelerando. Encostar em um = fim de jogo.',
   ir: {
     html: [{ type: 'canvas', id: 'tela', width: 480, height: 360 }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          background: '#0c4a6e',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          margin: '0',
-        },
-      },
-    ],
+    css: centeredCanvasLayout('#0c4a6e'),
     version: 2,
     behavior: {
       start: [

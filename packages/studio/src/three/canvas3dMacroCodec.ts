@@ -34,6 +34,39 @@ export interface Canvas3DPreparedSource {
   macros: Map<string, JSStatement>
 }
 
+export interface Canvas3DInternalCodeRange {
+  startLine: number
+  endLine: number
+  kind: 'metadata' | 'runtime'
+}
+
+/**
+ * Faixas 1-based que a Ponte pode recolher sem esconder o código didático das
+ * receitas. Marcadores ocupam uma linha; somente o kernel físico inteiro é
+ * infraestrutura gerada.
+ */
+export function canvas3DInternalCodeRanges(source: string): Canvas3DInternalCodeRange[] {
+  const lines = source.split(/\r?\n/)
+  const ranges: Canvas3DInternalCodeRange[] = []
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = (lines[index] ?? '').trim()
+    if (line.startsWith(RUNTIME_PREFIX)) {
+      const end = lines.findIndex(
+        (candidate, candidateIndex) => candidateIndex >= index && candidate.trim() === RUNTIME_END,
+      )
+      if (end >= index) {
+        ranges.push({ startLine: index + 1, endLine: end + 1, kind: 'runtime' })
+        index = end
+        continue
+      }
+    }
+    if (line.startsWith(MACRO_PREFIX) || line === MACRO_END) {
+      ranges.push({ startLine: index + 1, endLine: index + 1, kind: 'metadata' })
+    }
+  }
+  return ranges
+}
+
 /**
  * Substitui somente marcadores íntegros por chamadas-placeholder reconhecidas
  * pelo parser. Marcadores podem estar aninhados (ex.: macro dentro de evento de

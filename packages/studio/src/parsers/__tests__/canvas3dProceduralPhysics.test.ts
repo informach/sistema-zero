@@ -131,7 +131,10 @@ const statements: JSStatement[] = [
   },
   { type: 'physicsLiteMove', world: 'fisica', id: 'jogador', x: n(0), z: n(-1), speed: n(6) },
   { type: 'physicsLiteJump', world: 'fisica', id: 'jogador', speed: n(7) },
-  { type: 'physicsLiteStep', world: 'fisica', dt: n(1 / 60) },
+  {
+    type: 'animationLoop',
+    body: [{ type: 'physicsLiteStep', world: 'fisica', dt: n(1 / 60) }],
+  },
   { type: 'physicsLiteVelocity', world: 'fisica', id: 'jogador', x: n(1), y: n(0), z: n(0) },
   { type: 'physicsLiteImpulse', world: 'fisica', id: 'jogador', x: n(0), y: n(4), z: n(0) },
   { type: 'physicsLiteTeleport', world: 'fisica', id: 'jogador', x: n(0), y: n(2), z: n(0) },
@@ -218,11 +221,13 @@ describe('Canvas 3D — mundo procedural e física própria', () => {
           statements.filter(
             (statement) =>
               statement.type !== 'physicsLiteCollisionEvent' &&
-              statement.type !== 'physicsLiteTriggerEvent',
+              statement.type !== 'physicsLiteTriggerEvent' &&
+              statement.type !== 'animationLoop',
           ),
         ),
         'physicsLiteCollisionEvent',
         'physicsLiteTriggerEvent',
+        'animationLoop',
       ])
     } finally {
       workspace.dispose()

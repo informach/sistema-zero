@@ -41,6 +41,7 @@ const KEYBOARD_IR_TYPES = new Set([
   'g3k:keyDown',
   'g3k:keyPressed',
   'g3k:moveWithKeys',
+  'g3k:moveFps',
   'g3k:setPauseKey',
   'g3k:platformerKeys',
   'w3d:keyDown',

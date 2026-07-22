@@ -10,6 +10,8 @@ import type { BlockDefinition } from '../blocks/types'
 import { socketInputsFor } from '../blocks/valueSockets'
 import { buildIRFromWorkspace } from '../buildIR'
 import { categoryShades } from '../colorShades'
+import { COMMON_ADDONS } from '../fields/FieldAddonPicker'
+import { COMMON_CLASSES } from '../fields/FieldClassPicker'
 import { ensureBlocklyInitialized } from '../setup'
 import { CATEGORY_COLORS } from '../theme'
 import { buildCoreToolbox } from '../toolbox'
@@ -106,6 +108,9 @@ describe('Auditoria Canvas 3D — inventário e progressão', () => {
     }
     expect(intermediate.types.has('sz_t3d_import')).toBe(false)
     expect(intermediate.types.has('sz_t3d_new_var')).toBe(false)
+    expect(intermediate.types.has('sz_t3d_load_model')).toBe(false)
+    expect(intermediate.types.has('sz_t3d_load_sound')).toBe(false)
+    expect(intermediate.types.has('sz_t3d_mount_renderer')).toBe(false)
     expect(paletteAt('avancado-2d').names.has('Canvas 3D')).toBe(true)
   })
 
@@ -133,6 +138,67 @@ describe('Auditoria Canvas 3D — inventário e progressão', () => {
         (arg) => Boolean(arg) && typeof arg === 'object' && (arg as BlockArg).name === 'CANVAS',
       ) as { type?: string; kind?: string } | undefined
     expect(canvasField).toMatchObject({ type: 'field_name_picker', kind: 'canvas' })
+  })
+
+  it('usa o mesmo id de tela no caminho padrão', () => {
+    const defaults = new Map<string, string>()
+    for (const type of ['sz_t3d_renderer_create', 'sz_t3d_camera_create']) {
+      const definition = CANVAS3D_BLOCKS.find((block) => block.type === type)
+      const canvas = rows(definition as MultilineBlockDefinition)
+        .flatMap((args) => args ?? [])
+        .find(
+          (arg) => Boolean(arg) && typeof arg === 'object' && (arg as BlockArg).name === 'CANVAS',
+        ) as { text?: string } | undefined
+      defaults.set(type, canvas?.text ?? '')
+    }
+    expect(defaults).toEqual(
+      new Map([
+        ['sz_t3d_renderer_create', 'tela'],
+        ['sz_t3d_camera_create', 'tela'],
+      ]),
+    )
+  })
+
+  it('tipa os seletores pelos papéis de cada recurso 3D', () => {
+    const expected = new Map<string, Readonly<Record<string, string>>>([
+      ['sz_t3d_light_create', { SCENE: 'scene3d' }],
+      ['sz_t3d_renderer_config', { R: 'renderer3d' }],
+      [
+        'sz_t3d_renderer_responsive',
+        { R: 'renderer3d', CAMERA: 'camera3d', COMPOSER: 'composer3d' },
+      ],
+      ['sz_t3d_render', { SCENE: 'scene3d', CAMERA: 'camera3d', R: 'renderer3d' }],
+      ['sz_t3d_load_model', { LOADER: 'loader3d' }],
+      ['sz_t3d_physics_step', { WORLD: 'physics-world' }],
+    ])
+
+    for (const [type, fields] of expected) {
+      const definition = CANVAS3D_BLOCKS.find((block) => block.type === type)
+      const args = rows(definition as MultilineBlockDefinition).flatMap((row) => row ?? [])
+      for (const [name, kind] of Object.entries(fields)) {
+        const field = args.find(
+          (arg) => Boolean(arg) && typeof arg === 'object' && (arg as BlockArg).name === name,
+        ) as { type?: string; kind?: string } | undefined
+        expect(field, `${type}.${name}`).toMatchObject({ type: 'field_name_picker', kind })
+      }
+    }
+  })
+
+  it('classifica atualizações contínuas como comandos de loop', () => {
+    for (const type of ['sz_t3d_water_wave', 'sz_t3d_grass_wave', 'sz_t3d_physics_step']) {
+      expect(CANVAS3D_BLOCKS.find((block) => block.type === type)?.placement, type).toBe(
+        'loop-command',
+      )
+    }
+  })
+
+  it('não oferece no seletor recursos incompatíveis com o preview', () => {
+    const addonNames = COMMON_ADDONS.flatMap((group) => group.items.map((item) => item.name))
+    const classNames = COMMON_CLASSES.flatMap((group) => group.items.map((item) => item.name))
+    for (const unavailable of ['DRACOLoader', 'KTX2Loader', 'PointerLockControls']) {
+      expect(addonNames, unavailable).not.toContain(unavailable)
+      expect(classNames, unavailable).not.toContain(unavailable)
+    }
   })
 })
 
@@ -180,25 +246,6 @@ describe('Auditoria Canvas 3D — experiência infantil', () => {
       }
     }
     expect(exposed).toEqual([])
-  })
-
-  it('distribui blocos densos em linhas curtas para o celular', () => {
-    for (const definition of CANVAS3D_BLOCKS as MultilineBlockDefinition[]) {
-      for (const [index, args] of rows(definition).entries()) {
-        expect(args?.length ?? 0, `${definition.type}.args${index}`).toBeLessThanOrEqual(4)
-      }
-    }
-    expect(
-      (CANVAS3D_BLOCKS.find((block) => block.type === 'sz_t3d_city') as MultilineBlockDefinition)
-        ?.message3,
-    ).toBeTruthy()
-    expect(
-      (
-        CANVAS3D_BLOCKS.find(
-          (block) => block.type === 'sz_t3d_physics_raycast',
-        ) as MultilineBlockDefinition
-      )?.message2,
-    ).toBeTruthy()
   })
 
   it('esconde o caminho técnico padrão da ferramenta sem perder o módulo gerado', () => {

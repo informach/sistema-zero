@@ -224,6 +224,55 @@ describe('SZGameKit3D — 1ª pessoa olha e anda para o MESMO lado', () => {
     const lado = norm(vel(api, e))
     expect(Math.abs(dot(frente, lado))).toBeLessThan(1e-3)
   })
+
+  it('1ª pessoa: arrastar no canvas com toque gira o olhar e o rumo', async () => {
+    const { api, step } = await kitWithHero()
+    const e = api.spawn('heroi', 0, 0, 0)
+    api.cameraFps(e, 1.4)
+    step(1)
+    press('w')
+    api.moveFps(e, 6)
+    releaseAll()
+    const antes = norm(vel(api, e))
+    const canvases = document.querySelectorAll('#szg3k-canvas')
+    const canvas = canvases[canvases.length - 1]
+    if (!canvas) throw new Error('canvas 3D não montado')
+
+    canvas.dispatchEvent(
+      new PointerEvent('pointerdown', {
+        bubbles: true,
+        clientX: 100,
+        clientY: 100,
+        pointerId: 7,
+        pointerType: 'touch',
+      }),
+    )
+    window.dispatchEvent(
+      new PointerEvent('pointermove', {
+        bubbles: true,
+        clientX: 220,
+        clientY: 100,
+        pointerId: 7,
+        pointerType: 'touch',
+      }),
+    )
+    window.dispatchEvent(
+      new PointerEvent('pointerup', {
+        bubbles: true,
+        clientX: 220,
+        clientY: 100,
+        pointerId: 7,
+        pointerType: 'touch',
+      }),
+    )
+    step(1)
+
+    press('w')
+    api.moveFps(e, 6)
+    releaseAll()
+    const depois = norm(vel(api, e))
+    expect(dot(antes, depois)).toBeLessThan(0.99)
+  })
 })
 
 describe('SZGameKit3D — o contrato entre as duas famílias', () => {

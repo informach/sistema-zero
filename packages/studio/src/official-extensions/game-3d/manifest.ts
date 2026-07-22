@@ -13,7 +13,7 @@ import {
 export const gameThreeDManifest: ExtensionManifest = {
   id: 'game-3d',
   name: 'Jogo 3D',
-  version: '0.12.1',
+  version: '0.12.2',
   description:
     'Blocos e comandos para criar jogos 3D com Three.js: cena/câmera/luz (e cena em tela cheia responsiva), cubos/esferas/caixas, posição/rotação/escala, física (velocidade, gravidade, pulo, colisão), teclado, câmera que segue, genéricos de grade isométrica e de movimento (círculo, distância, cair girando, deslizar, girar) e Kits prontos: "Desvie", "Travessia", "Corrida" e "Empilhar". Three.js carrega de um CDN fixado.',
   category: 'games',
@@ -33,8 +33,9 @@ cenas e **jogos** 3D sobre WebGL. O Three.js é carregado de um CDN **fixado**
 - Em **⚙️ Ao iniciar**, crie a cena, objetos, modelos, luzes e enxames uma vez.
 - Em **⚡ Quando acontecer**, coloque chapéus de tecla e clique.
 - Em **🔁 Enquanto estiver rodando**, coloque **A cada frame 3D** e
-  atualizações periódicas. Dentro do quadro, apenas mova, anime, aplique física
-  e teste colisões.
+  atualizações periódicas. Dentro do quadro, mova, anime, aplique física, teste
+  colisões e crie somente itens temporários que tenham poda ou remoção definida.
+- Notas e efeitos sonoros podem responder a eventos ou a condições do quadro.
 
 Comandos que representam um passo contínuo cabem no corpo desses loops ou em
 funções/métodos chamados por eles. Eles não entram diretamente em **Ao iniciar**,
@@ -54,6 +55,7 @@ em um evento ou em um construtor.
 - Cilindro, cone, plano e anel completam as primitivas; os exemplos não dependem de assets externos.
 - **Criar modelo** agrupa peças: cor, opacidade, material e visibilidade funcionam no grupo inteiro.
 - Texturas são opcionais e usam um asset escolhido no projeto; remover um objeto também libera seus recursos de GPU.
+- Remover um modelo desregistra também suas peças. Objetos que terminam uma queda deixam de ocupar o limite da cena.
 - Luz ambiente, sol, luz pontual, neblina, céu em degradê e sombras montam a atmosfera.
 
 ### Física & controles (dentro de "A cada frame 3D")
@@ -84,6 +86,7 @@ em um evento ou em um construtor.
 ### Câmera & grade 3D (genéricos. Para jogos de grade/isométrico)
 
 - **Câmera isométrica** (vista de cima em ângulo, opcionalmente seguindo um objeto).
+- Câmeras isométrica e aérea são configurações de montagem. Chamadas repetidas reutilizam a câmera, e o enquadramento acompanha o tamanho do canvas.
 - **Colocar na linha/coluna** / **Mover em grade com as setas** / **Dar um passo** (botões).
 - **Mover objetos de um grupo (esteira, dando a volta)**.
 - **encosta em algum de … (caixa real)?**. Colisão que funciona com modelos compostos.
@@ -113,13 +116,15 @@ em um evento ou em um construtor.
 ### Observações
 
 - Para começar rápido, use **Criar cena 3D em tela cheia** (cria o canvas sozinho). Para mais controle (HUD próprio, layout), crie o \`<canvas>\` no HTML primeiro e use **Criar cena 3D no canvas** (mesmo padrão do Jogo 2D).
+- O runtime torna o canvas focalizável e adiciona nome, instruções para tecnologias assistivas e contorno de foco.
 - Crie cena, objetos, modelos, luzes e enxames UMA vez em **⚙️ Ao iniciar**; dentro
-  de **A cada frame 3D** ou de uma função/método chamado pelo loop, apenas mova,
-  anime, aplique física e teste colisões. O
+  de **A cada frame 3D** ou de uma função/método chamado pelo loop, mova,
+  anime, aplique física e teste colisões. Cópias temporárias de enxame podem ser
+  criadas ali quando também forem removidas ou podadas. O
   projeto é validado antes de executar para impedir construções persistentes no loop.
 - Eixos genéricos: x = direita, y = cima, z = profundidade; distância, círculo e grade usam o chão X-Z. Os kits Travessia/Corrida mantêm sua convenção interna sem mudar os blocos genéricos. Rotação em radianos.
 - Movimento e física usam o tempo real do quadro, mantendo a velocidade em telas de 60/120/144 Hz.
-- Há limites didáticos de segurança para objetos, luzes, enxames, linhas e andares; remova ou faça a poda de itens temporários.
+- Há limites didáticos de segurança para objetos, luzes, enxames, linhas e andares; remova ou faça a poda de itens temporários. Ao reiniciar o preview, o runtime também encerra WebGL, listeners e áudio.
 - Todos os blocos desta categoria são **iniciante-3d**. A aula usa \`allowBlocks\` para revelar somente os necessários, sem retirar capacidade da extensão.
 - Comece por **"Cubo girando"**; depois avance para **"Desvie dos blocos"**, **"Atravesse a rua"**, **"Corrida maluca"** e **"Torre maluca"**.
 `,

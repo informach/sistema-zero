@@ -55,7 +55,10 @@ const water: JSStatement[] = [
     size: { type: 'num', value: 2000 },
     color: { type: 'color', value: '#0a3d5c' },
   },
-  { type: 'waterTime', water: 'agua', dt: { type: 'num', value: 1 / 60 } },
+  {
+    type: 'animationLoop',
+    body: [{ type: 'waterTime', water: 'agua', dt: { type: 'num', value: 1 / 60 } }],
+  },
 ]
 
 describe('Canvas 3D — macro Água 🌊 (bloco sz_t3d_water)', () => {

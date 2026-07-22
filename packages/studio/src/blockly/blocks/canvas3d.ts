@@ -1,3 +1,8 @@
+import {
+  CANVAS3D_CONTINUOUS_BLOCK_TYPES,
+  CANVAS3D_RESOURCE_CREATOR_BLOCK_TYPES,
+  CANVAS3D_START_ONLY_BLOCK_TYPES,
+} from '../../three/canvas3dContract'
 import { categoryShades } from '../colorShades'
 import { CATEGORY_COLORS } from '../theme'
 import type { BlockDefinition } from './types'
@@ -62,7 +67,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     message0: 'preparar tela 3D %1',
     args0: [{ type: 'field_input', name: 'RENDERER', text: 'renderizador' }],
     message1: 'usando o canvas %1',
-    args1: [{ type: 'field_name_picker', name: 'CANVAS', text: 'jogo', kind: 'canvas' }],
+    args1: [{ type: 'field_name_picker', name: 'CANVAS', text: 'tela', kind: 'canvas' }],
     inputsInline: false,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -75,7 +80,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     message0: 'criar câmera %1 para o canvas %2',
     args0: [
       { type: 'field_input', name: 'CAMERA', text: 'camera' },
-      { type: 'field_name_picker', name: 'CANVAS', text: 'jogo', kind: 'canvas' },
+      { type: 'field_name_picker', name: 'CANVAS', text: 'tela', kind: 'canvas' },
     ],
     message1: 'visão %1° · perto %2 · longe %3',
     args1: [
@@ -95,7 +100,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     message0: 'criar luz %1 na cena %2',
     args0: [
       { type: 'field_input', name: 'LIGHT', text: 'luz' },
-      { type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' },
+      { type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'scene3d' },
     ],
     message1: 'tipo %1 · cor %2 · intensidade %3',
     args1: [
@@ -169,7 +174,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'posição de %1 → x %2 y %3 z %4',
     args0: [
-      { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'variable' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'Z', check: 'JSValue' },
@@ -186,7 +191,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'rotação de %1 → x %2 y %3 z %4',
     args0: [
-      { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'variable' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'Z', check: 'JSValue' },
@@ -203,7 +208,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'girar %1 no eixo %2 em %3',
     args0: [
-      { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'variable' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
       {
         type: 'field_dropdown',
         name: 'AXIS',
@@ -227,7 +232,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'escala de %1 → x %2 y %3 z %4',
     args0: [
-      { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'variable' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'Z', check: 'JSValue' },
@@ -244,7 +249,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: '%1 olhar para → x %2 y %3 z %4',
     args0: [
-      { type: 'field_name_picker', name: 'OBJ', text: 'camera', kind: 'variable' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'camera', kind: 'camera3d' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'Z', check: 'JSValue' },
@@ -261,7 +266,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: '%1 %2',
     args0: [
-      { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'variable' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
       {
         type: 'field_dropdown',
         name: 'VAL',
@@ -286,7 +291,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     message0: 'adicionar %1 em %2',
     args0: [
       { type: 'input_value', name: 'OBJ', check: 'JSValue' },
-      { type: 'field_name_picker', name: 'TARGET', text: 'cena', kind: 'variable' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'cena', kind: 'object3d' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
@@ -315,7 +320,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'fundo da cena %1 → cor %2',
     args0: [
-      { type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' },
+      { type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'scene3d' },
       { type: 'input_value', name: 'COLOR', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -329,7 +334,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_set_fog',
     placement: 'command',
     message0: 'névoa na cena %1',
-    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'scene3d' }],
     message1: 'com a cor %1',
     args1: [{ type: 'input_value', name: 'COLOR', check: 'JSValue' }],
     message2: 'começa em %1 e termina em %2',
@@ -349,7 +354,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_lerp_position',
     placement: 'command',
     message0: 'mover %1 devagar',
-    args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'camera', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'camera', kind: 'camera3d' }],
     message1: 'até %1',
     args1: [{ type: 'input_value', name: 'TARGET', check: 'JSValue' }],
     message2: 'suavidade %1',
@@ -371,7 +376,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: '%1 %2 sombra: %3',
     args0: [
-      { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'variable' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
       {
         type: 'field_dropdown',
         name: 'KIND',
@@ -401,7 +406,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'intensidade da luz %1 → %2',
     args0: [
-      { type: 'field_name_picker', name: 'OBJ', text: 'luz', kind: 'variable' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'luz', kind: 'light3d' },
       { type: 'input_value', name: 'N', check: 'JSValue' },
     ],
     inputsInline: true,
@@ -417,7 +422,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_renderer_size',
     placement: 'command',
     message0: 'tamanho da tela 3D %1',
-    args0: [{ type: 'field_name_picker', name: 'R', text: 'renderizador', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'R', text: 'renderizador', kind: 'renderer3d' }],
     message1: 'largura %1 · altura %2',
     args1: [
       { type: 'input_value', name: 'W', check: 'JSValue' },
@@ -434,7 +439,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_enable_shadows',
     placement: 'command',
     message0: 'ligar sombras na tela 3D %1',
-    args0: [{ type: 'field_name_picker', name: 'R', text: 'renderizador', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'R', text: 'renderizador', kind: 'renderer3d' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -445,11 +450,11 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_render',
     placement: 'command',
     message0: 'desenhar a cena %1',
-    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'scene3d' }],
     message1: 'com a câmera %1',
-    args1: [{ type: 'field_name_picker', name: 'CAMERA', text: 'camera', kind: 'variable' }],
+    args1: [{ type: 'field_name_picker', name: 'CAMERA', text: 'camera', kind: 'camera3d' }],
     message2: 'na tela 3D %1',
-    args2: [{ type: 'field_name_picker', name: 'R', text: 'renderizador', kind: 'variable' }],
+    args2: [{ type: 'field_name_picker', name: 'R', text: 'renderizador', kind: 'renderer3d' }],
     inputsInline: false,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -461,7 +466,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_mount_renderer',
     placement: 'command',
     message0: 'mostrar a tela 3D %1 na página',
-    args0: [{ type: 'field_name_picker', name: 'R', text: 'renderizador', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'R', text: 'renderizador', kind: 'renderer3d' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -474,11 +479,11 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_set_matrix_at',
     placement: 'command',
     message0: 'gravar a pose do molde %1',
-    args0: [{ type: 'field_name_picker', name: 'DUMMY', text: 'molde', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'DUMMY', text: 'molde', kind: 'object3d' }],
     message1: 'na cópia %1 de %2',
     args1: [
       { type: 'input_value', name: 'I', check: 'JSValue' },
-      { type: 'field_name_picker', name: 'MESH', text: 'copias', kind: 'variable' },
+      { type: 'field_name_picker', name: 'MESH', text: 'copias', kind: 'object3d' },
     ],
     inputsInline: false,
     previousStatement: 'JSStmt',
@@ -492,7 +497,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_instances_dirty',
     placement: 'command',
     message0: 'avisar que as cópias de %1 mudaram',
-    args0: [{ type: 'field_name_picker', name: 'MESH', text: 'copias', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'MESH', text: 'copias', kind: 'object3d' }],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -518,7 +523,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
       },
     ],
     message1: 'usando %1',
-    args1: [{ type: 'field_name_picker', name: 'LOADER', text: 'carregador', kind: 'variable' }],
+    args1: [{ type: 'field_name_picker', name: 'LOADER', text: 'carregador', kind: 'loader3d' }],
     message2: 'deu certo: %1 %2',
     args2: [
       { type: 'field_input', name: 'PARAM', text: 'modelo' },
@@ -547,7 +552,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     message0: 'carregar som %1',
     args0: [{ type: 'field_asset_picker', name: 'URL', text: 'som', kind: 'audio' }],
     message1: 'usando %1',
-    args1: [{ type: 'field_name_picker', name: 'LOADER', text: 'carregadorSom', kind: 'variable' }],
+    args1: [{ type: 'field_name_picker', name: 'LOADER', text: 'carregadorSom', kind: 'loader3d' }],
     message2: 'deu certo: %1 %2',
     args2: [
       { type: 'field_input', name: 'PARAM', text: 'buffer' },
@@ -591,7 +596,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'melhorar a imagem',
     message1: 'na tela 3D %1',
-    args1: [{ type: 'field_name_picker', name: 'R', text: 'renderizador', kind: 'variable' }],
+    args1: [{ type: 'field_name_picker', name: 'R', text: 'renderizador', kind: 'renderer3d' }],
     message2: 'nitidez %1 · sombras %2',
     args2: [
       {
@@ -642,11 +647,11 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_renderer_responsive',
     placement: 'resource-creator',
     message0: 'adaptar tela 3D %1',
-    args0: [{ type: 'field_name_picker', name: 'R', text: 'renderizador', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'R', text: 'renderizador', kind: 'renderer3d' }],
     message1: 'com câmera %1',
-    args1: [{ type: 'field_name_picker', name: 'CAMERA', text: 'camera', kind: 'variable' }],
+    args1: [{ type: 'field_name_picker', name: 'CAMERA', text: 'camera', kind: 'camera3d' }],
     message2: 'efeitos opcionais %1',
-    args2: [{ type: 'field_input', name: 'COMPOSER', text: '' }],
+    args2: [{ type: 'field_name_picker', name: 'COMPOSER', text: '', kind: 'composer3d' }],
     message3: 'guardar limpeza em %1',
     args3: [{ type: 'field_input', name: 'CLEANUP', text: 'pararResponsivo' }],
     inputsInline: false,
@@ -670,7 +675,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
       },
     ],
     message1: 'na cena %1',
-    args1: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' }],
+    args1: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'scene3d' }],
     message2: 'usar também como fundo %1',
     args2: [
       {
@@ -694,7 +699,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_dispose_object',
     placement: 'command',
     message0: 'remover e liberar objeto 3D %1',
-    args0: [{ type: 'field_name_picker', name: 'OBJECT', text: 'objeto', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'OBJECT', text: 'objeto', kind: 'object3d' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -708,11 +713,11 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_bloom_setup',
     placement: 'resource-creator',
     message0: 'ligar Brilho ✨ na tela 3D %1',
-    args0: [{ type: 'field_name_picker', name: 'R', text: 'renderizador', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'R', text: 'renderizador', kind: 'renderer3d' }],
     message1: 'da cena %1 com a câmera %2',
     args1: [
-      { type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' },
-      { type: 'field_name_picker', name: 'CAMERA', text: 'camera', kind: 'variable' },
+      { type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'scene3d' },
+      { type: 'field_name_picker', name: 'CAMERA', text: 'camera', kind: 'camera3d' },
     ],
     message2: 'força %1 · espalhar %2 · brilho mínimo %3 · guardar em %4',
     args2: [
@@ -734,7 +739,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_render_effects',
     placement: 'command',
     message0: 'desenhar a cena com efeitos %1',
-    args0: [{ type: 'field_name_picker', name: 'COMPOSER', text: 'composer', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'COMPOSER', text: 'composer', kind: 'composer3d' }],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -747,7 +752,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_particles',
     placement: 'resource-creator',
     message0: 'criar partículas ✨ na cena %1',
-    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'scene3d' }],
     message1: 'quantidade %1 · tamanho %2',
     args1: [
       { type: 'input_value', name: 'COUNT', check: 'JSValue' },
@@ -772,7 +777,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_water',
     placement: 'resource-creator',
     message0: 'criar água 🌊 na cena %1',
-    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'scene3d' }],
     message1: 'tamanho %1 · cor %2 · guardar em %3',
     args1: [
       { type: 'input_value', name: 'SIZE', check: 'JSValue' },
@@ -788,9 +793,9 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_t3d_water_wave',
-    placement: 'command',
+    placement: 'loop-command',
     message0: 'fazer a água %1 ondular',
-    args0: [{ type: 'field_name_picker', name: 'WATER', text: 'agua', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'WATER', text: 'agua', kind: 'object3d' }],
     message1: 'tempo do quadro %1',
     args1: [{ type: 'input_value', name: 'DT', check: 'JSValue' }],
     inputsInline: false,
@@ -806,7 +811,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_grass',
     placement: 'resource-creator',
     message0: 'criar grama 🌿 na cena %1',
-    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'scene3d' }],
     message1: 'folhas %1 · altura %2',
     args1: [
       { type: 'input_value', name: 'COUNT', check: 'JSValue' },
@@ -832,7 +837,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_sign',
     placement: 'resource-creator',
     message0: 'criar letreiro 🪧 na cena %1',
-    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'scene3d' }],
     message1: 'texto %1 · largura %2',
     args1: [
       { type: 'field_input', name: 'TEXT', text: 'Oi!' },
@@ -852,9 +857,9 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_t3d_grass_wave',
-    placement: 'command',
+    placement: 'loop-command',
     message0: 'fazer a grama %1 balançar',
-    args0: [{ type: 'field_name_picker', name: 'GRASS', text: 'grama', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'GRASS', text: 'grama', kind: 'object3d' }],
     message1: 'tempo do quadro %1',
     args1: [{ type: 'input_value', name: 'DT', check: 'JSValue' }],
     inputsInline: false,
@@ -882,7 +887,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
           ['cápsula', 'capsule'],
         ],
       },
-      { type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' },
+      { type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'scene3d' },
     ],
     message1: 'tamanho x %1 y %2 z %3',
     args1: [
@@ -906,7 +911,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_terrain',
     placement: 'resource-creator',
     message0: 'criar terreno automático na cena %1',
-    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'scene3d' }],
     message1: 'tamanho %1 · divisões %2 · morros %3 · suavidade %4',
     args1: [
       { type: 'input_value', name: 'SIZE', check: 'JSValue' },
@@ -931,7 +936,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_road',
     placement: 'resource-creator',
     message0: 'construir estrada na cena %1',
-    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'scene3d' }],
     message1: 'começar em x %1 z %2 · terminar em x %3 z %4',
     args1: [
       { type: 'input_value', name: 'X1', check: 'JSValue' },
@@ -962,7 +967,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     placement: 'resource-creator',
     message0: 'construir prédio na cena %1 em x %2 z %3',
     args0: [
-      { type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' },
+      { type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'scene3d' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Z', check: 'JSValue' },
     ],
@@ -990,7 +995,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_city',
     placement: 'resource-creator',
     message0: 'criar cidade automática na cena %1',
-    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'scene3d' }],
     message1: 'seguindo altura %1',
     args1: [{ type: 'field_name_picker', name: 'HEIGHT_FN', text: 'alturaChao', kind: 'function' }],
     message2: 'quarteirões x %1 z %2',
@@ -1049,7 +1054,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     placement: 'resource-creator',
     message0: 'na física %1 adicionar parede %2',
     args0: [
-      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'physics-world' },
       { type: 'field_input', name: 'ID', text: 'parede' },
     ],
     message1: 'posição x %1 y %2 z %3',
@@ -1075,8 +1080,8 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     placement: 'resource-creator',
     message0: 'na física %1 tornar %2 o corpo %3',
     args0: [
-      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
-      { type: 'field_name_picker', name: 'OBJECT', text: 'objeto', kind: 'variable' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'physics-world' },
+      { type: 'field_name_picker', name: 'OBJECT', text: 'objeto', kind: 'object3d' },
       { type: 'field_input', name: 'ID', text: 'jogador' },
     ],
     message1: 'tipo %1 · tamanho x %2 y %3 z %4',
@@ -1110,7 +1115,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     placement: 'resource-creator',
     message0: 'na física %1 adicionar esfera sólida %2',
     args0: [
-      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'physics-world' },
       { type: 'field_input', name: 'ID', text: 'rocha' },
     ],
     message1: 'posição x %1 y %2 z %3',
@@ -1132,12 +1137,12 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     placement: 'resource-creator',
     message0: 'na física %1 %2',
     args0: [
-      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'physics-world' },
       { type: 'input_end_row' },
     ],
     message1: 'deixar %1 sólido %2',
     args1: [
-      { type: 'field_name_picker', name: 'OBJECT', text: 'predio', kind: 'variable' },
+      { type: 'field_name_picker', name: 'OBJECT', text: 'predio', kind: 'object3d' },
       { type: 'input_end_row' },
     ],
     message2: 'com nome %1',
@@ -1154,12 +1159,12 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     placement: 'resource-creator',
     message0: 'na física %1 %2',
     args0: [
-      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'physics-world' },
       { type: 'input_end_row' },
     ],
     message1: 'tornar cidade %1 sólida %2',
     args1: [
-      { type: 'field_name_picker', name: 'CITY', text: 'cidade', kind: 'variable' },
+      { type: 'field_name_picker', name: 'CITY', text: 'cidade', kind: 'object3d' },
       { type: 'input_end_row' },
     ],
     message2: 'com prefixo %1',
@@ -1176,7 +1181,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     message0: 'mover personagem %1 na física %2',
     args0: [
       { type: 'field_name_picker', name: 'ID', text: 'jogador', kind: 'physics-body' },
-      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'physics-world' },
     ],
     message1: 'direção x %1 z %2 · velocidade %3',
     args1: [
@@ -1197,7 +1202,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     message0: 'personagem %1 pular',
     args0: [{ type: 'field_name_picker', name: 'ID', text: 'jogador', kind: 'physics-body' }],
     message1: 'na física %1',
-    args1: [{ type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' }],
+    args1: [{ type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'physics-world' }],
     message2: 'com força %1',
     args2: [{ type: 'input_value', name: 'SPEED', check: 'JSValue' }],
     inputsInline: false,
@@ -1211,7 +1216,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     placement: 'resource-creator',
     message0: 'na física %1 criar área %2',
     args0: [
-      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'physics-world' },
       { type: 'field_input', name: 'ID', text: 'praca' },
     ],
     message1: 'posição x %1 y %2 z %3',
@@ -1234,9 +1239,9 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_t3d_physics_step',
-    placement: 'command',
+    placement: 'loop-command',
     message0: 'atualizar física %1',
-    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'physics-world' }],
     message1: 'tempo do quadro %1',
     args1: [{ type: 'input_value', name: 'DT', check: 'JSValue' }],
     inputsInline: false,
@@ -1251,7 +1256,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     message0: 'definir velocidade de %1 na física %2',
     args0: [
       { type: 'field_name_picker', name: 'ID', text: 'caixa', kind: 'physics-body' },
-      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'physics-world' },
     ],
     message1: 'velocidade x %1 y %2 z %3',
     args1: [
@@ -1271,7 +1276,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     message0: 'dar impulso em %1 na física %2',
     args0: [
       { type: 'field_name_picker', name: 'ID', text: 'caixa', kind: 'physics-body' },
-      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'physics-world' },
     ],
     message1: 'força x %1 y %2 z %3',
     args1: [
@@ -1291,7 +1296,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     message0: 'teleportar %1 na física %2',
     args0: [
       { type: 'field_name_picker', name: 'ID', text: 'jogador', kind: 'physics-body' },
-      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'physics-world' },
     ],
     message1: 'destino x %1 y %2 z %3',
     args1: [
@@ -1311,7 +1316,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     message0: 'remover %1 da física %2',
     args0: [
       { type: 'field_name_picker', name: 'ID', text: 'objeto', kind: 'physics-resource' },
-      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'physics-world' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
@@ -1322,7 +1327,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_physics_clear',
     placement: 'command',
     message0: 'limpar física %1',
-    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'physics-world' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -1332,7 +1337,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_physics_on_collision',
     placement: 'event',
     message0: 'quando houver colisão na física %1',
-    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'physics-world' }],
     message1: 'corpo em %1',
     args1: [{ type: 'field_input', name: 'BODY_PARAM', text: 'corpoId' }],
     message2: 'obstáculo em %1',
@@ -1349,7 +1354,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_physics_on_trigger',
     placement: 'event',
     message0: 'quando uma área mudar na física %1',
-    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'physics-world' }],
     message1: 'corpo %1 · área %2',
     args1: [
       { type: 'field_input', name: 'BODY_PARAM', text: 'corpoId' },
@@ -1369,7 +1374,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_physics_raycast',
     placement: 'command',
     message0: 'ver o que está à frente na física %1',
-    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'physics-world' }],
     message1: 'começar em x %1 y %2 z %3',
     args1: [
       { type: 'input_value', name: 'OX', check: 'JSValue' },
@@ -1403,7 +1408,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     ],
     message1: 'da física %1 %2',
     args1: [
-      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'physics-world' },
       { type: 'input_end_row' },
     ],
     message2: 'guardar em %1',
@@ -1418,7 +1423,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_physics_stats',
     placement: 'command',
     message0: 'ler estatísticas da física %1',
-    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' }],
+    args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'physics-world' }],
     message1: 'guardar em %1',
     args1: [{ type: 'field_input', name: 'RESULT', text: 'estadoFisica' }],
     inputsInline: false,
@@ -1552,4 +1557,15 @@ const COLOUR_BY_TYPE = new Map<string, string>(
 for (const block of CANVAS3D_BLOCKS) {
   const colour = COLOUR_BY_TYPE.get(block.type)
   if (colour) block.colour = colour
+}
+
+// O contrato central vence as anotações locais: nível, toolbox e lifecycle
+// passam a ler a mesma classificação quando um bloco novo é acrescentado.
+const START_ONLY_TYPES = new Set<string>(CANVAS3D_START_ONLY_BLOCK_TYPES)
+const RESOURCE_CREATOR_TYPES = new Set<string>(CANVAS3D_RESOURCE_CREATOR_BLOCK_TYPES)
+const CONTINUOUS_TYPES = new Set<string>(CANVAS3D_CONTINUOUS_BLOCK_TYPES)
+for (const block of CANVAS3D_BLOCKS) {
+  if (START_ONLY_TYPES.has(block.type)) block.placement = 'start-declaration'
+  else if (RESOURCE_CREATOR_TYPES.has(block.type)) block.placement = 'resource-creator'
+  else if (CONTINUOUS_TYPES.has(block.type)) block.placement = 'loop-command'
 }

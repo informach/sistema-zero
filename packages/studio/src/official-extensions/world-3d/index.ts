@@ -1,5 +1,6 @@
 import type { ExtensionDefinition } from '#extensions'
 import { validateManifest, WORLD_3D_LIFECYCLE } from '#extensions'
+import { THREE_CDN } from '../../three/threeRuntimeContract'
 import { fullscreenConflictsFor } from '../fullscreenConflicts'
 import { world3DPromptContext } from './ai'
 import { world3DBlocks, world3DToolboxCategory } from './blocks'
@@ -12,7 +13,6 @@ validateManifest(world3DManifest)
 /** Versão fixada do Three.js (CDN ESM) — a MESMA do game-3d/game-3d-advanced e
  * do Canvas 3D do núcleo (coreImports.THREE_CDN), para o importmap colapsar
  * numa entrada só se coexistirem no mesmo projeto. */
-const THREE_CDN = 'https://esm.sh/three@0.180.0'
 /**
  * Loader de modelo (GLB) para o "Espalhar/Pôr o modelo". `?external=three` faz
  * o addon importar `three` BARE, resolvido pelo NOSSO importmap (medido no spike

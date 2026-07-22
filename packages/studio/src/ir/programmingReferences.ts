@@ -1,3 +1,9 @@
+import {
+  CANVAS3D_SEMANTIC_DECLARATION_FIELDS,
+  CANVAS3D_SEMANTIC_REFERENCE_FIELDS,
+  type Canvas3DSymbolKind,
+  canvas3DSymbolKindsForClass,
+} from '../three/canvas3dContract'
 import { isProgrammingStatementBodyKey, programmingChildBodyEntries } from './programmingExecution'
 import {
   PROGRAMMING_REFERENCE_FIELDS,
@@ -143,6 +149,8 @@ interface ClassDefinition {
 interface ProgrammingSymbols {
   variables: Set<string>
   canvasContexts: Set<string>
+  canvasIds: Set<string>
+  canvas3d: Record<Canvas3DSymbolKind, Set<string>>
   classes: Set<string>
   functions: Set<string>
   functionDefinitions: Map<string, FunctionDefinition>
@@ -156,6 +164,8 @@ function cloneSymbols(symbols: ProgrammingSymbols): ProgrammingSymbols {
   return {
     variables: new Set(symbols.variables),
     canvasContexts: new Set(symbols.canvasContexts),
+    canvasIds: new Set(symbols.canvasIds),
+    canvas3d: cloneCanvas3DSymbols(symbols.canvas3d),
     classes: new Set(symbols.classes),
     functions: new Set(symbols.functions),
     functionDefinitions: new Map(symbols.functionDefinitions),
@@ -178,6 +188,10 @@ function mergeFutureSymbols(
   const merged = cloneSymbols(current)
   for (const name of future.variables) merged.variables.add(name)
   for (const name of future.canvasContexts) merged.canvasContexts.add(name)
+  for (const name of future.canvasIds) merged.canvasIds.add(name)
+  for (const kind of CANVAS3D_SYMBOL_KINDS) {
+    for (const name of future.canvas3d[kind]) merged.canvas3d[kind].add(name)
+  }
   for (const name of future.classes) merged.classes.add(name)
   for (const name of future.functions) merged.functions.add(name)
   future.functionDefinitions.forEach((definition, name) => {
@@ -198,6 +212,39 @@ function addName(target: Set<string>, value: unknown): void {
   if (typeof value !== 'string') return
   const name = value.trim()
   if (name) target.add(name)
+}
+
+const CANVAS3D_SYMBOL_KINDS: readonly Canvas3DSymbolKind[] = [
+  'scene3d',
+  'renderer3d',
+  'camera3d',
+  'light3d',
+  'composer3d',
+  'object3d',
+  'loader3d',
+  'physics-world',
+]
+
+function emptyCanvas3DSymbols(): Record<Canvas3DSymbolKind, Set<string>> {
+  return Object.fromEntries(
+    CANVAS3D_SYMBOL_KINDS.map((kind) => [kind, new Set<string>()]),
+  ) as Record<Canvas3DSymbolKind, Set<string>>
+}
+
+function cloneCanvas3DSymbols(
+  symbols: Readonly<Record<Canvas3DSymbolKind, ReadonlySet<string>>>,
+): Record<Canvas3DSymbolKind, Set<string>> {
+  return Object.fromEntries(
+    CANVAS3D_SYMBOL_KINDS.map((kind) => [kind, new Set(symbols[kind])]),
+  ) as Record<Canvas3DSymbolKind, Set<string>>
+}
+
+function addCanvas3DSymbols(
+  symbols: ProgrammingSymbols,
+  value: unknown,
+  kinds: readonly Canvas3DSymbolKind[],
+): void {
+  for (const kind of kinds) addName(symbols.canvas3d[kind], value)
 }
 
 function missingIssue(
@@ -296,6 +343,50 @@ function validateCanvasContext(
   }
 }
 
+const CANVAS3D_REFERENCE_LABELS: Readonly<Record<Canvas3DSymbolKind, string>> = {
+  scene3d: 'cena 3D',
+  renderer3d: 'renderizador 3D',
+  camera3d: 'câmera 3D',
+  light3d: 'luz 3D',
+  composer3d: 'compositor de efeitos',
+  object3d: 'objeto 3D',
+  loader3d: 'carregador 3D',
+  'physics-world': 'mundo físico',
+}
+
+function validateCanvas3DReferences(
+  type: string,
+  record: Record<string, unknown>,
+  symbols: ProgrammingSymbols,
+  path: (string | number)[],
+  issues: ProgrammingReferenceIssue[],
+): void {
+  for (const reference of CANVAS3D_SEMANTIC_REFERENCE_FIELDS[type] ?? []) {
+    const value = record[reference.field]
+    if (typeof value !== 'string' || !value.trim()) continue
+    const name = value.trim()
+    let available: ReadonlySet<string>
+    let label: string
+    if (reference.kind === 'canvas') {
+      available = symbols.canvasIds
+      label = 'tela Canvas'
+    } else if (reference.kind === 'function') {
+      available = symbols.functions
+      label = 'função'
+      if (IMPLICIT_FUNCTIONS.has(name)) continue
+    } else {
+      available = symbols.canvas3d[reference.kind]
+      label = CANVAS3D_REFERENCE_LABELS[reference.kind]
+    }
+    if (!available.has(name)) {
+      issues.push({
+        path: [...path, reference.field],
+        message: `O recurso “${name}” não está disponível como ${label} neste ponto`,
+      })
+    }
+  }
+}
+
 function validateValue(
   value: unknown,
   symbols: ProgrammingSymbols,
@@ -312,6 +403,8 @@ function validateValue(
   if (typeof value !== 'object' || value === null) return
   const record = value as Record<string, unknown>
   const type = typeof record.type === 'string' ? record.type : ''
+
+  validateCanvas3DReferences(type, record, symbols, path, issues)
 
   if (type.startsWith('canvas') && type !== 'canvasSetup') {
     validateCanvasContext(record.ctxVar, symbols, [...path, 'ctxVar'], issues)
@@ -591,6 +684,20 @@ function addStatementDeclarations(statement: JSStatement, symbols: ProgrammingSy
     })
   }
 
+  for (const declaration of CANVAS3D_SEMANTIC_DECLARATION_FIELDS[statement.type] ?? []) {
+    addCanvas3DSymbols(symbols, record[declaration.field], declaration.kinds)
+  }
+
+  if (statement.type === 'newInstance') {
+    addCanvas3DSymbols(
+      symbols,
+      statement.varName,
+      canvas3DSymbolKindsForClass(
+        statement.namespace ? `${statement.namespace}.${statement.className}` : statement.className,
+      ),
+    )
+  }
+
   const declaredName = field && typeof record[field] === 'string' ? record[field].trim() : ''
   const value = record.value
   if (statement.type === 'newInstance' && !statement.namespace?.trim()) {
@@ -604,6 +711,9 @@ function addStatementDeclarations(statement: JSStatement, symbols: ProgrammingSy
     hasText((value as Record<string, unknown>).className)
   ) {
     symbols.instances.set(declaredName, String((value as Record<string, unknown>).className).trim())
+    const expression = value as Record<string, unknown>
+    const className = `${hasText(expression.namespace) ? `${expression.namespace}.` : ''}${String(expression.className)}`
+    addCanvas3DSymbols(symbols, declaredName, canvas3DSymbolKindsForClass(className))
   }
 }
 
@@ -767,14 +877,21 @@ function validateStatements(
   })
 }
 
+export interface ProgrammingReferenceOptions {
+  canvasIds?: Iterable<string>
+}
+
 export function validateProgrammingReferences(
   statements: JSStatement[],
   path: (string | number)[] = ['js'],
+  options: ProgrammingReferenceOptions = {},
 ): ProgrammingReferenceIssue[] {
   const issues: ProgrammingReferenceIssue[] = []
   const initialSymbols: ProgrammingSymbols = {
     variables: new Set(IMPLICIT_VARIABLES),
     canvasContexts: new Set(),
+    canvasIds: new Set(options.canvasIds ?? []),
+    canvas3d: emptyCanvas3DSymbols(),
     classes: new Set(IMPLICIT_CLASSES),
     functions: new Set(IMPLICIT_FUNCTIONS),
     functionDefinitions: new Map(),

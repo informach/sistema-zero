@@ -1,4 +1,6 @@
 import { CONTINUOUS_EXTENSION_STATEMENT_TYPES } from '../official-extensions/continuousCommandContract'
+import { CANVAS3D_CONTINUOUS_STATEMENT_TYPES } from '../three/canvas3dContract'
+import { GAME3D_START_ONLY_STATEMENT_TYPES } from '../three/game3dContract'
 import { resolveEventTargetKind } from './eventTargets'
 import {
   type ProgrammingBodyExecution,
@@ -105,38 +107,7 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'gk:playersSetup',
   'gk:tdSlot',
 
-  'g3d:createScene',
-  'g3d:createFullscreenScene',
-  'g3d:createBox',
-  'g3d:createSphere',
-  'g3d:createBlock',
-  'g3d:createGroup',
-  'g3d:createCrossingScene',
-  'g3d:createCrosser',
-  'g3d:addRow',
-  'g3d:generateRows',
-  'g3d:createRaceScene',
-  'g3d:createRaceTrack',
-  'g3d:createRaceCar',
-  'g3d:createStackScene',
-  'g3d:createStackTower',
-  'g3d:body',
-  'g3d:setSolid',
-  'g3d:createCylinder',
-  'g3d:createCone',
-  'g3d:createPlane',
-  'g3d:createTorus',
-  'g3d:createModel',
-  'g3d:addToModel',
-  'g3d:setMaterial',
-  'g3d:setTexture',
-  'g3d:addAmbientLight',
-  'g3d:addSunLight',
-  'g3d:addPointLight',
-  'g3d:setFog',
-  'g3d:setSky',
-  'g3d:setShadows',
-  'g3d:createSwarm',
+  ...GAME3D_START_ONLY_STATEMENT_TYPES,
 
   'g3k:setup',
   'g3k:defineMold',
@@ -244,6 +215,7 @@ type SpecializedBodyContext =
   | 'menu-options'
   | 'cutscene-steps'
   | 'trainer-team'
+  | 'g3k-mold-parts'
 
 const SPECIALIZED_BODY_CONTEXTS: ReadonlyMap<string, SpecializedBodyContext> = new Map([
   ['gk:onDraw', 'draw-world'],
@@ -254,6 +226,7 @@ const SPECIALIZED_BODY_CONTEXTS: ReadonlyMap<string, SpecializedBodyContext> = n
   ['gk:rpgMenu', 'menu-options'],
   ['gk:rpgCutscene', 'cutscene-steps'],
   ['gk:pkmBattleTrainer', 'trainer-team'],
+  ['g3k:defineMold', 'g3k-mold-parts'],
 ])
 
 const CONTAINER_ONLY_STATEMENTS: ReadonlyMap<string, SpecializedBodyContext> = new Map([
@@ -262,6 +235,7 @@ const CONTAINER_ONLY_STATEMENTS: ReadonlyMap<string, SpecializedBodyContext> = n
   ['gk:rpgOption', 'menu-options'],
   ['gk:rpgWait', 'cutscene-steps'],
   ['gk:pkmTrainerCreature', 'trainer-team'],
+  ['g3k:part', 'g3k-mold-parts'],
 ])
 
 const SPECIALIZED_BODY_LABELS: Readonly<Record<SpecializedBodyContext, string>> = {
@@ -273,6 +247,7 @@ const SPECIALIZED_BODY_LABELS: Readonly<Record<SpecializedBodyContext, string>> 
   'menu-options': 'Menu de escolha',
   'cutscene-steps': 'Fazer a cena',
   'trainer-team': 'batalha contra o treinador',
+  'g3k-mold-parts': 'Criar o molde 3D',
 }
 
 const CORE_EVENT_TYPES = new Set([
@@ -283,6 +258,12 @@ const CORE_EVENT_TYPES = new Set([
   'physicsLiteCollisionEvent',
   'physicsLiteTriggerEvent',
 ])
+
+function isContinuousCommandType(type: string): boolean {
+  return (
+    CONTINUOUS_EXTENSION_STATEMENT_TYPES.has(type) || CANVAS3D_CONTINUOUS_STATEMENT_TYPES.has(type)
+  )
+}
 
 export function isLegacyLoadEvent(statement: JSStatement): boolean {
   return (
@@ -296,7 +277,7 @@ export function isEventStatement(statement: JSStatement): boolean {
   if (statement.type === 'event') return !isLegacyLoadEvent(statement)
   if (
     LOOP_ROOT_TYPES.has(statement.type) ||
-    CONTINUOUS_EXTENSION_STATEMENT_TYPES.has(statement.type) ||
+    isContinuousCommandType(statement.type) ||
     LEGACY_START_WRAPPER_TYPES.has(statement.type)
   ) {
     return false
@@ -316,10 +297,7 @@ export function isLoopRootStatement(statement: JSStatement): boolean {
 
 /** Fonte única para classificar um statement nas três áreas de comportamento. */
 export function lifecycleAreaForStatement(statement: JSStatement): LifecycleArea {
-  if (
-    LOOP_ROOT_TYPES.has(statement.type) ||
-    CONTINUOUS_EXTENSION_STATEMENT_TYPES.has(statement.type)
-  ) {
+  if (LOOP_ROOT_TYPES.has(statement.type) || isContinuousCommandType(statement.type)) {
     return 'loops'
   }
   if (isEventStatement(statement)) return 'events'
@@ -335,7 +313,7 @@ export function isLifecycleRootAllowed(statement: JSStatement, area: LifecycleAr
     LEGACY_START_WRAPPER_TYPES.has(statement.type) ||
     LEGACY_ENGINE_BOOT_TYPES.has(statement.type) ||
     isLegacyLoadEvent(statement) ||
-    CONTINUOUS_EXTENSION_STATEMENT_TYPES.has(statement.type) ||
+    isContinuousCommandType(statement.type) ||
     EVENT_BODY_ONLY_TYPES.has(statement.type) ||
     CONTAINER_ONLY_STATEMENTS.has(statement.type)
   ) {
@@ -398,7 +376,7 @@ function validateContextDependentNode(
   }
 
   if (
-    CONTINUOUS_EXTENSION_STATEMENT_TYPES.has(String(node.type)) &&
+    isContinuousCommandType(String(node.type)) &&
     !context.continuousBody &&
     (!context.functionBody || context.eventBody || context.constructorBody)
   ) {
@@ -658,6 +636,9 @@ function visitStatement(
   }
   if (context.nested && START_ONLY_STATEMENT_TYPES.has(statement.type)) {
     issue(issues, path, `“${statement.type}” só pode ser usado diretamente em Ao iniciar`)
+  }
+  if (context.directSpecializedBody === 'g3k-mold-parts' && statement.type !== 'g3k:part') {
+    issue(issues, path, 'O corpo de “Criar o molde 3D” aceita somente blocos “Peça” diretos')
   }
   validateContextDependentNode(
     statement as unknown as Record<string, unknown>,

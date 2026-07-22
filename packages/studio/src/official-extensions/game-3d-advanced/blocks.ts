@@ -95,6 +95,7 @@ export const gameKit3DBlocks = [
     type: 'sz_g3k_define_mold',
     placement: 'start-only-command',
     bodyExecution: 'sync-callback',
+    bodyContext: 'g3k-mold-parts',
     message0: 'Criar o molde 3D %1 com vida %2 e velocidade %3',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'inimigo' },
@@ -112,7 +113,12 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_part',
-    placement: 'command',
+    placement: {
+      root: [],
+      nested: ['g3k-mold-parts'],
+      directNested: true,
+      role: 'command',
+    },
     message0: 'Peça %1 %2 cor %3 de %4 × %5 × %6',
     args0: [
       {
@@ -1189,7 +1195,7 @@ export const gameKit3DBlocks = [
     message0: 'No molde %1, no estado %2, tocar a animação %3',
     args0: [
       { type: 'field_name_picker', name: 'MOLD', text: 'heroi', kind: 'mold3d' },
-      { type: 'field_input', name: 'STATE', text: 'parado' },
+      { type: 'field_name_picker', name: 'STATE', text: 'parado', kind: 'entitystate' },
       { type: 'field_input', name: 'CLIP', text: 'Idle' },
     ],
     previousStatement: 'JSStmt',

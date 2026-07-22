@@ -27,6 +27,7 @@ export type StatementContext =
   | 'menu-options'
   | 'cutscene-steps'
   | 'trainer-team'
+  | 'g3k-mold-parts'
 
 export interface BlockPlacement {
   root: readonly BehaviorArea[]

@@ -1,6 +1,7 @@
 import type { ExtensionToolboxCategory } from '#extensions'
 import type { BlockDefinition } from '../../blockly/blocks/types'
 import { categoryShades } from '../../blockly/colorShades'
+import { GAME3D_DROPDOWN_OPTIONS } from '../../three/game3dContract'
 
 // Jogo 3D = UMA cor da categoria: AMARELO/dourado. A categoria inteira fica em
 // TONS de amarelo, variando por área/kit.
@@ -266,17 +267,7 @@ export const gameThreeDBlocks = [
       {
         type: 'field_dropdown',
         name: 'KEY',
-        options: [
-          ['W (frente)', 'KeyW'],
-          ['S (trás)', 'KeyS'],
-          ['A (esquerda)', 'KeyA'],
-          ['D (direita)', 'KeyD'],
-          ['espaço (pular)', 'Space'],
-          ['↑ seta para cima', 'ArrowUp'],
-          ['↓ seta para baixo', 'ArrowDown'],
-          ['← seta esquerda', 'ArrowLeft'],
-          ['→ seta direita', 'ArrowRight'],
-        ],
+        options: GAME3D_DROPDOWN_OPTIONS.key,
       },
     ],
     output: 'JSValue',
@@ -350,7 +341,7 @@ export const gameThreeDBlocks = [
   // ---- GENÉRICOS de grade/isométrico (fora do kit, p/ outros jogos) ----
   {
     type: 'sz_g3d_isometric_camera',
-    placement: 'command',
+    placement: 'start-only-command',
     message0: 'Câmera isométrica na cena %1 seguindo o objeto %2',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
@@ -397,12 +388,7 @@ export const gameThreeDBlocks = [
       {
         type: 'field_dropdown',
         name: 'DIR',
-        options: [
-          ['frente', 'forward'],
-          ['trás', 'backward'],
-          ['esquerda', 'left'],
-          ['direita', 'right'],
-        ],
+        options: GAME3D_DROPDOWN_OPTIONS.gridDirection,
       },
     ],
     previousStatement: 'JSStmt',
@@ -478,12 +464,7 @@ export const gameThreeDBlocks = [
       {
         type: 'field_dropdown',
         name: 'DIR',
-        options: [
-          ['frente', 'forward'],
-          ['trás', 'backward'],
-          ['esquerda', 'left'],
-          ['direita', 'right'],
-        ],
+        options: GAME3D_DROPDOWN_OPTIONS.gridDirection,
       },
     ],
     previousStatement: 'JSStmt',
@@ -529,20 +510,12 @@ export const gameThreeDBlocks = [
       {
         type: 'field_dropdown',
         name: 'KIND',
-        options: [
-          ['grama', 'grass'],
-          ['floresta (árvores)', 'forest'],
-          ['carros', 'car'],
-          ['caminhões', 'truck'],
-        ],
+        options: GAME3D_DROPDOWN_OPTIONS.rowKind,
       },
       {
         type: 'field_dropdown',
         name: 'DIR',
-        options: [
-          ['→ direita', 'right'],
-          ['← esquerda', 'left'],
-        ],
+        options: GAME3D_DROPDOWN_OPTIONS.rowDirection,
       },
       { type: 'input_value', name: 'SPEED', check: 'JSValue' },
     ],
@@ -603,7 +576,7 @@ export const gameThreeDBlocks = [
   // ---- GENÉRICOS: câmera aérea + movimento circular + distância ----
   {
     type: 'sz_g3d_top_camera',
-    placement: 'command',
+    placement: 'start-only-command',
     message0: 'Câmera aérea (de cima) na cena %1 seguindo o objeto %2',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
@@ -718,11 +691,7 @@ export const gameThreeDBlocks = [
       {
         type: 'field_dropdown',
         name: 'MODE',
-        options: [
-          ['acelerar', 'accelerate'],
-          ['frear', 'decelerate'],
-          ['velocidade normal', 'normal'],
-        ],
+        options: GAME3D_DROPDOWN_OPTIONS.raceMode,
       },
     ],
     previousStatement: 'JSStmt',
@@ -796,11 +765,7 @@ export const gameThreeDBlocks = [
       {
         type: 'field_dropdown',
         name: 'AXIS',
-        options: [
-          ['↔ X', 'x'],
-          ['↕ Y', 'y'],
-          ['↗ Z', 'z'],
-        ],
+        options: GAME3D_DROPDOWN_OPTIONS.axis,
       },
       { type: 'input_value', name: 'MIN', check: 'JSValue' },
       { type: 'input_value', name: 'MAX', check: 'JSValue' },
@@ -822,11 +787,7 @@ export const gameThreeDBlocks = [
       {
         type: 'field_dropdown',
         name: 'AXIS',
-        options: [
-          ['↕ Y', 'y'],
-          ['↔ X', 'x'],
-          ['↗ Z', 'z'],
-        ],
+        options: GAME3D_DROPDOWN_OPTIONS.rotationAxis,
       },
       { type: 'input_value', name: 'SPEED', check: 'JSValue' },
     ],
@@ -920,11 +881,7 @@ export const gameThreeDBlocks = [
       {
         type: 'field_dropdown',
         name: 'AXIS',
-        options: [
-          ['x', 'x'],
-          ['y', 'y'],
-          ['z', 'z'],
-        ],
+        options: GAME3D_DROPDOWN_OPTIONS.propertyAxis,
       },
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
     ],
@@ -939,11 +896,7 @@ export const gameThreeDBlocks = [
       {
         type: 'field_dropdown',
         name: 'AXIS',
-        options: [
-          ['x', 'x'],
-          ['y', 'y'],
-          ['z', 'z'],
-        ],
+        options: GAME3D_DROPDOWN_OPTIONS.propertyAxis,
       },
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
     ],
@@ -966,11 +919,7 @@ export const gameThreeDBlocks = [
       {
         type: 'field_dropdown',
         name: 'AXIS',
-        options: [
-          ['x', 'x'],
-          ['y', 'y'],
-          ['z', 'z'],
-        ],
+        options: GAME3D_DROPDOWN_OPTIONS.propertyAxis,
       },
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
     ],
@@ -1032,11 +981,7 @@ export const gameThreeDBlocks = [
       {
         type: 'field_dropdown',
         name: 'AXIS',
-        options: [
-          ['↕ Y', 'y'],
-          ['↔ X', 'x'],
-          ['↗ Z', 'z'],
-        ],
+        options: GAME3D_DROPDOWN_OPTIONS.rotationAxis,
       },
       { type: 'input_value', name: 'AMOUNT', check: 'JSValue' },
     ],
@@ -1048,7 +993,7 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_move_towards',
-    placement: 'command',
+    placement: 'loop-command',
     message0: 'suavizar %1 até x %2 y %3 z %4 (força %5)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
@@ -1453,10 +1398,7 @@ export const gameThreeDBlocks = [
       {
         type: 'field_dropdown',
         name: 'MODE',
-        options: [
-          ['Mostrar', 'show'],
-          ['Esconder', 'hide'],
-        ],
+        options: GAME3D_DROPDOWN_OPTIONS.visibility,
       },
       { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
     ],
@@ -1514,13 +1456,7 @@ export const gameThreeDBlocks = [
       {
         type: 'field_dropdown',
         name: 'KIND',
-        options: [
-          ['normal', 'normal'],
-          ['metal', 'metal'],
-          ['vidro', 'glass'],
-          ['brilhante', 'glow'],
-          ['só linhas', 'wireframe'],
-        ],
+        options: GAME3D_DROPDOWN_OPTIONS.material,
       },
     ],
     previousStatement: 'JSStmt',
@@ -1630,10 +1566,7 @@ export const gameThreeDBlocks = [
       {
         type: 'field_dropdown',
         name: 'MODE',
-        options: [
-          ['Ligar', 'on'],
-          ['Desligar', 'off'],
-        ],
+        options: GAME3D_DROPDOWN_OPTIONS.shadows,
       },
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'scene3d' },
     ],
@@ -1723,11 +1656,7 @@ export const gameThreeDBlocks = [
       {
         type: 'field_dropdown',
         name: 'AXIS',
-        options: [
-          ['↔ X', 'x'],
-          ['↕ Y', 'y'],
-          ['↗ Z', 'z'],
-        ],
+        options: GAME3D_DROPDOWN_OPTIONS.axis,
       },
     ],
     inputsInline: true,
@@ -1758,12 +1687,7 @@ export const gameThreeDBlocks = [
       {
         type: 'field_dropdown',
         name: 'KIND',
-        options: [
-          ['moeda', 'coin'],
-          ['pulo', 'jump'],
-          ['explosão', 'explosion'],
-          ['acerto', 'hit'],
-        ],
+        options: GAME3D_DROPDOWN_OPTIONS.effect,
       },
     ],
     previousStatement: 'JSStmt',

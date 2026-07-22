@@ -10,6 +10,7 @@ import { buildIRFromWorkspace } from '../../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import { parseJS } from '../../../parsers/js'
+import { GAME3D_START_ONLY_STATEMENT_TYPES } from '../../../three/game3dContract'
 import { gameThreeDBlocks } from '../blocks'
 import { gameThreeDRuntime } from '../runtime'
 
@@ -125,6 +126,18 @@ describe('Auditoria Jogo 3D — inventário', () => {
     expect(statementDefs.length + exprDefs.length).toBe(gameThreeDBlocks.length)
     for (const definition of statementDefs) expect(definition.previousStatement).toBe('JSStmt')
     for (const definition of exprDefs) expect(definition.output).toBe('JSValue')
+  })
+
+  it('mantém o placement de início alinhado ao contrato da IR', () => {
+    for (const definition of statementDefs) {
+      const placement = inferBlockContract(definition).placement
+      if (placement?.root[0] !== 'start') continue
+      const ir = buildIrFor(definition.type, 'statement')
+      const statement = ir[0]
+      expect(statement).toBeDefined()
+      const startOnly = placement.root.length === 1 && placement.nested.length === 0
+      expect(GAME3D_START_ONLY_STATEMENT_TYPES.has(statement?.type ?? '')).toBe(startOnly)
+    }
   })
 })
 

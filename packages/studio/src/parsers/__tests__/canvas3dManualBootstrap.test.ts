@@ -78,4 +78,17 @@ describe('Canvas 3D — inicialização manual sobre uma tela Canvas', () => {
       'threeLightSetup',
     ])
   })
+
+  it('reconhece facilitadores ao voltar diretamente da IR sem import explícito', () => {
+    const direct: SZIR = {
+      html: [{ type: 'canvas', id: 'jogo', width: 800, height: 600 }],
+      css: [],
+      js: [...setup, ...parseJS('camera.position.set(0, 1, 5);')],
+      extensions: [],
+    }
+
+    const serialized = JSON.stringify(buildWorkspaceStateFromIR(direct))
+    expect(serialized).toContain('sz_t3d_set_position')
+    expect(serialized).not.toContain('sz_js_method_on')
+  })
 })

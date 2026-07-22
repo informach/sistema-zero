@@ -4,7 +4,7 @@ Data: 19/07/2026
 
 ## Objetivo
 
-Corrigir todos os achados do review da categoria Canvas 3D sem quebrar projetos existentes. A criança deve montar uma cena funcional com os facilitadores, entender os textos dos blocos e usar a categoria no celular sem precisar conhecer a API do Three.js.
+Corrigir todos os achados do review da categoria Canvas 3D sem quebrar projetos existentes. A criança deve montar uma cena funcional com os facilitadores e entender os textos dos blocos sem precisar conhecer a API do Three.js. A experiência de programação é desktop-first; largura de blocos no celular não é critério desta categoria.
 
 ## Decisão aprovada
 
@@ -27,8 +27,7 @@ Todos os blocos que declaram variáveis ou funções alimentam os seletores de n
 - Textos e tooltips explicam a ação em português direto; detalhes de API ficam na Ponte.
 - Cada subgrupo usa um tom próprio da cor da categoria.
 - Soquetes de objeto nascem com um valor útil, inclusive o bloco de percorrer partes.
-- Blocos densos distribuem campos em várias linhas e permanecem inteiros no flyout em telas estreitas.
-- Botões dos seletores de classe e ferramenta têm área mínima de toque de 44 por 44 pixels.
+- Blocos densos distribuem campos em várias linhas para leitura confortável no desktop.
 
 ## Compatibilidade
 
@@ -36,4 +35,4 @@ Os identificadores, nomes de campos e nós da IR permanecem estáveis. A mudanç
 
 ## Verificação
 
-Cada achado recebe um teste de regressão. Uma auditoria permanente cobre inventário, grupos, níveis, cores, defaults, posicionamento, ciclo de vida, declarações, escopo, linguagem e geração dos blocos. O E2E mede blocos reais no desktop e no celular. A entrega exige testes focados, typecheck, lint e a suíte proporcional do Studio.
+Cada achado recebe um teste de regressão. Uma auditoria permanente cobre inventário, grupos, níveis, cores, defaults, posicionamento, ciclo de vida, declarações, escopo, linguagem e geração dos blocos. O E2E mede blocos reais no desktop e executa o caminho manual Canvas → cena → renderizador → câmera → luz. A entrega exige testes focados, typecheck, lint e a suíte proporcional do Studio.

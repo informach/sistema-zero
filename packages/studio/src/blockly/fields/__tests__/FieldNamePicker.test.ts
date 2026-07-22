@@ -10,12 +10,14 @@ import { VALUE_BLOCKS } from '../../blocks/values'
 import { ensureBlocklyInitialized } from '../../setup'
 import {
   collectBoards,
+  collectCameras3d,
   collectCanvas3DPhysicsBodies,
   collectCanvas3DPhysicsResources,
   collectCanvasContexts,
   collectCanvasIds,
   collectClassNames,
   collectCombatMoves,
+  collectComposers3d,
   collectCSSAnimations,
   collectCSSFonts,
   collectCSSSelectors,
@@ -24,11 +26,15 @@ import {
   collectFunctionNames,
   collectGroups3d,
   collectGroupsAndLists,
+  collectLights3d,
+  collectLoaders3d,
   collectMethodNames,
   collectMutableVariables,
   collectObjects3d,
+  collectPhysicsWorlds,
   collectPropertyNames,
   collectReadableVariables,
+  collectRenderers3d,
   collectScenes3d,
   collectScopedFunctionNames,
   collectScopedVariableNames,
@@ -379,6 +385,27 @@ describe('FieldNamePicker', () => {
       expect(collectScopedVariableNames(collisionBody)).toEqual(['corpoId', 'obstaculoId'])
       expect(collectScopedVariableNames(triggerBody)).toEqual(['outroCorpo', 'areaId', 'entrou'])
       expect(collectScopedVariableNames(ws.newBlock('sz_js_console_log_text'))).toEqual([])
+    })
+
+    it('separa cenas, renderizadores, câmeras, luzes, efeitos, loaders e mundos físicos', () => {
+      const ws = new Blockly.Workspace()
+      ws.newBlock('sz_t3d_scene_create').setFieldValue('cena', 'SCENE')
+      ws.newBlock('sz_t3d_renderer_create').setFieldValue('renderizador', 'RENDERER')
+      ws.newBlock('sz_t3d_camera_create').setFieldValue('camera', 'CAMERA')
+      ws.newBlock('sz_t3d_light_create').setFieldValue('luz', 'LIGHT')
+      ws.newBlock('sz_t3d_bloom_setup').setFieldValue('efeitos', 'COMPOSER')
+      ws.newBlock('sz_t3d_physics_setup').setFieldValue('fisica', 'WORLD')
+      const loader = ws.newBlock('sz_t3d_new_var')
+      loader.setFieldValue('carregador', 'VARNAME')
+      loader.setFieldValue('GLTFLoader', 'CLASS')
+
+      expect(collectScenes3d(ws)).toContain('cena')
+      expect(collectRenderers3d(ws)).toEqual(['renderizador'])
+      expect(collectCameras3d(ws)).toEqual(['camera'])
+      expect(collectLights3d(ws)).toEqual(['luz'])
+      expect(collectComposers3d(ws)).toEqual(['efeitos'])
+      expect(collectLoaders3d(ws)).toEqual(['carregador'])
+      expect(collectPhysicsWorlds(ws)).toEqual(['fisica'])
     })
   })
 

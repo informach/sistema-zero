@@ -1,5 +1,6 @@
 import type { ExtensionDefinition } from '#extensions'
 import { GAME_3D_ADVANCED_LIFECYCLE, validateManifest } from '#extensions'
+import { THREE_CDN } from '../../three/threeRuntimeContract'
 import { fullscreenConflictsFor } from '../fullscreenConflicts'
 import { gameKit3DPromptContext } from './ai'
 import { gameKit3DBlocks, gameKit3DToolboxCategory } from './blocks'
@@ -11,7 +12,6 @@ validateManifest(gameKit3DManifest)
 
 /** Versão fixada do Three.js (CDN ESM) — a MESMA do game-3d, para o importmap
  * colapsar numa entrada só se as duas extensões coexistirem. */
-const THREE_CDN = 'https://esm.sh/three@0.180.0'
 /**
  * Loaders de modelo (GLB) e de céu (HDR). São ADDONS do three, e o kit foi
  * escrito com a regra "sem addons" por medo de o esm.sh embutir uma 2ª cópia do

@@ -13,6 +13,7 @@ import {
 import { CANVAS_IMAGE_PRELOAD_MARKERS } from '../canvasImagePreloadCodec'
 import { canvasStatementToCode, isCanvasStatement } from '../codecs/web/canvasStatementToCode'
 import { programmingChildBodyEntries } from '../ir/programmingExecution'
+import { canvas3DAddonImport } from '../three/canvas3dAddons'
 import { CANVAS3D_SEMANTIC_STATEMENT_TYPES } from '../three/canvas3dContract'
 import { wrapCanvas3DMacro, wrapCanvas3DRuntime } from '../three/canvas3dMacroCodec'
 import { physicsLiteRuntimeSource } from '../three/physicsLiteRuntime'
@@ -84,13 +85,13 @@ const MACRO_ADDON_IMPORTS: Partial<
   Record<JSStatement['type'], ReadonlyArray<{ name: string; module: string }>>
 > = {
   bloomSetup: [
-    { name: 'EffectComposer', module: 'three/addons/postprocessing/EffectComposer.js' },
-    { name: 'RenderPass', module: 'three/addons/postprocessing/RenderPass.js' },
-    { name: 'UnrealBloomPass', module: 'three/addons/postprocessing/UnrealBloomPass.js' },
-    { name: 'OutputPass', module: 'three/addons/postprocessing/OutputPass.js' },
+    canvas3DAddonImport('EffectComposer'),
+    canvas3DAddonImport('RenderPass'),
+    canvas3DAddonImport('UnrealBloomPass'),
+    canvas3DAddonImport('OutputPass'),
   ],
-  waterSetup: [{ name: 'Water', module: 'three/addons/objects/Water.js' }],
-  environmentLoad: [{ name: 'RGBELoader', module: 'three/addons/loaders/RGBELoader.js' }],
+  waterSetup: [canvas3DAddonImport('Water')],
+  environmentLoad: [canvas3DAddonImport('RGBELoader')],
 }
 
 /** Nós cuja expansão deve voltar ao mesmo bloco semântico após editar a Ponte. */

@@ -5,6 +5,8 @@ import { canvasExpressionIRToBlock, canvasStatementIRToBlock } from '../codecs/w
 import { createCSSIRToBlocks } from '../codecs/web/cssIRToBlocks'
 import { htmlIRToBlock } from '../codecs/web/htmlIRToBlock'
 import { htmlElementForTag, isSupportedHTMLImageLoading } from '../html/catalog'
+import { CANVAS3D_ADDON_CLASSES } from '../three/canvas3dAddons'
+import { statementUsesCanvas3D } from '../three/canvas3dContract'
 import {
   FRAME_APPEARANCE,
   FRAME_EVENTS,
@@ -14,7 +16,6 @@ import {
   getBlockContract,
 } from './blockContracts'
 import { isGuidedDomAttributeName, isGuidedDomProperty } from './domSafety'
-import { ADDON_CLASSES } from './fields/FieldClassPicker'
 import { LEGACY_VALUE_FIELDS } from './migrateValueFields'
 
 const ELEMENT_EVENT_BLOCK_TYPES: Partial<Record<EventKind, string>> = {
@@ -156,11 +157,7 @@ export function buildWorkspaceStateFromIR(
   // quando o projeto REALMENTE usa three — senão `Set.add`/`Map.set`/`x.visible`
   // de um projeto 2D viraria bloco 3D (teal, categoria errada). O sinal é o
   // import da lib (o bloco-raiz) ou um `new THREE.…` de topo.
-  recognizeThree = allStatements.some(
-    (s) =>
-      (s.type === 'importStar' && s.module === 'three') ||
-      (s.type === 'newInstance' && s.namespace === 'THREE'),
-  )
+  recognizeThree = allStatements.some(statementUsesCanvas3D)
   audioLoaderVars = collectAudioLoaderVars(allStatements)
   const startChildren = statementsToBlocks(normalized.behavior.start, true)
   const eventChildren = statementsToBlocks(normalized.behavior.events, true)
@@ -5830,7 +5827,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       // Canvas 3D: com namespace (`new THREE.X`) OU classe de ADDON conhecida sob um
       // projeto three (`new GLTFLoader()`) → o bloco Canvas 3D, com CLASS = referência
       // completa (`THREE.Scene` / `GLTFLoader`). Senão → o bloco genérico do aluno.
-      const t3dNamed = !!stmt.namespace || (recognizeThree && ADDON_CLASSES.has(stmt.className))
+      const t3dNamed =
+        !!stmt.namespace || (recognizeThree && CANVAS3D_ADDON_CLASSES.has(stmt.className))
       if (t3dNamed) {
         const ref = stmt.namespace ? `${stmt.namespace}.${stmt.className}` : stmt.className
         return callWithArgs(
@@ -7436,7 +7434,8 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       // Com namespace (`new THREE.X()`) OU classe de ADDON sob three (`new
       // GLTFLoader()`) → o bloco Canvas 3D (CLASS = referência completa); senão → o
       // bloco genérico de classe do aluno.
-      const t3dNamed = !!expr.namespace || (recognizeThree && ADDON_CLASSES.has(expr.className))
+      const t3dNamed =
+        !!expr.namespace || (recognizeThree && CANVAS3D_ADDON_CLASSES.has(expr.className))
       const b = t3dNamed
         ? block(
             'sz_t3d_new',

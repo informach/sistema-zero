@@ -14,6 +14,7 @@ import {
   canvas3DMacroFromPlaceholder,
   prepareCanvas3DSourceForParse,
 } from '../three/canvas3dMacroCodec'
+import { game3dCallArityIsValid, game3dDropdownArgumentIsValid } from '../three/game3dContract'
 
 const BABEL_OPTS: ParserOptions = {
   sourceType: 'module',
@@ -4276,7 +4277,15 @@ function asSZGame3DCall(expr: Node): { method: string; args: Node[] } | null {
   if (callee?.type !== 'MemberExpression' || callee.computed) return null
   if (callee.object?.type !== 'Identifier' || callee.object.name !== 'SZGame3D') return null
   if (callee.property?.type !== 'Identifier') return null
-  return { method: callee.property.name as string, args: expr.arguments ?? [] }
+  const method = callee.property.name as string
+  const args = expr.arguments ?? []
+  if (!game3dCallArityIsValid(method, args.length)) return null
+  for (let index = 0; index < args.length; index += 1) {
+    const argument = args[index]
+    const value = argument?.type === 'StringLiteral' ? String(argument.value) : undefined
+    if (!game3dDropdownArgumentIsValid(method, index, value)) return null
+  }
+  return { method, args }
 }
 
 /** Lê `{ size, color }` de um literal de objeto. null se alguma chave for não-literal/desconhecida. */
@@ -9274,8 +9283,9 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
     case 'isometricCamera': {
       // generator: SZGame3D.isometricCamera(world, followObj | null)
       const worldVar = identifierName(args[0])
-      if (!worldVar) return null
-      return { type: 'g3d:isometricCamera', worldVar, followVar: identifierName(args[1]) || '' }
+      const followVar = identifierName(args[1])
+      if (!worldVar || (!followVar && args[1]?.type !== 'NullLiteral')) return null
+      return { type: 'g3d:isometricCamera', worldVar, followVar: followVar || '' }
     }
     case 'moveAcross': {
       // generator: SZGame3D.moveAcross(group, speed, min, max)
@@ -9298,8 +9308,9 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
     case 'topCamera': {
       // generator: SZGame3D.topCamera(world, followObj | null)
       const worldVar = identifierName(args[0])
-      if (!worldVar) return null
-      return { type: 'g3d:topCamera', worldVar, followVar: identifierName(args[1]) || '' }
+      const followVar = identifierName(args[1])
+      if (!worldVar || (!followVar && args[1]?.type !== 'NullLiteral')) return null
+      return { type: 'g3d:topCamera', worldVar, followVar: followVar || '' }
     }
     case 'moveInCircle': {
       const objVar = identifierName(args[0])

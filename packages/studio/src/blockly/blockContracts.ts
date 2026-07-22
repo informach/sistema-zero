@@ -171,6 +171,7 @@ const BODY_CONTEXTS: readonly StatementContext[] = [
   'menu-options',
   'cutscene-steps',
   'trainer-team',
+  'g3k-mold-parts',
 ]
 
 export const ADVANCED_COMMAND_PLACEMENT: BlockPlacement = Object.freeze({
@@ -263,6 +264,7 @@ const CHECK_BY_CONTEXT: Readonly<Record<StatementContext, string>> = {
   'menu-options': 'JSStmt',
   'cutscene-steps': 'JSStmt',
   'trainer-team': 'JSStmt',
+  'g3k-mold-parts': 'JSStmt',
 }
 
 export const NESTED_STATEMENT_CHECKS = [

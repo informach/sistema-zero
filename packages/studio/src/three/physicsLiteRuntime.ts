@@ -763,10 +763,3 @@ function createSZPhysicsLite(options) {
   };
 }
 `.trim()
-
-/** Insere o kernel logo depois do primeiro import ESM de um runtime. */
-export function injectPhysicsLiteRuntime(runtime: string): string {
-  const firstLineEnd = runtime.indexOf('\n')
-  if (firstLineEnd < 0) throw new Error('O runtime precisa começar com uma linha de import.')
-  return `${runtime.slice(0, firstLineEnd + 1)}${physicsLiteRuntimeSource}\n${runtime.slice(firstLineEnd + 1)}`
-}

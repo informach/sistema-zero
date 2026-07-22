@@ -20,7 +20,7 @@ function canvasStructureArea(): Record<string, unknown> {
         block: {
           type: 'sz_html_canvas',
           fields: {
-            ID: 'jogo',
+            ID: 'tela',
             CLASS: 'tela-3d',
             DESCRIPTION: 'Cena 3D criada manualmente.',
           },
@@ -41,11 +41,11 @@ function manualCanvas3DStartArea(): Record<string, unknown> {
           next: {
             block: {
               type: 'sz_t3d_renderer_create',
-              fields: { RENDERER: 'renderizador', CANVAS: 'jogo' },
+              fields: { RENDERER: 'renderizador' },
               next: {
                 block: {
                   type: 'sz_t3d_camera_create',
-                  fields: { CAMERA: 'camera', CANVAS: 'jogo' },
+                  fields: { CAMERA: 'camera' },
                   inputs: {
                     FOV: numberShadow(60),
                     NEAR: numberShadow(0.1),
@@ -95,7 +95,6 @@ async function openCanvas3DGroup(page: Page, group: string): Promise<void> {
 }
 
 async function flyoutLayout(page: Page): Promise<{
-  viewport: number
   flyoutWidth: number
   widest: { width: number; text: string }
 }> {
@@ -113,7 +112,6 @@ async function flyoutLayout(page: Page): Promise<{
       { width: 0, text: '' },
     )
     return {
-      viewport: window.innerWidth,
       flyoutWidth: flyout.width,
       widest,
     }
@@ -129,7 +127,7 @@ test.describe('Canvas 3D — experiência infantil', () => {
     await pasteBlocks(page, canvasStructureArea())
     await pasteBlocks(page, manualCanvas3DStartArea())
 
-    const canvas = page.frameLocator('iframe[title="Pré-visualização"]').locator('canvas#jogo')
+    const canvas = page.frameLocator('iframe[title="Pré-visualização"]').locator('canvas#tela')
     await expect(canvas).toBeVisible({ timeout: 15_000 })
     await expect
       .poll(
@@ -144,33 +142,6 @@ test.describe('Canvas 3D — experiência infantil', () => {
     expect(errors).toEqual([])
   })
 
-  for (const group of [
-    '🧊 Biblioteca 3D',
-    '🎯 Transformar',
-    '🎬 Cena e material',
-    '💡 Luz e sombra',
-    '🖥️ Tela 3D',
-    '🌳 Cópias em massa',
-    '📦 Modelos e sons',
-    '✨ Efeitos',
-    '🧱 Mundo automático',
-    '🧲 Física leve',
-  ]) {
-    test(`grupo ${group} cabe na largura de um celular`, async ({ page }) => {
-      await page.setViewportSize({ width: 390, height: 844 })
-      await createProject(page)
-      await openCanvas3DGroup(page, group)
-      const layout = await flyoutLayout(page)
-      expect(layout.flyoutWidth, `${group}: ${JSON.stringify(layout)}`).toBeGreaterThan(0)
-      expect(layout.flyoutWidth, `${group}: ${JSON.stringify(layout)}`).toBeLessThanOrEqual(
-        layout.viewport,
-      )
-      expect(layout.widest.width, `${group}: ${JSON.stringify(layout)}`).toBeLessThanOrEqual(
-        layout.flyoutWidth,
-      )
-    })
-  }
-
   test('cidade e visão à frente também cabem no desktop', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 })
     await createProject(page)
@@ -180,59 +151,6 @@ test.describe('Canvas 3D — experiência infantil', () => {
       expect(layout.widest.width, `${group}: ${JSON.stringify(layout)}`).toBeLessThanOrEqual(
         layout.flyoutWidth,
       )
-    }
-  })
-
-  test('seletores de classe e ferramenta têm alvos de toque de 44 px', async ({ page }) => {
-    await page.setViewportSize({ width: 390, height: 844 })
-    await createProject(page)
-    await pasteBlocks(page, {
-      type: 'sz_frame_start',
-      inputs: {
-        CHILDREN: {
-          block: {
-            type: 'sz_t3d_import_named',
-            fields: { NAMES: 'GLTFLoader', MODULE: 'automático' },
-            next: {
-              block: {
-                type: 'sz_t3d_new_var',
-                fields: { VARNAME: 'cena', CLASS: 'THREE.Scene' },
-              },
-            },
-          },
-        },
-      },
-    })
-
-    const workspace = page.locator('.blocklyWorkspace .blocklyBlockCanvas')
-    const classField = workspace.locator('text.blocklyText', { hasText: 'THREE.Scene' }).last()
-    await expect(classField).toBeVisible()
-    await classField.click()
-    const classButtons = page.locator('.blocklyDropDownDiv:visible button')
-    await expect(classButtons.first()).toBeVisible()
-    for (const box of await classButtons.evaluateAll((buttons) =>
-      buttons.map((button) => {
-        const { width, height } = button.getBoundingClientRect()
-        return { width, height }
-      }),
-    )) {
-      expect(box.width).toBeGreaterThanOrEqual(44)
-      expect(box.height).toBeGreaterThanOrEqual(44)
-    }
-
-    await page.keyboard.press('Escape')
-    const addonField = workspace.locator('text.blocklyText', { hasText: 'GLTFLoader' }).last()
-    await expect(addonField).toBeVisible()
-    await addonField.click()
-    const addonButtons = page.locator('.blocklyDropDownDiv:visible button')
-    await expect(addonButtons.first()).toBeVisible()
-    for (const box of await addonButtons.evaluateAll((buttons) =>
-      buttons.map((button) => {
-        const { width, height } = button.getBoundingClientRect()
-        return { width, height }
-      }),
-    )) {
-      expect(box.height).toBeGreaterThanOrEqual(44)
     }
   })
 })

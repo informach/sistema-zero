@@ -3,6 +3,7 @@ import { parse } from '@babel/parser'
 import type { JSStatement } from '#ir'
 import { generateJS, generateJSWithMap } from '../../generators/js'
 import { parseJS } from '../../parsers/js'
+import { canvas3DInternalCodeRanges } from '../canvas3dMacroCodec'
 
 const n = (value: number) => ({ type: 'num' as const, value })
 const color = (value: string) => ({ type: 'color' as const, value })
@@ -68,6 +69,41 @@ describe('Canvas 3D — codec semântico dos macros', () => {
 
     expect(parsed.map((statement) => statement.type)).toEqual(['importStar', 'physicsLiteSetup'])
     expect(JSON.stringify(parsed)).not.toContain('createSZPhysicsLite')
+  })
+
+  it('separa o kernel e os metadados internos do código didático da Ponte', () => {
+    const physics = generateJS({
+      statements: [
+        {
+          type: 'physicsLiteSetup',
+          world: 'fisica',
+          heightFunction: 'alturaChao',
+          gravity: n(-22),
+          maxSubSteps: n(3),
+        },
+      ],
+    })
+    const runtime = canvas3DInternalCodeRanges(physics).find((range) => range.kind === 'runtime')
+    expect(runtime).toBeDefined()
+    expect((runtime?.endLine ?? 0) - (runtime?.startLine ?? 0)).toBeGreaterThan(700)
+
+    const particleCode = generateJS({ statements: [particles] })
+    const metadata = canvas3DInternalCodeRanges(particleCode).filter(
+      (range) => range.kind === 'metadata',
+    )
+    expect(metadata).toHaveLength(2)
+    const visibleRecipeLine =
+      particleCode.split('\n').findIndex((line) => line.includes('new THREE.BufferGeometry')) + 1
+    expect(
+      metadata.some(
+        (range) => visibleRecipeLine >= range.startLine && visibleRecipeLine <= range.endLine,
+      ),
+    ).toBe(false)
+    expect(
+      canvas3DInternalCodeRanges(
+        'const texto = "/*__SZ_CANVAS3D_RUNTIME__não é um marcador de linha";',
+      ),
+    ).toEqual([])
   })
 
   it('mantém o source map alinhado depois dos cabeçalhos semânticos', () => {

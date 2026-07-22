@@ -16,9 +16,10 @@ Movimento no chão e distância usam X-Z. Os kits Travessia e Corrida preservam 
 coordenadas internas de grade, mas os blocos genéricos continuam seguindo X-Z.
 
 DESEMPENHO E SEGURANÇA: o runtime ajusta movimento ao tempo do quadro, descarta GPU,
-eventos e contextos ao reiniciar, e limita objetos, luzes, enxames, linhas e andares.
-Nunca crie recursos dentro do loop. Use remove/prune para itens temporários. A física
-é AABB leve, feita na plataforma, sem biblioteca externa pesada.
+eventos e áudio ao reiniciar, e limita objetos, luzes, enxames, linhas e andares.
+Crie recursos persistentes fora do loop. Cópias temporárias de enxame podem nascer
+no quadro quando remove/prune também fizer parte do fluxo. A física é AABB leve,
+feita na plataforma, sem biblioteca externa pesada.
 
 RECURSOS: há primitivas, modelos compostos, materiais, luz/céu, controles, câmeras,
 mira, corpos/colisões, enxames/som e kits Desvie, Travessia, Corrida e Empilhar. Use

@@ -108,7 +108,9 @@ projeto que instalar a extensão.
 > `fetchAllowedOrigins`. Por isso uma extensão que só CARREGA uma lib via CDN
 > fixado (ver item 7) **não** declara `network` — o carregamento da lib é
 > `script-src`/importmap, não a rede do aluno (`connect-src`). A `game-3d` declara
-> apenas `['canvas']` mesmo importando o Three.js de um CDN.
+> `['canvas', 'keyboard', 'mouse', 'audio']`, pois renderiza em WebGL, recebe
+> controles e oferece efeitos sonoros. Ela não declara `network`, mesmo
+> importando o Three.js de um CDN fixado.
 
 ### 7. Entrega de libs ESM via importmap (`esmImports`)
 

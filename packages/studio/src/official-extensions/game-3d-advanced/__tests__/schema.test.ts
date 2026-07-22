@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'bun:test'
-import { G3K_STATEMENT_TYPES, type JSStatement, SZIRSchema, statementIsExtension } from '#ir'
+import {
+  G3K_STATEMENT_TYPES,
+  type JSStatement,
+  SZIRSchema,
+  SZIRV2Schema,
+  statementIsExtension,
+} from '#ir'
 
 /**
  * Drift do schema do Jogo 3D Avançado: o Set de statements bate com o prefixo,
@@ -99,6 +105,90 @@ describe('SZIRSchema — IR exemplar do kit 3D', () => {
       js: [{ type: 'g3k:naoExiste' }],
     }
     const parsed = SZIRSchema.safeParse(ir)
+    expect(parsed.success).toBe(false)
+  })
+
+  it('rejeita Peça fora de Criar molde', () => {
+    const parsed = SZIRSchema.safeParse({
+      html: [],
+      css: [],
+      extensions: [{ extensionId: 'game-3d-advanced' }],
+      js: [
+        {
+          type: 'g3k:part',
+          shape: 'box',
+          material: 'normal',
+          color: '#22d3ee',
+          texture: '',
+          model: '',
+          w: { type: 'num', value: 1 },
+          h: { type: 'num', value: 1 },
+          d: { type: 'num', value: 1 },
+          x: { type: 'num', value: 0 },
+          y: { type: 'num', value: 0.5 },
+          z: { type: 'num', value: 0 },
+        },
+      ],
+    })
+
+    expect(parsed.success).toBe(false)
+  })
+
+  it('rejeita Peça fora de Criar molde também na IR v2', () => {
+    const parsed = SZIRV2Schema.safeParse({
+      version: 2,
+      html: [],
+      css: [],
+      extensions: [{ extensionId: 'game-3d-advanced' }],
+      behavior: {
+        start: [
+          {
+            type: 'g3k:part',
+            shape: 'box',
+            material: 'normal',
+            color: '#22d3ee',
+            texture: '',
+            model: '',
+            w: { type: 'num', value: 1 },
+            h: { type: 'num', value: 1 },
+            d: { type: 'num', value: 1 },
+            x: { type: 'num', value: 0 },
+            y: { type: 'num', value: 0.5 },
+            z: { type: 'num', value: 0 },
+          },
+        ],
+        events: [],
+        loops: [],
+      },
+    })
+
+    expect(parsed.success).toBe(false)
+  })
+
+  it('rejeita comandos comuns dentro de Criar molde', () => {
+    const parsed = SZIRSchema.safeParse({
+      html: [],
+      css: [],
+      extensions: [{ extensionId: 'game-3d-advanced' }],
+      js: [
+        {
+          type: 'g3k:defineMold',
+          name: 'heroi',
+          health: { type: 'num', value: 100 },
+          speed: { type: 'num', value: 8 },
+          body: [
+            {
+              type: 'g3k:spawn',
+              mold: 'heroi',
+              x: { type: 'num', value: 0 },
+              y: { type: 'num', value: 0 },
+              z: { type: 'num', value: 0 },
+            },
+          ],
+        },
+      ],
+    })
+
     expect(parsed.success).toBe(false)
   })
 })

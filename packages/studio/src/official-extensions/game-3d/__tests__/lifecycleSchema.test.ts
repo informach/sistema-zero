@@ -34,17 +34,41 @@ describe('game-3d — contrato de ciclo de vida', () => {
     }
   })
 
-  it('recusa materiais, texturas e áudio recriados a cada quadro', () => {
+  it('recusa materiais e texturas recriados a cada quadro', () => {
     for (const statement of [
       { type: 'g3d:setMaterial', objVar: 'cubo', kind: 'metal' },
-      { type: 'g3d:setTexture', objVar: 'cubo', assetName: 'parede' },
-      { type: 'g3d:playEffect', kind: 'coin' },
+      { type: 'g3d:setTexture', objVar: 'cubo', asset: 'parede' },
     ]) {
       const result = SZIRSchema.safeParse(
         project([{ type: 'g3d:animate', worldVar: 'cena', body: [statement] }]),
       )
       expect(result.success).toBe(false)
     }
+  })
+
+  it('aceita criar cópias e tocar sons em resposta ao jogo dentro de cada quadro', () => {
+    const parsed = SZIRSchema.safeParse(
+      project([
+        {
+          type: 'g3d:animate',
+          worldVar: 'cena',
+          body: [
+            {
+              type: 'g3d:spawnInSwarm',
+              swarmVar: 'enxame',
+              originalVar: 'modelo',
+              x: 0,
+              y: 0,
+              z: 0,
+            },
+            { type: 'g3d:playNote', freq: 440, ms: 100 },
+            { type: 'g3d:playEffect', kind: 'coin' },
+          ],
+        },
+      ]),
+    )
+
+    expect(parsed.success).toBe(true)
   })
 
   it('aceita criação antes do loop e movimento dentro dele', () => {

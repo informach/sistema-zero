@@ -157,6 +157,35 @@ describe('Auditoria Jogo 3D Avançado — inventário', () => {
     })
   })
 
+  it('molde aceita somente Peça diretamente no corpo e Peça não existe na raiz', () => {
+    const mold = gameKit3DBlocks.find((block) => block.type === 'sz_g3k_define_mold')
+    const part = gameKit3DBlocks.find((block) => block.type === 'sz_g3k_part')
+    if (!mold || !part) throw new Error('blocos de molde incompletos')
+
+    expect(inferBlockContract(mold)).toMatchObject({
+      bodyContext: 'g3k-mold-parts',
+    })
+    expect(inferBlockContract(part).placement).toEqual({
+      root: [],
+      nested: ['g3k-mold-parts'],
+      directNested: true,
+      role: 'command',
+    })
+  })
+
+  it('animação por estado usa o mesmo seletor de estados da FSM', () => {
+    const definition = gameKit3DBlocks.find((block) => block.type === 'sz_g3k_state_anim')
+    if (!definition) throw new Error('bloco de animação por estado ausente')
+    const args = Object.entries(definition)
+      .filter(([key, value]) => key.startsWith('args') && Array.isArray(value))
+      .flatMap(([, value]) => value)
+
+    expect(args.find((arg) => arg.name === 'STATE')).toMatchObject({
+      type: 'field_name_picker',
+      kind: 'entitystate',
+    })
+  })
+
   it('o bloco de boot legado fica registrado, mas não aparece na paleta', () => {
     expect(gameKit3DBlocks.find((block) => block.type === 'sz_g3k_start')).toMatchObject({
       hidden: true,

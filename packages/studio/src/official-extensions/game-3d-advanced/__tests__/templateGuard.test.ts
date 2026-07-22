@@ -8,7 +8,8 @@ import { gameKit3DRuntime } from '../runtime'
 /**
  * ⭐ A guarda que eu devia ter escrito na primeira vez.
  *
- * `runtime.ts`, `ai.ts` e o `docs` do `manifest.ts` são UM template literal cada.
+ * A fonte em `runtime.ts`, `ai.ts` e o `docs` do `manifest.ts` são UM template
+ * literal cada.
  * Uma crase CRUA lá dentro fecha a string no meio e o módulo inteiro deixa de
  * parsear — e o sintoma cai longe da causa (a última vez derrubou o HMR do Vite em
  * cascata: ActivityPanel, StudioCore, BridgeMode… por causa de UM caractere dentro
@@ -47,7 +48,7 @@ function rawBackticksInside(src: string, openerNeedle: string): number[] {
 describe('Guarda dos template literals do kit 3D', () => {
   it('runtime.ts: nenhuma crase crua no miolo do literal', () => {
     const src = readFileSync(join(DIR, 'runtime.ts'), 'utf8')
-    expect(rawBackticksInside(src, 'gameKit3DRuntime =')).toEqual([])
+    expect(rawBackticksInside(src, 'gameKit3DRuntimeSource =')).toEqual([])
   })
 
   it('ai.ts: idem (o contexto da IA também é um literal só)', () => {

@@ -245,6 +245,80 @@ describe('SZGameKit3D — motor (fake THREE + happy-dom)', () => {
     expect(warnings.filter((message) => message.includes('atratores')).length).toBe(1)
   })
 
+  it('limita a quantidade global de moldes e efeitos que alocam recursos', async () => {
+    const { api, renderers } = await loadStartedKit()
+    const warnings: string[] = []
+    let availableMolds: boolean[] = []
+    const originalWarn = console.warn
+    console.warn = (...args: unknown[]) => warnings.push(args.map(String).join(' '))
+    try {
+      for (let i = 0; i < 80; i++) {
+        api.defineMold(`molde-${i}`, { health: 1, speed: 0 }, () => {})
+        api.defineEffect(`efeito-${i}`, {
+          count: 1,
+          colorFrom: '#ffffff',
+          colorTo: '#000000',
+          sizeFrom: 1,
+          sizeTo: 0,
+          life: 1,
+          spread: 1,
+        })
+      }
+      api.setState('jogando')
+      availableMolds = Array.from(
+        { length: 80 },
+        (_, index) => api.spawn(`molde-${index}`, 0, 0, 0) !== null,
+      ).filter(Boolean)
+    } finally {
+      console.warn = originalWarn
+    }
+
+    const points = renderers[0]?.scene?.children.filter((object) => object.type === 'Points') ?? []
+
+    expect(availableMolds).toHaveLength(64)
+    expect(points).toHaveLength(32)
+    expect(warnings.filter((message) => message.includes('moldes')).length).toBe(1)
+    expect(warnings.filter((message) => message.includes('efeitos')).length).toBe(1)
+  })
+
+  it('expõe palco, telas, HUD, falas e vida para tecnologias assistivas', async () => {
+    const { api, step } = await loadStartedKit()
+    const stages = document.querySelectorAll('#szg3k-stage')
+    const stage = stages[stages.length - 1]
+    if (!stage) throw new Error('palco não montado')
+    const canvas = stage.querySelector('canvas')
+    const menu = stage.querySelector('[data-szg3k-screen="menu"]')
+
+    expect(stage.getAttribute('role')).toBe('region')
+    expect(stage.getAttribute('aria-label')).toBe('Jogo 3D interativo')
+    expect(canvas?.tabIndex).toBe(0)
+    expect(canvas?.getAttribute('aria-label')).toBe('Cena do jogo 3D')
+    const descriptionId = canvas?.getAttribute('aria-describedby') ?? ''
+    expect(stage.querySelector(`#${descriptionId}`)?.getAttribute('aria-live')).toBe('polite')
+    expect(menu?.getAttribute('role')).toBe('dialog')
+    expect(menu?.getAttribute('aria-hidden')).toBe('false')
+
+    api.setHud('top-left', 'Pontos: 3')
+    const hudStatus = stage.querySelector('#szg3k-hud-status')
+    expect(hudStatus?.getAttribute('aria-live')).toBe('polite')
+    expect(hudStatus?.textContent).toContain('Pontos: 3')
+
+    api.defineMold('heroi', { health: 10, speed: 0 }, () => {})
+    api.showHealthBar('heroi', true)
+    api.setState('jogando')
+    const hero = api.spawn('heroi', 0, 0, 0)
+    api.say(hero, 'Vamos!', 2)
+    step(1)
+
+    expect(menu?.getAttribute('aria-hidden')).toBe('true')
+    expect(document.activeElement).toBe(canvas)
+    expect(stage.querySelector('.szg3k-say')?.getAttribute('role')).toBe('status')
+    const bar = stage.querySelector('.szg3k-bar')
+    expect(bar?.getAttribute('role')).toBe('progressbar')
+    expect(bar?.getAttribute('aria-valuenow')).toBe('10')
+    expect(bar?.getAttribute('aria-valuemax')).toBe('10')
+  })
+
   it('reduz resoluções gigantes para o orçamento de pixels e limite da GPU', async () => {
     const { renderers } = await loadStartedKit((api) => {
       api.setup({ width: 4096, height: 4096, world: 100 })
@@ -847,6 +921,110 @@ describe('SZGameKit3D — física', () => {
       expect(sfx?.loop).toBe(false)
     } finally {
       ;(globalThis as { Audio?: unknown }).Audio = RealAudio
+    }
+  })
+
+  it('reusa sons entre partidas e encerra efeitos e AudioContext no teardown', async () => {
+    const made: FakeAudio[] = []
+    let closedContexts = 0
+    interface FakeAudio {
+      src: string
+      loop: boolean
+      currentTime: number
+      preload: string
+      oncanplaythrough: null | (() => void)
+      onerror: null | (() => void)
+      playCalls: number
+      pauseCalls: number
+      play(): Promise<void>
+      pause(): void
+    }
+    class FakeAudioContext {
+      state = 'running'
+      currentTime = 0
+      destination = {}
+      createOscillator() {
+        return {
+          type: 'square',
+          frequency: { value: 0 },
+          connect() {},
+          start() {},
+          stop() {},
+        }
+      }
+      createGain() {
+        return {
+          gain: { value: 0, setTargetAtTime() {} },
+          connect() {},
+        }
+      }
+      resume() {
+        return Promise.resolve()
+      }
+      close() {
+        closedContexts += 1
+        return Promise.resolve()
+      }
+    }
+    const audioDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'Audio')
+    const contextDescriptor = Object.getOwnPropertyDescriptor(window, 'AudioContext')
+    Object.defineProperty(globalThis, 'Audio', {
+      configurable: true,
+      value: function (this: FakeAudio, src?: string) {
+        const audio: FakeAudio = {
+          src: src ?? '',
+          loop: false,
+          currentTime: 0,
+          preload: '',
+          oncanplaythrough: null,
+          onerror: null,
+          playCalls: 0,
+          pauseCalls: 0,
+          play() {
+            this.playCalls += 1
+            return Promise.resolve()
+          },
+          pause() {
+            this.pauseCalls += 1
+          },
+        }
+        made.push(audio)
+        queueMicrotask(() => audio.oncanplaythrough?.())
+        return audio
+      },
+    })
+    Object.defineProperty(window, 'AudioContext', {
+      configurable: true,
+      value: FakeAudioContext,
+    })
+
+    try {
+      const url =
+        'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA='
+      const { api } = await loadStartedKit((runtime) => {
+        runtime.runProject(() => runtime.loadSound('efeito', url))
+      })
+      expect(made).toHaveLength(1)
+
+      api.setState('jogando')
+      api.playSound('efeito')
+      api.playTone(440, 600_000)
+      expect(made).toHaveLength(1)
+      expect(made[0]?.playCalls).toBe(1)
+
+      api.setState('fim')
+      api.setState('jogando')
+      expect(made).toHaveLength(1)
+      expect(made[0]?.pauseCalls).toBeGreaterThan(0)
+      expect(closedContexts).toBe(1)
+
+      window.dispatchEvent(new Event('pagehide'))
+      expect(made[0]?.pauseCalls).toBeGreaterThan(1)
+    } finally {
+      if (audioDescriptor) Object.defineProperty(globalThis, 'Audio', audioDescriptor)
+      else Reflect.deleteProperty(globalThis, 'Audio')
+      if (contextDescriptor) Object.defineProperty(window, 'AudioContext', contextDescriptor)
+      else Reflect.deleteProperty(window, 'AudioContext')
     }
   })
 

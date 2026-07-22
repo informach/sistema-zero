@@ -1,11 +1,14 @@
 import * as Blockly from 'blockly/core'
 import {
+  CANVAS3D_BLOCK_DECLARATIONS_BY_KIND,
   CANVAS3D_FUNCTION_DECLARATION_FIELDS,
   CANVAS3D_OBJECT_BRANCH_BINDERS,
   CANVAS3D_PHYSICS_BODY_DECLARATION_FIELDS,
   CANVAS3D_PHYSICS_RESOURCE_DECLARATION_FIELDS,
   CANVAS3D_VARIABLE_BRANCH_BINDERS,
   CANVAS3D_VARIABLE_DECLARATION_FIELDS,
+  type Canvas3DSymbolKind,
+  canvas3DSymbolKindsForClass,
 } from '../../three/canvas3dContract'
 import {
   type BlockScanner,
@@ -89,6 +92,12 @@ export type NameKind =
   | 'enemytype'
   | 'shape'
   | 'scene3d'
+  | 'renderer3d'
+  | 'camera3d'
+  | 'light3d'
+  | 'composer3d'
+  | 'loader3d'
+  | 'physics-world'
   | 'object3d'
   | 'group3d'
   | 'physics-body'
@@ -135,6 +144,14 @@ const DECLARED_NAME_KINDS: ReadonlySet<NameKind> = new Set([
   'combat-move',
   'fight-move',
   'enemy-combatant',
+  'scene3d',
+  'renderer3d',
+  'camera3d',
+  'light3d',
+  'composer3d',
+  'loader3d',
+  'physics-world',
+  'object3d',
   'physics-body',
   'physics-resource',
 ])
@@ -177,6 +194,12 @@ const NAME_KINDS: readonly NameKind[] = [
   'enemytype',
   'shape',
   'scene3d',
+  'renderer3d',
+  'camera3d',
+  'light3d',
+  'composer3d',
+  'loader3d',
+  'physics-world',
   'object3d',
   'group3d',
   'physics-body',
@@ -752,6 +775,7 @@ const ENTITYSTATE_DECL_BLOCKS: Record<string, string[]> = {
   sz_g3k_on_entity_state_update: ['STATE'],
   sz_g3k_on_exit_entity_state: ['STATE'],
   sz_g3k_state_timer: ['STATE', 'NEXT'],
+  sz_g3k_state_anim: ['STATE'],
 }
 function collectEntityStates(workspace: Blockly.Workspace | null | undefined): string[] {
   const used = collectDeclaredNames(workspace, ENTITYSTATE_DECL_BLOCKS)
@@ -1046,12 +1070,42 @@ const KIND_UI: Record<NameKind, KindUI> = {
   scene3d: {
     icon: '🌐',
     placeholder: 'nome da cena / mundo',
-    empty: 'Nenhuma cena 3D ainda — crie uma ("Criar cena/mundo…") ou digite o nome abaixo.',
+    empty: 'Nenhuma cena 3D ainda — crie uma antes de usar este bloco.',
+  },
+  renderer3d: {
+    icon: '🖼️',
+    placeholder: 'renderizador 3D',
+    empty: 'Nenhum renderizador ainda — prepare uma tela 3D primeiro.',
+  },
+  camera3d: {
+    icon: '📷',
+    placeholder: 'câmera 3D',
+    empty: 'Nenhuma câmera ainda — crie uma câmera primeiro.',
+  },
+  light3d: {
+    icon: '💡',
+    placeholder: 'luz 3D',
+    empty: 'Nenhuma luz ainda — crie uma luz primeiro.',
+  },
+  composer3d: {
+    icon: '✨',
+    placeholder: 'efeitos 3D',
+    empty: 'Nenhum conjunto de efeitos ainda — prepare o brilho primeiro.',
+  },
+  loader3d: {
+    icon: '📦',
+    placeholder: 'carregador 3D',
+    empty: 'Nenhum carregador ainda — crie um carregador com as peças técnicas.',
+  },
+  'physics-world': {
+    icon: '🧲',
+    placeholder: 'mundo físico',
+    empty: 'Nenhum mundo físico ainda — prepare a física primeiro.',
   },
   object3d: {
     icon: '🧊',
     placeholder: 'nome do objeto 3D',
-    empty: 'Nenhum objeto 3D ainda — crie um (caixa/bola/modelo…) ou digite o nome abaixo.',
+    empty: 'Nenhum objeto 3D ainda — crie uma peça, câmera, luz ou cena primeiro.',
   },
   group3d: {
     icon: '👾',
@@ -1564,12 +1618,70 @@ export function collectTilemaps(workspace: Blockly.Workspace | null | undefined)
 
 /** Nomes das cenas/mundos 3D declarados. */
 export function collectScenes3d(workspace: Blockly.Workspace | null | undefined): string[] {
-  return collectDeclaredNames(workspace, SCENE3D_DECL_BLOCKS)
+  return mergeNames(
+    collectDeclaredNames(workspace, SCENE3D_DECL_BLOCKS),
+    collectCanvas3DSymbolNames(workspace, 'scene3d'),
+  )
 }
 
 /** Nomes dos objetos/malhas 3D declarados. */
 export function collectObjects3d(workspace: Blockly.Workspace | null | undefined): string[] {
-  return collectDeclaredNames(workspace, OBJECT3D_DECL_BLOCKS)
+  return mergeNames(
+    collectDeclaredNames(workspace, OBJECT3D_DECL_BLOCKS),
+    collectCanvas3DSymbolNames(workspace, 'object3d'),
+  )
+}
+
+function mergeNames(...groups: readonly string[][]): string[] {
+  const seen = new Set<string>()
+  return groups.flat().filter((name) => {
+    if (seen.has(name)) return false
+    seen.add(name)
+    return true
+  })
+}
+
+function collectCanvas3DSymbolNames(
+  workspace: Blockly.Workspace | null | undefined,
+  kind: Canvas3DSymbolKind,
+): string[] {
+  const declared = collectDeclaredNames(workspace, CANVAS3D_BLOCK_DECLARATIONS_BY_KIND[kind])
+  if (!workspace) return declared
+  const advanced: string[] = []
+  const seen = new Set(declared)
+  for (const block of workspace.getBlocksByType('sz_t3d_new_var', false)) {
+    const className = `${block.getFieldValue('CLASS') ?? ''}`
+    if (!canvas3DSymbolKindsForClass(className).includes(kind)) continue
+    const name = `${block.getFieldValue('VARNAME') ?? ''}`.trim()
+    if (!name || seen.has(name)) continue
+    seen.add(name)
+    advanced.push(name)
+  }
+  return [...declared, ...advanced]
+}
+
+export function collectRenderers3d(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectCanvas3DSymbolNames(workspace, 'renderer3d')
+}
+
+export function collectCameras3d(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectCanvas3DSymbolNames(workspace, 'camera3d')
+}
+
+export function collectLights3d(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectCanvas3DSymbolNames(workspace, 'light3d')
+}
+
+export function collectComposers3d(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectCanvas3DSymbolNames(workspace, 'composer3d')
+}
+
+export function collectLoaders3d(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectCanvas3DSymbolNames(workspace, 'loader3d')
+}
+
+export function collectPhysicsWorlds(workspace: Blockly.Workspace | null | undefined): string[] {
+  return collectCanvas3DSymbolNames(workspace, 'physics-world')
 }
 
 /** Nomes dos grupos/enxames 3D declarados. */
@@ -1712,6 +1824,18 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectTilemaps(ws)
       case 'scene3d':
         return collectScenes3d(ws)
+      case 'renderer3d':
+        return collectRenderers3d(ws)
+      case 'camera3d':
+        return collectCameras3d(ws)
+      case 'light3d':
+        return collectLights3d(ws)
+      case 'composer3d':
+        return collectComposers3d(ws)
+      case 'loader3d':
+        return collectLoaders3d(ws)
+      case 'physics-world':
+        return collectPhysicsWorlds(ws)
       case 'object3d':
         return collectObjects3d(ws)
       case 'group3d':

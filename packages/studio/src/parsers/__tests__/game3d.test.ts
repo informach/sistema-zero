@@ -117,6 +117,59 @@ describe('parseJS — helpers SZGame3D.* (game-3d)', () => {
   })
 })
 
+describe('parseJS — preservação do código manual de Jogo 3D', () => {
+  const unknownDropdownCases = [
+    'const apertou = SZGame3D.keyDown("KeyQ");',
+    'SZGame3D.gridMove(obj, "diagonal");',
+    'SZGame3D.crosserMove(obj, "diagonal");',
+    'SZGame3D.addRow(cena, 1, "lava", "right", 0.1);',
+    'SZGame3D.addRow(cena, 1, "grass", "up", 0.1);',
+    'SZGame3D.raceControl(carro, "turbo");',
+    'SZGame3D.slideBetween(obj, "w", -1, 1, 0.1);',
+    'SZGame3D.spin(obj, "w", 0.1);',
+    'const x = SZGame3D.getPos(obj, "w");',
+    'const x = SZGame3D.getRot(obj, "w");',
+    'const x = SZGame3D.getVel(obj, "w");',
+    'SZGame3D.rotateBy(obj, "w", 0.1);',
+    'SZGame3D.setVisible(obj, "toggle");',
+    'SZGame3D.setMaterial(obj, "lava");',
+    'SZGame3D.setShadows(cena, "auto");',
+    'SZGame3D.pruneSwarm(enxame, "w", -10, 10);',
+    'SZGame3D.playEffect("laser");',
+  ]
+
+  for (const code of unknownDropdownCases) {
+    it(`preserva dropdown desconhecido como código: ${code}`, () => {
+      const parsed = parseJS(code)
+      expect([...collectTypes(parsed)].filter((type) => type.startsWith('g3d:'))).toEqual([])
+      expect(compileStatements(parsed, 0).trim()).toBe(code)
+    })
+  }
+
+  for (const code of [
+    'SZGame3D.setBackground(cena, "#000", 123);',
+    'const grupo = SZGame3D.createGroup(123);',
+    'SZGame3D.isometricCamera(cena, alvo, 123);',
+  ]) {
+    it(`preserva chamada com argumentos extras: ${code}`, () => {
+      const parsed = parseJS(code)
+      expect([...collectTypes(parsed)].filter((type) => type.startsWith('g3d:'))).toEqual([])
+      expect(compileStatements(parsed, 0).trim()).toBe(code)
+    })
+  }
+
+  for (const code of [
+    'SZGame3D.isometricCamera(cena, escolherAlvo());',
+    'SZGame3D.topCamera(cena, escolherAlvo());',
+  ]) {
+    it(`preserva alvo de câmera que não cabe no bloco: ${code}`, () => {
+      const parsed = parseJS(code)
+      expect([...collectTypes(parsed)].filter((type) => type.startsWith('g3d:'))).toEqual([])
+      expect(compileStatements(parsed, 0).trim()).toBe(code)
+    })
+  }
+})
+
 describe('roundtrip do rotatingCubeExample (gerar → parsear)', () => {
   it('o código gerado volta a virar blocos g3d (sem degradar para rawJS)', () => {
     const code = compileStatements(behaviorStatements(rotatingCubeExample.ir), 0)

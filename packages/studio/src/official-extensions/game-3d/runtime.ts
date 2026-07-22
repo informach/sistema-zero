@@ -89,6 +89,46 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     if (world) world._listeners = [];
   }
 
+  function prepareCanvasAccessibility(canvas) {
+    if (!canvas || !canvas.setAttribute) return;
+    var canvasId = canvas.id || 'tela';
+    var descriptionId = canvas.getAttribute && canvas.getAttribute('aria-describedby');
+    if (!descriptionId) descriptionId = canvasId + '-sz-game-3d-description';
+    if (!canvas.getAttribute || !canvas.getAttribute('aria-label')) {
+      canvas.setAttribute('aria-label', 'Cena de jogo 3D interativa');
+    }
+    if (!canvas.hasAttribute || !canvas.hasAttribute('tabindex')) {
+      canvas.setAttribute('tabindex', '0');
+    }
+    canvas.setAttribute('aria-describedby', descriptionId);
+
+    if (!document || !document.createElement || !document.body) return;
+    var description = document.getElementById ? document.getElementById(descriptionId) : null;
+    if (!description) {
+      description = document.createElement('p');
+      description.id = descriptionId;
+      description.textContent = 'Use as setas, WASD, espaço, mouse ou toque conforme as instruções do jogo.';
+      description.style.position = 'absolute';
+      description.style.width = '1px';
+      description.style.height = '1px';
+      description.style.padding = '0';
+      description.style.margin = '-1px';
+      description.style.overflow = 'hidden';
+      description.style.clip = 'rect(0, 0, 0, 0)';
+      description.style.whiteSpace = 'nowrap';
+      description.style.border = '0';
+      document.body.appendChild(description);
+    }
+
+    var focusStyle = document.getElementById ? document.getElementById('sz-game-3d-focus-style') : null;
+    if (!focusStyle && document.head) {
+      focusStyle = document.createElement('style');
+      focusStyle.id = 'sz-game-3d-focus-style';
+      focusStyle.textContent = 'canvas:focus-visible{outline:3px solid #fff;outline-offset:-6px;}';
+      document.head.appendChild(focusStyle);
+    }
+  }
+
   function requireCanvas(canvasId) {
     var canvas = document && document.getElementById ? document.getElementById(canvasId) : null;
     if (!canvas) {
@@ -116,6 +156,93 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     return obj;
   }
 
+  function removeFromArray(array, value) {
+    if (!array) return false;
+    var removed = false;
+    for (var i = array.length - 1; i >= 0; i--) {
+      if (array[i] !== value) continue;
+      array.splice(i, 1);
+      removed = true;
+    }
+    return removed;
+  }
+
+  function objectTree(root) {
+    var nodes = [];
+    if (!root) return nodes;
+    if (root.traverse) root.traverse(function (node) { nodes.push(node); });
+    else {
+      nodes.push(root);
+      var children = root.children || [];
+      for (var i = 0; i < children.length; i++) {
+        var descendants = objectTree(children[i]);
+        for (var j = 0; j < descendants.length; j++) nodes.push(descendants[j]);
+      }
+    }
+    return nodes;
+  }
+
+  function unregisterObjectTree(world, root) {
+    if (!world || !root) return;
+    var nodes = objectTree(root);
+    for (var i = 0; i < nodes.length; i++) {
+      var node = nodes[i];
+      removeFromArray(world._objects, node);
+      removeFromArray(world._models, node);
+      removeFromArray(world._solids, node);
+      node._szWorld = null;
+    }
+    if (!world._swarms) return;
+    for (var s = 0; s < world._swarms.length; s++) {
+      var swarm = world._swarms[s];
+      if (!swarm || !swarm.items) continue;
+      for (var itemIndex = swarm.items.length - 1; itemIndex >= 0; itemIndex--) {
+        if (nodes.indexOf(swarm.items[itemIndex]) === -1) continue;
+        swarm.items.splice(itemIndex, 1);
+        world._swarmItemCount = Math.max(0, (world._swarmItemCount || 0) - 1);
+      }
+    }
+  }
+
+  function objectContains(root, candidate) {
+    var current = candidate;
+    while (current) {
+      if (current === root) return true;
+      current = current.parent;
+    }
+    return false;
+  }
+
+  function keepActiveCamera(world, removedRoot) {
+    var camera = world && world.camera;
+    if (!camera || !objectContains(removedRoot, camera) || !world.scene) return;
+    if (world.scene.attach) world.scene.attach(camera);
+    else world.scene.add(camera);
+  }
+
+  function disposeOwnedMaterials(root) {
+    var seen = new Set();
+    var nodes = objectTree(root);
+    for (var i = 0; i < nodes.length; i++) {
+      var material = nodes[i] && nodes[i].material;
+      if (!material) continue;
+      var materials = material.length ? material : [material];
+      for (var j = 0; j < materials.length; j++) {
+        var item = materials[j];
+        if (!item || seen.has(item)) continue;
+        seen.add(item);
+        if (item.dispose) try { item.dispose(); } catch (e) {}
+      }
+    }
+  }
+
+  function disposeWorldsUsingCanvas(canvas) {
+    for (var i = worlds.length - 1; i >= 0; i--) {
+      if (!worlds[i] || worlds[i]._canvas !== canvas) continue;
+      try { dispose(worlds[i]); } catch (e) {}
+    }
+  }
+
   // Metadados de física por malha (meia-extensão p/ AABB + velocidade + flags).
   // A escala (obj.scale) é aplicada na hora de medir, então setScale já reflete
   // na colisão sem mexer aqui.
@@ -137,6 +264,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   // (canvas criado em tela cheia). NÃO muda o comportamento do createScene.
   function _setupWorld(canvas, w, h, options) {
     options = options || {};
+    prepareCanvasAccessibility(canvas);
     var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: !!options.alpha, canvas: canvas });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setSize(w, h, false);
@@ -169,6 +297,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     var world = {
       scene: scene, camera: camera, renderer: renderer, _objects: [], _canvas: canvas,
       _camFollow: null, _listeners: [], _solids: [], _dt: 0,
+      _resizeCamera: options.resizeCamera || null,
       _lightCount: options.skipLights ? 0 : 2,
       _swarmItemCount: 0, _disposed: false
     };
@@ -178,7 +307,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       if (!(nw > 0) || !(nh > 0)) return;
       renderer.setSize(nw, nh, false);
       var activeCamera = world.camera;
-      if (typeof options.resizeCamera === 'function') options.resizeCamera(activeCamera, nw, nh);
+      if (typeof world._resizeCamera === 'function') world._resizeCamera(activeCamera, nw, nh);
       else if (typeof activeCamera.aspect === 'number') {
         activeCamera.aspect = nw / nh;
         if (activeCamera.updateProjectionMatrix) activeCamera.updateProjectionMatrix();
@@ -199,11 +328,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     // de instanciar outro WebGLRenderer sobre o MESMO canvas, senão o contexto
     // antigo fica vivo no registro e o navegador acaba forçando perda de
     // contexto (cena preta) ao estourar o limite de ~16 contextos WebGL.
-    for (var k = worlds.length - 1; k >= 0; k--) {
-      if (worlds[k] && worlds[k]._canvas === canvas) {
-        try { dispose(worlds[k]); } catch (e) {}
-      }
-    }
+    disposeWorldsUsingCanvas(canvas);
     var w = canvas.clientWidth || canvas.width || 400;
     var h = canvas.clientHeight || canvas.height || 300;
     return _setupWorld(canvas, w, h);
@@ -523,20 +648,13 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   /** Remove um objeto da cena, do registro de GPU e descarta geometria/material. */
   function removeObject(world, mesh) {
     if (!world || !mesh) return;
+    keepActiveCamera(world, mesh);
     // Tira do pai (a cena, ou o modelo onde foi montado).
     if (mesh.parent && mesh.parent.remove) mesh.parent.remove(mesh);
     else if (world.scene) world.scene.remove(mesh);
-    disposeGroup(mesh, false);
-    var i = world._objects.indexOf(mesh);
-    if (i !== -1) world._objects.splice(i, 1);
-    if (world._models) {
-      var modelIndex = world._models.indexOf(mesh);
-      if (modelIndex !== -1) world._models.splice(modelIndex, 1);
-    }
-    if (world._solids) {
-      var solidIndex = world._solids.indexOf(mesh);
-      if (solidIndex !== -1) world._solids.splice(solidIndex, 1);
-    }
+    unregisterObjectTree(world, mesh);
+    if (mesh.userData && mesh.userData.szSwarmCopy) disposeOwnedMaterials(mesh);
+    else disposeGroup(mesh, false);
   }
 
   // ====================================================================
@@ -637,7 +755,20 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     // Material PRÓPRIO por cópia: deixa recolorir/sumir uma sem mexer nas outras,
     // e o dispose de uma cópia não mata o material do original. Geometria é
     // compartilhada (eficiente) — só o original a descarta.
-    if (original.material && original.material.clone) copy.material = original.material.clone();
+    var copyNodes = objectTree(copy);
+    for (var ci = 0; ci < copyNodes.length; ci++) {
+      var copyNode = copyNodes[ci];
+      if (!copyNode || !copyNode.material) continue;
+      var sourceMaterials = copyNode.material.length ? copyNode.material : [copyNode.material];
+      var clonedMaterials = [];
+      for (var mi = 0; mi < sourceMaterials.length; mi++) {
+        var sourceMaterial = sourceMaterials[mi];
+        clonedMaterials.push(sourceMaterial && sourceMaterial.clone ? sourceMaterial.clone() : sourceMaterial);
+      }
+      copyNode.material = copyNode.material.length ? clonedMaterials : clonedMaterials[0];
+    }
+    copy.userData = copy.userData || {};
+    copy.userData.szSwarmCopy = true;
     if (copy.position) copy.position.set(x || 0, y || 0, z || 0);
     copy.visible = true;
     // Herda as medidas/física do original p/ a colisão funcionar nas cópias.
@@ -668,7 +799,8 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     swarm.items.splice(i, 1);
     if (swarm.world) swarm.world._swarmItemCount = Math.max(0, (swarm.world._swarmItemCount || 0) - 1);
     if (item.parent && item.parent.remove) item.parent.remove(item);
-    if (item.material && item.material.dispose) try { item.material.dispose(); } catch (e) {}
+    unregisterObjectTree(swarm.world, item);
+    disposeOwnedMaterials(item);
   }
   function pruneSwarm(swarm, axis, min, max) {
     if (!swarm || !swarm.items) return;
@@ -724,6 +856,19 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     else if (kind === 'explosion') _beep('sawtooth', 180, 40, 0.4, 'exp');
     else if (kind === 'hit') _beep('square', 440, 110, 0.12, 'exp');
     else _beep('square', 880, 1320, 0.18, 'exp'); // coin (padrão)
+  }
+  function disposeAudio() {
+    var audio = _audio;
+    _audio = null;
+    if (!audio || !audio.close) return;
+    try {
+      var closing = audio.close();
+      if (closing && closing.catch) {
+        closing.catch(function () { warnOnce('audio-close', 'não foi possível encerrar o áudio desta execução.'); });
+      }
+    } catch (e) {
+      warnOnce('audio-close', 'não foi possível encerrar o áudio desta execução.');
+    }
   }
 
   /**
@@ -896,7 +1041,19 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     listen(world, window, 'pointerdown', upd);
   }
   function pickList(world) {
-    return world && world._objects ? world._objects : [];
+    if (!world || !world._objects) return [];
+    var visible = [];
+    for (var i = 0; i < world._objects.length; i++) {
+      var object = world._objects[i];
+      var current = object;
+      var active = true;
+      while (current) {
+        if (current.visible === false) { active = false; break; }
+        current = current.parent;
+      }
+      if (active) visible.push(object);
+    }
+    return visible;
   }
   function _syncMatrices(world) {
     // Sem o loop de render rodando, matrixWorld fica defasado → o raycast não
@@ -1075,7 +1232,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       });
     }
     listen(world, window, 'mousemove', function (e) {
-      if (!document.pointerLockElement) return;
+      if (document.pointerLockElement !== world._canvas) return;
       var mx = e.movementX || 0, my = e.movementY || 0;
       if (world._fpsObj && world._fpsObj.rotation) world._fpsObj.rotation.y -= mx * 0.0025;
       world._pitch -= my * 0.0025;
@@ -1258,6 +1415,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       }
       _texCache = null;
     }
+    disposeAudio();
   }
 
   // ======================================================================
@@ -1439,12 +1597,26 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   }
 
   // ---- Genéricos expostos ----
+  function installOrthographicCamera(world, kind, followObj, factory, resizeCamera) {
+    if (!world || !world.scene) return null;
+    var current = world.camera;
+    var cameraKind = current && current.userData ? current.userData.szCameraKind : null;
+    var camera = current;
+    if (cameraKind !== kind) {
+      if (current && current.parent && current.parent.remove) current.parent.remove(current);
+      camera = factory(world._canvas);
+      camera.userData = camera.userData || {};
+      camera.userData.szCameraKind = kind;
+    }
+    world.camera = camera;
+    world._resizeCamera = resizeCamera;
+    var parent = followObj && followObj.add ? followObj : world.scene;
+    if (camera.parent !== parent) parent.add(camera);
+    if (world._resize) world._resize();
+    return camera;
+  }
   function isometricCamera(world, followObj) {
-    if (!world || !world.scene) return;
-    var cam = makeYUpIsoCamera(world._canvas);
-    world.camera = cam;
-    if (followObj && followObj.add) followObj.add(cam);
-    else world.scene.add(cam);
+    installOrthographicCamera(world, 'isometric', followObj, makeYUpIsoCamera, resizeIsoCamera);
   }
   function gridPosition(obj, row, col) {
     if (!obj || !obj.position) return;
@@ -1584,9 +1756,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   // ---- Kit Travessia exposto ----
   function createCrossingScene(canvasId) {
     var canvas = requireCanvas(canvasId);
-    for (var k = worlds.length - 1; k >= 0; k--) {
-      if (worlds[k] && worlds[k]._canvas === canvas) { try { dispose(worlds[k]); } catch (e) {} }
-    }
+    disposeWorldsUsingCanvas(canvas);
     var w = canvas.clientWidth || canvas.width || 480;
     var h = canvas.clientHeight || canvas.height || 360;
     var camera = makeIsoCamera(canvas);
@@ -1816,11 +1986,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     if (cam.updateProjectionMatrix) cam.updateProjectionMatrix();
   }
   function topCamera(world, followObj) {
-    if (!world || !world.scene) return;
-    var cam = makeYUpAerialCamera(world._canvas);
-    world.camera = cam;
-    if (followObj && followObj.add) followObj.add(cam);
-    else world.scene.add(cam);
+    installOrthographicCamera(world, 'top', followObj, makeYUpAerialCamera, resizeAerialCamera);
   }
   function circleData(obj) {
     if (!obj.userData) obj.userData = {};
@@ -1881,9 +2047,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
 
   function createRaceScene(canvasId) {
     var canvas = requireCanvas(canvasId);
-    for (var k = worlds.length - 1; k >= 0; k--) {
-      if (worlds[k] && worlds[k]._canvas === canvas) { try { dispose(worlds[k]); } catch (e) {} }
-    }
+    disposeWorldsUsingCanvas(canvas);
     var w = canvas.clientWidth || canvas.width || 480;
     var h = canvas.clientHeight || canvas.height || 360;
     var camera = makeAerialCamera(canvas);
@@ -2047,8 +2211,12 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   function fall(obj) {
     if (!obj || !obj.position) return;
     if (integrateFall(obj)) {
-      if (obj.parent && obj.parent.remove) obj.parent.remove(obj);
-      disposeGroup(obj);
+      var world = worldOf(obj);
+      if (world) removeObject(world, obj);
+      else {
+        if (obj.parent && obj.parent.remove) obj.parent.remove(obj);
+        disposeGroup(obj);
+      }
     }
   }
   /** GENÉRICO: vaivém num eixo entre min e max (plataformas, patrulha). */
@@ -2137,9 +2305,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   }
   function createStackScene(canvasId) {
     var canvas = requireCanvas(canvasId);
-    for (var k = worlds.length - 1; k >= 0; k--) {
-      if (worlds[k] && worlds[k]._canvas === canvas) { try { dispose(worlds[k]); } catch (e) {} }
-    }
+    disposeWorldsUsingCanvas(canvas);
     var w = canvas.clientWidth || canvas.width || 480;
     var h = canvas.clientHeight || canvas.height || 360;
     var camera = makeStackCamera(canvas);

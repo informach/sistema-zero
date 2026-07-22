@@ -136,6 +136,8 @@ export const ptBR: Record<string, string> = {
 
   'bridge.advancedNotice':
     'Esse pedaço do código ainda não tem um bloco igual a ele, então virou um cartão de "Código avançado". Ele continua funcionando, e você pode editar no editor de código.',
+  'bridge.showGeneratedInternals': 'Ver detalhes gerados',
+  'bridge.hideGeneratedInternals': 'Ocultar detalhes gerados',
 
   'code.advancedBlock': 'Código avançado',
 

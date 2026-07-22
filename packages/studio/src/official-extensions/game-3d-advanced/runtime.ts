@@ -1,4 +1,5 @@
 import { withGameUIFontRuntime } from '../gameUiFont'
+import { withThreePostProcessingRuntime } from '../threePostProcessingRuntime'
 
 /**
  * Runtime do "Jogo 3D Avançado" — injetado no <head> do iframe quando a
@@ -29,7 +30,7 @@ import { withGameUIFontRuntime } from '../gameUiFont'
  *   clone de molde compartilha geometria/material, dispose + forceContextLoss
  *   no fechamento (o navegador limita ~16 contextos WebGL).
  */
-export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 'three';
+const gameKit3DRuntimeSource = `import * as THREE from 'three';
 (function () {
   var _szGameUIFont = window.SZGameUIFont.family;
   // ---- Config (do bloco "Preparar o jogo 3D") ----
@@ -55,6 +56,8 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
   // ---- Tetos (higiene de GPU/CPU) ----
   var MAX_ENTITIES = 200;   // cada entidade é um Group multi-peça com sombra
   var MAX_PARTS = 20;       // peças por molde
+  var MAX_MOLDS = 64;       // cada molde mantém template/material próprios
+  var MAX_EFFECTS = 32;     // cada efeito pré-aloca buffers para 300 partículas
   var MAX_DECOR = 64;       // enfeites do cenário
   var MAX_EXTRA_LIGHTS = 8; // luz pontual multiplica o custo de cada material
   var MAX_ATTRACTORS_PER_EFFECT = 16;
@@ -77,7 +80,10 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
   var projectButtons = [];               // botões extras criados pela fábrica do aluno
   var hudEls = Object.create(null);      // canto -> div
   var sounds = Object.create(null);      // nome -> HTMLAudioElement
+  var soundSources = Object.create(null); // nome -> data URL usada pelo Audio
+  var soundLoadCleanups = Object.create(null); // nome -> encerra timer/listeners pendentes
   var molds = Object.create(null);       // nome -> { health, speed, template, radius }
+  var moldCount = 0;
   var pools = Object.create(null);       // nome -> { active:[], free:[], _sweeping } (contador de profundidade)
   var spawners = [];                     // { mold, interval, timer, where }
   var fsmHooks = Object.create(null);    // mold -> estado -> { enter:[], step:[], exit:[] }
@@ -85,6 +91,7 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
   var deathHooks = Object.create(null);  // mold -> [fn]
   var overlapHooks = Object.create(null); // mold da ZONA -> [fn(zona, quem)]
   var effects = Object.create(null);     // nome -> receita + Points + buffers (faíscas)
+  var effectCount = 0;
   // Jorros contínuos VIVOS (lista, não mapa por efeito: várias tochas da mesma
   // receita convivem — o mapa antigo fazia o 2º jorro apagar o 1º em silêncio).
   var jets = [];
@@ -95,6 +102,12 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
   var canvasEl = null;
   var styleEl = null;
   var hudLayer = null;
+  var a11yDescriptionEl = null;
+  var a11yHudEl = null;
+  var a11yHudValues = Object.create(null);
+  var a11yHudTimer = null;
+  var a11yHudLastAt = -500;
+  var a11yHudSignature = '';
   var renderer = null;
   var scene = null;
   var camera = null;
@@ -156,6 +169,10 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
   var mouseJust = false;                 // apertou NESTE quadro (limpa com justPressed)
   var _pickWired = false;                // rastreio do ponteiro já ligado?
   var _fpsWired = false;                 // pointer-lock/olhar do FPS já ligado?
+  var _fpsTouchId = null;                // gesto de arrasto que controla o olhar no toque
+  var _fpsTouchX = 0;
+  var _fpsTouchY = 0;
+  var _stepSystemsWarned = false;
 
   function warn(msg) {
     try { console.warn('SZGameKit3D: ' + msg); } catch (e) {}
@@ -301,6 +318,10 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
         'box-shadow: 0 0 15px ' + rgba(config.accent, 0.2) + '; }' +
       '.szg3k-panel button:hover { background: ' + config.accent + '; ' +
         'box-shadow: 0 0 25px ' + glowStrong + '; transform: translateY(-2px); }' +
+      '.szg3k-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; ' +
+        'overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }' +
+      '#szg3k-canvas:focus-visible { outline: none; box-shadow: inset 0 0 0 3px rgba(255,255,255,0.9), ' +
+        'inset 0 0 0 5px rgba(0,0,0,0.55); }' +
       // Barra de vida flutuante: mesma mecânica do balão de fala (projetada por
       // quadro), um tico abaixo dele para os dois conviverem na mesma cabeça.
       '.szg3k-bar { position: absolute; width: 52px; height: 8px; border-radius: 5px; ' +
@@ -313,8 +334,14 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
     var el = document.createElement('div');
     el.className = 'szg3k-panel';
     el.setAttribute('data-szg3k-screen', name);
+    el.setAttribute('role', 'dialog');
+    el.setAttribute('aria-modal', 'false');
+    el.setAttribute('aria-hidden', 'true');
+    el.tabIndex = -1;
     var title = document.createElement(titleTag);
+    title.id = 'szg3k-screen-title-' + Object.keys(screens).length;
     title.textContent = titleText;
+    el.setAttribute('aria-labelledby', title.id);
     el.appendChild(title);
     var p = document.createElement('p');
     p.textContent = bodyText;
@@ -355,15 +382,36 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
 
       stageEl = document.createElement('div');
       stageEl.id = 'szg3k-stage';
+      stageEl.setAttribute('role', 'region');
+      stageEl.setAttribute('aria-label', 'Jogo 3D interativo');
       var frame = document.createElement('div');
       frame.id = 'szg3k-frame';
       canvasEl = document.createElement('canvas');
       canvasEl.id = 'szg3k-canvas';
       canvasEl.width = config.w;
       canvasEl.height = config.h;
+      canvasEl.tabIndex = 0;
+      canvasEl.style.touchAction = 'none';
+      canvasEl.setAttribute('aria-label', 'Cena do jogo 3D');
+      canvasEl.setAttribute('aria-describedby', 'szg3k-description');
       frame.appendChild(canvasEl);
       hudLayer = frame;
       stageEl.appendChild(frame);
+      a11yDescriptionEl = document.createElement('p');
+      a11yDescriptionEl.id = 'szg3k-description';
+      a11yDescriptionEl.className = 'szg3k-sr-only';
+      a11yDescriptionEl.setAttribute('role', 'status');
+      a11yDescriptionEl.setAttribute('aria-live', 'polite');
+      a11yDescriptionEl.setAttribute('aria-atomic', 'true');
+      a11yDescriptionEl.textContent = 'Jogo 3D interativo';
+      stageEl.appendChild(a11yDescriptionEl);
+      a11yHudEl = document.createElement('p');
+      a11yHudEl.id = 'szg3k-hud-status';
+      a11yHudEl.className = 'szg3k-sr-only';
+      a11yHudEl.setAttribute('role', 'status');
+      a11yHudEl.setAttribute('aria-live', 'polite');
+      a11yHudEl.setAttribute('aria-atomic', 'true');
+      stageEl.appendChild(a11yHudEl);
       document.body.appendChild(stageEl);
 
       var menu = makeScreen('menu', 'h1', 'Meu Jogo 3D', 'WASD ou setas para andar');
@@ -387,11 +435,18 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
     }
   }
 
-  function hideScreens() {
+  function hideScreens(focusCanvas) {
     if (!shellReady) return;
     for (var name in screens) {
       var s = screens[name];
-      if (s && s.el) s.el.classList.remove('szg3k-active');
+      if (s && s.el) {
+        s.el.classList.remove('szg3k-active');
+        s.el.setAttribute('aria-hidden', 'true');
+      }
+    }
+    if (focusCanvas && canvasEl && canvasEl.focus) {
+      try { canvasEl.focus({ preventScroll: true }); }
+      catch (e) { warnOnce('focus-canvas', 'não consegui focar a cena do jogo: ' + e); }
     }
   }
 
@@ -403,8 +458,17 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
       warn('a tela "' + key + '" não existe — crie com "Criar a tela" (prontas: menu, pausa, carregando, fim, vitoria)');
       return;
     }
-    hideScreens();
+    hideScreens(false);
     entry.el.classList.add('szg3k-active');
+    entry.el.setAttribute('aria-hidden', 'false');
+    if (a11yDescriptionEl) {
+      a11yDescriptionEl.textContent = ['Jogo 3D interativo', entry.title.textContent, entry.text.textContent]
+        .filter(Boolean).join('. ');
+    }
+    if (entry.el.focus) {
+      try { entry.el.focus({ preventScroll: true }); }
+      catch (e) { warnOnce('focus-screen', 'não consegui focar a tela "' + key + '": ' + e); }
+    }
   }
 
   function applyStateScreens(name) {
@@ -414,7 +478,44 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
     else if (name === 'fim') showScreen('fim');
     else if (name === 'vitoria') showScreen('vitoria');
     else if (name === 'carregando') showScreen('carregando');
-    else hideScreens();
+    else hideScreens(true);
+  }
+
+  function flushAccessibleHud() {
+    a11yHudTimer = null;
+    if (!a11yHudEl) return;
+    var values = [];
+    var keysList = Object.keys(a11yHudValues).sort();
+    for (var i = 0; i < keysList.length; i++) {
+      var value = a11yHudValues[keysList[i]];
+      if (value) values.push(value);
+    }
+    var signature = values.join('. ');
+    if (signature !== a11yHudSignature) {
+      a11yHudSignature = signature;
+      a11yHudEl.textContent = signature;
+    }
+    a11yHudLastAt = Date.now();
+  }
+
+  function resetAccessibleHud() {
+    if (a11yHudTimer !== null) { clearTimeout(a11yHudTimer); a11yHudTimer = null; }
+    a11yHudValues = Object.create(null);
+    a11yHudSignature = '';
+    a11yHudLastAt = -500;
+    if (a11yHudEl) a11yHudEl.textContent = '';
+  }
+
+  function updateAccessibleHud(key, content) {
+    if (content) a11yHudValues[key] = content;
+    else delete a11yHudValues[key];
+    var wait = 500 - (Date.now() - a11yHudLastAt);
+    if (wait <= 0) {
+      if (a11yHudTimer !== null) { clearTimeout(a11yHudTimer); a11yHudTimer = null; }
+      flushAccessibleHud();
+    } else if (a11yHudTimer === null) {
+      a11yHudTimer = setTimeout(flushAccessibleHud, wait);
+    }
   }
 
   /** HUD por canto (DOM sobre o canvas): texto vazio APAGA o canto. */
@@ -428,6 +529,7 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
     if (!content) {
       if (el && el.parentNode) el.parentNode.removeChild(el);
       delete hudEls[key];
+      updateAccessibleHud(key, '');
       return;
     }
     if (!el) {
@@ -437,6 +539,7 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
       hudEls[key] = el;
     }
     el.textContent = content;
+    updateAccessibleHud(key, content);
   }
 
   // ---- Máquina de estados do JOGO (menu/jogando/pausado/fim/vitoria + custom) ----
@@ -476,7 +579,25 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
     }
   }
 
+  function disposeMoldTemplate(mold, disposedMaterials) {
+    var tpl = mold && mold.template;
+    if (!tpl || !tpl.traverse) return;
+    tpl.traverse(function (o) {
+      var list = o.material && o.material.length ? o.material : [o.material];
+      for (var i = 0; i < list.length; i++) {
+        var material = list[i];
+        if (!material || !material.dispose || disposedMaterials.has(material)) continue;
+        disposedMaterials.add(material);
+        try { material.dispose(); }
+        catch (e) { warnOnce('dispose-mold', 'não consegui liberar um material antigo: ' + e); }
+      }
+    });
+  }
+
   function resetProjectRuntime() {
+    resetAudioForRun();
+    resetAccessibleHud();
+    _fpsTouchId = null;
     updateHooks.length = 0;
     enterStateHooks = Object.create(null);
     listeners = Object.create(null);
@@ -498,17 +619,7 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
     for (var fk in effects) disposeEffect(effects[fk]);
     var disposedMaterials = new Set();
     for (var mk in molds) {
-      var tpl = molds[mk].template;
-      if (!tpl || !tpl.traverse) continue;
-      tpl.traverse(function (o) {
-        var list = o.material && o.material.length ? o.material : [o.material];
-        for (var mi = 0; mi < list.length; mi++) {
-          var material = list[mi];
-          if (!material || !material.dispose || disposedMaterials.has(material)) continue;
-          disposedMaterials.add(material);
-          try { material.dispose(); } catch (e) { warnOnce('dispose-mold', 'não consegui liberar um material antigo: ' + e); }
-        }
-      });
+      disposeMoldTemplate(molds[mk], disposedMaterials);
     }
     for (var bi = 0; bi < projectButtons.length; bi++) {
       var button = projectButtons[bi];
@@ -516,9 +627,11 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
     }
     projectButtons.length = 0;
     molds = Object.create(null);
+    moldCount = 0;
     pools = Object.create(null);
     totalAlive = 0;
     effects = Object.create(null);
+    effectCount = 0;
     jets.length = 0;
     anySolid = false;
     anyTrigger = false;
@@ -568,7 +681,7 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
     });
     window.addEventListener('pointerup', function () { mouseHeld = false; });
     window.addEventListener('contextmenu', function () { keys = {}; });
-    window.addEventListener('blur', function () { keys = {}; mouseHeld = false; });
+    window.addEventListener('blur', function () { keys = {}; mouseHeld = false; _fpsTouchId = null; });
     // Rastreia o ponteiro desde o COMEÇO (não só no 1º pick): senão o primeiro
     // clique da partida mirava o centro da tela, não onde a criança clicou.
     ensurePointer();
@@ -1364,6 +1477,11 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
   function defineMold(name, opts, buildFn) {
     var k = text(name, '');
     if (!k) { warn('"Criar o molde 3D" precisa de um nome'); return; }
+    var previousMold = molds[k];
+    if (!previousMold && moldCount >= MAX_MOLDS) {
+      warnOnce('mold-limit', 'o mundo já tem ' + MAX_MOLDS + ' moldes — reutilize um molde existente');
+      return;
+    }
     var o = (opts && typeof opts === 'object') ? opts : {};
     var group;
     try {
@@ -1415,6 +1533,8 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
       model: '',
       stateAnims: null
     };
+    if (previousMold) disposeMoldTemplate(previousMold, new Set());
+    else moldCount++;
     molds[k] = mold;
     if (!pools[k]) pools[k] = { active: [], free: [], _sweeping: 0 };
     // O corpo de blocos roda AGORA, com o molde corrente implícito (as peças
@@ -3142,7 +3262,12 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
     var k = text(name, '');
     if (!k) { warn('"Criar o efeito 3D" precisa de um nome'); return; }
     var o = (opts && typeof opts === 'object') ? opts : {};
-    if (effects[k]) disposeEffect(effects[k]);
+    var previousEffect = effects[k];
+    if (!previousEffect && effectCount >= MAX_EFFECTS) {
+      warnOnce('effect-limit', 'o mundo já tem ' + MAX_EFFECTS + ' efeitos — reutilize um efeito existente');
+      return;
+    }
+    if (previousEffect) disposeEffect(previousEffect);
     try {
       // Explosão: esfera cheia, aditivo (glow), sem emissão contínua, sem giro.
       effects[k] = buildEffect(k, {
@@ -3165,6 +3290,7 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
         glow: true,
         curve: 'pulso'
       });
+      if (!previousEffect) effectCount++;
     } catch (e) {
       warn('não consegui criar o efeito "' + k + '": ' + e);
     }
@@ -3180,7 +3306,12 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
     var k = text(name, '');
     if (!k) { warn('"Criar o emissor 3D" precisa de um nome'); return; }
     var o = (opts && typeof opts === 'object') ? opts : {};
-    if (effects[k]) disposeEffect(effects[k]);
+    var previousEffect = effects[k];
+    if (!previousEffect && effectCount >= MAX_EFFECTS) {
+      warnOnce('effect-limit', 'o mundo já tem ' + MAX_EFFECTS + ' efeitos — reutilize um efeito existente');
+      return;
+    }
+    if (previousEffect) disposeEffect(previousEffect);
     try {
       var coneDeg = Math.max(0, Math.min(180, num(o.cone, 20)));
       var glow = o.glow == null ? true : (o.glow !== false && o.glow !== 'FALSE');
@@ -3204,6 +3335,7 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
         glow: glow,
         curve: text(o.curve, 'suave')
       });
+      if (!previousEffect) effectCount++;
     } catch (e) {
       warn('não consegui criar o emissor "' + k + '": ' + e);
     }
@@ -3502,141 +3634,8 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
     'void main() { gl_FragColor = texture2D(tDiffuse, vUvs); }'
   ].join(' ');
 
-  var DOWNSAMPLE_FSH = [
-    'uniform sampler2D frameTexture;',
-    'uniform bool useKaris;',
-    'uniform vec2 resolution;',
-    'varying vec2 vUvs;',
-    'float Luminance(vec4 c) { return max(1.0, dot(c.xyz, vec3(0.2627, 0.6780, 0.0593))); }',
-    'vec4 KarisAverage(vec4 s1, vec4 s2, vec4 s3, vec4 s4) {',
-    '  float w1 = 1.0 / Luminance(s1);',
-    '  float w2 = 1.0 / Luminance(s2);',
-    '  float w3 = 1.0 / Luminance(s3);',
-    '  float w4 = 1.0 / Luminance(s4);',
-    '  float totalWeight = 1.0 / (w1 + w2 + w3 + w4);',
-    '  return (s1 * w1 + s2 * w2 + s3 * w3 + s4 * w4) * totalWeight;',
-    '}',
-    'void main() {',
-    '  vec2 texelSize = 1.0 / resolution;',
-    '  vec4 A = texture2D(frameTexture, vUvs + texelSize * vec2(-1.0, -1.0));',
-    '  vec4 B = texture2D(frameTexture, vUvs + texelSize * vec2(0.0, -1.0));',
-    '  vec4 C = texture2D(frameTexture, vUvs + texelSize * vec2(1.0, -1.0));',
-    '  vec4 D = texture2D(frameTexture, vUvs + texelSize * vec2(-0.5, -0.5));',
-    '  vec4 E = texture2D(frameTexture, vUvs + texelSize * vec2(0.5, -0.5));',
-    '  vec4 F = texture2D(frameTexture, vUvs + texelSize * vec2(-1.0, 0.0));',
-    '  vec4 G = texture2D(frameTexture, vUvs);',
-    '  vec4 H = texture2D(frameTexture, vUvs + texelSize * vec2(1.0, 0.0));',
-    '  vec4 I = texture2D(frameTexture, vUvs + texelSize * vec2(-0.5, 0.5));',
-    '  vec4 J = texture2D(frameTexture, vUvs + texelSize * vec2(0.5, 0.5));',
-    '  vec4 K = texture2D(frameTexture, vUvs + texelSize * vec2(-1.0, 1.0));',
-    '  vec4 L = texture2D(frameTexture, vUvs + texelSize * vec2(0.0, 1.0));',
-    '  vec4 M = texture2D(frameTexture, vUvs + texelSize * vec2(1.0, 1.0));',
-    '  vec2 div = vec2(0.5, 0.125);',
-    '  vec4 colour = vec4(0.0);',
-    '  if (useKaris) {',
-    '    colour = KarisAverage(D, E, I, J) * div.x;',
-    '    colour += KarisAverage(A, B, G, F) * div.y;',
-    '    colour += KarisAverage(B, C, H, G) * div.y;',
-    '    colour += KarisAverage(F, G, L, K) * div.y;',
-    '    colour += KarisAverage(G, H, M, L) * div.y;',
-    '  } else {',
-    '    div *= 0.25;',
-    '    colour = (D + E + I + J) * div.x;',
-    '    colour += (A + B + G + F) * div.y;',
-    '    colour += (B + C + H + G) * div.y;',
-    '    colour += (F + G + L + K) * div.y;',
-    '    colour += (G + H + M + L) * div.y;',
-    '  }',
-    '  gl_FragColor = colour;',
-    '}'
-  ].join(' ');
+  /*__SZ_THREE_POST_PROCESSING_SHADERS__*/
 
-  var UPSAMPLE_FSH = [
-    'uniform sampler2D frameTexture;',
-    'uniform sampler2D mipTexture;',
-    'uniform vec2 resolution;',
-    'varying vec2 vUvs;',
-    'void main() {',
-    '  float x = 1.0 / resolution.x;',
-    '  float y = 1.0 / resolution.y;',
-    '  vec4 a = texture2D(frameTexture, vec2(vUvs.x - x, vUvs.y + y));',
-    '  vec4 b = texture2D(frameTexture, vec2(vUvs.x, vUvs.y + y));',
-    '  vec4 c = texture2D(frameTexture, vec2(vUvs.x + x, vUvs.y + y));',
-    '  vec4 d = texture2D(frameTexture, vec2(vUvs.x - x, vUvs.y));',
-    '  vec4 e = texture2D(frameTexture, vec2(vUvs.x, vUvs.y));',
-    '  vec4 f = texture2D(frameTexture, vec2(vUvs.x + x, vUvs.y));',
-    '  vec4 g = texture2D(frameTexture, vec2(vUvs.x - x, vUvs.y - y));',
-    '  vec4 h = texture2D(frameTexture, vec2(vUvs.x, vUvs.y - y));',
-    '  vec4 i = texture2D(frameTexture, vec2(vUvs.x + x, vUvs.y - y));',
-    '  vec4 colour = e * 4.0;',
-    '  colour += (b + d + f + h) * 2.0;',
-    '  colour += (a + c + g + i);',
-    '  colour *= 1.0 / 16.0;',
-    '  colour += texture2D(mipTexture, vUvs);',
-    '  gl_FragColor = colour;',
-    '}'
-  ].join(' ');
-
-  var COMPOSITE_FSH = [
-    'uniform sampler2D frameTexture;',
-    'uniform sampler2D bloomTexture;',
-    'uniform float bloomStrength;',
-    'uniform float bloomMix;',
-    'varying vec2 vUvs;',
-    'void main() {',
-    '  vec4 textureSample = texture2D(frameTexture, vUvs);',
-    '  vec4 bloomSample = texture2D(bloomTexture, vUvs);',
-    '  gl_FragColor = mix(textureSample, bloomStrength * bloomSample, bloomMix);',
-    '}'
-  ].join(' ');
-
-  var FINAL_FSH = [
-    'uniform sampler2D tDiffuse;',
-    'uniform float intensity;',
-    'uniform float dropoff;',
-    'varying vec2 vUvs;',
-    'float inverseLerp(float v, float minValue, float maxValue) {',
-    '  return (v - minValue) / (maxValue - minValue);',
-    '}',
-    'float remap(float v, float inMin, float inMax, float outMin, float outMax) {',
-    '  float t = inverseLerp(v, inMin, inMax);',
-    '  return mix(outMin, outMax, t);',
-    '}',
-    'float vignette(vec2 uvs) {',
-    '  float v1 = smoothstep(0.5, 0.3, abs(uvs.x - 0.5));',
-    '  float v2 = smoothstep(0.5, 0.3, abs(uvs.y - 0.5));',
-    '  float v = v1 * v2;',
-    '  v = pow(v, dropoff);',
-    '  v = remap(v, 0.0, 1.0, intensity, 1.0);',
-    '  return v;',
-    '}',
-    /* ACES EXATO do three.js (RRTAndODTFit + matrizes in/out, com /0.6 de
-       exposição) — a MESMA curva do ACESFilmicToneMapping do caminho direto e do
-       OutputPass do curso. Assim ligar/desligar bloom/vinheta NÃO desloca a cor
-       da imagem inteira (o furo de consistência do review). mat3 é column-major:
-       cada trinca é uma COLUNA, igual ao three. */
-    'vec3 RRTAndODTFit(vec3 v) {',
-    '  vec3 a = v * (v + 0.0245786) - 0.000090537;',
-    '  vec3 b = v * (0.983729 * v + 0.4329510) + 0.238081;',
-    '  return a / b;',
-    '}',
-    'vec3 aces(vec3 color) {',
-    '  mat3 mIn = mat3(0.59719, 0.07600, 0.02840, 0.35458, 0.90834, 0.13383, 0.04823, 0.01566, 0.83777);',
-    '  mat3 mOut = mat3(1.60475, -0.10208, -0.00327, -0.53108, 1.10813, -0.07276, -0.07367, -0.00605, 1.07602);',
-    '  color *= 1.0 / 0.6;',
-    '  color = mIn * color;',
-    '  color = RRTAndODTFit(color);',
-    '  color = mOut * color;',
-    '  return clamp(color, 0.0, 1.0);',
-    '}',
-    'void main() {',
-    '  vec4 texel = texture2D(tDiffuse, vUvs);',
-    '  vec3 col = texel.xyz * vignette(vUvs);',
-    '  col = aces(col);',
-    '  col = pow(col, vec3(0.4545));',
-    '  gl_FragColor = vec4(col, 1.0);',
-    '}'
-  ].join(' ');
 
   function makeTarget(w, h) {
     return new THREE.WebGLRenderTarget(Math.max(1, Math.round(w)), Math.max(1, Math.round(h)), {
@@ -3812,7 +3811,7 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
   // ---- Câmera viva (um modo por vez) ----
 
   function setOrbit(dist) {
-    camMode = { kind: 'orbit', target: null, dist: Math.max(2, num(dist, 25)), height: 0, pivot: camMode.pivot, pivotGen: camMode.pivotGen };
+    camMode = { kind: 'orbit', target: null, targetGen: 0, dist: Math.max(2, num(dist, 25)), height: 0, pivot: camMode.pivot, pivotGen: camMode.pivotGen };
     if (!orbit) {
       var st = { az: 0.7, el: 0.5, dist: camMode.dist, dragging: false, px: 0, py: 0 };
       orbit = st;
@@ -4032,33 +4031,66 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
       targetGen: e._gen,
       dist: 0,
       height: h,
+      pivot: null,
+      pivotGen: 0,
       yaw: e.mesh ? e.mesh.rotation.y : 0,
       pitch: 0
     };
     ensureFpsLook();
   }
+  function rotateFpsLook(dx, dy) {
+    if (camMode.kind !== 'fps') return;
+    camMode.yaw -= num(dx, 0) * 0.0025;
+    camMode.pitch -= num(dy, 0) * 0.0025;
+    if (camMode.pitch > 1.4) camMode.pitch = 1.4;
+    if (camMode.pitch < -1.4) camMode.pitch = -1.4;
+    // O corpo vira junto no eixo Y — mover em 1ª pessoa e o olhar batem.
+    if (isEntity(camMode.target) && camMode.target.mesh) {
+      camMode.target.mesh.rotation.y = camMode.yaw;
+    }
+  }
   function ensureFpsLook() {
     if (_fpsWired) return;
     _fpsWired = true;
     if (canvasEl && canvasEl.addEventListener) {
+      canvasEl.style.touchAction = 'none';
       canvasEl.addEventListener('click', function () {
         if (camMode.kind === 'fps' && canvasEl.requestPointerLock) {
           try { canvasEl.requestPointerLock(); } catch (err) {}
         }
       });
+      canvasEl.addEventListener('pointerdown', function (ev) {
+        if (camMode.kind !== 'fps' || ev.pointerType === 'mouse') return;
+        _fpsTouchId = ev.pointerId;
+        _fpsTouchX = ev.clientX;
+        _fpsTouchY = ev.clientY;
+        if (canvasEl.setPointerCapture) {
+          try { canvasEl.setPointerCapture(ev.pointerId); }
+          catch (e) { warnOnce('fps-touch-capture', 'não consegui capturar o gesto de câmera: ' + e); }
+        }
+        if (ev.cancelable) ev.preventDefault();
+      });
     }
     window.addEventListener('mousemove', function (ev) {
       if (camMode.kind !== 'fps') return;
       if (typeof document !== 'undefined' && document.pointerLockElement !== canvasEl) return;
-      camMode.yaw -= (ev.movementX || 0) * 0.0025;
-      camMode.pitch -= (ev.movementY || 0) * 0.0025;
-      if (camMode.pitch > 1.4) camMode.pitch = 1.4;
-      if (camMode.pitch < -1.4) camMode.pitch = -1.4;
-      // O corpo vira junto no eixo Y — mover em 1ª pessoa e o olhar batem.
-      if (isEntity(camMode.target) && camMode.target.mesh) {
-        camMode.target.mesh.rotation.y = camMode.yaw;
-      }
+      rotateFpsLook(ev.movementX || 0, ev.movementY || 0);
     });
+    window.addEventListener('pointermove', function (ev) {
+      if (_fpsTouchId === null || ev.pointerId !== _fpsTouchId) return;
+      var dx = ev.clientX - _fpsTouchX;
+      var dy = ev.clientY - _fpsTouchY;
+      _fpsTouchX = ev.clientX;
+      _fpsTouchY = ev.clientY;
+      rotateFpsLook(dx, dy);
+      if (ev.cancelable) ev.preventDefault();
+    });
+    var finishTouchLook = function (ev) {
+      if (_fpsTouchId === null || ev.pointerId !== _fpsTouchId) return;
+      _fpsTouchId = null;
+    };
+    window.addEventListener('pointerup', finishTouchLook);
+    window.addEventListener('pointercancel', finishTouchLook);
   }
   /**
    * Anda a entidade em 1ª pessoa: WASD/setas relativos ao olhar.
@@ -4165,8 +4197,8 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
       try {
         stepSystems(dt);
       } catch (e) {
-        if (!stepSystems.__szg3kWarned) {
-          stepSystems.__szg3kWarned = true;
+        if (!_stepSystemsWarned) {
+          _stepSystemsWarned = true;
           warn('erro nos sistemas do jogo: ' + e);
         }
       }
@@ -4257,6 +4289,10 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
     var el = document.createElement('div');
     el.className = 'szg3k-say';
     el.textContent = text(textValue, '');
+    el.setAttribute('role', 'status');
+    el.setAttribute('aria-live', 'polite');
+    el.setAttribute('aria-atomic', 'true');
+    el.setAttribute('aria-label', 'Fala de ' + text(e._mold, 'personagem'));
     hudLayer.appendChild(el);
     says.push({ e: e, gen: e._gen, el: el, left: Math.max(0.1, num(seconds, 2)) });
   }
@@ -4320,6 +4356,11 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
   function makeBar(e) {
     var el = document.createElement('div');
     el.className = 'szg3k-bar';
+    el.setAttribute('role', 'progressbar');
+    el.setAttribute('aria-label', 'Vida de ' + text(e._mold, 'personagem'));
+    el.setAttribute('aria-valuemin', '0');
+    el.setAttribute('aria-valuemax', String(Math.max(0, num(e.maxHealth, 0))));
+    el.setAttribute('aria-valuenow', String(Math.max(0, num(e.health, 0))));
     var fill = document.createElement('i');
     el.appendChild(fill);
     hudLayer.appendChild(el);
@@ -4356,6 +4397,8 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
         b.pct = step;
         b.fill.style.width = step + '%';
         b.fill.style.background = pct > 0.5 ? '#4ade80' : (pct > 0.25 ? '#fbbf24' : '#f87171');
+        b.el.setAttribute('aria-valuemax', String(Math.max(0, num(b.e.maxHealth, 0))));
+        b.el.setAttribute('aria-valuenow', String(Math.max(0, num(b.e.health, 0))));
       }
       _tv1.set(b.e.mesh.position.x, b.e.mesh.position.y + (bm.top || 1) + 0.15, b.e.mesh.position.z);
       _tv1.project(camera);
@@ -4433,18 +4476,58 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
     var a = text(asset, '');
     var src = SOUNDS[a] || (a.indexOf('data:audio/') === 0 ? a : null);
     if (!src) { warn('o som "' + a + '" não está no projeto (importe em "Imagens e sons")'); return; }
+    // A fábrica do projeto roda no preload E no começo de cada partida. Sons são
+    // assets do documento, não recursos da arena: a mesma fonte deve ser carregada
+    // uma vez e reutilizada em todos os restarts.
+    if (sounds[key] && soundSources[key] === src) return;
+    releaseSound(key, true);
     pending.push(new Promise(function (resolve) {
+      var audio = null;
+      var settled = false;
+      var timer = null;
+      var cleanup = function () {
+        if (timer !== null) { clearTimeout(timer); timer = null; }
+        if (audio) { audio.oncanplaythrough = null; audio.onerror = null; }
+        if (soundLoadCleanups[key] === cleanup) delete soundLoadCleanups[key];
+        if (!settled) { settled = true; resolve(); }
+      };
       try {
-        var timer = setTimeout(resolve, 3000);
-        var done = function () { clearTimeout(timer); resolve(); };
-        var audio = new Audio();
+        timer = setTimeout(cleanup, 3000);
+        audio = new Audio();
         audio.preload = 'auto';
-        audio.oncanplaythrough = done;
-        audio.onerror = function () { warn('o som "' + key + '" falhou ao carregar'); done(); };
+        audio.oncanplaythrough = cleanup;
+        audio.onerror = function () { warn('o som "' + key + '" falhou ao carregar'); cleanup(); };
         audio.src = src;
         sounds[key] = audio;
-      } catch (e) { resolve(); }
+        soundSources[key] = src;
+        soundLoadCleanups[key] = cleanup;
+      } catch (e) {
+        cleanup();
+        warnOnce('sound-load:' + key, 'não consegui preparar o som "' + key + '": ' + e);
+      }
     }));
+  }
+
+  function stopSoundElement(audio) {
+    if (!audio) return;
+    try { audio.pause(); } catch (e) { warnOnce('sound-pause', 'não consegui pausar um efeito: ' + e); }
+    try { audio.currentTime = 0; } catch (e) { warnOnce('sound-rewind', 'não consegui reiniciar um efeito: ' + e); }
+  }
+
+  function releaseSound(key, remove) {
+    var cleanup = soundLoadCleanups[key];
+    if (cleanup) {
+      cleanup();
+      delete soundLoadCleanups[key];
+    }
+    stopSoundElement(sounds[key]);
+    if (!remove) return;
+    delete sounds[key];
+    delete soundSources[key];
+  }
+
+  function stopAllSounds(remove) {
+    for (var key in sounds) releaseSound(key, remove);
   }
 
   function playSound(name) {
@@ -4502,6 +4585,34 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
     try {
       if (_audioCtx && _audioCtx.state === 'suspended') _audioCtx.resume();
     } catch (e) {}
+  }
+
+  function closeAudioContext() {
+    var ac = _audioCtx;
+    _audioCtx = null;
+    if (!ac || !ac.close) return;
+    try {
+      var closing = ac.close();
+      if (closing && closing.catch) {
+        closing.catch(function (e) {
+          warnOnce('audio-close', 'não consegui encerrar o sintetizador: ' + e);
+        });
+      }
+    } catch (e) {
+      warnOnce('audio-close', 'não consegui encerrar o sintetizador: ' + e);
+    }
+  }
+
+  function resetAudioForRun() {
+    stopMusic();
+    stopAllSounds(false);
+    closeAudioContext();
+  }
+
+  function disposeAudio() {
+    stopMusic();
+    stopAllSounds(true);
+    closeAudioContext();
   }
 
   function playTone(freq, ms) {
@@ -4568,9 +4679,10 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
     if (disposed) return;
     disposed = true;
     try {
-      // A música é um Audio próprio (fora da cena) — o teardown do renderer não a
-      // alcança. Sem isto ela seguiria tocando na janela do bfcache.
-      stopMusic();
+      // Efeitos, música e AudioContext ficam fora da cena — o teardown do renderer
+      // não os alcança. Sem isto poderiam continuar ativos na janela do bfcache.
+      disposeAudio();
+      resetAccessibleHud();
       if (renderer) {
         renderer.setAnimationLoop(null);
         try { renderer.dispose(); } catch (e) {}
@@ -4602,13 +4714,9 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
       _skyPhotoRequest++;
       // Templates de molde vivem FORA da cena — descarta os materiais próprios
       // (as geometrias-unidade são compartilhadas e saem junto).
+      var disposedMoldMaterials = new Set();
       for (var mk in molds) {
-        var tpl = molds[mk].template;
-        if (tpl && tpl.traverse) {
-          tpl.traverse(function (o) {
-            if (o.material && o.material.dispose) { try { o.material.dispose(); } catch (e) {} }
-          });
-        }
+        disposeMoldTemplate(molds[mk], disposedMoldMaterials);
       }
       if (UNIT_GEOS) {
         for (var gk in UNIT_GEOS) {
@@ -4743,7 +4851,7 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
     cameraLookAtPoint: guard('cameraLookAtPoint', cameraLookAtPoint),
     cameraSmooth: guard('cameraSmooth', cameraSmooth),
     cameraTop: guard('cameraTop', function (height) {
-      camMode = { kind: 'top', target: null, dist: 0, height: Math.max(4, num(height, 40)), pivot: camMode.pivot, pivotGen: camMode.pivotGen };
+      camMode = { kind: 'top', target: null, targetGen: 0, dist: 0, height: Math.max(4, num(height, 40)), pivot: camMode.pivot, pivotGen: camMode.pivotGen };
     }),
     // 🤖 Entidades
     place: guard('place', function (e, x, y, z) {
@@ -4971,4 +5079,8 @@ export const gameKit3DRuntime = withGameUIFontRuntime(`import * as THREE from 't
   });
   window.SZGameKit3D = api;
 })();
-`)
+`
+
+export const gameKit3DRuntime = withGameUIFontRuntime(
+  withThreePostProcessingRuntime(gameKit3DRuntimeSource),
+)

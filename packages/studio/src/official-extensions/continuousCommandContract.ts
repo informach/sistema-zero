@@ -25,6 +25,7 @@ export const CONTINUOUS_EXTENSION_COMMANDS = [
   { blockType: 'sz_g3d_stack_step', statementType: 'g3d:stackStep' },
   { blockType: 'sz_g3d_move_by', statementType: 'g3d:moveBy' },
   { blockType: 'sz_g3d_rotate_by', statementType: 'g3d:rotateBy' },
+  { blockType: 'sz_g3d_move_towards', statementType: 'g3d:moveTowards' },
   { blockType: 'sz_g3d_move_forward', statementType: 'g3d:moveForward' },
   { blockType: 'sz_g3d_step_body', statementType: 'g3d:stepBody' },
   { blockType: 'sz_g3d_platformer_controls', statementType: 'g3d:platformerControls' },

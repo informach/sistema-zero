@@ -48,7 +48,10 @@ const grass: JSStatement[] = [
     spread: { type: 'num', value: 50 },
     color: { type: 'color', value: '#4a7c2a' },
   },
-  { type: 'grassTime', grass: 'grama', dt: { type: 'num', value: 1 / 60 } },
+  {
+    type: 'animationLoop',
+    body: [{ type: 'grassTime', grass: 'grama', dt: { type: 'num', value: 1 / 60 } }],
+  },
 ]
 
 describe('Canvas 3D — macro Grama 🌿 (bloco sz_t3d_grass)', () => {

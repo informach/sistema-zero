@@ -1,4 +1,5 @@
 import * as Blockly from 'blockly/core'
+import { CANVAS3D_ADDON_MODULES, CANVAS3D_STUDIO_ADDON_GROUPS } from '../../three/canvas3dAddons'
 
 /**
  * Campo Blockly do bloco "usar … da biblioteca" (`sz_t3d_import_named`): em vez de a
@@ -14,61 +15,10 @@ import * as Blockly from 'blockly/core'
  */
 
 /** Addons comuns dos projetos three.js, agrupados; caminhos canônicos `three/addons/…`. */
-export const COMMON_ADDONS: ReadonlyArray<{
-  group: string
-  items: ReadonlyArray<{ name: string; module: string }>
-}> = [
-  {
-    group: '📦 Carregadores',
-    items: [
-      { name: 'GLTFLoader', module: 'three/addons/loaders/GLTFLoader.js' },
-      { name: 'FBXLoader', module: 'three/addons/loaders/FBXLoader.js' },
-      { name: 'OBJLoader', module: 'three/addons/loaders/OBJLoader.js' },
-      { name: 'RGBELoader', module: 'three/addons/loaders/RGBELoader.js' },
-      { name: 'DRACOLoader', module: 'three/addons/loaders/DRACOLoader.js' },
-      { name: 'KTX2Loader', module: 'three/addons/loaders/KTX2Loader.js' },
-    ],
-  },
-  {
-    group: '🎮 Controles',
-    items: [
-      { name: 'OrbitControls', module: 'three/addons/controls/OrbitControls.js' },
-      { name: 'PointerLockControls', module: 'three/addons/controls/PointerLockControls.js' },
-    ],
-  },
-  {
-    group: '✨ Efeitos (pós-processamento)',
-    items: [
-      { name: 'EffectComposer', module: 'three/addons/postprocessing/EffectComposer.js' },
-      { name: 'RenderPass', module: 'three/addons/postprocessing/RenderPass.js' },
-      { name: 'ShaderPass', module: 'three/addons/postprocessing/ShaderPass.js' },
-      { name: 'UnrealBloomPass', module: 'three/addons/postprocessing/UnrealBloomPass.js' },
-      { name: 'OutputPass', module: 'three/addons/postprocessing/OutputPass.js' },
-    ],
-  },
-  {
-    group: '🌊 Objetos',
-    items: [
-      { name: 'Water', module: 'three/addons/objects/Water.js' },
-      { name: 'Sky', module: 'three/addons/objects/Sky.js' },
-    ],
-  },
-  {
-    // Linhas GROSSAS (Line2): o LineBasicMaterial nativo ignora linewidth na
-    // maioria das GPUs — raio/relâmpago/traçado de rota usam este trio.
-    group: '📏 Linhas',
-    items: [
-      { name: 'Line2', module: 'three/addons/lines/Line2.js' },
-      { name: 'LineGeometry', module: 'three/addons/lines/LineGeometry.js' },
-      { name: 'LineMaterial', module: 'three/addons/lines/LineMaterial.js' },
-    ],
-  },
-]
+export const COMMON_ADDONS = CANVAS3D_STUDIO_ADDON_GROUPS
 
 /** Nome do addon → módulo canônico (o auto-preenchimento do campo MODULE). */
-export const ADDON_MODULES: Record<string, string> = Object.fromEntries(
-  COMMON_ADDONS.flatMap((g) => g.items.map((i) => [i.name, i.module] as const)),
-)
+export const ADDON_MODULES = CANVAS3D_ADDON_MODULES
 
 /** Reaplica o data-sz-theme do root no DropDownDiv portalado (mesmo do FieldAssetPicker). */
 function applyThemeScope(field: Blockly.Field, content: HTMLElement): void {

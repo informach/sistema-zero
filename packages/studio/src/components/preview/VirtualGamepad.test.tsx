@@ -34,6 +34,17 @@ describe('projectUsesKeyboardControls', () => {
     })
     expect(projectUsesKeyboardControls(ir)).toBe(true)
   })
+
+  it('reconhece o movimento em primeira pessoa do Jogo 3D Avançado', () => {
+    const ir = emptyIR()
+    ir.behavior.loops.push({
+      type: 'g3k:onUpdate',
+      dtName: 'dt',
+      body: [{ type: 'g3k:moveFps', charVar: 'heroi', speed: { type: 'num', value: 6 } }],
+    })
+
+    expect(projectUsesKeyboardControls(ir)).toBe(true)
+  })
 })
 
 describe('VirtualGamepad', () => {

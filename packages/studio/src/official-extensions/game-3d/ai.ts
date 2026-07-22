@@ -28,7 +28,7 @@ Kit "Desvie":
 - stop(world): para o loop (fim de jogo).
 
 Genéricos de grade/isométrico (chão X-Z, y = altura, 1 tile = 1 unidade):
-- isometricCamera(world, followObj | null): troca p/ câmera ortográfica isométrica; segue o objeto.
+- isometricCamera(world, followObj | null): troca p/ câmera ortográfica isométrica; segue o objeto. Configure uma vez em Ao iniciar; chamadas repetidas reutilizam a câmera.
 - gridPosition(obj, row, col): coloca o objeto numa casa da grade.
 - gridStep(obj): a cada quadro, anda uma casa por vez (setas) com um saltinho.
 - gridMove(obj, "forward"|"backward"|"left"|"right"): enfileira um passo (p/ botões).
@@ -46,7 +46,7 @@ Kit "Travessia" (atravessar a rua / Crossy Road):
 - crosserReset(player, world): recomeça.
 
 Genéricos top-down/circular (chão X-Z, y = altura — p/ jogos de pista/relógio/órbita):
-- topCamera(world, followObj | null): câmera ortográfica aérea (de cima); segue o objeto se dado.
+- topCamera(world, followObj | null): câmera ortográfica aérea (de cima); segue o objeto se dado. Configure uma vez em Ao iniciar; o resize atualiza o enquadramento.
 - moveInCircle(obj, raio, velocidade): gira o objeto numa circunferência (centro na origem), virado p/ frente.
 - distanceTo(a, b): distância entre dois objetos. isNear(a, b, dist): estão a menos de "dist"?
 
@@ -98,7 +98,7 @@ Formas, materiais e texturas (Fase 6 — montar qualquer visual; criar UMA vez, 
 - setColor(obj, "#cor") / setOpacity(obj, 0..1) / setMaterial(obj, "normal"|"metal"|"glass"|"glow"|"wireframe"):
   mudam a aparência da superfície.
 - setTexture(obj, "nomeDoAsset"): veste o objeto com uma imagem embutida (asset adicionado ao projeto).
-- setVisible(obj, "show"|"hide"): mostra/esconde (continua existindo). remove(world, obj): tira da cena de vez.
+- setVisible(obj, "show"|"hide"): mostra/esconde e também retira o objeto das consultas de mira enquanto estiver oculto. remove(world, obj): tira da cena e dos registros de física e seleção.
 - createModel(world) -> grupo vazio; addToModel(model, peca): junta peças num modelo (mover o modelo move tudo junto).
 
 Luz & céu (Fase 7 — atmosfera; criar UMA vez, fora do animate):
@@ -108,7 +108,7 @@ Luz & céu (Fase 7 — atmosfera; criar UMA vez, fora do animate):
 - setShadows(world, "on"|"off"): liga/desliga as sombras da cena (desligar = mais leve).
 
 Enxames & som (Fase 8 — grupos genéricos de cópias + áudio):
-- createSwarm(world) -> enxame: um grupo p/ muitas cópias. spawnInSwarm(enxame, original, x, y, z): cria uma cópia do original no enxame (na posição).
+- createSwarm(world) -> enxame: um grupo p/ muitas cópias. spawnInSwarm(enxame, original, x, y, z): cria uma cópia visualmente independente do original. Pode rodar no quadro quando houver remove/prune para limitar os itens.
 - forEachInSwarm(enxame, (item) => {...}): repete os blocos p/ cada cópia (a da vez é "item"); itera ao contrário, então pode remover dentro. countSwarm(enxame): quantas cópias tem.
 - removeFromSwarm(enxame, item): tira uma cópia. pruneSwarm(enxame, "x"|"y"|"z", min, max): limpa as cópias que saíram dos limites (higiene de GPU).
 - playNote(freqHz, ms): um bip (mais Hz = mais agudo). playEffect("coin"|"jump"|"explosion"|"hit"): efeito pronto. Som só toca DEPOIS de um clique/tecla (exigência do navegador).

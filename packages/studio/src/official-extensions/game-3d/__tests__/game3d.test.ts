@@ -613,6 +613,14 @@ describe('game-3d — schema e exemplo', () => {
   it('o exemplo "Enxame que gira" tem IR válido', () => {
     expect(SZIRV2Schema.safeParse(swarmExample.ir).success).toBe(true)
   })
+
+  it('os exemplos com canvas fixo cabem em telas estreitas', () => {
+    for (const example of [shapesExample, nightExample, swarmExample, dodgeExample]) {
+      const css = generateCSS(example.ir.css)
+      expect(css).toContain('width: min(480px, calc(100vw - 24px))')
+      expect(css).toContain('max-height: calc(100vh - 24px)')
+    }
+  })
 })
 
 describe('HTML/CSS para o HUD (melhorias)', () => {

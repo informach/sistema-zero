@@ -170,10 +170,12 @@ export interface KitApi {
   setSky(top: string, bottom: string): void
   setSkyPhoto(name: string): void
   addButton(screen: string, label: string, fn: () => void): void
+  setHud(slot: string, value: unknown): void
   playMusic(name: string): void
   playSound(name: string): void
   loadSound(name: string, asset: string): void
   stopMusic(): void
+  playTone(frequency: number, milliseconds: number): void
   say(e: unknown, text: string, seconds: number): void
   hideSay(e: unknown): void
   forEachAlive(mold: string, fn: (e: unknown) => void): void

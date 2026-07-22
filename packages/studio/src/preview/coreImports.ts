@@ -19,8 +19,9 @@
  * em `docs/canvas3d-preview-limits.md` (DRACO, pointer lock, gamepad, fetch…).
  */
 
-/** MESMA URL das extensões game-3d/game-3d-advanced (importmaps colapsam). */
-export const THREE_CDN = 'https://esm.sh/three@0.180.0'
+import { THREE_ADDONS_CDN, THREE_CDN } from '../three/threeRuntimeContract'
+
+export { THREE_ADDONS_CDN, THREE_CDN }
 
 /**
  * Prefixo dos "addons" oficiais do three (`three/addons/loaders/GLTFLoader.js`
@@ -28,8 +29,6 @@ export const THREE_CDN = 'https://esm.sh/three@0.180.0'
  * (chave com barra final) no importmap, então `three/addons/x/Y.js` resolve para
  * `…/examples/jsm/x/Y.js`. Mesma origem do `three` base → nada novo na CSP.
  */
-export const THREE_ADDONS_CDN = 'https://esm.sh/three@0.180.0/examples/jsm/'
-
 /** Especificador exato `three` (não `three/addons/…`, tratado à parte). */
 const IMPORTS_THREE = /from\s+['"]three['"]/
 /** Qualquer import de addon (`from 'three/addons/…'`). */

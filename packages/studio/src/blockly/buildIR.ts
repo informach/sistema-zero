@@ -15,6 +15,7 @@ import { canvasExpressionBlockToIR, canvasStatementBlockToIR } from '../codecs/w
 import { cssBlockToIR } from '../codecs/web/cssBlockToIR'
 import { htmlBlockToIR } from '../codecs/web/htmlBlockToIR'
 import { webCodecForBlockType } from '../codecs/web/registry'
+import { CANVAS3D_ADDON_MODULES } from '../three/canvas3dAddons'
 import {
   FRAME_APPEARANCE,
   FRAME_BEHAVIOR_LEGACY,
@@ -25,7 +26,6 @@ import {
 } from './blockContracts'
 import { getSuperName } from './blocks/extendsMutator'
 import { getParamNames } from './blocks/paramsMutator'
-import { ADDON_MODULES } from './fields/FieldAddonPicker'
 
 export { SHADOW_PRESETS } from '../codecs/web/cssBlockToIR'
 /** Tipos das cinco Áreas do projeto e da moldura legada de migração. */
@@ -2106,7 +2106,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
       const selectedModule = f(block, 'MODULE')
       const module =
         selectedModule === 'automático' && names.length === 1
-          ? (ADDON_MODULES[names[0] ?? ''] ?? selectedModule)
+          ? (CANVAS3D_ADDON_MODULES[names[0] ?? ''] ?? selectedModule)
           : selectedModule
       return {
         kind: 'js',

@@ -31,6 +31,7 @@ import { useUIStore } from '../state/uiStore'
 import { useStudioConfig } from '../studio/config'
 import { useStudioLayout } from '../studio/layoutContext'
 import { useStudioTheme } from '../studio/theme'
+import { canvas3DInternalCodeRanges } from '../three/canvas3dMacroCodec'
 import { BRIDGE_JS_HEADER, type BridgeReverseParseWorkerResponse } from './bridgeReverseParse'
 
 const EMPTY_INSTALLED_EXTENSIONS: InstalledExtension[] = []
@@ -98,6 +99,7 @@ export function BridgeMode(): JSX.Element {
   const codeFontSize = useSettingsStore((s) => s.codeFontSize)
   const studioTheme = useStudioTheme()
   const [parseDiagnostics, setParseDiagnostics] = useState<ParseProjectDiagnostic[]>([])
+  const [showCanvas3DInternals, setShowCanvas3DInternals] = useState(false)
 
   // Source mapping cruzado bloco ↔ linha.
   const cross = useCrossHighlight()
@@ -157,6 +159,19 @@ export function BridgeMode(): JSX.Element {
           ]
         : [],
     [files],
+  )
+  const canvas3DInternalRanges = useMemo(
+    () => canvas3DInternalCodeRanges(files?.['script.js'] ?? ''),
+    [files],
+  )
+  const hasCanvas3DInternals = canvas3DInternalRanges.length > 0
+  const hiddenCanvas3DAreas = useMemo(
+    () =>
+      showCanvas3DInternals
+        ? undefined
+        : (file: { name: string; value: string }) =>
+            file.name === 'script.js' ? canvas3DInternalCodeRanges(file.value) : [],
+    [showCanvas3DInternals],
   )
   // Texto e época formam UM snapshot atômico. Debounces separados por arquivo
   // permitiam que HTML novo + CSS antigo fossem postados com a época global do
@@ -588,7 +603,29 @@ export function BridgeMode(): JSX.Element {
         fontSize={codeFontSize || CODE_FONT_SIZE_DEFAULT}
         formatLabel={t('editor.format')}
         onFormatIssue={onFormatIssue}
-        tabsRightSlot={<FontSizeControls />}
+        hiddenAreas={hiddenCanvas3DAreas}
+        tabsRightSlot={
+          <div className="flex items-center gap-1">
+            {hasCanvas3DInternals && (
+              <button
+                type="button"
+                onClick={() => setShowCanvas3DInternals((visible) => !visible)}
+                aria-pressed={showCanvas3DInternals}
+                title={
+                  showCanvas3DInternals
+                    ? t('bridge.hideGeneratedInternals')
+                    : t('bridge.showGeneratedInternals')
+                }
+                className="rounded px-2 py-1 text-xs font-medium text-sz-fg hover:bg-sz-bg"
+              >
+                {showCanvas3DInternals
+                  ? t('bridge.hideGeneratedInternals')
+                  : t('bridge.showGeneratedInternals')}
+              </button>
+            )}
+            <FontSizeControls />
+          </div>
+        }
         onChange={(name, value) => {
           if (files && (name === 'index.html' || name === 'style.css' || name === 'script.js')) {
             setFiles({ ...files, [name]: value })
