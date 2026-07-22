@@ -2,6 +2,8 @@ import * as Blockly from 'blockly/core'
 import {
   CANVAS3D_FUNCTION_DECLARATION_FIELDS,
   CANVAS3D_OBJECT_BRANCH_BINDERS,
+  CANVAS3D_PHYSICS_BODY_DECLARATION_FIELDS,
+  CANVAS3D_PHYSICS_RESOURCE_DECLARATION_FIELDS,
   CANVAS3D_VARIABLE_BRANCH_BINDERS,
   CANVAS3D_VARIABLE_DECLARATION_FIELDS,
 } from '../../three/canvas3dContract'
@@ -11,6 +13,7 @@ import {
   classOfInstance,
   classPropertyNames,
   enclosingClass,
+  superClassMethodNames,
 } from '../blocks/classIntrospection'
 
 type NameFieldRegistry = Readonly<Record<string, readonly string[]>>
@@ -32,6 +35,7 @@ type ScopedBinderRegistry = Readonly<Record<string, ScopedBinder>>
  *                 envolve o bloco, ou a do objeto no campo/tomada `OBJ`); cai na lista
  *                 global de propriedades quando não dá para resolver a classe;
  *  - `method`   → métodos de classe, mesma lógica de escopo do `property`;
+ *  - `super-method` → somente métodos da classe-mãe e dos ancestrais dela;
  *  - `canvas`   → id de uma tela de desenho (`sz_html_canvas`);
  *  - `canvas-context` → pincéis Canvas 2D declarados ou recebidos pelo corpo atual;
  *  - `form-control` → ids de campos que podem receber um rótulo HTML;
@@ -47,6 +51,8 @@ type ScopedBinderRegistry = Readonly<Record<string, ScopedBinder>>
  *  - `object3d` → objeto/malha do Jogo 3D (caixa/bola/modelo…); tem locais de laço
  *                 (o "item" do "para cada no enxame");
  *  - `group3d`  → grupo/enxame do Jogo 3D (`criar grupo`/`criar enxame`).
+ *  - `physics-body` / `physics-resource` → IDs declarados na física leve do
+ *                 Canvas 3D, filtrados pelo mundo físico escolhido.
  *
  * Estende `FieldTextInput` (NÃO `FieldDropdown`), então o VALOR continua sendo uma
  * string — IR, round-trip, serialização e allowlist ficam IDÊNTICOS a um
@@ -65,6 +71,7 @@ export type NameKind =
   | 'function'
   | 'property'
   | 'method'
+  | 'super-method'
   | 'canvas'
   | 'canvas-context'
   | 'form-control'
@@ -84,6 +91,8 @@ export type NameKind =
   | 'scene3d'
   | 'object3d'
   | 'group3d'
+  | 'physics-body'
+  | 'physics-resource'
   | 'character'
   | 'screen'
   | 'gamestate'
@@ -118,6 +127,7 @@ const DECLARED_NAME_KINDS: ReadonlySet<NameKind> = new Set([
   'group',
   'class',
   'function',
+  'super-method',
   'dom-target',
   'canvas-context',
   'board',
@@ -125,6 +135,8 @@ const DECLARED_NAME_KINDS: ReadonlySet<NameKind> = new Set([
   'combat-move',
   'fight-move',
   'enemy-combatant',
+  'physics-body',
+  'physics-resource',
 ])
 
 export function nameKindAllowsFreeText(kind: NameKind): boolean {
@@ -147,6 +159,7 @@ const NAME_KINDS: readonly NameKind[] = [
   'function',
   'property',
   'method',
+  'super-method',
   'canvas',
   'canvas-context',
   'form-control',
@@ -166,6 +179,8 @@ const NAME_KINDS: readonly NameKind[] = [
   'scene3d',
   'object3d',
   'group3d',
+  'physics-body',
+  'physics-resource',
   'character',
   'screen',
   'gamestate',
@@ -257,6 +272,34 @@ const FUNCTION_DECL_BLOCKS: NameFieldRegistry = {
 }
 /** Telas de desenho declaradas (`sz_html_canvas` id) — fonte do seletor de canvas. */
 const CANVAS_DECL_BLOCKS: Record<string, string[]> = { sz_html_canvas: ['ID'] }
+
+function collectPhysicsNames(
+  workspace: Blockly.Workspace | null | undefined,
+  registry: NameFieldRegistry,
+  useBlock: Blockly.Block | null | undefined,
+): string[] {
+  const ownerFields = Object.fromEntries(Object.keys(registry).map((type) => [type, 'WORLD']))
+  return collectOwnedDeclaredNames(
+    workspace,
+    registry,
+    ownerFields,
+    useBlock?.getFieldValue('WORLD'),
+  )
+}
+
+export function collectCanvas3DPhysicsBodies(
+  workspace: Blockly.Workspace | null | undefined,
+  useBlock?: Blockly.Block | null,
+): string[] {
+  return collectPhysicsNames(workspace, CANVAS3D_PHYSICS_BODY_DECLARATION_FIELDS, useBlock)
+}
+
+export function collectCanvas3DPhysicsResources(
+  workspace: Blockly.Workspace | null | undefined,
+  useBlock?: Blockly.Block | null,
+): string[] {
+  return collectPhysicsNames(workspace, CANVAS3D_PHYSICS_RESOURCE_DECLARATION_FIELDS, useBlock)
+}
 
 /** Fontes e animações CSS que outros blocos podem consumir sem redigitar. */
 const CSS_FONT_DECL_BLOCKS: Record<string, string[]> = { sz_css_google_font: ['FONT'] }
@@ -908,6 +951,11 @@ const KIND_UI: Record<NameKind, KindUI> = {
     placeholder: 'nome do método',
     empty: 'Nenhum método ainda — crie um (bloco "método") ou digite o nome abaixo.',
   },
+  'super-method': {
+    icon: '⬆️',
+    placeholder: 'método da classe-mãe',
+    empty: 'A classe-mãe ainda não tem métodos disponíveis.',
+  },
   canvas: {
     icon: '🖼️',
     placeholder: 'id da tela de desenho',
@@ -1010,6 +1058,16 @@ const KIND_UI: Record<NameKind, KindUI> = {
     placeholder: 'nome do grupo / enxame',
     empty:
       'Nenhum grupo ou enxame 3D ainda — crie um ("Criar grupo/enxame") ou digite o nome abaixo.',
+  },
+  'physics-body': {
+    icon: '🧍',
+    placeholder: 'corpo da física',
+    empty: 'Nenhum corpo nessa física — conecte um objeto com “tornar o corpo” primeiro.',
+  },
+  'physics-resource': {
+    icon: '🧲',
+    placeholder: 'item da física',
+    empty: 'Nenhum item nessa física — adicione um corpo, obstáculo ou área primeiro.',
   },
   character: {
     icon: '🧍',
@@ -1658,6 +1716,10 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectObjects3d(ws)
       case 'group3d':
         return collectGroups3d(ws)
+      case 'physics-body':
+        return collectCanvas3DPhysicsBodies(ws, block)
+      case 'physics-resource':
+        return collectCanvas3DPhysicsResources(ws, block)
       case 'character':
         return collectCharacters(ws)
       case 'screen':
@@ -1720,6 +1782,10 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectW3dQuests(ws)
       case 'w3dachieve':
         return collectW3dAchievements(ws)
+      case 'super-method': {
+        const scan = workspaceScanner(ws)
+        return superClassMethodNames(scan, enclosingClass(block))
+      }
       case 'property':
       case 'method': {
         const scan = workspaceScanner(ws)

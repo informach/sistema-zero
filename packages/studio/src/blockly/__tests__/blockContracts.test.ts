@@ -15,7 +15,10 @@ import {
 } from '../../ir/programmingExecution'
 import { CONTINUOUS_EXTENSION_COMMANDS } from '../../official-extensions/continuousCommandContract'
 import { PERSISTENT_EXTENSION_COMMANDS } from '../../official-extensions/persistentResourceContract'
-import { CANVAS3D_RESOURCE_CREATOR_BLOCK_TYPES } from '../../three/canvas3dContract'
+import {
+  CANVAS3D_RESOURCE_CREATOR_BLOCK_TYPES,
+  CANVAS3D_START_ONLY_BLOCK_TYPES,
+} from '../../three/canvas3dContract'
 import {
   BEHAVIOR_AREA_LABELS,
   contractEventObjectCapability,
@@ -779,7 +782,7 @@ describe('contrato central de posicionamento', () => {
   })
 
   it('mantém imports do Canvas 3D somente em Ao iniciar', () => {
-    for (const type of ['sz_t3d_import', 'sz_t3d_import_named']) {
+    for (const type of CANVAS3D_START_ONLY_BLOCK_TYPES) {
       const contract = inferBlockContract(definition(type))
       expect(contract.placement?.root, type).toEqual(['start'])
       expect(contract.placement?.nested, type).toEqual([])

@@ -9,18 +9,16 @@ import type { BlockDefinition } from './types'
  * das extensões Jogo 3D (que achatam o three atrás de uma facade), aqui é a lib
  * de verdade — o objetivo é aprender a programar do jeito real.
  *
- * DOIS tipos de bloco convivem:
+ * Três tipos de bloco convivem:
  *  1. BASE (`sz_t3d_import`/`sz_t3d_new_var`/`sz_t3d_new`) — o import + o `new` com
  *     namespace. Têm IR própria (`importStar`/`newInstance`/`newExpr` com namespace).
- *  2. FACILITADORES (`sz_t3d_set_position`, `sz_t3d_rotate_axis`, `sz_t3d_render`…) —
- *     um rótulo amigável sobre os idiomas mais comuns, para o aluno NÃO ter que
- *     digitar "position", "rotation", ".set" na mão. Eles NÃO têm IR própria:
- *     `buildIR.ts` os compila para a MESMA IR genérica (`memberCall`/`memberSet`/
- *     `newExpr`) que os blocos manuais — então o código gerado é o three.js real e
- *     idêntico. O round-trip de volta (código→bloco amigável) vive só no
- *     `workspaceState.ts` (uma camada de RECONHECIMENTO das formas canônicas),
- *     ativa apenas quando o projeto importa three (senão `Set.add`/`Map.set` de um
- *     projeto 2D não viraria bloco 3D). Zero mexida em schema/parser.
+ *  2. FACILITADORES DIRETOS (`sz_t3d_set_position`, `sz_t3d_rotate_axis`,
+ *     `sz_t3d_render`…) — rótulos amigáveis que compilam para IR genérica
+ *     (`memberCall`/`memberSet`/`newExpr`).
+ *  3. RECEITAS SEMÂNTICAS (`sz_t3d_renderer_create`, `sz_t3d_terrain`, física…) —
+ *     blocos que expandem mais de uma linha e têm IR/schema próprios. Marcadores
+ *     versionados em `canvas3dMacroCodec.ts` preservam o round-trip sem esconder o
+ *     Three.js real mostrado na Ponte.
  *
  * Presença de qualquer bloco `sz_t3d_*` dispara o import automático do three.js no
  * preview (ver `preview/coreImports.ts`). Os facilitadores ficam no intermediário 3D;
@@ -46,12 +44,84 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     tooltip:
       'Prepara a biblioteca 3D para o projeto. Use no início quando quiser montar objetos com as peças técnicas.',
   },
+
+  // ─────────────────────── 🎬 Inicialização manual ──────────────────────────
+  {
+    type: 'sz_t3d_scene_create',
+    placement: 'resource-creator',
+    message0: 'criar cena 3D %1',
+    args0: [{ type: 'field_input', name: 'SCENE', text: 'cena' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Cria o espaço que reúne objetos, luzes e câmera antes de desenhar o mundo.',
+  },
+  {
+    type: 'sz_t3d_renderer_create',
+    placement: 'resource-creator',
+    message0: 'preparar tela 3D %1',
+    args0: [{ type: 'field_input', name: 'RENDERER', text: 'renderizador' }],
+    message1: 'usando o canvas %1',
+    args1: [{ type: 'field_name_picker', name: 'CANVAS', text: 'jogo', kind: 'canvas' }],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Liga o desenho 3D a uma tela criada antes na categoria Canvas.',
+  },
+  {
+    type: 'sz_t3d_camera_create',
+    placement: 'resource-creator',
+    message0: 'criar câmera %1 para o canvas %2',
+    args0: [
+      { type: 'field_input', name: 'CAMERA', text: 'camera' },
+      { type: 'field_name_picker', name: 'CANVAS', text: 'jogo', kind: 'canvas' },
+    ],
+    message1: 'visão %1° · perto %2 · longe %3',
+    args1: [
+      { type: 'input_value', name: 'FOV', check: 'JSValue' },
+      { type: 'input_value', name: 'NEAR', check: 'JSValue' },
+      { type: 'input_value', name: 'FAR', check: 'JSValue' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Cria o ponto de vista da cena com a proporção da tela escolhida.',
+  },
+  {
+    type: 'sz_t3d_light_create',
+    placement: 'resource-creator',
+    message0: 'criar luz %1 na cena %2',
+    args0: [
+      { type: 'field_input', name: 'LIGHT', text: 'luz' },
+      { type: 'field_name_picker', name: 'SCENE', text: 'cena', kind: 'variable' },
+    ],
+    message1: 'tipo %1 · cor %2 · intensidade %3',
+    args1: [
+      {
+        type: 'field_dropdown',
+        name: 'KIND',
+        options: [
+          ['ambiente', 'ambient'],
+          ['direcional', 'directional'],
+        ],
+      },
+      { type: 'input_value', name: 'COLOR', check: 'JSValue' },
+      { type: 'input_value', name: 'INTENSITY', check: 'JSValue' },
+    ],
+    inputsInline: false,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip: 'Cria uma luz e a coloca na cena. A luz ambiente ilumina tudo por igual.',
+  },
   {
     // Statement: `const cena = new THREE.Scene(args)`. NS = o nome da lib (THREE),
     // CLASS = o construtor real do three.js (Scene, Mesh, PerspectiveCamera…).
     // O args-mutator (+/−) adiciona as tomadas de argumento.
     type: 'sz_t3d_new_var',
-    placement: 'command',
+    placement: 'resource-creator',
     message0: 'criar %1 = novo %2',
     args0: [
       { type: 'field_input', name: 'VARNAME', text: 'cena' },
@@ -1105,7 +1175,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'mover personagem %1 na física %2',
     args0: [
-      { type: 'field_input', name: 'ID', text: 'jogador' },
+      { type: 'field_name_picker', name: 'ID', text: 'jogador', kind: 'physics-body' },
       { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
     ],
     message1: 'direção x %1 z %2 · velocidade %3',
@@ -1125,7 +1195,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_physics_jump',
     placement: 'command',
     message0: 'personagem %1 pular',
-    args0: [{ type: 'field_input', name: 'ID', text: 'jogador' }],
+    args0: [{ type: 'field_name_picker', name: 'ID', text: 'jogador', kind: 'physics-body' }],
     message1: 'na física %1',
     args1: [{ type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' }],
     message2: 'com força %1',
@@ -1180,7 +1250,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'definir velocidade de %1 na física %2',
     args0: [
-      { type: 'field_input', name: 'ID', text: 'caixa' },
+      { type: 'field_name_picker', name: 'ID', text: 'caixa', kind: 'physics-body' },
       { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
     ],
     message1: 'velocidade x %1 y %2 z %3',
@@ -1200,7 +1270,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'dar impulso em %1 na física %2',
     args0: [
-      { type: 'field_input', name: 'ID', text: 'caixa' },
+      { type: 'field_name_picker', name: 'ID', text: 'caixa', kind: 'physics-body' },
       { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
     ],
     message1: 'força x %1 y %2 z %3',
@@ -1220,7 +1290,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'teleportar %1 na física %2',
     args0: [
-      { type: 'field_input', name: 'ID', text: 'jogador' },
+      { type: 'field_name_picker', name: 'ID', text: 'jogador', kind: 'physics-body' },
       { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
     ],
     message1: 'destino x %1 y %2 z %3',
@@ -1240,7 +1310,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'remover %1 da física %2',
     args0: [
-      { type: 'field_input', name: 'ID', text: 'objeto' },
+      { type: 'field_name_picker', name: 'ID', text: 'objeto', kind: 'physics-resource' },
       { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
     ],
     previousStatement: 'JSStmt',
@@ -1327,7 +1397,10 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_physics_body_state',
     placement: 'command',
     message0: 'ler corpo %1 %2',
-    args0: [{ type: 'field_input', name: 'ID', text: 'jogador' }, { type: 'input_end_row' }],
+    args0: [
+      { type: 'field_name_picker', name: 'ID', text: 'jogador', kind: 'physics-body' },
+      { type: 'input_end_row' },
+    ],
     message1: 'da física %1 %2',
     args1: [
       { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'variable' },
@@ -1378,17 +1451,25 @@ export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[
   {
     name: '🎬 Cena e material',
     colour: C,
-    types: ['sz_t3d_add_to', 'sz_t3d_set_color', 'sz_t3d_set_background', 'sz_t3d_set_fog'],
+    types: [
+      'sz_t3d_scene_create',
+      'sz_t3d_add_to',
+      'sz_t3d_set_color',
+      'sz_t3d_set_background',
+      'sz_t3d_set_fog',
+    ],
   },
   {
     name: '💡 Luz e sombra',
     colour: C,
-    types: ['sz_t3d_set_shadow', 'sz_t3d_set_intensity'],
+    types: ['sz_t3d_light_create', 'sz_t3d_set_shadow', 'sz_t3d_set_intensity'],
   },
   {
     name: '🖥️ Tela 3D',
     colour: C,
     types: [
+      'sz_t3d_renderer_create',
+      'sz_t3d_camera_create',
       'sz_t3d_renderer_size',
       'sz_t3d_renderer_config',
       'sz_t3d_renderer_responsive',

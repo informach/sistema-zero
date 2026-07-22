@@ -5,7 +5,8 @@ COPY --from=docker.io/cloudflare/sandbox:0.10.3 /container-server/sandbox /sandb
 WORKDIR /opt/sz-runtime
 
 COPY runtime/package.json ./package.json
-RUN npm install --ignore-scripts --no-audit --no-fund \
+COPY runtime/package-lock.json ./package-lock.json
+RUN npm ci --ignore-scripts --no-audit --no-fund \
   && npm cache clean --force
 
 COPY runtime/inline-preview.mjs ./inline-preview.mjs

@@ -6,8 +6,8 @@ const C = CATEGORY_COLORS.js
 /**
  * Blocos da LINGUAGEM JavaScript: variáveis, console/alert, controle de fluxo,
  * listas, timers e Web APIs (storage/fetch). A MANIPULAÇÃO DO DOM (eventos,
- * busca de elementos, propriedades, classes, criação) vive em `dom.ts`
- * (categoria "DOM", entre CSS e JavaScript na toolbox).
+ * busca de elementos, propriedades, classes, criação) vive em `dom.ts` e aparece
+ * nas subcategorias Página e Eventos do guarda-chuva Programação.
  */
 export const JS_BLOCKS: BlockDefinition[] = [
   {

@@ -56,7 +56,7 @@ export function ImportButton({ onImported, allowedExtensions }: ImportButtonProp
           .filter((id) => !allowedExtensions.includes(id))
         if (unavailable.length > 0) {
           warns.push(
-            `Este projeto usa ferramentas que ainda serão liberadas na sua carreira: ${unavailable.join(', ')}. O conteúdo foi preservado.`,
+            `Este projeto usa ferramentas que ainda serão liberadas na sua carreira: ${unavailable.join(', ')}. Ele ficou salvo e poderá ser aberto quando você conquistar essas ferramentas.`,
           )
         }
       }

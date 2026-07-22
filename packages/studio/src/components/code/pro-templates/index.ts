@@ -1,3 +1,4 @@
+import type { StudioProTemplateId } from '@sistemazero/core/studio'
 import { buildProProject, type Project, type ProjectTree } from '#core'
 
 /**
@@ -6,7 +7,7 @@ import { buildProProject, type Project, type ProjectTree } from '#core'
  * os literais já contêm `package.json` com deps PINADAS e `vite.config`.
  */
 export interface ProTemplate {
-  id: string
+  id: StudioProTemplateId
   name: string
   description: string
   /** Script npm de dev (vai para `proMeta.devScript`). */
@@ -107,7 +108,7 @@ renderer.setAnimationLoop(() => {
 })
 `
 
-export const PRO_TEMPLATES: Record<string, ProTemplate> = {
+export const PRO_TEMPLATES: Record<StudioProTemplateId, ProTemplate> = {
   // JS puro PRIMEIRO: é o mais simples e vira o template PADRÃO do modal.
   'vanilla-js': {
     id: 'vanilla-js',
@@ -270,7 +271,7 @@ export function listProTemplates(): ProTemplate[] {
 }
 
 export function getProTemplate(id: string): ProTemplate | undefined {
-  return PRO_TEMPLATES[id]
+  return PRO_TEMPLATES[id as StudioProTemplateId]
 }
 
 /** Cria um `Project` profissional a partir de um template do catálogo. */

@@ -1,4 +1,16 @@
-import type { Project, StudioProRuntimeBuildResult } from '@sistemazero/studio'
+import {
+  InvalidJsonBodyError,
+  RequestBodyTooLargeError,
+  readJsonBodyWithLimit,
+} from '@sistemazero/member-shell/server/read-json-body'
+import {
+  buildStudioProProject,
+  isProStudioProject,
+  opaqueStudioRuntimeExecutionId,
+  proProjectTemplateId,
+  StudioProRuntimeUpstreamError,
+} from '@sistemazero/member-shell/server/studio-pro-runtime'
+import type { Project } from '@sistemazero/studio'
 import { getLesson } from '@/server/members'
 import { getSession } from '@/server/session'
 
@@ -14,37 +26,29 @@ interface BuildBody {
   project?: unknown
 }
 
-interface RuntimeFailure {
-  ok?: false
-  code?: string
-  message?: string
-  output?: string
-}
-
-interface RuntimeSuccess {
-  ok: true
-  html: string
-  output?: string
-  durationMs?: number
-}
-
 export async function POST(request: Request): Promise<Response> {
   const session = await getSession()
   if (!session?.id) return response({ error: { message: 'Entre novamente para continuar.' } }, 401)
 
-  const contentLength = Number(request.headers.get('content-length') ?? 0)
-  if (Number.isFinite(contentLength) && contentLength > MAX_REQUEST_BYTES) {
-    return response(
-      { error: { message: 'O projeto ficou grande demais para esta atividade.' } },
-      413,
-    )
+  let body: BuildBody | null = null
+  try {
+    body = (await readJsonBodyWithLimit(request, MAX_REQUEST_BYTES)) as BuildBody
+  } catch (error) {
+    if (error instanceof RequestBodyTooLargeError) {
+      return response(
+        { error: { message: 'O projeto ficou grande demais para esta atividade.' } },
+        413,
+      )
+    }
+    if (error instanceof InvalidJsonBodyError) {
+      return response({ error: { message: 'A atividade Pro enviada é inválida.' } }, 400)
+    }
+    throw error
   }
-
-  const body = (await request.json().catch(() => null)) as BuildBody | null
   const courseSlug = text(body?.courseSlug)
   const lessonId = text(body?.lessonId)
   const blockId = text(body?.blockId)
-  if (!courseSlug || !lessonId || !blockId || !isProProject(body?.project)) {
+  if (!courseSlug || !lessonId || !blockId || !isProStudioProject(body?.project)) {
     return response({ error: { message: 'A atividade Pro enviada é inválida.' } }, 400)
   }
 
@@ -57,7 +61,8 @@ export async function POST(request: Request): Promise<Response> {
   }
   const block = lesson.body.blocks.find((item) => item.id === blockId && item.kind === 'studio')
   const initial = readInitialProject(block?.content)
-  if (initial?.kind !== 'pro' || !initial.proMeta?.templateId) {
+  const templateId = initial ? proProjectTemplateId(initial) : null
+  if (initial?.kind !== 'pro' || !templateId) {
     return response({ error: { message: 'Este bloco não é uma atividade Pro.' } }, 403)
   }
 
@@ -70,56 +75,30 @@ export async function POST(request: Request): Promise<Response> {
     )
   }
 
-  const executionId = await opaqueExecutionId(session.id, lessonId, blockId)
-  const files = Object.fromEntries(
-    Object.entries(body.project.tree ?? {})
-      .filter((entry): entry is [string, { kind: 'file'; content: string }] => {
-        const node = entry[1]
-        return node?.kind === 'file' && typeof node.content === 'string'
-      })
-      .map(([path, node]) => [path, node.content]),
-  )
-
+  const executionId = await opaqueStudioRuntimeExecutionId('lesson', session.id, lessonId, blockId)
   try {
-    const upstream = await fetch(`${runtimeUrl}/v1/build`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${runtimeToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        executionId,
-        // O template vem do conteúdo autoral da aula, nunca do projeto enviado.
-        templateId: initial.proMeta.templateId,
-        files,
-      }),
-      cache: 'no-store',
+    const result = await buildStudioProProject({
+      project: body.project,
+      // O template vem do conteúdo autoral da aula, nunca do projeto enviado.
+      templateId,
+      executionId,
+      runtimeUrl,
+      runtimeToken,
       signal: AbortSignal.timeout(RUNTIME_TIMEOUT_MS),
     })
-    const result = (await upstream.json().catch(() => null)) as
-      | RuntimeSuccess
-      | RuntimeFailure
-      | null
-    if (!upstream.ok || result?.ok !== true) {
-      const failure = result as RuntimeFailure | null
+    return response(result)
+  } catch (error) {
+    if (error instanceof StudioProRuntimeUpstreamError) {
       return response(
         {
           error: {
-            message: failure?.message ?? 'Não foi possível compilar o projeto agora.',
-            output: failure?.output,
+            message: error.message,
+            output: error.output,
           },
         },
-        upstream.status === 429 ? 429 : upstream.status === 422 ? 422 : 502,
+        error.status === 429 ? 429 : error.status === 422 ? 422 : 502,
       )
     }
-    const success = result as RuntimeSuccess
-    const payload: StudioProRuntimeBuildResult = {
-      html: success.html,
-      output: success.output,
-      durationMs: success.durationMs,
-    }
-    return response(payload)
-  } catch (error) {
     console.error('Falha ao chamar o Studio Pro Runtime', error)
     return response(
       { error: { message: 'O ambiente Pro demorou demais para responder. Tente de novo.' } },
@@ -132,29 +111,12 @@ function text(value: unknown): string {
   return typeof value === 'string' ? value.trim() : ''
 }
 
-function isProProject(value: unknown): value is Project & { kind: 'pro' } {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return false
-  const project = value as Partial<Project>
-  return project.kind === 'pro' && Boolean(project.tree && typeof project.tree === 'object')
-}
-
 function readInitialProject(content: unknown): Project | null {
   if (!content || typeof content !== 'object' || Array.isArray(content)) return null
   const initial = (content as { initialProject?: unknown }).initialProject
   return initial && typeof initial === 'object' && !Array.isArray(initial)
     ? (initial as Project)
     : null
-}
-
-async function opaqueExecutionId(
-  viewerId: string,
-  lessonId: string,
-  blockId: string,
-): Promise<string> {
-  const bytes = new TextEncoder().encode(`${viewerId}\u0000${lessonId}\u0000${blockId}`)
-  const hash = await crypto.subtle.digest('SHA-256', bytes)
-  const hex = [...new Uint8Array(hash)].map((byte) => byte.toString(16).padStart(2, '0')).join('')
-  return `lesson-${hex.slice(0, 48)}`
 }
 
 function response(body: unknown, status = 200): Response {

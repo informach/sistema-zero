@@ -11,6 +11,7 @@ import {
   enclosingClass,
   findClass,
   methodParams,
+  superClassMethodNames,
 } from '../classIntrospection'
 
 interface ExtendsApi extends Blockly.Block {
@@ -114,6 +115,19 @@ describe('classIntrospection — achar classes e enumerar membros', () => {
     const scan = scannerFor(ws)
     expect(classPropertyNames(scan, dog)).toEqual(['nome', 'vida'])
     expect(classMethodNames(scan, dog)).toEqual(['latir', 'respirar'])
+  })
+
+  it('superClassMethodNames oferece somente métodos da classe-mãe e seus ancestrais', () => {
+    const ws = new Blockly.Workspace()
+    makeClass(ws, 'SerVivo', { methods: ['existir'] })
+    const animal = makeClass(ws, 'Animal', { methods: ['respirar'] }) as ExtendsApi
+    animal.addExtends_()
+    animal.setFieldValue('SerVivo', 'SUPER')
+    const dog = makeClass(ws, 'Cachorro', { methods: ['latir'] }) as ExtendsApi
+    dog.addExtends_()
+    dog.setFieldValue('Animal', 'SUPER')
+
+    expect(superClassMethodNames(scannerFor(ws), dog)).toEqual(['respirar', 'existir'])
   })
 
   it('herança cíclica (A estende B, B estende A) não trava — guarda de visitados', () => {

@@ -859,10 +859,10 @@ const StudioLevelSchema = t.Union([
 const StudioModeSchema = t.Union([t.Literal('blocks'), t.Literal('bridge'), t.Literal('code')])
 /**
  * Snapshot `Project` do Estúdio (autoria do admin = `initialProject`; entrega do
- * aluno = corpo do submit). Validado de forma DEFENSIVA — só exigimos `name`+`files`,
- * o resto passa (`additionalProperties`): o @sistemazero/studio sanitiza o shape inteiro
- * na autoria (export) e DE NOVO no aluno (`sanitizeProjectForHost`). O TETO DE TAMANHO
- * (anti-DoS no jsonb) é aplicado no service — TypeBox não limita bytes do agregado.
+ * aluno = corpo do submit). O TypeBox exige `name`+`files` e tolera propriedades adicionais.
+ * O service também valida `kind:pro`, árvore e template contra o catálogo fechado. O
+ * @sistemazero/studio sanitiza o shape inteiro na autoria e de novo no aluno. O teto de
+ * tamanho do agregado é aplicado no service.
  */
 const StudioProjectSchema = t.Object(
   {

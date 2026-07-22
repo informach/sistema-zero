@@ -530,8 +530,12 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   // workspace existe.
   useEffect(() => {
     if (!workspace) return
-    registerFunctionsFlyout(workspace as Blockly.WorkspaceSvg, profile)
+    const unregisterFunctionsFlyout = registerFunctionsFlyout(
+      workspace as Blockly.WorkspaceSvg,
+      profile,
+    )
     registerClassesFlyout(workspace as Blockly.WorkspaceSvg, profile)
+    return unregisterFunctionsFlyout
   }, [workspace, profile])
 
   // Pilhas executáveis fora das Áreas do projeto são preservadas como rascunho,

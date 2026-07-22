@@ -5,7 +5,7 @@ import { CSS_MEDIA_SIZE_FEATURES, type CSSMediaSizeFeature } from '../css/mediaQ
 import { isGuidedDomElementTag } from '../domSafety'
 import { HTML_TAGS, isHTMLElementChildAllowed } from '../html/catalog'
 import { PERSISTENT_EXTENSION_STATEMENT_TYPES } from '../official-extensions/persistentResourceContract'
-import { CANVAS3D_RESOURCE_CREATOR_TYPES } from '../three/canvas3dContract'
+import { isCanvas3DResourceCreatorStatement } from '../three/canvas3dContract'
 import { GAME3D_RESOURCE_CREATOR_TYPES } from '../three/game3dContract'
 import {
   isLegacyLoadEvent,
@@ -4779,6 +4779,31 @@ export type JSStatement =
   // vira a grafia ATUAL do three.js (setPixelRatio / shadowMap.type /
   // outputColorSpace / toneMapping); 'off' = não mexer. A Ponte reversa devolve os
   // memberSet/memberCall genéricos (o parser não reconstrói este nó).
+  | (JSStatementCommon & {
+      type: 'threeSceneSetup'
+      scene: string
+    })
+  | (JSStatementCommon & {
+      type: 'threeRendererSetup'
+      renderer: string
+      canvas: string
+    })
+  | (JSStatementCommon & {
+      type: 'threeCameraSetup'
+      camera: string
+      canvas: string
+      fov: JSExpr
+      near: JSExpr
+      far: JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'threeLightSetup'
+      light: string
+      scene: string
+      kind: 'ambient' | 'directional'
+      color: JSExpr
+      intensity: JSExpr
+    })
   | (JSStatementCommon & {
       type: 'rendererConfig'
       renderer: string
@@ -9664,6 +9689,35 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('threeSceneSetup'),
+      scene: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('threeRendererSetup'),
+      renderer: irText(),
+      canvas: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('threeCameraSetup'),
+      camera: irText(),
+      canvas: irText(),
+      fov: JSExprSchema,
+      near: JSExprSchema,
+      far: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('threeLightSetup'),
+      light: irText(),
+      scene: irText(),
+      kind: z.enum(['ambient', 'directional']),
+      color: JSExprSchema,
+      intensity: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
       type: z.literal('rendererConfig'),
       renderer: irText(),
       pixels: z.enum(['device', 'off']),
@@ -10326,7 +10380,6 @@ function validateG2DDeclarations(
 }
 
 const LOOP_FORBIDDEN_RESOURCE_TYPES: ReadonlySet<string> = new Set([
-  ...CANVAS3D_RESOURCE_CREATOR_TYPES,
   ...GAME3D_RESOURCE_CREATOR_TYPES,
   ...PERSISTENT_EXTENSION_STATEMENT_TYPES,
 ])
@@ -10341,7 +10394,11 @@ function validateLegacyLifecycle(
   for (let index = 0; index < statements.length; index += 1) {
     const statement = statements[index]
     if (!statement) continue
-    if (insideLoop && LOOP_FORBIDDEN_RESOURCE_TYPES.has(statement.type)) {
+    if (
+      insideLoop &&
+      (LOOP_FORBIDDEN_RESOURCE_TYPES.has(statement.type) ||
+        isCanvas3DResourceCreatorStatement(statement))
+    ) {
       ctx.addIssue({
         code: 'custom',
         path: [...path, index],

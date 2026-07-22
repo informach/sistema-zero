@@ -8,6 +8,10 @@ export const CANVAS3D_BLOCK_TYPES = [
   'sz_t3d_new_var',
   'sz_t3d_new',
   'sz_t3d_import_named',
+  'sz_t3d_scene_create',
+  'sz_t3d_renderer_create',
+  'sz_t3d_camera_create',
+  'sz_t3d_light_create',
   'sz_t3d_set_position',
   'sz_t3d_set_rotation',
   'sz_t3d_rotate_axis',
@@ -73,6 +77,10 @@ export type Canvas3DBlockType = (typeof CANVAS3D_BLOCK_TYPES)[number]
 
 /** Facilitadores oferecidos a partir do intermediário 3D. */
 export const CANVAS3D_INTERMEDIATE_BLOCK_TYPES: readonly Canvas3DBlockType[] = [
+  'sz_t3d_scene_create',
+  'sz_t3d_renderer_create',
+  'sz_t3d_camera_create',
+  'sz_t3d_light_create',
   'sz_t3d_set_position',
   'sz_t3d_set_rotation',
   'sz_t3d_rotate_axis',
@@ -137,6 +145,11 @@ export const CANVAS3D_START_ONLY_BLOCK_TYPES: readonly Canvas3DBlockType[] = [
 
 /** Blocos que mantêm recursos e, portanto, não podem ser recriados por quadro. */
 export const CANVAS3D_RESOURCE_CREATOR_BLOCK_TYPES: readonly Canvas3DBlockType[] = [
+  'sz_t3d_new_var',
+  'sz_t3d_scene_create',
+  'sz_t3d_renderer_create',
+  'sz_t3d_camera_create',
+  'sz_t3d_light_create',
   'sz_t3d_renderer_responsive',
   'sz_t3d_load_environment',
   'sz_t3d_load_model',
@@ -165,6 +178,10 @@ export const CANVAS3D_VARIABLE_DECLARATION_FIELDS: Readonly<
   Partial<Record<Canvas3DBlockType, readonly string[]>>
 > = {
   sz_t3d_new_var: ['VARNAME'],
+  sz_t3d_scene_create: ['SCENE'],
+  sz_t3d_renderer_create: ['RENDERER'],
+  sz_t3d_camera_create: ['CAMERA'],
+  sz_t3d_light_create: ['LIGHT'],
   sz_t3d_renderer_responsive: ['CLEANUP'],
   sz_t3d_load_environment: ['TEXTURE'],
   sz_t3d_bloom_setup: ['COMPOSER'],
@@ -181,6 +198,24 @@ export const CANVAS3D_VARIABLE_DECLARATION_FIELDS: Readonly<
   sz_t3d_physics_raycast: ['RESULT'],
   sz_t3d_physics_body_state: ['RESULT'],
   sz_t3d_physics_stats: ['RESULT'],
+}
+
+/** IDs de corpos que aceitam movimento, impulso, teleporte e leitura de estado. */
+export const CANVAS3D_PHYSICS_BODY_DECLARATION_FIELDS: Readonly<
+  Partial<Record<Canvas3DBlockType, readonly string[]>>
+> = {
+  sz_t3d_physics_body: ['ID'],
+}
+
+/** IDs explícitos que podem ser removidos do mundo físico. */
+export const CANVAS3D_PHYSICS_RESOURCE_DECLARATION_FIELDS: Readonly<
+  Partial<Record<Canvas3DBlockType, readonly string[]>>
+> = {
+  sz_t3d_physics_static_box: ['ID'],
+  sz_t3d_physics_static_sphere: ['ID'],
+  sz_t3d_physics_static_object: ['ID'],
+  sz_t3d_physics_body: ['ID'],
+  sz_t3d_physics_trigger: ['ID'],
 }
 
 export const CANVAS3D_FUNCTION_DECLARATION_FIELDS: Readonly<
@@ -211,6 +246,10 @@ export const CANVAS3D_OBJECT_BRANCH_BINDERS: Readonly<
 }
 
 export const CANVAS3D_SEMANTIC_STATEMENT_TYPES = [
+  'threeSceneSetup',
+  'threeRendererSetup',
+  'threeCameraSetup',
+  'threeLightSetup',
   'rendererConfig',
   'rendererResponsive',
   'environmentLoad',
@@ -251,6 +290,10 @@ export const CANVAS3D_SEMANTIC_STATEMENT_TYPES = [
 ] as const
 
 export const CANVAS3D_RESOURCE_CREATOR_TYPES: ReadonlySet<string> = new Set([
+  'threeSceneSetup',
+  'threeRendererSetup',
+  'threeCameraSetup',
+  'threeLightSetup',
   'rendererResponsive',
   'bloomSetup',
   'particlesSetup',
@@ -272,3 +315,14 @@ export const CANVAS3D_RESOURCE_CREATOR_TYPES: ReadonlySet<string> = new Set([
   'physicsLiteBody',
   'physicsLiteTrigger',
 ])
+
+/** Classifica recursos condicionais que compartilham um nó IR genérico. */
+export function isCanvas3DResourceCreatorStatement(statement: {
+  type: string
+  namespace?: string
+}): boolean {
+  return (
+    CANVAS3D_RESOURCE_CREATOR_TYPES.has(statement.type) ||
+    (statement.type === 'newInstance' && statement.namespace === 'THREE')
+  )
+}

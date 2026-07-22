@@ -28,6 +28,7 @@ import { useConfirm } from '@/components/admin/use-confirm'
 import { ImageUploader } from '@/components/media/image-uploader'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatDate } from '@/lib/format'
+import { loadAllPages } from '@/lib/load-all-pages'
 import { slugify } from '@/lib/slug'
 import {
   AUDIENCE_LABELS,
@@ -112,10 +113,12 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
   const loadCareer = useCallback(async () => {
     setCareerLoading(true)
     try {
-      const page = await apiGet<Paginated<CourseView>>(
-        '/api/members/courses?audience=kids&limit=100&offset=0',
+      const courses = await loadAllPages((pageOffset, limit) =>
+        apiGet<Paginated<CourseView>>(
+          `/api/members/courses?audience=kids&limit=${limit}&offset=${pageOffset}`,
+        ),
       )
-      setCareerItems(page.items)
+      setCareerItems(courses)
     } catch (err) {
       toast.error((err as ApiError).message ?? 'Falha ao conferir a Carreira do Criador.')
     } finally {

@@ -99,9 +99,9 @@ describe('Carreira do Criador — acesso pedagógico aos cursos', () => {
       careerLock: {
         locked: true,
         reason: 'future-tier',
-        foundationCourseSlug: 'base-3d',
       },
     })
+    expect(bySlug.get('base-3d')?.careerLock).not.toHaveProperty('foundationCourseSlug')
   })
 
   test('curso bônus não participa da trava; equipe ignora a trava pedagógica', async () => {

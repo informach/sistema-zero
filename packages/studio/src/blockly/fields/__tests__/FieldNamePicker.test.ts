@@ -10,6 +10,8 @@ import { VALUE_BLOCKS } from '../../blocks/values'
 import { ensureBlocklyInitialized } from '../../setup'
 import {
   collectBoards,
+  collectCanvas3DPhysicsBodies,
+  collectCanvas3DPhysicsResources,
   collectCanvasContexts,
   collectCanvasIds,
   collectClassNames,
@@ -401,6 +403,37 @@ describe('FieldNamePicker', () => {
       expect(nameKindAllowsFreeText('class')).toBe(false)
       expect(nameKindAllowsFreeText('function')).toBe(false)
       expect(nameKindAllowsFreeText('canvas-context')).toBe(false)
+      expect(nameKindAllowsFreeText('super-method')).toBe(false)
+      expect(nameKindAllowsFreeText('physics-body')).toBe(false)
+      expect(nameKindAllowsFreeText('physics-resource')).toBe(false)
+    })
+
+    it('IDs da física são filtrados pelo mundo e pelo tipo do recurso', () => {
+      const ws = new Blockly.Workspace()
+      const jogador = ws.newBlock('sz_t3d_physics_body')
+      jogador.setFieldValue('fisica', 'WORLD')
+      jogador.setFieldValue('jogador', 'ID')
+      const inimigo = ws.newBlock('sz_t3d_physics_body')
+      inimigo.setFieldValue('outraFisica', 'WORLD')
+      inimigo.setFieldValue('inimigo', 'ID')
+      const parede = ws.newBlock('sz_t3d_physics_static_box')
+      parede.setFieldValue('fisica', 'WORLD')
+      parede.setFieldValue('parede', 'ID')
+      const mover = ws.newBlock('sz_t3d_physics_move')
+      mover.setFieldValue('fisica', 'WORLD')
+
+      expect(collectCanvas3DPhysicsBodies(ws, mover)).toEqual(['jogador'])
+      expect(collectCanvas3DPhysicsResources(ws, mover)).toEqual(['jogador', 'parede'])
+    })
+
+    it('preserva um ID físico legado mesmo quando ele ainda não tem declarador', () => {
+      const source = new Blockly.Workspace()
+      source.newBlock('sz_t3d_physics_move').setFieldValue('heroiAntigo', 'ID')
+      const state = Blockly.serialization.workspaces.save(source)
+      const restored = new Blockly.Workspace()
+      Blockly.serialization.workspaces.load(state, restored)
+
+      expect(restored.getAllBlocks(false)[0]?.getFieldValue('ID')).toBe('heroiAntigo')
     })
 
     it('o bloco iniciante de propriedade consome uma variável declarada', () => {
@@ -640,6 +673,11 @@ describe('FieldNamePicker', () => {
       }
       cls.addExtends_()
       expect(kindOf(cls, 'SUPER')).toBe('class')
+    })
+
+    it('super: METHOD usa o seletor restrito aos métodos da classe-mãe', () => {
+      const block = new Blockly.Workspace().newBlock('sz_js_super_method')
+      expect(kindOf(block, 'METHOD')).toBe('super-method')
     })
   })
 

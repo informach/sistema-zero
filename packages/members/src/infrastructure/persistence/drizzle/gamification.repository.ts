@@ -752,9 +752,9 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     // (`source_level`/`source_track`) — o curso ao vivo é só FALLBACK p/ linhas legadas
     // sem snapshot; o track legado sem curso cai em `'2d'` (literal final do coalesce,
     // deliberado: re-taggear um curso 3D no admin corrige os marcos legados sozinho).
-    // Assim o RANK NUNCA REGRIDE quando o curso é re-nivelado depois. Self-join via
-    // alias; `countDistinct` é defensivo (UNIQUE do ledger já dá 1 marco por curso).
-    // `courses` é LEFT join: curso APAGADO ainda conta pelo snapshot.
+    // Assim o RANK NUNCA REGRIDE quando o curso é re-nivelado depois. O self-join
+    // cruza os dois marcos pelo mesmo curso e o agrupamento devolve cada posição
+    // qualificada uma vez. `courses` é LEFT join: curso APAGADO ainda conta pelo snapshot.
     const showcased = alias(xpEvents, 'sc')
     const level = sql<CourseLevel>`coalesce(${showcased.sourceLevel}, ${xpEvents.sourceLevel}, ${courses.level})`
     const track = sql<CourseTrack>`coalesce(${showcased.sourceTrack}, ${xpEvents.sourceTrack}, ${courses.track}, '2d')`

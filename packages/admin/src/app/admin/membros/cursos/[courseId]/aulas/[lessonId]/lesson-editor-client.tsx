@@ -1124,7 +1124,8 @@ export function LessonEditorClient({
                       : null
                   }
                   handleRef={studioHandleRef}
-                  features={{ terminal: false, ai: false, professional: false, export: false }}
+                  professionalAuthoring
+                  features={{ terminal: false, ai: false, professional: true, export: false }}
                 />
               </Field>
               <Field

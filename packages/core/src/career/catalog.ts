@@ -1,11 +1,9 @@
 /**
- * Contrato técnico e versionado da Carreira do Criador.
+ * Contrato técnico central da Carreira do Criador.
  *
  * Este módulo é deliberadamente puro: não conhece banco, React, Estúdio ou textos
  * de apresentação. Os consumidores traduzem os ids de recompensa para a UI.
  */
-export const CREATOR_CAREER_VERSION = 1 as const
-
 export const CAREER_LEVEL_SLUGS = [
   'noob',
   'coder',
@@ -36,8 +34,6 @@ export const CAREER_STUDIO_REWARD_IDS = [
   'studio.blocks.intermediario-2d',
   'studio.blocks.intermediario-3d',
   'studio.blocks.avancado-2d',
-  'studio.blocks.avancado-3d',
-  'studio.bridge',
   'studio.pro',
 ] as const
 export type CareerStudioRewardId = (typeof CAREER_STUDIO_REWARD_IDS)[number]

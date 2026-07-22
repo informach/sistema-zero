@@ -31,14 +31,16 @@ autostart, SEM editor — para a página PÚBLICA de jogar do community-kids; su
 (`kind` ausente/`'classic'`) = **Blocos + Ponte** (editam só os 3 arquivos canônicos via UI);
 **profissional** (`kind: 'pro'`) = **Código** (Monaco sobre a ÁRVORE Vite inteira). `normalizeClassicMode`
 migra o legado `'code'` (quando o básico tinha Código standalone, pré-D2) para `'bridge'`. A Topbar
-interseca `modesForKind(kind)` com o `allowedModes` do host. O preview profissional
-(`src/modes/pro/ProPreview.tsx`) NÃO é srcdoc: aponta para o **dev-server do Vite rodando DENTRO do
-WebContainer** (mount → `npm install` → `npm run dev` → `server-ready` → iframe; exceções cross-origin
-chegam por `preview-message` ao Console). Na fase ready há a **barra** (nome do projeto — o `<title>`
+interseca `modesForKind(kind)` com o `allowedModes` do host. O preview profissional escolhe o runtime
+em `src/modes/pro/ProPreview.tsx`: sem `proRuntime`, aponta para o **dev-server do Vite dentro do
+WebContainer**; com o adapter, `RemoteProPreview` envia o snapshot ao BFF e renderiza o HTML compilado
+em iframe sandbox. Aulas e Admin usam o remoto para não exigir COOP/COEP; o Estúdio Completo usa o
+local. No caminho local, mount → `npm install` → `npm run dev` → `server-ready` → iframe e exceções
+cross-origin chegam por `preview-message` ao Console. Na fase ready há a **barra** (nome do projeto — o `<title>`
 vivo não é legível, iframe cross-origin — + "⟳ Atualizar" que REMONTA o iframe via key + "⏻ Reiniciar"
 = attempt++, mata o dev e re-roda install morno+dev). O **console.log do app chega ao Console da IDE**
 via `proConsoleBridge.ts`: script STRING PURA injetado em toda página pelo `setPreviewScript` do
-WebContainer (embrulha console.*, postMessage com targetOrigin do HOST — nunca `'*'`); o ProPreview
+WebContainer (embrulha console.*, postMessage com targetOrigin do HOST — nunca `'*'`); o preview local
 valida ORIGEM (a do dev-server corrente) + forma (`isProConsoleMessage`) antes do logsStore. O sync host→container é um `FsDiff` (`src/modes/pro/fsDiff.ts`
 + `useWebContainerSync.ts`): diff puro entre dois snapshots planos que calcula writes/removes/**mkdirs/
 rmdirs** e o **conflito arquivo↔diretório** (`removeFirstPaths`, removido RECURSIVAMENTE ANTES de

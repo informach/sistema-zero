@@ -350,8 +350,11 @@ chaves `iniciante-2d`…`avancado-3d` + `any`, mirror do members) — `Gamificat
 é o helper compartilhado dos apps de aluno (`COURSE_TIERS`/`COURSE_TIER_LABELS`/`courseTierOf` —
 track ausente → `2d`; o admin NÃO importa daqui, duplicação intencional); o filtro `nivel` do
 `use-catalog-filters` usa os 6 degraus. **`lib/studio-tier.ts`**: `resolveStudioTier` mapeia os 8
-ranks → degrau de blocos do Estúdio Completo (cada nível libera o degrau que vai estudar; Ponte
-abre no `elite`/Mestre, PRO no `champion`/Gênio + `god` + equipe; desconhecido→noob). Tudo
+ranks → degrau de blocos do Estúdio Completo (cada nível libera somente ferramentas já aprendidas;
+Ponte abre no `elite`/Mestre e o Pro abre somente no `god`/Lenda + equipe; desconhecido→noob).
+`resolveStudioTier` também devolve a allowlist acumulada de extensões e bloqueia projetos antigos
+ou importados que dependam de uma extensão futura. A matriz completa e o runtime remoto das aulas
+estão em `docs/carreira-do-criador.md`. Tudo
 passthrough (os clients não mapeiam) — a APRESENTAÇÃO (aura/insígnia/chip) vive no community-kids;
 aqui é só o tipo.
 

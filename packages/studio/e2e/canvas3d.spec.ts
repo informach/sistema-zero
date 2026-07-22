@@ -8,6 +8,75 @@ async function createProject(page: Page): Promise<void> {
   await expect(page).toHaveURL(/\/editor\//)
 }
 
+const numberShadow = (value: number) => ({
+  shadow: { type: 'sz_val_number', fields: { NUM: value } },
+})
+
+function canvasStructureArea(): Record<string, unknown> {
+  return {
+    type: 'sz_frame_structure',
+    inputs: {
+      CHILDREN: {
+        block: {
+          type: 'sz_html_canvas',
+          fields: {
+            ID: 'jogo',
+            CLASS: 'tela-3d',
+            DESCRIPTION: 'Cena 3D criada manualmente.',
+          },
+        },
+      },
+    },
+  }
+}
+
+function manualCanvas3DStartArea(): Record<string, unknown> {
+  return {
+    type: 'sz_frame_start',
+    inputs: {
+      CHILDREN: {
+        block: {
+          type: 'sz_t3d_scene_create',
+          fields: { SCENE: 'cena' },
+          next: {
+            block: {
+              type: 'sz_t3d_renderer_create',
+              fields: { RENDERER: 'renderizador', CANVAS: 'jogo' },
+              next: {
+                block: {
+                  type: 'sz_t3d_camera_create',
+                  fields: { CAMERA: 'camera', CANVAS: 'jogo' },
+                  inputs: {
+                    FOV: numberShadow(60),
+                    NEAR: numberShadow(0.1),
+                    FAR: numberShadow(1000),
+                  },
+                  next: {
+                    block: {
+                      type: 'sz_t3d_light_create',
+                      fields: {
+                        LIGHT: 'luz',
+                        SCENE: 'cena',
+                        KIND: 'ambient',
+                      },
+                      inputs: {
+                        COLOR: {
+                          shadow: { type: 'sz_val_color', fields: { COLOR: '#ffffff' } },
+                        },
+                        INTENSITY: numberShadow(1),
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  }
+}
+
 async function openCanvas3DGroup(page: Page, group: string): Promise<void> {
   const canvas2D = page.getByRole('treeitem', { name: 'Canvas', exact: true })
   const root = page.getByRole('treeitem', { name: 'Canvas 3D', exact: true })
@@ -52,6 +121,29 @@ async function flyoutLayout(page: Page): Promise<{
 }
 
 test.describe('Canvas 3D — experiência infantil', () => {
+  test('monta cena, renderizador, câmera e luz sobre o canvas do núcleo', async ({ page }) => {
+    const errors: string[] = []
+    page.on('pageerror', (error) => errors.push(error.message))
+
+    await createProject(page)
+    await pasteBlocks(page, canvasStructureArea())
+    await pasteBlocks(page, manualCanvas3DStartArea())
+
+    const canvas = page.frameLocator('iframe[title="Pré-visualização"]').locator('canvas#jogo')
+    await expect(canvas).toBeVisible({ timeout: 15_000 })
+    await expect
+      .poll(
+        () =>
+          canvas.evaluate((element) => {
+            const target = element as HTMLCanvasElement
+            return target.getContext('webgl2') !== null || target.getContext('webgl') !== null
+          }),
+        { timeout: 15_000 },
+      )
+      .toBe(true)
+    expect(errors).toEqual([])
+  })
+
   for (const group of [
     '🧊 Biblioteca 3D',
     '🎯 Transformar',

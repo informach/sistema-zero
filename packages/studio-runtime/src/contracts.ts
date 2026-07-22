@@ -1,12 +1,12 @@
-export const PRO_TEMPLATE_IDS = [
-  'vanilla-js',
-  'vanilla-vite',
-  'react-ts',
-  'three-js',
-  'three-ts',
-] as const
+import {
+  isStudioProTemplateId,
+  STUDIO_PRO_TEMPLATE_IDS,
+  type StudioProTemplateId,
+} from '@sistemazero/core/studio'
 
-export type ProTemplateId = (typeof PRO_TEMPLATE_IDS)[number]
+export const PRO_TEMPLATE_IDS = STUDIO_PRO_TEMPLATE_IDS
+
+export type ProTemplateId = StudioProTemplateId
 
 export interface ProBuildRequest {
   executionId: string
@@ -30,7 +30,6 @@ export interface ProBuildFailure {
 
 export type ProBuildResponse = ProBuildSuccess | ProBuildFailure
 
-const TEMPLATE_SET = new Set<string>(PRO_TEMPLATE_IDS)
 const EXECUTION_ID = /^[a-z0-9][a-z0-9-]{15,95}$/
 const PATH_SEGMENT = /^[A-Za-z0-9._-]+$/
 const FILE_EXTENSION = /\.(?:ts|tsx|js|jsx|mjs|cjs|json|html|css|svg|txt|md)$/i
@@ -65,7 +64,7 @@ export function parseBuildRequest(value: unknown): ProBuildRequest {
   if (typeof input.executionId !== 'string' || !EXECUTION_ID.test(input.executionId)) {
     throw new InvalidBuildRequestError('Identificador de execução inválido.')
   }
-  if (typeof input.templateId !== 'string' || !TEMPLATE_SET.has(input.templateId)) {
+  if (!isStudioProTemplateId(input.templateId)) {
     throw new InvalidBuildRequestError('Template profissional inválido.')
   }
   if (!input.files || typeof input.files !== 'object' || Array.isArray(input.files)) {
@@ -101,7 +100,7 @@ export function parseBuildRequest(value: unknown): ProBuildRequest {
 
   return {
     executionId: input.executionId,
-    templateId: input.templateId as ProTemplateId,
+    templateId: input.templateId,
     files,
   }
 }

@@ -29,7 +29,7 @@ export function careerLocksForCourses(
       locked: lock.locked,
       ...(lock.reason ? { reason: lock.reason } : {}),
       ...(lock.requiredLevel ? { requiredLevel: lock.requiredLevel } : {}),
-      ...(lock.locked && foundationByTier.has(tier)
+      ...(lock.locked && lock.reason === 'foundation-first' && foundationByTier.has(tier)
         ? { foundationCourseSlug: foundationByTier.get(tier) }
         : {}),
     })

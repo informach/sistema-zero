@@ -21,6 +21,7 @@ import {
 } from './config'
 import { StudioExamplesVisibleProvider } from './examples-visibility'
 import { StudioProRuntimeProvider } from './pro-runtime'
+import { disallowedProjectExtensions } from './project-access'
 import { StudioShareDisabledProvider, StudioShareProvider } from './share'
 import { StudioThemeProvider } from './theme'
 import type { StudioCoreProps, StudioHandle } from './types'
@@ -175,6 +176,11 @@ function StudioCoreBody({
     if (!allowed.includes(mode)) mode = allowed[0] ?? project.mode
     return mode === project.mode ? project : { ...project, mode }
   }, [sourceProject, initialMode, resolvedModesKey])
+  const disallowedExtensions = useMemo(
+    () => (sanitized ? disallowedProjectExtensions(sanitized, learning.allowExtensions) : []),
+    [sanitized, learning.allowExtensions],
+  )
+  const projectAccessBlocked = disallowedExtensions.length > 0
 
   const projectStoreApi = useProjectStoreApi()
   const checksStoreApi = useChecksStoreApi()
@@ -207,7 +213,7 @@ function StudioCoreBody({
   )
 
   useEffect(() => {
-    if (!sanitized) return
+    if (!sanitized || projectAccessBlocked) return
     hydrateProject(sanitized)
     // Restaura, EM SEGUNDO PLANO, o `blocksState` pesado que a abertura rápida
     // (shell load) omitiu — sem isto o editor abria com o workspace VAZIO (os
@@ -224,7 +230,15 @@ function StudioCoreBody({
       unloadProject()
       checksStoreApi.getState().setResult(null)
     }
-  }, [sanitized, hydrateProject, unloadProject, setPreviewRunning, checksStoreApi, persistence])
+  }, [
+    sanitized,
+    projectAccessBlocked,
+    hydrateProject,
+    unloadProject,
+    setPreviewRunning,
+    checksStoreApi,
+    persistence,
+  ])
 
   useEffect(() => {
     const detach = persistence.attach()
@@ -290,6 +304,25 @@ function StudioCoreBody({
                           <p className="text-sm">
                             Projeto inválido — confira o initialProject passado ao Studio.
                           </p>
+                        </div>
+                      ) : projectAccessBlocked ? (
+                        <div className="flex h-full flex-col items-center justify-center gap-3 bg-sz-bg px-6 text-center text-sz-fg-soft">
+                          <p className="text-base font-semibold text-sz-fg">
+                            Este projeto usa ferramentas que você ainda vai conquistar
+                          </p>
+                          <p className="max-w-md text-sm">
+                            Continue avançando na Carreira do Criador. O projeto ficou guardado e
+                            abrirá normalmente quando essas ferramentas forem liberadas.
+                          </p>
+                          {onExit ? (
+                            <button
+                              type="button"
+                              className="rounded-lg bg-sz-accent px-4 py-2 font-semibold text-sm text-white"
+                              onClick={onExit}
+                            >
+                              Voltar
+                            </button>
+                          ) : null}
                         </div>
                       ) : hasProject ? (
                         <ErrorBoundary

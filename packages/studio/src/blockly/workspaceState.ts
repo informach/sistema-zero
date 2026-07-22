@@ -5989,6 +5989,46 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         { OBJ: obj },
       )
     }
+    case 'threeSceneSetup':
+      return block('sz_t3d_scene_create', { SCENE: stmt.scene }, {}, stmt.__id)
+    case 'threeRendererSetup':
+      return block(
+        'sz_t3d_renderer_create',
+        { RENDERER: stmt.renderer, CANVAS: stmt.canvas },
+        {},
+        stmt.__id,
+      )
+    case 'threeCameraSetup': {
+      const vs = valueSocketsOf([
+        ['FOV', stmt.fov],
+        ['NEAR', stmt.near],
+        ['FAR', stmt.far],
+      ])
+      return vs
+        ? block(
+            'sz_t3d_camera_create',
+            { CAMERA: stmt.camera, CANVAS: stmt.canvas },
+            {},
+            stmt.__id,
+            vs,
+          )
+        : rawJSBlock(stmt)
+    }
+    case 'threeLightSetup': {
+      const vs = valueSocketsOf([
+        ['COLOR', stmt.color],
+        ['INTENSITY', stmt.intensity],
+      ])
+      return vs
+        ? block(
+            'sz_t3d_light_create',
+            { LIGHT: stmt.light, SCENE: stmt.scene, KIND: stmt.kind },
+            {},
+            stmt.__id,
+            vs,
+          )
+        : rawJSBlock(stmt)
+    }
     case 'rendererConfig':
       // Forward-only: só chega aqui via block→IR→block (o parser não reconstrói o nó);
       // remonta os dropdowns. Do CÓDIGO, as linhas voltam como blocos genéricos.

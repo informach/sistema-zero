@@ -347,6 +347,31 @@ describe('gramática recursiva do ciclo de vida', () => {
     }
   })
 
+  it('recusa construtores Three.js dentro de qualquer laço', () => {
+    const threeConstructor: JSStatement = {
+      type: 'newInstance',
+      varName: 'renderizador',
+      namespace: 'THREE',
+      className: 'WebGLRenderer',
+      args: [],
+    }
+
+    expect(parse('start', threeConstructor).success).toBe(true)
+    expect(
+      parse('loops', {
+        type: 'animationLoop',
+        body: [threeConstructor],
+      }).success,
+    ).toBe(false)
+    expect(
+      parse('start', {
+        type: 'repeat',
+        times: { type: 'num', value: 2 },
+        body: [threeConstructor],
+      }).success,
+    ).toBe(false)
+  })
+
   it('aceita comandos contínuos em loops e funções, mas não em início, eventos ou construtores', () => {
     const continuous: JSStatement = {
       type: 'g3d:controlWithKeys',

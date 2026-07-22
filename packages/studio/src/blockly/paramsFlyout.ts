@@ -163,10 +163,28 @@ export function blockedDynamicSearchTypes(profile: LearningProfile): Set<string>
 export function registerFunctionsFlyout(
   workspace: Blockly.WorkspaceSvg,
   profile: LearningProfile = FULL_LEARNING_PROFILE,
-): void {
+): () => void {
+  // Ao clicar numa categoria, o Blockly troca a seleção global do bloco pelo item
+  // da toolbox antes de montar o flyout. Guardamos o último bloco selecionado para
+  // que a troca de categoria não apague o contexto léxico dos parâmetros.
+  let lastSelectedBlockId: string | null = null
+  const rememberBlockSelection = (event: Blockly.Events.Abstract): void => {
+    if (event.type !== Blockly.Events.SELECTED) return
+    const blockId = (event as Blockly.Events.Selected).newElementId ?? null
+    if (blockId && workspace.getBlockById(blockId)) lastSelectedBlockId = blockId
+  }
+  workspace.addChangeListener(rememberBlockSelection)
+
   workspace.registerToolboxCategoryCallback(FUNCTIONS_FLYOUT_CALLBACK, (() => {
     const selected = Blockly.common.getSelected()
-    const selectedBlock = selected instanceof Blockly.BlockSvg ? selected : null
+    const selectedBlock =
+      selected instanceof Blockly.BlockSvg && selected.workspace === workspace
+        ? selected
+        : lastSelectedBlockId
+          ? workspace.getBlockById(lastSelectedBlockId)
+          : null
     return functionFlyoutItemsForSelection(selectedBlock, profile)
   }) as unknown as (ws: Blockly.WorkspaceSvg) => Blockly.utils.toolbox.FlyoutItemInfo[])
+
+  return () => workspace.removeChangeListener(rememberBlockSelection)
 }

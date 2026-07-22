@@ -337,6 +337,20 @@
       "when": 1784740692948,
       "tag": "0047_panoramic_jack_power",
       "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1784746845685,
+      "tag": "0048_normalize_creator_career_slots",
+      "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "7",
+      "when": 1784746869660,
+      "tag": "0049_needy_iron_man",
+      "breakpoints": true
     }
   ]
 }

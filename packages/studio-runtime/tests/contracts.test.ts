@@ -54,4 +54,14 @@ describe('contrato do executor Pro', () => {
     expect(trustedViteConfig('react-ts')).toContain('plugins: [react()]')
     expect(trustedViteConfig('vanilla-js')).not.toContain('@vitejs/plugin-react')
   })
+
+  test('imagem instala dependências reproduzíveis pelo lockfile', async () => {
+    const dockerfile = await Bun.file(new URL('../Dockerfile', import.meta.url)).text()
+    const lockfile = await Bun.file(new URL('../runtime/package-lock.json', import.meta.url)).json()
+
+    expect(dockerfile).toContain('COPY runtime/package-lock.json')
+    expect(dockerfile).toContain('npm ci --ignore-scripts')
+    expect(lockfile.lockfileVersion).toBeGreaterThanOrEqual(3)
+    expect(lockfile.packages[''].dependencies.vite).toBe('8.0.14')
+  })
 })

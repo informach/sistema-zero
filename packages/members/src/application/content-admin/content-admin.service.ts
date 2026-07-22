@@ -1,3 +1,4 @@
+import { isStudioProTemplateId } from '@sistemazero/core/studio'
 import {
   ContentNotFoundError,
   CourseConflictError,
@@ -289,11 +290,30 @@ function assertBlockCoherent(content: LessonBlockContent): void {
     if (problem) throw new InvalidContentCommandError(problem)
     return
   }
-  // Estúdio: o `initialProject` é JSON opaco do editor — limita o peso no jsonb
-  // (mesmo teto da entrega do aluno). O shape em si o front sanitiza (autoria + aluno).
+  // Estúdio: limita o peso no jsonb e valida o discriminante crítico do projeto
+  // Pro. O restante do snapshot continua defensivo e é sanitizado pelo Studio.
   if (content.kind === 'studio') {
     if (JSON.stringify(content.initialProject).length > MAX_STUDIO_PROJECT_CHARS) {
       throw new InvalidContentCommandError('Projeto inicial excede o tamanho máximo permitido')
+    }
+    if (
+      content.initialProject &&
+      typeof content.initialProject === 'object' &&
+      !Array.isArray(content.initialProject) &&
+      (content.initialProject as { kind?: unknown }).kind === 'pro'
+    ) {
+      const project = content.initialProject as {
+        tree?: unknown
+        proMeta?: { templateId?: unknown }
+      }
+      if (
+        !project.tree ||
+        typeof project.tree !== 'object' ||
+        Array.isArray(project.tree) ||
+        !isStudioProTemplateId(project.proMeta?.templateId)
+      ) {
+        throw new InvalidContentCommandError('Escolha um modelo Pro válido')
+      }
     }
     // Atividade (auto-correção): coerência além do shape TypeBox (ids únicos,
     // code com source, testcase com função+casos, nota de corte com ≥1 checagem).

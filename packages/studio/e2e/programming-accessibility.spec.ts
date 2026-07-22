@@ -92,6 +92,35 @@ test('Programação mantém foco visível e contraste AA no uso por teclado', as
     .toBe('0s none')
 })
 
+test('flyouts dinâmicos de Funções e Classes respeitam a seleção real do workspace', async ({
+  page,
+}) => {
+  await createProject(page)
+  await pasteBlocklyBlocks(page, {
+    type: 'sz_js_function',
+    fields: { NAME: 'mover' },
+    extraState: { params: [{ id: 'param-velocidade', name: 'velocidade' }] },
+  })
+
+  const declaration = page.locator('.blocklyBlockCanvas .sz_js_function').first()
+  await expect(declaration).toBeVisible()
+  await declaration.locator(':scope > .blocklyPath').click({ position: { x: 8, y: 8 } })
+  await expect(declaration).toHaveClass(/blocklySelected/)
+
+  await page.getByRole('treeitem', { name: 'Programação', exact: true }).click()
+  await page.getByRole('treeitem', { name: '🧩 Funções', exact: true }).click()
+
+  const flyout = page.locator('.blocklyToolboxFlyout')
+  const parameter = flyout.locator('.sz_val_arg')
+  await expect(parameter).toHaveCount(1)
+  await expect(parameter).toContainText('velocidade')
+  await expect(flyout).toContainText('Parâmetros')
+
+  await page.getByRole('treeitem', { name: '🏛️ Classes', exact: true }).click()
+  await expect(flyout.locator('.sz_js_class').first()).toBeVisible()
+  await expect(flyout.locator('.sz_val_arg')).toHaveCount(0)
+})
+
 test('Programação mantém o flyout interativo em celular', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 })
   await createProject(page)

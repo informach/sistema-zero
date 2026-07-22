@@ -140,9 +140,9 @@ export type StudioMode = 'blocks' | 'bridge' | 'code'
  * pelo admin para a atividade da aula. `initialProject` é o snapshot do Estúdio
  * (shape `Project` da lib) autorado no editor embutido da autoria — já codifica nome,
  * TIPO (extensões web/jogo-2D/jogo-3D) e o código/blocos de partida. O members NÃO importa
- * a lib (é backend): trata `initialProject` como JSON de cliente sanitizado (o Estúdio
- * sanitiza na autoria via export e DE NOVO no aluno via `sanitizeProjectForHost`); aqui só
- * vale o teto de tamanho. A ENTREGA do aluno (mesmo formato JSON) bloqueia a conclusão da
+ * a lib (é backend): trata `initialProject` como JSON defensivo. O service valida o tipo e
+ * o template dos projetos Pro, além do teto de tamanho; o Estúdio sanitiza o snapshot na
+ * autoria e de novo no aluno. A ENTREGA do aluno (mesmo formato JSON) bloqueia a conclusão da
  * aula até ser enviada — espelha o gate do quiz (ver mark-lesson-complete.service).
  */
 export interface StudioBlock {

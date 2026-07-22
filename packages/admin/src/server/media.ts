@@ -1,17 +1,14 @@
 import 'server-only'
 import { randomUUID } from 'node:crypto'
-import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
-import { isSameOriginRequest } from '@/lib/csrf'
 import { getEnv, isProd } from '@/lib/env'
 import { safeExtension, sanitizeFilename } from '@/lib/filenames'
 import type { SessionUser } from '@/lib/types'
 import { pickTranscriptTrack } from '@/lib/vimeo-helpers'
-import { tryRefresh } from './gateway'
 import { type ImagePreset, optimizeImage } from './image-optimizer'
+import { requireLocalAdminSession } from './local-admin-session'
 import { MediaNotConfiguredError, r2PresignPrivatePut, r2PutObject, r2PutObjectPrivate } from './r2'
 import { captureServerException } from './sentry'
-import { type AccessVerdict, getAccessToken, getRefreshToken, verifyAccessToken } from './session'
 import {
   addVideoToFolder,
   applyPrivacy,
@@ -75,50 +72,7 @@ export const AUDIO_MIME_TYPES = new Set([
  * ou uma `NextResponse` de erro pronta.
  */
 export async function requireMediaSession(): Promise<SessionUser | NextResponse> {
-  // Anti-CSRF (mesma régua do proxy; `/api/media/*` fica fora do matcher dele).
-  // Todo tráfego destas rotas é `fetch()` same-origin dos editores do painel.
-  const h = await headers()
-  if (
-    !isSameOriginRequest({
-      secFetchSite: h.get('sec-fetch-site'),
-      origin: h.get('origin'),
-      host: h.get('x-forwarded-host') ?? h.get('host'),
-    })
-  ) {
-    return NextResponse.json(
-      { error: { code: 'FORBIDDEN', message: 'Origem não permitida.' } },
-      { status: 403 },
-    )
-  }
-
-  const access = await getAccessToken()
-  const refresh = await getRefreshToken()
-  let verdict: AccessVerdict =
-    access && refresh ? await verifyAccessToken(access) : { ok: false, expired: false }
-  if (!verdict.ok && verdict.expired) {
-    const renewed = await tryRefresh()
-    if (renewed) verdict = await verifyAccessToken(renewed)
-  }
-  if (!verdict.ok) {
-    return NextResponse.json(
-      { error: { code: 'UNAUTHORIZED', message: 'Sessão expirada — faça login novamente.' } },
-      { status: 401 },
-    )
-  }
-  const session = verdict.user
-  if (session.role !== 'superadmin' && session.role !== 'admin') {
-    return NextResponse.json(
-      { error: { code: 'FORBIDDEN', message: 'Sem permissão para enviar mídia.' } },
-      { status: 403 },
-    )
-  }
-  if (session.status !== 'active') {
-    return NextResponse.json(
-      { error: { code: 'FORBIDDEN', message: 'Conta sem acesso (status).' } },
-      { status: 403 },
-    )
-  }
-  return session
+  return requireLocalAdminSession('Sem permissão para enviar mídia.')
 }
 
 /** Erro → resposta `{ error: { code, message } }` (503 quando falta config). */

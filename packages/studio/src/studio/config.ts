@@ -43,9 +43,9 @@ export interface StudioFeatures {
   /** Aba/painel de IA. `true` = BYOK (mock até ter chave); objeto configura. Default: false. */
   ai?: boolean | StudioAIConfig
   /**
-   * MODO PROFISSIONAL (dev-server real no WebContainer: TS + npm + Vite + React).
-   * Quando `true`, FORÇA `terminal:true` e `allowedModes:['code']` (o seletor de
-   * modos some). Exige COOP/COEP no host. Default: false.
+   * Habilita criar e converter projetos Pro. O tipo do projeto define os modos:
+   * clássico usa Blocos/Ponte e Pro usa Código. O terminal local fica ligado por
+   * padrão, mas pode ser desligado quando o host fornece um `proRuntime` remoto.
    */
   professional?: boolean
 }
@@ -170,7 +170,8 @@ export function resolveStudioConfig(
     extensions: features?.extensions ?? true,
     export: features?.export ?? true,
     download: features?.download ?? true,
-    // Profissional EXIGE o terminal (é onde roda o dev-server).
+    // O modo profissional usa terminal por padrão no runtime local. Aulas e
+    // autores com runtime remoto podem desligá-lo explicitamente.
     terminal: professional ? (features?.terminal ?? true) : (features?.terminal ?? false),
     ai: ai !== false,
     professional,

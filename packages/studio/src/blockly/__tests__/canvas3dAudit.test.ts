@@ -67,8 +67,8 @@ function paletteAt(level: LearningProfile['level']): { types: Set<string>; names
 }
 
 describe('Auditoria Canvas 3D — inventário e progressão', () => {
-  it('mantém os 63 blocos em um único grupo e no catálogo da aula', () => {
-    expect(CANVAS3D_BLOCKS).toHaveLength(63)
+  it('mantém os 67 blocos em um único grupo e no catálogo da aula', () => {
+    expect(CANVAS3D_BLOCKS).toHaveLength(67)
     expect(CANVAS3D_BLOCK_TYPES.map(String).sort()).toEqual(
       CANVAS3D_BLOCKS.map((block) => block.type).sort(),
     )
@@ -91,6 +91,10 @@ describe('Auditoria Canvas 3D — inventário e progressão', () => {
     const intermediate = paletteAt('intermediario-3d')
     expect(intermediate.names.has('Canvas 3D')).toBe(true)
     for (const type of [
+      'sz_t3d_scene_create',
+      'sz_t3d_renderer_create',
+      'sz_t3d_camera_create',
+      'sz_t3d_light_create',
       'sz_t3d_primitive',
       'sz_t3d_terrain',
       'sz_t3d_city',
@@ -103,6 +107,32 @@ describe('Auditoria Canvas 3D — inventário e progressão', () => {
     expect(intermediate.types.has('sz_t3d_import')).toBe(false)
     expect(intermediate.types.has('sz_t3d_new_var')).toBe(false)
     expect(paletteAt('avancado-2d').names.has('Canvas 3D')).toBe(true)
+  })
+
+  it('oferece o caminho manual Canvas → cena → renderizador → câmera → luz', () => {
+    const intermediate = paletteAt('intermediario-3d')
+    expect(intermediate.types.has('sz_html_canvas')).toBe(true)
+
+    const expected = [
+      'sz_t3d_scene_create',
+      'sz_t3d_renderer_create',
+      'sz_t3d_camera_create',
+      'sz_t3d_light_create',
+    ]
+    for (const type of expected) {
+      expect(intermediate.types.has(type), type).toBe(true)
+      expect(CANVAS3D_BLOCKS.find((block) => block.type === type)?.placement, type).toBe(
+        'resource-creator',
+      )
+    }
+
+    const renderer = CANVAS3D_BLOCKS.find((block) => block.type === 'sz_t3d_renderer_create')
+    const canvasField = rows(renderer as MultilineBlockDefinition)
+      .flatMap((args) => args ?? [])
+      .find(
+        (arg) => Boolean(arg) && typeof arg === 'object' && (arg as BlockArg).name === 'CANVAS',
+      ) as { type?: string; kind?: string } | undefined
+    expect(canvasField).toMatchObject({ type: 'field_name_picker', kind: 'canvas' })
   })
 })
 
@@ -195,6 +225,28 @@ describe('Auditoria Canvas 3D — experiência infantil', () => {
       })
     } finally {
       workspace.dispose()
+    }
+  })
+
+  it('faz consumidores da física escolherem IDs declarados', () => {
+    const expectedKinds = new Map<string, string>([
+      ['sz_t3d_physics_move', 'physics-body'],
+      ['sz_t3d_physics_jump', 'physics-body'],
+      ['sz_t3d_physics_velocity', 'physics-body'],
+      ['sz_t3d_physics_impulse', 'physics-body'],
+      ['sz_t3d_physics_teleport', 'physics-body'],
+      ['sz_t3d_physics_body_state', 'physics-body'],
+      ['sz_t3d_physics_remove', 'physics-resource'],
+    ])
+
+    for (const [type, kind] of expectedKinds) {
+      const definition = CANVAS3D_BLOCKS.find((block) => block.type === type)
+      const id = rows(definition as MultilineBlockDefinition)
+        .flatMap((args) => args ?? [])
+        .find(
+          (arg) => Boolean(arg) && typeof arg === 'object' && (arg as BlockArg).name === 'ID',
+        ) as { type?: string; kind?: string } | undefined
+      expect(id, type).toMatchObject({ type: 'field_name_picker', kind })
     }
   })
 })

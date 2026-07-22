@@ -496,6 +496,8 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_t3d_set_intensity: { N: 'number' },
   sz_t3d_set_matrix_at: { I: 'number' },
   sz_t3d_renderer_size: { W: 'number', H: 'number' },
+  sz_t3d_camera_create: { FOV: 'number', NEAR: 'number', FAR: 'number' },
+  sz_t3d_light_create: { COLOR: 'color', INTENSITY: 'number' },
   sz_t3d_bloom_setup: { STRENGTH: 'number', RADIUS: 'number', THRESHOLD: 'number' },
   sz_t3d_particles: { COUNT: 'number', SIZE: 'number', SPREAD: 'number', COLOR: 'color' },
   sz_t3d_water: { SIZE: 'number', COLOR: 'color' },

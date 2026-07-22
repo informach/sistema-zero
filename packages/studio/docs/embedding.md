@@ -100,7 +100,7 @@ A biblioteca não chama `sendBeacon` sozinha (endpoint/credenciais são do host)
 
 `prefetchStudioModes()` — aquece os chunks pesados (Blockly/Monaco) no hover do link que abre o editor.
 
-## 5. Headers — SOMENTE se `features.terminal` for ligado
+## 5. Headers para o runtime local
 
 O WebContainer exige cross-origin isolation no DOCUMENTO do host:
 
@@ -124,23 +124,48 @@ CSP, se o host usa uma: o terminal precisa de `script-src 'unsafe-eval' 'wasm-un
 
 ## 7. Modo Profissional (`features.professional`)
 
-O modo profissional troca o preview srcdoc por um **dev-server real (Vite) rodando dentro do WebContainer**: TypeScript + npm + Vite + React, com `npm install`/`npm run dev` de verdade e HMR. É a ponte do aluno dos blocos para uma stack moderna.
+O projeto Pro trabalha somente em Código e pode usar dois runtimes. No Estúdio livre, o runtime local executa Vite dentro do WebContainer. Em aulas e no Admin, o host passa `proRuntime` e recebe o HTML já compilado por um executor remoto isolado.
 
 ```tsx
 import { createProProject } from '@sistemazero/studio'
 
 <Studio
   initialProject={createProProject(crypto.randomUUID(), 'Meu app', 'react-ts')}
-  features={{ professional: true }}   // FORÇA terminal:true e allowedModes:['code']
+  features={{ professional: true }}
   persistence="local"
 />
 ```
 
-Templates disponíveis (`PRO_TEMPLATES` / `listProTemplates()`): `vanilla-vite`, `react-ts`, `three-ts`. A `<ProjectList professional />` mostra o seletor de template no "Novo projeto" e chama o factory por baixo.
+Templates disponíveis em `listProTemplates()`: `vanilla-js`, `vanilla-vite`, `react-ts`, `three-js` e `three-ts`. A `<ProjectList professional />` mostra o seletor no novo projeto.
 
-Regras NÃO-NEGOCIÁVEIS:
+Para uma aula ou painel sem cross-origin isolation:
 
-- **COOP/COEP são OBRIGATÓRIOS** na rota inteira do editor (mesmos headers da seção 5 — `features.professional` já liga `terminal:true`). Sem eles o WebContainer não inicia.
+```tsx
+import type { StudioProRuntimeAdapter } from '@sistemazero/studio'
+
+const proRuntime: StudioProRuntimeAdapter = {
+  async build({ project, signal }) {
+    const response = await fetch('/api/studio/pro-runtime/build', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ project }),
+      signal,
+    })
+    if (!response.ok) throw new Error('Não foi possível compilar o projeto.')
+    return response.json()
+  },
+}
+
+<StudioLesson
+  initialProject={proProject}
+  features={{ professional: true, terminal: false }}
+  proRuntime={proRuntime}
+/>
+```
+
+Regras do runtime local:
+
+- **COOP/COEP são obrigatórios** na rota inteira do editor. `features.professional` liga o terminal por padrão, mas o host pode passar `terminal:false` quando fornece `proRuntime`.
 - **1 instância profissional por aba.** O WebContainer é singleton e o dev-server tem **uma** porta `server-ready` por vez; NÃO renderize dois `<Studio professional>` (nem a rota `/dual`) na mesma aba — eles disputam o mesmo container e a mesma porta.
 - **COEP afeta a página toda**: imagens/iframes cross-origin do host precisam de CORP/CORS, senão quebram. Ligue o modo só na rota do editor.
 - **O preview é cross-origin**: a URL vem do evento `server-ready` em runtime (porta dinâmica) — **não é configurável** pelo host. Exceções do app chegam ao Console via `preview-message`.
@@ -148,6 +173,8 @@ Regras NÃO-NEGOCIÁVEIS:
 - **Persistência**: só o código-fonte é salvo (a árvore `tree`); `node_modules` **nunca** é persistido nem aceito no load (o sanitizer rebaixa para projeto básico qualquer árvore com `node_modules`).
 
 Um único sincronizador (`ProWebContainerProvider`) escreve no FS do container; o Terminal em modo profissional só abre o shell sobre o FS já montado (dois escritores corromperiam os arquivos).
+
+No runtime remoto, a autenticação, a autorização da aula e a escolha confiável do template pertencem ao BFF. O navegador não recebe o token do executor. O contrato do Studio aceita apenas `{ html, output?, durationMs? }`; limites, dependências e isolamento são responsabilidade do serviço remoto.
 
 ## 8. Compartilhar (Mural) + player público
 

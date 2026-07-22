@@ -3234,6 +3234,52 @@ ${pad}});`
       const obj = compileExpr(stmt.object, 0, identifiers, recAt(base))
       return `${pad}${obj}.traverse((${identifiers.get(stmt.param)}) => {\n${body}\n${pad}});`
     }
+    case 'threeSceneSetup':
+      return `${pad}const ${identifiers.get(stmt.scene)} = new THREE.Scene();`
+    case 'threeRendererSetup': {
+      const renderer = identifiers.get(stmt.renderer)
+      const canvas = identifiers.reserveInternal(`${stmt.renderer}Canvas`)
+      const canvasId = JSON.stringify(stmt.canvas)
+      const message = JSON.stringify(
+        `Canvas "${stmt.canvas}" não encontrado. Crie essa tela primeiro na categoria Canvas.`,
+      )
+      const lines = [
+        `const ${canvas} = document.getElementById(${canvasId});`,
+        `if (!(${canvas} instanceof HTMLCanvasElement)) throw new Error(${message});`,
+        `const ${renderer} = new THREE.WebGLRenderer({ canvas: ${canvas}, antialias: true });`,
+        `${renderer}.setSize(Math.max(1, ${canvas}.clientWidth || ${canvas}.width), Math.max(1, ${canvas}.clientHeight || ${canvas}.height), false);`,
+      ]
+      return lines.map((line) => `${pad}${line}`).join('\n')
+    }
+    case 'threeCameraSetup': {
+      const camera = identifiers.get(stmt.camera)
+      const canvas = identifiers.reserveInternal(`${stmt.camera}Canvas`)
+      const width = identifiers.reserveInternal(`${stmt.camera}Largura`)
+      const height = identifiers.reserveInternal(`${stmt.camera}Altura`)
+      const canvasId = JSON.stringify(stmt.canvas)
+      const message = JSON.stringify(
+        `Canvas "${stmt.canvas}" não encontrado. Crie essa tela primeiro na categoria Canvas.`,
+      )
+      const fov = compileExpr(stmt.fov, 0, identifiers, recAt(base))
+      const near = compileExpr(stmt.near, 0, identifiers, recAt(base))
+      const far = compileExpr(stmt.far, 0, identifiers, recAt(base))
+      const lines = [
+        `const ${canvas} = document.getElementById(${canvasId});`,
+        `if (!(${canvas} instanceof HTMLCanvasElement)) throw new Error(${message});`,
+        `const ${width} = Math.max(1, ${canvas}.clientWidth || ${canvas}.width);`,
+        `const ${height} = Math.max(1, ${canvas}.clientHeight || ${canvas}.height);`,
+        `const ${camera} = new THREE.PerspectiveCamera(${fov}, ${width} / ${height}, ${near}, ${far});`,
+      ]
+      return lines.map((line) => `${pad}${line}`).join('\n')
+    }
+    case 'threeLightSetup': {
+      const light = identifiers.get(stmt.light)
+      const scene = identifiers.get(stmt.scene)
+      const color = compileExpr(stmt.color, 0, identifiers, recAt(base))
+      const intensity = compileExpr(stmt.intensity, 0, identifiers, recAt(base))
+      const className = stmt.kind === 'directional' ? 'DirectionalLight' : 'AmbientLight'
+      return `${pad}const ${light} = new THREE.${className}(${color}, ${intensity});\n${pad}${scene}.add(${light});`
+    }
     case 'rendererConfig': {
       // Modernização (forward-only): cada escolha ≠ 'off' vira uma linha com a
       // grafia ATUAL do three.js. 'off' = a linha não é emitida.
@@ -7082,6 +7128,24 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(stmt.object, names)
       names.add(stmt.param)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'threeSceneSetup':
+      names.add(stmt.scene)
+      return
+    case 'threeRendererSetup':
+      names.add(stmt.renderer)
+      return
+    case 'threeCameraSetup':
+      names.add(stmt.camera)
+      collectExprIdentifiers(stmt.fov, names)
+      collectExprIdentifiers(stmt.near, names)
+      collectExprIdentifiers(stmt.far, names)
+      return
+    case 'threeLightSetup':
+      names.add(stmt.light)
+      names.add(stmt.scene)
+      collectExprIdentifiers(stmt.color, names)
+      collectExprIdentifiers(stmt.intensity, names)
       return
     case 'rendererConfig':
       names.add(stmt.renderer)

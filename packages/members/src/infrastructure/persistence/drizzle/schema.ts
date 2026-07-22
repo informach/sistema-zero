@@ -102,8 +102,8 @@ export const courses = members.table(
     // `audience`/`level`: UPDATE sem o campo PRESERVA o atual.
     track: courseTrackEnum('track').notNull().default('2d'),
     // Posição do curso na etapa da Carreira do Criador. NULL = curso bônus;
-    // 1 = curso-base. O teto por etapa (6 no Iniciante 2D; 5 nas demais) é
-    // validado no domínio, enquanto o banco garante a faixa física e unicidade.
+    // 1 = curso-base. O domínio e o banco garantem que só Kids ocupa a carreira
+    // e aplicam o teto da etapa: 6 no Iniciante 2D e 5 nas demais.
     careerSlot: smallint('career_slot'),
     // Trava sequencial estilo Duolingo: a próxima aula só libera quando a anterior
     // está concluída. Default `true` = backfill LIGADO p/ os cursos já existentes
@@ -120,7 +120,7 @@ export const courses = members.table(
       .where(sql`${t.careerSlot} is not null`),
     check(
       'courses_career_slot_check',
-      sql`${t.careerSlot} is null or ${t.careerSlot} between 1 and 6`,
+      sql`${t.careerSlot} is null or (${t.audience} = 'kids' and ${t.careerSlot} between 1 and case when ${t.level} = 'iniciante' and ${t.track} = '2d' then 6 else 5 end)`,
     ),
   ],
 )

@@ -5,7 +5,7 @@ export interface CareerRewardInfo {
   description: string
 }
 
-/** Textos de apresentação; a matriz técnica continua versionada no core. */
+/** Textos de apresentação; a matriz técnica continua centralizada no core. */
 export const CAREER_REWARD_INFO: Record<StudentLevelSlug, CareerRewardInfo> = {
   noob: {
     title: 'Estúdio dentro das aulas',

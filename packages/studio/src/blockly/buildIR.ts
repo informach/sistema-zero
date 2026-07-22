@@ -2431,6 +2431,44 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           body: getStatementChildren(block, 'DO', seen),
         },
       }
+    case 'sz_t3d_scene_create':
+      return {
+        kind: 'js',
+        value: { type: 'threeSceneSetup', scene: f(block, 'SCENE') || 'cena' },
+      }
+    case 'sz_t3d_renderer_create':
+      return {
+        kind: 'js',
+        value: {
+          type: 'threeRendererSetup',
+          renderer: f(block, 'RENDERER') || 'renderizador',
+          canvas: f(block, 'CANVAS') || 'jogo',
+        },
+      }
+    case 'sz_t3d_camera_create':
+      return {
+        kind: 'js',
+        value: {
+          type: 'threeCameraSetup',
+          camera: f(block, 'CAMERA') || 'camera',
+          canvas: f(block, 'CANVAS') || 'jogo',
+          fov: exprInput(block, 'FOV', { type: 'num', value: 60 }),
+          near: exprInput(block, 'NEAR', { type: 'num', value: 0.1 }),
+          far: exprInput(block, 'FAR', { type: 'num', value: 1000 }),
+        },
+      }
+    case 'sz_t3d_light_create':
+      return {
+        kind: 'js',
+        value: {
+          type: 'threeLightSetup',
+          light: f(block, 'LIGHT') || 'luz',
+          scene: f(block, 'SCENE') || 'cena',
+          kind: fieldChoice(f(block, 'KIND'), ['ambient', 'directional'] as const, 'ambient'),
+          color: exprInput(block, 'COLOR', { type: 'color', value: '#ffffff' }),
+          intensity: exprInput(block, 'INTENSITY', { type: 'num', value: 1 }),
+        },
+      }
     case 'sz_t3d_renderer_config': {
       // Modernização do renderizador (forward-only) — os dropdowns viram a grafia atual.
       return {

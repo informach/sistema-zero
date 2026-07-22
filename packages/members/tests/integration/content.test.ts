@@ -266,6 +266,32 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
     expect(bad.status).toBe(400)
   })
 
+  test('bloco Pro exige modelo conhecido e árvore de projeto', async () => {
+    const { app } = buildApp()
+    const { lesson } = await seedTree(app)
+    const project = {
+      name: 'Projeto Pro',
+      files: { 'index.html': '', 'style.css': '', 'script.js': '' },
+      kind: 'pro',
+      tree: { 'index.html': { kind: 'file', content: '<main>Oi</main>' } },
+      proMeta: { templateId: 'modelo-inventado', devScript: 'dev' },
+    }
+
+    const invalid = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+      content: { kind: 'studio', initialProject: project },
+    })
+    expect(invalid.status).toBe(400)
+    expect((await readJson(invalid)).error.message).toContain('modelo Pro válido')
+
+    const valid = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+      content: {
+        kind: 'studio',
+        initialProject: { ...project, proMeta: { templateId: 'react-ts', devScript: 'dev' } },
+      },
+    })
+    expect(valid.status).toBe(201)
+  })
+
   test('bloco embed v3 (só html) e bloco ebook → 201; embed sem html → 400', async () => {
     const { app } = buildApp()
     const { lesson } = await seedTree(app)

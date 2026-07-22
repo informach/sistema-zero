@@ -6,15 +6,14 @@ const C = CATEGORY_COLORS.dom
 
 /**
  * Blocos de MANIPULAÇÃO DO DOM: eventos, busca de elementos, leitura/escrita de
- * propriedades, classes/dataset e criação/inserção. Separados da categoria
- * JavaScript (que fica com a LINGUAGEM: variáveis, controle de fluxo, listas,
- * console/alert, timers, storage, fetch) — ver toolbox.ts (categoria "DOM"
- * entre CSS e JavaScript).
+ * propriedades, classes/dataset e criação/inserção. Na toolbox, ficam nas
+ * subcategorias Página e Eventos do guarda-chuva Programação; os demais blocos
+ * da linguagem ocupam as outras subcategorias desse mesmo grupo.
  *
  * ⚠️ Os `type` continuam `sz_js_*` (NÃO renomear): parser, gerador, IR,
  * reverse-sync e a allowlist de projetos salvos referenciam o type — só a
- * organização da paleta e a cor mudaram. Recolorir = `colour: C` (sky), em vez
- * do âmbar de JavaScript.
+ * organização da paleta e a cor mudaram. Recolorir = `colour: C`, a tonalidade
+ * própria de DOM dentro da família visual de Programação.
  */
 export const DOM_BLOCKS: BlockDefinition[] = [
   // ---- Eventos ----

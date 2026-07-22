@@ -12,7 +12,8 @@
     "check:fix": "biome check --write ."
   },
   "dependencies": {
-    "@cloudflare/sandbox": "0.10.3"
+    "@cloudflare/sandbox": "0.10.3",
+    "@sistemazero/core": "workspace:*"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "5.20260722.1",

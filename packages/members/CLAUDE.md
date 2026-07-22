@@ -305,8 +305,9 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    opcional — ausente no CREATE → `true`; no UPDATE **PRESERVA a atual** (régua do `audience`).
    `false` é mantido. Os fronts (community + community-kids) leem `locked` por aula e renderizam
    o nó/linha travado (cadeado, não clicável) + página de "aula bloqueada" no 423.
-11. **DEGRAU do CURSO + carreira do ALUNO (rank; 06/2026 migration `0029`, reforma 2D/3D 07/2026
-   migration `0044`):** o curso tem `courses.level` (`iniciante`|`intermediario`|`avancado`, default
+11. **DEGRAU do CURSO + carreira do ALUNO (rank; posições na migration `0047`, normalização
+   `0048` e restrição final `0049`):** o curso tem `courses.level`
+   (`iniciante`|`intermediario`|`avancado`, default
    `iniciante`) **+ `courses.track`** (`2d`|`3d`, default `2d`) — o PAR é o DEGRAU pedagógico
    ("Iniciante 2D" … "Avançado 3D"). Colunas dedicadas, autoradas no admin (régua do
    `audience`/`sequentialLock`: ausentes no CREATE → defaults, no UPDATE **PRESERVAM** as atuais).
@@ -314,15 +315,18 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    **carreira de 8 níveis** (`noob`→`coder`→`hacker`→`explorer`→`elite`→`architect`→`champion`→`god`
    = Faísca→Construtor(a)→Inventor(a)→Explorador(a) de Mundos→Mestre dos Jogos→Arquiteto(a) de
    Mundos→Gênio da Criação→Lenda) **DERIVADA na leitura** (sem coluna/backfill, como o
-   ranking/missões): catálogo EM CÓDIGO em `domain/gamification/levels.ts` (`STUDENT_LEVELS` sobre 6
-   baldes `QualifyingByTier` + `computeStudentLevel` puro; régua cumulativa: 1 qualquer → 6 ini-2d →
-   +5 ini-3d → +5 int-2d → +5 int-3d → +5 av-2d → +5 av-3d). Um curso "qualificado" = tem AMBOS os
+   ranking/missões): catálogo central em `@sistemazero/core/career`, espelhado por
+   `domain/gamification/levels.ts`. A régua usa POSIÇÕES ESPECÍFICAS: slot 1 de Iniciante 2D →
+   slots 1..6 ini-2d → + slots 1..5 ini-3d → +1..5 int-2d → +1..5 int-3d → +1..5 av-2d →
+   +1..5 av-3d. Não é contagem genérica: um slot repetido ou fora da carreira não substitui outro.
+   Um curso "qualificado" = tem AMBOS os
    marcos no ledger `xp_events` — `course_complete` ∩ `course_showcased` (gravado pelo webhook
-   abaixo) — agrupado pelo DEGRAU (`countQualifyingCoursesByTier`, INTERSEÇÃO via self-join no
-   ledger, GROUP BY level+track). ⚠️ **RANK NUNCA REGRIDE POR RE-NIVELAMENTO (migrations
+   abaixo) — agrupado pelo DEGRAU e pela posição (`listQualifyingCareerSlots`, INTERSEÇÃO via
+   self-join no ledger, GROUP BY level+track+careerSlot). A versão em lote é
+   `listQualifyingCareerSlotsForProfiles`. ⚠️ **RANK NUNCA REGRIDE POR RE-NIVELAMENTO (migrations
    `0030`/`0044`):** o degrau contado vem do **SNAPSHOT congelado** `xp_events.source_level` +
-   `source_track` (gravados nos marcos de curso no momento do award — o repo resolve
-   `courses.level`/`track` AGORA), NÃO do curso ao vivo. O `courses` entra só como **LEFT join** p/
+   `source_track` + `source_career_slot` (gravados nos marcos de curso no momento do award),
+   NÃO do curso ao vivo. O `courses` entra só como **LEFT join** p/
    FALLBACK de linhas legadas sem snapshot (`coalesce(showcased.source_*, complete.source_*,
    courses.*)`; track legado sem curso → `'2d'` literal). Assim re-nivelar OU apagar o curso depois
    não muda o rank de quem já qualificou. ⚠️ O `source_track` NÃO foi backfillado (deliberado): o
@@ -500,9 +504,9 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   marcos → nível `noob`). Serve o BFF do **Clube/Mural kids** para pintar rosto+aura de cada
   autor de tópico/comentário numa ida (sem N+1). `GetAvatarsByProfilesService` (avatar +
   gamification) roda 2 queries em `Promise.all`: `AvatarRepository.listPhotoUrlsByProfileIds
-  (profileIds, audience)` + `GamificationRepository.countQualifyingByLevelForProfiles
-  (profileIds, audience)` (versão em LOTE do `countQualifyingCoursesByLevel` — mesmo self-join
-  de marcos, `GROUP BY user_id`) → `computeStudentLevel` por perfil. DTO `AvatarsBatchQuery`
+  (profileIds, audience)` + `GamificationRepository.listQualifyingCareerSlotsForProfiles
+  (profileIds, audience)` (versão em LOTE do `listQualifyingCareerSlots`, com o mesmo self-join
+  de marcos e posições) → `computeStudentLevel` por perfil. DTO `AvatarsBatchQuery`
   (`ids` csv, cap **50** via `parseProfileIds` — uuid validado na borda; `audience` ausente →
   **`kids`**, único consumidor é a vitrine kids). **SEM migração** (`avatar_configs.photo_url`
   já existe, migration `0023`). Gateway: rota `members-avatars-batch`.

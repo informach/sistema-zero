@@ -39,6 +39,7 @@
     "@blockly/field-colour": "^6.0.12",
     "@blockly/toolbox-search": "^3.1.9",
     "@monaco-editor/react": "^4.6.0",
+    "@sistemazero/core": "workspace:*",
     "@webcontainer/api": "^1.6.4",
     "@xterm/addon-fit": "^0.11.0",
     "@xterm/xterm": "^6.0.0",

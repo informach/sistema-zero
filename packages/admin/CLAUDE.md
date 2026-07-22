@@ -592,6 +592,10 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   bloco Estúdio no editor de aula usa `BLOCK_LEVEL_OPTIONS` do `@sistemazero/studio` (6 degraus de
   BLOCOS; aula legada normaliza no load via `normalizeBlockLevel`, e o clipboard de config normaliza
   no paste — localStorage guarda legado p/ sempre).
+  **Posição na carreira:** `careerSlot` é opcional. Só curso Kids pode ocupá-la; Iniciante 2D aceita
+  1..6 e as demais etapas 1..5. O card de prontidão carrega TODAS as páginas Kids com
+  `loadAllPages` e espera as 31 posições, sem cortar nos primeiros 100 cursos. A matriz operacional
+  e as migrations `0048`/`0049` estão em `docs/carreira-do-criador.md`.
   **Convite multi-plataforma**: `POST /auth/admin/users` aceita
   `platform: 'main'|'kids'` (select "Plataforma do convite" no dialog — decide a base do link do
   e-mail `welcome`); impersonação aceita `?platform=kids` (`impersonateUser(id, platform?)` em
@@ -602,7 +606,13 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   `src/lib/types.ts`.
   **Bloco `studio` (06/2026):** o form de bloco embute o **`@sistemazero/studio`**
   (`components/studio/studio-embed.tsx`, dynamic ssr:false, `persistence:'none'`) — o admin monta o
-  PROJETO INICIAL (tipo/código/nome) e o `saveBlock` captura via `handleRef.getProject()`; campos à
+  PROJETO INICIAL (tipo/código/nome) e o `saveBlock` captura via `handleRef.getProject()`. O embed de
+  autoria oferece **Projeto em blocos** ou **Projeto Pro**, com os cinco templates
+  do catálogo compartilhado. Trocar tipo/modelo pede confirmação. Projeto Pro usa `proRuntime` pelo
+  BFF local `/api/studio/pro-runtime/build`, que exige sessão admin estrita e chama o executor remoto
+  com `STUDIO_PRO_RUNTIME_URL` + `STUDIO_PRO_RUNTIME_TOKEN`. O mesmo adapter visualiza entregas Pro,
+  sem exigir COEP/WebContainer na rota do Admin. O members recusa template Pro fora da allowlist.
+  Campos à
   parte: nível, modos liberados, categorias sempre visíveis, **lista de blocos** (RESTRITIVA —
   `components/studio/studio-blocks-picker.tsx`, busca + grupos por categoria, carrega o `BLOCK_CATALOG`
   do pacote — **CORE + extensões Jogo 2D/3D** — por import DINÂMICO; preenchida = o aluno vê SÓ esses

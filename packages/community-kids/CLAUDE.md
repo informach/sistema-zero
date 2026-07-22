@@ -229,8 +229,13 @@ a rota `GET /members/access` curto-circuita `estudio-completo` p/ `true` quando 
 estúdio". `studio-full-client.tsx` (`'use client'`, import dinâmico do package no
 effect — Monaco/Blockly/IndexedDB não rodam no SSR) hospeda a navegação **lista ⇄ editor** (estado
 local; o package não tem router) com `<ProjectList>` + `<StudioEditor persistence="local">` — recursos
-CLÁSSICOS (NÃO passa `features`: o `StudioEditor` já vem com terminal/IA/profissional OFF → sem
-COOP/COEP, sem conflito com os vídeos das aulas). O botão **"Compartilhar"** usa um `share` adapter
+controlados por `resolveStudioTier(levelSlug, role)`. O produto comprado não basta: Faísca usa apenas
+as aulas; Construtor abre o Estúdio livre; cada rank recebe allowlist acumulada de extensões e blocos;
+Ponte abre no Mestre; Pro e "Promover para Pro" abrem somente na Lenda/equipe. Projeto importado com
+extensão futura é preservado, mas não abre antes da conquista. A matriz exata está em
+`docs/carreira-do-criador.md`. O modo Pro livre usa WebContainer local na rota dedicada; atividades Pro
+de aula usam `proRuntime` remoto via `/api/studio/pro-runtime/build`, com autorização do curso e template
+autoral, sem exigir COOP/COEP no player. O botão **"Compartilhar"** usa um `share` adapter
 próprio → `/api/studio/describe` + **`/api/studio/publish-standalone`** (shim sobre
 `shell.routes.studioPublishStandalone`; o hub re-valida a posse do produto). **Persistência LOCAL por
 NAVEGADOR + PERFIL (06/2026):** projetos no IndexedDB do aparelho, **isolados por PERFIL** — a `EstudioPage`

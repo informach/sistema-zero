@@ -137,7 +137,7 @@ export const OOP_BLOCKS: BlockDefinition[] = [
   {
     type: 'sz_js_super_method',
     message0: 'na classe-mãe chamar método %1',
-    args0: [{ type: 'field_name_picker', name: 'METHOD', text: 'desenhar', kind: 'method' }],
+    args0: [{ type: 'field_name_picker', name: 'METHOD', text: 'desenhar', kind: 'super-method' }],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
