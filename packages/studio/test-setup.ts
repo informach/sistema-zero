@@ -17,3 +17,24 @@ GlobalRegistrator.register({ settings: { disableIframePageLoading: true } })
 const { cleanup } = await import('@testing-library/react')
 const { afterEach } = await import('bun:test')
 afterEach(cleanup)
+
+// ⚠️ Os RUNTIMES dos jogos (game-2d/3d + advanced + world-3d) são código que RODA
+// dentro do iframe do preview e por design DONO do document.body: eles injetam no
+// `document.body`/`<head>` GLOBAL um canvas de palco (`#tela`/`[data-sz-game-2d-stage]`),
+// regiões vivas de acessibilidade (`<p role="status" id="sz-game-…">`) e `<style>`
+// de foco (`#sz-game-…-focus-style`). Nos testes, o happy-dom tem UM document
+// compartilhado por todo o processo — o `cleanup()` da testing-library só remove os
+// containers que ELA renderizou, então esses nós VAZAM p/ os testes seguintes. O
+// sintoma clássico: um teste posterior faz `getByRole('status')` e recebe
+// "Found multiple elements with the role status" (o aviso do próprio componente + o
+// `sz-game-…` órfão) — flake não-determinística de CI, dependente da ordem dos testes
+// (visto atribuído ao NewProjectModal). Varre os artefatos por PREFIXO de id (cobre
+// todos os runtimes) + o canvas de palco. Espelha o fix de `disableIframePageLoading`
+// acima: poluição do document GLOBAL curada na camada de setup.
+afterEach(() => {
+  for (const node of document.querySelectorAll(
+    '[id^="sz-game"], canvas[data-sz-game-2d-stage], canvas#tela',
+  )) {
+    node.remove()
+  }
+})
