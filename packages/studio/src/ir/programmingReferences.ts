@@ -1,10 +1,17 @@
 import {
   CANVAS3D_SEMANTIC_DECLARATION_FIELDS,
+  CANVAS3D_SEMANTIC_PHYSICS_ID_DECLARATION_FIELDS,
   CANVAS3D_SEMANTIC_REFERENCE_FIELDS,
   type Canvas3DReferenceField,
   type Canvas3DSymbolKind,
   canvas3DSymbolKindsForClass,
 } from '../three/canvas3dContract'
+import {
+  GAME3D_OBJECT_EXPRESSION_TYPES,
+  GAME3D_SEMANTIC_DECLARATION_FIELDS,
+  GAME3D_SEMANTIC_REFERENCE_FIELDS,
+  type Game3DSymbolKind,
+} from '../three/game3dContract'
 import { isProgrammingStatementBodyKey, programmingChildBodyEntries } from './programmingExecution'
 import {
   PROGRAMMING_REFERENCE_FIELDS,
@@ -71,23 +78,13 @@ const VARIABLE_DECLARATION_FIELDS: Readonly<Record<string, string>> = {
   'g2d:placeThrower': 'varName',
   'g2d:createStickHero': 'varName',
   'g2d:createBalloon': 'varName',
-  'g3d:createScene': 'varName',
-  'g3d:createFullscreenScene': 'varName',
-  'g3d:createGroup': 'varName',
-  'g3d:createCrossingScene': 'varName',
-  'g3d:createRaceScene': 'varName',
-  'g3d:createStackScene': 'varName',
-  'g3d:createModel': 'varName',
-  'g3d:createSwarm': 'varName',
+  ...Object.fromEntries(
+    Object.entries(GAME3D_SEMANTIC_DECLARATION_FIELDS).map(([type, declaration]) => [
+      type,
+      declaration.field,
+    ]),
+  ),
 }
-
-const GAME3D_WORLD_DECLARATION_TYPES = new Set([
-  'g3d:createScene',
-  'g3d:createFullscreenScene',
-  'g3d:createCrossingScene',
-  'g3d:createRaceScene',
-  'g3d:createStackScene',
-])
 
 const IMPLICIT_VARIABLES = new Set([
   'window',
@@ -160,7 +157,10 @@ interface ProgrammingSymbols {
   canvasContexts: Set<string>
   canvasIds: Set<string>
   canvas3d: Record<Canvas3DSymbolKind, Set<string>>
-  game3dWorlds: Set<string>
+  canvas3dPhysicsBodies: Map<string, Set<string>>
+  canvas3dPhysicsCharacters: Map<string, Set<string>>
+  canvas3dPhysicsResources: Map<string, Set<string>>
+  game3d: Record<Game3DSymbolKind, Set<string>>
   classes: Set<string>
   functions: Set<string>
   functionDefinitions: Map<string, FunctionDefinition>
@@ -176,7 +176,10 @@ function cloneSymbols(symbols: ProgrammingSymbols): ProgrammingSymbols {
     canvasContexts: new Set(symbols.canvasContexts),
     canvasIds: new Set(symbols.canvasIds),
     canvas3d: cloneCanvas3DSymbols(symbols.canvas3d),
-    game3dWorlds: new Set(symbols.game3dWorlds),
+    canvas3dPhysicsBodies: cloneOwnedNames(symbols.canvas3dPhysicsBodies),
+    canvas3dPhysicsCharacters: cloneOwnedNames(symbols.canvas3dPhysicsCharacters),
+    canvas3dPhysicsResources: cloneOwnedNames(symbols.canvas3dPhysicsResources),
+    game3d: cloneGame3DSymbols(symbols.game3d),
     classes: new Set(symbols.classes),
     functions: new Set(symbols.functions),
     functionDefinitions: new Map(symbols.functionDefinitions),
@@ -203,7 +206,12 @@ function mergeFutureSymbols(
   for (const kind of CANVAS3D_SYMBOL_KINDS) {
     for (const name of future.canvas3d[kind]) merged.canvas3d[kind].add(name)
   }
-  for (const name of future.game3dWorlds) merged.game3dWorlds.add(name)
+  mergeOwnedNames(merged.canvas3dPhysicsBodies, future.canvas3dPhysicsBodies)
+  mergeOwnedNames(merged.canvas3dPhysicsCharacters, future.canvas3dPhysicsCharacters)
+  mergeOwnedNames(merged.canvas3dPhysicsResources, future.canvas3dPhysicsResources)
+  for (const kind of GAME3D_SYMBOL_KINDS) {
+    for (const name of future.game3d[kind]) merged.game3d[kind].add(name)
+  }
   for (const name of future.classes) merged.classes.add(name)
   for (const name of future.functions) merged.functions.add(name)
   future.functionDefinitions.forEach((definition, name) => {
@@ -226,10 +234,59 @@ function addName(target: Set<string>, value: unknown): void {
   if (name) target.add(name)
 }
 
+function cloneOwnedNames(
+  source: ReadonlyMap<string, ReadonlySet<string>>,
+): Map<string, Set<string>> {
+  return new Map([...source].map(([owner, names]) => [owner, new Set(names)]))
+}
+
+function mergeOwnedNames(
+  target: Map<string, Set<string>>,
+  source: ReadonlyMap<string, ReadonlySet<string>>,
+): void {
+  source.forEach((names, owner) => {
+    const owned = target.get(owner) ?? new Set<string>()
+    for (const name of names) owned.add(name)
+    target.set(owner, owned)
+  })
+}
+
+function addOwnedName(
+  target: Map<string, Set<string>>,
+  ownerValue: unknown,
+  nameValue: unknown,
+): void {
+  if (typeof ownerValue !== 'string' || typeof nameValue !== 'string') return
+  const owner = ownerValue.trim()
+  const name = nameValue.trim()
+  if (!owner || !name) return
+  const owned = target.get(owner) ?? new Set<string>()
+  owned.add(name)
+  target.set(owner, owned)
+}
+
+const GAME3D_SYMBOL_KINDS: readonly Game3DSymbolKind[] = ['world', 'object', 'group', 'swarm']
+
+function emptyGame3DSymbols(): Record<Game3DSymbolKind, Set<string>> {
+  return Object.fromEntries(GAME3D_SYMBOL_KINDS.map((kind) => [kind, new Set<string>()])) as Record<
+    Game3DSymbolKind,
+    Set<string>
+  >
+}
+
+function cloneGame3DSymbols(
+  symbols: Readonly<Record<Game3DSymbolKind, ReadonlySet<string>>>,
+): Record<Game3DSymbolKind, Set<string>> {
+  return Object.fromEntries(
+    GAME3D_SYMBOL_KINDS.map((kind) => [kind, new Set(symbols[kind])]),
+  ) as Record<Game3DSymbolKind, Set<string>>
+}
+
 const CANVAS3D_SYMBOL_KINDS: readonly Canvas3DSymbolKind[] = [
   'scene3d',
   'renderer3d',
   'camera3d',
+  'perspective-camera3d',
   'light3d',
   'composer3d',
   'object3d',
@@ -240,6 +297,10 @@ const CANVAS3D_SYMBOL_KINDS: readonly Canvas3DSymbolKind[] = [
   'grass3d',
   'instanced-mesh3d',
   'color-target3d',
+  'shadow-caster3d',
+  'shadow-receiver3d',
+  'physics-collider3d',
+  'physics-city3d',
   'physics-world',
 ]
 
@@ -365,6 +426,7 @@ const CANVAS3D_REFERENCE_LABELS: Readonly<Record<Canvas3DSymbolKind, string>> = 
   scene3d: 'cena 3D',
   renderer3d: 'renderizador 3D',
   camera3d: 'câmera 3D',
+  'perspective-camera3d': 'câmera de perspectiva 3D',
   light3d: 'luz 3D',
   composer3d: 'compositor de efeitos',
   object3d: 'objeto 3D',
@@ -375,8 +437,14 @@ const CANVAS3D_REFERENCE_LABELS: Readonly<Record<Canvas3DSymbolKind, string>> = 
   grass3d: 'grama 3D',
   'instanced-mesh3d': 'malha de cópias 3D',
   'color-target3d': 'material ou luz 3D',
+  'shadow-caster3d': 'objeto que projeta sombra',
+  'shadow-receiver3d': 'objeto que recebe sombra',
+  'physics-collider3d': 'objeto com dados de colisão',
+  'physics-city3d': 'cidade com mapa de colisão',
   'physics-world': 'mundo físico',
 }
+
+const EMPTY_NAMES: ReadonlySet<string> = new Set()
 
 function validateCanvas3DReferences(
   type: string,
@@ -404,6 +472,26 @@ function validateCanvas3DReferences(
       available = symbols.functions
       label = 'função'
       if (IMPLICIT_FUNCTIONS.has(name)) continue
+    } else if (
+      reference.kind === 'physics-body-id' ||
+      reference.kind === 'physics-character-id' ||
+      reference.kind === 'physics-resource-id'
+    ) {
+      const owner = reference.ownerField
+      const world = owner && typeof record[owner] === 'string' ? record[owner].trim() : ''
+      available =
+        (reference.kind === 'physics-body-id'
+          ? symbols.canvas3dPhysicsBodies
+          : reference.kind === 'physics-character-id'
+            ? symbols.canvas3dPhysicsCharacters
+            : symbols.canvas3dPhysicsResources
+        ).get(world) ?? EMPTY_NAMES
+      label =
+        reference.kind === 'physics-body-id'
+          ? 'corpo deste mundo físico'
+          : reference.kind === 'physics-character-id'
+            ? 'personagem deste mundo físico'
+            : 'item deste mundo físico'
     } else {
       available = symbols.canvas3d[reference.kind]
       label = CANVAS3D_REFERENCE_LABELS[reference.kind]
@@ -417,20 +505,66 @@ function validateCanvas3DReferences(
   }
 }
 
-function validateGame3DWorldReference(
+function validateCanvas3DPhysicsIdDeclarations(
+  statement: JSStatement,
+  symbols: ProgrammingSymbols,
+  path: (string | number)[],
+  issues: ProgrammingReferenceIssue[],
+): void {
+  const checked = new Set<string>()
+  const fields = new Map(Object.entries(statement))
+  for (const declaration of CANVAS3D_SEMANTIC_PHYSICS_ID_DECLARATION_FIELDS[statement.type] ?? []) {
+    const ownerValue = fields.get(declaration.ownerField)
+    const idValue = fields.get(declaration.field)
+    if (typeof ownerValue !== 'string' || typeof idValue !== 'string') continue
+    const world = ownerValue.trim()
+    const id = idValue.trim()
+    const key = `${world}\0${id}`
+    if (!world || !id || checked.has(key)) continue
+    checked.add(key)
+    const alreadyClaimed =
+      symbols.canvas3dPhysicsBodies.get(world)?.has(id) === true ||
+      symbols.canvas3dPhysicsResources.get(world)?.has(id) === true
+    if (alreadyClaimed) {
+      issues.push({
+        path: [...path, declaration.field],
+        message: `O nome físico “${id}” já existe neste mundo. Escolha outro nome.`,
+      })
+    }
+  }
+}
+
+const GAME3D_REFERENCE_LABELS: Readonly<Record<Game3DSymbolKind, string>> = {
+  world: 'mundo do Jogo 3D',
+  object: 'objeto do Jogo 3D',
+  group: 'grupo do Jogo 3D',
+  swarm: 'enxame do Jogo 3D',
+}
+
+function validateGame3DReferences(
   type: string,
   record: Record<string, unknown>,
   symbols: ProgrammingSymbols,
   path: (string | number)[],
   issues: ProgrammingReferenceIssue[],
 ): void {
-  if (!type.startsWith('g3d:') || typeof record.worldVar !== 'string') return
-  const name = record.worldVar.trim()
-  if (name && !symbols.game3dWorlds.has(name)) {
-    issues.push({
-      path: [...path, 'worldVar'],
-      message: `O mundo do Jogo 3D “${name}” ainda não foi criado neste ponto`,
-    })
+  for (const reference of GAME3D_SEMANTIC_REFERENCE_FIELDS[type] ?? []) {
+    const value = record[reference.field]
+    if (typeof value !== 'string' || !value.trim()) continue
+    const name = value.trim()
+    const acceptsCanvas3DObject =
+      reference.kind === 'object' && reference.objectScope !== 'game-world-object'
+    const isCanvas3DObject = acceptsCanvas3DObject && symbols.canvas3d.object3d.has(name)
+    if (!symbols.game3d[reference.kind].has(name) && !isCanvas3DObject) {
+      const label =
+        reference.kind === 'object' && reference.objectScope === 'game-world-object'
+          ? 'objeto que pertence a um mundo do Jogo 3D'
+          : GAME3D_REFERENCE_LABELS[reference.kind]
+      issues.push({
+        path: [...path, reference.field],
+        message: `O ${label} “${name}” ainda não foi criado neste ponto`,
+      })
+    }
   }
 }
 
@@ -452,7 +586,7 @@ function validateValue(
   const type = typeof record.type === 'string' ? record.type : ''
 
   validateCanvas3DReferences(type, record, symbols, path, issues)
-  validateGame3DWorldReference(type, record, symbols, path, issues)
+  validateGame3DReferences(type, record, symbols, path, issues)
 
   if (type.startsWith('canvas') && type !== 'canvasSetup') {
     validateCanvasContext(record.ctxVar, symbols, [...path, 'ctxVar'], issues)
@@ -688,7 +822,6 @@ function hoistFunctions(statements: readonly JSStatement[], symbols: Programming
         body: statement.body,
       })
     }
-    if (statement.type === 'terrainSetup') addName(symbols.functions, statement.heightFunction)
     if (statement.type === 'importNamed') {
       statement.names.forEach((name) => {
         addName(symbols.functions, name)
@@ -707,8 +840,9 @@ function addStatementDeclarations(statement: JSStatement, symbols: ProgrammingSy
     addName(symbols.variables, record[field])
     if (typeof record[field] === 'string') symbols.instances.delete(record[field].trim())
   }
-  if (GAME3D_WORLD_DECLARATION_TYPES.has(statement.type)) {
-    addName(symbols.game3dWorlds, record.varName)
+  const game3dDeclaration = GAME3D_SEMANTIC_DECLARATION_FIELDS[statement.type]
+  if (game3dDeclaration) {
+    addName(symbols.game3d[game3dDeclaration.kind], record[game3dDeclaration.field])
   }
   if (statement.type === 'importNamed') {
     statement.names.forEach((name) => {
@@ -720,6 +854,9 @@ function addStatementDeclarations(statement: JSStatement, symbols: ProgrammingSy
     addName(symbols.variables, statement.name)
     symbols.instances.delete(statement.name.trim())
   }
+  // A função do terreno fecha sobre constantes inicializadas pelo próprio bloco.
+  // Diferente de uma declaração de função comum, ela só é segura depois do preparo.
+  if (statement.type === 'terrainSetup') addName(symbols.functions, statement.heightFunction)
   if (statement.type === 'canvasSetup') {
     addName(symbols.variables, 'canvas')
     addName(symbols.canvasContexts, statement.varName)
@@ -743,6 +880,34 @@ function addStatementDeclarations(statement: JSStatement, symbols: ProgrammingSy
     addCanvas3DSymbols(symbols, record[declaration.field], declaration.kinds)
   }
 
+  const physicsWorld = typeof record.world === 'string' ? record.world.trim() : ''
+  if (statement.type === 'physicsLiteClear' && physicsWorld) {
+    symbols.canvas3dPhysicsBodies.delete(physicsWorld)
+    symbols.canvas3dPhysicsCharacters.delete(physicsWorld)
+    symbols.canvas3dPhysicsResources.delete(physicsWorld)
+  } else if (
+    statement.type === 'physicsLiteRemove' &&
+    physicsWorld &&
+    typeof record.id === 'string'
+  ) {
+    const id = record.id.trim()
+    symbols.canvas3dPhysicsBodies.get(physicsWorld)?.delete(id)
+    symbols.canvas3dPhysicsCharacters.get(physicsWorld)?.delete(id)
+    symbols.canvas3dPhysicsResources.get(physicsWorld)?.delete(id)
+  }
+  if (statement.type === 'physicsLiteBody' && record.kind === 'character') {
+    addOwnedName(symbols.canvas3dPhysicsCharacters, record.world, record.id)
+  }
+  for (const declaration of CANVAS3D_SEMANTIC_PHYSICS_ID_DECLARATION_FIELDS[statement.type] ?? []) {
+    for (const kind of declaration.kinds) {
+      addOwnedName(
+        kind === 'body' ? symbols.canvas3dPhysicsBodies : symbols.canvas3dPhysicsResources,
+        record[declaration.ownerField],
+        record[declaration.field],
+      )
+    }
+  }
+
   if (statement.type === 'newInstance') {
     addCanvas3DSymbols(
       symbols,
@@ -755,6 +920,15 @@ function addStatementDeclarations(statement: JSStatement, symbols: ProgrammingSy
 
   const declaredName = field && typeof record[field] === 'string' ? record[field].trim() : ''
   const value = record.value
+  const valueType =
+    value &&
+    typeof value === 'object' &&
+    typeof (value as Record<string, unknown>).type === 'string'
+      ? String((value as Record<string, unknown>).type)
+      : ''
+  if (declaredName && GAME3D_OBJECT_EXPRESSION_TYPES.has(valueType)) {
+    addName(symbols.game3d.object, declaredName)
+  }
   if (statement.type === 'newInstance' && !statement.namespace?.trim()) {
     symbols.instances.set(statement.varName.trim(), statement.className.trim())
   } else if (
@@ -856,6 +1030,7 @@ function validateStatements(
       statement.type === 'awaitStmt'
         ? mergeFutureSymbols(symbols, suspensionBase)
         : afterSequenceSymbols
+    validateCanvas3DPhysicsIdDeclarations(statement, symbols, statementPath, issues)
     validateValue(statement, symbols, valueFutureSymbols, statementPath, issues)
 
     if (statement.type === 'assign') {
@@ -907,6 +1082,11 @@ function validateStatements(
         addName(childCallbackBase.variables, name)
         addName(childSuspensionBase.variables, name)
       })
+      if (statement.type === 'g3d:forEachInSwarm') {
+        addName(childSymbols.game3d.object, statement.itemName)
+        addName(childCallbackBase.game3d.object, statement.itemName)
+        addName(childSuspensionBase.game3d.object, statement.itemName)
+      }
       child.canvasContexts.forEach((name) => {
         addName(childSymbols.canvasContexts, name)
         addName(childCallbackBase.canvasContexts, name)
@@ -950,7 +1130,10 @@ export function validateProgrammingReferences(
     canvasContexts: new Set(),
     canvasIds: new Set(options.canvasIds ?? []),
     canvas3d: emptyCanvas3DSymbols(),
-    game3dWorlds: new Set(),
+    canvas3dPhysicsBodies: new Map(),
+    canvas3dPhysicsCharacters: new Map(),
+    canvas3dPhysicsResources: new Map(),
+    game3d: emptyGame3DSymbols(),
     classes: new Set(IMPLICIT_CLASSES),
     functions: new Set(IMPLICIT_FUNCTIONS),
     functionDefinitions: new Map(),

@@ -11,6 +11,7 @@ import {
   tiroAoAlvoExample,
 } from '../examples'
 import { type KitApi, loadExampleKit } from './kitHarness'
+import { stripIds } from './testUtils'
 
 /**
  * ⭐ A REDE QUE FALTAVA (a lição R17 do gêmeo 2D, aplicada ao 3D) — testes que
@@ -37,19 +38,6 @@ import { type KitApi, loadExampleKit } from './kitHarness'
  * Salto é o forEachNear do gancho DO EXEMPLO, e as gemas/bolas passam pela
  * máquina de gatilho de ENTRADA do motor. Teclado entra num smoke à parte.
  */
-
-function stripIds<T>(value: T): T {
-  if (Array.isArray(value)) return value.map(stripIds) as unknown as T
-  if (value && typeof value === 'object') {
-    const out: Record<string, unknown> = {}
-    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-      if (k === '__id') continue
-      out[k] = stripIds(v)
-    }
-    return out as T
-  }
-  return value
-}
 
 /** O MESMO JS que o preview roda: gerado da IR embutida pelo gerador real. */
 function jsDoExemplo(example: { ir: { behavior: BehaviorIR } }): string {
@@ -296,6 +284,8 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
     // o pointerdown ali (o rect do canvas no happy-dom é 0×0 → o rastreador cai
     // em width/height 1, então clientX = (ndc+1)/2). O exemplo faz o resto:
     // mousePressed → pick → gaveta "valor" → recycle → emit("acertou").
+    const canvas = stage.querySelector('canvas')
+    if (!canvas) throw new Error('canvas do exemplo não montou')
     const clicarNo = (mold: string): boolean => {
       const alvo = primeiroVivo(api, mold)
       const cam = renderers[0]?.camera
@@ -309,10 +299,14 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
       // Fora da tela (atrás da câmera ou além da borda): não adianta clicar —
       // espere o alvo fugir sozinho e o próximo nascer à vista.
       if (v.z > 1 || Math.abs(v.x) > 0.98 || Math.abs(v.y) > 0.98) return false
-      window.dispatchEvent(
-        new MouseEvent('pointerdown', { clientX: (v.x + 1) / 2, clientY: (1 - v.y) / 2 }),
+      canvas.dispatchEvent(
+        new PointerEvent('pointerdown', {
+          bubbles: true,
+          clientX: (v.x + 1) / 2,
+          clientY: (1 - v.y) / 2,
+        }),
       )
-      window.dispatchEvent(new MouseEvent('pointerup'))
+      window.dispatchEvent(new PointerEvent('pointerup'))
       return true
     }
     for (let i = 0; i < 740 && api.state() === 'jogando'; i++) {

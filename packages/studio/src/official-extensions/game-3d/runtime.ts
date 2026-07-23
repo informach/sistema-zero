@@ -170,6 +170,14 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     return false;
   }
 
+  function shareWorld(a, b, warningKey, action) {
+    var firstWorld = worldOf(a);
+    var secondWorld = worldOf(b);
+    if (!firstWorld || !secondWorld || firstWorld === secondWorld) return true;
+    warnOnce(warningKey, action + ' só funciona com itens que pertencem à mesma cena.');
+    return false;
+  }
+
   function removeFromArray(array, value) {
     if (!array) return false;
     var removed = false;
@@ -194,6 +202,13 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       }
     }
     return nodes;
+  }
+
+  function markObjectTreeOnce(root, marker) {
+    if (!root || root[marker]) return false;
+    var nodes = objectTree(root);
+    for (var i = 0; i < nodes.length; i++) nodes[i][marker] = true;
+    return true;
   }
 
   // Cópias de enxame compartilham a geometria do molde. A contagem mantém essa
@@ -244,6 +259,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     for (var i = 0; i < nodes.length; i++) {
       var node = nodes[i];
       removeFromArray(world._objects, node);
+      removeFromArray(world._pickables, node);
       removeFromArray(world._models, node);
       removeFromArray(world._solids, node);
       node._szWorld = null;
@@ -351,9 +367,10 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       scene.add(dir);
     }
     var world = {
-      scene: scene, camera: camera, renderer: renderer, _objects: [], _canvas: canvas,
+      scene: scene, camera: camera, renderer: renderer, _objects: [], _pickables: [], _canvas: canvas,
       _camFollow: null, _listeners: [], _solids: [], _dt: 0,
       _cameraMode: 'manual',
+      _perspectiveCamera: camera && camera.isPerspectiveCamera ? camera : null,
       _resizeCamera: options.resizeCamera || null,
       _lightCount: options.skipLights ? 0 : 2,
       _swarmItemCount: 0, _disposed: false
@@ -472,6 +489,13 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     world.scene.add(mesh);
     world._objects.push(mesh);
     return attachWorld(mesh, world);
+  }
+
+  function registerPickable(world, object) {
+    if (!world || !object) return object;
+    if (!world._pickables) world._pickables = [];
+    if (world._pickables.indexOf(object) === -1) world._pickables.push(object);
+    return object;
   }
   function createBox(world, opts) {
     opts = opts || {};
@@ -636,6 +660,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   /** AABB estável entre dois objetos, compartilhada pelas duas camadas de física. */
   function collides(a, b) {
     if (!a || !b || !a.position || !b.position) return false;
+    if (!shareWorld(a, b, 'collision-world', 'Verificar uma colisão')) return false;
     var sa = szData(a), sb = szData(b);
     var axh = halfX(a, sa), ayh = halfY(a, sa), azh = halfZ(a, sa);
     var bxh = halfX(b, sb), byh = halfY(b, sb), bzh = halfZ(b, sb);
@@ -648,6 +673,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   /** Anda pela velocidade e pousa de forma estável sobre o chão. */
   function applyGravity(obj, ground) {
     if (!obj || !obj.position) return;
+    if (ground && !shareWorld(obj, ground, 'gravity-world', 'Aplicar gravidade com um chão')) return;
     var s = szData(obj);
     var scale = frameScale(obj);
     var previousY = obj.position.y;
@@ -696,6 +722,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     if (!belongsToWorld(world, obj, 'camera-follow-world', 'Fazer a câmera seguir um objeto')) return;
     var changed = world._cameraMode !== 'follow' || world._camFollowTarget !== obj;
     activateCameraMode(world, 'follow');
+    attachCameraToScene(world);
     world._camFollowTarget = obj;
     if (changed || !world._camFollow) {
       world._camFollow = {
@@ -715,6 +742,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   /** Remove um objeto da cena, do registro de GPU e descarta geometria/material. */
   function removeObject(world, mesh) {
     if (!world || !mesh) return;
+    if (!markObjectTreeOnce(mesh, '_szRemoved')) return;
     var actualWorld = worldOf(mesh) || world;
     if (actualWorld !== world) {
       warnOnce('remove-world', 'O objeto foi removido da cena em que ele foi criado.');
@@ -856,6 +884,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     }
     if (swarm.world && swarm.world.scene) swarm.world.scene.add(copy);
     attachWorld(copy, swarm.world);
+    registerPickable(swarm.world, copy);
     swarm.items.push(copy);
     swarm.world._swarmItemCount = (swarm.world._swarmItemCount || 0) + 1;
     return copy;
@@ -1015,6 +1044,16 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       warnOnce('enemy-group-kind', 'Escolha um grupo de objetos no bloco que solta inimigos.');
       return;
     }
+    if (ground && !belongsToWorld(world, ground, 'enemy-ground-world', 'Usar o chão dos inimigos')) return;
+    var groupWorld = worldOf(group);
+    if (groupWorld && groupWorld !== world) {
+      warnOnce('enemy-group-world', 'O grupo de inimigos só pode ser usado na cena em que começou.');
+      return;
+    }
+    for (var existing = 0; existing < group.length; existing++) {
+      if (group[existing] && !belongsToWorld(world, group[existing], 'enemy-item-world', 'Atualizar os inimigos')) return;
+    }
+    if (!groupWorld) attachWorld(group, world);
     var groupState = _enemyGroupState.get(group);
     if (!groupState) {
       groupState = { elapsed: 0, rate: positive(every, 200, 36000) / 60 };
@@ -1048,6 +1087,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   /** Verdadeiro se obj encostou em qualquer um do grupo (fim de jogo). */
   function hitAny(obj, group) {
     if (!obj || !group) return false;
+    if (!shareWorld(obj, group, 'hit-group-world', 'Verificar o grupo de inimigos')) return false;
     for (var i = 0; i < group.length; i++) {
       if (group[i] && collides(obj, group[i])) return true;
     }
@@ -1121,6 +1161,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   }
   function lookAtObject(a, b) {
     if (!a || !a.lookAt || !b || !b.position) return;
+    if (!shareWorld(a, b, 'look-object-world', 'Fazer um objeto olhar para outro')) return;
     a.lookAt(b.position.x, b.position.y, b.position.z);
   }
   function lookAtPoint(obj, x, y, z) {
@@ -1149,6 +1190,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   }
   function angleTo(a, b) {
     if (!a || !b || !a.position || !b.position) return 0;
+    if (!shareWorld(a, b, 'angle-world', 'Calcular o ângulo entre objetos')) return 0;
     return Math.atan2(b.position.x - a.position.x, b.position.z - a.position.z);
   }
 
@@ -1183,9 +1225,14 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   }
   function pickList(world) {
     if (!world || !world._objects) return [];
+    var candidates = world._objects.slice();
+    var extras = world._pickables || [];
+    for (var extraIndex = 0; extraIndex < extras.length; extraIndex++) {
+      if (candidates.indexOf(extras[extraIndex]) === -1) candidates.push(extras[extraIndex]);
+    }
     var visible = [];
-    for (var i = 0; i < world._objects.length; i++) {
-      var object = world._objects[i];
+    for (var i = 0; i < candidates.length; i++) {
+      var object = candidates[i];
       var current = object;
       var active = true;
       while (current) {
@@ -1310,10 +1357,12 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     }
   }
   function resolveCollision(a, b) {
+    if (!shareWorld(a, b, 'resolve-collision-world', 'Resolver uma colisão')) return;
     resolveAABB(a, b);
   }
   function stepBody(obj, world) {
     if (!obj || !obj.position || !world) return;
+    if (!belongsToWorld(world, obj, 'body-step-world', 'Atualizar o corpo físico')) return;
     var s = szData(obj);
     var scale = frameScale(world);
     s.vy += s.gravity * scale;
@@ -1334,6 +1383,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   }
   function platformerControls(obj, world, speed, jump) {
     if (!obj) return;
+    if (!belongsToWorld(world, obj, 'platformer-controls-world', 'Controlar o personagem de plataforma')) return;
     var s = szData(obj);
     var sp = finite(speed, 0.08);
     var jp = finite(jump, 0.18);
@@ -1349,6 +1399,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   }
   function fpsControls(obj, world, speed) {
     if (!obj || !world) return;
+    if (!belongsToWorld(world, obj, 'fps-controls-world', 'Controlar o personagem em primeira pessoa')) return;
     var s = szData(obj);
     var sp = finite(speed, 0.08);
     var yaw = obj.rotation ? obj.rotation.y : 0;
@@ -1368,7 +1419,9 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   // ---- GENÉRICOS: câmeras vivas (1ª pessoa, orbital, 3ª pessoa, olhar, FOV) ----
   function attachCameraToScene(world) {
     if (!world || !world.scene || !world.camera) return;
-    if (world.camera.parent !== world.scene) world.scene.add(world.camera);
+    if (world.camera.parent === world.scene) return;
+    if (world.camera.parent && world.scene.attach) world.scene.attach(world.camera);
+    else world.scene.add(world.camera);
   }
   function activateCameraMode(world, mode) {
     if (!world) return;
@@ -1392,8 +1445,20 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   function fpsCamera(world, obj) {
     if (!world || !world.camera || !obj) return;
     if (!belongsToWorld(world, obj, 'fps-camera-world', 'Usar a câmera em primeira pessoa')) return;
-    var cam = world.camera;
     var changed = world._cameraMode !== 'fps' || world._fpsObj !== obj;
+    var cam = world._perspectiveCamera;
+    if (!cam || !cam.isPerspectiveCamera) {
+      var width = canvasDimension(world._canvas, 'width', 480);
+      var height = canvasDimension(world._canvas, 'height', 360);
+      cam = new THREE.PerspectiveCamera(60, width / height, 0.1, 1000);
+      world._perspectiveCamera = cam;
+    }
+    if (world.camera !== cam) {
+      if (world.camera.parent && world.camera.parent.remove) world.camera.parent.remove(world.camera);
+      world.camera = cam;
+      world._resizeCamera = null;
+      if (world._resize) world._resize();
+    }
     activateCameraMode(world, 'fps');
     world._fpsObj = obj;
     if (changed) {
@@ -1527,7 +1592,14 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
         world._dt = d;
         world._lastT = now;
         var callbacks = world._animationCallbacks.slice();
-        for (var i = 0; i < callbacks.length; i++) callbacks[i](d);
+        for (var i = 0; i < callbacks.length; i++) {
+          try {
+            callbacks[i](d);
+          } catch (callbackError) {
+            console.error('SZGame3D: erro em um bloco de animação. Esse bloco foi pausado:', callbackError);
+            removeFromArray(world._animationCallbacks, callbacks[i]);
+          }
+        }
         _updateCameras(world);
         world.renderer.render(world.scene, world.camera);
       } catch (e) {
@@ -1627,7 +1699,8 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     if (!group) return;
     var visited = seen || { geometries: new Set(), materials: new Set() };
     function visit(o) {
-      if (!o) return;
+      if (!o || o._szResourcesDisposed) return;
+      o._szResourcesDisposed = true;
       if (o.geometry && o.geometry.dispose && !visited.geometries.has(o.geometry)) {
         visited.geometries.add(o.geometry);
         disposeOwnedGeometry(o.geometry, !!forceGeometries);
@@ -1845,6 +1918,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   function boxOf(obj) { return new THREE.Box3().setFromObject(obj); }
   function touchesBox(obj, group) {
     if (!obj || !group || !group.length) return false;
+    if (!shareWorld(obj, group, 'touches-group-world', 'Verificar os obstáculos da travessia')) return false;
     var pb = boxOf(obj);
     for (var i = 0; i < group.length; i++) {
       if (group[i] && pb.intersectsBox(boxOf(group[i]))) return true;
@@ -1974,6 +2048,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     var cs = crossingState(world);
     if (cs.player) {
       if (cs.player.parent && cs.player.parent.remove) cs.player.parent.remove(cs.player);
+      unregisterObjectTree(world, cs.player);
       disposeGroup(cs.player, false);
       cs.player = null;
     }
@@ -1981,6 +2056,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     world.scene.add(built.outer);
     attachWorld(built.outer, world);
     attachWorld(built.inner, world);
+    registerPickable(world, built.outer);
     var g = gridData(built.outer);
     g.row = 0; g.col = 0; g.tile = TS; g.inner = built.inner; g.yUp = false;
     built.outer.position.set(0, 0, 0);
@@ -2002,6 +2078,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
 
   function crosserStep(obj, world) {
     if (!obj || !world) return;
+    if (!belongsToWorld(world, obj, 'crosser-step-world', 'Atualizar o personagem da travessia')) return;
     var cs = crossingState(world);
     var g = gridData(obj);
     g.world = world; // para o crosserMove validar
@@ -2015,6 +2092,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
 
   function crosserReset(obj, world) {
     if (!obj || !world) return;
+    if (!belongsToWorld(world, obj, 'crosser-reset-world', 'Reiniciar a travessia')) return;
     var cs = crossingState(world);
     // limpa o mapa
     var ids = [];
@@ -2138,6 +2216,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   function crosserHit(obj, world) {
     var cs = world && world._crossing;
     if (!obj || !cs) return false;
+    if (!belongsToWorld(world, obj, 'crosser-hit-world', 'Verificar uma batida na travessia')) return false;
     if (cs.gameOver) return true;
     var g = gridData(obj);
     var meta = cs.rowByIndex[g.row];
@@ -2205,6 +2284,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   }
   function distanceTo(a, b) {
     if (!a || !b || !a.position || !b.position) return 0;
+    if (!shareWorld(a, b, 'distance-world', 'Calcular a distância entre objetos')) return Infinity;
     return Math.sqrt(
       (b.position.x - a.position.x) * (b.position.x - a.position.x) +
         (b.position.z - a.position.z) * (b.position.z - a.position.z)
@@ -2286,12 +2366,14 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     var rs = raceState(world);
     if (rs.player) {
       rs.group.remove(rs.player);
+      unregisterObjectTree(world, rs.player);
       disposeGroup(rs.player, false);
       rs.player = null;
     }
     var car = makeCar('right', opts.color || '#ef2d56');
     rs.group.add(car);
     attachWorld(car, world);
+    registerPickable(world, car);
     rs.player = car;
     rs.totalAngle = 0; rs.laps = 0;
     if (!car.userData) car.userData = {};
@@ -2302,6 +2384,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
 
   function raceStep(car, world) {
     if (!car || !world) return;
+    if (!belongsToWorld(world, car, 'race-step-world', 'Atualizar o carro da corrida')) return;
     var rs = raceState(world);
     if (rs.gameOver) return;
     rs.player = car;
@@ -2355,6 +2438,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
 
   function raceHit(car, world) {
     if (!car || !world) return false;
+    if (!belongsToWorld(world, car, 'race-hit-world', 'Verificar uma batida na corrida')) return false;
     var rs = raceState(world);
     if (rs.gameOver) return true;
     for (var i = 0; i < rs.rivals.length; i++) {
@@ -2372,6 +2456,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
 
   function raceReset(car, world) {
     if (!world) return;
+    if (car && !belongsToWorld(world, car, 'race-reset-world', 'Reiniciar a corrida')) return;
     var rs = raceState(world);
     for (var i = 0; i < rs.rivals.length; i++) {
       var m = rs.rivals[i] && rs.rivals[i].mesh;
@@ -2414,11 +2499,12 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   }
   /** GENÉRICO: solta o objeto em queda livre, girando, até sumir (gravidade). */
   function fall(obj) {
-    if (!obj || !obj.position) return;
+    if (!obj || !obj.position || obj._szRemoved) return;
     if (integrateFall(obj)) {
       var world = worldOf(obj);
       if (world) removeObject(world, obj);
       else {
+        if (!markObjectTreeOnce(obj, '_szRemoved')) return;
         if (obj.parent && obj.parent.remove) obj.parent.remove(obj);
         disposeGroup(obj);
       }
@@ -2541,7 +2627,11 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   /** O bloco do topo inteiro vira sobra e cai (errou o encaixe). */
   function stackMiss(st) {
     var lay = st.layers[st.layers.length - 1];
-    if (lay && st.moving === lay) { st.overhangs.push(lay.mesh); st.moving = null; }
+    if (lay && st.moving === lay) {
+      st.overhangs.push(lay.mesh);
+      st.layers.pop();
+      st.moving = null;
+    }
     st.gameOver = true;
   }
   function stackStep(world) {

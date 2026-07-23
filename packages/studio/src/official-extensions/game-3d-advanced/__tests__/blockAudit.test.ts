@@ -12,6 +12,7 @@ import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import { parseJS } from '../../../parsers/js'
 import { G3K_SOCKET_SHADOWS, gameKit3DBlocks, gameKit3DToolboxCategory } from '../blocks'
 import { gameKit3DRuntime } from '../runtime'
+import { collectTypes, stripIds } from './testUtils'
 
 /**
  * Auditoria GENÉRICA de todos os blocos do Jogo 3D Avançado (clone do
@@ -31,29 +32,6 @@ const EXPR_HOST = 'sz_g3k_place'
 
 const statementDefs = gameKit3DBlocks.filter((def) => !def.output)
 const exprDefs = gameKit3DBlocks.filter((def) => Boolean(def.output))
-
-function stripIds<T>(value: T): T {
-  if (Array.isArray(value)) return value.map(stripIds) as unknown as T
-  if (value && typeof value === 'object') {
-    const out: Record<string, unknown> = {}
-    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-      if (k === '__id') continue
-      out[k] = stripIds(v)
-    }
-    return out as T
-  }
-  return value
-}
-
-function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string> {
-  if (Array.isArray(value)) for (const item of value) collectTypes(item, out)
-  else if (value && typeof value === 'object') {
-    const obj = value as Record<string, unknown>
-    if (typeof obj.type === 'string') out.add(obj.type)
-    for (const v of Object.values(obj)) collectTypes(v, out)
-  }
-  return out
-}
 
 function loadRuntimeKeys(): Set<string> {
   // O runtime é um SCRIPT MODULE (1ª linha = import de three). Para avaliar no

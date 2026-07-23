@@ -37,6 +37,8 @@ test('o runtime injetado não contém referências ou propriedades semanticament
     moduleResolution: ts.ModuleResolutionKind.Bundler,
     noEmit: true,
     noImplicitAny: false,
+    noUnusedLocals: true,
+    noUnusedParameters: true,
     skipLibCheck: true,
     target: ts.ScriptTarget.ES2022,
   }

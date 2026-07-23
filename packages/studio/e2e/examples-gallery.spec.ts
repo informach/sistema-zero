@@ -1,9 +1,15 @@
 import { expect, type FrameLocator, type Page, test } from '@playwright/test'
+import type { Project } from '../src/core/project'
 import {
   EXAMPLE_QA_CONTRACTS,
   type ExampleQAContract,
   type ExampleQAInteraction,
 } from '../src/examples/qaContracts'
+import {
+  makeAnimatedGlb,
+  makeHdrDataUrl,
+} from '../src/official-extensions/game-3d-advanced/__tests__/assetFixtures'
+import { renderProjectToPreviewDoc } from '../src/preview/renderProject'
 
 const EXPERIENCE_LABEL = {
   game: 'Jogo',
@@ -356,6 +362,174 @@ test.describe('KitGallery — os 67 cartões no Chromium', () => {
       await openAndExercise(page, contract)
     })
   }
+})
+
+test('game-3d-advanced: GLB animado e HDR percorrem o preview real e toleram teardown', async ({
+  page,
+}) => {
+  const diagnostics: string[] = []
+  page.on('pageerror', (error) => diagnostics.push(`pageerror: ${error.message}`))
+  page.on('console', (message) => {
+    if (message.type() !== 'warning' && message.type() !== 'error') return
+    const text = message.text()
+    if (text.includes('GL Driver Message') && text.includes('ReadPixels')) return
+    diagnostics.push(`${message.type()}: ${text}`)
+  })
+
+  const now = Date.now()
+  const project: Project = {
+    id: 'e2e-game-3d-assets',
+    name: 'Assets 3D no Chromium',
+    createdAt: now,
+    updatedAt: now,
+    mode: 'bridge',
+    files: {
+      'index.html': '<main></main>',
+      'style.css': 'html, body { margin: 0; overflow: hidden; }',
+      'script.js': `
+SZGameKit3D.setup({ width: 640, height: 360, world: 30, sky: '#000044', ground: '#101010' });
+SZGameKit3D.defineMold('heroi', { health: 10, speed: 0 }, function () {
+  SZGameKit3D.part({ shape: 'modelo', model: 'heroi-glb', w: 2, h: 2, d: 2, x: 0, y: 0, z: 0 });
+});
+SZGameKit3D.setStateAnim('heroi', 'parado', 'andar');
+SZGameKit3D.onEnterState('jogando', function () {
+  window.__assetEntity = SZGameKit3D.spawn('heroi', 0, 0, 0);
+  SZGameKit3D.setSkyPhoto('ceu-hdr');
+  SZGameKit3D.cameraOrbit(8);
+});
+SZGameKit3D.start();
+`.trim(),
+    },
+    assets: [
+      {
+        id: 'asset-glb',
+        name: 'heroi-glb',
+        kind: 'model3d',
+        dataUrl: makeAnimatedGlb('ModeloBrowser', ['andar']),
+        originalFileName: 'heroi.glb',
+        source: 'upload',
+      },
+      {
+        id: 'asset-hdr',
+        name: 'ceu-hdr',
+        kind: 'environment3d',
+        dataUrl: makeHdrDataUrl(255, 8, 8),
+        originalFileName: 'ceu.hdr',
+        source: 'upload',
+      },
+    ],
+    ir: null,
+    blocksState: null,
+    installedExtensions: [{ id: 'game-3d-advanced', version: '0.8.6', installedAt: now }],
+  }
+  const srcdoc = renderProjectToPreviewDoc(project)
+
+  await page.goto('/')
+  await page.evaluate((documentSource) => {
+    document.body.replaceChildren()
+    const iframe = document.createElement('iframe')
+    iframe.id = 'asset-preview'
+    iframe.setAttribute('sandbox', 'allow-scripts allow-pointer-lock')
+    iframe.style.width = '800px'
+    iframe.style.height = '500px'
+    iframe.srcdoc = documentSource
+    document.body.appendChild(iframe)
+  }, srcdoc)
+
+  const preview = page.frameLocator('#asset-preview')
+  const canvas = preview.locator('canvas').first()
+  await expect(canvas).toBeVisible({ timeout: 20_000 })
+  await preview.locator('button:visible').first().click({ force: true })
+
+  await expect
+    .poll(
+      () =>
+        preview.locator('body').evaluate(() => {
+          const host = window as unknown as {
+            __SZGAME_ASSETS_3D?: Record<string, unknown>
+            __assetEntity?: {
+              _action?: { getClip(): { name: string } }
+              _clips?: Array<{ name: string }>
+              mesh?: { traverse(fn: (node: { name?: string }) => void): void }
+            }
+            SZGameKit3D?: { state(): string }
+          }
+          let hasModelNode = false
+          host.__assetEntity?.mesh?.traverse((node) => {
+            if (node.name === 'ModeloBrowser') hasModelNode = true
+          })
+          return {
+            state: host.SZGameKit3D?.state() ?? '',
+            assetKinds: Object.keys(host.__SZGAME_ASSETS_3D ?? {}).sort(),
+            hasModelNode,
+            clips: (host.__assetEntity?._clips ?? []).map((clip) => clip.name),
+            action: host.__assetEntity?._action?.getClip().name ?? '',
+          }
+        }),
+      { timeout: 20_000 },
+    )
+    .toEqual({
+      state: 'jogando',
+      assetKinds: ['ceu-hdr', 'heroi-glb'],
+      hasModelNode: true,
+      clips: ['andar'],
+      action: 'andar',
+    })
+
+  await expect
+    .poll(
+      () =>
+        canvas.evaluate(async (element) => {
+          const target = element as HTMLCanvasElement
+          await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+          const gl = target.getContext('webgl2') ?? target.getContext('webgl')
+          if (!gl || gl.drawingBufferWidth < 2 || gl.drawingBufferHeight < 2) {
+            return { redDominant: false, opaque: false }
+          }
+          const pixel = new Uint8Array(4)
+          gl.readPixels(1, gl.drawingBufferHeight - 2, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel)
+          return { redDominant: pixel[0]! > pixel[2]! + 20, opaque: pixel[3]! > 0 }
+        }),
+      { timeout: 20_000 },
+    )
+    .toEqual({ redDominant: true, opaque: true })
+
+  await preview.locator('body').evaluate(() => {
+    const host = window as unknown as {
+      __assetEntity?: unknown
+      SZGameKit3D?: { cameraFps(target: unknown, eyeHeight: number): void }
+    }
+    if (!host.__assetEntity || !host.SZGameKit3D) throw new Error('runtime 3D indisponível')
+    host.SZGameKit3D.cameraFps(host.__assetEntity, 1.4)
+  })
+  await canvas.click({ position: { x: 20, y: 20 } })
+  await expect
+    .poll(() => canvas.evaluate((element) => document.pointerLockElement === element))
+    .toBe(true)
+
+  await preview.locator('body').evaluate(() => {
+    const host = window as unknown as { SZGameKit3D?: { cameraOrbit(distance: number): void } }
+    host.SZGameKit3D?.cameraOrbit(8)
+  })
+  await expect.poll(() => canvas.evaluate(() => document.pointerLockElement === null)).toBe(true)
+
+  // Segunda instância: remove o iframe assim que o canvas nasce, enquanto os
+  // addons/assets ainda podem estar concluindo. O navegador real não deve emitir
+  // pageerror nem deixar o runtime tardio religar um loop fora do documento.
+  await page.evaluate((documentSource) => {
+    const iframe = document.createElement('iframe')
+    iframe.id = 'pending-assets-preview'
+    iframe.setAttribute('sandbox', 'allow-scripts allow-pointer-lock')
+    iframe.srcdoc = documentSource
+    document.body.appendChild(iframe)
+  }, srcdoc)
+  await expect(page.frameLocator('#pending-assets-preview').locator('canvas')).toBeAttached({
+    timeout: 20_000,
+  })
+  await page.locator('#pending-assets-preview').evaluate((iframe) => iframe.remove())
+  await page.waitForTimeout(300)
+
+  expect(diagnostics, diagnostics.join('\n')).toEqual([])
 })
 
 const GAME_TWO_D_DPR_SAMPLES = ['game-2d:Sala com paredes', 'game-2d:Equilibrista', 'game-2d:Balão']

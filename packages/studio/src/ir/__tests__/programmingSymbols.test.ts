@@ -8,6 +8,13 @@ const legacyProject = (js: unknown[], gameTwoD = false) => ({
   extensions: gameTwoD ? [{ extensionId: 'game-2d' }] : [],
 })
 
+const game3DProject = (js: unknown[]) => ({
+  html: [],
+  css: [],
+  js,
+  extensions: [{ extensionId: 'game-3d' }],
+})
+
 describe('símbolos léxicos da Programação', () => {
   it('aceita os locais do núcleo mesmo quando Jogo 2D está instalado', () => {
     const cases = [
@@ -661,5 +668,192 @@ describe('símbolos léxicos da Programação', () => {
         ]),
       ).success,
     ).toBe(true)
+  })
+
+  it('recusa objetos, grupos e enxames do Jogo 3D que não existem nesse ponto', () => {
+    const parsed = SZIRSchema.safeParse(
+      game3DProject([
+        { type: 'g3d:createFullscreenScene', varName: 'mundo', bg: '#101020' },
+        {
+          type: 'g3d:createBox',
+          varName: 'heroi',
+          worldVar: 'mundo',
+          size: 1,
+          color: '#ffffff',
+        },
+        {
+          type: 'g3d:rotateBy',
+          objVar: 'fantasma',
+          axis: 'y',
+          amount: { type: 'num', value: 0.1 },
+        },
+        {
+          type: 'g3d:runEnemies',
+          worldVar: 'mundo',
+          groupVar: 'inimigos',
+          groundVar: 'heroi',
+          every: 1,
+          speed: 2,
+        },
+        {
+          type: 'g3d:spawnInSwarm',
+          swarmVar: 'estrelas',
+          originalVar: 'heroi',
+          x: 0,
+          y: 0,
+          z: 0,
+        },
+      ]),
+    )
+
+    expect(parsed.success).toBe(false)
+    if (!parsed.success) {
+      expect(parsed.error.issues.some((issue) => issue.message.includes('fantasma'))).toBe(true)
+      expect(parsed.error.issues.some((issue) => issue.message.includes('inimigos'))).toBe(true)
+      expect(parsed.error.issues.some((issue) => issue.message.includes('estrelas'))).toBe(true)
+    }
+  })
+
+  it('registra todo criador de objeto do Jogo 3D também como variável JavaScript', () => {
+    const parsed = SZIRSchema.safeParse(
+      game3DProject([
+        { type: 'g3d:createFullscreenScene', varName: 'mundo', bg: '#101020' },
+        {
+          type: 'g3d:createBox',
+          varName: 'caixa',
+          worldVar: 'mundo',
+          size: 1,
+          color: '#ffffff',
+        },
+        { type: 'consoleLog', value: { type: 'var', name: 'caixa' } },
+      ]),
+    )
+
+    expect(parsed.success).toBe(true)
+  })
+
+  it('recusa nomes duplicados entre criadores de objetos do Jogo 3D', () => {
+    const parsed = SZIRSchema.safeParse(
+      game3DProject([
+        { type: 'g3d:createFullscreenScene', varName: 'mundo', bg: '#101020' },
+        {
+          type: 'g3d:createBox',
+          varName: 'objeto',
+          worldVar: 'mundo',
+          size: 1,
+          color: '#ffffff',
+        },
+        {
+          type: 'g3d:createSphere',
+          varName: 'objeto',
+          worldVar: 'mundo',
+          radius: 1,
+          color: '#ffffff',
+        },
+      ]),
+    )
+
+    expect(parsed.success).toBe(false)
+    if (!parsed.success) {
+      expect(parsed.error.issues.some((issue) => issue.message.includes('objeto'))).toBe(true)
+    }
+  })
+
+  it('não aceita objeto Three.js cru em comando que exige vínculo com o mundo do jogo', () => {
+    const shared = [
+      {
+        type: 'newInstance',
+        varName: 'objetoCru',
+        namespace: 'THREE',
+        className: 'Mesh',
+        args: [],
+      },
+      { type: 'g3d:createFullscreenScene', varName: 'mundo', bg: '#101020' },
+    ]
+    const genericTransform = SZIRSchema.safeParse(
+      game3DProject([
+        ...shared,
+        {
+          type: 'g3d:setPosition',
+          objVar: 'objetoCru',
+          x: { type: 'num', value: 0 },
+          y: { type: 'num', value: 1 },
+          z: { type: 'num', value: 0 },
+        },
+      ]),
+    )
+    const worldCommand = SZIRSchema.safeParse(
+      game3DProject([...shared, { type: 'g3d:fpsCamera', worldVar: 'mundo', objVar: 'objetoCru' }]),
+    )
+
+    expect(genericTransform.success).toBe(true)
+    expect(worldCommand.success).toBe(false)
+    if (!worldCommand.success) {
+      expect(worldCommand.error.issues.some((issue) => issue.message.includes('objetoCru'))).toBe(
+        true,
+      )
+    }
+  })
+
+  it('promove resultados de seleção e mira guardados em variáveis para objeto do Jogo 3D', () => {
+    const parsed = SZIRSchema.safeParse(
+      game3DProject([
+        { type: 'g3d:createFullscreenScene', varName: 'mundo', bg: '#101020' },
+        {
+          type: 'g3d:createBox',
+          varName: 'jogador',
+          worldVar: 'mundo',
+          size: 1,
+          color: '#ffffff',
+        },
+        { type: 'var', name: 'selecionado', value: { type: 'g3d:pickAtMouse', worldVar: 'mundo' } },
+        {
+          type: 'var',
+          name: 'alvo',
+          value: { type: 'g3d:aimAhead', worldVar: 'mundo', objVar: 'jogador', dist: 50 },
+        },
+        { type: 'g3d:cameraLookAt', worldVar: 'mundo', objVar: 'selecionado' },
+        { type: 'g3d:cameraLookAt', worldVar: 'mundo', objVar: 'alvo' },
+      ]),
+    )
+
+    expect(parsed.success).toBe(true)
+  })
+
+  it('distingue os tipos 3D e libera o item local de um para-cada no enxame', () => {
+    const wrongKind = SZIRSchema.safeParse(
+      game3DProject([
+        { type: 'g3d:createGroup', varName: 'inimigos' },
+        {
+          type: 'g3d:rotateBy',
+          objVar: 'inimigos',
+          axis: 'y',
+          amount: { type: 'num', value: 0.1 },
+        },
+      ]),
+    )
+    expect(wrongKind.success).toBe(false)
+
+    const localItem = SZIRSchema.safeParse(
+      game3DProject([
+        { type: 'g3d:createFullscreenScene', varName: 'mundo', bg: '#101020' },
+        { type: 'g3d:createSwarm', varName: 'estrelas', worldVar: 'mundo' },
+        {
+          type: 'g3d:forEachInSwarm',
+          swarmVar: 'estrelas',
+          itemName: 'estrela',
+          body: [
+            {
+              type: 'g3d:moveBy',
+              objVar: 'estrela',
+              x: { type: 'num', value: 0 },
+              y: { type: 'num', value: 1 },
+              z: { type: 'num', value: 0 },
+            },
+          ],
+        },
+      ]),
+    )
+    expect(localItem.success).toBe(true)
   })
 })

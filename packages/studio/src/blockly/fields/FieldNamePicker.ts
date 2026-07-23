@@ -58,6 +58,7 @@ type ScopedBinderRegistry = Readonly<Record<string, ScopedBinder>>
  *  - `swarm3d`  → enxame de cópias do Jogo 3D (`criar enxame`).
  *  - `physics-body` / `physics-resource` → IDs declarados na física leve do
  *                 Canvas 3D, filtrados pelo mundo físico escolhido.
+ *  - `shadow-target3d` → objetos compatíveis com o modo "projeta/recebe" escolhido.
  *
  * Estende `FieldTextInput` (NÃO `FieldDropdown`), então o VALOR continua sendo uma
  * string — IR, round-trip, serialização e allowlist ficam IDÊNTICOS a um
@@ -74,6 +75,7 @@ export type NameKind =
   | 'group'
   | 'class'
   | 'function'
+  | 'optional-function'
   | 'property'
   | 'method'
   | 'super-method'
@@ -98,6 +100,7 @@ export type NameKind =
   | 'g3d-world'
   | 'renderer3d'
   | 'camera3d'
+  | 'perspective-camera3d'
   | 'light3d'
   | 'composer3d'
   | 'loader3d'
@@ -107,11 +110,16 @@ export type NameKind =
   | 'grass3d'
   | 'instanced-mesh3d'
   | 'color-target3d'
+  | 'shadow-target3d'
+  | 'physics-collider3d'
+  | 'physics-city3d'
   | 'physics-world'
   | 'object3d'
+  | 'g3d-object'
   | 'group3d'
   | 'swarm3d'
   | 'physics-body'
+  | 'physics-character'
   | 'physics-resource'
   | 'character'
   | 'screen'
@@ -147,6 +155,7 @@ const DECLARED_NAME_KINDS: ReadonlySet<NameKind> = new Set([
   'group',
   'class',
   'function',
+  'optional-function',
   'super-method',
   'dom-target',
   'canvas3d-canvas',
@@ -160,6 +169,7 @@ const DECLARED_NAME_KINDS: ReadonlySet<NameKind> = new Set([
   'g3d-world',
   'renderer3d',
   'camera3d',
+  'perspective-camera3d',
   'light3d',
   'composer3d',
   'loader3d',
@@ -169,11 +179,16 @@ const DECLARED_NAME_KINDS: ReadonlySet<NameKind> = new Set([
   'grass3d',
   'instanced-mesh3d',
   'color-target3d',
+  'shadow-target3d',
+  'physics-collider3d',
+  'physics-city3d',
   'physics-world',
   'object3d',
+  'g3d-object',
   'group3d',
   'swarm3d',
   'physics-body',
+  'physics-character',
   'physics-resource',
 ])
 
@@ -195,6 +210,7 @@ const NAME_KINDS: readonly NameKind[] = [
   'group',
   'class',
   'function',
+  'optional-function',
   'property',
   'method',
   'super-method',
@@ -219,6 +235,7 @@ const NAME_KINDS: readonly NameKind[] = [
   'g3d-world',
   'renderer3d',
   'camera3d',
+  'perspective-camera3d',
   'light3d',
   'composer3d',
   'loader3d',
@@ -228,11 +245,16 @@ const NAME_KINDS: readonly NameKind[] = [
   'grass3d',
   'instanced-mesh3d',
   'color-target3d',
+  'shadow-target3d',
+  'physics-collider3d',
+  'physics-city3d',
   'physics-world',
   'object3d',
+  'g3d-object',
   'group3d',
   'swarm3d',
   'physics-body',
+  'physics-character',
   'physics-resource',
   'character',
   'screen',
@@ -337,6 +359,7 @@ function collectPhysicsNames(
     registry,
     ownerFields,
     useBlock?.getFieldValue('WORLD'),
+    useBlock,
   )
 }
 
@@ -345,6 +368,21 @@ export function collectCanvas3DPhysicsBodies(
   useBlock?: Blockly.Block | null,
 ): string[] {
   return collectPhysicsNames(workspace, CANVAS3D_PHYSICS_BODY_DECLARATION_FIELDS, useBlock)
+}
+
+export function collectCanvas3DPhysicsCharacters(
+  workspace: Blockly.Workspace | null | undefined,
+  useBlock?: Blockly.Block | null,
+): string[] {
+  const ownerFields = { sz_t3d_physics_body: 'WORLD' }
+  return collectOwnedDeclaredNames(
+    workspace,
+    CANVAS3D_PHYSICS_BODY_DECLARATION_FIELDS,
+    ownerFields,
+    useBlock?.getFieldValue('WORLD'),
+    useBlock,
+    (block) => block.getFieldValue('KIND') === 'character',
+  )
 }
 
 export function collectCanvas3DPhysicsResources(
@@ -834,6 +872,18 @@ const OBJECT3D_DECL_BLOCKS: Record<string, string[]> = {
   sz_g3d_create_torus: ['NAME'],
   sz_g3d_create_model: ['NAME'],
 }
+const GAME3D_OBJECT_VALUE_HOLDERS: NameFieldRegistry = {
+  sz_js_var_create: ['NAME'],
+  sz_js_const_create: ['NAME'],
+}
+const GAME3D_OBJECT_VALUE_BLOCKS: ReadonlySet<string> = new Set([
+  'sz_g3d_pick_at_mouse',
+  'sz_g3d_aim_ahead',
+])
+const GAME3D_OBJECT_DECL_BLOCKS: NameFieldRegistry = {
+  ...OBJECT3D_DECL_BLOCKS,
+  ...GAME3D_OBJECT_VALUE_HOLDERS,
+}
 /** O "item" do "para cada no enxame" e a "parte" do traverse são nomes LOCAIS de objeto 3D. */
 const OBJECT3D_LOOP_BINDERS: ScopedBinderRegistry = {
   sz_g3d_for_each_swarm: ['ITEM'],
@@ -997,6 +1047,11 @@ const KIND_UI: Record<NameKind, KindUI> = {
     placeholder: 'nome da função',
     empty: 'Nenhuma função ainda — crie uma (bloco "função") ou digite o nome abaixo.',
   },
+  'optional-function': {
+    icon: '⛰️',
+    placeholder: 'função de altura opcional',
+    empty: 'Use terreno plano ou prepare um terreno para acompanhar seus morros.',
+  },
   property: {
     icon: '🏷️',
     placeholder: 'nome da propriedade',
@@ -1125,6 +1180,11 @@ const KIND_UI: Record<NameKind, KindUI> = {
     placeholder: 'câmera 3D',
     empty: 'Nenhuma câmera ainda — crie uma câmera primeiro.',
   },
+  'perspective-camera3d': {
+    icon: '📷',
+    placeholder: 'câmera de perspectiva 3D',
+    empty: 'Nenhuma câmera de perspectiva ainda — crie uma câmera 3D primeiro.',
+  },
   light3d: {
     icon: '💡',
     placeholder: 'luz 3D',
@@ -1171,15 +1231,40 @@ const KIND_UI: Record<NameKind, KindUI> = {
     placeholder: 'objeto com cor',
     empty: 'Nenhum material, luz ou objeto compatível com cor está disponível.',
   },
+  'shadow-target3d': {
+    icon: '🌗',
+    placeholder: 'objeto compatível com sombra',
+    empty: 'Nenhum objeto compatível com este tipo de sombra está disponível.',
+  },
+  'physics-collider3d': {
+    icon: '🧱',
+    placeholder: 'objeto com colisão',
+    empty: 'Nenhuma primitiva ou prédio compatível com colisão está disponível.',
+  },
+  'physics-city3d': {
+    icon: '🏙️',
+    placeholder: 'cidade com colisão',
+    empty: 'Nenhuma cidade automática está disponível.',
+  },
   'physics-world': {
     icon: '🧲',
     placeholder: 'mundo físico',
     empty: 'Nenhum mundo físico ainda — prepare a física primeiro.',
   },
+  'physics-character': {
+    icon: '🧍',
+    placeholder: 'personagem físico',
+    empty: 'Nenhum personagem físico ainda — crie um corpo do tipo personagem primeiro.',
+  },
   object3d: {
     icon: '🧊',
     placeholder: 'nome do objeto 3D',
     empty: 'Nenhum objeto 3D ainda — crie uma peça, câmera, luz ou cena primeiro.',
+  },
+  'g3d-object': {
+    icon: '🧊',
+    placeholder: 'objeto deste mundo do jogo',
+    empty: 'Nenhum objeto do Jogo 3D ainda. Crie uma peça nesse mundo primeiro.',
   },
   group3d: {
     icon: '👾',
@@ -1336,6 +1421,8 @@ const LOOP_BINDERS_BY_KIND: Partial<Record<NameKind, ScopedBinderRegistry>> = {
   'mutable-variable': VARIABLE_LOOP_BINDERS,
   function: FUNCTION_LOCAL_BINDERS,
   object3d: OBJECT3D_LOOP_BINDERS,
+  'g3d-object': OBJECT3D_LOOP_BINDERS,
+  'shadow-target3d': OBJECT3D_LOOP_BINDERS,
   character: CHARACTER_LOOP_BINDERS,
   entity3d: ENTITY3D_LOOP_BINDERS,
 }
@@ -1368,17 +1455,25 @@ function collectOwnedDeclaredNames(
   registry: NameFieldRegistry,
   ownerFields: Readonly<Record<string, string>>,
   requestedOwner: unknown,
+  useBlock?: Blockly.Block | null,
+  declarationFilter?: (block: Blockly.Block) => boolean,
 ): string[] {
   if (!workspace) return []
   const owner = `${requestedOwner ?? ''}`.trim()
-  if (!owner) return collectDeclaredNames(workspace, registry)
+  const visibleScopes = useBlock ? new Set(variableScopeKeys(useBlock)) : null
   const seen = new Set<string>()
   const ordered: string[] = []
   for (const block of workspace.getAllBlocks(false)) {
     const fields = registry[block.type]
     const ownerField = ownerFields[block.type]
-    if (!fields || !ownerField || `${block.getFieldValue(ownerField) ?? ''}`.trim() !== owner)
-      continue
+    if (!fields || !ownerField) continue
+    if (declarationFilter && !declarationFilter(block)) continue
+    if (owner && `${block.getFieldValue(ownerField) ?? ''}`.trim() !== owner) continue
+    if (visibleScopes && useBlock) {
+      const declarationScope = variableScopeKeys(block)[0] ?? 'global'
+      if (!visibleScopes.has(declarationScope)) continue
+      if (!declarationPrecedesUse(block, useBlock, declarationScope)) continue
+    }
     for (const field of fields) {
       if (!block.getField(field)) continue
       const name = `${block.getFieldValue(field) ?? ''}`.trim()
@@ -1504,12 +1599,14 @@ function collectVariableDeclarations(
   registry: NameFieldRegistry,
   visibleScopes: ReadonlySet<string>,
   useBlock?: Blockly.Block | null,
+  acceptsDeclaration: (block: Blockly.Block) => boolean = () => true,
 ): string[] {
   const seen = new Set<string>()
   const ordered: string[] = []
   for (const declaration of workspace.getAllBlocks(false)) {
     const fields = registry[declaration.type]
     if (!fields) continue
+    if (!acceptsDeclaration(declaration)) continue
     const declarationScope = variableScopeKeys(declaration)[0] ?? 'global'
     if (!visibleScopes.has(declarationScope)) continue
     if (useBlock && !declarationPrecedesUse(declaration, useBlock, declarationScope)) continue
@@ -1722,21 +1819,37 @@ export function collectGame3DWorlds(
   )
 }
 
-/** Nomes dos objetos/malhas 3D declarados. */
-export function collectObjects3d(
+function isGame3DObjectDeclaration(block: Blockly.Block): boolean {
+  if (OBJECT3D_DECL_BLOCKS[block.type]) return true
+  const valueType = block.getInputTargetBlock('VALUE')?.type
+  return Boolean(valueType && GAME3D_OBJECT_VALUE_BLOCKS.has(valueType))
+}
+
+/** Objetos criados pelo Jogo 3D ou obtidos de uma seleção dentro dele. */
+export function collectGame3DObjects(
   workspace: Blockly.Workspace | null | undefined,
   useBlock?: Blockly.Block | null,
 ): string[] {
   const target = useBlock ?? workspace
   const context = nameLookupContext(target)
   if (!context.workspace) return []
+  return collectVariableDeclarations(
+    context.workspace,
+    GAME3D_OBJECT_DECL_BLOCKS,
+    new Set(context.useBlock ? variableScopeKeys(context.useBlock) : ['global']),
+    context.useBlock,
+    isGame3DObjectDeclaration,
+  )
+}
+
+/** Nomes dos objetos/malhas 3D declarados nas duas camadas Three.js. */
+export function collectObjects3d(
+  workspace: Blockly.Workspace | null | undefined,
+  useBlock?: Blockly.Block | null,
+): string[] {
+  const target = useBlock ?? workspace
   return mergeNames(
-    collectVariableDeclarations(
-      context.workspace,
-      OBJECT3D_DECL_BLOCKS,
-      new Set(context.useBlock ? variableScopeKeys(context.useBlock) : ['global']),
-      context.useBlock,
-    ),
+    collectGame3DObjects(workspace, useBlock),
     collectCanvas3DSymbolNames(target, 'object3d'),
   )
 }
@@ -1750,6 +1863,20 @@ function mergeNames(...groups: readonly string[][]): string[] {
   })
 }
 
+function canvas3DDeclarationSupportsKind(
+  declaration: Blockly.Block,
+  kind: Canvas3DSymbolKind,
+): boolean {
+  if (kind !== 'shadow-caster3d' && kind !== 'shadow-receiver3d') return true
+  if (declaration.type === 'sz_t3d_primitive') {
+    return declaration.getFieldValue('SHAPE') !== 'capsule'
+  }
+  if (kind === 'shadow-caster3d' && declaration.type === 'sz_t3d_light_create') {
+    return declaration.getFieldValue('KIND') === 'directional'
+  }
+  return true
+}
+
 function collectCanvas3DSymbolNames(target: NameLookupTarget, kind: Canvas3DSymbolKind): string[] {
   const { workspace, useBlock } = nameLookupContext(target)
   if (!workspace) return []
@@ -1759,6 +1886,7 @@ function collectCanvas3DSymbolNames(target: NameLookupTarget, kind: Canvas3DSymb
     CANVAS3D_BLOCK_DECLARATIONS_BY_KIND[kind],
     visibleScopes,
     useBlock,
+    (declaration) => canvas3DDeclarationSupportsKind(declaration, kind),
   )
   const advanced: string[] = []
   const seen = new Set(declared)
@@ -1776,6 +1904,16 @@ function collectCanvas3DSymbolNames(target: NameLookupTarget, kind: Canvas3DSymb
   return [...declared, ...advanced]
 }
 
+/** Objetos compatíveis com a operação de sombra escolhida no bloco consumidor. */
+export function collectCanvas3DShadowTargets(
+  workspace: Blockly.Workspace | null | undefined,
+  useBlock?: Blockly.Block | null,
+): string[] {
+  const kind =
+    useBlock?.getFieldValue('KIND') === 'receive' ? 'shadow-receiver3d' : 'shadow-caster3d'
+  return collectCanvas3DSymbolNames(useBlock ?? workspace, kind)
+}
+
 export function collectRenderers3d(
   workspace: Blockly.Workspace | null | undefined,
   useBlock?: Blockly.Block | null,
@@ -1788,6 +1926,27 @@ export function collectCameras3d(
   useBlock?: Blockly.Block | null,
 ): string[] {
   return collectCanvas3DSymbolNames(useBlock ?? workspace, 'camera3d')
+}
+
+export function collectPerspectiveCameras3d(
+  workspace: Blockly.Workspace | null | undefined,
+  useBlock?: Blockly.Block | null,
+): string[] {
+  return collectCanvas3DSymbolNames(useBlock ?? workspace, 'perspective-camera3d')
+}
+
+export function collectPhysicsColliders3d(
+  workspace: Blockly.Workspace | null | undefined,
+  useBlock?: Blockly.Block | null,
+): string[] {
+  return collectCanvas3DSymbolNames(useBlock ?? workspace, 'physics-collider3d')
+}
+
+export function collectPhysicsCities3d(
+  workspace: Blockly.Workspace | null | undefined,
+  useBlock?: Blockly.Block | null,
+): string[] {
+  return collectCanvas3DSymbolNames(useBlock ?? workspace, 'physics-city3d')
 }
 
 export function collectLights3d(
@@ -1819,13 +1978,35 @@ export function collectPhysicsWorlds(
 }
 
 /** Nomes dos grupos simples 3D declarados. */
-export function collectGroups3d(workspace: Blockly.Workspace | null | undefined): string[] {
-  return collectDeclaredNames(workspace, GROUP3D_DECL_BLOCKS)
+export function collectGroups3d(
+  workspace: Blockly.Workspace | null | undefined,
+  useBlock?: Blockly.Block | null,
+): string[] {
+  const target = useBlock ?? workspace
+  const context = nameLookupContext(target)
+  if (!context.workspace) return []
+  return collectVariableDeclarations(
+    context.workspace,
+    GROUP3D_DECL_BLOCKS,
+    new Set(context.useBlock ? variableScopeKeys(context.useBlock) : ['global']),
+    context.useBlock,
+  )
 }
 
 /** Nomes dos enxames 3D declarados. */
-export function collectSwarms3d(workspace: Blockly.Workspace | null | undefined): string[] {
-  return collectDeclaredNames(workspace, SWARM3D_DECL_BLOCKS)
+export function collectSwarms3d(
+  workspace: Blockly.Workspace | null | undefined,
+  useBlock?: Blockly.Block | null,
+): string[] {
+  const target = useBlock ?? workspace
+  const context = nameLookupContext(target)
+  if (!context.workspace) return []
+  return collectVariableDeclarations(
+    context.workspace,
+    SWARM3D_DECL_BLOCKS,
+    new Set(context.useBlock ? variableScopeKeys(context.useBlock) : ['global']),
+    context.useBlock,
+  )
 }
 
 /**
@@ -1911,6 +2092,11 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
     return new FieldNamePicker(`${options.text ?? ''}`, coerceKind(options.kind))
   }
 
+  protected override getText_(): string | null {
+    if (this.kind === 'optional-function' && !this.getValue()) return 'terreno plano'
+    return super.getText_()
+  }
+
   /** Nomes GLOBAIS a oferecer neste seletor, conforme o `kind` (+ contexto de classe). */
   private collectGlobals(
     block: Blockly.Block | null | undefined,
@@ -1930,6 +2116,7 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
       case 'class':
         return collectClassNames(block)
       case 'function':
+      case 'optional-function':
         return collectFunctionNames(block)
       case 'canvas':
         return collectCanvasIds(ws)
@@ -1971,6 +2158,8 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectRenderers3d(ws, block)
       case 'camera3d':
         return collectCameras3d(ws, block)
+      case 'perspective-camera3d':
+        return collectPerspectiveCameras3d(ws, block)
       case 'light3d':
         return collectLights3d(ws, block)
       case 'composer3d':
@@ -1984,16 +2173,26 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
       case 'instanced-mesh3d':
       case 'color-target3d':
         return collectCanvas3DSymbolNames(block ?? ws, this.kind)
+      case 'physics-collider3d':
+        return collectPhysicsColliders3d(ws, block)
+      case 'physics-city3d':
+        return collectPhysicsCities3d(ws, block)
+      case 'shadow-target3d':
+        return collectCanvas3DShadowTargets(ws, block)
       case 'physics-world':
         return collectPhysicsWorlds(ws, block)
       case 'object3d':
         return collectObjects3d(ws, block)
+      case 'g3d-object':
+        return collectGame3DObjects(ws, block)
       case 'group3d':
-        return collectGroups3d(ws)
+        return collectGroups3d(ws, block)
       case 'swarm3d':
-        return collectSwarms3d(ws)
+        return collectSwarms3d(ws, block)
       case 'physics-body':
         return collectCanvas3DPhysicsBodies(ws, block)
+      case 'physics-character':
+        return collectCanvas3DPhysicsCharacters(ws, block)
       case 'physics-resource':
         return collectCanvas3DPhysicsResources(ws, block)
       case 'character':
@@ -2110,7 +2309,8 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
       'padding:8px;width:240px;background:var(--color-sz-panel);font-family:Inter,system-ui,sans-serif;'
     let focusTarget: HTMLElement = wrap
 
-    if (globals.length === 0 && locals.length === 0) {
+    const hasFlatOption = this.kind === 'optional-function'
+    if (globals.length === 0 && locals.length === 0 && !hasFlatOption) {
       const empty = document.createElement('div')
       empty.textContent = ui.empty
       empty.style.cssText =
@@ -2123,11 +2323,11 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         'display:flex;flex-direction:column;gap:4px;max-height:200px;overflow:auto;'
       // Uma linha selecionável. `loop` = variável local do laço: swatch 🔁 tracejado +
       // marca "no laço" (mesma linguagem visual do seletor de sprite).
-      const addRow = (name: string, loop: boolean): void => {
+      const addRow = (name: string, loop: boolean, visibleName = name): void => {
         const btn = document.createElement('button')
         btn.type = 'button'
         btn.className = 'sz-name-picker__option'
-        btn.title = loop ? `${name} — variável deste laço (local)` : name
+        btn.title = loop ? `${visibleName} — variável deste laço (local)` : visibleName
         const selected = name === this.getValue()
         btn.setAttribute('aria-pressed', selected ? 'true' : 'false')
         btn.style.cssText = `display:flex;align-items:center;gap:8px;padding:5px 7px;border:1px solid ${selected ? 'var(--color-sz-accent)' : 'var(--color-sz-border)'};border-radius:6px;background:var(--color-sz-bg);cursor:pointer;text-align:left;`
@@ -2138,7 +2338,7 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
           ? 'flex:none;width:22px;height:22px;border-radius:5px;border:1px dashed var(--color-sz-border);display:flex;align-items:center;justify-content:center;font-size:12px;'
           : 'flex:none;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:15px;'
         const label = document.createElement('span')
-        label.textContent = name
+        label.textContent = visibleName
         label.style.cssText =
           'flex:1;min-width:0;font-size:13px;color:var(--color-sz-fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'
         btn.append(icon, label)
@@ -2155,6 +2355,7 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         if (focusTarget === wrap) focusTarget = btn
         list.appendChild(btn)
       }
+      if (hasFlatOption) addRow('', false, 'terreno plano')
       for (const name of globals) addRow(name, false)
       for (const name of locals) addRow(name, true)
       wrap.appendChild(list)

@@ -378,79 +378,119 @@ describe('gramática recursiva do ciclo de vida', () => {
       objVar: 'jogador',
       speed: { type: 'num', value: 0.05 },
     }
+    const game3DPrerequisites: JSStatement[] = [
+      { type: 'g3d:createScene', canvasId: 'tela', varName: 'cena' },
+      {
+        type: 'g3d:createBox',
+        varName: 'jogador',
+        worldVar: 'cena',
+        size: 1,
+        color: '#22d3ee',
+      },
+    ]
 
-    expect(parse('start', continuous).success).toBe(false)
+    expect(parse('start', continuous, game3DPrerequisites).success).toBe(false)
     expect(
-      parse('events', {
-        type: 'event',
-        target: 'botao',
-        event: 'click',
-        body: [continuous],
-      }).success,
+      parse(
+        'events',
+        {
+          type: 'event',
+          target: 'botao',
+          event: 'click',
+          body: [continuous],
+        },
+        game3DPrerequisites,
+      ).success,
     ).toBe(false)
     expect(
-      parse('events', {
-        type: 'event',
-        target: 'botao',
-        event: 'click',
-        body: [
-          {
-            type: 'repeat',
-            times: { type: 'num', value: 2 },
-            body: [continuous],
-          },
-        ],
-      }).success,
+      parse(
+        'events',
+        {
+          type: 'event',
+          target: 'botao',
+          event: 'click',
+          body: [
+            {
+              type: 'repeat',
+              times: { type: 'num', value: 2 },
+              body: [continuous],
+            },
+          ],
+        },
+        game3DPrerequisites,
+      ).success,
     ).toBe(true)
     expect(
-      parse('loops', { type: 'g3d:animate', worldVar: 'cena', body: [continuous] }, [
-        { type: 'g3d:createScene', canvasId: 'tela', varName: 'cena' },
-      ]).success,
+      parse(
+        'loops',
+        { type: 'g3d:animate', worldVar: 'cena', body: [continuous] },
+        game3DPrerequisites,
+      ).success,
     ).toBe(true)
     expect(
-      parse('start', {
-        type: 'repeat',
-        times: { type: 'num', value: 2 },
-        body: [continuous],
-      }).success,
+      parse(
+        'start',
+        {
+          type: 'repeat',
+          times: { type: 'num', value: 2 },
+          body: [continuous],
+        },
+        game3DPrerequisites,
+      ).success,
     ).toBe(true)
     expect(
-      parse('start', {
-        type: 'funcDecl',
-        name: 'atualizar',
-        params: [],
-        body: [continuous],
-      }).success,
+      parse(
+        'start',
+        {
+          type: 'funcDecl',
+          name: 'atualizar',
+          params: [],
+          body: [continuous],
+        },
+        game3DPrerequisites,
+      ).success,
     ).toBe(true)
     expect(
-      parse('start', {
-        type: 'classDecl',
-        name: 'Jogo',
-        ctorBody: [continuous],
-        methods: [{ name: 'atualizar', params: [], body: [continuous] }],
-      }).success,
+      parse(
+        'start',
+        {
+          type: 'classDecl',
+          name: 'Jogo',
+          ctorBody: [continuous],
+          methods: [{ name: 'atualizar', params: [], body: [continuous] }],
+        },
+        game3DPrerequisites,
+      ).success,
     ).toBe(false)
     expect(
-      parse('start', {
-        type: 'classDecl',
-        name: 'Jogo',
-        ctorBody: [],
-        methods: [{ name: 'atualizar', params: [], body: [continuous] }],
-      }).success,
+      parse(
+        'start',
+        {
+          type: 'classDecl',
+          name: 'Jogo',
+          ctorBody: [],
+          methods: [{ name: 'atualizar', params: [], body: [continuous] }],
+        },
+        game3DPrerequisites,
+      ).success,
     ).toBe(true)
     expect(
-      parse('start', {
-        type: 'classDecl',
-        name: 'Jogo',
-        ctorBody: [
-          {
-            type: 'repeat',
-            times: { type: 'num', value: 2 },
-            body: [continuous],
-          },
-        ],
-        methods: [],
-      }).success,
+      parse(
+        'start',
+        {
+          type: 'classDecl',
+          name: 'Jogo',
+          ctorBody: [
+            {
+              type: 'repeat',
+              times: { type: 'num', value: 2 },
+              body: [continuous],
+            },
+          ],
+          methods: [],
+        },
+        game3DPrerequisites,
+      ).success,
     ).toBe(true)
   })
 

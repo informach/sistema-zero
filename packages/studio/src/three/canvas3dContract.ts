@@ -80,6 +80,7 @@ export type Canvas3DSymbolKind =
   | 'scene3d'
   | 'renderer3d'
   | 'camera3d'
+  | 'perspective-camera3d'
   | 'light3d'
   | 'composer3d'
   | 'object3d'
@@ -90,9 +91,19 @@ export type Canvas3DSymbolKind =
   | 'grass3d'
   | 'instanced-mesh3d'
   | 'color-target3d'
+  | 'shadow-caster3d'
+  | 'shadow-receiver3d'
+  | 'physics-collider3d'
+  | 'physics-city3d'
   | 'physics-world'
 
-export type Canvas3DReferenceKind = Canvas3DSymbolKind | 'canvas' | 'function'
+export type Canvas3DReferenceKind =
+  | Canvas3DSymbolKind
+  | 'canvas'
+  | 'function'
+  | 'physics-body-id'
+  | 'physics-character-id'
+  | 'physics-resource-id'
 
 export interface Canvas3DSymbolField {
   field: string
@@ -102,6 +113,13 @@ export interface Canvas3DSymbolField {
 export interface Canvas3DReferenceField {
   field: string
   kind: Canvas3DReferenceKind
+  ownerField?: string
+}
+
+export interface Canvas3DPhysicsIdDeclarationField {
+  field: string
+  ownerField: string
+  kinds: readonly ('body' | 'resource')[]
 }
 
 /** Declarações dos blocos amigáveis, usadas pelos seletores e pela validação da IR. */
@@ -111,6 +129,7 @@ export const CANVAS3D_BLOCK_DECLARATIONS_BY_KIND: Readonly<
   scene3d: { sz_t3d_scene_create: ['SCENE'] },
   renderer3d: { sz_t3d_renderer_create: ['RENDERER'] },
   camera3d: { sz_t3d_camera_create: ['CAMERA'] },
+  'perspective-camera3d': { sz_t3d_camera_create: ['CAMERA'] },
   light3d: { sz_t3d_light_create: ['LIGHT'] },
   composer3d: { sz_t3d_bloom_setup: ['COMPOSER'] },
   object3d: {
@@ -134,6 +153,23 @@ export const CANVAS3D_BLOCK_DECLARATIONS_BY_KIND: Readonly<
   grass3d: { sz_t3d_grass: ['GRASS'] },
   'instanced-mesh3d': { sz_t3d_grass: ['GRASS'] },
   'color-target3d': { sz_t3d_light_create: ['LIGHT'] },
+  'shadow-caster3d': {
+    sz_t3d_light_create: ['LIGHT'],
+    sz_t3d_water: ['WATER'],
+    sz_t3d_grass: ['GRASS'],
+    sz_t3d_sign: ['SIGN'],
+    sz_t3d_primitive: ['MESH'],
+    sz_t3d_terrain: ['TERRAIN'],
+  },
+  'shadow-receiver3d': {
+    sz_t3d_primitive: ['MESH'],
+    sz_t3d_terrain: ['TERRAIN'],
+  },
+  'physics-collider3d': {
+    sz_t3d_primitive: ['MESH'],
+    sz_t3d_building: ['BUILDING'],
+  },
+  'physics-city3d': { sz_t3d_city: ['CITY'] },
   'physics-world': { sz_t3d_physics_setup: ['WORLD'] },
 }
 
@@ -143,18 +179,18 @@ export const CANVAS3D_SEMANTIC_DECLARATION_FIELDS: Readonly<
 > = {
   threeSceneSetup: [{ field: 'scene', kinds: ['scene3d', 'object3d'] }],
   threeRendererSetup: [{ field: 'renderer', kinds: ['renderer3d'] }],
-  threeCameraSetup: [{ field: 'camera', kinds: ['camera3d', 'object3d'] }],
+  threeCameraSetup: [{ field: 'camera', kinds: ['camera3d', 'perspective-camera3d', 'object3d'] }],
   threeLightSetup: [{ field: 'light', kinds: ['light3d', 'object3d', 'color-target3d'] }],
   bloomSetup: [{ field: 'composer', kinds: ['composer3d'] }],
   particlesSetup: [{ field: 'particles', kinds: ['object3d'] }],
   waterSetup: [{ field: 'water', kinds: ['object3d', 'water3d'] }],
   grassSetup: [{ field: 'grass', kinds: ['object3d', 'grass3d', 'instanced-mesh3d'] }],
   signSetup: [{ field: 'sign', kinds: ['object3d'] }],
-  primitiveSetup: [{ field: 'mesh', kinds: ['object3d'] }],
+  primitiveSetup: [{ field: 'mesh', kinds: ['object3d', 'physics-collider3d'] }],
   terrainSetup: [{ field: 'terrain', kinds: ['object3d'] }],
   roadSetup: [{ field: 'road', kinds: ['object3d'] }],
-  buildingSetup: [{ field: 'building', kinds: ['object3d'] }],
-  citySetup: [{ field: 'city', kinds: ['object3d'] }],
+  buildingSetup: [{ field: 'building', kinds: ['object3d', 'physics-collider3d'] }],
+  citySetup: [{ field: 'city', kinds: ['object3d', 'physics-city3d'] }],
   physicsLiteSetup: [{ field: 'world', kinds: ['physics-world'] }],
 }
 
@@ -168,7 +204,7 @@ export const CANVAS3D_SEMANTIC_REFERENCE_FIELDS: Readonly<
   rendererConfig: [{ field: 'renderer', kind: 'renderer3d' }],
   rendererResponsive: [
     { field: 'renderer', kind: 'renderer3d' },
-    { field: 'camera', kind: 'camera3d' },
+    { field: 'camera', kind: 'perspective-camera3d' },
     { field: 'composer', kind: 'composer3d' },
   ],
   environmentLoad: [{ field: 'scene', kind: 'scene3d' }],
@@ -186,10 +222,7 @@ export const CANVAS3D_SEMANTIC_REFERENCE_FIELDS: Readonly<
   grassTime: [{ field: 'grass', kind: 'grass3d' }],
   signSetup: [{ field: 'scene', kind: 'scene3d' }],
   primitiveSetup: [{ field: 'scene', kind: 'scene3d' }],
-  terrainSetup: [
-    { field: 'scene', kind: 'scene3d' },
-    { field: 'heightFunction', kind: 'function' },
-  ],
+  terrainSetup: [{ field: 'scene', kind: 'scene3d' }],
   roadSetup: [
     { field: 'scene', kind: 'scene3d' },
     { field: 'heightFunction', kind: 'function' },
@@ -207,31 +240,63 @@ export const CANVAS3D_SEMANTIC_REFERENCE_FIELDS: Readonly<
   physicsLiteStaticSphere: [{ field: 'world', kind: 'physics-world' }],
   physicsLiteStaticObject: [
     { field: 'world', kind: 'physics-world' },
-    { field: 'object', kind: 'object3d' },
+    { field: 'object', kind: 'physics-collider3d' },
   ],
   physicsLiteStaticCity: [
     { field: 'world', kind: 'physics-world' },
-    { field: 'city', kind: 'object3d' },
+    { field: 'city', kind: 'physics-city3d' },
   ],
   physicsLiteBody: [
     { field: 'world', kind: 'physics-world' },
     { field: 'object', kind: 'object3d' },
   ],
-  physicsLiteMove: [{ field: 'world', kind: 'physics-world' }],
-  physicsLiteJump: [{ field: 'world', kind: 'physics-world' }],
+  physicsLiteMove: [
+    { field: 'world', kind: 'physics-world' },
+    { field: 'id', kind: 'physics-character-id', ownerField: 'world' },
+  ],
+  physicsLiteJump: [
+    { field: 'world', kind: 'physics-world' },
+    { field: 'id', kind: 'physics-character-id', ownerField: 'world' },
+  ],
   physicsLiteTrigger: [{ field: 'world', kind: 'physics-world' }],
   physicsLiteStep: [{ field: 'world', kind: 'physics-world' }],
-  physicsLiteVelocity: [{ field: 'world', kind: 'physics-world' }],
-  physicsLiteImpulse: [{ field: 'world', kind: 'physics-world' }],
-  physicsLiteTeleport: [{ field: 'world', kind: 'physics-world' }],
-  physicsLiteRemove: [{ field: 'world', kind: 'physics-world' }],
+  physicsLiteVelocity: [
+    { field: 'world', kind: 'physics-world' },
+    { field: 'id', kind: 'physics-body-id', ownerField: 'world' },
+  ],
+  physicsLiteImpulse: [
+    { field: 'world', kind: 'physics-world' },
+    { field: 'id', kind: 'physics-body-id', ownerField: 'world' },
+  ],
+  physicsLiteTeleport: [
+    { field: 'world', kind: 'physics-world' },
+    { field: 'id', kind: 'physics-body-id', ownerField: 'world' },
+  ],
+  physicsLiteRemove: [
+    { field: 'world', kind: 'physics-world' },
+    { field: 'id', kind: 'physics-resource-id', ownerField: 'world' },
+  ],
   physicsLiteClear: [{ field: 'world', kind: 'physics-world' }],
   physicsLiteCollisionEvent: [{ field: 'world', kind: 'physics-world' }],
   physicsLiteTriggerEvent: [{ field: 'world', kind: 'physics-world' }],
   physicsLiteRaycast: [{ field: 'world', kind: 'physics-world' }],
-  physicsLiteBodyState: [{ field: 'world', kind: 'physics-world' }],
+  physicsLiteBodyState: [
+    { field: 'world', kind: 'physics-world' },
+    { field: 'id', kind: 'physics-body-id', ownerField: 'world' },
+  ],
   physicsLiteStats: [{ field: 'world', kind: 'physics-world' }],
   mountRenderer: [{ field: 'renderer', kind: 'renderer3d' }],
+}
+
+/** IDs que passam a existir dentro de um mundo físico após cada declaração. */
+export const CANVAS3D_SEMANTIC_PHYSICS_ID_DECLARATION_FIELDS: Readonly<
+  Record<string, readonly Canvas3DPhysicsIdDeclarationField[]>
+> = {
+  physicsLiteStaticBox: [{ field: 'id', ownerField: 'world', kinds: ['resource'] }],
+  physicsLiteStaticSphere: [{ field: 'id', ownerField: 'world', kinds: ['resource'] }],
+  physicsLiteStaticObject: [{ field: 'id', ownerField: 'world', kinds: ['resource'] }],
+  physicsLiteBody: [{ field: 'id', ownerField: 'world', kinds: ['body', 'resource'] }],
+  physicsLiteTrigger: [{ field: 'id', ownerField: 'world', kinds: ['resource'] }],
 }
 
 const OBJECT3D_CLASS_NAMES = new Set([
@@ -269,21 +334,47 @@ const MODEL_LOADER_CLASS_NAMES = new Set([
   'STLLoader',
 ])
 
+const COLOR_TARGET_MATERIAL_CLASS_NAMES = new Set([
+  'LineBasicMaterial',
+  'LineDashedMaterial',
+  'MeshBasicMaterial',
+  'MeshLambertMaterial',
+  'MeshMatcapMaterial',
+  'MeshPhongMaterial',
+  'MeshPhysicalMaterial',
+  'MeshStandardMaterial',
+  'MeshToonMaterial',
+  'PointsMaterial',
+  'ShadowMaterial',
+  'SpriteMaterial',
+])
+
 /** Classifica o construtor técnico sem depender da UI do seletor de classes. */
 export function canvas3DSymbolKindsForClass(rawClass: string): readonly Canvas3DSymbolKind[] {
   const className = rawClass.trim().split('.').at(-1) ?? ''
   if (className === 'Scene') return ['scene3d', 'object3d']
+  if (className === 'PerspectiveCamera') return ['camera3d', 'perspective-camera3d', 'object3d']
   if (className.endsWith('Camera')) return ['camera3d', 'object3d']
   if (className === 'WebGLRenderer' || className === 'WebGPURenderer') return ['renderer3d']
   if (className.endsWith('Light') || className.endsWith('LightProbe')) {
-    return ['light3d', 'object3d', 'color-target3d']
+    const kinds: Canvas3DSymbolKind[] = ['light3d', 'object3d', 'color-target3d']
+    if (['DirectionalLight', 'PointLight', 'SpotLight'].includes(className)) {
+      kinds.push('shadow-caster3d')
+    }
+    return kinds
   }
   if (className === 'EffectComposer') return ['composer3d']
   if (className === 'AudioLoader') return ['loader3d', 'audio-loader3d']
   if (MODEL_LOADER_CLASS_NAMES.has(className)) return ['loader3d', 'model-loader3d']
   if (className.endsWith('Loader')) return ['loader3d']
-  if (className.endsWith('Material')) return ['color-target3d']
-  if (className === 'InstancedMesh') return ['object3d', 'instanced-mesh3d']
+  if (COLOR_TARGET_MATERIAL_CLASS_NAMES.has(className)) return ['color-target3d']
+  if (className === 'InstancedMesh') {
+    return ['object3d', 'instanced-mesh3d', 'shadow-caster3d', 'shadow-receiver3d']
+  }
+  if (className === 'Mesh') return ['object3d', 'shadow-caster3d', 'shadow-receiver3d']
+  if (className === 'Water' || className === 'Reflector') {
+    return ['object3d', 'shadow-caster3d']
+  }
   return OBJECT3D_CLASS_NAMES.has(className) ? ['object3d'] : []
 }
 
@@ -527,7 +618,8 @@ export function statementUsesCanvas3D(statement: {
   return (
     CANVAS3D_SEMANTIC_STATEMENT_TYPE_SET.has(statement.type) ||
     (statement.type === 'importStar' && statement.module === 'three') ||
-    (statement.type === 'importNamed' && statement.module?.startsWith('three/addons/')) ||
+    (statement.type === 'importNamed' &&
+      (statement.module === 'three' || statement.module?.startsWith('three/addons/'))) ||
     (statement.type === 'newInstance' && statement.namespace === 'THREE')
   )
 }

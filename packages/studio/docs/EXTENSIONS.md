@@ -203,12 +203,20 @@ antes de o código do aluno rodar). Regras:
       objeto 3D, grupo/enxame, folha de quadros, mapa de tiles, imagem/textura…)
       usa um **seletor**, não `field_input`: `field_sprite_picker` (sprites, com
       miniatura), `field_asset_picker` (imagens do projeto) ou `field_name_picker`
-      com o `kind` certo (`scene3d`/`object3d`/`group3d`/`spritesheet`/`tilemap`/…).
+      com o `kind` certo (`scene3d`/`object3d`/`g3d-object`/`group3d`/`spritesheet`/`tilemap`/…). `object3d` aceita objetos Three.js genéricos; `g3d-object`
+      aceita somente objetos ligados a um mundo do Jogo 3D.
       O valor segue string (round-trip intacto). O bloco que DECLARA o nome fica em
       `field_input` E precisa estar registrado no `*_DECL_BLOCKS` correspondente em
       `blockly/fields/FieldNamePicker.ts` (ou `FieldSpritePicker.ts`), senão o
       seletor lista "nenhum ainda". Ver "Padrões já usados → Seletores de NOME" no
       CLAUDE.md. (game-2d/game-3d já seguem isto.)
+- [ ] Referências semânticas do Jogo 3D também estão registradas em
+      `GAME3D_SEMANTIC_DECLARATION_FIELDS` e `GAME3D_SEMANTIC_REFERENCE_FIELDS`.
+      O primeiro catálogo também alimenta o registro geral de variáveis. O schema
+      deve distinguir mundo, objeto genérico, objeto ligado ao jogo, grupo e enxame,
+      respeitando ordem e escopo, para que um nome inválido apareça no bloco antes
+      de gerar JavaScript. Expressões que devolvem objetos nomeáveis ficam em
+      `GAME3D_OBJECT_EXPRESSION_TYPES`.
 
 ### 5. Re-registro e remoção (invariante #5)
 

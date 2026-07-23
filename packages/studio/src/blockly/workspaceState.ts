@@ -158,11 +158,13 @@ export function buildWorkspaceStateFromIR(
   // de um projeto 2D viraria bloco 3D (teal, categoria errada). O sinal é o
   // import da lib (o bloco-raiz) ou um `new THREE.…` de topo.
   recognizeThree = allStatements.some(statementUsesCanvas3D)
+  canvas3dImportedNames = collectCanvas3DImportedNames(allStatements)
   audioLoaderVars = collectAudioLoaderVars(allStatements)
   const startChildren = statementsToBlocks(normalized.behavior.start, true)
   const eventChildren = statementsToBlocks(normalized.behavior.events, true)
   const loopChildren = statementsToBlocks(normalized.behavior.loops, true)
   recognizeThree = false
+  canvas3dImportedNames = new Set()
   audioLoaderVars = new Set()
 
   // Uma área por categoria, somente quando tem conteúdo. A disposição canônica
@@ -290,6 +292,21 @@ const STYLE_PROP_VALUES: ReadonlySet<string> = new Set([
 // propriedade). Registro-espelho: allowlist, valueSockets, LEGACY_VALUE_FIELDS.
 // ─────────────────────────────────────────────────────────────────────────────
 let recognizeThree = false
+
+let canvas3dImportedNames: ReadonlySet<string> = new Set()
+
+function collectCanvas3DImportedNames(statements: readonly JSStatement[]): Set<string> {
+  const names = new Set<string>()
+  for (const statement of statements) {
+    if (
+      statement.type === 'importNamed' &&
+      (statement.module === 'three' || statement.module.startsWith('three/addons/'))
+    ) {
+      for (const name of statement.names) names.add(name)
+    }
+  }
+  return names
+}
 
 // Latch-irmão do `recognizeThree`, para DISCRIMINAR o bloco do nó `loaderLoad`:
 // variáveis declaradas como AudioLoader (`new THREE.AudioLoader()` ou
@@ -5828,7 +5845,9 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       // projeto three (`new GLTFLoader()`) → o bloco Canvas 3D, com CLASS = referência
       // completa (`THREE.Scene` / `GLTFLoader`). Senão → o bloco genérico do aluno.
       const t3dNamed =
-        !!stmt.namespace || (recognizeThree && CANVAS3D_ADDON_CLASSES.has(stmt.className))
+        !!stmt.namespace ||
+        (recognizeThree &&
+          (CANVAS3D_ADDON_CLASSES.has(stmt.className) || canvas3dImportedNames.has(stmt.className)))
       if (t3dNamed) {
         const ref = stmt.namespace ? `${stmt.namespace}.${stmt.className}` : stmt.className
         return callWithArgs(
@@ -5846,14 +5865,18 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       )
     }
     case 'importStar':
-      return block('sz_t3d_import', { NAME: stmt.name }, {}, stmt.__id)
+      return stmt.module === 'three'
+        ? block('sz_t3d_import', { NAME: stmt.name }, {}, stmt.__id)
+        : rawJSBlock(stmt)
     case 'importNamed':
-      return block(
-        'sz_t3d_import_named',
-        { NAMES: stmt.names.join(', '), MODULE: stmt.module },
-        {},
-        stmt.__id,
-      )
+      return stmt.module === 'three' || stmt.module.startsWith('three/addons/')
+        ? block(
+            'sz_t3d_import_named',
+            { NAMES: stmt.names.join(', '), MODULE: stmt.module },
+            {},
+            stmt.__id,
+          )
+        : rawJSBlock(stmt)
     case 'callMethod':
       return callWithArgs(
         'sz_js_call_method',
@@ -6210,7 +6233,7 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       if (!vs) return rawJSBlock(stmt)
       return block(
         'sz_t3d_road',
-        { SCENE: stmt.scene, ROAD: stmt.road, HEIGHT_FN: stmt.heightFunction ?? 'alturaChao' },
+        { SCENE: stmt.scene, ROAD: stmt.road, HEIGHT_FN: stmt.heightFunction ?? '' },
         {},
         stmt.__id,
         vs,
@@ -6232,7 +6255,7 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         {
           SCENE: stmt.scene,
           BUILDING: stmt.building,
-          HEIGHT_FN: stmt.heightFunction ?? 'alturaChao',
+          HEIGHT_FN: stmt.heightFunction ?? '',
         },
         {},
         stmt.__id,
@@ -7439,7 +7462,9 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       // GLTFLoader()`) → o bloco Canvas 3D (CLASS = referência completa); senão → o
       // bloco genérico de classe do aluno.
       const t3dNamed =
-        !!expr.namespace || (recognizeThree && CANVAS3D_ADDON_CLASSES.has(expr.className))
+        !!expr.namespace ||
+        (recognizeThree &&
+          (CANVAS3D_ADDON_CLASSES.has(expr.className) || canvas3dImportedNames.has(expr.className)))
       const b = t3dNamed
         ? block(
             'sz_t3d_new',

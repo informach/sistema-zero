@@ -50,4 +50,15 @@ describe('game-3d — ergonomia dos blocos para iniciantes', () => {
       expect(placement?.nested).not.toContain('event-body')
     }
   })
+
+  it('só permite parar o jogo em um contexto que pode estar rodando', () => {
+    const definition = gameThreeDBlocks.find((block) => block.type === 'sz_g3d_stop')
+    if (!definition) throw new Error('bloco sz_g3d_stop não encontrado')
+    const placement = inferBlockContract(definition).placement
+
+    expect(placement?.root).toEqual([])
+    expect(placement?.nested).toContain('loop-body')
+    expect(placement?.nested).toContain('event-body')
+    expect(placement?.nested).toContain('function-body')
+  })
 })

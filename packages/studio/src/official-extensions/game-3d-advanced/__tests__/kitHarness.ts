@@ -130,6 +130,9 @@ export interface KitApi {
   healthOf(e: unknown): number
   onEntityDeath(mold: string, fn: (e: unknown) => void): void
   keyDown(key: string): boolean
+  keyPressed(key: string): boolean
+  mouseDown(): boolean
+  mousePressed(): boolean
   posOf(e: unknown, axis: string): number
   fall(e: unknown, g: number): void
   jump(e: unknown, force: number): void

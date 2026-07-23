@@ -132,6 +132,20 @@ export const LOOP_COMMAND_PLACEMENT: BlockPlacement = Object.freeze({
   role: 'command',
 })
 
+export const RUNTIME_COMMAND_PLACEMENT: BlockPlacement = Object.freeze({
+  root: [] as const,
+  nested: [
+    'event-body',
+    'user-gesture-body',
+    'loop-body',
+    'syntactic-loop-body',
+    'function-body',
+    'async-function-body',
+    'derived-method-body',
+  ] as const,
+  role: 'command',
+})
+
 export const FRAME_STRUCTURE = 'sz_frame_structure'
 export const FRAME_APPEARANCE = 'sz_frame_appearance'
 export const FRAME_BEHAVIOR_LEGACY = 'sz_frame_behavior'
@@ -218,6 +232,7 @@ const PLACEMENT_PRESETS: Readonly<Record<BlockPlacementPreset, BlockPlacement>> 
     phase: 'update',
   }),
   'loop-command': LOOP_COMMAND_PLACEMENT,
+  'runtime-command': RUNTIME_COMMAND_PLACEMENT,
   'legacy-start': Object.freeze({
     root: ['start'] as const,
     nested: [] as const,

@@ -1,6 +1,9 @@
 import { CONTINUOUS_EXTENSION_STATEMENT_TYPES } from '../official-extensions/continuousCommandContract'
 import { CANVAS3D_CONTINUOUS_STATEMENT_TYPES } from '../three/canvas3dContract'
-import { GAME3D_START_ONLY_STATEMENT_TYPES } from '../three/game3dContract'
+import {
+  GAME3D_RUNNING_CONTEXT_STATEMENT_TYPES,
+  GAME3D_START_ONLY_STATEMENT_TYPES,
+} from '../three/game3dContract'
 import { resolveEventTargetKind } from './eventTargets'
 import {
   type ProgrammingBodyExecution,
@@ -314,6 +317,7 @@ export function isLifecycleRootAllowed(statement: JSStatement, area: LifecycleAr
     LEGACY_ENGINE_BOOT_TYPES.has(statement.type) ||
     isLegacyLoadEvent(statement) ||
     isContinuousCommandType(statement.type) ||
+    GAME3D_RUNNING_CONTEXT_STATEMENT_TYPES.has(statement.type) ||
     EVENT_BODY_ONLY_TYPES.has(statement.type) ||
     CONTAINER_ONLY_STATEMENTS.has(statement.type)
   ) {
@@ -385,6 +389,16 @@ function validateContextDependentNode(
       path,
       'Este comando contínuo só pode ser usado dentro de um loop, função ou método',
     )
+  }
+
+  if (
+    context.nested &&
+    GAME3D_RUNNING_CONTEXT_STATEMENT_TYPES.has(String(node.type)) &&
+    !context.continuousBody &&
+    !context.eventBody &&
+    !context.functionBody
+  ) {
+    issue(issues, path, 'Este comando só pode ser usado enquanto o jogo estiver rodando')
   }
 
   switch (node.type) {

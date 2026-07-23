@@ -87,6 +87,14 @@ describe('PreviewIframe', () => {
     })
   })
 
+  it('permite Pointer Lock para a câmera FPS sem abrir o isolamento de origem', () => {
+    render(<PreviewIframe />)
+
+    const sandbox = screen.getByTitle('Pré-visualização').getAttribute('sandbox') ?? ''
+    expect(sandbox).toContain('allow-pointer-lock')
+    expect(sandbox).not.toContain('allow-same-origin')
+  })
+
   it('mostra gamepad automaticamente somente em touch quando a IR usa teclado', async () => {
     const originalTouchPoints = Object.getOwnPropertyDescriptor(navigator, 'maxTouchPoints')
     Object.defineProperty(navigator, 'maxTouchPoints', { configurable: true, value: 1 })

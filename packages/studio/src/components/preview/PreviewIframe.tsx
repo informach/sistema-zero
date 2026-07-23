@@ -540,7 +540,9 @@ export function PreviewIframe(): JSX.Element {
             iframeRef.current?.focus()
           }
         }}
-        sandbox="allow-scripts allow-modals"
+        // `allow-pointer-lock` permite que a câmera FPS capture o mouse após um clique.
+        // Mantemos o iframe sem `allow-same-origin` para preservar o isolamento do preview.
+        sandbox="allow-scripts allow-modals allow-pointer-lock"
         // Libera a Fullscreen API DENTRO do iframe (blocos de "tela cheia"). Sem
         // isso requestFullscreen() é rejeitado silenciosamente. Não afeta o sandbox.
         // Só `allow` (o `allowFullScreen` booleano é redundante e gera warning no console).

@@ -1,5 +1,166 @@
 type DropdownOption = readonly [label: string, value: string]
 
+export type Game3DSymbolKind = 'world' | 'object' | 'group' | 'swarm'
+export type Game3DObjectScope = 'any-three-object' | 'game-world-object'
+
+export interface Game3DReferenceField {
+  field: string
+  kind: Game3DSymbolKind
+  objectScope?: Game3DObjectScope
+}
+
+/** Recursos nomeados que cada comando do Jogo 3D introduz no programa. */
+export const GAME3D_SEMANTIC_DECLARATION_FIELDS: Readonly<Record<string, Game3DReferenceField>> = {
+  'g3d:createScene': { field: 'varName', kind: 'world' },
+  'g3d:createFullscreenScene': { field: 'varName', kind: 'world' },
+  'g3d:createCrossingScene': { field: 'varName', kind: 'world' },
+  'g3d:createRaceScene': { field: 'varName', kind: 'world' },
+  'g3d:createStackScene': { field: 'varName', kind: 'world' },
+  'g3d:createBox': { field: 'varName', kind: 'object' },
+  'g3d:createSphere': { field: 'varName', kind: 'object' },
+  'g3d:createBlock': { field: 'varName', kind: 'object' },
+  'g3d:createCrosser': { field: 'varName', kind: 'object' },
+  'g3d:createRaceCar': { field: 'varName', kind: 'object' },
+  'g3d:createCylinder': { field: 'varName', kind: 'object' },
+  'g3d:createCone': { field: 'varName', kind: 'object' },
+  'g3d:createPlane': { field: 'varName', kind: 'object' },
+  'g3d:createTorus': { field: 'varName', kind: 'object' },
+  'g3d:createModel': { field: 'varName', kind: 'object' },
+  'g3d:createGroup': { field: 'varName', kind: 'group' },
+  'g3d:createSwarm': { field: 'varName', kind: 'swarm' },
+}
+
+const world = (field = 'worldVar'): Game3DReferenceField => ({ field, kind: 'world' })
+const object = (field = 'objVar'): Game3DReferenceField => ({ field, kind: 'object' })
+const gameObject = (field = 'objVar'): Game3DReferenceField => ({
+  field,
+  kind: 'object',
+  objectScope: 'game-world-object',
+})
+const group = (field = 'groupVar'): Game3DReferenceField => ({ field, kind: 'group' })
+const swarm = (field = 'swarmVar'): Game3DReferenceField => ({ field, kind: 'swarm' })
+
+/** Expressões que devolvem um objeto pertencente a um mundo do Jogo 3D. */
+export const GAME3D_OBJECT_EXPRESSION_TYPES: ReadonlySet<string> = new Set([
+  'g3d:pickAtMouse',
+  'g3d:aimAhead',
+])
+
+/** Referências semânticas emitidas pelos blocos e consumidas pelo validador de IR. */
+export const GAME3D_SEMANTIC_REFERENCE_FIELDS: Readonly<
+  Record<string, readonly Game3DReferenceField[]>
+> = {
+  'g3d:setBackground': [world()],
+  'g3d:setCameraPosition': [world()],
+  'g3d:createBox': [world()],
+  'g3d:createSphere': [world()],
+  'g3d:setPosition': [object()],
+  'g3d:setRotation': [object()],
+  'g3d:animate': [world()],
+  'g3d:createBlock': [world()],
+  'g3d:setVelocity': [object()],
+  'g3d:jump': [object()],
+  'g3d:applyGravity': [object(), object('groundVar')],
+  'g3d:controlWithKeys': [object()],
+  'g3d:setScale': [object()],
+  'g3d:cameraFollow': [world(), gameObject()],
+  'g3d:runEnemies': [world(), group(), gameObject('groundVar')],
+  'g3d:stop': [world()],
+  'g3d:createCrosser': [world()],
+  'g3d:crosserMove': [object()],
+  'g3d:crosserStep': [gameObject(), world()],
+  'g3d:crosserReset': [gameObject(), world()],
+  'g3d:gridPosition': [object()],
+  'g3d:addRow': [world()],
+  'g3d:generateRows': [world()],
+  'g3d:moveTraffic': [world()],
+  'g3d:isometricCamera': [world(), gameObject('followVar')],
+  'g3d:gridStep': [object()],
+  'g3d:gridMove': [object()],
+  'g3d:moveAcross': [group()],
+  'g3d:touchesBox': [object(), group()],
+  'g3d:topCamera': [world(), gameObject('followVar')],
+  'g3d:moveInCircle': [object()],
+  'g3d:createRaceTrack': [world()],
+  'g3d:createRaceCar': [world()],
+  'g3d:raceStep': [gameObject(), world()],
+  'g3d:raceControl': [object()],
+  'g3d:runRivals': [world()],
+  'g3d:raceReset': [gameObject(), world()],
+  'g3d:fall': [object()],
+  'g3d:slideBetween': [object()],
+  'g3d:spin': [object()],
+  'g3d:createStackTower': [world()],
+  'g3d:stackDrop': [world()],
+  'g3d:stackStep': [world()],
+  'g3d:stackReset': [world()],
+  'g3d:moveBy': [object()],
+  'g3d:rotateBy': [object()],
+  'g3d:moveTowards': [object()],
+  'g3d:lookAtObject': [object('aVar'), object('bVar')],
+  'g3d:lookAtPoint': [object()],
+  'g3d:moveForward': [object()],
+  'g3d:faceVelocity': [object()],
+  'g3d:body': [object()],
+  'g3d:stepBody': [gameObject(), world()],
+  'g3d:setSolid': [object()],
+  'g3d:platformerControls': [gameObject(), world()],
+  'g3d:fpsControls': [gameObject(), world()],
+  'g3d:resolveCollision': [object('aVar'), object('bVar')],
+  'g3d:fpsCamera': [world(), gameObject()],
+  'g3d:orbitCamera': [world(), gameObject()],
+  'g3d:thirdPersonCamera': [world(), gameObject()],
+  'g3d:cameraLookAt': [world(), gameObject()],
+  'g3d:setFOV': [world()],
+  'g3d:createCylinder': [world()],
+  'g3d:createCone': [world()],
+  'g3d:createPlane': [world()],
+  'g3d:createTorus': [world()],
+  'g3d:createModel': [world()],
+  'g3d:setColor': [object()],
+  'g3d:setOpacity': [object()],
+  'g3d:setMaterial': [object()],
+  'g3d:setTexture': [object()],
+  'g3d:setVisible': [object()],
+  'g3d:removeObject': [world(), object()],
+  'g3d:addToModel': [gameObject('modelVar'), gameObject('partVar')],
+  'g3d:addAmbientLight': [world()],
+  'g3d:addSunLight': [world()],
+  'g3d:addPointLight': [world()],
+  'g3d:setFog': [world()],
+  'g3d:setSky': [world()],
+  'g3d:setShadows': [world()],
+  'g3d:createSwarm': [world()],
+  'g3d:spawnInSwarm': [swarm(), gameObject('originalVar')],
+  'g3d:countSwarm': [swarm()],
+  'g3d:forEachInSwarm': [swarm()],
+  'g3d:removeFromSwarm': [swarm(), gameObject('itemVar')],
+  'g3d:pruneSwarm': [swarm()],
+  'g3d:collides': [object('aVar'), object('bVar')],
+  'g3d:hitAny': [object(), group()],
+  'g3d:crosserHit': [gameObject(), world()],
+  'g3d:crosserRow': [object()],
+  'g3d:distanceTo': [object('aVar'), object('bVar')],
+  'g3d:isNear': [object('aVar'), object('bVar')],
+  'g3d:raceHit': [gameObject(), world()],
+  'g3d:raceLaps': [object()],
+  'g3d:stackScore': [world()],
+  'g3d:stackGameOver': [world()],
+  'g3d:getPos': [object()],
+  'g3d:getRot': [object()],
+  'g3d:getScale': [object()],
+  'g3d:getVel': [object()],
+  'g3d:getSpeed': [object()],
+  'g3d:isMoving': [object()],
+  'g3d:dt': [world()],
+  'g3d:angleTo': [object('aVar'), object('bVar')],
+  'g3d:pickAtMouse': [world()],
+  'g3d:pointerOver': [world(), gameObject()],
+  'g3d:aimAhead': [world(), gameObject()],
+  'g3d:onGround': [world(), gameObject()],
+  'g3d:groundHeight': [world(), gameObject()],
+}
+
 /**
  * Catálogo único dos dropdowns do Jogo 3D. Os blocos usam os rótulos e o
  * parser usa os mesmos valores para decidir se o código cabe em um bloco sem
@@ -278,3 +439,6 @@ export const GAME3D_START_ONLY_STATEMENT_TYPES: ReadonlySet<string> = new Set([
   'g3d:setShadows',
   'g3d:createSwarm',
 ])
+
+/** Comandos sem efeito antes de um loop, evento ou função entrar em execução. */
+export const GAME3D_RUNNING_CONTEXT_STATEMENT_TYPES: ReadonlySet<string> = new Set(['g3d:stop'])

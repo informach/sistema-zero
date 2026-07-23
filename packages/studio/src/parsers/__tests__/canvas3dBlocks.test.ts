@@ -4,15 +4,12 @@ import 'blockly/blocks'
 import { buildIRFromWorkspace } from '../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../blockly/workspaceState'
+import { generateJS } from '../../generators/js'
 import { behaviorStatements } from '../../ir/behavior'
 import type { SZIR } from '../../ir/schema'
 import { parseJS } from '../js'
 
-/**
- * Round-trip de BLOCOS dos 3 blocos da Canvas 3D: código → IR → blocos → IR →
- * código, byte-estável. Prova que `sz_t3d_import`/`sz_t3d_new_var`/`sz_t3d_new`
- * (o `new THREE.X()` com namespace) sobrevivem à ida e volta pela Ponte.
- */
+/** Exercita a ida e volta dos blocos Canvas 3D pela Ponte sem perder semântica. */
 
 function stripIds<T>(v: T): T {
   if (Array.isArray(v)) return v.map(stripIds) as unknown as T
@@ -56,6 +53,102 @@ describe('Canvas 3D — round-trip de blocos', () => {
       expect(stripIds(rebuilt)).toEqual(stripIds(ir))
     } finally {
       ws.dispose()
+    }
+  })
+
+  it('não toma para Canvas 3D imports que pertencem a outros módulos', () => {
+    ensureBlocklyInitialized()
+    for (const source of [
+      "import * as helpers from './helpers.js';",
+      "import { somar } from './matematica.js';",
+    ]) {
+      const statements = parseJS(source)
+      const state = buildWorkspaceStateFromIR({ html: [], css: [], js: statements, extensions: [] })
+      const serialized = JSON.stringify(state)
+      expect(serialized).not.toContain('sz_t3d_import')
+      expect(serialized).toContain('sz_adv_raw_js')
+
+      const workspace = new Blockly.Workspace()
+      try {
+        Blockly.serialization.workspaces.load(
+          state as unknown as Record<string, unknown>,
+          workspace,
+        )
+        expect(
+          generateJS({ statements: behaviorStatements(buildIRFromWorkspace(workspace)) }).trim(),
+        ).toBe(generateJS({ statements }).trim())
+      } finally {
+        workspace.dispose()
+      }
+    }
+  })
+
+  it('mantém construtores do núcleo em Canvas 3D com import nomeado', () => {
+    ensureBlocklyInitialized()
+    const statements = parseJS("import { Scene } from 'three';\nconst cena = new Scene();")
+    const state = buildWorkspaceStateFromIR({ html: [], css: [], js: statements, extensions: [] })
+    const serialized = JSON.stringify(state)
+
+    expect(serialized).toContain('sz_t3d_import_named')
+    expect(serialized).toContain('sz_t3d_new_var')
+    expect(serialized).not.toContain('sz_js_new_var')
+
+    const workspace = new Blockly.Workspace()
+    try {
+      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, workspace)
+      expect(stripIds(behaviorStatements(buildIRFromWorkspace(workspace)))).toEqual(
+        stripIds(statements),
+      )
+    } finally {
+      workspace.dispose()
+    }
+  })
+
+  it('mantém estrada e prédio no chão plano depois da ida e volta pela Ponte', () => {
+    ensureBlocklyInitialized()
+    const ir: SZIR = {
+      html: [],
+      css: [],
+      js: [
+        { type: 'threeSceneSetup', scene: 'cena' },
+        {
+          type: 'roadSetup',
+          road: 'estrada',
+          scene: 'cena',
+          x1: { type: 'num', value: -5 },
+          z1: { type: 'num', value: 0 },
+          x2: { type: 'num', value: 5 },
+          z2: { type: 'num', value: 0 },
+          width: { type: 'num', value: 2 },
+          segments: { type: 'num', value: 8 },
+          color: { type: 'color', value: '#334155' },
+        },
+        {
+          type: 'buildingSetup',
+          building: 'predio',
+          scene: 'cena',
+          x: { type: 'num', value: 0 },
+          z: { type: 'num', value: 0 },
+          width: { type: 'num', value: 8 },
+          height: { type: 'num', value: 10 },
+          depth: { type: 'num', value: 8 },
+          color: { type: 'color', value: '#f59e0b' },
+          roofColor: { type: 'color', value: '#b91c1c' },
+        },
+      ],
+      extensions: [],
+    }
+    const state = buildWorkspaceStateFromIR(ir)
+    const workspace = new Blockly.Workspace()
+
+    try {
+      Blockly.serialization.workspaces.load(state as unknown as Record<string, unknown>, workspace)
+      const rebuilt = behaviorStatements(buildIRFromWorkspace(workspace))
+      expect(stripIds(rebuilt)).toEqual(stripIds(ir.js))
+      expect(rebuilt[1]).not.toHaveProperty('heightFunction')
+      expect(rebuilt[2]).not.toHaveProperty('heightFunction')
+    } finally {
+      workspace.dispose()
     }
   })
 })

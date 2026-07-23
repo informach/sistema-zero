@@ -7,7 +7,7 @@ API global injetada como window.SZGame3D (wrapper sobre Three.js):
 - createBox(world, { size, color }) -> mesh ; createSphere(world, { radius, color }) -> mesh.
 - createBlock(world, { width, height, depth, color }) -> mesh (caixa retangular; ótima p/ o chão).
 - setPosition(obj, x, y, z) / setRotation(obj, x, y, z) (radianos) / setScale(obj, fator).
-- animate(world, fn): registra uma atualização. Várias atualizações da mesma cena rodam em ordem e produzem um único desenho por quadro.
+- animate(world, fn): registra uma atualização. Várias atualizações da mesma cena rodam em ordem e produzem um único desenho por quadro. Se uma falhar, somente ela é pausada e as demais continuam.
 
 Física (chamar DENTRO do animate):
 - setVelocity(obj, x, y, z): define a velocidade base em cada eixo; o runtime ajusta pelo tempo do quadro.
@@ -25,7 +25,7 @@ Kit "Desvie":
 - createGroup() -> []: lista p/ guardar os inimigos.
 - runEnemies(world, group, ground, every, speed): a cada quadro, solta/move inimigos que vêm de
   longe acelerando e descarta os que passam. Chamar dentro do animate.
-- stop(world): para o loop (fim de jogo).
+- stop(world): para o loop (fim de jogo). Use durante animate, evento ou função da partida, nunca solto em Ao iniciar.
 
 Genéricos de grade/isométrico (chão X-Z, y = altura, 1 tile = 1 unidade):
 - isometricCamera(world, followObj | null): troca p/ câmera ortográfica isométrica; segue o objeto. Configure uma vez em Ao iniciar; chamadas repetidas reutilizam a câmera.
@@ -37,7 +37,7 @@ Genéricos de grade/isométrico (chão X-Z, y = altura, 1 tile = 1 unidade):
 
 Kit "Travessia" (atravessar a rua / Crossy Road):
 - createCrossingScene(canvasId) -> world: cena + câmera isométrica + luz (mundo de grade).
-- createCrosser(world, { color }) -> player: personagem que pula de casa em casa (câmera segue).
+- createCrosser(world, { color }) -> player: personagem que pula de casa em casa (câmera segue) e participa de pickAtMouse/pointerOver.
 - addRow(world, rowIndex, "grass"|"forest"|"car"|"truck", "right"|"left", speed): cria uma linha.
 - generateRows(world, count): gera várias linhas aleatórias à frente.
 - crosserStep(player, world): a cada quadro — setas em grade + estende/limpa o mapa + segue câmera.
@@ -53,13 +53,13 @@ Genéricos top-down/circular (chão X-Z, y = altura — p/ jogos de pista/relóg
 Kit "Corrida" (correr numa pista top-down):
 - createRaceScene(canvasId) -> world: cena + câmera aérea + luz.
 - createRaceTrack(world): pista oval (grama + asfalto + árvores).
-- createRaceCar(world, { color }) -> car: carro do jogador na largada.
+- createRaceCar(world, { color }) -> car: carro do jogador na largada, disponível em pickAtMouse/pointerOver.
 - raceStep(car, world): a cada quadro — dá voltas (↑ acelera, ↓ freia) e conta voltas.
 - runRivals(world): solta/move carros rivais pela pista. raceControl(car, "accelerate"|"decelerate"|"normal"): p/ botões.
 - raceHit(car, world): bateu num rival? raceLaps(car): voltas (pontuação). Depois da batida, carro e rivais ficam congelados. raceReset(car, world): recomeça.
 
 Genéricos de movimento/física (SEM lib de física — feita na mão; p/ queda/plataforma/giro):
-- fall(obj): a cada quadro, solta o objeto em queda livre girando (gravidade) e o remove ao sumir.
+- fall(obj): a cada quadro, solta o objeto em queda livre girando (gravidade) e o remove ao sumir. Depois da remoção, novas chamadas não descartam seus recursos outra vez.
 - slideBetween(obj, "x"|"y"|"z", min, max, speed): vaivém num eixo (plataformas que andam).
 - spin(obj, "x"|"y"|"z", speed): rotação contínua (moedas, hélices, planetas).
 - getPos(obj, "x"|"y"|"z") / getRot(obj, "x"|"y"|"z") / getScale(obj): LER posição/giro/tamanho (valores) — base p/ lógica própria (mira, IA, movimento custom).
@@ -72,7 +72,7 @@ Genéricos de movimento/física (SEM lib de física — feita na mão; p/ queda/
 - angleTo(a, b): ângulo (radianos) de A para B no plano do chão (X-Z) — p/ mirar/girar.
 
 Mira & clique (raycast — valores p/ "se"/variável; combine com o evento CORE "clicar em qualquer lugar"):
-- pickAtMouse(world): o objeto 3D sob o ponteiro (ou null) — guarde numa variável p/ usar pelo nome.
+- pickAtMouse(world): o objeto 3D sob o ponteiro (ou null) — guarde numa variável p/ usar pelo nome; essa variável passa a aparecer nos seletores de objeto do jogo. Cópias visíveis de enxame também podem ser selecionadas.
 - pointerOver(world, obj): o mouse está sobre aquele objeto? (bool). aimAhead(world, obj, dist): o objeto à
   frente, na direção que "obj" olha (tiro/mira; null se nada).
 - onGround(world, obj): tem chão logo abaixo? (bool — sensor de plataforma). groundHeight(world, obj): a
@@ -86,11 +86,13 @@ Física genérica (SEM lib; gravidade + colisão AABB de empurrar-para-fora):
 - resolveCollision(a, b): empurra A para fora de B (colisão manual de 2 objetos).
 
 Câmeras vivas (manuais, sem addon):
-- fpsCamera(world, obj): câmera nos olhos do objeto + olhar com o mouse (pointer-lock; clique trava). Combine c/ fpsControls.
+- fpsCamera(world, obj): câmera em perspectiva nos olhos do objeto + olhar com o mouse (pointer-lock; clique trava), mesmo se a cena estava usando câmera ortográfica. Combine c/ fpsControls.
 - orbitCamera(world, target): gira ao redor do alvo arrastando o mouse (roda = zoom).
 - thirdPersonCamera(world, obj, dist, height): câmera atrás/acima do objeto (atualizada a cada frame pelo animate).
 - cameraLookAt(world, obj): aponta a câmera p/ um objeto. setFOV(world, graus): "zoom" (menos graus = mais zoom).
-- Só existe um modo de câmera ativo por cena. O último escolhido substitui o anterior, e repetir fpsCamera não zera a rotação.
+- Só existe um modo de câmera ativo por cena. O último escolhido substitui o anterior, solta a câmera do vínculo do modo FPS quando necessário, e repetir fpsCamera não zera a rotação.
+- Recursos passados juntos precisam pertencer à mesma cena. O runtime ignora combinações incompatíveis e avisa no console.
+- Transformações genéricas aceitam objetos Three.js crus. Comandos que recebem um world usam objetos criados ou selecionados dentro do Jogo 3D.
 
 Formas, materiais e texturas (Fase 6 — montar qualquer visual; criar UMA vez, fora do animate):
 - createCylinder(world, { radius, height, color }) / createCone(...) / createTorus(world, { radius, tube, color }):
@@ -109,7 +111,7 @@ Luz & céu (Fase 7 — atmosfera; criar UMA vez, fora do animate):
 - setShadows(world, "on"|"off"): liga/desliga as sombras da cena (desligar = mais leve).
 
 Enxames & som (Fase 8 — grupos genéricos de cópias + áudio):
-- createSwarm(world) -> enxame: administra muitas cópias e não é o mesmo recurso que createGroup(). spawnInSwarm exige um molde da mesma cena. Pode rodar no quadro quando houver remove/prune para limitar os itens.
+- createSwarm(world) -> enxame: administra muitas cópias e não é o mesmo recurso que createGroup(). spawnInSwarm exige um molde da mesma cena. As cópias visíveis entram nas consultas de ponteiro e mira. Pode rodar no quadro quando houver remove/prune para limitar os itens.
 - forEachInSwarm(enxame, (item) => {...}): repete os blocos p/ cada cópia (a da vez é "item"); itera ao contrário, então pode remover dentro. countSwarm(enxame): quantas cópias tem.
 - removeFromSwarm(enxame, item): tira uma cópia. pruneSwarm(enxame, "x"|"y"|"z", min, max): limpa as cópias que saíram dos limites (higiene de GPU).
 - playNote(freqHz, ms): um bip (mais Hz = mais agudo). playEffect("coin"|"jump"|"explosion"|"hit"): efeito pronto. Use diretamente em clique/tecla ou numa condição do quadro, nunca diretamente em Ao iniciar. O runtime aceita no máximo 32 vozes ao mesmo tempo.

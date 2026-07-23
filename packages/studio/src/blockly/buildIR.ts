@@ -2645,7 +2645,8 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           color: exprInput(block, 'COLOR', { type: 'color', value: '#65a30d' }),
         },
       }
-    case 'sz_t3d_road':
+    case 'sz_t3d_road': {
+      const heightFunction = f(block, 'HEIGHT_FN').trim()
       return {
         kind: 'js',
         value: {
@@ -2659,10 +2660,12 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           width: exprInput(block, 'WIDTH', { type: 'num', value: 6 }),
           segments: exprInput(block, 'SEGMENTS', { type: 'num', value: 24 }),
           color: exprInput(block, 'COLOR', { type: 'color', value: '#334155' }),
-          heightFunction: f(block, 'HEIGHT_FN') || 'alturaChao',
+          ...(heightFunction ? { heightFunction } : {}),
         },
       }
-    case 'sz_t3d_building':
+    }
+    case 'sz_t3d_building': {
+      const heightFunction = f(block, 'HEIGHT_FN').trim()
       return {
         kind: 'js',
         value: {
@@ -2676,9 +2679,10 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           depth: exprInput(block, 'D', { type: 'num', value: 8 }),
           color: exprInput(block, 'COLOR', { type: 'color', value: '#f59e0b' }),
           roofColor: exprInput(block, 'ROOF', { type: 'color', value: '#b91c1c' }),
-          heightFunction: f(block, 'HEIGHT_FN') || 'alturaChao',
+          ...(heightFunction ? { heightFunction } : {}),
         },
       }
+    }
     case 'sz_t3d_city':
       return {
         kind: 'js',

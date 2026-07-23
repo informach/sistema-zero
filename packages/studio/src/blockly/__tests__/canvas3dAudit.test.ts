@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import type { LearningProfile } from '#core'
 import { CORE_CATEGORY_LEVELS } from '#core'
-import { CANVAS3D_BLOCK_TYPES } from '../../three/canvas3dContract'
+import { CANVAS3D_BLOCK_TYPES, canvas3DSymbolKindsForClass } from '../../three/canvas3dContract'
 import { BLOCK_CATALOG } from '../blockCatalog'
 import { resolveBlockLevel } from '../blockLevels'
 import { CANVAS3D_BLOCKS, CANVAS3D_GROUPS } from '../blocks/canvas3d'
@@ -165,7 +165,7 @@ describe('Auditoria Canvas 3D — inventário e progressão', () => {
       ['sz_t3d_renderer_config', { R: 'renderer3d' }],
       [
         'sz_t3d_renderer_responsive',
-        { R: 'renderer3d', CAMERA: 'camera3d', COMPOSER: 'composer3d' },
+        { R: 'renderer3d', CAMERA: 'perspective-camera3d', COMPOSER: 'composer3d' },
       ],
       ['sz_t3d_render', { SCENE: 'scene3d', CAMERA: 'camera3d', R: 'renderer3d' }],
       ['sz_t3d_load_model', { LOADER: 'model-loader3d' }],
@@ -175,7 +175,14 @@ describe('Auditoria Canvas 3D — inventário e progressão', () => {
       ['sz_t3d_set_matrix_at', { MESH: 'instanced-mesh3d' }],
       ['sz_t3d_instances_dirty', { MESH: 'instanced-mesh3d' }],
       ['sz_t3d_set_color', { OBJ: 'color-target3d' }],
+      ['sz_t3d_look_at', { OBJ: 'object3d' }],
+      ['sz_t3d_lerp_position', { OBJ: 'object3d' }],
+      ['sz_t3d_set_shadow', { OBJ: 'shadow-target3d' }],
       ['sz_t3d_physics_step', { WORLD: 'physics-world' }],
+      ['sz_t3d_physics_static_object', { OBJECT: 'physics-collider3d' }],
+      ['sz_t3d_physics_static_city', { CITY: 'physics-city3d' }],
+      ['sz_t3d_road', { HEIGHT_FN: 'optional-function' }],
+      ['sz_t3d_building', { HEIGHT_FN: 'optional-function' }],
     ])
 
     for (const [type, fields] of expected) {
@@ -205,6 +212,12 @@ describe('Auditoria Canvas 3D — inventário e progressão', () => {
       expect(addonNames, unavailable).not.toContain(unavailable)
       expect(classNames, unavailable).not.toContain(unavailable)
     }
+  })
+
+  it('não promete capacidades ausentes em classes técnicas', () => {
+    expect(canvas3DSymbolKindsForClass('ShaderMaterial')).not.toContain('color-target3d')
+    expect(canvas3DSymbolKindsForClass('PerspectiveCamera')).toContain('perspective-camera3d')
+    expect(canvas3DSymbolKindsForClass('OrthographicCamera')).not.toContain('perspective-camera3d')
   })
 })
 
@@ -283,8 +296,8 @@ describe('Auditoria Canvas 3D — experiência infantil', () => {
 
   it('faz consumidores da física escolherem IDs declarados', () => {
     const expectedKinds = new Map<string, string>([
-      ['sz_t3d_physics_move', 'physics-body'],
-      ['sz_t3d_physics_jump', 'physics-body'],
+      ['sz_t3d_physics_move', 'physics-character'],
+      ['sz_t3d_physics_jump', 'physics-character'],
       ['sz_t3d_physics_velocity', 'physics-body'],
       ['sz_t3d_physics_impulse', 'physics-body'],
       ['sz_t3d_physics_teleport', 'physics-body'],
@@ -300,6 +313,27 @@ describe('Auditoria Canvas 3D — experiência infantil', () => {
           (arg) => Boolean(arg) && typeof arg === 'object' && (arg as BlockArg).name === 'ID',
         ) as { type?: string; kind?: string } | undefined
       expect(id, type).toMatchObject({ type: 'field_name_picker', kind })
+    }
+  })
+
+  it('preserva a opção plana de estrada e prédio na ida dos blocos para a IR', () => {
+    ensureBlocklyInitialized()
+    for (const type of ['sz_t3d_road', 'sz_t3d_building']) {
+      const workspace = new Blockly.Workspace()
+      try {
+        const frame = workspace.newBlock('sz_frame_start')
+        const resource = workspace.newBlock(type)
+        const frameConnection = frame.getInput('CHILDREN')?.connection
+        if (!frameConnection || !resource.previousConnection) {
+          throw new Error(`Conexões ausentes em ${type}`)
+        }
+        frameConnection.connect(resource.previousConnection)
+
+        const statement = buildIRFromWorkspace(workspace).behavior.start[0]
+        expect(statement, type).not.toHaveProperty('heightFunction')
+      } finally {
+        workspace.dispose()
+      }
     }
   })
 })

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { AmbientLight, Fog, PointLight } from 'three'
-import { type KitApi, loadStartedKit, runtimeBody } from './kitHarness'
+import { type KitApi, loadStartedKit, makeFakeThree, runtimeBody } from './kitHarness'
 
 /** Comportamento do motor: pool, FSM, vizinhança, combate e FÍSICA. A
  *  orientação/câmera vive em `direction.test.ts`; a bancada é a mesma. */
@@ -21,7 +21,7 @@ describe('SZGameKit3D — montagem', () => {
 })
 
 describe('SZGameKit3D — motor (fake THREE + happy-dom)', () => {
-  it('pool: nascer/recolher reusa a entidade; FSM nasce em parado e roda o entrar', async () => {
+  it('pool: nascer/recolher reusa o mesh sem ressuscitar o handle; FSM nasce em parado', async () => {
     const { api } = await loadStartedKit()
     const entered: unknown[] = []
     api.defineMold('inimigo', { health: 30, speed: 3 }, () => {
@@ -42,7 +42,23 @@ describe('SZGameKit3D — motor (fake THREE + happy-dom)', () => {
     expect(api.exists(e)).toBe(false)
     expect(api.countAlive('inimigo')).toBe(0)
     const e2 = api.spawn('inimigo', 0, 0, 0)
-    expect(e2).toBe(e) // pooling: o MESMO objeto volta
+    expect(e2).not.toBe(e)
+    expect((e2 as { mesh: unknown }).mesh).toBe((e as { mesh: unknown }).mesh)
+    expect(api.exists(e)).toBe(false)
+    api.place(e, 99, 0, 0)
+    expect(api.posOf(e2, 'x')).toBe(0)
+    expect(api.posOf(e, 'x')).toBe(0)
+    expect(api.spawnFrom('inimigo', e)).toBeNull()
+
+    const staleEntries: unknown[] = []
+    api.onEnterEntityState('inimigo', 'atacar', (entity: unknown) => {
+      staleEntries.push(entity)
+    })
+    api.setEntityState(e, 'atacar')
+    expect(staleEntries).toEqual([])
+    expect(api.entityStateIs(e, 'atacar')).toBe(false)
+    expect(api.healthOf(e)).toBe(0)
+    expect(api.entityStateIs(e2, 'parado')).toBe(true)
   })
 
   it('teto de entidades: acima de 200 o spawn devolve null', async () => {
@@ -89,6 +105,55 @@ describe('SZGameKit3D — motor (fake THREE + happy-dom)', () => {
     expect(exits).toEqual(['saiu'])
   })
 
+  it('FSM serializa transição pedida dentro do gancho de saída', async () => {
+    const { api } = await loadStartedKit()
+    api.defineMold('torre', { health: 100, speed: 0 }, () => {})
+    const events: string[] = []
+    let redirected = false
+    api.onExitEntityState('torre', 'parado', (entity) => {
+      events.push('saiu:parado')
+      if (!redirected) {
+        redirected = true
+        api.setEntityState(entity, 'recarregar')
+      }
+    })
+    api.onEnterEntityState('torre', 'mirar', () => {
+      events.push('entrou:mirar')
+    })
+    api.onExitEntityState('torre', 'mirar', () => {
+      events.push('saiu:mirar')
+    })
+    api.onEnterEntityState('torre', 'recarregar', () => {
+      events.push('entrou:recarregar')
+    })
+    api.setState('jogando')
+    const torre = api.spawn('torre', 0, 0, 0)
+
+    api.setEntityState(torre, 'mirar')
+
+    expect(events).toEqual(['saiu:parado', 'entrou:mirar', 'saiu:mirar', 'entrou:recarregar'])
+    expect(api.entityStateIs(torre, 'recarregar')).toBe(true)
+  })
+
+  it('FSM interrompe a transição quando o gancho de saída recolhe a entidade', async () => {
+    const { api } = await loadStartedKit()
+    api.defineMold('tiro', { health: 1, speed: 0 }, () => {})
+    let entered = 0
+    api.onExitEntityState('tiro', 'parado', (entity) => {
+      api.recycle(entity)
+    })
+    api.onEnterEntityState('tiro', 'explodir', () => {
+      entered += 1
+    })
+    api.setState('jogando')
+    const tiro = api.spawn('tiro', 0, 0, 0)
+
+    api.setEntityState(tiro, 'explodir')
+
+    expect(api.exists(tiro)).toBe(false)
+    expect(entered).toBe(0)
+  })
+
   it('combate: i-frames seguram o segundo hit; a derrota roda o gancho e recolhe', async () => {
     const { api, step } = await loadStartedKit()
     api.defineMold('inimigo', { health: 30, speed: 1 }, () => {})
@@ -114,15 +179,124 @@ describe('SZGameKit3D — motor (fake THREE + happy-dom)', () => {
   it('estados do jogo: entrar em jogando recolhe a arena; pausa não', async () => {
     const { api } = await loadStartedKit()
     api.defineMold('inimigo', { health: 10, speed: 1 }, () => {})
+    let entries = 0
+    api.onEnterState('jogando', () => {
+      entries += 1
+      api.spawn('inimigo', 0, 0, 0)
+    })
     api.setState('jogando')
-    api.spawn('inimigo', 0, 0, 0)
+    expect(entries).toBe(1)
     expect(api.countAlive('inimigo')).toBe(1)
     api.setState('pausado')
     api.setState('jogando') // despausar NÃO reseta
+    expect(entries).toBe(1)
     expect(api.countAlive('inimigo')).toBe(1)
     api.setState('menu')
     api.setState('jogando') // recomeço: arena limpa
-    expect(api.countAlive('inimigo')).toBe(0)
+    expect(entries).toBe(2)
+    expect(api.countAlive('inimigo')).toBe(1)
+  })
+
+  it('setState é idempotente e não repete o gancho do estado atual', async () => {
+    const { api } = await loadStartedKit()
+    let entries = 0
+    api.onEnterState('jogando', () => entries++)
+
+    api.setState('jogando')
+    api.setState('jogando')
+
+    expect(entries).toBe(1)
+  })
+
+  it('clique de UI não vira entrada do jogo; ponteiro do canvas respeita cancelamento', async () => {
+    const { api } = await loadStartedKit()
+    const stages = document.querySelectorAll('#szg3k-stage')
+    const stage = stages[stages.length - 1]
+    if (!stage) throw new Error('palco não montado')
+    const playButton = Array.from(stage.querySelectorAll('button')).find(
+      (button) => button.textContent === 'Jogar',
+    )
+    const canvas = stage.querySelector('canvas')
+    if (!playButton || !canvas) throw new Error('controles do jogo não montados')
+
+    playButton.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 1 }))
+    playButton.click()
+    expect(api.state()).toBe('jogando')
+    expect(api.mousePressed()).toBe(false)
+    expect(api.mouseDown()).toBe(false)
+
+    canvas.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerId: 2 }))
+    expect(api.mousePressed()).toBe(true)
+    expect(api.mouseDown()).toBe(true)
+    window.dispatchEvent(new PointerEvent('pointercancel', { pointerId: 2 }))
+    expect(api.mouseDown()).toBe(false)
+    expect(api.mousePressed()).toBe(false)
+  })
+
+  it('sair da câmera FPS libera o pointer lock do canvas', async () => {
+    const { api } = await loadStartedKit()
+    api.defineMold('heroi', { health: 1, speed: 0 }, () => {})
+    api.setState('jogando')
+    const heroi = api.spawn('heroi', 0, 0, 0)
+    const canvases = document.querySelectorAll('#szg3k-canvas')
+    const canvas = canvases[canvases.length - 1] as HTMLCanvasElement | undefined
+    if (!canvas) throw new Error('canvas 3D não montado')
+
+    const pointerLockDescriptor = Object.getOwnPropertyDescriptor(document, 'pointerLockElement')
+    const exitPointerLockDescriptor = Object.getOwnPropertyDescriptor(document, 'exitPointerLock')
+    const requestPointerLockDescriptor = Object.getOwnPropertyDescriptor(
+      canvas,
+      'requestPointerLock',
+    )
+    let locked: Element | null = null
+    const canvasIsLocked = (): boolean => locked === canvas
+    try {
+      Object.defineProperty(document, 'pointerLockElement', {
+        configurable: true,
+        get: () => locked,
+      })
+      Object.defineProperty(document, 'exitPointerLock', {
+        configurable: true,
+        value: () => {
+          locked = null
+        },
+      })
+      Object.defineProperty(canvas, 'requestPointerLock', {
+        configurable: true,
+        value: () => {
+          locked = canvas
+        },
+      })
+
+      api.cameraFps(heroi, 1.4)
+      canvas.click()
+      expect(canvasIsLocked()).toBe(true)
+
+      api.cameraOrbit(12)
+      expect(locked === null).toBe(true)
+
+      api.cameraFps(heroi, 1.4)
+      canvas.click()
+      expect(canvasIsLocked()).toBe(true)
+      api.setState('pausado')
+      expect(locked === null).toBe(true)
+    } finally {
+      if (pointerLockDescriptor) {
+        Object.defineProperty(document, 'pointerLockElement', pointerLockDescriptor)
+      } else {
+        Reflect.deleteProperty(document, 'pointerLockElement')
+      }
+      if (exitPointerLockDescriptor) {
+        Object.defineProperty(document, 'exitPointerLock', exitPointerLockDescriptor)
+      } else {
+        Reflect.deleteProperty(document, 'exitPointerLock')
+      }
+      if (requestPointerLockDescriptor) {
+        Object.defineProperty(canvas, 'requestPointerLock', requestPointerLockDescriptor)
+      } else {
+        Reflect.deleteProperty(canvas, 'requestPointerLock')
+      }
+    }
   })
 
   it('runProject recria o escopo e substitui os ganchos no Jogar de novo', async () => {
@@ -339,11 +513,78 @@ describe('SZGameKit3D — motor (fake THREE + happy-dom)', () => {
     expect(api.keyDown('w')).toBe(false)
   })
 
+  it('teclado: auto-repeat não rearma a borda nem alterna a pausa outra vez', async () => {
+    const { api, step } = await loadStartedKit()
+    api.setState('jogando')
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+    expect(api.state()).toBe('pausado')
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', repeat: true }))
+    expect(api.state()).toBe('pausado')
+    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'Escape' }))
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k' }))
+    expect(api.keyPressed('k')).toBe(true)
+    step(1)
+    expect(api.keyPressed('k')).toBe(false)
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', repeat: true }))
+    expect(api.keyDown('k')).toBe(true)
+    expect(api.keyPressed('k')).toBe(false)
+    window.dispatchEvent(new KeyboardEvent('keyup', { key: 'k' }))
+  })
+
   it('dispose no pagehide: renderer.dispose + forceContextLoss (higiene de contexto WebGL)', async () => {
     const { renderers } = await loadStartedKit()
     window.dispatchEvent(new Event('pagehide'))
     expect(renderers[0]?.disposeCalls).toBe(1)
     expect(renderers[0]?.forceContextLossCalls).toBe(1)
+  })
+
+  it('dispose enquanto um som carrega não religa o loop nem lança depois do teardown', async () => {
+    interface PendingAudio {
+      src: string
+      preload: string
+      currentTime: number
+      oncanplaythrough: null | (() => void)
+      onerror: null | (() => void)
+      pause(): void
+    }
+    class PendingAudioImpl implements PendingAudio {
+      src = ''
+      preload = ''
+      currentTime = 0
+      oncanplaythrough: null | (() => void) = null
+      onerror: null | (() => void) = null
+      pause() {}
+    }
+    const audioDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'Audio')
+    Object.defineProperty(globalThis, 'Audio', {
+      configurable: true,
+      value: PendingAudioImpl,
+    })
+    try {
+      const { THREE, renderers } = makeFakeThree()
+      const win = globalThis.window as unknown as Record<string, unknown>
+      new Function('THREE', 'window', runtimeBody)(THREE, win)
+      const api = win.SZGameKit3D as KitApi
+      api.setup({ width: 640, height: 360, world: 100 })
+      api.loadSound(
+        'pendente',
+        'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=',
+      )
+      api.start()
+      expect(renderers[0]?.loop).toBeNull()
+
+      window.dispatchEvent(new Event('pagehide'))
+      await Promise.resolve()
+      await new Promise((resolve) => setTimeout(resolve, 0))
+
+      expect(renderers[0]?.loop).toBeNull()
+      expect(renderers[0]?.disposeCalls).toBe(1)
+    } finally {
+      if (audioDescriptor) Object.defineProperty(globalThis, 'Audio', audioDescriptor)
+      else Reflect.deleteProperty(globalThis, 'Audio')
+    }
   })
 })
 
@@ -469,6 +710,35 @@ describe('SZGameKit3D — física', () => {
     api.setVelocity(t, 60, 0, 0)
     step(30)
     expect(api.posOf(t, 'x')).toBeLessThan(5)
+  })
+
+  it('colisão contínua segura tiro mais rápido que o teto de substeps', async () => {
+    const { api, step } = await loadStartedKit()
+    api.defineMold('parede', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#fff', w: 1, h: 4, d: 10, x: 0, y: 2, z: 0 })
+    })
+    api.defineMold('tiro', { health: 1, speed: 0 }, () => {
+      api.part({
+        shape: 'sphere',
+        color: '#ff0',
+        w: 0.35,
+        h: 0.35,
+        d: 0.35,
+        x: 0,
+        y: 0,
+        z: 0,
+      })
+    })
+    api.makeSolid('parede')
+    api.setState('jogando')
+    api.spawn('parede', 5, 0, 0)
+    const tiro = api.spawn('tiro', 0, 2, 0)
+    api.setVelocity(tiro, 240, 0, 0)
+
+    step(1)
+
+    expect(api.posOf(tiro, 'x')).toBeLessThan(5)
+    expect(api.velocityOf(tiro, 'x')).toBe(0)
   })
 
   // ---- Defeito 7 + MIN_THICK: a regressão que o próprio fix cria ----
@@ -611,7 +881,7 @@ describe('SZGameKit3D — física', () => {
     expect(hits).toContain(b)
   })
 
-  it('⭐ zona não repete a entrada quando outro slot é reciclado e reutilizado', async () => {
+  it('⭐ zona distingue a vida nova quando recursos de outra entidade são reutilizados', async () => {
     const { api, step } = await loadStartedKit()
     defineWideZoneAndVisitor(api)
     api.setState('jogando')
@@ -629,9 +899,10 @@ describe('SZGameKit3D — física', () => {
 
     step(4)
 
-    expect(reused).toBe(a)
+    expect(reused).not.toBe(a)
+    expect(hits.filter((who) => who === a)).toHaveLength(1)
     expect(hits.filter((who) => who === b)).toHaveLength(1)
-    expect(hits.filter((who) => who === reused)).toHaveLength(2)
+    expect(hits.filter((who) => who === reused)).toHaveLength(1)
   })
 
   it('⭐ zona detecta uma entidade parada que nasceu dentro dela', async () => {
@@ -1028,8 +1299,70 @@ describe('SZGameKit3D — física', () => {
     }
   })
 
-  // ---- 🎥 Câmera não segue o slot reciclado por OUTRA entidade ----
-  it('⭐ câmera: alvo reciclado + slot reusado → volta à origem (não segue o estranho)', async () => {
+  it('limita vozes simultâneas e normaliza frequência e duração dos tons', async () => {
+    const oscillators: Array<{
+      frequency: { value: number }
+      stopTimes: number[]
+      onended: null | (() => void)
+    }> = []
+    class FakeAudioContext {
+      state = 'running'
+      currentTime = 0
+      destination = {}
+      createOscillator() {
+        const oscillator = {
+          type: 'square',
+          frequency: { value: 0 },
+          stopTimes: [] as number[],
+          onended: null as null | (() => void),
+          connect() {},
+          start() {},
+          stop(time = 0) {
+            this.stopTimes.push(time)
+          },
+        }
+        oscillators.push(oscillator)
+        return oscillator
+      }
+      createGain() {
+        return {
+          gain: { value: 0, setTargetAtTime() {} },
+          connect() {},
+        }
+      }
+      resume() {
+        return Promise.resolve()
+      }
+      close() {
+        return Promise.resolve()
+      }
+    }
+    const descriptor = Object.getOwnPropertyDescriptor(window, 'AudioContext')
+    Object.defineProperty(window, 'AudioContext', { configurable: true, value: FakeAudioContext })
+    try {
+      const { api } = await loadStartedKit()
+      for (let index = 0; index < 40; index++) {
+        api.playTone(index === 0 ? -100 : 30_000, 600_000)
+      }
+
+      expect(oscillators).toHaveLength(40)
+      expect(oscillators[0]?.frequency.value).toBe(20)
+      expect(oscillators[39]?.frequency.value).toBe(20_000)
+      expect(oscillators.every((oscillator) => oscillator.stopTimes[0] === 10)).toBe(true)
+      expect(oscillators.slice(0, 8).every((oscillator) => oscillator.stopTimes.length === 2)).toBe(
+        true,
+      )
+      expect(oscillators.slice(8).every((oscillator) => oscillator.stopTimes.length === 1)).toBe(
+        true,
+      )
+    } finally {
+      if (descriptor) Object.defineProperty(window, 'AudioContext', descriptor)
+      else Reflect.deleteProperty(window, 'AudioContext')
+    }
+  })
+
+  // ---- 🎥 Câmera não segue o recurso reciclado por OUTRA entidade ----
+  it('⭐ câmera: alvo reciclado + mesh reusado → volta à origem (não segue o estranho)', async () => {
     const { api, step, renderers } = await loadStartedKit()
     api.defineMold('bicho', { health: 1, speed: 0 }, () => {
       api.part({ shape: 'box', color: '#f00', w: 1, h: 1, d: 1, x: 0, y: 0.5, z: 0 })
@@ -1040,9 +1373,9 @@ describe('SZGameKit3D — física', () => {
     api.cameraLookAt(chefe) // a câmera orbita o chefe
     step(2)
     api.recycle(chefe)
-    // O slot volta a nascer como OUTRO bicho, noutro lugar (o pool reusa o objeto).
+    // O mesh volta a nascer como OUTRO bicho, noutro lugar, com handle novo.
     const novo = api.spawn('bicho', -18, 0, -18)
-    expect(novo).toBe(chefe) // é o MESMO slot, com _gen novo
+    expect(novo).not.toBe(chefe)
     step(2)
     const cam = (renderers as { camera?: { position: { x: number; z: number } } }[])[0]?.camera
     // A órbita agora olha para a ORIGEM (o alvo antigo morreu), não para o -18/-18
@@ -1103,7 +1436,8 @@ describe('SZGameKit3D — física', () => {
     api.recycle(e)
     expect(e.mesh.parent).toBe(null) // saiu da cena (era só visible=false)
     const e2 = api.spawn('bicho', 1, 0, 0) as { mesh: { parent: unknown } }
-    expect(e2).toBe(e as unknown as typeof e2) // mesmo slot do pool
+    expect(e2).not.toBe(e as unknown as typeof e2)
+    expect(e2.mesh).toBe(e.mesh) // o recurso gráfico continua no pool
     expect(e2.mesh.parent).toBeTruthy() // voltou para a cena
   })
 
@@ -1223,8 +1557,8 @@ describe('SZGameKit3D — 6º review: identidade, rumo, barras e jorros', () => 
     const e = api.spawn('bicho', 3, 0, 3)
     step(5) // congela a matriz (split estático)
     api.recycle(e)
-    const e2 = api.spawn('bicho', -8, 0, -8) // reusa o slot
-    expect(e2).toBe(e)
+    const e2 = api.spawn('bicho', -8, 0, -8) // reusa o mesh em uma vida nova
+    expect(e2).not.toBe(e)
     step(2) // o render (fake) roda scene.updateMatrixWorld()
     const mesh = (e2 as { mesh: { matrixWorld: { elements: number[] } } }).mesh
     const el = mesh.matrixWorld.elements
@@ -1335,7 +1669,7 @@ describe('SZGameKit3D — 6º review: identidade, rumo, barras e jorros', () => 
     }
     expect(conta()).toBeGreaterThan(0) // controle: o rastro está aceso
     api.recycle(a)
-    api.spawn('bicho', 5, 0, 5) // reusa o slot com OUTRA geração
+    api.spawn('bicho', 5, 0, 5) // reusa o mesh com OUTRA geração
     step(30) // 1 s ≫ vida 0.4 s: sem emissão nova, tudo apaga
     expect(conta()).toBe(0)
   })

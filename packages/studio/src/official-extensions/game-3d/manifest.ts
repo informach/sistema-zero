@@ -13,7 +13,7 @@ import {
 export const gameThreeDManifest: ExtensionManifest = {
   id: 'game-3d',
   name: 'Jogo 3D',
-  version: '0.13.0',
+  version: '0.14.0',
   description:
     'Blocos e comandos para criar jogos 3D com Three.js: cena/câmera/luz (e cena em tela cheia responsiva), cubos/esferas/caixas, posição/rotação/escala, física (velocidade, gravidade, pulo, colisão), teclado, câmera que segue, genéricos de grade isométrica e de movimento (círculo, distância, cair girando, deslizar, girar) e Kits prontos: "Desvie", "Travessia", "Corrida" e "Empilhar". Three.js carrega de um CDN fixado.',
   category: 'games',
@@ -51,14 +51,15 @@ em um evento ou em um construtor.
 - **Posição** / **Rotação** (radianos) / **Tamanho (escala)** do objeto.
 - **A cada frame 3D**. Loop de animação que redesenha a cena. Se o projeto usar
   mais de um bloco de quadro na mesma cena, os corpos rodam juntos na ordem em
-  que foram registrados e a cena é desenhada uma vez.
+  que foram registrados e a cena é desenhada uma vez. Se um corpo falhar, apenas
+  ele é pausado; os outros continuam e a cena permanece responsiva.
 
 ### Formas, modelos & aparência
 
 - Cilindro, cone, plano e anel completam as primitivas; os exemplos não dependem de assets externos.
 - **Criar modelo** agrupa peças da mesma cena: cor, opacidade, material e visibilidade funcionam no grupo inteiro.
 - Texturas são opcionais e usam um asset escolhido no projeto; remover um objeto também libera seus recursos de GPU.
-- Remover um modelo desregistra também suas peças. Objetos que terminam uma queda deixam de ocupar o limite da cena.
+- Remover um modelo desregistra também suas peças. Objetos que terminam uma queda deixam de ocupar o limite da cena e chamadas posteriores não descartam os mesmos recursos de novo.
 - Luz ambiente, sol, luz pontual, neblina, céu em degradê e sombras montam a atmosfera.
 
 ### Física & controles (dentro de "A cada frame 3D")
@@ -66,7 +67,7 @@ em um evento ou em um construtor.
 - **Mover com o teclado (WASD/setas)**. Anda no plano.
 - **Definir velocidade** / **Fazer pular** (só no chão) / **Mover com gravidade (chão)**.
 - **A câmera segue o objeto**. Acompanha mantendo o enquadramento.
-- Movimento relativo, olhar/mira e câmeras em primeira pessoa, terceira pessoa e orbital. O último modo de câmera escolhido substitui o anterior.
+- Movimento relativo, olhar/mira e câmeras em primeira pessoa, terceira pessoa e orbital. O último modo de câmera escolhido substitui o anterior sem manter a câmera presa ao objeto do modo FPS. Entrar em primeira pessoa sempre ativa uma câmera em perspectiva, mesmo depois de uma câmera isométrica ou aérea.
 - **Corpo + sólido + atualizar corpo**. Física AABB leve da própria plataforma, sem biblioteca externa pesada.
 
 ### Perguntas (booleanos. Caem num "se")
@@ -79,12 +80,13 @@ em um evento ou em um construtor.
 
 - **Criar grupo de objetos**. Lista p/ guardar os inimigos.
 - **Soltar inimigos**. Cria/movimenta inimigos que vêm de longe acelerando (limpa os que passam).
-- **Fim de jogo: parar a cena**.
+- **Fim de jogo: parar a cena**. Use durante um quadro, evento ou função que roda durante a partida. O bloco não pode ficar solto em **Ao iniciar**.
 
 ### Enxames & som
 
 - **Grupo de objetos** e **enxame** são recursos diferentes e aparecem em seletores separados. O grupo guarda inimigos do Kit Desvie; o enxame administra cópias ligadas a uma cena.
 - O enxame compartilha a geometria do molde com segurança. Remover o molde não invalida cópias que ainda estão na cena; o recurso é liberado depois da última cópia.
+- Cópias visíveis do enxame participam de **objeto sob o mouse**, **mouse sobre o objeto** e das consultas de mira.
 - Toque notas e efeitos curtos depois da primeira interação do jogador. O runtime limita a 32 sons simultâneos e descarta as conexões no reinício.
 
 ### Câmera & grade 3D (genéricos. Para jogos de grade/isométrico)
@@ -97,7 +99,7 @@ em um evento ou em um construtor.
 
 ### Kit "Travessia" (atravessar a rua)
 
-- **Criar mundo Travessia** + **Criar personagem** que pula de casa em casa.
+- **Criar mundo Travessia** + **Criar personagem** que pula de casa em casa e pode ser consultado pelos blocos de ponteiro.
 - **Criar faixa** (grama/floresta/carros/caminhões) / **Gerar linhas aleatórias**.
 - **Atualizar o personagem** (setas + grade) / **Mover os veículos**.
 - **bateu num veículo?** / **pontuação (linha)** / **Recomeçar**. Depois da batida, personagem e trânsito ficam congelados até recomeçar.
@@ -106,7 +108,7 @@ em um evento ou em um construtor.
 
 - **Câmera aérea** (de cima) e **Mover em círculo** (movimento circular genérico).
 - **a distância entre … / está perto de … ?**. Proximidade (p/ colisão de qualquer jogo).
-- **Criar mundo de corrida** + **Criar a pista** (oval) + **Criar carro do jogador**.
+- **Criar mundo de corrida** + **Criar a pista** (oval) + **Criar carro do jogador**, também disponível para consultas de ponteiro.
 - **Dirigir o carro** (↑ acelera / ↓ freia, dá voltas) / **Soltar e mover rivais** / **marcha** (botões).
 - **bateu num rival?** / **voltas (pontuação)** / **Recomeçar**. Depois da batida, carro e rivais ficam congelados até recomeçar.
 
@@ -128,7 +130,7 @@ em um evento ou em um construtor.
   projeto é validado antes de executar para impedir construções persistentes no loop.
 - Eixos genéricos: x = direita, y = cima, z = profundidade; distância, círculo e grade usam o chão X-Z. Os kits Travessia/Corrida mantêm sua convenção interna sem mudar os blocos genéricos. Rotação em radianos.
 - Movimento e física usam o tempo real do quadro, mantendo a velocidade em telas de 60/120/144 Hz.
-- Os seletores separam o mundo completo do Jogo 3D de uma cena Three.js crua do Canvas 3D. Objetos, modelos e enxames não podem misturar cenas diferentes.
+- Os seletores separam o mundo completo do Jogo 3D de uma cena Three.js crua do Canvas 3D e só oferecem recursos já declarados naquele ponto. Transformações genéricas aceitam objetos das duas camadas; comandos que usam um mundo do jogo oferecem somente objetos ligados ao Jogo 3D. Resultados de **objeto sob o mouse** e **objeto que está mirando** guardados numa variável também aparecem nesses seletores. Objetos, modelos, grupos e enxames não podem misturar cenas diferentes; o runtime ignora a operação incompatível e mostra um aviso.
 - Há limites didáticos de segurança para objetos, luzes, enxames, linhas e andares; remova ou faça a poda de itens temporários. Ao reiniciar o preview, o runtime também encerra WebGL, listeners e áudio.
 - Todos os blocos desta categoria são **iniciante-3d**. A aula usa \`allowBlocks\` para revelar somente os necessários, sem retirar capacidade da extensão.
 - Comece por **"Cubo girando"**; depois avance para **"Desvie dos blocos"**, **"Atravesse a rua"**, **"Corrida maluca"** e **"Torre maluca"**.

@@ -12,7 +12,9 @@ import {
   collectBoards,
   collectCameras3d,
   collectCanvas3DPhysicsBodies,
+  collectCanvas3DPhysicsCharacters,
   collectCanvas3DPhysicsResources,
+  collectCanvas3DShadowTargets,
   collectCanvasContexts,
   collectCanvasIds,
   collectClassNames,
@@ -24,6 +26,7 @@ import {
   collectEnemyCombatants,
   collectFightMoves,
   collectFunctionNames,
+  collectGame3DObjects,
   collectGroups3d,
   collectGroupsAndLists,
   collectLights3d,
@@ -31,6 +34,9 @@ import {
   collectMethodNames,
   collectMutableVariables,
   collectObjects3d,
+  collectPerspectiveCameras3d,
+  collectPhysicsCities3d,
+  collectPhysicsColliders3d,
   collectPhysicsWorlds,
   collectPropertyNames,
   collectReadableVariables,
@@ -426,6 +432,50 @@ describe('FieldNamePicker', () => {
 
       expect(collectRenderers3d(ws, use)).toEqual(['antes'])
     })
+
+    it('oferece somente recursos compatíveis com projetar ou receber sombra', () => {
+      const ws = new Blockly.Workspace()
+      const ambient = ws.newBlock('sz_t3d_light_create')
+      ambient.setFieldValue('luzAmbiente', 'LIGHT')
+      ambient.setFieldValue('ambient', 'KIND')
+      const directional = ws.newBlock('sz_t3d_light_create')
+      directional.setFieldValue('sol', 'LIGHT')
+      directional.setFieldValue('directional', 'KIND')
+      const box = ws.newBlock('sz_t3d_primitive')
+      box.setFieldValue('caixa', 'MESH')
+      const capsule = ws.newBlock('sz_t3d_primitive')
+      capsule.setFieldValue('capsula', 'MESH')
+      capsule.setFieldValue('capsule', 'SHAPE')
+      const terrain = ws.newBlock('sz_t3d_terrain')
+      terrain.setFieldValue('chao', 'TERRAIN')
+      ws.newBlock('sz_t3d_road').setFieldValue('estrada', 'ROAD')
+
+      const technicalMesh = ws.newBlock('sz_t3d_new_var')
+      technicalMesh.setFieldValue('malhaTecnica', 'VARNAME')
+      technicalMesh.setFieldValue('Mesh', 'CLASS')
+      const technicalGroup = ws.newBlock('sz_t3d_new_var')
+      technicalGroup.setFieldValue('grupoTecnico', 'VARNAME')
+      technicalGroup.setFieldValue('Group', 'CLASS')
+      const technicalAmbient = ws.newBlock('sz_t3d_new_var')
+      technicalAmbient.setFieldValue('ambienteTecnica', 'VARNAME')
+      technicalAmbient.setFieldValue('AmbientLight', 'CLASS')
+      const technicalSpot = ws.newBlock('sz_t3d_new_var')
+      technicalSpot.setFieldValue('holofote', 'VARNAME')
+      technicalSpot.setFieldValue('SpotLight', 'CLASS')
+
+      const shadow = ws.newBlock('sz_t3d_set_shadow')
+      shadow.setFieldValue('cast', 'KIND')
+      expect(collectCanvas3DShadowTargets(ws, shadow)).toEqual([
+        'sol',
+        'caixa',
+        'chao',
+        'malhaTecnica',
+        'holofote',
+      ])
+
+      shadow.setFieldValue('receive', 'KIND')
+      expect(collectCanvas3DShadowTargets(ws, shadow)).toEqual(['caixa', 'chao', 'malhaTecnica'])
+    })
   })
 
   describe('tipos de seletor para leitura e escrita', () => {
@@ -451,7 +501,9 @@ describe('FieldNamePicker', () => {
       expect(nameKindAllowsFreeText('canvas-context')).toBe(false)
       expect(nameKindAllowsFreeText('super-method')).toBe(false)
       expect(nameKindAllowsFreeText('physics-body')).toBe(false)
+      expect(nameKindAllowsFreeText('physics-character')).toBe(false)
       expect(nameKindAllowsFreeText('physics-resource')).toBe(false)
+      expect(nameKindAllowsFreeText('optional-function')).toBe(false)
       expect(nameKindAllowsFreeText('canvas3d-canvas')).toBe(false)
       expect(nameKindAllowsFreeText('g3d-world')).toBe(false)
       expect(nameKindAllowsFreeText('water3d')).toBe(false)
@@ -474,6 +526,60 @@ describe('FieldNamePicker', () => {
 
       expect(collectCanvas3DPhysicsBodies(ws, mover)).toEqual(['jogador'])
       expect(collectCanvas3DPhysicsResources(ws, mover)).toEqual(['jogador', 'parede'])
+    })
+
+    it('mover e pular oferecem apenas corpos do tipo personagem', () => {
+      const ws = new Blockly.Workspace()
+      const jogador = ws.newBlock('sz_t3d_physics_body')
+      jogador.setFieldValue('fisica', 'WORLD')
+      jogador.setFieldValue('jogador', 'ID')
+      jogador.setFieldValue('character', 'KIND')
+      const caixa = ws.newBlock('sz_t3d_physics_body')
+      caixa.setFieldValue('fisica', 'WORLD')
+      caixa.setFieldValue('caixa', 'ID')
+      caixa.setFieldValue('dynamic', 'KIND')
+
+      expect(collectCanvas3DPhysicsCharacters(ws)).toEqual(['jogador'])
+    })
+
+    it('separa colisores, cidades e câmeras compatíveis com adaptação responsiva', () => {
+      const ws = new Blockly.Workspace()
+      ws.newBlock('sz_t3d_primitive').setFieldValue('cubo', 'MESH')
+      ws.newBlock('sz_t3d_building').setFieldValue('predio', 'BUILDING')
+      ws.newBlock('sz_t3d_terrain').setFieldValue('terreno', 'TERRAIN')
+      ws.newBlock('sz_t3d_city').setFieldValue('cidade', 'CITY')
+      ws.newBlock('sz_t3d_camera_create').setFieldValue('camera', 'CAMERA')
+      const ortho = ws.newBlock('sz_t3d_new_var')
+      ortho.setFieldValue('cameraOrto', 'VARNAME')
+      ortho.setFieldValue('THREE.OrthographicCamera', 'CLASS')
+
+      expect(collectPhysicsColliders3d(ws)).toEqual(['cubo', 'predio'])
+      expect(collectPhysicsCities3d(ws)).toEqual(['cidade'])
+      expect(collectPerspectiveCameras3d(ws)).toEqual(['camera'])
+    })
+
+    it('mostra terreno plano como escolha real da função opcional', () => {
+      const road = new Blockly.Workspace().newBlock('sz_t3d_road')
+      const field = road.getField('HEIGHT_FN')
+      expect(field).toBeInstanceOf(FieldNamePicker)
+      if (!(field instanceof FieldNamePicker)) throw new Error('Seletor opcional ausente')
+      expect(field.kind).toBe('optional-function')
+      expect(field?.getValue()).toBe('')
+      expect(field?.getText()).toBe('terreno plano')
+    })
+
+    it('não oferece um corpo físico que só será criado depois do comando', () => {
+      const ws = new Blockly.Workspace()
+      const mover = ws.newBlock('sz_t3d_physics_move')
+      mover.setFieldValue('fisica', 'WORLD')
+      const corpo = ws.newBlock('sz_t3d_physics_body')
+      corpo.setFieldValue('fisica', 'WORLD')
+      corpo.setFieldValue('jogador', 'ID')
+      const bodyConnection = corpo.previousConnection
+      if (!bodyConnection) throw new Error('O corpo físico precisa aceitar encadeamento')
+      mover.nextConnection?.connect(bodyConnection)
+
+      expect(collectCanvas3DPhysicsBodies(ws, mover)).toEqual([])
     })
 
     it('preserva um ID físico legado mesmo quando ele ainda não tem declarador', () => {
@@ -1089,6 +1195,7 @@ describe('FieldNamePicker', () => {
     it('separa seletores de grupo simples e enxame', () => {
       const ws = new Blockly.Workspace()
       expect(kindOf(ws.newBlock('sz_g3d_set_position'), 'OBJ')).toBe('object3d')
+      expect(kindOf(ws.newBlock('sz_g3d_fps_camera'), 'OBJ')).toBe('g3d-object')
       expect(kindOf(ws.newBlock('sz_g3d_run_enemies'), 'GROUP')).toBe('group3d')
       expect(kindOf(ws.newBlock('sz_g3d_spawn_in_swarm'), 'SWARM')).toBe('swarm3d')
       expect(kindOf(ws.newBlock('sz_g3d_count_swarm'), 'SWARM')).toBe('swarm3d')
@@ -1101,12 +1208,103 @@ describe('FieldNamePicker', () => {
       expect(kindOf(tex, 'OBJ')).toBe('object3d')
     })
 
-    it('o "item" do para-cada do enxame DECLARA (texto); tirar-do-enxame CONSOME (object3d)', () => {
+    it('usa o seletor restrito em todo campo que depende do mundo do jogo', () => {
+      const ws = new Blockly.Workspace()
+      const fields: Readonly<Record<string, readonly string[]>> = {
+        sz_g3d_camera_follow: ['OBJ'],
+        sz_g3d_run_enemies: ['GROUND'],
+        sz_g3d_isometric_camera: ['FOLLOW'],
+        sz_g3d_crosser_step: ['OBJ'],
+        sz_g3d_crosser_reset: ['OBJ'],
+        sz_g3d_crosser_hit: ['OBJ'],
+        sz_g3d_top_camera: ['FOLLOW'],
+        sz_g3d_race_step: ['OBJ'],
+        sz_g3d_race_reset: ['OBJ'],
+        sz_g3d_race_hit: ['OBJ'],
+        sz_g3d_pointer_over: ['OBJ'],
+        sz_g3d_aim_ahead: ['OBJ'],
+        sz_g3d_on_ground: ['OBJ'],
+        sz_g3d_ground_height: ['OBJ'],
+        sz_g3d_step_body: ['OBJ'],
+        sz_g3d_platformer_controls: ['OBJ'],
+        sz_g3d_fps_controls: ['OBJ'],
+        sz_g3d_fps_camera: ['OBJ'],
+        sz_g3d_orbit_camera: ['OBJ'],
+        sz_g3d_third_person_camera: ['OBJ'],
+        sz_g3d_camera_look_at: ['OBJ'],
+        sz_g3d_add_to_model: ['PART', 'MODEL'],
+        sz_g3d_spawn_in_swarm: ['ORIGINAL'],
+        sz_g3d_remove_from_swarm: ['ITEM'],
+      }
+
+      for (const [type, names] of Object.entries(fields)) {
+        const block = ws.newBlock(type)
+        for (const name of names) expect(kindOf(block, name), `${type}.${name}`).toBe('g3d-object')
+      }
+    })
+
+    it('não mistura objetos Three.js crus no seletor de comandos vinculados ao mundo', () => {
+      const ws = new Blockly.Workspace()
+      ws.newBlock('sz_g3d_create_box').setFieldValue('caixaDoJogo', 'NAME')
+      ws.newBlock('sz_t3d_primitive').setFieldValue('objetoCru', 'MESH')
+
+      expect(collectObjects3d(ws)).toEqual(['caixaDoJogo', 'objetoCru'])
+      expect(collectGame3DObjects(ws)).toEqual(['caixaDoJogo'])
+    })
+
+    it('oferece resultados de seleção e mira guardados numa variável como objetos do jogo', () => {
+      const ws = new Blockly.Workspace()
+      const frame = ws.newBlock('sz_frame_start')
+      const selected = ws.newBlock('sz_js_var_create')
+      selected.setFieldValue('selecionado', 'NAME')
+      const pick = ws.newBlock('sz_g3d_pick_at_mouse')
+      selected.getInput('VALUE')?.connection?.connect(pick.outputConnection as Blockly.Connection)
+      const aimed = ws.newBlock('sz_js_const_create')
+      aimed.setFieldValue('alvo', 'NAME')
+      const aim = ws.newBlock('sz_g3d_aim_ahead')
+      aimed.getInput('VALUE')?.connection?.connect(aim.outputConnection as Blockly.Connection)
+      const use = ws.newBlock('sz_g3d_fps_camera')
+
+      frame
+        .getInput('CHILDREN')
+        ?.connection?.connect(selected.previousConnection as Blockly.Connection)
+      selected.nextConnection?.connect(aimed.previousConnection as Blockly.Connection)
+      aimed.nextConnection?.connect(use.previousConnection as Blockly.Connection)
+
+      expect(collectGame3DObjects(ws, use)).toEqual(['selecionado', 'alvo'])
+    })
+
+    it('o "item" do para-cada do enxame declara; tirar-do-enxame consome objeto do jogo', () => {
       const ws = new Blockly.Workspace()
       expect(ws.newBlock('sz_g3d_for_each_swarm').getField('ITEM')).not.toBeInstanceOf(
         FieldNamePicker,
       )
-      expect(kindOf(ws.newBlock('sz_g3d_remove_from_swarm'), 'ITEM')).toBe('object3d')
+      expect(kindOf(ws.newBlock('sz_g3d_remove_from_swarm'), 'ITEM')).toBe('g3d-object')
+    })
+
+    it('só oferece grupos e enxames declarados antes do bloco que os usa', () => {
+      const ws = new Blockly.Workspace()
+      const frame = ws.newBlock('sz_frame_start')
+      const groupBefore = ws.newBlock('sz_g3d_create_group')
+      groupBefore.setFieldValue('inimigosProntos', 'NAME')
+      const swarmBefore = ws.newBlock('sz_g3d_create_swarm')
+      swarmBefore.setFieldValue('estrelasProntas', 'NAME')
+      const use = ws.newBlock('sz_g3d_prune_swarm')
+      const groupAfter = ws.newBlock('sz_g3d_create_group')
+      groupAfter.setFieldValue('inimigosFuturos', 'NAME')
+      const swarmAfter = ws.newBlock('sz_g3d_create_swarm')
+      swarmAfter.setFieldValue('estrelasFuturas', 'NAME')
+
+      frame
+        .getInput('CHILDREN')
+        ?.connection?.connect(groupBefore.previousConnection as Blockly.Connection)
+      groupBefore.nextConnection?.connect(swarmBefore.previousConnection as Blockly.Connection)
+      swarmBefore.nextConnection?.connect(use.previousConnection as Blockly.Connection)
+      use.nextConnection?.connect(groupAfter.previousConnection as Blockly.Connection)
+      groupAfter.nextConnection?.connect(swarmAfter.previousConnection as Blockly.Connection)
+
+      expect(collectGroups3d(ws, use)).toEqual(['inimigosProntos'])
+      expect(collectSwarms3d(ws, use)).toEqual(['estrelasProntas'])
     })
   })
 

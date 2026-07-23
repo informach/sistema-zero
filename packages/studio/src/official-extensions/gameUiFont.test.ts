@@ -46,7 +46,8 @@ describe('fonte local das interfaces automáticas de jogos', () => {
 
     for (const runtime of [gameTwoDRuntime, gameKitRuntime, gameKit3DRuntime, world3DRuntime]) {
       expect(runtime).toContain('window.SZGameUIFont')
-      expect(runtime).toContain('_szGameUIFont = window.SZGameUIFont.family')
+      expect(runtime).toContain('window.SZGameUIFont = { family: family, install: install }')
+      expect(runtime).toContain('--sz-game-ui-font:')
     }
     expect(gameKitRuntime).toContain('font-family: var(--sz-game-ui-font)')
     expect(gameKit3DRuntime).toContain('font-family: var(--sz-game-ui-font)')

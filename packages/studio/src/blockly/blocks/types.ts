@@ -60,6 +60,7 @@ export type BlockPlacementPreset =
   | 'loop-draw-hud'
   | 'loop-body'
   | 'loop-command'
+  | 'runtime-command'
   | 'legacy-start'
   | 'start-only-command'
   | 'resource-creator'

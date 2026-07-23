@@ -6,8 +6,12 @@ import { isGuidedDomElementTag } from '../domSafety'
 import { HTML_TAGS, isHTMLElementChildAllowed } from '../html/catalog'
 import { PERSISTENT_EXTENSION_STATEMENT_TYPES } from '../official-extensions/persistentResourceContract'
 import { isCanvas3DResourceCreatorStatement } from '../three/canvas3dContract'
-import { GAME3D_START_ONLY_STATEMENT_TYPES } from '../three/game3dContract'
 import {
+  GAME3D_RUNNING_CONTEXT_STATEMENT_TYPES,
+  GAME3D_START_ONLY_STATEMENT_TYPES,
+} from '../three/game3dContract'
+import {
+  isEventStatement,
   isLegacyLoadEvent,
   isLifecycleRootAllowed,
   isLoopStatement,
@@ -10394,11 +10398,18 @@ function validateLegacyLifecycle(
   insideLoop = false,
   nested = false,
   directG3kMoldBody = false,
+  insideRunningContext = false,
 ): void {
   for (let index = 0; index < statements.length; index += 1) {
     const statement = statements[index]
     if (!statement) continue
-    if (statement.type === 'g3k:part' && !directG3kMoldBody) {
+    if (GAME3D_RUNNING_CONTEXT_STATEMENT_TYPES.has(statement.type) && !insideRunningContext) {
+      ctx.addIssue({
+        code: 'custom',
+        path: [...path, index],
+        message: `“${statement.type}” só pode ser usado enquanto o jogo estiver rodando`,
+      })
+    } else if (statement.type === 'g3k:part' && !directG3kMoldBody) {
       ctx.addIssue({
         code: 'custom',
         path: [...path, index],
@@ -10428,6 +10439,12 @@ function validateLegacyLifecycle(
       })
     }
     const childInsideLoop = insideLoop || isLoopStatement(statement)
+    const childInsideRunningContext =
+      insideRunningContext ||
+      childInsideLoop ||
+      isEventStatement(statement) ||
+      statement.type === 'funcDecl' ||
+      statement.type === 'classDecl'
     const childNested =
       nested || (!LEGACY_START_WRAPPER_TYPES.has(statement.type) && !isLegacyLoadEvent(statement))
     for (const child of childStatementEntries(statement)) {
@@ -10439,6 +10456,7 @@ function validateLegacyLifecycle(
         childInsideLoop,
         childNested,
         childIsG3kMoldBody,
+        childInsideRunningContext,
       )
     }
   }

@@ -293,7 +293,7 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Tira esta entidade do jogo e guarda para reaproveitar depois. Melhor que "apagar". O motor reusa quando outra nascer (pooling profissional).',
+      'Tira esta entidade do jogo. O motor reaproveita o mesh e a animação quando outra nascer, mas a entidade recolhida continua inválida (pooling seguro).',
   },
   {
     type: 'sz_g3k_recycle_all',
@@ -1224,7 +1224,7 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Toca uma animação do modelo importado nessa entidade, na hora. "repetindo" é para andar/parado; "uma vez só" é para pular/atacar (fica no último quadro no fim). Pedir a animação que já está tocando não recomeça do zero.',
+      'Toca uma animação do modelo importado nessa entidade, na hora. "repetindo" é para andar/parado; "uma vez só" é para pular/atacar (fica no último quadro no fim e pode tocar de novo no próximo golpe). Pedir a animação enquanto ela ainda está tocando não recomeça do zero.',
   },
   {
     type: 'sz_g3k_stop_anim',
@@ -1657,7 +1657,7 @@ export const gameKit3DBlocks = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Verdadeiro SÓ no quadro do clique/toque. O gatilho do point-and-click: "se o mouse foi clicado agora, guardar quem está sob o mouse". O irmão do "a tecla foi apertada agora?".',
+      'Verdadeiro SÓ no quadro do clique/toque sobre o mundo 3D. Botões das telas não contam. É o gatilho do point-and-click: "se o mouse foi clicado agora, guardar quem está sob o mouse".',
   },
   {
     type: 'sz_g3k_mouse_down',
@@ -1677,7 +1677,7 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Vê o mundo pelos olhos da entidade. Clique na tela para capturar o mouse e olhar em volta. Combine com "mover em 1ª pessoa" para um jogo de explorar/atirar em 1ª pessoa.',
+      'Vê o mundo pelos olhos da entidade. Clique na tela para capturar o mouse e olhar em volta. Trocar de câmera, pausar ou terminar devolve o cursor. Combine com "mover em 1ª pessoa" para um jogo de explorar/atirar em 1ª pessoa.',
   },
   {
     type: 'sz_g3k_move_fps',
@@ -1962,7 +1962,8 @@ export const gameKit3DBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Toca uma notinha: quanto maior o Hz, mais agudo. Junte várias para uma melodia.',
+    tooltip:
+      'Toca uma notinha: quanto maior o Hz, mais agudo. O motor aceita de 20 a 20000 Hz, até 10 segundos e no máximo 32 notas simultâneas.',
   },
 ] satisfies BlockDefinition[]
 

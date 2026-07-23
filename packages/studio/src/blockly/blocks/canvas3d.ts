@@ -249,7 +249,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: '%1 olhar para → x %2 y %3 z %4',
     args0: [
-      { type: 'field_name_picker', name: 'OBJ', text: 'camera', kind: 'camera3d' },
+      { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
       { type: 'input_value', name: 'X', check: 'JSValue' },
       { type: 'input_value', name: 'Y', check: 'JSValue' },
       { type: 'input_value', name: 'Z', check: 'JSValue' },
@@ -359,7 +359,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_lerp_position',
     placement: 'command',
     message0: 'mover %1 devagar',
-    args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'camera', kind: 'camera3d' }],
+    args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' }],
     message1: 'até %1',
     args1: [{ type: 'input_value', name: 'TARGET', check: 'JSValue' }],
     message2: 'suavidade %1',
@@ -381,7 +381,12 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: '%1 %2 sombra: %3',
     args0: [
-      { type: 'field_name_picker', name: 'OBJ', text: 'objeto', kind: 'object3d' },
+      {
+        type: 'field_name_picker',
+        name: 'OBJ',
+        text: 'objeto',
+        kind: 'shadow-target3d',
+      },
       {
         type: 'field_dropdown',
         name: 'KIND',
@@ -663,7 +668,14 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     message0: 'adaptar tela 3D %1',
     args0: [{ type: 'field_name_picker', name: 'R', text: 'renderizador', kind: 'renderer3d' }],
     message1: 'com câmera %1',
-    args1: [{ type: 'field_name_picker', name: 'CAMERA', text: 'camera', kind: 'camera3d' }],
+    args1: [
+      {
+        type: 'field_name_picker',
+        name: 'CAMERA',
+        text: 'camera',
+        kind: 'perspective-camera3d',
+      },
+    ],
     message2: 'efeitos opcionais %1',
     args2: [{ type: 'field_name_picker', name: 'COMPOSER', text: '', kind: 'composer3d' }],
     message3: 'guardar limpeza em %1',
@@ -958,11 +970,11 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
       { type: 'input_value', name: 'X2', check: 'JSValue' },
       { type: 'input_value', name: 'Z2', check: 'JSValue' },
     ],
-    message2: 'largura %1 · divisões %2 · seguir altura %3',
+    message2: 'largura %1 · divisões %2 · altura do chão %3',
     args2: [
       { type: 'input_value', name: 'WIDTH', check: 'JSValue' },
       { type: 'input_value', name: 'SEGMENTS', check: 'JSValue' },
-      { type: 'field_name_picker', name: 'HEIGHT_FN', text: 'alturaChao', kind: 'function' },
+      { type: 'field_name_picker', name: 'HEIGHT_FN', text: '', kind: 'optional-function' },
     ],
     message3: 'cor %1 · guardar em %2',
     args3: [
@@ -974,7 +986,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria uma estrada segmentada que acompanha a função de altura do terreno. Combine várias para formar quarteirões e trajetos.',
+      'Cria uma estrada segmentada. Escolha terreno plano ou a função de altura de um terreno com morros.',
   },
   {
     type: 'sz_t3d_building',
@@ -991,11 +1003,11 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
       { type: 'input_value', name: 'H', check: 'JSValue' },
       { type: 'input_value', name: 'D', check: 'JSValue' },
     ],
-    message2: 'parede %1 · telhado %2 · seguir altura %3 · guardar em %4',
+    message2: 'parede %1 · telhado %2 · altura do chão %3 · guardar em %4',
     args2: [
       { type: 'input_value', name: 'COLOR', check: 'JSValue' },
       { type: 'input_value', name: 'ROOF', check: 'JSValue' },
-      { type: 'field_name_picker', name: 'HEIGHT_FN', text: 'alturaChao', kind: 'function' },
+      { type: 'field_name_picker', name: 'HEIGHT_FN', text: '', kind: 'optional-function' },
       { type: 'field_input', name: 'BUILDING', text: 'predio' },
     ],
     inputsInline: false,
@@ -1003,7 +1015,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Monta um prédio com corpo, telhado, porta e janelas. As mesmas medidas podem deixá-lo sólido na física.',
+      'Monta um prédio no chão plano ou na altura de um terreno. As mesmas medidas podem deixá-lo sólido na física.',
   },
   {
     type: 'sz_t3d_city',
@@ -1156,7 +1168,12 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     ],
     message1: 'deixar %1 sólido %2',
     args1: [
-      { type: 'field_name_picker', name: 'OBJECT', text: 'predio', kind: 'object3d' },
+      {
+        type: 'field_name_picker',
+        name: 'OBJECT',
+        text: 'predio',
+        kind: 'physics-collider3d',
+      },
       { type: 'input_end_row' },
     ],
     message2: 'com nome %1',
@@ -1178,7 +1195,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     ],
     message1: 'tornar cidade %1 sólida %2',
     args1: [
-      { type: 'field_name_picker', name: 'CITY', text: 'cidade', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'CITY', text: 'cidade', kind: 'physics-city3d' },
       { type: 'input_end_row' },
     ],
     message2: 'com prefixo %1',
@@ -1194,7 +1211,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     placement: 'command',
     message0: 'mover personagem %1 na física %2',
     args0: [
-      { type: 'field_name_picker', name: 'ID', text: 'jogador', kind: 'physics-body' },
+      { type: 'field_name_picker', name: 'ID', text: 'jogador', kind: 'physics-character' },
       { type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'physics-world' },
     ],
     message1: 'direção x %1 z %2 · velocidade %3',
@@ -1214,7 +1231,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     type: 'sz_t3d_physics_jump',
     placement: 'command',
     message0: 'personagem %1 pular',
-    args0: [{ type: 'field_name_picker', name: 'ID', text: 'jogador', kind: 'physics-body' }],
+    args0: [{ type: 'field_name_picker', name: 'ID', text: 'jogador', kind: 'physics-character' }],
     message1: 'na física %1',
     args1: [{ type: 'field_name_picker', name: 'WORLD', text: 'fisica', kind: 'physics-world' }],
     message2: 'com força %1',

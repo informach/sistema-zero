@@ -273,6 +273,52 @@ describe('SZGameKit3D — 1ª pessoa olha e anda para o MESMO lado', () => {
     const depois = norm(vel(api, e))
     expect(dot(antes, depois)).toBeLessThan(0.99)
   })
+
+  it('olhar em 1ª pessoa reassa a matriz de uma entidade estática', async () => {
+    const { api, step } = await kitWithHero()
+    const e = api.spawn('heroi', 0, 0, 0) as {
+      mesh: { matrix: { toArray(): number[] }; matrixAutoUpdate: boolean }
+    }
+    step(2)
+    expect(e.mesh.matrixAutoUpdate).toBe(false)
+    const before = e.mesh.matrix.toArray()
+    api.cameraFps(e, 1.4)
+    const canvases = document.querySelectorAll('#szg3k-canvas')
+    const canvas = canvases[canvases.length - 1]
+    if (!canvas) throw new Error('canvas 3D não montado')
+
+    canvas.dispatchEvent(
+      new PointerEvent('pointerdown', {
+        bubbles: true,
+        clientX: 100,
+        clientY: 100,
+        pointerId: 9,
+        pointerType: 'touch',
+      }),
+    )
+    window.dispatchEvent(
+      new PointerEvent('pointermove', {
+        bubbles: true,
+        clientX: 180,
+        clientY: 100,
+        pointerId: 9,
+        pointerType: 'touch',
+      }),
+    )
+    window.dispatchEvent(
+      new PointerEvent('pointerup', {
+        bubbles: true,
+        clientX: 180,
+        clientY: 100,
+        pointerId: 9,
+        pointerType: 'touch',
+      }),
+    )
+    step(1)
+
+    expect(e.mesh.matrix.toArray()).not.toEqual(before)
+    expect(e.mesh.matrixAutoUpdate).toBe(false)
+  })
 })
 
 describe('SZGameKit3D — o contrato entre as duas famílias', () => {

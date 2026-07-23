@@ -19,7 +19,9 @@ coordenadas internas de grade, mas os blocos genéricos continuam seguindo X-Z.
 DESEMPENHO E SEGURANÇA: o runtime ajusta movimento ao tempo do quadro, descarta GPU,
 eventos e áudio ao reiniciar, e limita objetos, luzes, enxames, linhas, andares e
 sons simultâneos. Grupo de inimigos e enxame são recursos diferentes e usam
-seletores separados.
+seletores separados. Transformações genéricas aceitam objetos Three.js crus,
+mas comandos ligados a um mundo usam somente objetos do Jogo 3D. Resultados de
+clique e mira guardados em variáveis aparecem nesses seletores.
 Crie recursos persistentes fora do loop. Cópias temporárias de enxame podem nascer
 no quadro quando remove/prune também fizer parte do fluxo. A física é AABB leve,
 feita na plataforma, sem biblioteca externa pesada.
@@ -27,7 +29,9 @@ feita na plataforma, sem biblioteca externa pesada.
 RECURSOS: há primitivas, modelos compostos, materiais, luz/céu, controles, câmeras,
 mira, corpos/colisões, enxames/som e kits Desvie, Travessia, Corrida e Empilhar.
 O último modo de câmera escolhido substitui o anterior. Travessia e Corrida
-congelam depois da derrota até o comando de recomeçar. Use
+congelam depois da derrota até o comando de recomeçar. Cópias de enxame podem
+ser selecionadas pelo ponteiro, e o comando de parar só cabe durante um loop,
+evento ou função da partida. Use
 assets apenas quando a criança escolher textura/modelo; exemplos visuais são feitos
 com primitivas. Todos os blocos são iniciante-3d; cada aula filtra o subconjunto que
 quer apresentar. Não use JS cru quando houver um bloco equivalente.`

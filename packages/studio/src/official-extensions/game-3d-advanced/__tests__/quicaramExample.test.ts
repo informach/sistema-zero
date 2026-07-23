@@ -13,6 +13,7 @@ import { gameKit3DBlocks } from '../blocks'
 import { quadraMalucaExample } from '../examples'
 import { gameKit3DManifest } from '../manifest'
 import { parseExampleLifecycleSource } from './exampleLifecycleSource'
+import { collectTypes, stripIds } from './testUtils'
 
 /**
  * Drift do exemplo "Quadra Maluca" — a vitrine dos consertos da v0.4.0: WASD
@@ -21,29 +22,6 @@ import { parseExampleLifecycleSource } from './exampleLifecycleSource'
  * mora no __gen_quicaram.ts, importado aqui para que fonte e teste NUNCA possam
  * divergir — duas cópias do fonte é como um drift passa despercebido).
  */
-
-function stripIds<T>(value: T): T {
-  if (Array.isArray(value)) return value.map(stripIds) as unknown as T
-  if (value && typeof value === 'object') {
-    const out: Record<string, unknown> = {}
-    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-      if (k === '__id') continue
-      out[k] = stripIds(v)
-    }
-    return out as T
-  }
-  return value
-}
-
-function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string> {
-  if (Array.isArray(value)) for (const item of value) collectTypes(item, out)
-  else if (value && typeof value === 'object') {
-    const obj = value as Record<string, unknown>
-    if (typeof obj.type === 'string') out.add(obj.type)
-    for (const v of Object.values(obj)) collectTypes(v, out)
-  }
-  return out
-}
 
 beforeAll(() => {
   ensureBlocklyInitialized()

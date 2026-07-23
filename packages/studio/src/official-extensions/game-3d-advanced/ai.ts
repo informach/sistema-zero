@@ -24,7 +24,8 @@ API global (cada método corresponde a exatamente 1 bloco):
   nome de um .glb do projeto (o colisor segue sendo a caixa w/h/d).
 - Céu de foto: setSkyPhoto('nome') — um .hdr do projeto vira o céu 360 e ilumina
   a cena. GLB/HDR carregam por parse() de um ArrayBuffer (a rede é bloqueada no
-  preview); KTX2/Draco NÃO existem (precisariam de WASM).
+  preview); KTX2/Draco NÃO existem (precisariam de WASM). O orçamento das
+  cópias vivas de GLB é global entre todos os moldes; recycle devolve o custo.
 - Valores da entidade: posOf(ent, 'x'|'y'|'z'); velocityOf(ent, eixo);
   distanceBetween(a, b); healthOf(ent); maxHealthOf(ent); stateOf(ent).
 - Enxames: spawn('molde', x, y, z) devolve a entidade (use const nome = ...
@@ -34,7 +35,9 @@ API global (cada método corresponde a exatamente 1 bloco):
   countAlive('molde'); recycle(ent); recycleAll('molde'); cullFar('molde', d).
 - Laço/teclas: onUpdate(function (dt) {}) — roda só no estado 'jogando';
   moveWithKeys(ent, velocidade) — WASD/setas no chão, dt embutido;
-  keyDown('w'); keyPressed('j'); setPauseKey('Escape').
+  keyDown('w'); keyPressed('j'); setPauseKey('Escape'). keyPressed vale só na
+  transição para apertada; repetição automática do teclado não rearma o evento
+  nem alterna a pausa.
 - Câmera: cameraFollow(ent, dist, altura); cameraOrbit(dist); cameraTop(alt);
   cameraFps(ent) — 1a pessoa, olhar com o mouse (clique captura o ponteiro);
   cameraAngle(azGraus, elGraus) — gira/inclina a órbita por código;
@@ -68,11 +71,13 @@ API global (cada método corresponde a exatamente 1 bloco):
   mas o trampolim ainda o arremessa); atrito = o mais ESCORREGADIO dos dois.
   Rampa = FORMA de peca (part shape 'rampa'), nao bloco. Plataforma que anda =
   makeSolid + setVelocity: ela CARREGA quem esta em cima, sem bloco novo.
-  Tiro rapido nao tunela (o motor parte o passo do quadro em substeps).
+  Tiro rapido nao tunela: o motor varre o caminho e acha o primeiro impacto;
+  substeps refinam rampas e penetracoes.
 - Anima o modelo (.glb): setStateAnim('molde', 'estado', 'Clipe') — ⭐ AMARRA a
   animação ao estado da FSM (o setEntityState troca o clipe sozinho, com
-  crossfade); playAnim(ent, 'Clipe', loop) — na hora (loop=false fica no último
-  quadro); stopAnim(ent). O nome do clipe vem de DENTRO do .glb (Idle/Run/Walk —
+  crossfade); playAnim(ent, 'Clipe', loop) — na hora (loop=false fica no ultimo
+  quadro e pode ser chamado de novo depois que terminar); stopAnim(ent). O nome
+  do clipe vem de DENTRO do .glb (Idle/Run/Walk —
   cada site nomeia do seu jeito); clipe inexistente = aviso, nunca exceção. O
   mixer é POR ENTIDADE (nasce no spawn, não no part) e o clone usa SkeletonUtils
   (o clone comum não reamarra o esqueleto). Molde só de peças não tem animação.
@@ -95,13 +100,16 @@ API global (cada método corresponde a exatamente 1 bloco):
 - Mira/clique (raycast): const alvo = pick('molde') — a entidade do molde sob o
   mouse (point-and-click/RTS); pointerOver(ent) — o mouse esta sobre ela?;
   groundPoint('x'|'y'|'z') — o ponto do chao sob o mouse; mousePressed() — o
-  clique ACONTECEU neste quadro (o gatilho do point-and-click: if
+  clique ACONTECEU neste quadro SOBRE O CANVAS 3D (botao de menu nao conta; o
+  gatilho do point-and-click: if
   (mousePressed()) { const alvo = pick('molde'); ... }); mouseDown() — segurando.
 - Entidades: place(ent, x, y, z); setYaw(ent, graus); setVelocity(ent, x, y,
   z); setDrag(ent, n) — freia so no plano x/z; lookAt(a, b); moveForward(ent,
   vel); posOf(ent, 'x'|'y'|'z'); exists(ent) — sempre pergunte antes de usar um
   alvo guardado; isMold(ent, 'molde') — a identidade (o filtro do 'quem' das
   zonas: em onOverlap, confira isMold(quem, 'heroi') antes de contar o ponto).
+  Uma referência recolhida fica inerte: não muda a FSM e seus getters devolvem
+  valores seguros; ainda assim, sempre proteja alvos guardados com exists.
 - FSM por entidade (o coração): toda entidade nasce no estado 'parado'.
   onEnterEntityState('molde', 'estado', function (ela) {});
   onEntityStateUpdate('molde', 'estado', function (ela, dt) {});
@@ -142,10 +150,13 @@ API global (cada método corresponde a exatamente 1 bloco):
 - Estados do jogo: setState('jogando'); onEnterState('estado', function ()
   {}); stateIs('estado'); state(); returnToMenu(); endGame(). Entrar em
   'jogando' fora da pausa RECOMEÇA a arena (recolhe todas as entidades).
+  Retomar de 'pausa' para 'jogando' preserva a arena e NÃO repete o gancho de
+  entrada. setState com o estado atual também não repete esse gancho.
 - Avisos: on('nome', function () {}); emit('nome').
 - Som: loadSound('nome', 'asset'); playSound('nome'); playEffect('coin'|
   'hit'|'explosion'|'jump'|'laser'|'hurt'|'powerup'|'win'|'gameover'|
-  'click'); playTone(hz, ms).
+  'click'); playTone(hz, ms) (de 20 a 20000 Hz, no máximo 10 s; o motor limita a 32
+  vozes simultâneas).
 
 Quando ajudar o aluno com o Jogo 3D Avançado:
 - A partida se monta dentro de onEnterState('jogando') — nascer o herói com

@@ -74,6 +74,7 @@ interface RuntimeWorld {
   renderer: FakeRenderer
   _canvas: FakeCanvas
   _objects: RealThree.Object3D[]
+  _pickables?: RealThree.Object3D[]
   _models: RealThree.Object3D[]
   _solids: RealThree.Object3D[]
   _crossing?: {
@@ -87,6 +88,12 @@ interface RuntimeWorld {
     spawnElapsed: number
     rivals: Array<{ mesh: RealThree.Object3D; angle: number }>
   }
+  _stack?: {
+    layers: Array<{ mesh: RealThree.Mesh }>
+    overhangs: RealThree.Mesh[]
+    moving: { mesh: RealThree.Mesh } | null
+    gameOver: boolean
+  }
 }
 
 interface RuntimeApi {
@@ -98,6 +105,8 @@ interface RuntimeApi {
   remove(world: RuntimeWorld, object: RealThree.Object3D): void
   setSolid(object: RealThree.Object3D): void
   setPosition(object: RealThree.Object3D, x: number, y: number, z: number): void
+  setVelocity(object: RealThree.Object3D, x: number, y: number, z: number): void
+  stepBody(object: RealThree.Object3D, world: RuntimeWorld): void
   fall(object: RealThree.Object3D): void
   isometricCamera(world: RuntimeWorld, follow: RealThree.Object3D | null): void
   topCamera(world: RuntimeWorld, follow: RealThree.Object3D | null): void
@@ -123,9 +132,12 @@ interface RuntimeApi {
   setColor(object: RealThree.Object3D, color: string): void
   setVisible(object: RealThree.Object3D, mode: string): void
   pickAtMouse(world: RuntimeWorld): RealThree.Object3D | null
+  pointerOver(world: RuntimeWorld, object: RealThree.Object3D): boolean
   playNote(frequency: number, milliseconds: number): void
   disposeAll(): void
   fpsCamera(world: RuntimeWorld, object: RealThree.Object3D): void
+  cameraFollow(world: RuntimeWorld, object: RealThree.Object3D): void
+  setFOV(world: RuntimeWorld, degrees: number): void
   aimAhead(
     world: RuntimeWorld,
     object: RealThree.Object3D,
@@ -138,6 +150,7 @@ interface RuntimeApi {
   crosserMove(object: RealThree.Object3D, direction: string): void
   crosserStep(object: RealThree.Object3D, world: RuntimeWorld): void
   crosserReset(object: RealThree.Object3D, world: RuntimeWorld): void
+  crosserHit(object: RealThree.Object3D, world: RuntimeWorld): boolean
   addRow(world: RuntimeWorld, row: number, kind: string, direction: string, speed: number): void
   moveTraffic(world: RuntimeWorld): void
   createRaceScene(canvasId: string): RuntimeWorld
@@ -147,6 +160,11 @@ interface RuntimeApi {
   raceControl(car: RealThree.Object3D, mode: string): void
   runRivals(world: RuntimeWorld): void
   raceReset(car: RealThree.Object3D, world: RuntimeWorld): void
+  raceHit(car: RealThree.Object3D, world: RuntimeWorld): boolean
+  createStackScene(canvasId: string): RuntimeWorld
+  createStackTower(world: RuntimeWorld): void
+  stackStep(world: RuntimeWorld): void
+  stackReset(world: RuntimeWorld): void
 }
 
 function loadRuntime() {
@@ -304,6 +322,30 @@ describe('gameThreeDRuntime - ciclo de vida real com Three.js', () => {
     expect(world._solids).not.toContain(falling)
   })
 
+  it('descarta uma única vez um objeto que já terminou de cair', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const falling = api.createBox(world)
+    if (!(falling.material instanceof RealThree.Material)) {
+      throw new Error('Era esperado um objeto com material')
+    }
+    let geometryDisposals = 0
+    let materialDisposals = 0
+    falling.geometry.dispose = () => {
+      geometryDisposals += 1
+    }
+    falling.material.dispose = () => {
+      materialDisposals += 1
+    }
+    api.setPosition(falling, 0, -30, 0)
+
+    api.fall(falling)
+    api.fall(falling)
+
+    expect(geometryDisposals).toBe(1)
+    expect(materialDisposals).toBe(1)
+  })
+
   it('reutiliza câmeras ortográficas e recalcula a projeção no resize', () => {
     const { api, canvas, fire } = loadRuntime()
     const world = api.createScene('tela')
@@ -391,6 +433,18 @@ describe('gameThreeDRuntime - ciclo de vida real com Three.js', () => {
     expect(disposeCalls).toBe(1)
   })
 
+  it('inclui as cópias visíveis do enxame na seleção pelo ponteiro', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const original = api.createBox(world)
+    const swarm = api.createSwarm(world)
+    const copy = api.spawnInSwarm(swarm, original, 0, 0, 0)
+    if (!copy) throw new Error('Era esperado criar uma cópia no enxame')
+    api.setVisible(original, 'hide')
+
+    expect(api.pickAtMouse(world)).toBe(copy)
+  })
+
   it('ignora objetos invisíveis e ancestrais escondidos no raycast', () => {
     const { api } = loadRuntime()
     const world = api.createScene('tela')
@@ -432,6 +486,34 @@ describe('gameThreeDRuntime - ciclo de vida real com Three.js', () => {
     expect(world.renderer.renderCalls).toBe(1)
   })
 
+  it('isola o erro de um bloco animado e mantém os demais blocos e o desenho ativos', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    let falhas = 0
+    let execucoesSaudaveis = 0
+    const originalError = console.error
+    console.error = () => undefined
+
+    try {
+      api.animate(world, () => {
+        falhas += 1
+        throw new Error('erro esperado no teste')
+      })
+      api.animate(world, () => {
+        execucoesSaudaveis += 1
+      })
+      world.renderer.loop?.(16)
+      world.renderer.loop?.(32)
+    } finally {
+      console.error = originalError
+    }
+
+    expect(falhas).toBe(1)
+    expect(execucoesSaudaveis).toBe(2)
+    expect(world.renderer.renderCalls).toBe(2)
+    expect(world.renderer.loop).not.toBeNull()
+  })
+
   it('remove o objeto de seu mundo real mesmo quando recebe outra cena', () => {
     const { api } = loadRuntime()
     const firstWorld = api.createScene('primeiro')
@@ -461,6 +543,38 @@ describe('gameThreeDRuntime - ciclo de vida real com Three.js', () => {
     expect(swarm.items).toHaveLength(0)
   })
 
+  it('não atualiza física nem kits com um objeto pertencente a outra cena', () => {
+    const { api } = loadRuntime()
+    const firstWorld = api.createScene('primeiro')
+    const secondWorld = api.createScene('segundo')
+    const object = api.createBox(firstWorld)
+    api.setVelocity(object, 1, 0, 0)
+    const objectPosition = object.position.clone()
+
+    api.stepBody(object, secondWorld)
+
+    expect(object.position.distanceTo(objectPosition)).toBe(0)
+
+    const firstCrossing = api.createCrossingScene('travessia-1')
+    const secondCrossing = api.createCrossingScene('travessia-2')
+    const player = api.createCrosser(firstCrossing)
+    const nextRow = secondCrossing._crossing!.nextRow
+    api.crosserStep(player, secondCrossing)
+    api.crosserReset(player, secondCrossing)
+    expect(api.crosserHit(player, secondCrossing)).toBe(false)
+    expect(secondCrossing._crossing!.nextRow).toBe(nextRow)
+
+    const firstRace = api.createRaceScene('corrida-1')
+    const secondRace = api.createRaceScene('corrida-2')
+    const car = api.createRaceCar(firstRace)
+    const carPosition = car.position.clone()
+    api.raceStep(car, secondRace)
+    api.raceReset(car, secondRace)
+    expect(api.raceHit(car, secondRace)).toBe(false)
+    expect(secondRace._race).toBeUndefined()
+    expect(car.position.distanceTo(carPosition)).toBe(0)
+  })
+
   it('mantém apenas o modo de câmera escolhido por último', () => {
     const { api } = loadRuntime()
     const world = api.createScene('tela')
@@ -487,6 +601,77 @@ describe('gameThreeDRuntime - ciclo de vida real com Three.js', () => {
 
     expect(player.rotation.y).toBe(0.8)
     expect(world.camera.rotation.x).toBe(0.4)
+  })
+
+  it('solta a câmera do jogador ao trocar de FPS para seguir', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const player = api.createBox(world)
+    api.setPosition(player, 2, 0, 0)
+    api.fpsCamera(world, player)
+
+    api.cameraFollow(world, player)
+    const before = new RealThree.Vector3()
+    world.camera.getWorldPosition(before)
+    api.setPosition(player, 3, 0, 0)
+    api.cameraFollow(world, player)
+    const after = new RealThree.Vector3()
+    world.camera.getWorldPosition(after)
+
+    expect(world.camera.parent).toBe(world.scene)
+    expect(after.x - before.x).toBeCloseTo(1)
+  })
+
+  it('restaura uma câmera em perspectiva ao entrar no modo FPS depois da isométrica', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const player = api.createBox(world)
+    api.isometricCamera(world, null)
+    expect(world.camera).toBeInstanceOf(RealThree.OrthographicCamera)
+
+    api.fpsCamera(world, player)
+    api.setFOV(world, 75)
+
+    expect(world.camera).toBeInstanceOf(RealThree.PerspectiveCamera)
+    expect((world.camera as RealThree.PerspectiveCamera).fov).toBe(75)
+    expect(world.camera.parent).toBe(player)
+  })
+
+  it('inclui os personagens da Travessia e da Corrida na seleção pelo ponteiro', () => {
+    const { api } = loadRuntime()
+    const crossing = api.createCrossingScene('travessia')
+    const player = api.createCrosser(crossing)
+    expect(api.pointerOver(crossing, player)).toBe(true)
+
+    const race = api.createRaceScene('corrida')
+    const car = api.createRaceCar(race)
+    api.setPosition(car, 0, 0, 0)
+    expect(api.pointerOver(race, car)).toBe(true)
+  })
+
+  it('descarta uma única vez o bloco móvel que errou a torre', () => {
+    const { api } = loadRuntime()
+    const world = api.createStackScene('pilha')
+    api.createStackTower(world)
+    const moving = world._stack?.moving?.mesh
+    if (!moving || !(moving.material instanceof RealThree.Material)) {
+      throw new Error('Era esperado um bloco móvel com material')
+    }
+    let geometryDisposals = 0
+    let materialDisposals = 0
+    moving.geometry.dispose = () => {
+      geometryDisposals += 1
+    }
+    moving.material.dispose = () => {
+      materialDisposals += 1
+    }
+    moving.position.x = 11
+
+    api.stackStep(world)
+    api.stackReset(world)
+
+    expect(geometryDisposals).toBe(1)
+    expect(materialDisposals).toBe(1)
   })
 
   it('ignora as próprias peças de um modelo ao mirar e procurar o chão', () => {

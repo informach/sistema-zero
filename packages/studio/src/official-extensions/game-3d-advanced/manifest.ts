@@ -11,7 +11,7 @@ import {
 export const gameKit3DManifest: ExtensionManifest = {
   id: 'game-3d-advanced',
   name: 'Jogo 3D Avançado',
-  version: '0.8.3',
+  version: '0.8.6',
   description:
     'A base de um jogo 3D profissional, portada de um curso de engine. Um SANDBOX 3D completo. Entidades com máquina de estados que ANIMA o boneco .glb sozinha a cada estado; física por TIPO (bola quica, personagem não, gelo escorrega) com pulo, rampas e plataformas; peças, modelos, luz e névoa; câmera que segue/orbita/1ª pessoa com girar, zoom e tremor, e o WASD sempre relativo a ela; partículas; enxames com pool; vizinhança por grade; combate, fala, cronômetro, sorteio semeado, HUD e música.',
   category: 'games',
@@ -41,7 +41,9 @@ O que o motor já faz por você:
 - **Moldes de peças 3D**. A aparência é montada de caixas, bolas, cilindros
   e cones coloridos (como um brinquedo de montar). Nada de imagem: tudo
   procedural.
-- **Enxames com pool**. Nascer/recolher reaproveita as entidades (pooling).
+- **Enxames com pool**. Nascer/recolher reaproveita o mesh, o esqueleto e o
+  mixer, mas cada vida recebe uma entidade nova. Um alvo já recolhido nunca
+  passa a controlar quem nasceu depois.
   As fábricas ("A cada X s, nascer…") soltam inimigos sem parar.
 - **Vizinhança rápida**. "para cada vizinho a até X" usa uma grade espacial
   por dentro: nunca compara todo mundo com todo mundo (a lição de otimização
@@ -84,7 +86,9 @@ A torre profissional funciona assim, e você monta igual, em blocos:
   **parado** (transição automática por tempo).
 
 Toda entidade NASCE no estado \`parado\`. Mudar para o estado em que já está
-não faz nada (proteção dos jogos de verdade).
+não faz nada (proteção dos jogos de verdade). Se um gancho de entrar/sair pedir
+outra mudança, o motor termina a transição atual e executa a nova em seguida,
+na ordem, sem repetir o gancho antigo nem perder o estado pedido.
 
 A morte do "Machucar" recolhe NA HORA (de propósito). Quer a morte DRAMÁTICA
 do curso. O bicho cai uns segundos antes de sumir? Faça a SUA: guarde a vida
@@ -148,8 +152,8 @@ O motor de entidade tem física de verdade. Feita à mão, sem biblioteca:
 - **Quicar** (trampolim, bola pula-pula) e **atrito** (0 = gelo, 1 = gruda)
   valem tanto para a coisa que cai quanto para o chão. Veja a regra do "maior
   manda" lá em cima.
-- Um tiro rápido **não atravessa** mais parede fina: o motor parte o passo do
-  quadro em pedaços quando a entidade anda mais que a própria espessura.
+- Um tiro rápido **não atravessa** mais parede fina: o motor varre todo o caminho
+  do quadro e encontra o primeiro impacto mesmo quando o passo pularia a parede.
 
 ### Formas, modelos, texturas & luz (🧊 Moldes & peças, 💡 Luz & céu)
 
@@ -163,6 +167,11 @@ O motor de entidade tem física de verdade. Feita à mão, sem biblioteca:
   colide continua sendo o tamanho que você deu, então o jogo não muda de
   comportamento. **Céu de foto**: um arquivo **.hdr** vira o céu 360° E ilumina
   a cena inteira (é o que faz o metal refletir o ambiente).
+- O motor mede malhas, triângulos, ossos, materiais e chamadas de desenho do
+  **.glb** depois de abrir o arquivo. Modelos acima dos tetos seguros usam a
+  forma de reserva. O orçamento das cópias vivas é global entre todos os
+  moldes; recolher uma entidade devolve o custo dela antes do próximo
+  nascimento.
 - **Pôr uma luz** acende uma luz colorida num ponto (tocha, fogueira). Declare
   no começo; o motor aceita até 8 luzes extras para proteger o desempenho;
   **Luz do ambiente** deixa o mundo mais claro ou escuro (modo noturno/caverna);
@@ -213,7 +222,8 @@ Escolha a câmera. **seguir** alguém, **girar em volta** (órbita, arrastável)
   "apertada agora"); o segundo, enquanto o dedo segura.
 - **Câmera em 1ª pessoa em …** vê o mundo pelos olhos da entidade (clique para
   capturar o mouse e olhar em volta); **Mover … em 1ª pessoa** anda para onde
-  a câmera olha (WASD relativo ao olhar).
+  a câmera olha (WASD relativo ao olhar). Trocar de câmera, pausar ou encerrar
+  devolve o cursor automaticamente.
 
 ### Faíscas 3D, emissores & efeitos de cinema (💥 🌊)
 
@@ -250,7 +260,8 @@ pular, atacar). O motor lê todas.
   muda de estado, a animação troca junto, com uma passagem suave. O personagem
   não "pede para animar": ele só muda de estado, e o corpo acompanha.
 - **Tocar a animação … em …** serve para a hora exata (o pulo, o golpe): escolha
-  *repetindo* (andar/parado) ou *uma vez só* (fica no último quadro no fim).
+  *repetindo* (andar/parado) ou *uma vez só* (fica no último quadro no fim e
+  pode ser tocada de novo no próximo pulo/golpe).
 - O NOME da animação é o que vem dentro do arquivo. Cada site nomeia do seu
   jeito (Idle, Run, Walk…). Nome que não existe = aviso, o jogo não quebra.
 
@@ -288,8 +299,12 @@ obedece à semente.
 - A resolução interna mantém a proporção escolhida, mas é reduzida
   automaticamente se ultrapassar o limite da GPU ou o orçamento de 1920×1080
   pixels. O canvas continua ocupando o espaço disponível na tela.
-- O jogo pausa com Esc (troque com "Usar a tecla … para pausar").
-- Entrar em "jogando" fora da pausa RECOMEÇA a arena (recolhe todo mundo). Por isso a partida se monta no "quando entrar no estado jogando".
+- O jogo pausa com Esc (troque com "Usar a tecla … para pausar"). Segurar a
+  tecla não alterna a pausa repetidamente.
+- Entrar em "jogando" fora da pausa RECOMEÇA a arena (recolhe todo mundo). Por
+  isso a partida se monta no "quando entrar no estado jogando". Retomar da
+  pausa preserva a arena e não repete esse gancho.
+- Pedir o estado que já está ativo não repete o gancho "quando entrar".
 - O placar fica nos cantos da tela com "Escrever no canto … da tela".
 
 > ⚠️ Use APENAS UMA extensão de jogo por projeto (Jogo 2D, Jogo 2D Avançado,

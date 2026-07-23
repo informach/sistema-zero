@@ -62,6 +62,14 @@ describe('game-3d — contrato de ciclo de vida', () => {
       project([
         { type: 'g3d:createScene', canvasId: 'tela', varName: 'cena' },
         {
+          type: 'g3d:createBox',
+          varName: 'modelo',
+          worldVar: 'cena',
+          size: 1,
+          color: '#22d3ee',
+        },
+        { type: 'g3d:createSwarm', varName: 'enxame', worldVar: 'cena' },
+        {
           type: 'g3d:animate',
           worldVar: 'cena',
           body: [
@@ -110,5 +118,27 @@ describe('game-3d — contrato de ciclo de vida', () => {
     )
 
     expect(parsed.success).toBe(true)
+  })
+
+  it('recusa parar antes do jogo rodar e aceita a parada durante o loop', () => {
+    const rootStop = SZIRSchema.safeParse(
+      project([
+        { type: 'g3d:createScene', canvasId: 'tela', varName: 'cena' },
+        { type: 'g3d:stop', worldVar: 'cena' },
+      ]),
+    )
+    const runningStop = SZIRSchema.safeParse(
+      project([
+        { type: 'g3d:createScene', canvasId: 'tela', varName: 'cena' },
+        {
+          type: 'g3d:animate',
+          worldVar: 'cena',
+          body: [{ type: 'g3d:stop', worldVar: 'cena' }],
+        },
+      ]),
+    )
+
+    expect(rootStop.success).toBe(false)
+    expect(runningStop.success).toBe(true)
   })
 })
