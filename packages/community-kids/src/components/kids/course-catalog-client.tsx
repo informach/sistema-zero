@@ -17,6 +17,9 @@ export function CourseCatalogClient({ courses }: Props) {
   const { filters, filtered, setFilter, clearFilters, hasActiveFilters } =
     useCatalogFilters(courses)
 
+  // slug → título p/ o card nomear o curso-base (`foundationCourseSlug`) sem ir ao backend.
+  const titleBySlug = new Map(courses.map((c) => [c.courseSlug, c.title]))
+
   return (
     <section className="flex flex-col gap-5">
       <CatalogFilterBar
@@ -42,6 +45,11 @@ export function CourseCatalogClient({ courses }: Props) {
               key={course.courseSlug}
               course={course}
               salesUrl={course.salesPageUrl}
+              foundationTitle={
+                course.careerLock?.foundationCourseSlug
+                  ? (titleBySlug.get(course.careerLock.foundationCourseSlug) ?? null)
+                  : null
+              }
               theme={unitThemeAt(i)}
             />
           ))}

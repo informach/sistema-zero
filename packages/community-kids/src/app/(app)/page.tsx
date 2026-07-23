@@ -44,6 +44,8 @@ export default async function HomePage() {
     ])
   if (status !== 200) throw new Error('Falha ao carregar os cursos')
   const courses = body?.courses ?? []
+  // slug → título p/ o card nomear o curso-base (`foundationCourseSlug`) sem ir ao backend.
+  const titleBySlug = new Map(courses.map((c) => [c.courseSlug, c.title]))
   const gamification = gam.status === 200 ? (gam.body ?? null) : null
   const missionsData = missions.status === 200 ? (missions.body ?? null) : null
   const avatarPhotoUrl =
@@ -108,7 +110,16 @@ export default async function HomePage() {
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {courses.map((course, i) => (
-              <CourseCard key={course.courseSlug} course={course} theme={unitThemeAt(i)} />
+              <CourseCard
+                key={course.courseSlug}
+                course={course}
+                foundationTitle={
+                  course.careerLock?.foundationCourseSlug
+                    ? (titleBySlug.get(course.careerLock.foundationCourseSlug) ?? null)
+                    : null
+                }
+                theme={unitThemeAt(i)}
+              />
             ))}
           </div>
         )}

@@ -1,6 +1,6 @@
 import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
 import { Card } from '@sistemazero/ui/card'
-import { BookOpen, Lock } from 'lucide-react'
+import { ArrowRight, BookOpen, Lock } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import type { MyCourseView } from '@/lib/types'
@@ -9,16 +9,19 @@ import { UNIT_THEME_CLASS, type UnitTheme } from './unit-theme'
 
 interface CourseCardProps {
   course: MyCourseView
+  /** Título do curso-base da etapa (resolvido pelo pai por `foundationCourseSlug`). */
+  foundationTitle?: string | null
   /** Tema da unidade (o grid alterna cyan → lime → grad por índice). */
   theme?: UnitTheme
 }
 
 /** Card de curso da home ("Meus cursos"): capa + progresso + CTA, vestindo o tema. */
-export function CourseCard({ course, theme = 'cyan' }: CourseCardProps) {
+export function CourseCard({ course, foundationTitle, theme = 'cyan' }: CourseCardProps) {
   const { progress } = course
   const started = progress.completedLessons > 0
   const done = progress.totalLessons > 0 && progress.completedLessons >= progress.totalLessons
   const careerLocked = course.careerLock?.locked === true
+  const foundationFirst = careerLocked && course.careerLock?.reason === 'foundation-first'
 
   const card = (
     <Card
@@ -74,17 +77,29 @@ export function CourseCard({ course, theme = 'cyan' }: CourseCardProps) {
           </div>
           <ProgressBar value={progress.percent} />
         </div>
-        <span className="sz-btn-gradient mt-1 w-full">
-          {careerLocked
-            ? course.careerLock?.reason === 'foundation-first'
-              ? 'Faça primeiro o curso-base'
-              : 'Continue sua carreira'
-            : done
-              ? 'Revisar curso'
-              : started
-                ? 'Continuar'
-                : 'Começar agora'}
-        </span>
+        {foundationFirst ? (
+          // Bloqueado pelo curso-base: CTA de largura total que NOMEIA o curso a
+          // fazer (o card inteiro leva a ele). Sem repetir "curso-base" solto.
+          <span className="sz-btn-gradient mt-1 flex w-full flex-col gap-0.5 px-3 py-2">
+            <span className="font-normal text-[11px] opacity-90">Ir para o curso-base:</span>
+            <span className="flex items-center gap-1.5">
+              <span className="line-clamp-1 flex-1 text-left font-semibold text-sm">
+                {foundationTitle ?? 'Curso-base da etapa'}
+              </span>
+              <ArrowRight className="size-4 shrink-0" />
+            </span>
+          </span>
+        ) : careerLocked ? (
+          // Etapa futura: não é clicável → rótulo muted, sem cara de botão.
+          <span className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-full bg-muted px-3 py-2 text-muted-foreground text-xs">
+            <Lock className="size-3.5" />
+            Em breve na sua carreira
+          </span>
+        ) : (
+          <span className="sz-btn-gradient mt-1 w-full">
+            {done ? 'Revisar curso' : started ? 'Continuar' : 'Começar agora'}
+          </span>
+        )}
       </div>
     </Card>
   )

@@ -1,5 +1,5 @@
 import { Card } from '@sistemazero/ui/card'
-import { BookOpen, Lock, ShieldCheck } from 'lucide-react'
+import { ArrowRight, BookOpen, Lock, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import type { CatalogCourseView } from '@/lib/types'
@@ -10,6 +10,8 @@ interface CatalogCourseCardProps {
   course: CatalogCourseView
   /** Página de vendas do curso (`metadata.salesPageUrl`); `null` = card não-clicável. */
   salesUrl: string | null
+  /** Título do curso-base da etapa (resolvido pelo pai por `foundationCourseSlug`). */
+  foundationTitle?: string | null
   /** Tema da unidade (o grid alterna por índice); bloqueado fica neutro. */
   theme?: UnitTheme
 }
@@ -18,11 +20,19 @@ interface CatalogCourseCardProps {
  * Card de "Todos os cursos": desbloqueado → entra no curso (vestindo o tema
  * da unidade); bloqueado → cadeado, card neutro e clique leva à página de
  * vendas do curso (sem `salesPageUrl` fica não-clicável — kids não tem funil).
- * Rodapé ShieldCheck "Liberado" / Lock "Bloqueado".
+ * Rodapé: "Liberado" (side-by-side) quando aberto; bloqueado pela carreira usa
+ * um CTA único de largura total (curso-base → clicável; etapa futura → rótulo
+ * muted não-tocável).
  */
-export function CatalogCourseCard({ course, salesUrl, theme = 'cyan' }: CatalogCourseCardProps) {
+export function CatalogCourseCard({
+  course,
+  salesUrl,
+  foundationTitle,
+  theme = 'cyan',
+}: CatalogCourseCardProps) {
   const careerLocked = course.hasAccess && course.careerLock?.locked === true
   const available = course.hasAccess && !careerLocked
+  const foundationFirst = careerLocked && course.careerLock?.reason === 'foundation-first'
   const body = (
     <Card
       className={cn(
@@ -72,35 +82,47 @@ export function CatalogCourseCard({ course, salesUrl, theme = 'cyan' }: CatalogC
             <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{course.subtitle}</p>
           ) : null}
         </div>
-        <div className="mt-auto flex items-center justify-between gap-3 border-t border-border pt-3 text-sm">
-          {available ? (
-            <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-              <ShieldCheck className="size-4 text-primary" />
-              Liberado
+        {careerLocked ? (
+          // Bloqueado pela carreira: um CTA único de largura total na linha de
+          // baixo (sem status duplicado do lado). Curso-base → CTA clicável que
+          // NOMEIA o curso a fazer; etapa futura → rótulo muted não-tocável (o
+          // card é um <div>, não pode parecer botão).
+          <div className="mt-auto border-t border-border pt-3">
+            {foundationFirst ? (
+              <span className="sz-btn-gradient flex w-full flex-col gap-0.5 px-3 py-2">
+                <span className="font-normal text-[11px] opacity-90">Ir para o curso-base:</span>
+                <span className="flex items-center gap-1.5">
+                  <span className="line-clamp-1 flex-1 text-left font-semibold text-sm">
+                    {foundationTitle ?? 'Curso-base da etapa'}
+                  </span>
+                  <ArrowRight className="size-4 shrink-0" />
+                </span>
+              </span>
+            ) : (
+              <span className="flex w-full items-center justify-center gap-1.5 rounded-full bg-muted px-3 py-2 text-muted-foreground text-xs">
+                <Lock className="size-3.5" />
+                Em breve na sua carreira
+              </span>
+            )}
+          </div>
+        ) : (
+          <div className="mt-auto flex items-center justify-between gap-3 border-t border-border pt-3 text-sm">
+            {available ? (
+              <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                <ShieldCheck className="size-4 text-primary" />
+                Liberado
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                <Lock className="size-4" />
+                Bloqueado
+              </span>
+            )}
+            <span className="sz-btn-gradient h-8 px-3 text-xs">
+              {available ? 'Acessar curso' : 'Quero acesso'}
             </span>
-          ) : careerLocked ? (
-            <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-              <Lock className="size-4 text-primary" />
-              {course.careerLock?.reason === 'foundation-first'
-                ? 'Faça o curso-base'
-                : 'Avance na carreira'}
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-              <Lock className="size-4" />
-              Bloqueado
-            </span>
-          )}
-          <span className="sz-btn-gradient h-8 px-3 text-xs">
-            {available
-              ? 'Acessar curso'
-              : careerLocked
-                ? course.careerLock?.reason === 'foundation-first'
-                  ? 'Ir para o curso-base'
-                  : 'Em breve para você'
-                : 'Quero acesso'}
-          </span>
-        </div>
+          </div>
+        )}
       </div>
     </Card>
   )
