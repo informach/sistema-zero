@@ -276,7 +276,9 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         editing={editing}
         prefill={prefill}
         careerCourses={careerItems}
-        onSaved={() => Promise.all([load(), loadCareer()])}
+        onSaved={async () => {
+          await Promise.all([load(), loadCareer()])
+        }}
       />
     </div>
   )
