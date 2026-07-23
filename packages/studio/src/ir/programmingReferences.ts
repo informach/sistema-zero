@@ -12,7 +12,11 @@ import {
   GAME3D_SEMANTIC_REFERENCE_FIELDS,
   type Game3DSymbolKind,
 } from '../three/game3dContract'
-import { isProgrammingStatementBodyKey, programmingChildBodyEntries } from './programmingExecution'
+import {
+  isProgrammingStatementBodyKey,
+  programmingChildBodyEntries,
+  programmingEmbeddedBodyEntries,
+} from './programmingExecution'
 import {
   PROGRAMMING_REFERENCE_FIELDS,
   type ProgrammingReferenceField,
@@ -160,6 +164,7 @@ interface ProgrammingSymbols {
   canvas3dPhysicsBodies: Map<string, Set<string>>
   canvas3dPhysicsCharacters: Map<string, Set<string>>
   canvas3dPhysicsResources: Map<string, Set<string>>
+  canvas3dImportedClasses: Set<string>
   game3d: Record<Game3DSymbolKind, Set<string>>
   classes: Set<string>
   functions: Set<string>
@@ -179,6 +184,7 @@ function cloneSymbols(symbols: ProgrammingSymbols): ProgrammingSymbols {
     canvas3dPhysicsBodies: cloneOwnedNames(symbols.canvas3dPhysicsBodies),
     canvas3dPhysicsCharacters: cloneOwnedNames(symbols.canvas3dPhysicsCharacters),
     canvas3dPhysicsResources: cloneOwnedNames(symbols.canvas3dPhysicsResources),
+    canvas3dImportedClasses: new Set(symbols.canvas3dImportedClasses),
     game3d: cloneGame3DSymbols(symbols.game3d),
     classes: new Set(symbols.classes),
     functions: new Set(symbols.functions),
@@ -324,6 +330,14 @@ function addCanvas3DSymbols(
   kinds: readonly Canvas3DSymbolKind[],
 ): void {
   for (const kind of kinds) addName(symbols.canvas3d[kind], value)
+}
+
+function removeCanvas3DSymbolName(symbols: ProgrammingSymbols, rawName: unknown): void {
+  if (typeof rawName !== 'string') return
+  const name = rawName.trim()
+  if (!name) return
+  for (const kind of CANVAS3D_SYMBOL_KINDS) symbols.canvas3d[kind].delete(name)
+  symbols.canvas3dImportedClasses.delete(name)
 }
 
 function missingIssue(
@@ -827,6 +841,9 @@ function hoistFunctions(statements: readonly JSStatement[], symbols: Programming
         addName(symbols.functions, name)
         addName(symbols.variables, name)
         addName(symbols.classes, name)
+        if (statement.module === 'three' || statement.module.startsWith('three/addons/')) {
+          addName(symbols.canvas3dImportedClasses, name)
+        }
       })
     }
     if (statement.type === 'importStar') addName(symbols.variables, statement.name)
@@ -848,6 +865,9 @@ function addStatementDeclarations(statement: JSStatement, symbols: ProgrammingSy
     statement.names.forEach((name) => {
       addName(symbols.variables, name)
       addName(symbols.classes, name)
+      if (statement.module === 'three' || statement.module.startsWith('three/addons/')) {
+        addName(symbols.canvas3dImportedClasses, name)
+      }
     })
   }
   if (statement.type === 'importStar') {
@@ -909,13 +929,19 @@ function addStatementDeclarations(statement: JSStatement, symbols: ProgrammingSy
   }
 
   if (statement.type === 'newInstance') {
-    addCanvas3DSymbols(
-      symbols,
-      statement.varName,
-      canvas3DSymbolKindsForClass(
-        statement.namespace ? `${statement.namespace}.${statement.className}` : statement.className,
-      ),
-    )
+    const namespace = statement.namespace?.trim() ?? ''
+    if (
+      namespace === 'THREE' ||
+      (!namespace && symbols.canvas3dImportedClasses.has(statement.className.trim()))
+    ) {
+      addCanvas3DSymbols(
+        symbols,
+        statement.varName,
+        canvas3DSymbolKindsForClass(
+          namespace ? `${namespace}.${statement.className}` : statement.className,
+        ),
+      )
+    }
   }
 
   const declaredName = field && typeof record[field] === 'string' ? record[field].trim() : ''
@@ -936,13 +962,16 @@ function addStatementDeclarations(statement: JSStatement, symbols: ProgrammingSy
     value &&
     typeof value === 'object' &&
     (value as Record<string, unknown>).type === 'newExpr' &&
-    !hasText((value as Record<string, unknown>).namespace) &&
     hasText((value as Record<string, unknown>).className)
   ) {
-    symbols.instances.set(declaredName, String((value as Record<string, unknown>).className).trim())
     const expression = value as Record<string, unknown>
-    const className = `${hasText(expression.namespace) ? `${expression.namespace}.` : ''}${String(expression.className)}`
-    addCanvas3DSymbols(symbols, declaredName, canvas3DSymbolKindsForClass(className))
+    const className = String(expression.className).trim()
+    const namespace = hasText(expression.namespace) ? String(expression.namespace).trim() : ''
+    if (!namespace) symbols.instances.set(declaredName, className)
+    if (namespace === 'THREE' || (!namespace && symbols.canvas3dImportedClasses.has(className))) {
+      const qualifiedClassName = namespace ? `${namespace}.${className}` : className
+      addCanvas3DSymbols(symbols, declaredName, canvas3DSymbolKindsForClass(qualifiedClassName))
+    }
   }
 }
 
@@ -960,6 +989,128 @@ function updateAssignedInstance(statement: JSStatement, symbols: ProgrammingSymb
     symbols.instances.set(name, String(value.className).trim())
   } else {
     symbols.instances.delete(name)
+  }
+}
+
+/**
+ * Foto imutável dos nomes Canvas 3D visíveis antes de executar um statement.
+ * A Bridge e as regras de lifecycle consomem o mesmo contexto léxico usado
+ * pelos seletores, sem inferir o domínio pela presença global de Three.js.
+ */
+export interface Canvas3DStatementContext {
+  symbols: Readonly<Record<Canvas3DSymbolKind, ReadonlySet<string>>>
+  importedClasses: ReadonlySet<string>
+}
+
+export type Canvas3DStatementContextIndex = WeakMap<JSStatement, Canvas3DStatementContext>
+
+function snapshotCanvas3DContext(symbols: ProgrammingSymbols): Canvas3DStatementContext {
+  return {
+    symbols: cloneCanvas3DSymbols(symbols.canvas3d),
+    importedClasses: new Set(symbols.canvas3dImportedClasses),
+  }
+}
+
+export function canvas3DContextHasSymbol(
+  context: Canvas3DStatementContext | undefined,
+  rawName: string,
+  kind: Canvas3DSymbolKind,
+): boolean {
+  const name = rawName.trim()
+  return Boolean(name && context?.symbols[kind].has(name))
+}
+
+export function canvas3DContextHasImportedClass(
+  context: Canvas3DStatementContext | undefined,
+  rawName: string,
+): boolean {
+  const name = rawName.trim()
+  return Boolean(name && context?.importedClasses.has(name))
+}
+
+/** Aplica somente as mudanças de binding que afetam a classificação Canvas 3D. */
+function applyCanvas3DContextDeclarations(
+  statement: JSStatement,
+  symbols: ProgrammingSymbols,
+): void {
+  for (const declaration of statementDeclarations(statement)) {
+    removeCanvas3DSymbolName(symbols, declaration.name)
+  }
+  if (statement.type === 'assign') removeCanvas3DSymbolName(symbols, statement.name)
+
+  addStatementDeclarations(statement, symbols)
+
+  if (statement.type !== 'assign' || statement.value.type !== 'newExpr') return
+  const namespace = statement.value.namespace?.trim() ?? ''
+  const className = statement.value.className.trim()
+  if (namespace === 'THREE' || (!namespace && symbols.canvas3dImportedClasses.has(className))) {
+    addCanvas3DSymbols(
+      symbols,
+      statement.name,
+      canvas3DSymbolKindsForClass(namespace ? `${namespace}.${className}` : className),
+    )
+  }
+}
+
+function addCanvas3DChildLocals(symbols: ProgrammingSymbols, names: readonly string[]): void {
+  for (const name of names) {
+    removeCanvas3DSymbolName(symbols, name)
+    addName(symbols.variables, name)
+  }
+}
+
+function indexCanvas3DStatements(
+  statements: JSStatement[],
+  inherited: ProgrammingSymbols,
+  callbackBase: ProgrammingSymbols,
+  suspensionBase: ProgrammingSymbols,
+  index: Canvas3DStatementContextIndex,
+): void {
+  let symbols = cloneSymbols(inherited)
+  hoistFunctions(statements, symbols)
+
+  const afterSequenceSymbols = mergeFutureSymbols(symbols, callbackBase)
+  for (const statement of statements) {
+    applyCanvas3DContextDeclarations(statement, afterSequenceSymbols)
+  }
+  hoistFunctions(statements, afterSequenceSymbols)
+
+  for (const statement of statements) {
+    index.set(statement, snapshotCanvas3DContext(symbols))
+
+    for (const child of programmingChildBodyEntries(statement)) {
+      const childSymbols = cloneSymbols(
+        child.timing === 'immediate' ? symbols : afterSequenceSymbols,
+      )
+      const childCallbackBase = cloneSymbols(afterSequenceSymbols)
+      const childSuspensionBase = cloneSymbols(
+        child.timing === 'immediate' ? suspensionBase : afterSequenceSymbols,
+      )
+      addCanvas3DChildLocals(childSymbols, child.localVariables)
+      addCanvas3DChildLocals(childCallbackBase, child.localVariables)
+      addCanvas3DChildLocals(childSuspensionBase, child.localVariables)
+      if (statement.type === 'classDecl') {
+        addCanvas3DChildLocals(childSymbols, [statement.name])
+        addCanvas3DChildLocals(childCallbackBase, [statement.name])
+        addCanvas3DChildLocals(childSuspensionBase, [statement.name])
+      }
+      indexCanvas3DStatements(
+        child.body,
+        childSymbols,
+        childCallbackBase,
+        childSuspensionBase,
+        index,
+      )
+    }
+
+    for (const embedded of programmingEmbeddedBodyEntries(statement)) {
+      indexCanvas3DStatements(embedded.body, symbols, afterSequenceSymbols, suspensionBase, index)
+    }
+
+    applyCanvas3DContextDeclarations(statement, symbols)
+    if (statement.type === 'awaitStmt') {
+      symbols = mergeFutureSymbols(symbols, suspensionBase)
+    }
   }
 }
 
@@ -1119,13 +1270,10 @@ export interface ProgrammingReferenceOptions {
   canvasIds?: Iterable<string>
 }
 
-export function validateProgrammingReferences(
-  statements: JSStatement[],
-  path: (string | number)[] = ['js'],
+function createInitialProgrammingSymbols(
   options: ProgrammingReferenceOptions = {},
-): ProgrammingReferenceIssue[] {
-  const issues: ProgrammingReferenceIssue[] = []
-  const initialSymbols: ProgrammingSymbols = {
+): ProgrammingSymbols {
+  return {
     variables: new Set(IMPLICIT_VARIABLES),
     canvasContexts: new Set(),
     canvasIds: new Set(options.canvasIds ?? []),
@@ -1133,6 +1281,7 @@ export function validateProgrammingReferences(
     canvas3dPhysicsBodies: new Map(),
     canvas3dPhysicsCharacters: new Map(),
     canvas3dPhysicsResources: new Map(),
+    canvas3dImportedClasses: new Set(),
     game3d: emptyGame3DSymbols(),
     classes: new Set(IMPLICIT_CLASSES),
     functions: new Set(IMPLICIT_FUNCTIONS),
@@ -1142,6 +1291,25 @@ export function validateProgrammingReferences(
     instances: new Map(),
     checkingClassBodies: new Set(),
   }
+}
+
+/** Indexa a visibilidade Canvas 3D por ordem, callback e escopo léxico. */
+export function createCanvas3DStatementContextIndex(
+  statements: JSStatement[],
+): Canvas3DStatementContextIndex {
+  const index: Canvas3DStatementContextIndex = new WeakMap()
+  const initialSymbols = createInitialProgrammingSymbols()
+  indexCanvas3DStatements(statements, initialSymbols, initialSymbols, initialSymbols, index)
+  return index
+}
+
+export function validateProgrammingReferences(
+  statements: JSStatement[],
+  path: (string | number)[] = ['js'],
+  options: ProgrammingReferenceOptions = {},
+): ProgrammingReferenceIssue[] {
+  const issues: ProgrammingReferenceIssue[] = []
+  const initialSymbols = createInitialProgrammingSymbols(options)
   validateStatements(statements, initialSymbols, initialSymbols, initialSymbols, path, issues)
   return issues
 }

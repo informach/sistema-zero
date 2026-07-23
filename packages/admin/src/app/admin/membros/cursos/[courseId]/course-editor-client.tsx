@@ -37,6 +37,7 @@ import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { slugify } from '@/lib/slug'
 import type { CourseTreeView, LessonView, ModuleView } from '@/lib/types'
+import { CourseFormDialog } from '../course-form-dialog'
 import { CourseSubmissionsPanel } from './course-submissions-client'
 
 type CourseTab = 'estrutura' | 'entregas'
@@ -64,6 +65,9 @@ export function CourseEditorClient({
   const { confirm, confirmDialog } = useConfirm()
   // Módulos COLAPSADOS (default = tudo expandido).
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
+
+  // Dialog de edição do PRÓPRIO curso (mesmo form da listagem — reusa CourseFormDialog).
+  const [courseEditOpen, setCourseEditOpen] = useState(false)
 
   const [moduleOpen, setModuleOpen] = useState(false)
   const [editingModule, setEditingModule] = useState<ModuleView | null>(null)
@@ -271,10 +275,17 @@ export function CourseEditorClient({
         title={tree?.title ?? 'Curso'}
         description={tree ? `${tree.slug} · ${tree.status}` : courseId}
         action={
-          canWrite && tab === 'estrutura' ? (
-            <Button onClick={openCreateModule}>
-              <Plus className="size-4" /> Novo módulo
-            </Button>
+          canWrite ? (
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={() => setCourseEditOpen(true)} disabled={!tree}>
+                <Pencil className="size-4" /> Editar curso
+              </Button>
+              {tab === 'estrutura' ? (
+                <Button onClick={openCreateModule}>
+                  <Plus className="size-4" /> Novo módulo
+                </Button>
+              ) : null}
+            </div>
           ) : undefined
         }
       />
@@ -346,6 +357,15 @@ export function CourseEditorClient({
           </SortableContext>
         </DndContext>
       )}
+
+      {tree ? (
+        <CourseFormDialog
+          open={courseEditOpen}
+          onClose={() => setCourseEditOpen(false)}
+          editing={tree}
+          onSaved={load}
+        />
+      ) : null}
 
       <Dialog
         open={moduleOpen}

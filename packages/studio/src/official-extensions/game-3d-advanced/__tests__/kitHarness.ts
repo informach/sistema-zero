@@ -1,4 +1,5 @@
 import * as RealTHREE from 'three'
+import { buildProjectRunContextRuntime } from '#extensions'
 import { gameKit3DRuntime } from '../runtime'
 
 /**
@@ -108,10 +109,17 @@ export function makeFakeThree() {
 /** Só o que os testes chamam — o inventário completo é auditado no blockAudit. */
 export interface KitApi {
   setup(opts: Record<string, unknown>): void
+  setEffects(opts: {
+    shadows?: boolean
+    bloom?: boolean
+    strength?: number
+    vignette?: boolean
+  }): void
   start(): void
   runProject(fn: () => void): void
   state(): string
   setState(name: string): void
+  endGame(message?: string): void
   onEnterState(name: string, fn: () => void): void
   defineMold(name: string, opts: Record<string, unknown>, fn: () => void): void
   part(opts: Record<string, unknown>): void
@@ -224,6 +232,17 @@ export async function loadStartedKit(beforeStart?: (api: KitApi) => void): Promi
 }> {
   const { THREE, renderers } = makeFakeThree()
   const win = globalThis.window as unknown as Record<string, unknown>
+  // O preview instala este contexto antes do JS gerado. A extensão agora marca
+  // suas execuções como gerenciadas, portanto a bancada precisa reproduzir a
+  // mesma fronteira de ciclo de vida em vez de deixar o exemplo falhar em um
+  // ambiente incompleto.
+  new Function(
+    'window',
+    'requestAnimationFrame',
+    'cancelAnimationFrame',
+    'AbortController',
+    buildProjectRunContextRuntime(),
+  )(win, requestAnimationFrame, cancelAnimationFrame, AbortController)
   new Function('THREE', 'window', runtimeBody)(THREE, win)
   const api = win.SZGameKit3D as KitApi
   api.setup({ width: 640, height: 360, world: 100 })
@@ -268,6 +287,13 @@ export async function loadExampleKit(exampleJs: string): Promise<{
 }> {
   const { THREE, renderers } = makeFakeThree()
   const win = globalThis.window as unknown as Record<string, unknown>
+  new Function(
+    'window',
+    'requestAnimationFrame',
+    'cancelAnimationFrame',
+    'AbortController',
+    buildProjectRunContextRuntime(),
+  )(win, requestAnimationFrame, cancelAnimationFrame, AbortController)
   new Function('THREE', 'window', runtimeBody)(THREE, win)
   const api = win.SZGameKit3D as KitApi
   // O exemplo referencia o identificador SZGameKit3D "solto" — entra como

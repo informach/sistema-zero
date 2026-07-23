@@ -152,7 +152,8 @@ export const gameTwoDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'A gravidade é somada à velocidade vertical de cada sprite em "Aplicar velocidade".',
+    tooltip:
+      'Define a gravidade do mundo para física, plataforma, pulo e inimigos terrestres. Use 0 para desligar ou um valor negativo para puxar para cima.',
   },
   {
     type: 'sz_g2d_apply_velocity',
@@ -1341,7 +1342,7 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Esquerda/direita com as setas, pulo com a seta pra cima (só quando está no chão) e gravidade puxando pra baixo. O chão é a base da tela.',
+      'Esquerda/direita com as setas, pulo com a seta pra cima (só quando está no chão) e gravidade. Usa a gravidade do mundo quando ela foi definida; senão usa 0,6. O chão é a borda atraída: base com gravidade positiva, teto com gravidade negativa.',
   },
   {
     type: 'sz_g2d_top_down',
@@ -2278,7 +2279,7 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Pula com ↑/Espaço/W ou um toque na tela, com gravidade e pouso no chão (a base da tela). Ótimo para jogos de corrida e de pulo. Use dentro do "a cada quadro".',
+      'Pula com ↑/Espaço/W ou um toque na tela, com gravidade e pouso na borda atraída: base com gravidade positiva, teto com gravidade negativa. Ótimo para jogos de corrida e de pulo. Use dentro do "a cada quadro".',
   },
 
   // ---- Kit dino (v0.9.0): desenhos prontos + sons para um jogo de corrida ----

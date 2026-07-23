@@ -331,6 +331,73 @@ describe('SZGameKit3D — modelos .glb', () => {
     expect(hasNode(e, 'Casco')).toBe(true)
   })
 
+  it('carrega modelo cujo nome coincide com uma propriedade herdada', async () => {
+    seedModels({ constructor: makeAnimatedGlb('Construtor') })
+    const { api } = await loadStartedKit((a) => {
+      a.defineMold('nave', { health: 1, speed: 0 }, () => {
+        a.part({ shape: 'modelo', model: 'constructor', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
+      })
+    })
+    api.setState('jogando')
+
+    expect(hasNode(api.spawn('nave', 0, 0, 0), 'Construtor')).toBe(true)
+  })
+
+  it('inicia o jogo quando o carregamento de modelo excede o timeout', async () => {
+    seedModels({ tardio: makeAnimatedGlb('Tardio') })
+    const { THREE, renderers } = makeFakeThree()
+    const win = globalThis.window as unknown as Record<string, unknown>
+    const timers: Array<() => void> = []
+    new Function('THREE', 'window', 'setTimeout', 'clearTimeout', runtimeBody)(
+      THREE,
+      win,
+      (callback: () => void) => {
+        timers.push(callback)
+        return timers.length
+      },
+      () => undefined,
+    )
+    const api = win.SZGameKit3D as KitApi
+    api.setup({ width: 640, height: 360, world: 100 })
+    api.defineMold('tardio', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'modelo', model: 'tardio', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
+    })
+    api.start()
+
+    expect(timers).toHaveLength(1)
+    timers[0]?.()
+    await waitUntil(() => Boolean(renderers[0]?.loop))
+
+    window.dispatchEvent(new Event('pagehide'))
+  })
+
+  it('dispose cancela imediatamente o timeout de um GLB pendente', () => {
+    seedModels({ tardio: makeAnimatedGlb('Tardio') })
+    const { THREE } = makeFakeThree()
+    const win = globalThis.window as unknown as Record<string, unknown>
+    const timers: Array<() => void> = []
+    const cleared: number[] = []
+    new Function('THREE', 'window', 'setTimeout', 'clearTimeout', runtimeBody)(
+      THREE,
+      win,
+      (callback: () => void) => {
+        timers.push(callback)
+        return timers.length
+      },
+      (id: number) => cleared.push(id),
+    )
+    const api = win.SZGameKit3D as KitApi
+    api.setup({ width: 640, height: 360, world: 100 })
+    api.defineMold('tardio', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'modelo', model: 'tardio', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
+    })
+    api.start()
+
+    expect(timers).toHaveLength(1)
+    window.dispatchEvent(new Event('pagehide'))
+    expect(cleared).toEqual([1])
+  })
+
   it('dispose durante o parse de GLB invalida a conclusão tardia do start', async () => {
     seedModels({ tardio: makeAnimatedGlb('Tardio') })
     const { THREE, renderers } = makeFakeThree()
@@ -357,6 +424,92 @@ describe('SZGameKit3D — modelos .glb', () => {
 
     expect(renderers[0]?.loop).toBeNull()
     expect(renderers[0]?.disposeCalls).toBe(1)
+  })
+
+  it('dispose libera o GLB cacheado mesmo depois de a entidade voltar ao pool', async () => {
+    seedModels({ heroi: makeAnimatedGlb('Heroi') })
+    const { api } = await loadStartedKit((runtime) => {
+      runtime.defineMold('heroi', { health: 1, speed: 0 }, () => {
+        runtime.part({ shape: 'modelo', model: 'heroi', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
+      })
+    })
+    api.setState('jogando')
+    const entity = api.spawn('heroi', 0, 0, 0) as {
+      mesh: {
+        traverse(
+          fn: (node: {
+            geometry?: { addEventListener(type: string, fn: () => void): void }
+          }) => void,
+        ): void
+      }
+    }
+    let geometryDisposals = 0
+    entity.mesh.traverse((node) => {
+      node.geometry?.addEventListener('dispose', () => geometryDisposals++)
+    })
+
+    api.recycle(entity)
+    window.dispatchEvent(new Event('pagehide'))
+
+    expect(geometryDisposals).toBeGreaterThan(0)
+  })
+
+  it('dispose emite uma vez para a geometria compartilhada entre cena e cache', async () => {
+    seedModels({ heroi: makeAnimatedGlb('Heroi') })
+    const { api } = await loadStartedKit((runtime) => {
+      runtime.defineMold('heroi', { health: 1, speed: 0 }, () => {
+        runtime.part({ shape: 'modelo', model: 'heroi', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
+      })
+    })
+    api.setState('jogando')
+    const entity = api.spawn('heroi', 0, 0, 0) as {
+      mesh: {
+        traverse(
+          fn: (node: {
+            geometry?: { addEventListener(type: string, fn: () => void): void }
+          }) => void,
+        ): void
+      }
+    }
+    let geometryDisposals = 0
+    entity.mesh.traverse((node) => {
+      node.geometry?.addEventListener('dispose', () => geometryDisposals++)
+    })
+
+    window.dispatchEvent(new Event('pagehide'))
+
+    expect(geometryDisposals).toBe(1)
+  })
+
+  it('Jogar de novo preserva o material que pertence ao cache de GLB', async () => {
+    seedModels({ heroi: makeAnimatedGlb('Heroi') })
+    const { api } = await loadStartedKit()
+    api.runProject(() => {
+      api.defineMold('heroi', { health: 1, speed: 0 }, () => {
+        api.part({ shape: 'modelo', model: 'heroi', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
+      })
+    })
+    api.setState('jogando')
+    await new Promise((resolve) => setTimeout(resolve, 120))
+    const entity = api.spawn('heroi', 0, 0, 0) as {
+      mesh: {
+        traverse(
+          fn: (node: {
+            material?: { addEventListener(type: string, fn: () => void): void }
+          }) => void,
+        ): void
+      }
+    }
+    let materialDisposals = 0
+    entity.mesh.traverse((node) => {
+      node.material?.addEventListener('dispose', () => materialDisposals++)
+    })
+
+    api.setState('fim')
+    api.setState('jogando')
+
+    expect(materialDisposals).toBe(0)
+    window.dispatchEvent(new Event('pagehide'))
   })
 
   it('⭐ o boneco ganha um mixer e os clipes do .glb (era estátua congelada)', async () => {

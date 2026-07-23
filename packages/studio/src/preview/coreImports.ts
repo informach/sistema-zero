@@ -29,10 +29,15 @@ export { THREE_ADDONS_CDN, THREE_CDN }
  * (chave com barra final) no importmap, então `three/addons/x/Y.js` resolve para
  * `…/examples/jsm/x/Y.js`. Mesma origem do `three` base → nada novo na CSP.
  */
-/** Especificador exato `three` (não `three/addons/…`, tratado à parte). */
-const IMPORTS_THREE = /from\s+['"]three['"]/
-/** Qualquer import de addon (`from 'three/addons/…'`). */
-const IMPORTS_THREE_ADDONS = /from\s+['"]three\/addons\//
+/**
+ * Especificador exato `three` (não `three/addons/…`, tratado à parte). `\s*` (não `\s+`)
+ * tolera `from'three'` sem espaço — JS válido que o gerador não emite, mas código escrito
+ * à mão na Ponte/modo PRO pode. ⚠️ Varre a fonte CRUA: o literal `from 'three'` num
+ * comentário/string de um projeto 2D liga o importmap à toa (inócuo — entrada não usada).
+ */
+const IMPORTS_THREE = /from\s*['"]three['"]/
+/** Qualquer import de addon (`from 'three/addons/…'`); mesma tolerância de espaço. */
+const IMPORTS_THREE_ADDONS = /from\s*['"]three\/addons\//
 
 /** Os imports de núcleo que o código gerado exige (three.js + addons). */
 export function coreImportsForCode(js: unknown): Record<string, string> {

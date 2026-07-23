@@ -99,6 +99,22 @@ function categoriasDeBlocosCitadasNasDocs(texto: string): { label: string; categ
 }
 
 describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
+  it('descreve o chão como a borda atraída, inclusive com gravidade negativa', () => {
+    const tooltips = gameTwoDBlocks
+      .map((block) => block.tooltip)
+      .filter((tooltip): tooltip is string => typeof tooltip === 'string')
+      .join('\n')
+    const semanticSurfaces = [gameTwoDManifest.docs, gameTwoDPromptContext, tooltips]
+
+    for (const text of semanticSurfaces) {
+      expect(text).not.toMatch(
+        /chão\s*=\s*base (?:da tela|do canvas)|o chão é a base da tela|pous[ao]\w* (?:o sprite )?na base da tela/i,
+      )
+    }
+    expect(gameTwoDManifest.docs).toContain('gravidade negativa')
+    expect(gameTwoDManifest.docs).toContain('teto')
+  })
+
   const reais = new Set(nomesDeCategoria(gameTwoDToolboxCategory))
 
   it('toda citação de chip nas docs do aluno é uma sub-categoria real (ou uma do núcleo)', () => {

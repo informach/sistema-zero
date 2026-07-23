@@ -128,6 +128,11 @@ API global (cada método corresponde a exatamente 1 bloco):
   viva do molde (verde -> vermelha; chefao/RPG). Morte dramatica (cair antes de
   sumir): NAO use hurt no golpe final — vida numa gaveta + estado 'morrendo'
   (fall + stateTimer) + recycle no estado seguinte.
+- Chefao (bullet-hell na unha): heal(ent, vida) — devolve vida ate o maximo de
+  nascenca (pocao, descanso, chefao que se recupera); onHurt('molde', function
+  (ela) {}) — roda a cada dano levado, leia healthOf(ela) ali dentro para trocar
+  de fase; spawnRing('tiro', N, ent, velocidade) — anel de N tiros ao redor da
+  entidade voando para fora (combine com cullFar no tiro).
 - Faíscas 3D (partículas data-driven): defineEffect('nome', {count, colorFrom,
   colorTo, spread, sizeFrom, sizeTo, life, gravity}) — EXPLOSAO; burstAt('nome',
   x, y, z); burstOn('nome', ent) — combine com onEntityDeath.

@@ -30,6 +30,14 @@ São 31 posições obrigatórias. `careerSlot = null` identifica um curso bônus
 
 A posição 1 é o curso base de cada etapa. Ao entrar em uma etapa, a criança abre primeiro esse curso. Os demais cursos da mesma etapa só abrem depois que o curso base for concluído e publicado. Cursos de etapas futuras mostram uma mensagem de continuação da carreira e não criam um link para um curso que ainda está bloqueado.
 
+### Sem curso base publicado, a etapa não trava (fail-open)
+
+A trava da posição 1 só faz sentido quando existe um curso base **publicado** para destravar. Se a etapa tiver cursos nas posições 2 ou seguintes mas nenhum curso base publicado (ainda não cadastrado, em rascunho ou removido), a trava `foundation-first` é ignorada e esses cursos ficam acessíveis. Sem isso a etapa inteira — e, no caso do Iniciante 2D, a carreira toda — congelaria: não haveria nada a concluir para liberar as demais posições. A regra vive em `resolveCareerCourseLock` (parâmetro `foundationAvailable`) e vale tanto na listagem quanto no acesso direto por URL.
+
+Isso é uma rede de segurança, não o estado desejado: o painel de prontidão continua marcando a posição 1 vazia como "Falta curso". Cadastre e publique o curso base para que a progressão pedagógica volte a valer.
+
+⚠️ **Armadilha do Mural:** a posição 1 só *qualifica* quando a criança conclui o curso base **e publica no Mural**. Se o curso base não tiver um bloco de Estúdio com vitrine (`showcase.enabled`), ela conclui o curso mas nunca publica — a posição 1 nunca qualifica e os demais cursos da etapa seguem travados. Todo curso base precisa terminar com um projeto publicável.
+
 ## Matriz dos níveis
 
 | Nível | Requisito acumulado | Etapa estudada | Liberação no Estúdio livre |
@@ -72,6 +80,20 @@ Nas aulas, o professor pode criar um projeto Pro antes de a criança chegar à L
 
 ## Autoria no Admin
 
+### Cadastrar o curso base e as posições da etapa
+
+No painel **Cursos** (`/admin/membros/cursos`), o formulário de curso (tanto ao criar quanto ao editar — o botão **"Editar curso"** também aparece dentro do editor de conteúdo de cada curso) tem o campo **Posição na Carreira do Criador**. Ele só fica habilitado quando a Audiência é **Kids**.
+
+* **Nenhuma — curso bônus:** fora da trava (o curso aparece mas não segura os outros).
+* **1 — Curso-base da etapa:** o curso que destrava as demais posições.
+* **2 em diante:** os demais cursos da etapa, liberados após o curso base.
+
+O select mostra qual curso já ocupa cada posição da etapa selecionada e desabilita posições ocupadas por outro curso (o banco recusa duplicata na mesma etapa). Iniciante 2D aceita posições 1 a 6; as demais etapas, 1 a 5.
+
+O painel **Carreira do Criador** no topo da página é clicável: uma posição vazia abre o cadastro já mirando a etapa e a posição corretas; uma posição ocupada abre a edição daquele curso. Use-o para preencher a etapa Iniciante 2D primeiro, começando pela posição 1.
+
+### Autoria do bloco Estúdio (blocos ou Pro)
+
 No bloco Estúdio, o autor escolhe entre projeto em blocos e projeto Pro. Ao escolher Pro, também escolhe um dos cinco modelos. Trocar tipo ou modelo substitui o projeto inicial somente após confirmação.
 
 O backend valida o identificador do modelo contra o catálogo fechado. O preview do Admin chama o mesmo executor remoto usado pelas aulas. Configure no Admin e no Community Kids:
@@ -98,7 +120,9 @@ As migrações `0048_normalize_creator_career_slots` e `0049_needy_iron_man` pre
 
 ## Pontos principais no código
 
-* matriz e regras de trava: `packages/core/src/career/catalog.ts`;
+* matriz e regras de trava (incl. `foundationAvailable` = fail-open sem curso base): `packages/core/src/career/catalog.ts`;
+* projeção da trava na listagem: `packages/members/src/application/career-course-locking/career-course-locking.ts`;
+* gate de acesso direto (423) + checagem de curso base publicado: `packages/members/src/application/access/check-access.service.ts` e `hasPublishedFoundationCourse` no repositório de cursos;
 * cálculo dos marcos: `packages/members/src/infrastructure/persistence/drizzle/gamification.repository.ts`;
 * regra de autoria e posições: `packages/members/src/application/content-admin/content-admin.service.ts`;
 * capacidades do Estúdio por nível: `packages/member-shell/src/lib/studio-tier.ts`;

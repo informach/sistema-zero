@@ -83,7 +83,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     if (!group || !group.items) return null;
     if (group.items.length >= MAX_GROUP) return null;
     opts = opts || {};
-    var base = (typeof opts.size === 'number' && opts.size > 0) ? opts.size : 36;
+    var base = _positiveFiniteNumber(opts.size, 36);
     // Cada asteroide nasce com um tamanho um pouco diferente (variedade automática).
     var size = Math.round(base * (0.65 + Math.random() * 0.5));
     var s = createSprite({ x: opts.x, y: opts.y, w: size, h: size, color: opts.color, vx: opts.vx, vy: opts.vy });
@@ -230,11 +230,11 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
         behavior: opts.behavior || 'patrulha',
         color: opts.color || '#e4573d',
         image: (typeof opts.image === 'string') ? opts.image : '',
-        hp: (typeof opts.hp === 'number' && opts.hp > 0) ? opts.hp : 3,
-        speed: (typeof opts.speed === 'number') ? opts.speed : 2,
-        dmg: (typeof opts.dmg === 'number') ? opts.dmg : 1,
-        w: (typeof opts.w === 'number' && opts.w > 0) ? opts.w : 32,
-        h: (typeof opts.h === 'number' && opts.h > 0) ? opts.h : 32,
+        hp: _positiveFiniteNumber(opts.hp, 3),
+        speed: _finiteNumber(opts.speed, 2),
+        dmg: _finiteNumber(opts.dmg, 1),
+        w: _positiveFiniteNumber(opts.w, 32),
+        h: _positiveFiniteNumber(opts.h, 32),
         // Ajustes finos por comportamento (bloco "Ajustar no tipo de inimigo…").
         jump: 10,
         jumpRate: 90,
@@ -253,20 +253,19 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
   function setEnemyStateAnimation(type, state, sheet, from, to, fps) {
     if (!type || !type.config || !sheet || !state) return;
     if (!type.config.animStates) type.config.animStates = {};
-    var f = (typeof from === 'number') ? from : 0;
-    var t = (typeof to === 'number') ? to : f;
+    var f = _finiteNumber(from, 0);
+    var t = _finiteNumber(to, f);
     type.config.animStates[state] = {
       sheet: sheet,
       from: Math.max(0, Math.floor(f)),
       to: Math.max(0, Math.floor(t)),
-      fps: (typeof fps === 'number' && fps > 0) ? fps : 8
+      fps: _positiveFiniteNumber(fps, 8)
     };
   }
 
   /** Ajuste fino por comportamento: pulo/ritmo (saltador), alcance (voador), cadencia/tiro (atirador). */
   function setEnemyTypeParam(type, param, value) {
-    // value !== value = NaN (typeof NaN e 'number'; sem depender de isNaN).
-    if (!type || !type.config || typeof value !== 'number' || value !== value) return;
+    if (!type || !type.config || !_isFiniteNumber(value)) return;
     var c = type.config;
     if (param === 'pulo') c.jump = value;
     else if (param === 'ritmo') c.jumpRate = Math.max(1, Math.round(value));
@@ -281,8 +280,8 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     if (type.items.length >= MAX_GROUP) return null;
     var c = type.config;
     var s = createSprite({
-      x: (typeof x === 'number') ? x : 0,
-      y: (typeof y === 'number') ? y : 0,
+      x: _finiteNumber(x, 0),
+      y: _finiteNumber(y, 0),
       w: c.w,
       h: c.h,
       color: c.color,
@@ -328,7 +327,11 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     var generation = _driverGeneration;
     var c = type.config || {};
     var visible = _visibleWorldRect(ctx);
-    var g = world.gravity > 0 ? world.gravity : 0.6;
+    // A patrulha só usa gravidade quando o projeto a declara explicitamente.
+    // Saltador/atirador continuam com 0.6 por padrão, mas respeitam inclusive
+    // gravidade 0 ou negativa quando ela foi configurada.
+    var hasGravity = world.gravityConfigured && world.gravity !== 0;
+    var g = _worldGravityOr(0.6);
     for (var i = type.items.length - 1; i >= 0; i--) {
       var s = type.items[i];
       if (!s) { _removeGroupItemAt(type, i); continue; }
@@ -364,22 +367,18 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
         s.vx = 0;
         s.vy = (s.vy || 0) + g;
         s.y += s.vy;
-        var floorJ = visible.bottom - s.h;
-        s.onGround = false;
-        if (s.y >= floorJ) { s.y = floorJ; s.vy = 0; s.onGround = true; }
+        _resolveGravityGround(s, visible.top, visible.bottom, g);
         if (typeof s._jcd !== 'number') s._jcd = c.jumpRate;
         if (s.onGround) {
           s._jcd -= 1;
-          if (s._jcd <= 0) { s.vy = -c.jump; s.onGround = false; s._jcd = c.jumpRate; }
+          if (s._jcd <= 0) { s.vy = _jumpVelocityForGravity(g, c.jump); s.onGround = false; s._jcd = c.jumpRate; }
         }
       } else if (b === 'atirador') {
         // Fica no chao, vira para o alvo e atira a cada "cadencia" quadros.
         s.vx = 0;
         s.vy = (s.vy || 0) + g;
         s.y += s.vy;
-        var floorS = visible.bottom - s.h;
-        s.onGround = false;
-        if (s.y >= floorS) { s.y = floorS; s.vy = 0; s.onGround = true; }
+        _resolveGravityGround(s, visible.top, visible.bottom, g);
         if (target) {
           s.facing = ((target.x + (target.w || 0) / 2) < (s.x + s.w / 2)) ? -1 : 1;
           if (typeof s._scd !== 'number') s._scd = c.rate;
@@ -411,11 +410,13 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
         if (s.x + s.w >= visible.right) s._dir = -1;
         s.vx = (s._dir || 1) * c.speed;
         s.x += s.vx;
-        s.vy = (s.vy || 0) + g;
-        s.y += s.vy;
-        var floorP = visible.bottom - s.h;
-        s.onGround = false;
-        if (s.y >= floorP) { s.y = floorP; s.vy = 0; s.onGround = true; }
+        // Gravidade/chao SO quando o mundo declarou gravidade. Num top-down puro,
+        // o inimigo padrao patrulha na horizontal sem afundar.
+        if (hasGravity) {
+          s.vy = (s.vy || 0) + g;
+          s.y += s.vy;
+          _resolveGravityGround(s, visible.top, visible.bottom, g);
+        }
         s._moved = true;
       }
       autoAnimate(s);
@@ -506,7 +507,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
 
   /** O dano de contato guardado no inimigo (ou no tiro dele). */
   function enemyDamage(s) {
-    return (s && typeof s.dmg === 'number') ? s.dmg : 1;
+    return s ? _finiteNumber(s.dmg, 1) : 1;
   }
 
   /**
@@ -523,27 +524,29 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
   /** Escreve "rótulo valor" (ex.: "Pontos: 5") na tela. */
   function drawScore(ctx, label, value, x, y, color, size) {
     if (!ctx) return;
+    var px = _finiteNumber(x, 0), py = _finiteNumber(y, 0);
     ctx.save();
     ctx.fillStyle = color || '#ffffff';
-    ctx.font = 'bold ' + ((typeof size === 'number' && size > 0) ? size : 20) + 'px ' + _szGameUIFont;
+    ctx.font = 'bold ' + _positiveFiniteNumber(size, 20) + 'px ' + _szGameUIFont;
     ctx.textAlign = 'left';
     var text = (label === undefined || label === null || label === '') ? String(value)
       : String(label) + ' ' + String(value);
-    ctx.fillText(text, x || 0, y || 0);
+    ctx.fillText(text, px, py);
     ctx.restore();
-    _updateAccessibleHud('score:' + String(label || '') + ':' + String(x || 0) + ':' + String(y || 0), text);
+    _updateAccessibleHud('score:' + String(label || '') + ':' + String(px) + ':' + String(py), text);
   }
   /** Escreve um texto na tela (com alinhamento esquerda/centro/direita). */
   function drawLabel(ctx, text, x, y, color, size, align) {
     if (!ctx) return;
     var labelText = String(text === undefined || text === null ? '' : text);
+    var px = _finiteNumber(x, 0), py = _finiteNumber(y, 0);
     ctx.save();
     ctx.fillStyle = color || '#ffffff';
-    ctx.font = 'bold ' + ((typeof size === 'number' && size > 0) ? size : 20) + 'px ' + _szGameUIFont;
+    ctx.font = 'bold ' + _positiveFiniteNumber(size, 20) + 'px ' + _szGameUIFont;
     ctx.textAlign = align || 'left';
-    ctx.fillText(labelText, x || 0, y || 0);
+    ctx.fillText(labelText, px, py);
     ctx.restore();
-    _updateAccessibleHud('label:' + String(x || 0) + ':' + String(y || 0), labelText);
+    _updateAccessibleHud('label:' + String(px) + ':' + String(py), labelText);
   }
   /** Desenha UM coração de tamanho s, canto superior-esquerdo em (x,y). */
   function drawHeart(ctx, x, y, s) {
@@ -560,40 +563,42 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
   /** Desenha somente a parte visual dos corações; os chamadores publicam a semântica. */
   function _drawHeartsVisual(ctx, count, x, y, size, color) {
     if (!ctx) return;
-    var n = Math.max(0, Math.min(typeof count === 'number' ? Math.floor(count) : 0, 20));
-    var s = (typeof size === 'number' && size > 0) ? size : 22;
+    var n = Math.max(0, Math.min(Math.floor(_finiteNumber(count, 0)), 20));
+    var s = _positiveFiniteNumber(size, 22);
+    var px = _finiteNumber(x, 0), py = _finiteNumber(y, 0);
     ctx.save();
     ctx.fillStyle = color || '#ff5d5d';
-    for (var i = 0; i < n; i++) drawHeart(ctx, (x || 0) + i * (s + 6), y || 0, s);
+    for (var i = 0; i < n; i++) drawHeart(ctx, px + i * (s + 6), py, s);
     ctx.restore();
   }
   /** Desenha "count" corações em linha (ex.: vidas). Teto de 20. */
   function drawHearts(ctx, count, x, y, size, color) {
     if (!ctx) return;
     _drawHeartsVisual(ctx, count, x, y, size, color);
-    var n = Math.max(0, Math.min(typeof count === 'number' ? Math.floor(count) : 0, 20));
-    _updateAccessibleHud('hearts:' + String(x || 0) + ':' + String(y || 0), 'Vidas: ' + n);
+    var n = Math.max(0, Math.min(Math.floor(_finiteNumber(count, 0)), 20));
+    _updateAccessibleHud('hearts:' + String(_finiteNumber(x, 0)) + ':' + String(_finiteNumber(y, 0)), 'Vidas: ' + n);
   }
   /** Barra de progresso/vida: fundo + preenchimento proporcional a value/max. */
   function _drawBarVisual(ctx, value, max, x, y, w, h, color) {
     if (!ctx) return;
-    var m = (typeof max === 'number' && max > 0) ? max : 1;
-    var v = (typeof value === 'number') ? value : 0;
+    var m = _positiveFiniteNumber(max, 1);
+    var v = _finiteNumber(value, 0);
     var frac = Math.max(0, Math.min(v / m, 1));
-    var bw = (typeof w === 'number' && w > 0) ? w : 100;
-    var bh = (typeof h === 'number' && h > 0) ? h : 12;
+    var bw = _positiveFiniteNumber(w, 100);
+    var bh = _positiveFiniteNumber(h, 12);
+    var px = _finiteNumber(x, 0), py = _finiteNumber(y, 0);
     ctx.save();
     ctx.fillStyle = 'rgba(255,255,255,0.2)';
-    ctx.fillRect(x || 0, y || 0, bw, bh);
+    ctx.fillRect(px, py, bw, bh);
     ctx.fillStyle = color || '#9cff57';
-    ctx.fillRect(x || 0, y || 0, bw * frac, bh);
+    ctx.fillRect(px, py, bw * frac, bh);
     ctx.restore();
   }
   function drawBar(ctx, value, max, x, y, w, h, color) {
     _drawBarVisual(ctx, value, max, x, y, w, h, color);
-    var v = (typeof value === 'number') ? value : 0;
-    var m = (typeof max === 'number' && max > 0) ? max : 1;
-    _updateAccessibleHud('bar:' + String(x || 0) + ':' + String(y || 0), 'Progresso: ' + v + ' de ' + m);
+    var v = _finiteNumber(value, 0);
+    var m = _positiveFiniteNumber(max, 1);
+    _updateAccessibleHud('bar:' + String(_finiteNumber(x, 0)) + ':' + String(_finiteNumber(y, 0)), 'Progresso: ' + v + ' de ' + m);
   }
   /** HUD de vidas ligado ao sprite: corações ou barra, sem variável intermediária. */
   function drawSpriteHealth(ctx, sprite, style, x, y, size, color) {
@@ -601,13 +606,13 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     if (!_hasInitializedHealth(sprite)) { _warnHealthNotInitialized(); return; }
     var visual = style === 'bar' ? 'bar' : 'hearts';
     if (visual === 'bar') {
-      var width = (typeof size === 'number' && Number.isFinite(size) && size > 0) ? size : 160;
+      var width = _positiveFiniteNumber(size, 160);
       var height = Math.max(8, Math.round(width / 10));
       _drawBarVisual(ctx, sprite.hp, sprite.hpMax, x, y, width, height, color);
     } else {
       _drawHeartsVisual(ctx, sprite.hp, x, y, size, color);
     }
-    _updateAccessibleHud('health:' + String(x || 0) + ':' + String(y || 0), 'Vidas: ' + sprite.hp + ' de ' + sprite.hpMax);
+    _updateAccessibleHud('health:' + String(_finiteNumber(x, 0)) + ':' + String(_finiteNumber(y, 0)), 'Vidas: ' + sprite.hp + ' de ' + sprite.hpMax);
   }
 
   // ---- Estado do jogo (cenas): início → jogando → ganhou → perdeu ----
@@ -749,7 +754,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
    */
   function drawStarfield(ctx, speed) {
     if (!ctx || !ctx.canvas) return;
-    var sp = (typeof speed === 'number') ? speed : 1;
+    var sp = _finiteNumber(speed, 1);
     var w = stageW(ctx), h = stageH(ctx);
     ctx.save();
     var grad = ctx.createLinearGradient(0, 0, 0, h);
@@ -779,23 +784,25 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
   }
 
   // ---- Pulo no chão (genérico) + Kit dino (v0.9.0) ----
-  // Bloco genérico "pular no chão": gravidade + pouso na base do canvas + pulo
+  // Bloco genérico "pular no chão": gravidade + pouso na borda atraída + pulo
   // com ↑/Espaço/W ou um toque (borda de toque). Serve a QUALQUER jogo de pulo.
   var _jumpTapPrev = false;
   function jumpOnGround(sprite, ctx, jump) {
     if (!sprite || !ctx || !ctx.canvas) return;
-    var j = (typeof jump === 'number' && jump > 0) ? jump : 14;
-    var g = world.gravity > 0 ? world.gravity : 0.6;
+    var j = (_isFiniteNumber(jump) && jump > 0) ? jump : 14;
+    var g = _worldGravityOr(0.6);
     sprite.vy = (sprite.vy || 0) + g;
     sprite.y += sprite.vy;
-    var floor = _visibleWorldRect(ctx).bottom - sprite.h;
+    var visible = _visibleWorldRect(ctx);
     // Persiste "no chão" NO sprite (mesmo contrato do platformer/autoAnimate).
-    sprite.onGround = false;
-    if (sprite.y >= floor) { sprite.y = floor; sprite.vy = 0; sprite.onGround = true; }
+    _resolveGravityGround(sprite, visible.top, visible.bottom, g);
     var tap = pointer.down && !_jumpTapPrev;
     _jumpTapPrev = pointer.down;
     var wantJump = keys.up || keyDown('Space') || tap;
-    if (wantJump && sprite.onGround) sprite.vy = -j;
+    if (wantJump && sprite.onGround) {
+      sprite.vy = _jumpVelocityForGravity(g, j);
+      sprite.onGround = false;
+    }
   }
 
   // Linha do chão do mundo "corrida": fica um pouco acima da base p/ o dino
@@ -808,7 +815,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
   /** Cria um dinossauro desenhado (corre sozinho; pose muda no pulo/agachar). */
   function createDino(opts) {
     opts = opts || {};
-    var size = (typeof opts.size === 'number' && opts.size > 0) ? opts.size : 64;
+    var size = _positiveFiniteNumber(opts.size, 64);
     var w = Math.round(size * 0.95), h = size;
     var s = createSprite({ x: opts.x, y: opts.y, w: w, h: h, color: opts.color });
     s.skin = { kind: 'dino', color: opts.color || '#5fb45f', fullH: h, ducking: false, onGround: true };
@@ -825,32 +832,32 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
   function controlDino(sprite, ctx, jump) {
     if (!sprite || !ctx || !ctx.canvas) return;
     var sk = sprite.skin || (sprite.skin = { kind: 'dino' });
-    var j = (typeof jump === 'number' && jump > 0) ? jump : 15;
-    var g = world.gravity > 0 ? world.gravity : 0.6;
+    var j = _positiveFiniteNumber(jump, 15);
+    var g = _worldGravityOr(0.6);
     var gh = stageH(ctx);
     var gy = dinoGround(ctx);
+    var visible = _visibleWorldRect(ctx);
     // Gravidade + integração vertical.
     sprite.vy = (sprite.vy || 0) + g;
     sprite.y += sprite.vy;
-    var floor = gy - sprite.h;
-    if (sprite.y >= floor) {
-      if (sprite.vy > 5) emitParticles(sprite.x + sprite.w / 2, sprite.y + sprite.h, 5, '#caa977');
-      sprite.y = floor; sprite.vy = 0; sk.onGround = true;
-    } else {
-      sk.onGround = false;
+    var impactVelocity = sprite.vy;
+    sk.onGround = _resolveGravityGround(sprite, visible.top, gy, g);
+    if (sk.onGround && (_gravityPullsUp(g) ? -impactVelocity : impactVelocity) > 5) {
+      var landingY = _gravityPullsUp(g) ? sprite.y : sprite.y + sprite.h;
+      emitParticles(sprite.x + sprite.w / 2, landingY, 5, '#caa977');
     }
-    // Agachar (só no chão): encolhe a altura mantendo os pés na linha do chão.
+    // Agachar (só no chão): encolhe mantendo a borda apoiada no lugar.
     var touchDuck = pointer.down && pointer.y > gh * 0.6;
     var wantDuck = (keys.down || touchDuck) && sk.onGround;
     var fullH = sk.fullH || sprite.h;
     if (wantDuck && !sk.ducking) {
       sk.ducking = true;
       var dh = Math.round(fullH * 0.6);
-      sprite.y += (sprite.h - dh);
+      if (!_gravityPullsUp(g)) sprite.y += (sprite.h - dh);
       sprite.h = dh;
     } else if (!wantDuck && sk.ducking) {
       sk.ducking = false;
-      sprite.y -= (fullH - sprite.h);
+      if (!_gravityPullsUp(g)) sprite.y -= (fullH - sprite.h);
       sprite.h = fullH;
     }
     // Pulo (não enquanto agacha): teclas OU toque na metade de cima.
@@ -858,9 +865,11 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     _dinoTapPrev = pointer.down;
     var wantJump = keys.up || keyDown('Space') || tap;
     if (wantJump && sk.onGround && !sk.ducking) {
-      sprite.vy = -j;
+      sprite.vy = _jumpVelocityForGravity(g, j);
       sk.onGround = false;
-      emitParticles(sprite.x + sprite.w / 2, sprite.y + sprite.h, 8, '#caa977');
+      sprite.onGround = false;
+      var takeoffY = _gravityPullsUp(g) ? sprite.y : sprite.y + sprite.h;
+      emitParticles(sprite.x + sprite.w / 2, takeoffY, 8, '#caa977');
     }
   }
 
@@ -878,14 +887,15 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
     // sombra: FICA na linha do chão (não sobe com o pulo, como acontecia quando era
     // desenhada nos pés) e encolhe/clareia conforme o dino ganha altura — dá
     // profundidade sem "grudar" no dino.
-    var groundY = dinoGround(ctx);
-    var airborne = groundY - (y + h);
+    var invertedGravity = _gravityPullsUp(_worldGravityOr(0.6));
+    var groundY = invertedGravity ? _visibleWorldRect(ctx).top : dinoGround(ctx);
+    var airborne = invertedGravity ? y - groundY : groundY - (y + h);
     if (airborne < 0) airborne = 0;
     var shadowScale = 1 - airborne / 260;
     if (shadowScale < 0.4) shadowScale = 0.4;
     ctx.fillStyle = 'rgba(32,65,92,' + (0.16 * shadowScale).toFixed(3) + ')';
     ctx.beginPath();
-    ctx.ellipse(x + w * 0.52, groundY - 1, w * 0.42 * shadowScale, h * 0.06 * shadowScale, 0, 0, Math.PI * 2);
+    ctx.ellipse(x + w * 0.52, groundY + (invertedGravity ? 1 : -1), w * 0.42 * shadowScale, h * 0.06 * shadowScale, 0, 0, Math.PI * 2);
     ctx.fill();
     // cauda
     ctx.fillStyle = col;
@@ -967,7 +977,7 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
       var r = Math.random();
       type = r < 0.45 ? 'cactus' : (r < 0.8 ? 'rock' : 'bird');
     }
-    var size = (typeof opts.size === 'number' && opts.size > 0) ? opts.size : 44;
+    var size = _positiveFiniteNumber(opts.size, 44);
     var gy = dinoGround(ctx);
     var w, h, y;
     if (type === 'bird') { w = Math.round(size * 1.3); h = Math.round(size * 0.8); y = gy - h - 46; }

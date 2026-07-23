@@ -344,6 +344,22 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    Como é amount 0, **NÃO toca `gamification_profiles`** (o ramo que grava `privileged`/`accountId` só
    roda com `amount > 0`) → marco de showcase não rebaixa o `privileged` de equipe. Kids-only por ora
    (o Mural é kids); a estrutura é por audiência (extensível ao adulto).
+12. **TRAVA PEDAGÓGICA ENTRE CURSOS (curso-base):** separada da matrícula comercial. Cada curso Kids
+   tem `careerSlot` (`courses.career_slot`, migrations `0047`–`0049`): **posição 1 = curso-base** da
+   etapa (`level`+`track`), 2+ = demais; `null` = bônus (fora da trava). A política PURA é
+   `resolveCareerCourseLock(qualified, tier, slot, foundationAvailable)` (core `@sistemazero/core/career`):
+   curso de etapa FUTURA → `future-tier`; na etapa atual, se não é o slot 1 e o slot 1 ainda não
+   qualificou → `foundation-first`. ⚠️ **Fail-open (fix 23/07):** sem um curso-base PUBLICADO na
+   etapa não há como destravar (concluir+publicar a base é a única chave), então a trava
+   `foundation-first` é IGNORADA — senão a etapa inteira (e, no Iniciante 2D, a carreira toda)
+   congelaria. `foundationAvailable` = `foundationByTier.has(tier)` na projeção da listagem
+   (`careerLocksForCourses`) e `CourseRepository.hasPublishedFoundationCourse(audience, level, track)`
+   no gate em profundidade (`CheckAccessService`, que lança `CourseCareerLockedError` → **423
+   `COURSE_CAREER_LOCKED`**). LISTA e gate usam a MESMA política (mesmo `qualified` do PERFIL). Flag
+   liga só p/ `audience==='kids' && !privileged` (equipe ignora). Autoria admin valida o slot em
+   `assertCareerSlot` (kids-only, máx 6 iniciante-2d senão 5, conflito → 409 `CAREER_SLOT_CONFLICT`).
+   ⚠️ **Armadilha:** curso-base sem bloco de Estúdio com vitrine (`showcase.enabled`) conclui mas
+   nunca publica → slot 1 nunca qualifica → demais da etapa presos. Doc: `docs/carreira-do-criador.md`.
 
 ## Arquitetura (DDD + Hexagonal — espelha auth/catalog)
 

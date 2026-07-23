@@ -1,5 +1,9 @@
 import * as Blockly from 'blockly/core'
-import { CANVAS3D_ADDON_MODULES, CANVAS3D_STUDIO_ADDON_GROUPS } from '../../three/canvas3dAddons'
+import {
+  CANVAS3D_ADDON_MODULES,
+  CANVAS3D_AUTO_ADDON_MODULE,
+  CANVAS3D_STUDIO_ADDON_GROUPS,
+} from '../../three/canvas3dAddons'
 
 /**
  * Campo Blockly do bloco "usar … da biblioteca" (`sz_t3d_import_named`): em vez de a
@@ -38,7 +42,7 @@ export class FieldAddonPicker extends Blockly.FieldTextInput {
   private pick(name: string, module: string): void {
     this.setValue(name)
     this.getSourceBlock()?.setFieldValue(
-      ADDON_MODULES[name] === module ? 'automático' : module,
+      ADDON_MODULES[name] === module ? CANVAS3D_AUTO_ADDON_MODULE : module,
       'MODULE',
     )
     Blockly.DropDownDiv.hideIfOwner(this)
@@ -97,7 +101,9 @@ export class FieldAddonPicker extends Blockly.FieldTextInput {
     const apply = () => {
       const name = input.value.trim()
       // Se casar um addon conhecido, também auto-preenche o módulo.
-      if (ADDON_MODULES[name]) this.getSourceBlock()?.setFieldValue('automático', 'MODULE')
+      if (ADDON_MODULES[name]) {
+        this.getSourceBlock()?.setFieldValue(CANVAS3D_AUTO_ADDON_MODULE, 'MODULE')
+      }
       this.setValue(name)
       Blockly.DropDownDiv.hideIfOwner(this)
     }

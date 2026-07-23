@@ -1,4 +1,6 @@
-export const gameKit3DModelAssetsRuntimeSource = `  // ---- 🧊 Modelos 3D de verdade (GLB) e céu de foto (HDR) ----
+import { dataUrlToBufferRuntimeSource } from '../assetRuntime'
+
+const gameKit3DModelAssetsRuntimeTemplate = `  // ---- 🧊 Modelos 3D de verdade (GLB) e céu de foto (HDR) ----
   //
   // Os binários chegam como data: URL no __SZGAME_ASSETS_3D. A rede é MORTA no
   // preview (o permissionGuard mata o fetch e a CSP tem connect-src 'none'), então
@@ -13,25 +15,23 @@ export const gameKit3DModelAssetsRuntimeSource = `  // ---- 🧊 Modelos 3D de v
   var _hdrLoaderWaiters = [];
   var _skelMod = null;       // SkeletonUtils: clone que REAMARRA o esqueleto
   var _modelCache = null;    // nome -> { scene, clips } já parseado (clonado a cada uso)
+  var _cachedModelMaterials = new Set();
   var _modelPending = null;  // nome -> FILA de callbacks (import/parse em voo)
+  var _pendingModelCancels = [];
   var _hdrCache = null;      // nome -> DataTexture-base (cada uso recebe um clone)
   var _hdrPending = null;    // nome -> callbacks aguardando um único parse
   var _environmentTexture = null;
   var _pendingEnvironmentTexture = null;
   var _skyPhotoRequest = 0;  // impede uma carga antiga de vencer a escolha mais nova
+  var MODEL_LOAD_TIMEOUT_MS = 10000;
 
-  /** data: URL base64 -> ArrayBuffer, sem tocar na rede. */
-  function dataUrlToBuffer(url) {
-    var comma = url.indexOf(',');
-    if (comma < 0) return null;
-    try {
-      var bin = atob(url.slice(comma + 1));
-      var len = bin.length;
-      var u8 = new Uint8Array(len);
-      for (var i = 0; i < len; i++) u8[i] = bin.charCodeAt(i);
-      return u8.buffer;
-    } catch (e) {
-      return null;
+  /*__SZ_DATA_URL_RUNTIME__*/
+
+  /** Encerra esperas de GLB no teardown e solta timers/promises imediatamente. */
+  function cancelPendingModelLoads() {
+    while (_pendingModelCancels.length) {
+      var cancel = _pendingModelCancels.pop();
+      if (cancel) cancel();
     }
   }
 
@@ -211,7 +211,7 @@ export const gameKit3DModelAssetsRuntimeSource = `  // ---- 🧊 Modelos 3D de v
     return '';
   }
 
-  function disposeImportedModel(root) {
+  function disposeImportedModel(root, disposedResources) {
     var geometries = new Set();
     var materials = new Set();
     var textures = new Set();
@@ -233,22 +233,60 @@ export const gameKit3DModelAssetsRuntimeSource = `  // ---- 🧊 Modelos 3D de v
       warnOnce('dispose-imported-traverse', 'não consegui percorrer um modelo rejeitado para liberar recursos: ' + e);
     }
     textures.forEach(function (texture) {
+      if (disposedResources && disposedResources.textures && disposedResources.textures.has(texture)) return;
+      if (disposedResources && disposedResources.textures) disposedResources.textures.add(texture);
       if (texture.dispose) { try { texture.dispose(); } catch (e) { warnOnce('dispose-imported-texture', 'não consegui liberar uma textura de modelo rejeitado: ' + e); } }
     });
     materials.forEach(function (material) {
+      if (disposedResources && disposedResources.materials && disposedResources.materials.has(material)) return;
+      if (disposedResources && disposedResources.materials) disposedResources.materials.add(material);
       if (material.dispose) { try { material.dispose(); } catch (e) { warnOnce('dispose-imported-material', 'não consegui liberar um material de modelo rejeitado: ' + e); } }
     });
     geometries.forEach(function (geometry) {
+      if (disposedResources && disposedResources.geometries && disposedResources.geometries.has(geometry)) return;
+      if (disposedResources && disposedResources.geometries) disposedResources.geometries.add(geometry);
       if (geometry.dispose) { try { geometry.dispose(); } catch (e) { warnOnce('dispose-imported-geometry', 'não consegui liberar uma geometria de modelo rejeitado: ' + e); } }
     });
+  }
+
+  /** Materiais de um GLB cacheado são compartilhados pelos clones dos moldes. */
+  function rememberCachedModelMaterials(root) {
+    try {
+      root.traverse(function (o) {
+        var list = o.material && o.material.length ? o.material : [o.material];
+        for (var i = 0; i < list.length; i++) {
+          if (list[i]) _cachedModelMaterials.add(list[i]);
+        }
+      });
+    } catch (e) {
+      warnOnce('cache-model-materials', 'não consegui registrar os materiais de um modelo 3D: ' + e);
+    }
+  }
+
+  function isCachedModelMaterial(material) {
+    return _cachedModelMaterials.has(material);
+  }
+
+  /** O cache-base fica fora da cena; no teardown ele também precisa soltar GPU/CPU. */
+  function disposeCachedModels(disposedResources) {
+    if (!_modelCache) return;
+    var roots = new Set();
+    for (var key in _modelCache) {
+      var hit = _modelCache[key];
+      if (!hit || !hit.scene || roots.has(hit.scene)) continue;
+      roots.add(hit.scene);
+      disposeImportedModel(hit.scene, disposedResources);
+    }
+    _modelCache = null;
+    _cachedModelMaterials = new Set();
   }
 
   function loadModel(name, onReady) {
     var k = text(name, '');
     if (!k || disposed) return null;
-    if (!_modelCache) _modelCache = {};
+    if (!_modelCache) _modelCache = Object.create(null);
     if (_modelCache[k]) return _modelCache[k];
-    if (!_modelPending) _modelPending = {};
+    if (!_modelPending) _modelPending = Object.create(null);
     // Carga JÁ em voo: entra na FILA. Antes devolvia null e DESCARTAVA o onReady —
     // dois moldes com o MESMO .glb e o segundo ficava com o cubo para sempre.
     if (_modelPending[k]) {
@@ -271,11 +309,16 @@ export const gameKit3DModelAssetsRuntimeSource = `  // ---- 🧊 Modelos 3D de v
     var release = null;
     pending.push(new Promise(function (resolve) { release = resolve; }));
     var settled = false;
+    var timer = null;
+    var cancel = null;
     var flush = function (hit) {
       if (settled) return;
       settled = true;
+      if (timer !== null) { clearTimeout(timer); timer = null; }
+      var cancelIndex = _pendingModelCancels.indexOf(cancel);
+      if (cancelIndex >= 0) _pendingModelCancels.splice(cancelIndex, 1);
       var queue = _modelPending[k] || [];
-      _modelPending[k] = null;
+      delete _modelPending[k];
       if (hit) {
         for (var i = 0; i < queue.length; i++) {
           try { queue[i](hit); } catch (e) {}
@@ -283,11 +326,18 @@ export const gameKit3DModelAssetsRuntimeSource = `  // ---- 🧊 Modelos 3D de v
       }
       if (release) release();
     };
+    cancel = function () { flush(null); };
+    _pendingModelCancels.push(cancel);
     var finish = function (mod) {
+      if (settled) return;
       if (disposed) { flush(null); return; }
       _gltfMod = mod;
       try {
         new mod.GLTFLoader().parse(buf, '', function (gltf) {
+          if (settled) {
+            if (gltf && gltf.scene) disposeImportedModel(gltf.scene);
+            return;
+          }
           if (gltf && gltf.scene) {
             // O loader não oferece cancelamento do parse. Se o iframe morreu no
             // meio, a conclusão tardia é dona destes recursos e deve descartá-los
@@ -307,6 +357,7 @@ export const gameKit3DModelAssetsRuntimeSource = `  // ---- 🧊 Modelos 3D de v
             }
             // Guarda os CLIPES junto: são eles que dão vida ao boneco (a lição do
             // AnimatedObjectComponent do curso). Antes o gltf.animations ia no lixo.
+            rememberCachedModelMaterials(gltf.scene);
             _modelCache[k] = { scene: gltf.scene, clips: gltf.animations || [], metrics: metrics };
             warmModel(gltf.scene);
             flush(_modelCache[k]);
@@ -323,6 +374,10 @@ export const gameKit3DModelAssetsRuntimeSource = `  // ---- 🧊 Modelos 3D de v
         flush(null);
       }
     };
+    timer = setTimeout(function () {
+      if (!disposed) warn('o modelo "' + k + '" demorou demais para carregar — a peça fica com a forma de reserva');
+      flush(null);
+    }, MODEL_LOAD_TIMEOUT_MS);
     if (_gltfMod) { finish(_gltfMod); return null; }
     try {
       // Os DOIS addons antes de parsear. O SkeletonUtils é opcional (catch -> null):
@@ -489,3 +544,8 @@ export const gameKit3DModelAssetsRuntimeSource = `  // ---- 🧊 Modelos 3D de v
   }
 
 `
+
+export const gameKit3DModelAssetsRuntimeSource = gameKit3DModelAssetsRuntimeTemplate.replace(
+  '  /*__SZ_DATA_URL_RUNTIME__*/',
+  dataUrlToBufferRuntimeSource,
+)

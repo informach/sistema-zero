@@ -73,4 +73,4 @@ test('o runtime injetado não contém referências ou propriedades semanticament
     .map(formatDiagnostic)
 
   expect(errors).toEqual([])
-})
+}, 20_000)

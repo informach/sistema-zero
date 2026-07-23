@@ -76,6 +76,8 @@ interface Api {
   overlapSpriteGroup: (getSprite: () => Sprite, g: unknown, fn: (s: Sprite) => void) => void
   removeFromGroup: (g: unknown, s: Sprite) => void
   setCamera: (x: number, y: number) => void
+  setGravity: (v: number) => void
+  platformer: (sprite: Sprite, ctx: unknown, speed?: number, jump?: number) => void
 }
 
 function load(): Api {
@@ -170,9 +172,11 @@ describe('createEnemyType / spawnEnemy', () => {
 })
 
 describe('comportamentos', () => {
-  it('patrulha: anda, vira na borda da tela e vira quando o vx é zerado (parede)', () => {
+  it('patrulha (com gravidade): anda, vira na borda e cai no chão', () => {
     const api = load()
     const ctx = fakeCtx(200, 100)
+    // Mundo COM gravidade: a patrulha anda E cai no chão da tela.
+    api.setGravity(0.6)
     const t = api.createEnemyType({ behavior: 'patrulha', speed: 4 })
     const e = api.spawnEnemy(t, 100, 84) as Sprite
     api.updateEnemyType(t, ctx, null)
@@ -188,6 +192,75 @@ describe('comportamentos', () => {
     // gravidade + chão do canvas
     expect(e.onGround).toBe(true)
     expect(e.y).toBe(100 - e.h)
+  })
+
+  it('patrulha (top-down, sem gravidade): patrulha na horizontal SEM afundar', () => {
+    const api = load()
+    const ctx = fakeCtx(200, 100)
+    // Mundo sem gravidade (top-down): o inimigo padrão NÃO cai até a borda.
+    const t = api.createEnemyType({ behavior: 'patrulha', speed: 4 })
+    const e = api.spawnEnemy(t, 100, 40) as Sprite
+    const y0 = e.y
+    for (let i = 0; i < 30; i++) api.updateEnemyType(t, ctx, null)
+    expect(e.y).toBe(y0) // não afundou
+    expect(e.x).not.toBe(100) // andou na horizontal (patrulha)
+    expect(e.onGround).toBeUndefined() // sem chão num top-down
+  })
+
+  it('patrulha usa somente a gravidade declarada, sem herdar o modo do platformer', () => {
+    const api = load()
+    const ctx = fakeCtx(200, 100)
+    const hero = api.createSprite({ x: 20, y: 20, w: 16, h: 16 })
+    api.platformer(hero, ctx, 4, 11)
+    const t = api.createEnemyType({ behavior: 'patrulha', speed: 4 })
+    const e = api.spawnEnemy(t, 100, 40) as Sprite
+    api.updateEnemyType(t, ctx, null)
+    expect(e.y).toBe(40)
+    expect(e.onGround).toBeUndefined()
+
+    api.setGravity(0.6)
+    for (let i = 0; i < 30; i++) api.updateEnemyType(t, ctx, null)
+    expect(e.onGround).toBe(true)
+    expect(e.y).toBe(100 - e.h)
+  })
+
+  it('setGravity(0) desliga a queda da patrulha mesmo após usar platformer', () => {
+    const api = load()
+    const ctx = fakeCtx(200, 100)
+    api.platformer(api.createSprite({ x: 20, y: 20, w: 16, h: 16 }), ctx, 4, 11)
+    api.setGravity(0)
+    const t = api.createEnemyType({ behavior: 'patrulha', speed: 0 })
+    const e = api.spawnEnemy(t, 100, 40) as Sprite
+
+    api.updateEnemyType(t, ctx, null)
+
+    expect(e.y).toBe(40)
+    expect(e.vy).toBe(0)
+    expect(e.onGround).toBeUndefined()
+  })
+
+  it('gravidade negativa ancora inimigos terrestres no teto e inverte o pulo', () => {
+    const api = load()
+    const ctx = fakeCtx(200, 100)
+    api.setGravity(-1)
+    const patrolType = api.createEnemyType({ behavior: 'patrulha', speed: 0 })
+    const patrol = api.spawnEnemy(patrolType, 20, 10) as Sprite
+    const jumperType = api.createEnemyType({ behavior: 'saltador', speed: 0 })
+    api.setEnemyTypeParam(jumperType, 'ritmo', 3)
+    api.setEnemyTypeParam(jumperType, 'pulo', 9)
+    const jumper = api.spawnEnemy(jumperType, 60, 0) as Sprite
+
+    for (let i = 0; i < 10; i++) api.updateEnemyType(patrolType, ctx, null)
+    api.updateEnemyType(jumperType, ctx, null)
+    api.updateEnemyType(jumperType, ctx, null)
+    api.updateEnemyType(jumperType, ctx, null)
+
+    expect(patrol.y).toBe(0)
+    expect(patrol.vy).toBe(0)
+    expect(patrol.onGround).toBe(true)
+    expect(jumper.y).toBe(0)
+    expect(jumper.vy).toBe(9)
+    expect(jumper.onGround).toBe(false)
   })
 
   it('perseguidor: reduz a distância até o alvo gravando vx/vy', () => {
@@ -306,6 +379,7 @@ describe('comportamentos', () => {
     const api = load()
     const ctx = fakeCtx(320, 240)
     api.setCamera(1000, 500)
+    api.setGravity(0.6) // mundo com gravidade: a patrulha cai no chão visível
 
     const patrol = api.createEnemyType({ behavior: 'patrulha', speed: 4 })
     const walker = api.spawnEnemy(patrol, 1050, 708) as Sprite

@@ -18,6 +18,15 @@ const particles: JSStatement = {
   color: color('#ffffff'),
 }
 
+function legacyChecksum(value: string): string {
+  let hash = 0x811c9dc5
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index)
+    hash = Math.imul(hash, 0x01000193)
+  }
+  return (hash >>> 0).toString(36)
+}
+
 describe('Canvas 3D — codec semântico dos macros', () => {
   it('restaura o macro íntegro e mantém a geração determinística sem IDs efêmeros', () => {
     const first = generateJS({ statements: [particles] })
@@ -29,6 +38,23 @@ describe('Canvas 3D — codec semântico dos macros', () => {
     expect(first).not.toContain('%22__id%22')
   })
 
+  it('continua abrindo marcadores legados salvos antes do framing v2', () => {
+    const generated = generateJS({ statements: [particles] })
+    const markerStart = generated.indexOf('/*__SZ_CANVAS3D_MACRO__')
+    const markerEnd = generated.indexOf('__*/', markerStart) + '__*/'.length
+    const closing = generated.indexOf('/*__SZ_CANVAS3D_END__*/', markerEnd)
+    const header = generated.slice(markerStart, markerEnd)
+    const payload = header.slice(header.lastIndexOf(':') + 1, -'__*/'.length)
+    const body = generated.slice(markerEnd + 1, closing - 1)
+    const legacyHeader = `/*__SZ_CANVAS3D_MACRO__${legacyChecksum(body)}:${payload}__*/`
+    const legacy = `${generated.slice(0, markerStart)}${legacyHeader}\n${body}\n${generated.slice(closing)}`
+
+    expect(parseJS(legacy).map((statement) => statement.type)).toEqual([
+      'importStar',
+      'particlesSetup',
+    ])
+  })
+
   it('não confia no metadado quando o JavaScript expandido foi editado', () => {
     const generated = generateJS({ statements: [particles] })
     const edited = generated.replace('Math.min(20000', 'Math.min(19999')
@@ -36,6 +62,36 @@ describe('Canvas 3D — codec semântico dos macros', () => {
 
     expect(parsed.some((statement) => statement.type === 'particlesSetup')).toBe(false)
     expect(parsed.length).toBeGreaterThan(3)
+  })
+
+  it('não confia no payload semântico quando só o metadado foi alterado', () => {
+    const generated = generateJS({ statements: [particles] })
+    const originalPayload = encodeURIComponent(JSON.stringify(particles))
+    const changedPayload = encodeURIComponent(
+      JSON.stringify({ ...particles, count: { type: 'num', value: 999 } }),
+    )
+    const tampered = generated.replace(originalPayload, changedPayload)
+    const parsed = parseJS(tampered)
+
+    expect(tampered).not.toBe(generated)
+    expect(parsed.some((statement) => statement.type === 'particlesSetup')).toBe(false)
+    expect(generateJS({ statements: parsed })).toContain('Number(500)')
+  })
+
+  it('não confunde a sentinela de fim dentro do texto do letreiro com framing', () => {
+    const sign: JSStatement = {
+      type: 'signSetup',
+      sign: 'placa',
+      scene: 'cena',
+      text: 'cuidado /*__SZ_CANVAS3D_END__*/ aqui',
+      size: n(4),
+      color: color('#facc15'),
+    }
+    const generated = generateJS({ statements: [sign] })
+    const parsed = parseJS(generated)
+
+    expect(parsed.map((statement) => statement.type)).toEqual(['importStar', 'signSetup'])
+    expect(parsed[1]).toEqual(sign)
   })
 
   it('reserva auxiliares contra nomes do aluno e o JavaScript real continua parseável', () => {

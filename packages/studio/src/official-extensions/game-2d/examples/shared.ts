@@ -39,6 +39,7 @@ function liftBeginnerPeriodicLoops(loops: JSStatement[]): JSStatement[] {
 
 function accessibleGameDescription(example: ExtensionExample): string {
   const descriptions: Record<string, string> = {
+    'Pegue a moeda': 'Encoste na moeda para fazer pontos. Use as setas para andar.',
     'Aventura com câmera': 'Colete 4 moedas. Use as setas para explorar o caminho.',
     'Plataforma com inimigos':
       'Derrote os inimigos e faça pontos. Use as setas para andar e pular; Espaço atira.',

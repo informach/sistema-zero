@@ -7,6 +7,7 @@ import {
   asteroidsExample,
   balloonExample,
   cameraAdventureExample,
+  catchCoinExample,
   codeDrawnExample,
   dinoRunExample,
   enemyPlatformerExample,
@@ -407,6 +408,42 @@ function exampleHarness(example: ExtensionExample, random: () => number = Math.r
 }
 
 describe('playthrough dos exemplos exatos do Jogo 2D', () => {
+  it('Pegue a moeda coleta cinco vezes, vence e reinicia a partida limpa', () => {
+    const game = exampleHarness(catchCoinExample, () => 0.5)
+    expect(game.api.sceneIs('inicio')).toBe(true)
+    game.fireKey('Enter')
+    expect(game.api.sceneIs('jogando')).toBe(true)
+    const [firstHero, firstCoin] = game.sprites
+    expect(firstHero).toBeDefined()
+    expect(firstCoin).toBeDefined()
+
+    for (let point = 1; point <= 5; point += 1) {
+      if (firstHero && firstCoin) {
+        firstCoin.x = firstHero.x
+        firstCoin.y = firstHero.y
+      }
+      game.nextFrame()
+      expect(game.scores['Moedas:']).toBe(point)
+    }
+    expect(game.api.sceneIs('vitoria')).toBe(true)
+
+    game.fireKey('Enter', 'keyup')
+    game.fireKey('Enter')
+    game.nextFrame()
+    expect(game.api.sceneIs('inicio')).toBe(true)
+    expect(game.sprites).toHaveLength(4)
+    expect(game.sprites[2]).not.toBe(firstHero)
+    expect(game.sprites[3]).not.toBe(firstCoin)
+
+    game.fireKey('Enter', 'keyup')
+    game.fireKey('Enter')
+    game.nextFrame()
+    expect(game.api.sceneIs('jogando')).toBe(true)
+    expect(game.scores['Moedas:']).toBe(0)
+    expect(game.errors).toEqual([])
+    expect(game.warnings).toEqual([])
+  })
+
   it('Herói que anda move e mantém a animação prometida', () => {
     const game = exampleHarness(animatedHeroExample)
     const hero = game.sprites[0]

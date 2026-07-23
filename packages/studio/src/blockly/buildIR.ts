@@ -15,7 +15,7 @@ import { canvasExpressionBlockToIR, canvasStatementBlockToIR } from '../codecs/w
 import { cssBlockToIR } from '../codecs/web/cssBlockToIR'
 import { htmlBlockToIR } from '../codecs/web/htmlBlockToIR'
 import { webCodecForBlockType } from '../codecs/web/registry'
-import { CANVAS3D_ADDON_MODULES } from '../three/canvas3dAddons'
+import { resolveCanvas3DAddonImports } from '../three/canvas3dAddons'
 import {
   FRAME_APPEARANCE,
   FRAME_BEHAVIOR_LEGACY,
@@ -36,6 +36,21 @@ export {
   FRAME_LOOPS,
   FRAME_START,
   FRAME_STRUCTURE,
+}
+
+function resolveCanvas3DAddonStatements(statements: JSStatement[]): JSStatement[] {
+  return statements.flatMap<JSStatement>((statement) => {
+    if (statement.type !== 'importNamed') {
+      return [statement]
+    }
+    const resolved = resolveCanvas3DAddonImports(statement.names, statement.module)
+    if (!resolved) return [statement]
+    return resolved.map((addonImport, index) => ({
+      ...statement,
+      ...addonImport,
+      ...(index === 0 ? {} : { __id: undefined }),
+    }))
+  })
 }
 
 /**
@@ -80,6 +95,10 @@ export function buildIRFromWorkspace(workspace: Blockly.Workspace): SZIRV2 {
   const loops = firstOf(FRAME_LOOPS)
   if (loops) ir.behavior.loops.push(...getStatementChildren(loops, 'CHILDREN', seen))
 
+  ir.behavior.start = resolveCanvas3DAddonStatements(ir.behavior.start)
+  ir.behavior.events = resolveCanvas3DAddonStatements(ir.behavior.events)
+  ir.behavior.loops = resolveCanvas3DAddonStatements(ir.behavior.loops)
+
   ir.extensions = Array.from(seen).map((id) => ({ extensionId: id }))
   return ir
 }
@@ -97,6 +116,7 @@ export function collectFlatFromWorkspace(workspace: Blockly.Workspace): SZIR {
     if (top.isInsertionMarker()) continue
     visitStack(top, ir, seen)
   }
+  ir.js = resolveCanvas3DAddonStatements(ir.js)
   ir.extensions = Array.from(seen).map((id) => ({ extensionId: id }))
   return ir
 }
@@ -244,6 +264,14 @@ function routeNode(node: RoutedNode, ir: SZIR): void {
 
 function f(block: Blockly.Block, name: string): string {
   return String(block.getFieldValue(name) ?? '')
+}
+
+function constructorReference(rawReference: string): { namespace?: string; className: string } {
+  const reference = rawReference.trim()
+  const dot = reference.lastIndexOf('.')
+  return dot > 0
+    ? { namespace: reference.slice(0, dot), className: reference.slice(dot + 1) }
+    : { className: reference }
 }
 
 function fieldChoice<T extends string>(value: string, allowed: readonly T[], fallback: T): T {
@@ -1085,21 +1113,21 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
         method: f(block, 'METHOD'),
         args: getArgs(block),
       }
-    case 'sz_val_new':
+    case 'sz_val_new': {
+      const reference = constructorReference(f(block, 'CLASS'))
       return {
         type: 'newExpr',
-        className: f(block, 'CLASS'),
+        ...reference,
         args: getArgs(block),
       }
+    }
     case 'sz_t3d_new': {
       // CLASS = referência completa: `THREE.Vector3` (namespace THREE) ou `GLTFLoader`
       // (bare, sem namespace). Quebra no 1º ponto.
-      const ref = f(block, 'CLASS')
-      const dot = ref.indexOf('.')
+      const reference = constructorReference(f(block, 'CLASS'))
       return {
         type: 'newExpr',
-        ...(dot > 0 ? { namespace: ref.slice(0, dot) } : {}),
-        className: dot > 0 ? ref.slice(dot + 1) : ref,
+        ...reference,
         args: getArgs(block),
       }
     }
@@ -2082,16 +2110,18 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         },
       }
     }
-    case 'sz_js_new_var':
+    case 'sz_js_new_var': {
+      const reference = constructorReference(f(block, 'CLASS'))
       return {
         kind: 'js',
         value: {
           type: 'newInstance',
           varName: f(block, 'VARNAME'),
-          className: f(block, 'CLASS'),
+          ...reference,
           args: getArgs(block),
         },
       }
+    }
     // Canvas 3D (three.js cru): import + new com NAMESPACE (`new THREE.Classe()`).
     case 'sz_t3d_import':
       return {
@@ -2104,31 +2134,25 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         .map((name) => name.trim())
         .filter(Boolean)
       const selectedModule = f(block, 'MODULE')
-      const module =
-        selectedModule === 'automático' && names.length === 1
-          ? (CANVAS3D_ADDON_MODULES[names[0] ?? ''] ?? selectedModule)
-          : selectedModule
       return {
         kind: 'js',
         value: {
           type: 'importNamed',
           names,
-          module,
+          module: selectedModule,
         },
       }
     }
     case 'sz_t3d_new_var': {
       // CLASS = referência completa: `THREE.Scene` (namespace THREE) ou `GLTFLoader`
       // (bare, addon sem namespace). Quebra no 1º ponto.
-      const ref = f(block, 'CLASS')
-      const dot = ref.indexOf('.')
+      const reference = constructorReference(f(block, 'CLASS'))
       return {
         kind: 'js',
         value: {
           type: 'newInstance',
           varName: f(block, 'VARNAME'),
-          ...(dot > 0 ? { namespace: ref.slice(0, dot) } : {}),
-          className: dot > 0 ? ref.slice(dot + 1) : ref,
+          ...reference,
           args: getArgs(block),
         },
       }
@@ -7643,6 +7667,18 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: { type: 'g3k:spawnFrom', mold: f(block, 'MOLD'), fromVar: f(block, 'FROM') },
       }
+    case 'sz_g3k_spawn_ring':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:spawnRing',
+          mold: f(block, 'MOLD'),
+          count: exprInput(block, 'COUNT', { type: 'num', value: 8 }),
+          fromVar: f(block, 'FROM') || 'ela',
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 6 }),
+        },
+      }
     case 'sz_g3k_start_spawner':
       seen.add('game-3d-advanced')
       return {
@@ -8232,12 +8268,33 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           amount: exprInput(block, 'AMOUNT', { type: 'num', value: 10 }),
         },
       }
+    case 'sz_g3k_heal':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:heal',
+          charVar: f(block, 'WHO'),
+          amount: exprInput(block, 'AMOUNT', { type: 'num', value: 20 }),
+        },
+      }
     case 'sz_g3k_on_entity_death':
       seen.add('game-3d-advanced')
       return {
         kind: 'js',
         value: {
           type: 'g3k:onEntityDeath',
+          mold: f(block, 'MOLD'),
+          itemName: f(block, 'ITEM') || 'ela',
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_g3k_on_hurt':
+      seen.add('game-3d-advanced')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3k:onHurt',
           mold: f(block, 'MOLD'),
           itemName: f(block, 'ITEM') || 'ela',
           body: getStatementChildren(block, 'BODY', seen),

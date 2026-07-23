@@ -80,6 +80,22 @@ describe('Canvas 3D — new namespaced × bare (round-trip)', () => {
     expect(code).toContain('const loader = new GLTFLoader();')
   })
 
+  it('new PointerLockControls(...) (addon exposto ao preview) → sz_t3d_new_var, regenera igual', () => {
+    const src = [
+      "import * as THREE from 'three';",
+      "import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';",
+      'const camera = new THREE.PerspectiveCamera();',
+      'const renderer = new THREE.WebGLRenderer();',
+      'const controls = new PointerLockControls(camera, renderer);',
+    ].join('\n')
+    const code = generateJS({ statements: parseJS(src) })
+    const { rebuilt, state } = roundtrip(code)
+    expect(rebuilt).toBe(code)
+    // reconhecido como bloco Canvas 3D bare (o sandbox tem allow-pointer-lock, então é oferecido)
+    expect(state).toContain('"PointerLockControls"')
+    expect(code).toContain('const controls = new PointerLockControls(camera, renderer);')
+  })
+
   it('new Coisa() SEM three continua bloco genérico (não vira Canvas 3D)', () => {
     const code = generateJS({
       statements: parseJS('class Coisa {}\nconst c = new Coisa();'),
@@ -88,9 +104,31 @@ describe('Canvas 3D — new namespaced × bare (round-trip)', () => {
     expect(state).not.toContain('sz_t3d_')
     expect(state).toContain('"sz_js_new_var"')
   })
+
+  it('preserva construtor de outro namespace como bloco genérico', () => {
+    const source = "import * as PIXI from 'pixi.js';\nconst app = new PIXI.Application();"
+    const code = generateJS({ statements: parseJS(source) })
+    const { rebuilt, state } = roundtrip(code)
+
+    expect(rebuilt).toBe(code)
+    expect(state).toContain('"sz_js_new_var"')
+    expect(state).toContain('"PIXI.Application"')
+    expect(state).not.toContain('"sz_t3d_new_var"')
+  })
+
+  it('preserva expressão new de outro namespace como valor genérico', () => {
+    const source = "import * as API from './api.js';\nconsole.log(new API.Client());"
+    const code = generateJS({ statements: parseJS(source) })
+    const { rebuilt, state } = roundtrip(code)
+
+    expect(rebuilt).toBe(code)
+    expect(state).toContain('"sz_val_new"')
+    expect(state).toContain('"API.Client"')
+    expect(state).not.toContain('"sz_t3d_new"')
+  })
 })
 
-/** IR → blocos → IR → código (forward-only: o parser não reconstrói o nó). */
+/** IR → blocos → IR → código: exercita só o caminho block↔IR (não passa pelo parser). */
 function fromIR(js: JSStatement[]): { code: string; state: string } {
   ensureBlocklyInitialized()
   const irObj: SZIR = { html: [], css: [], js, extensions: [] }

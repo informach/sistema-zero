@@ -1,5 +1,6 @@
 import type { ExtensionManifest } from '#extensions'
 import {
+  chefaoDasSombrasExample,
   defesaDaTorreExample,
   guardiaoDoPortalExample,
   parkourDoVulcaoExample,
@@ -11,9 +12,9 @@ import {
 export const gameKit3DManifest: ExtensionManifest = {
   id: 'game-3d-advanced',
   name: 'Jogo 3D Avançado',
-  version: '0.8.6',
+  version: '0.9.0',
   description:
-    'A base de um jogo 3D profissional, portada de um curso de engine. Um SANDBOX 3D completo. Entidades com máquina de estados que ANIMA o boneco .glb sozinha a cada estado; física por TIPO (bola quica, personagem não, gelo escorrega) com pulo, rampas e plataformas; peças, modelos, luz e névoa; câmera que segue/orbita/1ª pessoa com girar, zoom e tremor, e o WASD sempre relativo a ela; partículas; enxames com pool; vizinhança por grade; combate, fala, cronômetro, sorteio semeado, HUD e música.',
+    'A base de um jogo 3D profissional, portada de um curso de engine. Um SANDBOX 3D completo. Entidades com máquina de estados que ANIMA o boneco .glb sozinha; física por TIPO (bola quica, personagem não, gelo escorrega) com pulo, rampas e plataformas; peças, modelos, luz e névoa; câmera que segue/orbita/1ª pessoa com zoom, tremor e WASD relativo a ela; partículas; enxames com pool; vizinhança por grade; combate com chefões, fala, cronômetro, sorteio semeado, HUD e música.',
   category: 'games',
   official: true,
   enabledByDefault: false,
@@ -292,6 +293,25 @@ acaso de verdade. ⚠️ Vale para o acaso do MOTOR (enfeites, faíscas, fábric
 para os blocos **sortear** deste kit. O bloco "número aleatório" comum NÃO
 obedece à semente.
 
+### Chefões: reagir a dano, atacar em anel e curar
+
+O gênero CHEFÃO em três blocos, todos irmãos do que você já tem:
+
+- **Quando um do molde … levar dano** (❤️ Combate) roda um "fazer" toda vez que
+  uma entidade daquele molde é machucada. Leia a vida dela ali dentro (com "a
+  vida de …" e "a vida máxima de …") para trocar de FASE, piscar ou revidar. É o
+  coração de um chefão em várias fases.
+- **Disparar um anel de … tiros** (👾 Nascer & fábricas) faz nascer vários tiros
+  ao redor de uma entidade, espalhados em círculo e voando para fora. É o ataque
+  clássico de chefão. Ligue o "cortar longe" para limpar os tiros que saem do mundo.
+- **Curar … somando … de vida** (❤️ Combate) devolve vida a uma entidade, sem
+  passar do máximo com que ela nasceu. É o oposto do "Machucar": poções, pontos de
+  descanso ou um chefão que se recupera entre as fases.
+
+No exemplo "O Chefão das Sombras", você clica no chefão para machucá-lo e, a cada
+fase (por "quando levar dano" lendo a vida), ele fica mais bravo, dispara um anel
+maior e se cura um pouco. Desvie do anel com WASD.
+
 ### Dicas
 
 - Unidades são METROS do mundo 3D: um boneco tem ~1 a 2 de altura, velocidades
@@ -317,5 +337,6 @@ obedece à semente.
     quadraMalucaExample,
     guardiaoDoPortalExample,
     tiroAoAlvoExample,
+    chefaoDasSombrasExample,
   ],
 }

@@ -7,6 +7,13 @@
 export const gameKit3DCameraRuntimeSource = `
   // ---- Câmera viva (um modo por vez) ----
 
+  // Offset do tremor aplicado no quadro ANTERIOR. O updateCamera o desfaz no
+  // topo antes de reposicionar, para que a câmera "seguir" (lerp) parta da base
+  // LIMPA — senão o offset persistia ~15 quadros e o tremor virava deriva lenta.
+  var _shakeOx = 0;
+  var _shakeOy = 0;
+  var _shakeOz = 0;
+
   /** Libera tudo que pertence à captura da câmera em primeira pessoa. */
   function releaseFpsInput() {
     var touchId = _fpsTouchId;
@@ -154,9 +161,14 @@ export const gameKit3DCameraRuntimeSource = `
     _shakeT -= dt;
     if (_shakeT < 0) _shakeT = 0;
     var k = _shakeAmp * (_shakeT / _shakeMax); // decai até sumir
-    camera.position.x += (rand() * 2 - 1) * k;
-    camera.position.y += (rand() * 2 - 1) * k;
-    camera.position.z += (rand() * 2 - 1) * k;
+    // Guarda o offset (desfeito no topo do próximo updateCamera) para NÃO
+    // realimentar o lerp do "seguir" — a razão da deriva de baixa frequência.
+    _shakeOx = (rand() * 2 - 1) * k;
+    _shakeOy = (rand() * 2 - 1) * k;
+    _shakeOz = (rand() * 2 - 1) * k;
+    camera.position.x += _shakeOx;
+    camera.position.y += _shakeOy;
+    camera.position.z += _shakeOz;
   }
 
   // ---- Mira & clique no mundo (raycast) + câmera 1ª pessoa ----
@@ -329,6 +341,14 @@ export const gameKit3DCameraRuntimeSource = `
 
   function updateCamera(dt) {
     if (!camera) return;
+    // Desfaz o tremor do quadro anterior ANTES de reposicionar: o "seguir" faz
+    // lerp a partir de camera.position, então sem isto partiria da posição JÁ
+    // tremida e o offset persistiria virando deriva. Nos modos .set()
+    // (orbit/topo/fps) é inócuo — a posição é reescrita antes do applyShake.
+    camera.position.x -= _shakeOx;
+    camera.position.y -= _shakeOy;
+    camera.position.z -= _shakeOz;
+    _shakeOx = 0; _shakeOy = 0; _shakeOz = 0;
     if (camMode.kind === 'fps') {
       var f = camMode.target;
       if (!sameCamEntity(f, camMode.targetGen)) {

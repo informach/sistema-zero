@@ -5,8 +5,13 @@ import { CSS_MEDIA_SIZE_FEATURES, type CSSMediaSizeFeature } from '../css/mediaQ
 import { isGuidedDomElementTag } from '../domSafety'
 import { HTML_TAGS, isHTMLElementChildAllowed } from '../html/catalog'
 import { PERSISTENT_EXTENSION_STATEMENT_TYPES } from '../official-extensions/persistentResourceContract'
-import { isCanvas3DResourceCreatorStatement } from '../three/canvas3dContract'
+import { CANVAS3D_AUTO_ADDON_MODULE, isCanvas3DAddonImportCanonical } from '../three/canvas3dAddons'
 import {
+  isCanvas3DResourceCreatorExpression,
+  isCanvas3DResourceCreatorStatement,
+} from '../three/canvas3dContract'
+import {
+  GAME3D_ACTION_CONTEXT_STATEMENT_TYPES,
   GAME3D_RUNNING_CONTEXT_STATEMENT_TYPES,
   GAME3D_START_ONLY_STATEMENT_TYPES,
 } from '../three/game3dContract'
@@ -21,7 +26,11 @@ import {
   validateLifecycleSemantics,
 } from './lifecycle'
 import { cssCommentRejectionReason, cssSelectorRejectionReason } from './outputSafety'
-import { validateProgrammingReferences as collectProgrammingReferenceIssues } from './programmingReferences'
+import {
+  type Canvas3DStatementContextIndex,
+  validateProgrammingReferences as collectProgrammingReferenceIssues,
+  createCanvas3DStatementContextIndex,
+} from './programmingReferences'
 
 export const MAX_IR_TEXT_CHARS = 2_000_000
 
@@ -4239,6 +4248,21 @@ export type JSStatement =
       itemName: string
       body: JSStatement[]
     })
+  // 👹 Chefão: reagir a dano, curar e disparar em anel (bullet-hell na unha).
+  | (JSStatementCommon & { type: 'g3k:heal'; charVar: string; amount: number | JSExpr })
+  | (JSStatementCommon & {
+      type: 'g3k:onHurt'
+      mold: string
+      itemName: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & {
+      type: 'g3k:spawnRing'
+      mold: string
+      count: number | JSExpr
+      fromVar: string
+      speed: number | JSExpr
+    })
   // 💥 Faíscas 3D (partículas data-driven: rampas de 2 chaves cor/tamanho).
   | (JSStatementCommon & {
       type: 'g3k:defineEffect'
@@ -5181,12 +5205,22 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({ type: z.literal('break'), ...idField }),
     z.object({ type: z.literal('continue'), ...idField }),
     z.object({ type: z.literal('importStar'), name: irText(), module: irText(), ...idField }),
-    z.object({
-      type: z.literal('importNamed'),
-      names: z.array(irText()),
-      module: irText(),
-      ...idField,
-    }),
+    z
+      .object({
+        type: z.literal('importNamed'),
+        names: z.array(irText()),
+        module: irText().refine(
+          (module) => module.trim().length > 0 && module !== CANVAS3D_AUTO_ADDON_MODULE,
+          {
+            message: 'Informe o caminho do addon que não está no catálogo automático',
+          },
+        ),
+        ...idField,
+      })
+      .refine((statement) => isCanvas3DAddonImportCanonical(statement.names, statement.module), {
+        message: 'Cada addon conhecido precisa usar o arquivo correto da biblioteca',
+        path: ['module'],
+      }),
     z.object({
       type: z.literal('forOf'),
       itemName: irText(),
@@ -8894,6 +8928,27 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('g3k:heal'),
+      charVar: irText(),
+      amount: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:onHurt'),
+      mold: irText(),
+      itemName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3k:spawnRing'),
+      mold: irText(),
+      count: z.union([JSExprSchema, z.number()]),
+      fromVar: irText(),
+      speed: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('g3k:defineEffect'),
       name: irText(),
       count: z.union([JSExprSchema, z.number()]),
@@ -10391,23 +10446,66 @@ const LOOP_FORBIDDEN_RESOURCE_TYPES: ReadonlySet<string> = new Set([
   ...PERSISTENT_EXTENSION_STATEMENT_TYPES,
 ])
 
+function containsCanvas3DResourceCreatorExpression(
+  value: unknown,
+  importedClassNames: ReadonlySet<string> | undefined,
+): boolean {
+  if (Array.isArray(value)) {
+    return value.some((child) =>
+      containsCanvas3DResourceCreatorExpression(child, importedClassNames),
+    )
+  }
+  if (!value || typeof value !== 'object') return false
+  const record = value as Record<string, unknown>
+  if (
+    isCanvas3DResourceCreatorExpression(
+      {
+        type: typeof record.type === 'string' ? record.type : '',
+        className: typeof record.className === 'string' ? record.className : undefined,
+        namespace: typeof record.namespace === 'string' ? record.namespace : undefined,
+      },
+      importedClassNames,
+    )
+  ) {
+    return true
+  }
+  return Object.entries(record).some(
+    ([key, child]) =>
+      key !== '__id' && containsCanvas3DResourceCreatorExpression(child, importedClassNames),
+  )
+}
+
 function validateLegacyLifecycle(
   statements: JSStatement[],
   ctx: z.RefinementCtx,
   path: (string | number)[],
+  canvas3dContexts: Canvas3DStatementContextIndex,
   insideLoop = false,
   nested = false,
   directG3kMoldBody = false,
   insideRunningContext = false,
+  insideActionContext = false,
+  insideConstructor = false,
+  insideActionLoop = false,
 ): void {
   for (let index = 0; index < statements.length; index += 1) {
     const statement = statements[index]
     if (!statement) continue
+    const canvas3dContext = canvas3dContexts.get(statement)
     if (GAME3D_RUNNING_CONTEXT_STATEMENT_TYPES.has(statement.type) && !insideRunningContext) {
       ctx.addIssue({
         code: 'custom',
         path: [...path, index],
         message: `“${statement.type}” só pode ser usado enquanto o jogo estiver rodando`,
+      })
+    } else if (
+      GAME3D_ACTION_CONTEXT_STATEMENT_TYPES.has(statement.type) &&
+      (!insideActionContext || insideConstructor || insideActionLoop)
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: [...path, index],
+        message: `“${statement.type}” precisa responder a um evento ou ser chamado por uma função`,
       })
     } else if (statement.type === 'g3k:part' && !directG3kMoldBody) {
       ctx.addIssue({
@@ -10424,7 +10522,8 @@ function validateLegacyLifecycle(
     } else if (
       insideLoop &&
       (LOOP_FORBIDDEN_RESOURCE_TYPES.has(statement.type) ||
-        isCanvas3DResourceCreatorStatement(statement))
+        isCanvas3DResourceCreatorStatement(statement, canvas3dContext?.importedClasses) ||
+        containsCanvas3DResourceCreatorExpression(statement, canvas3dContext?.importedClasses))
     ) {
       ctx.addIssue({
         code: 'custom',
@@ -10439,24 +10538,43 @@ function validateLegacyLifecycle(
       })
     }
     const childInsideLoop = insideLoop || isLoopStatement(statement)
-    const childInsideRunningContext =
-      insideRunningContext ||
-      childInsideLoop ||
-      isEventStatement(statement) ||
-      statement.type === 'funcDecl' ||
-      statement.type === 'classDecl'
     const childNested =
       nested || (!LEGACY_START_WRAPPER_TYPES.has(statement.type) && !isLegacyLoadEvent(statement))
     for (const child of childStatementEntries(statement)) {
       const childIsG3kMoldBody = statement.type === 'g3k:defineMold' && child.path[0] === 'body'
+      const childIsConstructor = statement.type === 'classDecl' && child.path[0] === 'ctorBody'
+      const childIsMethod = statement.type === 'classDecl' && child.path[0] === 'methods'
+      const startsFunction = statement.type === 'funcDecl' || childIsConstructor || childIsMethod
+      const startsEvent = isEventStatement(statement)
+      const startsActionBoundary = startsFunction || startsEvent
+      const childInsideRunningContext =
+        childInsideLoop ||
+        startsEvent ||
+        statement.type === 'funcDecl' ||
+        childIsMethod ||
+        (!startsFunction && insideRunningContext)
+      const childInsideActionContext =
+        startsEvent ||
+        statement.type === 'funcDecl' ||
+        childIsMethod ||
+        (!startsActionBoundary && insideActionContext)
+      const childInsideConstructor =
+        childIsConstructor || (!startsActionBoundary && insideConstructor)
+      const childInsideActionLoop = startsActionBoundary
+        ? false
+        : insideActionLoop || isLoopStatement(statement)
       validateLegacyLifecycle(
         child.body,
         ctx,
         [...path, index, ...child.path],
+        canvas3dContexts,
         childInsideLoop,
         childNested,
         childIsG3kMoldBody,
         childInsideRunningContext,
+        childInsideActionContext,
+        childInsideConstructor,
+        childInsideActionLoop,
       )
     }
   }
@@ -10562,7 +10680,7 @@ export const SZIRSchema = z
   })
 
   .superRefine((ir, ctx) => {
-    validateLegacyLifecycle(ir.js, ctx, ['js'])
+    validateLegacyLifecycle(ir.js, ctx, ['js'], createCanvas3DStatementContextIndex(ir.js))
     for (const issue of collectProgrammingReferenceIssues(ir.js, ['js'], {
       canvasIds: collectCanvasIds(ir.html),
     })) {
@@ -11326,6 +11444,9 @@ export const G3K_STATEMENT_TYPES = new Set([
   'g3k:storeNearest',
   'g3k:hurt',
   'g3k:onEntityDeath',
+  'g3k:heal',
+  'g3k:onHurt',
+  'g3k:spawnRing',
   'g3k:defineEffect',
   'g3k:burstAt',
   'g3k:burstOn',

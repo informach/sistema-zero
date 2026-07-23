@@ -27,6 +27,7 @@ interface Sprite {
 }
 
 interface Api {
+  setGravity: (gravity: number) => void
   createTileMap: (opts: {
     image: string
     tile: number
@@ -157,5 +158,27 @@ describe('colisão PLATAFORMA (one-way)', () => {
     const s: Sprite = { x: 0, y: 20, w: 16, h: 16, vx: 0, vy: 5 }
     api.collideTileMap(s, map)
     expect(s.y).toBe(20)
+  })
+
+  it('com gravidade negativa, subindo por baixo: POUSA na face inferior e fica no chão', () => {
+    const api = load({})
+    api.setGravity(-0.6)
+    const map = platformMap(api)
+    // topo anterior = y-vy = 30-(-5) = 35, abaixo da base da plataforma (32).
+    const s: Sprite = { x: 0, y: 30, w: 16, h: 16, vx: 0, vy: -5 }
+    api.collideTileMap(s, map)
+    expect(s.y).toBe(32)
+    expect(s.vy).toBe(0)
+    expect(s.onGround).toBe(true)
+  })
+
+  it('com gravidade negativa, descendo pela face superior: ATRAVESSA', () => {
+    const api = load({})
+    api.setGravity(-0.6)
+    const map = platformMap(api)
+    const s: Sprite = { x: 0, y: 5, w: 16, h: 16, vx: 0, vy: 5 }
+    api.collideTileMap(s, map)
+    expect(s.y).toBe(5)
+    expect(s.vy).toBe(5)
   })
 })

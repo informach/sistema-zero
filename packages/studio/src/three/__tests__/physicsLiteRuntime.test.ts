@@ -35,6 +35,7 @@ interface PhysicsWorld {
     height: number,
     depth: number,
   ): void
+  addStaticSphere(id: string, x: number, y: number, z: number, radius: number): void
   addTrigger(
     id: string,
     x: number,
@@ -112,6 +113,32 @@ describe('SZ Physics Lite runtime', () => {
     expect(collisions.filter((collision) => collision === 'jogador:parede')).toHaveLength(1)
   })
 
+  it('aterrissa personagem sobre esfera estática e permite pular', () => {
+    const physics = loadFactory()({ groundHeight: () => -100 })
+    const object = objectAt(0, 3, 0)
+    physics.addBody('jogador', object, { kind: 'character', width: 1, height: 2, depth: 1 })
+    physics.addStaticSphere('rocha', 0, 0, 0, 2)
+
+    for (let frame = 0; frame < 10; frame += 1) physics.step(1 / 60)
+
+    expect(object.position.y).toBeCloseTo(3, 5)
+    expect(physics.body('jogador')?.grounded).toBe(true)
+    expect(physics.jump('jogador', 7)).toBe(true)
+  })
+
+  it('separa corpo e esfera mesmo quando os centros coincidem', () => {
+    const physics = loadFactory()({ gravity: 0, groundHeight: () => -100 })
+    const object = objectAt(0, 0, 0)
+    physics.addBody('caixa', object, { width: 1, height: 2, depth: 1 })
+    physics.addStaticSphere('esfera', 0, 0, 0, 2)
+
+    physics.step(1 / 60)
+
+    expect(
+      Math.abs(object.position.x) + Math.abs(object.position.y) + Math.abs(object.position.z),
+    ).toBeGreaterThan(0)
+  })
+
   it('emite entrada e saída de gatilho sem repetir entrada a cada quadro', () => {
     const physics = loadFactory()({ gravity: 0 })
     const object = objectAt(-3, 1, 0)
@@ -129,6 +156,32 @@ describe('SZ Physics Lite runtime', () => {
 
     expect(events.filter((event) => event.endsWith('entrou'))).toHaveLength(1)
     expect(events.filter((event) => event.endsWith('saiu'))).toHaveLength(1)
+  })
+
+  it('limpa contatos ao remover IDs que contêm o antigo delimitador interno', () => {
+    const physics = loadFactory()({ gravity: 0, groundHeight: () => -100 })
+    const object = objectAt(0, 1, 0)
+    const collisions: string[] = []
+    const triggers: string[] = []
+    physics.addBody('jogador', object, { kind: 'character', width: 1, height: 2, depth: 1 })
+    physics.onCollision((bodyId, colliderId) => collisions.push(`${bodyId}:${colliderId}`))
+    physics.onTrigger((bodyId, triggerId, entering) => {
+      if (entering) triggers.push(`${bodyId}:${triggerId}`)
+    })
+
+    physics.addStaticBox('parede|um', 0, 1, 0, 2, 2, 2)
+    physics.addTrigger('area|um', 0, 1, 0, 10, 4, 10)
+    physics.step(1 / 60)
+    expect(physics.remove('parede|um')).toBe(true)
+    expect(physics.remove('area|um')).toBe(true)
+    expect(physics.teleport('jogador', 0, 1, 0)).toBe(true)
+
+    physics.addStaticBox('parede|um', 0, 1, 0, 2, 2, 2)
+    physics.addTrigger('area|um', 0, 1, 0, 10, 4, 10)
+    physics.step(1 / 60)
+
+    expect(collisions).toEqual(['jogador:parede|um', 'jogador:parede|um'])
+    expect(triggers).toEqual(['jogador:area|um', 'jogador:area|um'])
   })
 
   it('oferece salto de personagem e raycast no colisor mais próximo', () => {

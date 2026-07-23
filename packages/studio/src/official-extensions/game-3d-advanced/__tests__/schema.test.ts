@@ -15,7 +15,7 @@ import {
 
 describe('G3K_STATEMENT_TYPES', () => {
   it('tem os 103 statements do kit, todos com o prefixo g3k:', () => {
-    expect(G3K_STATEMENT_TYPES.size).toBe(103)
+    expect(G3K_STATEMENT_TYPES.size).toBe(106)
     for (const type of G3K_STATEMENT_TYPES) {
       expect(type.startsWith('g3k:')).toBe(true)
     }

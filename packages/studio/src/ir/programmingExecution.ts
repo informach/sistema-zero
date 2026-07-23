@@ -119,6 +119,7 @@ const CALLBACK_BODY_EXECUTION: ReadonlyMap<string, CallbackBodyExecution> = new 
     'g3k:onEntityStateUpdate',
     'g3k:onExitEntityState',
     'g3k:onEntityDeath',
+    'g3k:onHurt',
     'g3k:addButton',
     'g3k:onEnterState',
     'g3k:onEvent',
@@ -307,6 +308,7 @@ function localVariablesForChild(
     case 'g3k:onEnterEntityState':
     case 'g3k:onExitEntityState':
     case 'g3k:onEntityDeath':
+    case 'g3k:onHurt':
       return first === 'body' ? [statement.itemName] : []
     case 'gk:overlapGroups':
       return first === 'body' ? [statement.aName, statement.bName] : []

@@ -26,6 +26,7 @@ SZGameKit3D.setup({ width: 1280, height: 720, world: 60, sky: "#0b1026", ground:
 SZGameKit3D.setEffects({ shadows: true, bloom: true, strength: 1.2, vignette: true });
 SZGameKit3D.setScreenText("menu", "Defesa da Torre", "Os invasores vêm da beirada do mundo. Suas torres têm cérebro próprio!", "Defender");
 SZGameKit3D.setScreenText("vitoria", "O cristal sobreviveu!", "As torres agradecem.", "Defender de novo");
+SZGameKit3D.setScreenText("fim", "O cristal caiu!", "Os invasores passaram. Proteja o cristal na próxima!", "Tentar de novo");
 SZGameKit3D.defineMold("cristal", { health: 200, speed: 0 }, function () {
   SZGameKit3D.part({ shape: "box", color: "#0e7490", w: 2.2, h: 0.4, d: 2.2, x: 0, y: 0.2, z: 0 });
   SZGameKit3D.part({ shape: "cone", color: "#22d3ee", w: 1.6, h: 3, d: 1.6, x: 0, y: 1.9, z: 0 });

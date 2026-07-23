@@ -45,10 +45,16 @@ describe('Canvas 3D Fase 2 — importNamed', () => {
     expect(roundtripBlocks(code).stateJson).toContain('"sz_t3d_import_named"')
   })
 
-  it('vários nomes: import { GLTFLoader, DRACOLoader } from … (vírgula)', () => {
-    const src = "import { GLTFLoader, DRACOLoader } from 'three/addons/loaders/GLTFLoader.js';"
+  it('separa addons de arquivos diferentes quando chegam juntos pela Ponte', () => {
+    const src = "import { GLTFLoader, OrbitControls } from 'three/addons/loaders/GLTFLoader.js';"
     const { rebuiltCode } = roundtripBlocks(generateJS({ statements: parseJS(src) }))
-    expect(rebuiltCode).toContain('import { GLTFLoader, DRACOLoader } from')
+    expect(rebuiltCode).toBe(
+      [
+        "import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';",
+        "import { OrbitControls } from 'three/addons/controls/OrbitControls.js';",
+        '',
+      ].join('\n'),
+    )
   })
 
   it('import com ALIAS (X as Y) segue rawJS (fora do escopo)', () => {

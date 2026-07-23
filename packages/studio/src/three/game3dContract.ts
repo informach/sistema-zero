@@ -442,3 +442,6 @@ export const GAME3D_START_ONLY_STATEMENT_TYPES: ReadonlySet<string> = new Set([
 
 /** Comandos sem efeito antes de um loop, evento ou função entrar em execução. */
 export const GAME3D_RUNNING_CONTEXT_STATEMENT_TYPES: ReadonlySet<string> = new Set(['g3d:stop'])
+
+/** Comandos pontuais que precisam nascer de um evento, função ou método. */
+export const GAME3D_ACTION_CONTEXT_STATEMENT_TYPES: ReadonlySet<string> = new Set(['g3d:stackDrop'])

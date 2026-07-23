@@ -1,5 +1,5 @@
 /**
- * Contrato sem dependências da categoria Canvas 3D. Definições, curadoria,
+ * Contrato de domínio da categoria Canvas 3D. Definições, curadoria,
  * seletores, allowlist, geração e validação leem estes metadados para que um
  * bloco novo não precise ser classificado à mão em cada camada.
  */
@@ -337,6 +337,7 @@ const MODEL_LOADER_CLASS_NAMES = new Set([
 const COLOR_TARGET_MATERIAL_CLASS_NAMES = new Set([
   'LineBasicMaterial',
   'LineDashedMaterial',
+  'LineMaterial',
   'MeshBasicMaterial',
   'MeshLambertMaterial',
   'MeshMatcapMaterial',
@@ -348,6 +349,48 @@ const COLOR_TARGET_MATERIAL_CLASS_NAMES = new Set([
   'ShadowMaterial',
   'SpriteMaterial',
 ])
+
+/**
+ * Objetos matemáticos pequenos não possuem lifecycle próprio e são seguros como
+ * valores temporários. Os demais construtores Three/addon criam estado ou recursos
+ * que precisam nascer fora do laço de animação.
+ */
+const CANVAS3D_TEMPORARY_VALUE_CLASS_NAMES: ReadonlySet<string> = new Set([
+  'Box2',
+  'Box3',
+  'Color',
+  'Cylindrical',
+  'Euler',
+  'Frustum',
+  'Line3',
+  'Matrix3',
+  'Matrix4',
+  'Plane',
+  'Quaternion',
+  'Ray',
+  'Sphere',
+  'Spherical',
+  'Triangle',
+  'Vector2',
+  'Vector3',
+  'Vector4',
+])
+
+export function isCanvas3DResourceCreatorExpression(
+  expression: {
+    type: string
+    className?: string
+    namespace?: string
+  },
+  importedClassNames: ReadonlySet<string> = new Set(),
+): boolean {
+  if (expression.type !== 'newExpr') return false
+  const className = expression.className?.trim() ?? ''
+  const namespace = expression.namespace?.trim() ?? ''
+  const belongsToCanvas3D =
+    namespace === 'THREE' || (!namespace && importedClassNames.has(className))
+  return belongsToCanvas3D && !CANVAS3D_TEMPORARY_VALUE_CLASS_NAMES.has(className)
+}
 
 /** Classifica o construtor técnico sem depender da UI do seletor de classes. */
 export function canvas3DSymbolKindsForClass(rawClass: string): readonly Canvas3DSymbolKind[] {
@@ -595,34 +638,11 @@ export const CANVAS3D_SEMANTIC_STATEMENT_TYPES = [
   'physicsLiteStats',
 ] as const
 
-export const CANVAS3D_SEMANTIC_STATEMENT_TYPE_SET: ReadonlySet<string> = new Set(
-  CANVAS3D_SEMANTIC_STATEMENT_TYPES,
-)
-
 export const CANVAS3D_CONTINUOUS_STATEMENT_TYPES: ReadonlySet<string> = new Set([
   'waterTime',
   'grassTime',
   'physicsLiteStep',
 ])
-
-/**
- * Sinal estável usado pela volta IR → Blockly. A geração injeta imports depois,
- * portanto a própria IR semântica precisa ativar os facilitadores 3D.
- */
-export function statementUsesCanvas3D(statement: {
-  type: string
-  module?: string
-  namespace?: string
-}): boolean {
-  if (statement.type === 'loaderLoad' || statement.type === 'traverseEach') return false
-  return (
-    CANVAS3D_SEMANTIC_STATEMENT_TYPE_SET.has(statement.type) ||
-    (statement.type === 'importStar' && statement.module === 'three') ||
-    (statement.type === 'importNamed' &&
-      (statement.module === 'three' || statement.module?.startsWith('three/addons/'))) ||
-    (statement.type === 'newInstance' && statement.namespace === 'THREE')
-  )
-}
 
 export const CANVAS3D_RESOURCE_CREATOR_TYPES: ReadonlySet<string> = new Set([
   'threeSceneSetup',
@@ -652,12 +672,24 @@ export const CANVAS3D_RESOURCE_CREATOR_TYPES: ReadonlySet<string> = new Set([
 ])
 
 /** Classifica recursos condicionais que compartilham um nó IR genérico. */
-export function isCanvas3DResourceCreatorStatement(statement: {
-  type: string
-  namespace?: string
-}): boolean {
+export function isCanvas3DResourceCreatorStatement(
+  statement: {
+    type: string
+    namespace?: string
+    className?: string
+  },
+  importedClassNames: ReadonlySet<string> = new Set(),
+): boolean {
   return (
     CANVAS3D_RESOURCE_CREATOR_TYPES.has(statement.type) ||
-    (statement.type === 'newInstance' && statement.namespace === 'THREE')
+    (statement.type === 'newInstance' &&
+      isCanvas3DResourceCreatorExpression(
+        {
+          type: 'newExpr',
+          namespace: statement.namespace,
+          className: statement.className,
+        },
+        importedClassNames,
+      ))
   )
 }

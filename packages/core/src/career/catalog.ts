@@ -256,11 +256,18 @@ export interface CareerCourseLock {
 /**
  * Política de acesso aos cursos da carreira. Cursos bônus (`careerSlot=null`)
  * permanecem fora desta trava e seguem apenas a autorização comercial normal.
+ *
+ * `foundationAvailable` diz se existe um curso-base (`careerSlot=1`) PUBLICADO na
+ * etapa. Sem ele NÃO há como destravar as posições 2+ (concluir+publicar a base é
+ * a única chave), então a trava `foundation-first` faria a etapa inteira — e a
+ * carreira — congelar. Nesse caso a política falha ABERTA: a trava pedagógica só
+ * vale quando existe base alcançável. Default `true` para compatibilidade.
  */
 export function resolveCareerCourseLock(
   qualified: QualifiedCareerSlots,
   courseTier: CareerCourseTier,
   careerSlot: number | null,
+  foundationAvailable = true,
 ): CareerCourseLock {
   if (careerSlot === null) return { locked: false }
 
@@ -284,6 +291,9 @@ export function resolveCareerCourseLock(
   }
 
   if (careerSlot === 1 || slotSet(qualified, courseTier).has(1)) return { locked: false }
+  // Sem curso-base publicado na etapa, travar as demais posições prenderia o aluno
+  // para sempre (nada a concluir para liberar). Fail-open.
+  if (!foundationAvailable) return { locked: false }
   return {
     locked: true,
     reason: 'foundation-first',

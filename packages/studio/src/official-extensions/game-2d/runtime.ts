@@ -55,6 +55,9 @@ export const gameTwoDRuntime = withGameUIFontRuntime(
   function _finiteNumber(value, fallback) {
     return _isFiniteNumber(value) ? value : fallback;
   }
+  function _positiveFiniteNumber(value, fallback) {
+    return _isFiniteNumber(value) && value > 0 ? value : fallback;
+  }
 ` +
     gameRuntimeDomains +
     `

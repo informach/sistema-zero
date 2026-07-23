@@ -51,6 +51,47 @@ describe('Carreira do Criador — acesso pedagógico aos cursos', () => {
     })
   })
 
+  test('sem curso-base PUBLICADO na etapa, os demais NÃO ficam presos (fail-open)', async () => {
+    const { app, courses, entitlements } = buildApp()
+    // Só a posição 2 existe; nenhum curso-base publicado para destravá-la.
+    seedSampleCourse(courses, 'segundo-2d', 'published', 'kids', false, 'iniciante', '2d', 2)
+    grantAllKidsCourses(entitlements, { userId: ACCOUNT })
+
+    const response = await app.handle(
+      new Request('http://localhost/members/courses/segundo-2d', { headers }),
+    )
+    // Sem base alcançável, travar prenderia o aluno para sempre → abre.
+    expect(response.status).toBe(200)
+  })
+
+  test('curso-base em RASCUNHO não conta como base publicada (fail-open)', async () => {
+    const { app, courses, entitlements } = buildApp()
+    seedSampleCourse(courses, 'base-2d', 'draft', 'kids', false, 'iniciante', '2d', 1)
+    seedSampleCourse(courses, 'segundo-2d', 'published', 'kids', false, 'iniciante', '2d', 2)
+    grantAllKidsCourses(entitlements, { userId: ACCOUNT })
+
+    const response = await app.handle(
+      new Request('http://localhost/members/courses/segundo-2d', { headers }),
+    )
+    expect(response.status).toBe(200)
+  })
+
+  test('catálogo: sem curso-base publicado, a posição 2 não trava', async () => {
+    const { app, courses, entitlements } = buildApp()
+    seedSampleCourse(courses, 'segundo-2d', 'published', 'kids', false, 'iniciante', '2d', 2)
+    grantAllKidsCourses(entitlements, { userId: ACCOUNT })
+
+    const response = await app.handle(
+      new Request('http://localhost/members/catalog?audience=kids', { headers }),
+    )
+    const body = (await response.json()) as { courses: Record<string, any>[] }
+    const bySlug = new Map(body.courses.map((course) => [course.courseSlug, course]))
+    expect(bySlug.get('segundo-2d')).toMatchObject({
+      hasAccess: true,
+      careerLock: { locked: false },
+    })
+  })
+
   test('os dois marcos do curso-base liberam os demais da mesma etapa', async () => {
     const { app, courses, entitlements, gamification } = buildApp()
     const base = seedSampleCourse(

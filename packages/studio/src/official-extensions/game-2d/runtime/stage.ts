@@ -17,6 +17,10 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
   var _lastHudSignature = '';
   var _lastHudAnnouncementAt = -HUD_ANNOUNCE_INTERVAL_MS;
   var _hudTimer = null;
+  // Os helpers públicos de HUD podem ser chamados em sequência sem clear().
+  // Agrupamos todas as mudanças do mesmo turno JavaScript antes de anunciar a
+  // região viva, sem depender da limpeza visual do canvas para definir o lote.
+  var _hudBatchPending = false;
   var _hudFrame = 0;
   var _hudSeenAt = Object.create(null);
   var _hudFramePending = false;
@@ -98,7 +102,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
   }
 
   function _flushAccessibleHudIfDue() {
-    if (!_hudDirty || _hudFramePending) return;
+    if (!_hudDirty || _hudFramePending || _hudBatchPending) return;
     var current = now();
     if (current - _lastHudAnnouncementAt < HUD_ANNOUNCE_INTERVAL_MS) {
       _scheduleAccessibleHudFlush();
@@ -125,7 +129,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
         delete _hudSeenAt[key];
         _hudDirty = true;
       }
-      _flushAccessibleHudIfDue();
+      _scheduleAccessibleHudBatch();
       return;
     }
     _hudSeenAt[key] = _hudFrame;
@@ -133,7 +137,18 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
       _hudValues[key] = value;
       _hudDirty = true;
     }
-    _flushAccessibleHudIfDue();
+    _scheduleAccessibleHudBatch();
+  }
+
+  function _scheduleAccessibleHudBatch() {
+    if (_hudBatchPending) return;
+    _hudBatchPending = true;
+    var generation = _hudLifecycleGeneration;
+    Promise.resolve().then(function () {
+      if (generation !== _hudLifecycleGeneration) return;
+      _hudBatchPending = false;
+      _flushAccessibleHudIfDue();
+    });
   }
 
   function _finalizeAccessibleHudFrame() {
@@ -166,6 +181,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     _hudValues = Object.create(null);
     _hudSeenAt = Object.create(null);
     _hudDirty = false;
+    _hudBatchPending = false;
     _hudFrame = 0;
     _hudFramePending = false;
     _lastHudSignature = '';
@@ -307,7 +323,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     if (!c) { try { c = document.querySelector('canvas'); } catch (e) {} }
     if (!c) return;
     if (!_logicalW) { _logicalW = c.width || 4; _logicalH = c.height || 3; }
-    var p = (typeof percent === 'number' && percent > 0 && percent <= 100) ? percent : 100;
+    var p = (_isFiniteNumber(percent) && percent > 0 && percent <= 100) ? percent : 100;
     var ar = _logicalW / _logicalH;
     c.style.width = 'min(' + p + 'vw, ' + (p * ar) + 'vh)';
     c.style.height = 'auto';
@@ -329,7 +345,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     ensureStage();
     var c = _stageCanvas;
     if (!c) { try { c = document.querySelector('canvas'); } catch (e) {} }
-    if (c && typeof w === 'number' && w > 0 && typeof h === 'number' && h > 0) {
+    if (c && _isFiniteNumber(w) && w > 0 && _isFiniteNumber(h) && h > 0) {
       _fillMode = false;
       c.width = Math.round(w);
       c.height = Math.round(h);

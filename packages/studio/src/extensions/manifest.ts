@@ -111,8 +111,9 @@ const BoundedExampleIRSchema = z
 
 // Tetos defensivos: um manifest é só metadados + docs, então strings imensas
 // indicam dados malformados/maliciosos. Limites generosos para não atrapalhar
-// extensões reais (o docs oficial tem ~1 KB) mas finitos para evitar exaustão
-// de memória se um dia carregarmos extensões de terceiros.
+// extensões reais (nome/descrição/categoria são curtos; a `docs` é o campo grande
+// e tem o seu PRÓPRIO teto, MAX_DOCS_CHARS logo abaixo) mas finitos para evitar
+// exaustão de memória se um dia carregarmos extensões de terceiros.
 const MAX_NAME_CHARS = 80
 const MAX_DESCRIPTION_CHARS = 500
 const MAX_CATEGORY_CHARS = 60

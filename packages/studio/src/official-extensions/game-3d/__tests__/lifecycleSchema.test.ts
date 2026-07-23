@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { SZIRSchema } from '#ir'
+import { SZIRSchema, SZIRV2Schema } from '#ir'
 
 const project = (js: unknown[]) => ({
   html: [{ type: 'canvas', id: 'tela', width: 480, height: 360 }],
@@ -140,5 +140,82 @@ describe('game-3d — contrato de ciclo de vida', () => {
 
     expect(rootStop.success).toBe(false)
     expect(runningStop.success).toBe(true)
+  })
+
+  it('recusa parar diretamente no construtor nas duas versões da IR', () => {
+    const scene = { type: 'g3d:createScene' as const, canvasId: 'tela', varName: 'cena' }
+    const classWithStop = {
+      type: 'classDecl' as const,
+      name: 'Jogo',
+      ctorBody: [{ type: 'g3d:stop' as const, worldVar: 'cena' }],
+      methods: [],
+    }
+
+    const legacy = SZIRSchema.safeParse(project([scene, classWithStop]))
+    const current = SZIRV2Schema.safeParse({
+      version: 2,
+      html: [],
+      css: [],
+      behavior: { start: [scene, classWithStop], events: [], loops: [] },
+      extensions: [{ extensionId: 'game-3d' }],
+    })
+
+    expect(legacy.success).toBe(false)
+    expect(current.success).toBe(false)
+    for (const result of [legacy, current]) {
+      if (!result.success) {
+        expect(
+          result.error.issues.some((issue) => issue.message.includes('jogo estiver rodando')),
+        ).toBe(true)
+      }
+    }
+  })
+
+  it('só aceita soltar a torre em evento, função ou método', () => {
+    const drop = { type: 'g3d:stackDrop' as const, worldVar: 'torre' }
+    const scene = {
+      type: 'g3d:createStackScene' as const,
+      canvasId: 'tela',
+      varName: 'torre',
+    }
+    const rootDrop = SZIRSchema.safeParse(project([scene, drop]))
+    const loopDrop = SZIRSchema.safeParse(
+      project([scene, { type: 'g3d:animate', worldVar: 'torre', body: [drop] }]),
+    )
+    const eventDrop = SZIRSchema.safeParse(
+      project([scene, { type: 'event', target: 'botao', event: 'click', body: [drop] }]),
+    )
+    const functionDrop = SZIRSchema.safeParse(
+      project([scene, { type: 'funcDecl', name: 'soltar', params: [], body: [drop] }]),
+    )
+
+    expect(rootDrop.success).toBe(false)
+    expect(loopDrop.success).toBe(false)
+    expect(eventDrop.success).toBe(true)
+    expect(functionDrop.success).toBe(true)
+
+    const currentProject = (behavior: { start: unknown[]; events: unknown[]; loops: unknown[] }) =>
+      SZIRV2Schema.safeParse({
+        version: 2,
+        html: [{ type: 'canvas', id: 'tela', width: 480, height: 360 }],
+        css: [],
+        behavior,
+        extensions: [{ extensionId: 'game-3d' }],
+      })
+    const currentRoot = currentProject({ start: [scene, drop], events: [], loops: [] })
+    const currentLoop = currentProject({
+      start: [scene],
+      events: [],
+      loops: [{ type: 'g3d:animate', worldVar: 'torre', body: [drop] }],
+    })
+    const currentEvent = currentProject({
+      start: [scene],
+      events: [{ type: 'event', target: 'window', event: 'keydown', body: [drop] }],
+      loops: [],
+    })
+
+    expect(currentRoot.success).toBe(false)
+    expect(currentLoop.success).toBe(false)
+    expect(currentEvent.success).toBe(true)
   })
 })

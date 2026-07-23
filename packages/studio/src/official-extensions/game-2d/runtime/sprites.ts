@@ -49,7 +49,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     var prev = true, ok = true;
     try { prev = ctx.imageSmoothingEnabled; } catch (e) {}
     try {
-      if (typeof srcW === 'number' && srcW > 0 && dw * _deviceScale(ctx) >= srcW) {
+      if (_isFiniteNumber(srcW) && srcW > 0 && dw * _deviceScale(ctx) >= srcW) {
         ctx.imageSmoothingEnabled = false;
       }
     } catch (e) {}
@@ -92,8 +92,8 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   function loadSpriteSheet(name, fw, fh) {
     return {
       image: loadImage(name),
-      frameW: (typeof fw === 'number' && fw > 0) ? fw : 32,
-      frameH: (typeof fh === 'number' && fh > 0) ? fh : 32
+      frameW: _positiveFiniteNumber(fw, 32),
+      frameH: _positiveFiniteNumber(fh, 32)
     };
   }
 
@@ -104,13 +104,13 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   function createSprite(opts) {
     opts = opts || {};
     return {
-      x: opts.x || 0,
-      y: opts.y || 0,
-      w: opts.w || 32,
-      h: opts.h || 32,
+      x: _finiteNumber(opts.x, 0),
+      y: _finiteNumber(opts.y, 0),
+      w: (_isFiniteNumber(opts.w) && opts.w > 0) ? opts.w : 32,
+      h: (_isFiniteNumber(opts.h) && opts.h > 0) ? opts.h : 32,
       color: opts.color || '#22d3ee',
-      vx: opts.vx || 0,
-      vy: opts.vy || 0,
+      vx: _finiteNumber(opts.vx, 0),
+      vy: _finiteNumber(opts.vy, 0),
       image: opts.image ? loadImage(opts.image) : null,
       anim: null
     };
@@ -200,36 +200,37 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   // figura). Cada um e autossuficiente (begin/fill) para nao depender de estado.
   function paintRect(ctx, x, y, w, h, color) {
     ctx.fillStyle = color || '#000000';
-    ctx.fillRect(x || 0, y || 0, w || 0, h || 0);
+    ctx.fillRect(_finiteNumber(x, 0), _finiteNumber(y, 0), _finiteNumber(w, 0), _finiteNumber(h, 0));
   }
   function paintCircle(ctx, x, y, r, color) {
     ctx.fillStyle = color || '#000000';
     ctx.beginPath();
-    ctx.arc(x || 0, y || 0, Math.max(0, r || 0), 0, Math.PI * 2);
+    ctx.arc(_finiteNumber(x, 0), _finiteNumber(y, 0), Math.max(0, _finiteNumber(r, 0)), 0, Math.PI * 2);
     ctx.fill();
   }
   function paintEllipse(ctx, x, y, w, h, color) {
-    var rw = Math.max(0, (w || 0) / 2), rh = Math.max(0, (h || 0) / 2);
+    var px = _finiteNumber(x, 0), py = _finiteNumber(y, 0);
+    var rw = Math.max(0, _finiteNumber(w, 0) / 2), rh = Math.max(0, _finiteNumber(h, 0) / 2);
     ctx.fillStyle = color || '#000000';
     ctx.beginPath();
-    ctx.ellipse((x || 0) + rw, (y || 0) + rh, rw, rh, 0, 0, Math.PI * 2);
+    ctx.ellipse(px + rw, py + rh, rw, rh, 0, 0, Math.PI * 2);
     ctx.fill();
   }
   function paintTriangle(ctx, x1, y1, x2, y2, x3, y3, color) {
     ctx.fillStyle = color || '#000000';
     ctx.beginPath();
-    ctx.moveTo(x1 || 0, y1 || 0);
-    ctx.lineTo(x2 || 0, y2 || 0);
-    ctx.lineTo(x3 || 0, y3 || 0);
+    ctx.moveTo(_finiteNumber(x1, 0), _finiteNumber(y1, 0));
+    ctx.lineTo(_finiteNumber(x2, 0), _finiteNumber(y2, 0));
+    ctx.lineTo(_finiteNumber(x3, 0), _finiteNumber(y3, 0));
     ctx.closePath();
     ctx.fill();
   }
   function paintLine(ctx, x1, y1, x2, y2, color, width) {
     ctx.strokeStyle = color || '#000000';
-    ctx.lineWidth = (typeof width === 'number' && width > 0) ? width : 2;
+    ctx.lineWidth = _positiveFiniteNumber(width, 2);
     ctx.beginPath();
-    ctx.moveTo(x1 || 0, y1 || 0);
-    ctx.lineTo(x2 || 0, y2 || 0);
+    ctx.moveTo(_finiteNumber(x1, 0), _finiteNumber(y1, 0));
+    ctx.lineTo(_finiteNumber(x2, 0), _finiteNumber(y2, 0));
     ctx.stroke();
   }
 
@@ -243,13 +244,13 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     sprite.skin = null;
     sprite.image = null;
     sprite._imgHooked = false;
-    var f = (typeof from === 'number') ? from : 0;
-    var t = (typeof to === 'number') ? to : f;
+    var f = _finiteNumber(from, 0);
+    var t = _finiteNumber(to, f);
     sprite.anim = {
       sheet: sheet,
       from: Math.max(0, Math.floor(f)),
       to: Math.max(0, Math.floor(t)),
-      fps: (typeof fps === 'number' && fps > 0) ? fps : 8,
+      fps: _positiveFiniteNumber(fps, 8),
       start: now()
     };
   }
@@ -276,13 +277,13 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   function setStateAnimation(sprite, state, sheet, from, to, fps) {
     if (!sprite || !sheet || !state) return;
     if (!sprite.animStates) sprite.animStates = {};
-    var f = (typeof from === 'number') ? from : 0;
-    var t = (typeof to === 'number') ? to : f;
+    var f = _finiteNumber(from, 0);
+    var t = _finiteNumber(to, f);
     sprite.animStates[state] = {
       sheet: sheet,
       from: Math.max(0, Math.floor(f)),
       to: Math.max(0, Math.floor(t)),
-      fps: (typeof fps === 'number' && fps > 0) ? fps : 8
+      fps: _positiveFiniteNumber(fps, 8)
     };
   }
 
@@ -292,7 +293,9 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   // entra em pulando/caindo.
   function _resolveAnimState(s) {
     if ((s.hurtFrames || 0) > 0 || (s.blinkFrames || 0) > 0) return 'dano';
-    if (s.onGround === false) return ((s.vy || 0) < 0) ? 'pulando' : 'caindo';
+    if (s.onGround === false) {
+      return _isJumpingForGravity(s.vy, _worldGravityOr(0.6)) ? 'pulando' : 'caindo';
+    }
     if (Math.abs(s.vx || 0) > 0.01) return 'andando';
     if (Math.abs(s.vy || 0) > 0.01) return 'vertical';
     return 'parado';
@@ -337,21 +340,21 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    */
   function drawFrame(ctx, sheet, index, x, y, w, h) {
     if (!ctx) return;
-    var dx = x || 0, dy = y || 0;
+    var dx = _finiteNumber(x, 0), dy = _finiteNumber(y, 0);
     var img = sheet && sheet.image && sheet.image.loaded ? sheet.image.img : null;
     if (!img) {
       ctx.fillStyle = '#94a3b8';
       ctx.fillRect(dx, dy, w || 32, h || 32);
       return;
     }
-    var fw = sheet.frameW || 32, fh = sheet.frameH || 32;
+    var fw = _positiveFiniteNumber(sheet.frameW, 32), fh = _positiveFiniteNumber(sheet.frameH, 32);
     var sheetW = img.naturalWidth || img.width || fw;
     var cols = Math.max(1, Math.floor(sheetW / fw));
-    var i = Math.max(0, Math.floor(index || 0));
+    var i = Math.max(0, Math.floor(_finiteNumber(index, 0)));
     var sx = (i % cols) * fw;
     var sy = Math.floor(i / cols) * fh;
-    var dw = (typeof w === 'number') ? w : fw;
-    var dh = (typeof h === 'number') ? h : fh;
+    var dw = _finiteNumber(w, fw);
+    var dh = _finiteNumber(h, fh);
     _crispDraw(ctx, fw, dw, function () { ctx.drawImage(img, sx, sy, fw, fh, dx, dy, dw, dh); });
   }
 
@@ -364,7 +367,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   // Wrapper público: aplica o "piscar" (invencibilidade) e delega o desenho real.
   function drawSprite(ctx, sprite) {
     if (!ctx || !sprite) return;
-    var op = (typeof sprite.opacity === 'number') ? sprite.opacity : 1;
+    var op = _finiteNumber(sprite.opacity, 1);
     if (sprite.blinkFrames > 0) {
       // Decai 1× por quadro do jogo (carimbo) — não por desenho. Sem "a cada quadro
       // do jogo" ativo (aluno desenhando no rAF do núcleo), cai no modo antigo.
@@ -383,7 +386,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   }
   function _drawSpriteRaw(ctx, sprite) {
     if (!ctx || !sprite) return;
-    var ang = (typeof sprite.angle === 'number') ? sprite.angle : 0;
+    var ang = _finiteNumber(sprite.angle, 0);
     var flip = sprite.facing === -1;
     if (!ang && !flip) { _drawSpriteBody(ctx, sprite); return; }
     // Gira/espelha o desenho em torno do CENTRO do sprite (o corpo segue em

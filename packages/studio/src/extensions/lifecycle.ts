@@ -39,6 +39,7 @@ export const GAME_3D_ADVANCED_LIFECYCLE: RuntimeLifecycleContract = {
   extensionId: 'game-3d-advanced',
   globalName: 'SZGameKit3D',
   runMethod: 'runProject',
+  managedProjectRun: true,
   bootMethod: 'start',
   disposeMethod: 'disposeAll',
 }

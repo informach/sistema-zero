@@ -3,6 +3,7 @@ import { withThreePostProcessingRuntime } from '../threePostProcessingRuntime'
 import { gameKit3DCameraRuntimeSource } from './runtimeCamera'
 import { gameKit3DModelAssetsRuntimeSource } from './runtimeModelAssets'
 import { gameKit3DPhysicsRuntimeSource } from './runtimePhysics'
+import { gameKit3DProjectRuntimeSource } from './runtimeProject'
 
 /**
  * Runtime do "Jogo 3D Avançado" — injetado no <head> do iframe quando a
@@ -78,9 +79,12 @@ const gameKit3DRuntimeBeforeModelSource = `import * as THREE from 'three';
   var MIN_TONE_FREQUENCY = 20;
   var MAX_TONE_FREQUENCY = 20000;
   var MAX_TONE_SECONDS = 10;
+  var MAX_GAME_STATE_TRANSITIONS = 32;
 
   // ---- Estado interno ----
   var state = 'menu';
+  var stateQueue = [];
+  var changingState = false;
   var started = false;
   var lifecycleGeneration = 0;
   var shellReady = false;
@@ -106,6 +110,7 @@ const gameKit3DRuntimeBeforeModelSource = `import * as THREE from 'three';
   var fsmHooks = Object.create(null);    // mold -> estado -> { enter:[], step:[], exit:[] }
   var stateTimers = [];                  // { mold, state, sec, next }
   var deathHooks = Object.create(null);  // mold -> [fn]
+  var hurtHooks = Object.create(null);   // mold -> [fn] (roda a cada dano levado)
   var overlapHooks = Object.create(null); // mold da ZONA -> [fn(zona, quem)]
   var effects = Object.create(null);     // nome -> receita + Points + buffers (faíscas)
   var effectCount = 0;
@@ -558,51 +563,6 @@ const gameKit3DRuntimeBeforeModelSource = `import * as THREE from 'three';
     updateAccessibleHud(key, content);
   }
 
-  // ---- Máquina de estados do JOGO (menu/jogando/pausado/fim/vitoria + custom) ----
-
-  function setState(name) {
-    var n = text(name, '');
-    if (!n) return;
-    if (n === state) return;
-    var prev = state;
-    var resuming = n === 'jogando' && prev === 'pausado';
-    state = n;
-    mouseHeld = false;
-    mouseJust = false;
-    if (n !== 'jogando') releaseFpsInput();
-    applyStateScreens(n);
-    // Entrou em 'jogando' vindo de fora do jogo: RECOMEÇA a arena (recolhe
-    // todas as entidades, zera fábricas/tempo) ANTES dos ganchos da criança —
-    // assim "Jogar de novo" funciona. Despausar NÃO reseta.
-    if (n === 'jogando' && prev !== 'jogando' && prev !== 'pausado') {
-      playTime = 0;
-      entityLimitWarned = false;
-      for (var pk in pools) releaseAll(pools[pk]);
-      for (var si = 0; si < spawners.length; si++) spawners[si].timer = 0;
-      resetParticles();
-      // Recomeço limpa o que sobrou da partida anterior: balão de fala pendurado,
-      // cronômetro correndo e tremor pendente atravessariam para o jogo novo.
-      clearSays();
-      clearBars();
-      _timer.on = false;
-      _timer.left = 0;
-      _shakeT = 0;
-      if (projectFactory) {
-        resetProjectRuntime();
-        executeProjectFactory();
-      }
-    }
-    // Retomar a MESMA partida não é entrar nela de novo. Os ganchos de
-    // "jogando" normalmente criam herói, arena, fábricas e cronômetro; repeti-los
-    // no resume duplicaria tudo que a pausa preservou.
-    var hooks = resuming ? null : enterStateHooks[n];
-    if (hooks) {
-      for (var i = 0; i < hooks.length; i++) {
-        try { hooks[i](); } catch (e) { warn('erro no "quando o jogo entrar no estado ' + n + '": ' + e); }
-      }
-    }
-  }
-
   function disposeMoldTemplate(mold, disposedMaterials) {
     var tpl = mold && mold.template;
     if (!tpl || !tpl.traverse) return;
@@ -610,7 +570,7 @@ const gameKit3DRuntimeBeforeModelSource = `import * as THREE from 'three';
       var list = o.material && o.material.length ? o.material : [o.material];
       for (var i = 0; i < list.length; i++) {
         var material = list[i];
-        if (!material || !material.dispose || disposedMaterials.has(material)) continue;
+        if (!material || !material.dispose || disposedMaterials.has(material) || isCachedModelMaterial(material)) continue;
         disposedMaterials.add(material);
         try { material.dispose(); }
         catch (e) { warnOnce('dispose-mold', 'não consegui liberar um material antigo: ' + e); }
@@ -618,67 +578,7 @@ const gameKit3DRuntimeBeforeModelSource = `import * as THREE from 'three';
     });
   }
 
-  function resetProjectRuntime() {
-    resetAudioForRun();
-    resetAccessibleHud();
-    _fpsTouchId = null;
-    updateHooks.length = 0;
-    enterStateHooks = Object.create(null);
-    listeners = Object.create(null);
-    fsmHooks = Object.create(null);
-    deathHooks = Object.create(null);
-    overlapHooks = Object.create(null);
-    timerHooks.length = 0;
-    stateTimers.length = 0;
-    spawners.length = 0;
-    clearDecor();
-    for (var li = 0; li < extraLights.length; li++) {
-      var light = extraLights[li];
-      if (scene && light) scene.remove(light);
-      if (light && light.dispose) {
-        try { light.dispose(); } catch (e) { warnOnce('dispose-light', 'não consegui liberar uma luz antiga: ' + e); }
-      }
-    }
-    extraLights.length = 0;
-    for (var fk in effects) disposeEffect(effects[fk]);
-    var disposedMaterials = new Set();
-    for (var mk in molds) {
-      disposeMoldTemplate(molds[mk], disposedMaterials);
-    }
-    for (var bi = 0; bi < projectButtons.length; bi++) {
-      var button = projectButtons[bi];
-      if (button && button.parentNode) button.parentNode.removeChild(button);
-    }
-    projectButtons.length = 0;
-    molds = Object.create(null);
-    moldCount = 0;
-    pools = Object.create(null);
-    totalAlive = 0;
-    resetActiveModelCost();
-    effects = Object.create(null);
-    effectCount = 0;
-    jets.length = 0;
-    anySolid = false;
-    anyTrigger = false;
-    anyCarrier = false;
-  }
-
-  function executeProjectFactory() {
-    if (typeof projectFactory !== 'function' || runningProjectFactory) return;
-    runningProjectFactory = true;
-    try { projectFactory(); }
-    catch (e) { warn('erro em "Ao iniciar": ' + e); }
-    runningProjectFactory = false;
-  }
-
-  function runProject(fn) {
-    if (typeof fn !== 'function') {
-      warn('o projeto precisa de uma função de início');
-      return;
-    }
-    projectFactory = fn;
-    executeProjectFactory();
-  }
+  /*__SZ_GAME_KIT_3D_PROJECT_RUNTIME__*/
 
   // ---- Entrada (mapa de teclas com limpeza em blur/contextmenu) ----
 
@@ -1332,7 +1232,10 @@ const gameKit3DRuntimeAfterModelSource = `
       if (shape === 'modelo') {
         // Peça = MODELO do projeto. O GLB chega assíncrono (import do addon +
         // parse), então a peça nasce com um cubo de reserva e o modelo entra no
-        // lugar quando fica pronto — a cena nunca aparece quebrada.
+        // lugar quando fica pronto. O start() espera os modelos dos moldes
+        // definidos ANTES dele, então o caso comum nunca aparece quebrado; um
+        // molde definido DEPOIS do start troca o cubo só nos spawns FUTUROS (quem
+        // nasceu durante o parse fica com o reserva).
         mesh = new THREE.Group();
         var holder = mesh;
         // O molde ANOTA de qual modelo ele é feito: o spawn precisa saber para
@@ -1627,6 +1530,30 @@ const gameKit3DRuntimeAfterModelSource = `
     return e;
   }
 
+  /**
+   * Anel de tiros: faz nascer N entidades do molde ao redor da fonte, cada uma
+   * voando para FORA (o ataque de chefão / bullet-hell na unha). Reusa o spawn
+   * (respeita o teto global do pool). O molde do tiro decide o desenho.
+   */
+  function spawnRing(mold, count, from, speed) {
+    if (!isEntity(from)) return;
+    var n = Math.floor(num(count, 8));
+    if (n < 1) n = 1;
+    if (n > 60) n = 60; // teto de bom senso por anel (o pool ainda tem o teto global)
+    var sp = num(speed, 6);
+    var cx = posAxis(from, 'x');
+    var cy = posAxis(from, 'y');
+    var cz = posAxis(from, 'z');
+    for (var i = 0; i < n; i++) {
+      var ang = (i / n) * Math.PI * 2;
+      var e = spawn(mold, cx, cy, cz);
+      if (!e) break; // bateu o teto global de entidades
+      // +Z é a frente do curso; o vetor unitário girado por ang dá (sin, 0, cos).
+      e.vx = Math.sin(ang) * sp;
+      e.vz = Math.cos(ang) * sp;
+    }
+  }
+
   function isEntity(e) {
     return !!(e && typeof e === 'object' && e.mesh && e._alive === true);
   }
@@ -1875,8 +1802,10 @@ const gameKit3DRuntimeAfterModelSource = `
       var c = m.col;
       var thin = Math.min(c.maxX - c.minX, Math.min(c.maxY - c.minY, c.maxZ - c.minZ));
       if (thin < _minSolidThin) _minSolidThin = thin;
-      // Molde sólido que anda = plataforma: liga a passada dupla (carona).
-      if (m.speed !== 0) anyCarrier = true;
+      // Velocidade é da ENTIDADE e pode mudar em runtime. Todo sólido é uma
+      // plataforma potencial, então as entidades sólidas andam antes dos
+      // passageiros no mesmo quadro, mesmo se o molde nasceu com velocidade 0.
+      anyCarrier = true;
     }
   }
   function makeSolid(mold) {
@@ -2120,11 +2049,24 @@ const gameKit3DRuntimeAfterModelSource = `
     var cellSize = config.world / GRID_DIM;
     var px = e.mesh.position.x;
     var pz = e.mesh.position.z;
+    var ep = e.mesh.position;
     for (var mult = 2; mult <= GRID_DIM; mult += mult) {
       var r = cellSize * mult;
       // gridQuery devolve o buffer compartilhado; consumido AQUI antes de re-usar.
       var best = nearestOfList(gridQuery(px, pz, r), e, k);
-      if (best) return best;
+      if (best) {
+        // best saiu de uma CAIXA de meia-largura r; um vizinho logo fora da
+        // borda pode estar mais perto na diagonal do que best no canto. Se best
+        // está ALÉM do raio já varrido, reconfirma numa caixa que cubra a
+        // distância dele — qualquer um mais perto tem |dx|,|dz| menores, então
+        // cai dentro (uma única re-consulta basta).
+        var bdx = best.mesh.position.x - ep.x;
+        var bdy = best.mesh.position.y - ep.y;
+        var bdz = best.mesh.position.z - ep.z;
+        var dBest = Math.sqrt(bdx * bdx + bdy * bdy + bdz * bdz);
+        if (dBest <= r) return best;
+        return nearestOfList(gridQuery(px, pz, dBest), e, k);
+      }
       if (r >= config.world) break;
     }
     // Fallback: nenhum vizinho na grade — varre o pool (raro, e correto).
@@ -2139,28 +2081,43 @@ const gameKit3DRuntimeAfterModelSource = `
 
   // ---- Combate (dano com i-frames; a derrota roda os ganchos e recolhe) ----
 
+  function runMoldHooks(hooks, e, label) {
+    if (!hooks) return;
+    for (var i = 0; i < hooks.length; i++) {
+      var fn = hooks[i];
+      try {
+        fn(e);
+      } catch (err) {
+        if (!fn.__szg3kWarned) {
+          fn.__szg3kWarned = true;
+          warn('erro no "' + label + '": ' + err);
+        }
+      }
+    }
+  }
+
   function hurt(e, amount) {
     if (!isEntity(e)) return;
     if (e._iFrames > 0) return;
     e.health = Math.max(0, num(e.health, 0) - Math.max(0, num(amount, 10)));
     e._iFrames = 0.5;
+    // "Quando levar dano" roda a cada golpe REAL (o guard de i-frames acima já
+    // filtra os repetidos), ANTES da checagem de morte — o chefão troca de fase
+    // lendo a própria vida aqui dentro. O gancho pode recolher a entidade; se
+    // recolheu, paramos (não rodar o "quando for derrotado" nem recolher 2x).
+    runMoldHooks(hurtHooks[e._mold], e, 'quando levar dano');
+    if (!e._alive) return;
     if (e.health <= 0) {
-      var hooks = deathHooks[e._mold];
-      if (hooks) {
-        for (var i = 0; i < hooks.length; i++) {
-          var fn = hooks[i];
-          try {
-            fn(e);
-          } catch (err) {
-            if (!fn.__szg3kWarned) {
-              fn.__szg3kWarned = true;
-              warn('erro no "quando for derrotado": ' + err);
-            }
-          }
-        }
-      }
+      runMoldHooks(deathHooks[e._mold], e, 'quando for derrotado');
       recycle(e);
     }
+  }
+
+  function heal(e, amount) {
+    if (!isEntity(e)) return;
+    var next = num(e.health, 0) + Math.max(0, num(amount, 10));
+    var max = num(e.maxHealth, 0);
+    e.health = max > 0 ? Math.min(max, next) : next; // não passa do máximo de nascença
   }
 
   // ---- 💥 Faíscas 3D (partículas data-driven do curso, simplificadas) ----
@@ -2465,6 +2422,11 @@ const gameKit3DRuntimeAfterModelSource = `
         curve: 'pulso'
       });
       if (!previousEffect) effectCount++;
+      // Redefinir a receita com um jorro JÁ ligado: re-aponta os jorros vivos do
+      // efeito antigo para o NOVO. Sem isso o jorro seguia emitindo no efeito
+      // morto (removido da cena) enquanto o novo ficava vazio → o emissor sumia
+      // em silêncio. Retunar um emissor aceso agora o mantém aceso.
+      repointJets(previousEffect, effects[k]);
     } catch (e) {
       warn('não consegui criar o efeito "' + k + '": ' + e);
     }
@@ -2510,6 +2472,11 @@ const gameKit3DRuntimeAfterModelSource = `
         curve: text(o.curve, 'suave')
       });
       if (!previousEffect) effectCount++;
+      // Redefinir a receita com um jorro JÁ ligado: re-aponta os jorros vivos do
+      // efeito antigo para o NOVO. Sem isso o jorro seguia emitindo no efeito
+      // morto (removido da cena) enquanto o novo ficava vazio → o emissor sumia
+      // em silêncio. Retunar um emissor aceso agora o mantém aceso.
+      repointJets(previousEffect, effects[k]);
     } catch (e) {
       warn('não consegui criar o emissor "' + k + '": ' + e);
     }
@@ -2521,6 +2488,14 @@ const gameKit3DRuntimeAfterModelSource = `
       if (fx.geometry && fx.geometry.dispose) fx.geometry.dispose();
       if (fx.material && fx.material.dispose) fx.material.dispose();
     } catch (e) {}
+  }
+
+  /** Re-aponta os jorros CONTÍNUOS de um efeito redefinido para a nova receita. */
+  function repointJets(oldFx, newFx) {
+    if (!oldFx || oldFx === newFx) return;
+    for (var i = 0; i < jets.length; i++) {
+      if (jets[i].fx === oldFx) jets[i].fx = newFx;
+    }
   }
 
   /** No start: pendura na cena os efeitos definidos antes do mundo existir. */
@@ -2896,12 +2871,12 @@ const gameKit3DRuntimeAfterModelSource = `
     stepParticles(dt);
   }
 
-  /** phase: 0 = tudo · 1 = só carregadoras (sólido que anda) · 2 = o resto. */
+    /** phase: 0 = tudo · 1 = sólidos (plataformas potenciais) · 2 = o resto. */
   function stepPools(dt, phase) {
     for (var pk in pools) {
       if (phase) {
         var m = molds[pk];
-        var carrier = !!(m && m.solid && m.speed !== 0);
+        var carrier = !!(m && m.solid);
         if (phase === 1 && !carrier) continue;
         if (phase === 2 && carrier) continue;
       }
@@ -3365,6 +3340,7 @@ const gameKit3DRuntimeAfterModelSource = `
     if (disposed) return;
     disposed = true;
     lifecycleGeneration++;
+    cancelPendingModelLoads();
     try {
       // Efeitos, música e AudioContext ficam fora da cena — o teardown do renderer
       // não os alcança. Sem isto poderiam continuar ativos na janela do bfcache.
@@ -3379,13 +3355,26 @@ const gameKit3DRuntimeAfterModelSource = `
         // vários "Atualizar".
         try { renderer.forceContextLoss(); } catch (e) {}
       }
+      var disposedModelResources = { geometries: new Set(), materials: new Set(), textures: new Set() };
       if (scene && scene.traverse) {
         scene.traverse(function (o) {
-          if (o.geometry && o.geometry.dispose) { try { o.geometry.dispose(); } catch (e) {} }
+          if (o.geometry && o.geometry.dispose && !disposedModelResources.geometries.has(o.geometry)) {
+            disposedModelResources.geometries.add(o.geometry);
+            try { o.geometry.dispose(); } catch (e) {}
+          }
           if (o.material) {
             var m = o.material;
-            if (m.length) { for (var i = 0; i < m.length; i++) { if (m[i] && m[i].dispose) { try { m[i].dispose(); } catch (e) {} } } }
-            else if (m.dispose) { try { m.dispose(); } catch (e2) {} }
+            if (m.length) {
+              for (var i = 0; i < m.length; i++) {
+                if (m[i] && m[i].dispose && !disposedModelResources.materials.has(m[i])) {
+                  disposedModelResources.materials.add(m[i]);
+                  try { m[i].dispose(); } catch (e) {}
+                }
+              }
+            } else if (m.dispose && !disposedModelResources.materials.has(m)) {
+              disposedModelResources.materials.add(m);
+              try { m.dispose(); } catch (e2) {}
+            }
           }
         });
       }
@@ -3399,10 +3388,11 @@ const gameKit3DRuntimeAfterModelSource = `
         for (var hk in _hdrCache) disposeTexture(_hdrCache[hk], 'dispose-hdr-cache');
         _hdrCache = null;
       }
+      disposeCachedModels(disposedModelResources);
       _skyPhotoRequest++;
       // Templates de molde vivem FORA da cena — descarta os materiais próprios
       // (as geometrias-unidade são compartilhadas e saem junto).
-      var disposedMoldMaterials = new Set();
+      var disposedMoldMaterials = disposedModelResources.materials;
       for (var mk in molds) {
         disposeMoldTemplate(molds[mk], disposedMoldMaterials);
       }
@@ -3502,6 +3492,7 @@ const gameKit3DRuntimeAfterModelSource = `
     // 👾 Nascer & enxames
     spawn: guard('spawn', spawn),
     spawnFrom: guard('spawnFrom', spawnFrom),
+    spawnRing: guard('spawnRing', spawnRing),
     startSpawner: guard('startSpawner', startSpawner),
     stopSpawner: guard('stopSpawner', stopSpawner),
     forEachAlive: guard('forEachAlive', forEachAlive),
@@ -3674,6 +3665,7 @@ const gameKit3DRuntimeAfterModelSource = `
     touches: guard('touches', touches),
     // ❤️ Combate
     hurt: guard('hurt', hurt),
+    heal: guard('heal', heal),
     healthOf: guard('healthOf', function (e) {
       return isEntity(e) ? num(e.health, 0) : 0;
     }),
@@ -3681,6 +3673,11 @@ const gameKit3DRuntimeAfterModelSource = `
       var k = text(mold, '');
       if (!k || typeof fn !== 'function') return;
       (deathHooks[k] || (deathHooks[k] = [])).push(fn);
+    }),
+    onHurt: guard('onHurt', function (mold, fn) {
+      var k = text(mold, '');
+      if (!k || typeof fn !== 'function') return;
+      (hurtHooks[k] || (hurtHooks[k] = [])).push(fn);
     }),
     // 🖼️ Telas & HUD
     setScreenText: guard('setScreenText', function (screen, title, textBody, button) {
@@ -3776,6 +3773,7 @@ const gameKit3DRuntimeSource = (
 )
   .replace('  /*__SZ_GAME_KIT_3D_PHYSICS_RUNTIME__*/', gameKit3DPhysicsRuntimeSource)
   .replace('  /*__SZ_GAME_KIT_3D_CAMERA_RUNTIME__*/', gameKit3DCameraRuntimeSource)
+  .replace('  /*__SZ_GAME_KIT_3D_PROJECT_RUNTIME__*/', gameKit3DProjectRuntimeSource)
 
 export const gameKit3DRuntime = withGameUIFontRuntime(
   withThreePostProcessingRuntime(gameKit3DRuntimeSource),

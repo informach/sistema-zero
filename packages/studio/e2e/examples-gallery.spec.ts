@@ -110,25 +110,29 @@ async function expectFirstFrame(page: Page): Promise<FrameLocator> {
   return preview
 }
 
-async function focusPreview(page: Page, preview: FrameLocator): Promise<void> {
-  // Telas de início/splash têm prioridade e são parte do caminho real.
-  const button = preview.locator('button:visible').first()
-  if ((await button.count()) > 0) {
-    await button.click({ force: true })
-  } else {
-    const splash = preview.locator('.szw3d-splash:visible').first()
-    if ((await splash.count()) > 0) await splash.click({ force: true })
-  }
-
-  // O iframe é sandboxed (origem opaca) e pode estar parcialmente coberto no
-  // layout estreito. Foco programático entrega teclado sem mascarar hit-testing.
-  // A Ponte ainda pode substituir o srcDoc uma última vez depois do primeiro
-  // frame; nesse intervalo o contexto antigo é destruído. Resolva o FrameLocator
-  // novamente, em vez de transformar uma estabilização normal em falha do jogo.
+async function focusPreview(preview: FrameLocator): Promise<void> {
+  // A Ponte pode substituir o srcDoc durante a estabilização. Escolher a tela
+  // inicial, clicar e focar dentro da mesma avaliação evita separar a consulta
+  // da ação entre dois documentos diferentes.
   for (let attempt = 0; attempt < 4; attempt++) {
     try {
-      await page.locator('iframe').first().focus()
       await preview.locator('body').evaluate((body) => {
+        const isVisible = (element: Element) => {
+          const node = element as HTMLElement
+          const style = getComputedStyle(node)
+          const rect = node.getBoundingClientRect()
+          return (
+            style.display !== 'none' &&
+            style.visibility !== 'hidden' &&
+            rect.width > 0 &&
+            rect.height > 0
+          )
+        }
+        const button = Array.from(body.querySelectorAll('button')).find(isVisible)
+        const splash = Array.from(body.querySelectorAll('.szw3d-splash')).find(isVisible)
+        const entry = button ?? splash
+        if (entry instanceof HTMLElement) entry.click()
+
         window.focus()
         body.tabIndex = -1
         body.focus()
@@ -139,7 +143,6 @@ async function focusPreview(page: Page, preview: FrameLocator): Promise<void> {
         error instanceof Error &&
         /Execution context was destroyed|Frame was detached/.test(error.message)
       ) {
-        await page.waitForTimeout(100)
         continue
       }
       throw error
@@ -325,7 +328,7 @@ async function openAndExercise(page: Page, contract: ExampleQAContract): Promise
         ),
       })
   }
-  await focusPreview(page, preview)
+  await focusPreview(preview)
   for (const interaction of contract.interactions) {
     await applyInteraction(page, preview, interaction)
   }
@@ -356,7 +359,7 @@ async function expectLogicalCanvasAtDpr(page: Page, expectedDpr: number): Promis
   expect(dimensions.backingHeight).toBe(Math.round(dimensions.displayHeight * expectedDpr))
 }
 
-test.describe('KitGallery — os 67 cartões no Chromium', () => {
+test.describe(`KitGallery — os ${EXAMPLE_QA_CONTRACTS.length} cartões no Chromium`, () => {
   for (const contract of EXAMPLE_QA_CONTRACTS) {
     test(`${contract.key}: cria, mostra primeiro frame e aceita controles`, async ({ page }) => {
       await openAndExercise(page, contract)
@@ -746,7 +749,7 @@ test('game-2d-advanced: Vila do Dragão — fluxo visual completo no Chromium', 
   // de novo é parte da sincronização com o preview final, não um atalho de jogo.
   let started = false
   for (let attempt = 0; attempt < 4 && !started; attempt++) {
-    await focusPreview(page, preview)
+    await focusPreview(preview)
     await page.waitForTimeout(700)
     const snapshot = await rpgSnapshot(preview)
     started = snapshot.state === 'jogando' && snapshot.map === 'vila'

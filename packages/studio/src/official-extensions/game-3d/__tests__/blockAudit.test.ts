@@ -156,7 +156,9 @@ describe('Auditoria Jogo 3D — pipeline completo por bloco', () => {
       expect(collectTypes(ir).has('rawJS')).toBe(false)
 
       if (kind === 'statement') {
-        expect(String(ir[0]?.type).startsWith('g3d:')).toBe(true)
+        expect(
+          [...collectTypes(ir)].some((statementType) => statementType.startsWith('g3d:')),
+        ).toBe(true)
       } else {
         const host = ir[0] as { type?: string; factor?: { type?: string } }
         expect(host.type).toBe('g3d:setScale')

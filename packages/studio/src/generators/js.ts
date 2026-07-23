@@ -2434,6 +2434,8 @@ function compileStatementCode(
     }
     case 'g3k:spawnFrom':
       return `${pad}SZGameKit3D.spawnFrom(${JSON.stringify(stmt.mold)}, ${identifiers.get(stmt.fromVar)});`
+    case 'g3k:spawnRing':
+      return `${pad}SZGameKit3D.spawnRing(${JSON.stringify(stmt.mold)}, ${compileExpr(valueToExpr(stmt.count), 0, identifiers, recAt(base))}, ${identifiers.get(stmt.fromVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
     case 'g3k:startSpawner':
       return `${pad}SZGameKit3D.startSpawner(${JSON.stringify(stmt.mold)}, ${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.where)});`
     case 'g3k:stopSpawner':
@@ -2634,6 +2636,8 @@ ${pad}});`
     }
     case 'g3k:hurt':
       return `${pad}SZGameKit3D.hurt(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.amount), 0, identifiers, recAt(base))});`
+    case 'g3k:heal':
+      return `${pad}SZGameKit3D.heal(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.amount), 0, identifiers, recAt(base))});`
     case 'g3k:onEntityDeath': {
       const body = compileStatements(
         stmt.body,
@@ -2642,6 +2646,15 @@ ${pad}});`
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
       return `${pad}SZGameKit3D.onEntityDeath(${JSON.stringify(stmt.mold)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
+    }
+    case 'g3k:onHurt': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGameKit3D.onHurt(${JSON.stringify(stmt.mold)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
     }
     case 'g3k:defineEffect':
       return `${pad}SZGameKit3D.defineEffect(${JSON.stringify(stmt.name)}, { count: ${compileExpr(valueToExpr(stmt.count), 0, identifiers, recAt(base))}, colorFrom: ${JSON.stringify(stmt.colorFrom)}, colorTo: ${JSON.stringify(stmt.colorTo)}, spread: ${compileExpr(valueToExpr(stmt.spread), 0, identifiers, recAt(base))}, sizeFrom: ${compileExpr(valueToExpr(stmt.sizeFrom), 0, identifiers, recAt(base))}, sizeTo: ${compileExpr(valueToExpr(stmt.sizeTo), 0, identifiers, recAt(base))}, life: ${compileExpr(valueToExpr(stmt.life), 0, identifiers, recAt(base))}, gravity: ${compileExpr(valueToExpr(stmt.gravity), 0, identifiers, recAt(base))} });`
@@ -6503,6 +6516,11 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g3k:spawnFrom':
       names.add(stmt.fromVar)
       return
+    case 'g3k:spawnRing':
+      names.add(stmt.fromVar)
+      collectExprIdentifiers(valueToExpr(stmt.count), names)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      return
     case 'g3k:startSpawner':
       collectExprIdentifiers(valueToExpr(stmt.seconds), names)
       return
@@ -6695,7 +6713,15 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       names.add(stmt.charVar)
       collectExprIdentifiers(valueToExpr(stmt.amount), names)
       return
+    case 'g3k:heal':
+      names.add(stmt.charVar)
+      collectExprIdentifiers(valueToExpr(stmt.amount), names)
+      return
     case 'g3k:onEntityDeath':
+      names.add(stmt.itemName)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g3k:onHurt':
       names.add(stmt.itemName)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
@@ -6909,6 +6935,84 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'w3d:lamp':
     case 'w3d:campfire':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:city':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:district':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.size), names)
+      return
+    case 'w3d:roadGrid':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.size), names)
+      collectExprIdentifiers(valueToExpr(stmt.width), names)
+      return
+    case 'w3d:houseRow':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      collectExprIdentifiers(valueToExpr(stmt.x1), names)
+      collectExprIdentifiers(valueToExpr(stmt.z1), names)
+      collectExprIdentifiers(valueToExpr(stmt.x2), names)
+      collectExprIdentifiers(valueToExpr(stmt.z2), names)
+      return
+    case 'w3d:quality':
+      return
+    case 'w3d:inventoryGive':
+    case 'w3d:inventoryRemove':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      return
+    case 'w3d:stringLights':
+      collectExprIdentifiers(valueToExpr(stmt.x1), names)
+      collectExprIdentifiers(valueToExpr(stmt.z1), names)
+      collectExprIdentifiers(valueToExpr(stmt.x2), names)
+      collectExprIdentifiers(valueToExpr(stmt.z2), names)
+      return
+    case 'w3d:traffic':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      return
+    case 'w3d:door':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.deg), names)
+      return
+    case 'w3d:crops':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:barn':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.deg), names)
+      return
+    case 'w3d:windmill':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      return
+    case 'w3d:fence':
+      collectExprIdentifiers(valueToExpr(stmt.x1), names)
+      collectExprIdentifiers(valueToExpr(stmt.z1), names)
+      collectExprIdentifiers(valueToExpr(stmt.x2), names)
+      collectExprIdentifiers(valueToExpr(stmt.z2), names)
+      return
+    case 'w3d:animals':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.r), names)
+      return
+    case 'w3d:crater':
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.z), names)
+      collectExprIdentifiers(valueToExpr(stmt.r), names)
+      return
+    case 'w3d:flag':
+    case 'w3d:rocket':
       collectExprIdentifiers(valueToExpr(stmt.x), names)
       collectExprIdentifiers(valueToExpr(stmt.z), names)
       return

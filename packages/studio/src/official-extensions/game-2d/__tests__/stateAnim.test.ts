@@ -52,6 +52,8 @@ interface Api {
   createTileMap: (opts: Record<string, unknown>) => unknown
   drawTileMap: (ctx: unknown, map: unknown, x: number, y: number) => void
   collideTileMap: (s: Sprite, map: unknown) => void
+  setGravity: (value: number) => void
+  applyVelocity: (s: Sprite) => void
   keys: { left: boolean; right: boolean; up: boolean; down: boolean }
 }
 
@@ -163,6 +165,18 @@ describe('autoAnimate — estados e prioridade', () => {
     api.autoAnimate(s)
     expect(s.anim?.sheet).toBe(sheets.pulando)
     s.vy = 4
+    api.autoAnimate(s)
+    expect(s.anim?.sheet).toBe(sheets.caindo)
+  })
+
+  it('inverte pulando/caindo quando a gravidade aponta para cima', () => {
+    const { api, s, sheets } = rig()
+    api.setGravity(-1)
+    s.onGround = false
+    s.vy = 5
+    api.autoAnimate(s)
+    expect(s.anim?.sheet).toBe(sheets.pulando)
+    s.vy = -4
     api.autoAnimate(s)
     expect(s.anim?.sheet).toBe(sheets.caindo)
   })
@@ -291,12 +305,74 @@ describe('onGround persistido nos helpers de movimento', () => {
     expect(s.onGround).toBe(true)
   })
 
-  it('topDown NÃO mexe em onGround (fica undefined)', () => {
+  it('platformer e jumpOnGround usam o teto como chão com gravidade negativa', () => {
+    const { api } = load()
+    const ctx = fakeCtx(200, 200)
+    api.setGravity(-1)
+
+    const platformerSprite = api.createSprite({ x: 50, y: 20, w: 20, h: 20 })
+    for (let i = 0; i < 20; i++) api.platformer(platformerSprite, ctx, 4, 11)
+    expect(platformerSprite.y).toBe(0)
+    expect(platformerSprite.onGround).toBe(true)
+
+    api.keys.up = true
+    api.platformer(platformerSprite, ctx, 4, 11)
+    api.keys.up = false
+    expect(platformerSprite.vy).toBe(11)
+    expect(platformerSprite.onGround).toBe(false)
+    api.platformer(platformerSprite, ctx, 4, 11)
+    expect(platformerSprite.y).toBeGreaterThan(0)
+
+    const genericSprite = api.createSprite({ x: 90, y: 20, w: 20, h: 20 })
+    for (let i = 0; i < 20; i++) api.jumpOnGround(genericSprite, ctx, 12)
+    expect(genericSprite.y).toBe(0)
+    expect(genericSprite.onGround).toBe(true)
+  })
+
+  it('topDown mantém onGround ausente em sprite top-down', () => {
     const { api } = load()
     const s = api.createSprite({})
     api.keys.right = true
     api.topDown(s, 3)
     api.keys.right = false
+    expect(s.onGround).toBeUndefined()
+  })
+
+  it('topDown limpa o estado aéreo deixado por platformer antes de animar', () => {
+    const { api } = load()
+    const ctx = fakeCtx(200, 200)
+    const s = api.createSprite({ x: 50, y: 10, w: 20, h: 20 })
+    const sheet = sheetOf(api, 'troca-modo')
+    api.setStateAnimation(s, 'parado', sheet, 0, 0, 8)
+    api.setStateAnimation(s, 'caindo', sheet, 1, 1, 8)
+    api.platformer(s, ctx, 4, 11)
+    expect(s.onGround).toBe(false)
+
+    api.topDown(s, 3)
+    api.autoAnimate(s)
+
+    expect(s.onGround).toBeUndefined()
+    expect(s._animState).toBe('parado')
+  })
+
+  it('topDown não reativa o chão ao encostar exatamente em um tile após trocar de modo', () => {
+    const { api } = load()
+    const ctx = fakeCtx(64, 64)
+    const map = api.createTileMap({ image: '', tile: 32, solid: '1', grid: '. .;1 1' })
+    api.drawTileMap(ctx, map, 0, 0)
+    const s = api.createSprite({ x: 4, y: 10, w: 16, h: 16, vy: 8 })
+    api.setGravity(0.6)
+
+    // Dois quadros de plataforma deixam o contato exato confirmado pela física.
+    api.applyVelocity(s)
+    api.collideTileMap(s, map)
+    api.applyVelocity(s)
+    api.collideTileMap(s, map)
+    expect(s.onGround).toBe(true)
+
+    api.topDown(s, 3)
+    api.collideTileMap(s, map)
+
     expect(s.onGround).toBeUndefined()
   })
 
@@ -320,6 +396,51 @@ describe('onGround persistido nos helpers de movimento', () => {
     s2.onGround = false
     api.collideTileMap(s2, map)
     expect(s2.onGround).toBe(false)
+  })
+
+  it('applyVelocity limpa onGround ao sair do tile para autoAnimate entrar em caindo', () => {
+    const { api } = load()
+    const ctx = fakeCtx(64, 64)
+    const map = api.createTileMap({ image: '', tile: 32, solid: '1', grid: '. .;1 1' })
+    api.drawTileMap(ctx, map, 0, 0)
+    const s = api.createSprite({ x: 4, y: 10, w: 16, h: 16, vx: 0, vy: 8 })
+    const andando = sheetOf(api, 'andando-sair-do-tile')
+    const caindo = sheetOf(api, 'caindo-sair-do-tile')
+    api.setStateAnimation(s, 'andando', andando, 0, 0, 8)
+    api.setStateAnimation(s, 'caindo', caindo, 0, 0, 8)
+    api.setGravity(0.6)
+
+    api.applyVelocity(s)
+    api.collideTileMap(s, map)
+    expect(s.onGround).toBe(true)
+
+    s.vx = 64 // deixa a largura do mapa depois de mover
+    api.applyVelocity(s)
+    api.collideTileMap(s, map)
+    api.autoAnimate(s)
+
+    expect(s.onGround).toBe(false)
+    expect(s._animState).toBe('caindo')
+  })
+
+  it('applyVelocity mantém onGround ao continuar apoiado exatamente no tile', () => {
+    const { api } = load()
+    const ctx = fakeCtx(64, 64)
+    const map = api.createTileMap({ image: '', tile: 32, solid: '1', grid: '. .;1 1' })
+    api.drawTileMap(ctx, map, 0, 0)
+    const s = api.createSprite({ x: 4, y: 10, w: 16, h: 16, vx: 0, vy: 8 })
+    api.setGravity(0.6)
+
+    api.applyVelocity(s)
+    api.collideTileMap(s, map)
+    expect(s.onGround).toBe(true)
+
+    api.applyVelocity(s)
+    api.collideTileMap(s, map)
+
+    expect(s.y).toBe(16)
+    expect(s.vy).toBe(0)
+    expect(s.onGround).toBe(true)
   })
 })
 

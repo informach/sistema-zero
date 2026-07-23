@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'bun:test'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { inferBlockContract } from '../../../blockly/blockContracts'
 import type { BlockDefinition } from '../../../blockly/blocks/types'
 import { G3D_SOCKET_SHADOW_TYPES, gameThreeDBlocks, gameThreeDToolboxCategory } from '../blocks'
@@ -60,5 +62,35 @@ describe('game-3d — ergonomia dos blocos para iniciantes', () => {
     expect(placement?.nested).toContain('loop-body')
     expect(placement?.nested).toContain('event-body')
     expect(placement?.nested).toContain('function-body')
+  })
+
+  it('só permite soltar a torre em resposta a uma ação', () => {
+    const definition = gameThreeDBlocks.find((block) => block.type === 'sz_g3d_stack_drop')
+    if (!definition) throw new Error('bloco sz_g3d_stack_drop não encontrado')
+    const placement = inferBlockContract(definition).placement
+
+    expect(placement?.root).toEqual([])
+    expect(placement?.nested).toContain('event-body')
+    expect(placement?.nested).toContain('function-body')
+    expect(placement?.nested).not.toContain('loop-body')
+    expect(placement?.nested).not.toContain('syntactic-loop-body')
+    expect(placement?.nested).not.toContain('constructor-body')
+    expect(placement?.forbiddenNested).toContain('loop-body')
+    expect(placement?.forbiddenNested).toContain('syntactic-loop-body')
+  })
+
+  it('declara a cor uma única vez pela subcategoria de cada bloco', () => {
+    const source = readFileSync(join(import.meta.dir, '..', 'blocks.ts'), 'utf8')
+    const definitionsStart = source.indexOf('export const gameThreeDBlocks')
+    const subcategoriesStart = source.indexOf('const SUBCAT_DEFINITIONS')
+    const definitionsSource = source.slice(definitionsStart, subcategoriesStart)
+
+    expect(definitionsStart).toBeGreaterThanOrEqual(0)
+    expect(subcategoriesStart).toBeGreaterThan(definitionsStart)
+    expect(definitionsSource).not.toMatch(/^\s+colour:/gm)
+    expect(source).not.toMatch(/^const (?:EVENT_C|KIT_C|GRID_C|KIT2_C|RACE_C|STACK_C)\b/m)
+    expect(
+      (gameThreeDBlocks as BlockDefinition[]).every((block) => typeof block.colour === 'string'),
+    ).toBe(true)
   })
 })

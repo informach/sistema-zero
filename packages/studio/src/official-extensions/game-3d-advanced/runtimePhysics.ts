@@ -346,10 +346,26 @@ export const gameKit3DPhysicsRuntimeSource = `
     // Horizontal: empurra pelo eixo escolhido NO FRAME LOCAL e volta ao mundo.
     var lpx = 0, lpz = 0, lnx2 = 0, lnz2 = 0;
     if (useX) {
-      var sx = _loc.x < (c.minX + c.maxX) / 2 ? -1 : 1;
+      var cx = (c.minX + c.maxX) / 2;
+      var sx;
+      if (_loc.x < cx) sx = -1;
+      else if (_loc.x > cx) sx = 1;
+      else {
+        // No centro exato não há lado geométrico. Saia pela face OPOSTA ao
+        // movimento local para remover a velocidade que entrou no sólido.
+        var lvelX = e.vx * Math.cos(-yaw2) - e.vz * Math.sin(-yaw2);
+        sx = lvelX > 0 ? -1 : (lvelX < 0 ? 1 : 1);
+      }
       lpx = ox * sx; lnx2 = sx;
     } else {
-      var sz = _loc.z < (c.minZ + c.maxZ) / 2 ? -1 : 1;
+      var cz = (c.minZ + c.maxZ) / 2;
+      var sz;
+      if (_loc.z < cz) sz = -1;
+      else if (_loc.z > cz) sz = 1;
+      else {
+        var lvelZ = e.vx * Math.sin(-yaw2) + e.vz * Math.cos(-yaw2);
+        sz = lvelZ > 0 ? -1 : (lvelZ < 0 ? 1 : 1);
+      }
       lpz = oz * sz; lnz2 = sz;
     }
     var cc = Math.cos(yaw2), ss = Math.sin(yaw2);
@@ -670,7 +686,13 @@ export const gameKit3DPhysicsRuntimeSource = `
     // FSM e o stateTime ACIMA continuam rodando — congelá-los pararia o cérebro
     // da entidade e o relógio que a criança lê.
     if (!e.vx && !e.vy && !e.vz && !e.gravity && !e._ride && e._iFrames <= 0) {
-      e._dx = 0; e._dy = 0; e._dz = 0;
+      // Congelado NAO quer dizer imovel: um place() por quadro move o transform
+      // SEM velocidade. Captura o deslocamento REAL (pos - _l) para os
+      // passageiros ainda somarem no proximo quadro (parado de verdade da delta
+      // 0). O place()/setYaw/lookAt/aimAt ja sincronizaram a grade, entao
+      // seguimos pulando fisica/colisao/zona.
+      e._dx = p.x - e._lx; e._dy = p.y - e._ly; e._dz = p.z - e._lz;
+      e._lx = p.x; e._ly = p.y; e._lz = p.z;
       // ⭐ Congela a matriz de quem está parado: um molde sólido (parede, moeda,
       // enfeite) não muda de transform, então recompô-la todo quadro é puro
       // desperdício. Assa UMA vez, na transição para estático (o guard do
@@ -710,6 +732,9 @@ export const gameKit3DPhysicsRuntimeSource = `
       // Integra cada substep com a velocidade VIVA (dt/k). A varredura contínua
       // encontra o impacto mesmo quando o deslocamento pula a parede inteira; o
       // resolveSolids mantém a resposta de rampas/penetrações já existente.
+      // Corrige a penetração que JÁ existia antes da varredura. Sem isso, o slab
+      // devolve entry < 0 e um tiro que nasceu no sólido atravessa a outra face.
+      resolveSolids(e);
       var h = dt / k;
       for (var st = 0; st < k; st++) {
         moveContinuous(e, h);

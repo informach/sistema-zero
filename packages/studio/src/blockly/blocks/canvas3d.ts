@@ -1,3 +1,4 @@
+import { CANVAS3D_AUTO_ADDON_MODULE } from '../../three/canvas3dAddons'
 import {
   CANVAS3D_CONTINUOUS_BLOCK_TYPES,
   CANVAS3D_RESOURCE_CREATOR_BLOCK_TYPES,
@@ -37,12 +38,16 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
   // ───────────────────────── 🧊 Biblioteca 3D (base) ─────────────────────────
   {
     // O bloco-raiz: a criança põe primeiro. Sua presença liga o importmap do
-    // three.js no preview. `NAME` é o apelido da biblioteca (padrão THREE) — o
-    // mesmo nome que aparece nos construtores (`new THREE.Scene()`).
+    // three.js no preview. `NAME` é o nome da biblioteca nos construtores
+    // (`new THREE.Scene()`) — FIXO em THREE (rótulo não-editável): todo o pipeline
+    // assume o namespace THREE (os class pickers emitem `THREE.Classe`; os
+    // reconhecedores só classificam namespace 'THREE'). Um campo editável deixava a
+    // criança renomear e quebrar tudo em silêncio (THREE is not defined + loaders/
+    // áudio/sombra viravam no-op). O rótulo serializável preserva o valor no round-trip.
     type: 'sz_t3d_import',
     placement: 'start-declaration',
     message0: 'usar a biblioteca 3D como %1',
-    args0: [{ type: 'field_input', name: 'NAME', text: 'THREE' }],
+    args0: [{ type: 'field_label_serializable', name: 'NAME', text: 'THREE' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
@@ -159,7 +164,7 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     message0: 'usar %1',
     args0: [{ type: 'field_addon_picker', name: 'NAMES', text: 'GLTFLoader' }],
     message1: 'da biblioteca %1',
-    args1: [{ type: 'field_input', name: 'MODULE', text: 'automático' }],
+    args1: [{ type: 'field_input', name: 'MODULE', text: CANVAS3D_AUTO_ADDON_MODULE }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,

@@ -5,14 +5,16 @@ import { gameKit3DPromptContext } from '../ai'
 import { gameKit3DManifest } from '../manifest'
 import { gameKit3DRuntime } from '../runtime'
 import { gameKit3DCameraRuntimeSource } from '../runtimeCamera'
+import { gameKit3DModelAssetsRuntimeSource } from '../runtimeModelAssets'
 import { gameKit3DPhysicsRuntimeSource } from '../runtimePhysics'
+import { gameKit3DProjectRuntimeSource } from '../runtimeProject'
 
 /**
  * ⭐ A guarda que eu devia ter escrito na primeira vez.
  *
  * As fontes em `runtime.ts`, `runtimeCamera.ts`, `runtimePhysics.ts`,
- * `runtimeModelAssets.ts`, `ai.ts` e no `docs` do `manifest.ts` são template
- * literals compostos no build.
+ * `runtimeModelAssets.ts`, `runtimeProject.ts`, `ai.ts` e no `docs` do
+ * `manifest.ts` são template literals compostos no build.
  * Uma crase CRUA lá dentro fecha a string no meio e o módulo inteiro deixa de
  * parsear — e o sintoma cai longe da causa (a última vez derrubou o HMR do Vite em
  * cascata: ActivityPanel, StudioCore, BridgeMode… por causa de UM caractere dentro
@@ -55,13 +57,16 @@ describe('Guarda dos template literals do kit 3D', () => {
     expect(rawBackticksInside(src, 'gameKit3DRuntimeAfterModelSource =')).toEqual([])
 
     const modelAssets = readFileSync(join(DIR, 'runtimeModelAssets.ts'), 'utf8')
-    expect(rawBackticksInside(modelAssets, 'gameKit3DModelAssetsRuntimeSource =')).toEqual([])
+    expect(rawBackticksInside(modelAssets, 'gameKit3DModelAssetsRuntimeTemplate =')).toEqual([])
 
     const camera = readFileSync(join(DIR, 'runtimeCamera.ts'), 'utf8')
     expect(rawBackticksInside(camera, 'gameKit3DCameraRuntimeSource =')).toEqual([])
 
     const physics = readFileSync(join(DIR, 'runtimePhysics.ts'), 'utf8')
     expect(rawBackticksInside(physics, 'gameKit3DPhysicsRuntimeSource =')).toEqual([])
+
+    const project = readFileSync(join(DIR, 'runtimeProject.ts'), 'utf8')
+    expect(rawBackticksInside(project, 'gameKit3DProjectRuntimeSource =')).toEqual([])
   })
 
   it('ai.ts: idem (o contexto da IA também é um literal só)', () => {
@@ -78,11 +83,15 @@ describe('Guarda dos template literals do kit 3D', () => {
     // Se uma crase crua tivesse escapado, o import lá em cima nem carregaria.
     expect(gameKit3DRuntime.length).toBeGreaterThan(1000)
     expect(gameKit3DCameraRuntimeSource.length).toBeGreaterThan(1000)
+    expect(gameKit3DModelAssetsRuntimeSource.length).toBeGreaterThan(1000)
     expect(gameKit3DPhysicsRuntimeSource.length).toBeGreaterThan(1000)
+    expect(gameKit3DProjectRuntimeSource.length).toBeGreaterThan(1000)
     expect(gameKit3DPromptContext.length).toBeGreaterThan(500)
     expect(gameKit3DManifest.docs.length).toBeGreaterThan(500)
     expect(gameKit3DRuntime).not.toContain('__SZ_GAME_KIT_3D_CAMERA_RUNTIME__')
+    expect(gameKit3DRuntime).not.toContain('__SZ_GAME_KIT_3D_PROJECT_RUNTIME__')
     expect(gameKit3DRuntime).not.toContain('__SZ_GAME_KIT_3D_PHYSICS_RUNTIME__')
+    expect(gameKit3DRuntime).not.toContain('__SZ_DATA_URL_RUNTIME__')
   })
 
   it('o runtime é avaliável como corpo de função (crase quebraria o parse)', () => {

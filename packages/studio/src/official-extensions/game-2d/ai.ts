@@ -29,7 +29,9 @@ API global injetada como window.SZGame2D:
   chamada nem ofereça o bloco legado. Use as Áreas do projeto.
 - gameLoop(fn): adiciona fn ao agendador do jogo, com passo fixo de 60 Hz. Vários loops coexistem.
 - keys: estado das setas { left, right, up, down }.
-- setGravity(g) / applyVelocity(sprite): física simples (vy += gravidade).
+- setGravity(g) / applyVelocity(sprite): física simples com valor finito explícito
+  (vy += gravidade). Zero desliga e valores negativos puxam para cima; platformer,
+  jumpOnGround e inimigos terrestres respeitam o mesmo valor.
 - bounceOnEdges(sprite, ctx): quica nas bordas do canvas.
 - circleCollides(a, b): colisão por círculo.
 - playSound(freq, ms): bip sintetizado (Web Audio).
@@ -105,6 +107,8 @@ Tipos de inimigo (v0.22.0) — classes com comportamento pronto; o TIPO é um gr
 ({ items, bullets: {items}, config }), então os helpers de grupo funcionam nele:
 - createEnemyType({ behavior, color, image, hp, speed, dmg, w, h }): behavior em
   'patrulha'|'perseguidor'|'voador'|'voador-vertical'|'saltador'|'atirador'.
+  Patrulha não cai num top-down; para fazê-la cair em plataforma, gere setGravity
+  em Ao iniciar, sem inferir o modo a partir de platformer/jumpOnGround.
 - spawnEnemy(tipo, x, y): solta um inimigo com a vida/dano/animações do tipo.
 - updateEnemyType(tipo, ctx, alvo): DENTRO do gameLoop; comportamento + autoAnimate + tiros do
   atirador + remove derrotados (hp<=0 -> particulas + onDefeat). Alvo = quem perseguir/mirar.
@@ -122,7 +126,7 @@ Tipos de inimigo (v0.22.0) — classes com comportamento pronto; o TIPO é um gr
 - loadImage('nome'): handle { img, loaded } (aceita nome do asset OU url/dataUrl direta).
 
 Movimento e efeitos (v0.4.0) — sempre DENTRO do gameLoop:
-- platformer(sprite, ctx, speed, jump): esq/dir + pulo (seta pra cima, só no chão) + gravidade; chão = base do canvas.
+- platformer(sprite, ctx, speed, jump): esq/dir + pulo (seta pra cima, só no chão) + gravidade; a borda atraída é o chão (base com gravidade positiva, teto com gravidade negativa).
 - topDown(sprite, speed): 4 direções com diagonal normalizada.
 - followPointer(sprite, speed): anda em direção ao ponteiro.
 - clampToScreen(sprite, ctx): prende o sprite dentro do canvas.
@@ -218,7 +222,7 @@ NAVE CLÁSSICA — girar + impulsionar na direção apontada (v0.10.0), para o A
 - shootFrom(sprite, grupo, { speed, color }): cria um tiro na PONTA do sprite, indo na direção que ele aponta (use no "quando apertar Espaço"). spawnAsteroidFromEdge(grupo, { size, color, speed }): solta um asteroide de uma borda aleatória rumo ao centro (use no "a cada X segundos"). Existe o exemplo pronto "Asteroides clássico" mostrando tudo junto.
 
 PULO NO CHÃO (genérico, v0.9.0) — para jogos de corrida/pulo SEM andar para os lados:
-- jumpOnGround(sprite, ctx, força): aplica gravidade, pousa o sprite na BASE da tela e pula com ↑/Espaço/W OU um toque. Use dentro do gameLoop. Bloco "Fazer o sprite pular no chão". Diferente do platformer (que também anda esquerda/direita).
+- jumpOnGround(sprite, ctx, força): aplica gravidade, pousa na borda atraída (base com gravidade positiva, teto com gravidade negativa) e pula com ↑/Espaço/W OU um toque. Use dentro do gameLoop. Bloco "Fazer o sprite pular no chão". Diferente do platformer (que também anda esquerda/direita).
 
 KIT DINO (v0.9.0) — categoria "🦕 Kit dino" com atalhos PRONTOS (não genéricos) para um jogo de corrida estilo "Dino Run"; os blocos genéricos seguem nas categorias normais:
 - createDino({ x, y, size, color }): dinossauro desenhado (perninhas que correm sozinhas; a pose muda no pulo/agachar). É um sprite normal (drawSprite desenha o dino).

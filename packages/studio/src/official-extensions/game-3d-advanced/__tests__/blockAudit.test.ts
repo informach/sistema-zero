@@ -92,7 +92,7 @@ beforeAll(() => {
 describe('Auditoria Jogo 3D Avançado — inventário', () => {
   it('todo def é statement (previousStatement) ou reporter (output)', () => {
     expect(statementDefs.length + exprDefs.length).toBe(gameKit3DBlocks.length)
-    expect(gameKit3DBlocks.length).toBe(130)
+    expect(gameKit3DBlocks.length).toBe(133)
     for (const def of statementDefs) expect(def.previousStatement).toBe('JSStmt')
     for (const def of exprDefs) expect(def.output).toBe('JSValue')
   })
@@ -221,4 +221,80 @@ describe('Auditoria Jogo 3D Avançado — pipeline completo por bloco', () => {
       expect(reparsed).toEqual(ir)
     })
   }
+})
+
+describe('Auditoria Jogo 3D Avançado — round-trip por OPÇÃO de dropdown', () => {
+  // O pipeline acima só exercita os valores DEFAULT (1ª opção do dropdown). Foi
+  // esse furo que deixou `part({ shape: 'modelo' })` cair em rawJS na Ponte — o
+  // parser não tinha 'modelo' no G3K_PART_SHAPES, mas o default 'box' passava.
+  // Aqui varremos CADA opção de CADA field_dropdown e provamos que sobrevive à
+  // Ponte: qualquer opção que exista no bloco/runtime mas falte no Set do parser
+  // (ou destoe de material/where/axis/curve/…) vira rawJS e o teste pega.
+  interface DropdownArg {
+    type?: string
+    name?: string
+    options?: Array<[string, string]>
+  }
+  const cases: { type: string; kind: 'statement' | 'expr'; field: string; value: string }[] = []
+  for (const def of gameKit3DBlocks) {
+    const keep = def.output || inferBlockContract(def).migration === 'keep'
+    if (!keep) continue
+    const kind: 'statement' | 'expr' = def.output ? 'expr' : 'statement'
+    for (const [key, value] of Object.entries(def)) {
+      if (!key.startsWith('args') || !Array.isArray(value)) continue
+      for (const arg of value as DropdownArg[]) {
+        if (arg.type !== 'field_dropdown' || !arg.name || !Array.isArray(arg.options)) continue
+        for (const [, optValue] of arg.options) {
+          cases.push({ type: def.type, kind, field: arg.name, value: optValue })
+        }
+      }
+    }
+  }
+
+  it('há dropdowns cobertos (a varredura não ficou vazia)', () => {
+    expect(cases.length).toBeGreaterThan(0)
+  })
+
+  it('toda opção de todo dropdown sobrevive à Ponte (0 rawJS, round-trip estável)', () => {
+    const broken: string[] = []
+    for (const c of cases) {
+      const ws = new Blockly.Workspace()
+      try {
+        const block = attachBlockInContractContext({
+          workspace: ws,
+          type: c.type,
+          kind: c.kind,
+          expressionHost: EXPR_HOST,
+          expressionInput: 'X',
+          loopHost: 'sz_g3k_on_update',
+        })
+        block.setFieldValue(c.value, c.field)
+        const ir = stripIds(behaviorStatements(buildIRFromWorkspace(ws)))
+        const code = compileStatements(ir, 0)
+        const reparsed = stripIds(parseJS(code))
+        if (collectTypes(ir).has('rawJS')) broken.push(`${c.type}.${c.field}=${c.value} (IR rawJS)`)
+        else if (collectTypes(reparsed).has('rawJS'))
+          broken.push(`${c.type}.${c.field}=${c.value} (Ponte→rawJS)`)
+        else if (JSON.stringify(reparsed) !== JSON.stringify(ir))
+          broken.push(`${c.type}.${c.field}=${c.value} (round-trip instável)`)
+      } catch (err) {
+        broken.push(`${c.type}.${c.field}=${c.value} (erro: ${err})`)
+      } finally {
+        ws.dispose()
+      }
+    }
+    expect(broken).toEqual([])
+  })
+
+  it('playEffect com efeito FORA do dropdown vira rawJS (não coage p/ "coin")', () => {
+    // Direção reversa (Ponte código→blocos): um fx desconhecido (IA/edição/cola)
+    // NÃO pode ser aceito, senão o FieldDropdown o coage p/ a 1ª opção no sync.
+    const known = collectTypes(stripIds(parseJS(`SZGameKit3D.playEffect('coin');`)))
+    expect(known.has('g3k:playEffect')).toBe(true)
+    const unknown = collectTypes(stripIds(parseJS(`SZGameKit3D.playEffect('desconhecido');`)))
+    // NÃO vira g3k:playEffect (o bloco de dropdown que coagiria p/ "coin"); cai
+    // num memberCall genérico (chamada de método estruturada, sem coerção).
+    expect(unknown.has('g3k:playEffect')).toBe(false)
+    expect(unknown.has('memberCall')).toBe(true)
+  })
 })

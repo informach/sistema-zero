@@ -362,6 +362,7 @@ export const enemyPlatformerExample: ExtensionExample = beginnerGameExample({
     version: 2,
     behavior: {
       start: [
+        { type: 'g2d:setGravity', value: 0.6 },
         {
           type: 'g2d:createSprite',
           varName: 'heroi',

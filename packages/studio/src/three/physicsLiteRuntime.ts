@@ -369,8 +369,24 @@ function createSZPhysicsLite(options) {
       Math.abs(body.y - box.y) < body.hy + box.hy &&
       Math.abs(body.z - box.z) < body.hz + box.hz;
   }
+  function contactKey(first, second) {
+    return first.length + ':' + first + second;
+  }
+  function orderedContactKey(first, second) {
+    return first < second ? contactKey(first, second) : contactKey(second, first);
+  }
+  function contactIncludes(key, id) {
+    var separator = key.indexOf(':');
+    if (separator < 1) return false;
+    var firstLength = Number(key.slice(0, separator));
+    if (!Number.isSafeInteger(firstLength) || firstLength < 0) return false;
+    var firstStart = separator + 1;
+    var firstEnd = firstStart + firstLength;
+    if (firstEnd > key.length) return false;
+    return key.slice(firstStart, firstEnd) === id || key.slice(firstEnd) === id;
+  }
   function emitCollision(bodyId, colliderId) {
-    var key = bodyId < colliderId ? bodyId + '|' + colliderId : colliderId + '|' + bodyId;
+    var key = orderedContactKey(bodyId, colliderId);
     currentCollisions[key] = true;
     if (activeCollisions[key]) return;
     for (var index = 0; index < collisionListeners.length; index += 1) {
@@ -410,22 +426,43 @@ function createSZPhysicsLite(options) {
     var distanceSquared = dx * dx + dy * dy + dz * dz;
     if (distanceSquared >= sphere.radius * sphere.radius) return false;
     var distance = Math.sqrt(distanceSquared);
-    if (distance < 0.00001) {
-      dx = body.x - sphere.x;
-      dy = body.y - sphere.y;
-      dz = body.z - sphere.z;
-      distance = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1;
+    var normalX = 0;
+    var normalY = 0;
+    var normalZ = 0;
+    var push = 0;
+    if (distance >= 0.00001) {
+      normalX = dx / distance;
+      normalY = dy / distance;
+      normalZ = dz / distance;
+      push = sphere.radius - distance;
+    } else {
+      var localX = sphere.x - body.x;
+      var localY = sphere.y - body.y;
+      var localZ = sphere.z - body.z;
+      var faceX = body.hx - Math.abs(localX);
+      var faceY = body.hy - Math.abs(localY);
+      var faceZ = body.hz - Math.abs(localZ);
+      if (faceY <= faceX && faceY <= faceZ) {
+        normalY = localY > 0 ? -1 : 1;
+        push = sphere.radius + Math.max(0, faceY);
+      } else if (faceX <= faceZ) {
+        normalX = localX > 0 ? -1 : 1;
+        push = sphere.radius + Math.max(0, faceX);
+      } else {
+        normalZ = localZ > 0 ? -1 : 1;
+        push = sphere.radius + Math.max(0, faceZ);
+      }
     }
-    var push = sphere.radius - distance;
-    body.x += dx / distance * push;
-    body.y += dy / distance * push;
-    body.z += dz / distance * push;
-    var normalVelocity = body.vx * dx / distance + body.vy * dy / distance + body.vz * dz / distance;
+    body.x += normalX * push;
+    body.y += normalY * push;
+    body.z += normalZ * push;
+    if (normalY > 0.5) body.grounded = true;
+    var normalVelocity = body.vx * normalX + body.vy * normalY + body.vz * normalZ;
     if (normalVelocity < 0) {
       var impulse = -(1 + body.bounce) * normalVelocity;
-      body.vx += dx / distance * impulse;
-      body.vy += dy / distance * impulse;
-      body.vz += dz / distance * impulse;
+      body.vx += normalX * impulse;
+      body.vy += normalY * impulse;
+      body.vz += normalZ * impulse;
     }
     emitCollision(body.id, sphere.id);
     return true;
@@ -471,7 +508,7 @@ function createSZPhysicsLite(options) {
         b.vz -= impulseZ * directionZ * bShare;
       }
     }
-    var pair = a.id < b.id ? a.id + '|' + b.id : b.id + '|' + a.id;
+    var pair = orderedContactKey(a.id, b.id);
     if (!emitted[pair]) {
       emitted[pair] = true;
       emitCollision(a.id, b.id);
@@ -498,7 +535,7 @@ function createSZPhysicsLite(options) {
       else resolveBox(body, collider);
     }
   }
-  function triggerKey(bodyId, triggerId) { return bodyId + '|' + triggerId; }
+  function triggerKey(bodyId, triggerId) { return contactKey(bodyId, triggerId); }
   function emitTrigger(bodyId, triggerId, entering) {
     for (var index = 0; index < triggerListeners.length; index += 1) {
       var listener = triggerListeners[index];
@@ -662,14 +699,14 @@ function createSZPhysicsLite(options) {
     var keys = Object.keys(activeTriggers);
     for (var index = 0; index < keys.length; index += 1) {
       var key = keys[index];
-      if (key.split('|').indexOf(id) < 0) next[key] = activeTriggers[key];
+      if (!contactIncludes(key, id)) next[key] = activeTriggers[key];
     }
     activeTriggers = next;
     var nextCollisions = Object.create(null);
     var collisionKeys = Object.keys(activeCollisions);
     for (var collisionIndex = 0; collisionIndex < collisionKeys.length; collisionIndex += 1) {
       var collisionKey = collisionKeys[collisionIndex];
-      if (collisionKey.split('|').indexOf(id) < 0) {
+      if (!contactIncludes(collisionKey, id)) {
         nextCollisions[collisionKey] = activeCollisions[collisionKey];
       }
     }

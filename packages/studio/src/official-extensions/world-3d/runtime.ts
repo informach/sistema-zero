@@ -1,3 +1,4 @@
+import { dataUrlToBufferRuntimeSource } from '../assetRuntime'
 import { withGameUIFontRuntime } from '../gameUiFont'
 import { compactOfficialRuntimeSource } from '../runtimeSource'
 import { withThreePostProcessingRuntime } from '../threePostProcessingRuntime'
@@ -895,20 +896,7 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 
   // ---- Modelos .glb do projeto (parse de ArrayBuffer — a rede é morta) ----
 
-  /** data: URL base64 -> ArrayBuffer, sem tocar na rede. */
-  function dataUrlToBuffer(url) {
-    var comma = url.indexOf(',');
-    if (comma < 0) return null;
-    try {
-      var bin = atob(url.slice(comma + 1));
-      var len = bin.length;
-      var u8 = new Uint8Array(len);
-      for (var i = 0; i < len; i++) u8[i] = bin.charCodeAt(i);
-      return u8.buffer;
-    } catch (e) {
-      return null;
-    }
-  }
+  /*__SZ_DATA_URL_RUNTIME__*/
 
   function disposeTexture(texture, warningKey) {
     if (!texture || !texture.dispose) return;
@@ -1766,8 +1754,9 @@ const world3DRuntimeSource = `import * as THREE from 'three';
     var rng = mulberry(555);
     var posArr = new Float32Array(n * 3);
     var vel = new Float32Array(n * 2); // fase de deriva + velocidade própria
-    var cx = carState ? carState.x : 0;
-    var cz = carState ? carState.z : 0;
+    var _wc = playerXZ();
+    var cx = _wc.x;
+    var cz = _wc.z;
     for (var i = 0; i < n; i++) {
       posArr[i * 3] = cx + (rng() * 2 - 1) * WEATHER_R;
       posArr[i * 3 + 1] = rng() * WEATHER_H;
@@ -1796,8 +1785,9 @@ const world3DRuntimeSource = `import * as THREE from 'three';
   function stepWeather(dt) {
     if (!weatherPts) return;
     var p = weatherPts;
-    var cx = carState ? carState.x : 0;
-    var cz = carState ? carState.z : 0;
+    var _wc = playerXZ();
+    var cx = _wc.x;
+    var cz = _wc.z;
     var t = playTime;
     for (var i = 0; i < p.n; i++) {
       var ix = i * 3;
@@ -2053,9 +2043,11 @@ const world3DRuntimeSource = `import * as THREE from 'three';
       sayEl.style.display = 'none';
       return;
     }
-    if (!carState || !camera || !renderer) return;
-    // Projeta a cabeça do carrinho para a tela (mundo → pixel do canvas).
-    _proj.set(carState.x, carState.y + 2.2, carState.z);
+    if (!camera || !renderer || !_proj) return;
+    // Projeta a cabeça do JOGADOR ATIVO (a pé/barco/carro) para a tela — sem
+    // carrinho o balão ficava preso no canto (media só o carState ausente).
+    var _sayP = playerXZ();
+    _proj.set(_sayP.x, _sayP.y + 2.2, _sayP.z);
     _proj.project(camera);
     var rect = canvasEl.getBoundingClientRect();
     var sx = (_proj.x * 0.5 + 0.5) * rect.width;
@@ -4866,6 +4858,16 @@ const world3DRuntimeSource = `import * as THREE from 'three';
           var dz0 = vsrc.z - points[i].z;
           if (dx0 * dx0 + dz0 * dz0 < points[i].r * points[i].r) { near = true; break; }
         }
+        // O árbitro do E (stepInteractions) também resolve NPCs/portas/etc.
+        // registrados em extraInteract — se algum está perto, ele trata o E e o
+        // "descer" NÃO deve roubar o mesmo aperto (senão desce E dispara junto).
+        for (var xe = 0; !near && xe < extraInteract.length; xe++) {
+          var ex0 = extraInteract[xe];
+          if (!ex0 || ex0.r <= 0) continue;
+          var edx0 = vsrc.x - ex0.x;
+          var edz0 = vsrc.z - ex0.z;
+          if (edx0 * edx0 + edz0 * edz0 < ex0.r * ex0.r) near = true;
+        }
         if (!near) exitVehicle();
       }
       return;
@@ -7529,8 +7531,10 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 
   /** O sol acompanha o carro: frustum de sombra pequeno + mundo grande. */
   function updateSun() {
-    if (!sunLight || !carState) return;
-    var s = carState;
+    // Segue o JOGADOR ATIVO (a pé/barco/carro), não só o carrinho — senão a
+    // sombra some quando a criança sai do carro ou navega de barco.
+    var s = focusState();
+    if (!sunLight || !s) return;
     sunLight.position.set(s.x + config.world * 0.22, config.world * 0.35, s.z + config.world * 0.16);
     if (sunTarget) {
       sunTarget.position.set(s.x, 0, s.z);
@@ -9035,5 +9039,9 @@ const world3DRuntimeSource = `import * as THREE from 'three';
 `
 
 export const world3DRuntime = withGameUIFontRuntime(
-  compactOfficialRuntimeSource(withThreePostProcessingRuntime(world3DRuntimeSource)),
+  compactOfficialRuntimeSource(
+    withThreePostProcessingRuntime(
+      world3DRuntimeSource.replace('  /*__SZ_DATA_URL_RUNTIME__*/', dataUrlToBufferRuntimeSource),
+    ),
+  ),
 )

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { AmbientLight, Fog, PointLight } from 'three'
+import { ACESFilmicToneMapping, AmbientLight, Fog, PointLight } from 'three'
 import { type KitApi, loadStartedKit, makeFakeThree, runtimeBody } from './kitHarness'
 
 /** Comportamento do motor: pool, FSM, vizinhança, combate e FÍSICA. A
@@ -86,6 +86,21 @@ describe('SZGameKit3D — motor (fake THREE + happy-dom)', () => {
     expect(seen).toEqual([b])
     expect(seen.includes(a)).toBe(false)
     expect(seen.includes(c)).toBe(false)
+  })
+
+  it('⭐ nearest devolve o REALMENTE mais próximo, não o do canto da caixa', async () => {
+    // Antes do fix o laço retornava no 1º anel com QUALQUER acerto. Com world=100
+    // (cellSize 6.25, 1º anel r=12.5 → células [6,10]), o alvo AXIAL mais PERTO
+    // A(20,0) cai na célula 11 (fora do anel), mas o mais LONGE B(15,15) cai na 10
+    // (dentro) → devolvia B (~21.2) no lugar de A (20). A re-consulta pela
+    // distância de best conserta: falha antes do fix, passa depois.
+    const { api } = await loadStartedKit()
+    api.defineMold('inimigo', { health: 10, speed: 1 }, () => {})
+    api.setState('jogando')
+    const e = api.spawn('inimigo', 0, 0, 0)
+    const a = api.spawn('inimigo', 20, 0, 0) // mais PERTO (dist 20), fora do 1º anel
+    api.spawn('inimigo', 15, 0, 15) // mais LONGE (~21.2), dentro do 1º anel
+    expect(api.nearest('inimigo', e)).toBe(a)
   })
 
   it('stateTimer: depois do tempo no estado, muda sozinho; setEntityState é idempotente', async () => {
@@ -206,6 +221,21 @@ describe('SZGameKit3D — motor (fake THREE + happy-dom)', () => {
     api.setState('jogando')
 
     expect(entries).toBe(1)
+  })
+
+  it('serializa transições pedidas por um gancho de estado', async () => {
+    const { api } = await loadStartedKit()
+    const statesSeen: string[] = []
+    api.onEnterState('jogando', () => {
+      statesSeen.push(api.state())
+      api.endGame()
+    })
+    api.onEnterState('jogando', () => statesSeen.push(api.state()))
+
+    api.setState('jogando')
+
+    expect(statesSeen).toEqual(['jogando', 'jogando'])
+    expect(api.state()).toBe('fim')
   })
 
   it('clique de UI não vira entrada do jogo; ponteiro do canvas respeita cancelamento', async () => {
@@ -741,6 +771,26 @@ describe('SZGameKit3D — física', () => {
     expect(api.velocityOf(tiro, 'x')).toBe(0)
   })
 
+  it('resolve a sobreposição inicial antes de varrer um tiro rápido', async () => {
+    const { api, step } = await loadStartedKit()
+    api.defineMold('parede', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#fff', w: 1, h: 4, d: 4, x: 0, y: 2, z: 0 })
+    })
+    api.defineMold('tiro', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'sphere', color: '#ff0', w: 0.2, h: 0.2, d: 0.2, x: 0, y: 0, z: 0 })
+    })
+    api.makeSolid('parede')
+    api.setState('jogando')
+    api.spawn('parede', 0, 0, 0)
+    const tiro = api.spawn('tiro', 0, 2, 0)
+    api.setVelocity(tiro, 240, 0, 0)
+
+    step(1)
+
+    expect(api.posOf(tiro, 'x')).toBeLessThan(1)
+    expect(api.velocityOf(tiro, 'x')).toBe(0)
+  })
+
   // ---- Defeito 7 + MIN_THICK: a regressão que o próprio fix cria ----
   it('⭐ piso de PLANO sólido não é atravessado (MIN_THICK)', async () => {
     const { api, step } = await loadStartedKit()
@@ -795,6 +845,54 @@ describe('SZGameKit3D — física', () => {
     api.setVelocity(plat, 3, 0, 0)
     step(30)
     // Sem a carona o herói ficaria parado enquanto a plataforma sai debaixo dele.
+    expect(api.posOf(h, 'x') - x0).toBeGreaterThan(1)
+  })
+
+  it('plataforma sólida com velocidade do molde zero carrega no mesmo quadro', async () => {
+    const { api, step } = await loadStartedKit()
+    // O herói entra primeiro na tabela de pools: sem a passada de carregadoras,
+    // ele integra antes da plataforma e fica visualmente um quadro atrás.
+    defineHero(api)
+    api.defineMold('plat', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', color: '#334155', w: 4, h: 0.6, d: 4, x: 0, y: 0, z: 0 })
+    })
+    api.makeSolid('plat')
+    api.setState('jogando')
+    const plat = api.spawn('plat', 0, 1.5, 0)
+    const h = api.spawn('heroi', 0, 3, 0)
+    api.fall(h, 20)
+    step(40)
+    api.setVelocity(plat, 30, 0, 0)
+
+    step(1)
+
+    expect(api.posOf(plat, 'x')).toBeCloseTo(1, 3)
+    expect(api.posOf(h, 'x')).toBeCloseTo(1, 3)
+  })
+
+  it('⭐ plataforma movida SÓ por place() a cada quadro CARREGA quem está em cima', async () => {
+    // O jeito natural de uma criança animar uma plataforma: "A cada quadro:
+    // place(plat, sin(t)*10, …)" — sem velocidade nenhuma. Antes do fix a
+    // plataforma caía no ramo estático (sem vx/gravity/ride), reportava _dx=0 e
+    // deixava o herói para trás. Este teste falha antes do fix e passa depois.
+    const { api, step } = await loadStartedKit()
+    api.defineMold('plat', { health: 1, speed: 1 }, () => {
+      api.part({ shape: 'box', color: '#334155', w: 4, h: 0.6, d: 4, x: 0, y: 0, z: 0 })
+    })
+    defineHero(api)
+    api.makeSolid('plat')
+    api.setState('jogando')
+    const plat = api.spawn('plat', 0, 1.5, 0)
+    const h = api.spawn('heroi', 0, 3, 0)
+    api.fall(h, 20)
+    step(40) // pousa
+    expect(api.onGround(h)).toBe(true)
+    const x0 = api.posOf(h, 'x')
+    for (let i = 1; i <= 30; i++) {
+      api.place(plat, i * 0.1, 1.5, 0) // move só pelo place, quadro a quadro
+      step(1)
+    }
+    expect(api.posOf(plat, 'x')).toBeCloseTo(3, 1)
     expect(api.posOf(h, 'x') - x0).toBeGreaterThan(1)
   })
 
@@ -1637,6 +1735,96 @@ describe('SZGameKit3D — 6º review: identidade, rumo, barras e jorros', () => 
     })
     // Um jorro só chegaria a ~30; dois convivendo passam com folga de 45.
     expect(vivos).toBeGreaterThan(45)
+  })
+
+  it('⭐ redefinir a receita mantém o jorro JÁ ligado aceso (re-aponta, não órfã)', async () => {
+    const { api, step, renderers } = await loadStartedKit()
+    api.setSeed(5)
+    const conta = () => {
+      let vivos = 0
+      renderers[0]?.scene?.traverse((o) => {
+        const p = o as unknown as {
+          isPoints?: boolean
+          geometry?: { drawRange?: { count: number } }
+        }
+        if (p.isPoints) vivos += p.geometry?.drawRange?.count ?? 0
+      })
+      return vivos
+    }
+    api.defineEmitter('fogo', {
+      rate: 30,
+      life: 1,
+      speed: 0.5,
+      cone: 10,
+      gravity: 0,
+      glow: true,
+      curve: 'suave',
+    })
+    api.setState('jogando')
+    api.startEmitter('fogo', 0, 1, 0)
+    step(15)
+    expect(conta()).toBeGreaterThan(0) // controle: aceso antes do redefine
+    // Retuna a MESMA receita com o jorro AINDA ligado (sem novo startEmitter).
+    // Antes do fix o jorro emitia no efeito MORTO e o novo ficava vazio → 0.
+    api.defineEmitter('fogo', {
+      rate: 30,
+      life: 1,
+      speed: 0.9,
+      cone: 20,
+      gravity: 0,
+      glow: true,
+      curve: 'fogo',
+    })
+    step(20)
+    expect(conta()).toBeGreaterThan(0)
+  })
+
+  it('⭐ cameraShake não faz a câmera "seguir" derivar (offset não realimenta o lerp)', async () => {
+    const { api, step, renderers } = await loadStartedKit()
+    api.setSeed(7)
+    api.defineMold('heroi', { health: 10, speed: 1 }, () => {
+      api.part({ shape: 'box', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
+    })
+    api.setState('jogando')
+    const h = api.spawn('heroi', 0, 0, 0) // parado, sem rotação
+    const dist = 10
+    const height = 5
+    api.cameraFollow(h, dist, height) // base seguida = (0, height, -dist)
+    step(150) // converge à base (resíduo do lerp fica ~1e-6)
+    const camPos = () => {
+      const c = renderers[0]?.camera
+      if (!c) throw new Error('câmera não chegou ao render')
+      return c.position
+    }
+    const amp = 3
+    api.cameraShake(amp, 0.3) // ~9 quadros de tremor
+    // Câmera = base + tremor, com |offset por eixo| ≤ amp. Sem o fix, o lerp do
+    // seguir lê a posição JÁ tremida e o offset acumula ACIMA de amp.
+    let maxDev = 0
+    for (let i = 0; i < 12; i++) {
+      step(1)
+      const p = camPos()
+      maxDev = Math.max(maxDev, Math.abs(p.x - 0), Math.abs(p.y - height), Math.abs(p.z - -dist))
+    }
+    expect(maxDev).toBeLessThanOrEqual(amp + 0.1)
+  })
+
+  it('pós-processamento: bloom→direto religa ACES e o ciclo do composer não quebra', async () => {
+    // A "cinema effects" flagship (bloom dual-filter + ACES + vinheta) não tinha
+    // NENHUMA asserção — um tonemap/composer quebrado passava verde. Aqui: com os
+    // efeitos ligados (default) o caminho do composer (ou seu fallback) roda sem
+    // lançar; ao desligá-los, setEffects libera o composer e o renderFrame volta
+    // ao caminho DIRETO aplicando ACES no renderer.
+    const { api, step, renderers } = await loadStartedKit()
+    api.defineMold('m', { health: 1, speed: 0 }, () => {
+      api.part({ shape: 'box', w: 1, h: 1, d: 1, x: 0, y: 0, z: 0 })
+    })
+    api.setState('jogando')
+    api.spawn('m', 0, 0, 0)
+    step(2) // bloom+vinheta ligados: exercita o composer/fallback
+    api.setEffects({ bloom: false, vignette: false })
+    step(2) // agora o caminho direto
+    expect(renderers[0]?.toneMapping).toBe(ACESFilmicToneMapping)
   })
 
   it('jorro preso em entidade morre com o slot RECICLADO (marca de geração)', async () => {

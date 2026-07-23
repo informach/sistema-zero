@@ -607,7 +607,7 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
     )
   })
 
-  it('anuncia HUD em região própria, somente por mudança e com frequência limitada', () => {
+  it('anuncia HUD em região própria, somente por mudança e com frequência limitada', async () => {
     document.body.innerHTML = ''
     const { api, setTime } = runtimeHarness()
     api.setupStage(320, 200, '#000000')
@@ -641,12 +641,14 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
 
     setTime(0)
     hudApi.drawScore(ctx, 'Pontos:', 5, 10, 20, '#fff', 20)
+    await Promise.resolve()
     const hud = document.getElementById('sz-game-hud-status')
     expect(hud).not.toBeNull()
     expect(hud?.textContent).toContain('Pontos: 5')
 
     setTime(100)
     hudApi.drawScore(ctx, 'Pontos:', 6, 10, 20, '#fff', 20)
+    await Promise.resolve()
     expect(hud?.textContent).toContain('Pontos: 5')
 
     setTime(500)
@@ -656,6 +658,7 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
     api.setHealth(sprite, 3)
     setTime(1_000)
     hudApi.drawSpriteHealth(ctx, sprite, 'bar', 10, 30, 100, '#f00')
+    await Promise.resolve()
     expect(hud?.textContent).toContain('Vidas: 3 de 3')
 
     api.onStart(() => {}, 'hud-test')
@@ -663,7 +666,34 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
     expect(hud?.textContent).toBe('')
   })
 
-  it('congela o anúncio pendente na pausa e cancela o timer ao reiniciar', () => {
+  it('agrupa o HUD acessível mesmo sem limpar o canvas antes de desenhar', async () => {
+    document.body.innerHTML = ''
+    const { api, setTime } = runtimeHarness()
+    api.setupStage(320, 200, '#000000')
+    const ctx = {
+      canvas: { width: 320, height: 200 },
+      save() {},
+      restore() {},
+      fillText() {},
+      fillRect() {},
+      beginPath() {},
+      moveTo() {},
+      bezierCurveTo() {},
+      closePath() {},
+      fill() {},
+    } as unknown as CanvasRenderingContext2D
+
+    setTime(0)
+    api.drawScore(ctx, 'Pontos:', 7, 10, 20, '#fff', 20)
+    api.drawHearts(ctx, 3, 20, 20, 18, '#f00')
+    await Promise.resolve()
+
+    const hud = document.getElementById('sz-game-hud-status')
+    expect(hud?.textContent).toContain('Pontos: 7')
+    expect(hud?.textContent).toContain('Vidas: 3')
+  })
+
+  it('congela o anúncio pendente na pausa e cancela o timer ao reiniciar', async () => {
     document.body.innerHTML = ''
     const { api, setTime } = runtimeHarness()
     api.setupStage(320, 200, '#000000')
@@ -676,8 +706,10 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
 
     setTime(0)
     api.drawScore(ctx, 'Pontos:', 1, 10, 20, '#fff', 20)
+    await Promise.resolve()
     setTime(100)
     api.drawScore(ctx, 'Pontos:', 2, 10, 20, '#fff', 20)
+    await Promise.resolve()
     const hud = document.getElementById('sz-game-hud-status')
 
     api.pauseGame()
@@ -698,7 +730,7 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
     expect(hud?.textContent).toBe('')
   })
 
-  it('inclui o texto desenhado no HUD acessível', () => {
+  it('inclui o texto desenhado no HUD acessível', async () => {
     document.body.innerHTML = ''
     const { api, setTime } = runtimeHarness()
     api.setupStage(320, 200, '#000000')
@@ -711,13 +743,14 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
 
     setTime(0)
     api.drawLabel(ctx, 'Colete a chave', 20, 30, '#fff', 18, 'left')
+    await Promise.resolve()
 
     const hud = document.getElementById('sz-game-hud-status')
     expect(hud).not.toBeNull()
     expect(hud?.textContent).toContain('Colete a chave')
   })
 
-  it('mantém os corações legados no HUD acessível de projetos salvos', () => {
+  it('mantém os corações legados no HUD acessível de projetos salvos', async () => {
     document.body.innerHTML = ''
     const { api, setTime } = runtimeHarness()
     api.setupStage(320, 200, '#000000')
@@ -734,6 +767,7 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
 
     setTime(0)
     api.drawHearts(ctx, 3, 12, 48, 22, '#f00')
+    await Promise.resolve()
 
     const hud = document.getElementById('sz-game-hud-status')
     expect(hud?.textContent).toContain('Vidas: 3')
@@ -782,7 +816,7 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
     expect(hud?.textContent).not.toContain('Aviso antigo')
   })
 
-  it('remove do leitor de tela os valores da tela anterior ao mudar de cena', () => {
+  it('remove do leitor de tela os valores da tela anterior ao mudar de cena', async () => {
     document.body.innerHTML = ''
     const { api, setTime } = runtimeHarness()
     api.setupStage(320, 200, '#000000')
@@ -795,6 +829,7 @@ describe('gameTwoDRuntime — ciclo de vida didático', () => {
 
     setTime(0)
     api.drawScore(ctx, 'Pontos:', 9, 10, 20, '#fff', 20)
+    await Promise.resolve()
     const hud = document.getElementById('sz-game-hud-status')
     expect(hud?.textContent).toContain('Pontos: 9')
 

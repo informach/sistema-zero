@@ -59,6 +59,9 @@ interface Engine {
   randomX: () => number
   randomY: () => number
   wrapEdges: (s: Sprite) => void
+  touches: (a: Sprite, b: Sprite) => boolean
+  randomChance: (percent: number) => boolean
+  playJump: () => void
 }
 function loadRuntime(): Engine {
   const win = { addEventListener() {}, SZGame2D: undefined } as unknown as Record<string, unknown>
@@ -111,12 +114,14 @@ describe('game-2d — gerador dos novos statements', () => {
     expect(typeof api.playNote).toBe('function')
     expect(typeof api.playMusic).toBe('function')
     expect(typeof api.stopMusic).toBe('function')
+    expect(typeof api.playJump).toBe('function')
     // Sem AudioContext no ambiente de teste, são no-op silencioso (não lançam).
     expect(() => {
       api.playFx('coin')
       api.playNote('C', 100)
       api.playMusic('happy')
       api.stopMusic()
+      api.playJump()
     }).not.toThrow()
   })
 
@@ -478,6 +483,34 @@ describe('game-2d — runtime de física', () => {
     const c = api.createSprite({ x: 100, y: 100, w: 20, h: 20 })
     expect(api.circleCollides(a, b)).toBe(true)
     expect(api.circleCollides(a, c)).toBe(false)
+  })
+
+  it('touches: verdadeiro só quando os retângulos se sobrepõem (reporter de colisão)', () => {
+    const api = loadRuntime()
+    const a = api.createSprite({ x: 0, y: 0, w: 20, h: 20 })
+    const over = api.createSprite({ x: 10, y: 10, w: 20, h: 20 }) // sobrepõe a
+    const apart = api.createSprite({ x: 100, y: 0, w: 20, h: 20 }) // longe
+    expect(api.touches(a, over)).toBe(true)
+    expect(api.touches(a, apart)).toBe(false)
+    expect(api.touches(over, a)).toBe(true) // simétrico: a ordem não muda a resposta
+  })
+
+  it('randomChance: 0% nunca, 100% sempre e respeita o limiar', () => {
+    const random = spyOn(Math, 'random')
+    try {
+      const api = loadRuntime()
+      random.mockReturnValue(0.99)
+      expect(api.randomChance(0)).toBe(false) // 0%: nunca
+      random.mockReturnValue(0)
+      expect(api.randomChance(100)).toBe(true) // 100%: sempre
+      // 30%: verdadeiro quando o sorteio (× 100) fica ABAIXO de 30.
+      random.mockReturnValue(0.2)
+      expect(api.randomChance(30)).toBe(true) // 20 < 30
+      random.mockReturnValue(0.3)
+      expect(api.randomChance(30)).toBe(false) // 30 < 30 = falso
+    } finally {
+      random.mockRestore()
+    }
   })
 
   it('onPointer registra sem erro e expõe o estado pointer', () => {

@@ -1,14 +1,70 @@
 export const gameTwoDPhysicsRuntime = `  // ---- Física ----
   // Mundo com gravidade (px/frame² aplicada ao eixo Y por applyVelocity).
-  var world = { gravity: 0 };
-  function setGravity(g) { world.gravity = typeof g === 'number' ? g : 0; }
+  // configured distingue "nenhuma gravidade declarada" da gravidade 0. Assim
+  // inimigos top-down não caem por inferência e valores 0/negativos mantêm o
+  // mesmo significado em todos os helpers físicos.
+  var world = { gravity: 0, gravityConfigured: false };
+  function setGravity(g) {
+    if (!_isFiniteNumber(g)) {
+      warnOnce('gravidade-invalida', 'a gravidade precisa ser um número finito; mantive o valor anterior.');
+      return;
+    }
+    world.gravity = g;
+    world.gravityConfigured = true;
+  }
+  function _worldGravityOr(fallback) {
+    return world.gravityConfigured ? world.gravity : fallback;
+  }
+  function _gravityPullsUp(gravity) {
+    return _finiteNumber(gravity, 0) < 0;
+  }
+  function _jumpVelocityForGravity(gravity, strength) {
+    var jump = _positiveFiniteNumber(strength, 0);
+    return _gravityPullsUp(gravity) ? jump : -jump;
+  }
+  function _isJumpingForGravity(velocityY, gravity) {
+    var vy = _finiteNumber(velocityY, 0);
+    return _gravityPullsUp(gravity) ? vy > 0 : vy < 0;
+  }
+  /**
+   * Resolve a borda que funciona como chão para a gravidade atual. Gravidade
+   * positiva pousa em bottom; gravidade negativa pousa em top.
+   */
+  function _resolveGravityGround(sprite, top, bottom, gravity) {
+    if (!sprite) return false;
+    var ceiling = _finiteNumber(top, 0);
+    var floor = _finiteNumber(bottom, ceiling) -
+      ((_isFiniteNumber(sprite.h) && sprite.h > 0) ? sprite.h : 0);
+    sprite.y = _finiteNumber(sprite.y, 0);
+    sprite.vy = _finiteNumber(sprite.vy, 0);
+    sprite.onGround = false;
+    if (_gravityPullsUp(gravity)) {
+      if (sprite.y <= ceiling) {
+        sprite.y = ceiling;
+        sprite.vy = 0;
+        sprite.onGround = true;
+      }
+    } else if (sprite.y >= floor) {
+      sprite.y = floor;
+      sprite.vy = 0;
+      sprite.onGround = true;
+    }
+    return sprite.onGround;
+  }
 
   /** Integra a velocidade no sprite e soma a gravidade ao vy. */
   function applyVelocity(s) {
     if (!s) return;
-    s.x += s.vx || 0;
-    s.y += s.vy || 0;
-    s.vy = (s.vy || 0) + world.gravity;
+    // A colisão do quadro anterior pode ter marcado o chão. A integração abre
+    // um novo quadro: se ainda houver apoio, collideTileMap/collideGroup/
+    // collideSprite o confirma de novo depois de mover.
+    s._groundedLastFrame = s.onGround === true;
+    if (s.onGround === true) s.onGround = false;
+    var vx = _finiteNumber(s.vx, 0), vy = _finiteNumber(s.vy, 0);
+    s.x = _finiteNumber(s.x, 0) + vx;
+    s.y = _finiteNumber(s.y, 0) + vy;
+    s.vx = vx;
+    s.vy = vy + world.gravity;
   }
 
   /** Faz o sprite ricochetear nas bordas do canvas (invertendo a velocidade). */
@@ -31,7 +87,7 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
   }
 
   _registerRuntimeDomain('physics', {
-    reset: function () { world.gravity = 0; }
+    reset: function () { world.gravity = 0; world.gravityConfigured = false; }
   });
 
 `

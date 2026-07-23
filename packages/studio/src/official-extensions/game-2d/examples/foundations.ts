@@ -725,3 +725,176 @@ export const tilemapExample: ExtensionExample = beginnerGameExample({
     extensions: [{ extensionId: 'game-2d' }],
   },
 })
+
+/**
+ * Exemplo "Pegue a moeda": o PRIMEIRO jogo, o mais simples e completo possível —
+ * um herói que anda com as setas, uma moeda para encostar, um placar e a vitória
+ * ao fazer 5 pontos. Top-down (sem gravidade), dois sprites coloridos (não depende
+ * de asset), telas de início/vitória e reinício com Enter. É a porta de entrada da
+ * vitrine: menos de 20 blocos, do jeito mais facilitado.
+ */
+export const catchCoinExample: ExtensionExample = beginnerGameExample({
+  name: 'Pegue a moeda',
+  experience: 'game',
+  description: 'Ande com as setas, encoste na moeda e faça 5 pontos para vencer.',
+  ir: {
+    html: [{ type: 'canvas', id: 'tela', width: 320, height: 240 }],
+    css: [
+      {
+        selector: 'body',
+        declarations: {
+          background: '#0b1020',
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          'min-height': '100vh',
+          margin: '0',
+        },
+      },
+      {
+        selector: 'canvas',
+        declarations: { border: '2px solid #fbbf24', background: '#11172a' },
+      },
+    ],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'g2d:createSprite',
+          varName: 'heroi',
+          x: 148,
+          y: 108,
+          w: 24,
+          h: 24,
+          color: '#4ade80',
+        },
+        {
+          type: 'g2d:createSprite',
+          varName: 'moeda',
+          x: 60,
+          y: 60,
+          w: 18,
+          h: 18,
+          color: '#fbbf24',
+        },
+        { type: 'var', name: 'pontos', value: { type: 'num', value: 0 } },
+        { type: 'g2d:setScene', name: 'inicio' },
+      ],
+      events: [
+        {
+          type: 'g2d:onKey',
+          key: 'Enter',
+          body: [
+            {
+              type: 'if',
+              cond: { type: 'g2d:sceneIs', name: 'inicio' },
+              then: [{ type: 'g2d:setScene', name: 'jogando' }],
+            },
+            {
+              type: 'if',
+              cond: { type: 'g2d:sceneIs', name: 'vitoria' },
+              then: [{ type: 'g2d:restart' }],
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g2d:updateEachFrame',
+          body: [
+            { type: 'g2d:clear' },
+            {
+              type: 'if',
+              cond: { type: 'g2d:sceneIs', name: 'inicio' },
+              then: [
+                {
+                  type: 'g2d:showScreen',
+                  ctxVar: 'ctx',
+                  title: 'Pegue a moeda',
+                  subtitle: 'Use as setas para andar e encoste na moeda. Faça 5 pontos!',
+                  hint: 'Aperte Enter para começar',
+                  bg: '#11172a',
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: { type: 'g2d:sceneIs', name: 'jogando' },
+              then: [
+                { type: 'g2d:topDown', spriteVar: 'heroi', speed: 3 },
+                { type: 'g2d:clampToScreen', spriteVar: 'heroi', ctxVar: 'ctx' },
+                { type: 'g2d:collides', aVar: 'heroi', bVar: 'moeda', varName: 'pegou' },
+                {
+                  type: 'if',
+                  cond: { type: 'var', name: 'pegou' },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'pontos',
+                      value: {
+                        type: 'binop',
+                        op: '+',
+                        left: { type: 'var', name: 'pontos' },
+                        right: { type: 'num', value: 1 },
+                      },
+                    },
+                    {
+                      type: 'memberSet',
+                      object: { type: 'var', name: 'moeda' },
+                      name: 'x',
+                      value: { type: 'g2d:randomBetween', min: 20, max: 282 },
+                    },
+                    {
+                      type: 'memberSet',
+                      object: { type: 'var', name: 'moeda' },
+                      name: 'y',
+                      value: { type: 'g2d:randomBetween', min: 20, max: 202 },
+                    },
+                    { type: 'g2d:playFx', fx: 'coin' },
+                  ],
+                },
+                { type: 'g2d:drawSprite', spriteVar: 'moeda', ctxVar: 'ctx' },
+                { type: 'g2d:drawSprite', spriteVar: 'heroi', ctxVar: 'ctx' },
+                {
+                  type: 'g2d:drawScore',
+                  ctxVar: 'ctx',
+                  label: 'Moedas:',
+                  value: { type: 'var', name: 'pontos' },
+                  x: 12,
+                  y: 28,
+                  color: '#fbbf24',
+                  size: 20,
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>=',
+                    left: { type: 'var', name: 'pontos' },
+                    right: { type: 'num', value: 5 },
+                  },
+                  then: [{ type: 'g2d:setScene', name: 'vitoria' }],
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: { type: 'g2d:sceneIs', name: 'vitoria' },
+              then: [
+                {
+                  type: 'g2d:showScreen',
+                  ctxVar: 'ctx',
+                  title: 'Você venceu!',
+                  subtitle: 'Você pegou 5 moedas!',
+                  hint: 'Aperte Enter para jogar de novo',
+                  bg: '#063018',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    extensions: [{ extensionId: 'game-2d' }],
+  },
+})

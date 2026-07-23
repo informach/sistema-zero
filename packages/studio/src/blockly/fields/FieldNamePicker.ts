@@ -783,6 +783,7 @@ const ENTITY3D_LOOP_BINDERS: Record<string, string[]> = {
   sz_g3k_on_entity_state_update: ['ITEM'],
   sz_g3k_on_exit_entity_state: ['ITEM'],
   sz_g3k_on_entity_death: ['ITEM'],
+  sz_g3k_on_hurt: ['ITEM'],
   // A zona e quem encostou nela são entidades LOCAIS do gancho de sobreposição.
   sz_g3k_on_overlap: ['ZONE', 'WHO'],
 }
@@ -1890,13 +1891,32 @@ function collectCanvas3DSymbolNames(target: NameLookupTarget, kind: Canvas3DSymb
   )
   const advanced: string[] = []
   const seen = new Set(declared)
-  for (const block of workspace.getBlocksByType('sz_t3d_new_var', false)) {
+  const constructorDeclarations: Array<{
+    block: Blockly.Block
+    className: string
+    name: string
+  }> = workspace.getBlocksByType('sz_t3d_new_var', false).map((block) => ({
+    block,
+    className: `${block.getFieldValue('CLASS') ?? ''}`,
+    name: `${block.getFieldValue('VARNAME') ?? ''}`.trim(),
+  }))
+  for (const type of ['sz_js_var_create', 'sz_js_const_create']) {
+    for (const block of workspace.getBlocksByType(type, false)) {
+      const constructorBlock = block.getInputTargetBlock('VALUE')
+      if (constructorBlock?.type !== 'sz_t3d_new') continue
+      constructorDeclarations.push({
+        block,
+        className: `${constructorBlock.getFieldValue('CLASS') ?? ''}`,
+        name: `${block.getFieldValue('NAME') ?? ''}`.trim(),
+      })
+    }
+  }
+  for (const declaration of constructorDeclarations) {
+    const { block, className, name } = declaration
     const declarationScope = variableScopeKeys(block)[0] ?? 'global'
     if (!visibleScopes.has(declarationScope)) continue
     if (useBlock && !declarationPrecedesUse(block, useBlock, declarationScope)) continue
-    const className = `${block.getFieldValue('CLASS') ?? ''}`
     if (!canvas3DSymbolKindsForClass(className).includes(kind)) continue
-    const name = `${block.getFieldValue('VARNAME') ?? ''}`.trim()
     if (!name || seen.has(name)) continue
     seen.add(name)
     advanced.push(name)

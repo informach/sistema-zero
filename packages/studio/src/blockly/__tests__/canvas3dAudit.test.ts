@@ -2,6 +2,8 @@ import { describe, expect, it } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import type { LearningProfile } from '#core'
 import { CORE_CATEGORY_LEVELS } from '#core'
+import { SZIRInputSchema, SZIRSchema } from '#ir'
+import { generateJS } from '../../generators/js'
 import { CANVAS3D_BLOCK_TYPES, canvas3DSymbolKindsForClass } from '../../three/canvas3dContract'
 import { BLOCK_CATALOG } from '../blockCatalog'
 import { resolveBlockLevel } from '../blockLevels'
@@ -208,14 +210,19 @@ describe('Auditoria Canvas 3D — inventário e progressão', () => {
   it('não oferece no seletor recursos incompatíveis com o preview', () => {
     const addonNames = COMMON_ADDONS.flatMap((group) => group.items.map((item) => item.name))
     const classNames = COMMON_CLASSES.flatMap((group) => group.items.map((item) => item.name))
-    for (const unavailable of ['DRACOLoader', 'KTX2Loader', 'PointerLockControls']) {
+    // DRACO/KTX2 exigem decoder WASM em worker (`worker-src 'none'`) → seguem fora do picker.
+    for (const unavailable of ['DRACOLoader', 'KTX2Loader']) {
       expect(addonNames, unavailable).not.toContain(unavailable)
       expect(classNames, unavailable).not.toContain(unavailable)
     }
+    // PointerLockControls PASSOU a rodar no preview (sandbox com `allow-pointer-lock`) → oferecido.
+    expect(addonNames).toContain('PointerLockControls')
+    expect(classNames).toContain('PointerLockControls')
   })
 
   it('não promete capacidades ausentes em classes técnicas', () => {
     expect(canvas3DSymbolKindsForClass('ShaderMaterial')).not.toContain('color-target3d')
+    expect(canvas3DSymbolKindsForClass('LineMaterial')).toContain('color-target3d')
     expect(canvas3DSymbolKindsForClass('PerspectiveCamera')).toContain('perspective-camera3d')
     expect(canvas3DSymbolKindsForClass('OrthographicCamera')).not.toContain('perspective-camera3d')
   })
@@ -291,6 +298,114 @@ describe('Auditoria Canvas 3D — experiência infantil', () => {
       })
     } finally {
       workspace.dispose()
+    }
+  })
+
+  it('separa addons conhecidos pelo módulo canônico, mesmo quando a Ponte trouxe um caminho explícito errado', () => {
+    ensureBlocklyInitialized()
+    const workspace = new Blockly.Workspace()
+    try {
+      const frame = workspace.newBlock('sz_frame_start')
+      const block = workspace.newBlock('sz_t3d_import_named')
+      const frameConnection = frame.getInput('CHILDREN')?.connection
+      if (!frameConnection || !block.previousConnection) {
+        throw new Error('Conexões do import ausentes')
+      }
+      frameConnection.connect(block.previousConnection)
+      block.setFieldValue('GLTFLoader, OrbitControls', 'NAMES')
+      block.setFieldValue('automático', 'MODULE')
+
+      const ir = buildIRFromWorkspace(workspace)
+      expect(ir.behavior.start).toMatchObject([
+        {
+          type: 'importNamed',
+          names: ['GLTFLoader'],
+          module: 'three/addons/loaders/GLTFLoader.js',
+        },
+        {
+          type: 'importNamed',
+          names: ['OrbitControls'],
+          module: 'three/addons/controls/OrbitControls.js',
+        },
+      ])
+      expect(generateJS({ behavior: ir.behavior })).not.toContain('automático')
+
+      block.setFieldValue('three/addons/loaders/GLTFLoader.js', 'MODULE')
+      const normalized = buildIRFromWorkspace(workspace)
+      expect(normalized.behavior.start).toMatchObject([
+        {
+          type: 'importNamed',
+          names: ['GLTFLoader'],
+          module: 'three/addons/loaders/GLTFLoader.js',
+        },
+        {
+          type: 'importNamed',
+          names: ['OrbitControls'],
+          module: 'three/addons/controls/OrbitControls.js',
+        },
+      ])
+    } finally {
+      workspace.dispose()
+    }
+  })
+
+  it('exige caminho explícito para addon livre que o modo automático não conhece', () => {
+    ensureBlocklyInitialized()
+    const workspace = new Blockly.Workspace()
+    try {
+      const frame = workspace.newBlock('sz_frame_start')
+      const block = workspace.newBlock('sz_t3d_import_named')
+      const frameConnection = frame.getInput('CHILDREN')?.connection
+      if (!frameConnection || !block.previousConnection) {
+        throw new Error('Conexões do import ausentes')
+      }
+      frameConnection.connect(block.previousConnection)
+      block.setFieldValue('MeuControle', 'NAMES')
+      block.setFieldValue('automático', 'MODULE')
+
+      const unresolved = buildIRFromWorkspace(workspace)
+      const invalid = SZIRInputSchema.safeParse(unresolved)
+      expect(invalid.success).toBe(false)
+      if (!invalid.success) {
+        expect(invalid.error.issues.some((issue) => issue.message.includes('caminho'))).toBe(true)
+      }
+
+      block.setFieldValue('', 'MODULE')
+      expect(SZIRInputSchema.safeParse(buildIRFromWorkspace(workspace)).success).toBe(false)
+
+      block.setFieldValue('three/addons/controls/MeuControle.js', 'MODULE')
+      const manual = buildIRFromWorkspace(workspace)
+      expect(SZIRInputSchema.safeParse(manual).success).toBe(true)
+      expect(manual.behavior.start).toMatchObject([
+        {
+          type: 'importNamed',
+          names: ['MeuControle'],
+          module: 'three/addons/controls/MeuControle.js',
+        },
+      ])
+    } finally {
+      workspace.dispose()
+    }
+  })
+
+  it('recusa uma IR estruturada que liga addon conhecido ao arquivo errado', () => {
+    const invalid = SZIRSchema.safeParse({
+      html: [],
+      css: [],
+      js: [
+        {
+          type: 'importNamed',
+          names: ['GLTFLoader', 'OrbitControls'],
+          module: 'three/addons/loaders/GLTFLoader.js',
+        },
+      ],
+      extensions: [],
+    })
+    expect(invalid.success).toBe(false)
+    if (!invalid.success) {
+      expect(invalid.error.issues.some((issue) => issue.message.includes('arquivo correto'))).toBe(
+        true,
+      )
     }
   })
 

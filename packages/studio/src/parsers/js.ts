@@ -8070,6 +8070,7 @@ const G3K_PART_SHAPES = new Set([
   'torus',
   'pyramid',
   'rampa',
+  'modelo',
 ])
 const G3K_COLLIDER_SHAPES = new Set(['box', 'sphere', 'capsule'])
 /** Espelha o dropdown de "ter física de" — valor fora daqui cai em rawJS. */
@@ -8078,6 +8079,20 @@ const G3K_CURVES = new Set(['linear', 'suave', 'pulso', 'fogo'])
 const G3K_PART_MATERIALS = new Set(['normal', 'metal', 'vidro', 'brilho'])
 const G3K_SPAWNER_WHERE = new Set(['edge', 'anywhere'])
 const G3K_POS_AXES = new Set(['x', 'y', 'z'])
+// Espelha o dropdown FX do sz_g3k_play_effect (10 sons prontos) — valor fora
+// daqui cai em rawJS na Ponte, igual ao GK_FX_KINDS do gêmeo 2D (convenção R29).
+const G3K_FX_KINDS = new Set([
+  'coin',
+  'hit',
+  'explosion',
+  'jump',
+  'laser',
+  'hurt',
+  'powerup',
+  'win',
+  'gameover',
+  'click',
+])
 
 /** SZGameKit3D.keyDown("w") / touches(a, b, d) / worldSize() … em posição de VALOR. */
 function matchGameKit3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
@@ -8654,6 +8669,15 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
       const fromVar = identifierName(args[1])
       return fromVar ? { type: 'g3k:spawnFrom', mold: args[0].value as string, fromVar } : null
     }
+    case 'spawnRing': {
+      if (args[0]?.type !== 'StringLiteral') return null
+      const count = toExpr(args[1], ctx)
+      const fromVar = identifierName(args[2])
+      const speed = toExpr(args[3], ctx)
+      return fromVar && isSimpleValue(count) && isSimpleValue(speed)
+        ? { type: 'g3k:spawnRing', mold: args[0].value as string, count, fromVar, speed }
+        : null
+    }
     case 'startSpawner': {
       if (args[0]?.type !== 'StringLiteral' || args[2]?.type !== 'StringLiteral') return null
       const where = args[2].value as string
@@ -9088,10 +9112,25 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
       const amount = toExpr(args[1], ctx)
       return isSimpleValue(amount) ? { type: 'g3k:hurt', charVar, amount } : null
     }
+    case 'heal': {
+      const charVar = identifierName(args[0])
+      if (!charVar) return null
+      const amount = toExpr(args[1], ctx)
+      return isSimpleValue(amount) ? { type: 'g3k:heal', charVar, amount } : null
+    }
     case 'onEntityDeath': {
       if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
       return {
         type: 'g3k:onEntityDeath',
+        mold: args[0].value as string,
+        itemName: identifierName(args[1].params?.[0]) ?? 'ela',
+        body: bodyOfFn(args[1], source, ctx),
+      }
+    }
+    case 'onHurt': {
+      if (args[0]?.type !== 'StringLiteral' || !isFn(args[1])) return null
+      return {
+        type: 'g3k:onHurt',
         mold: args[0].value as string,
         itemName: identifierName(args[1].params?.[0]) ?? 'ela',
         body: bodyOfFn(args[1], source, ctx),
@@ -9183,6 +9222,9 @@ function tryMatchGameKit3DCall(expr: Node, source: string, ctx: ParseCtx): JSSta
     }
     case 'playEffect': {
       if (args[0]?.type !== 'StringLiteral') return null
+      // Efeito fora do dropdown → rawJS (senão a Ponte reversa coage o
+      // desconhecido p/ a 1ª opção "coin"). Mesma convenção R29 do gêmeo 2D.
+      if (!G3K_FX_KINDS.has(args[0].value as string)) return null
       return { type: 'g3k:playEffect', fx: args[0].value as string }
     }
     case 'playTone': {

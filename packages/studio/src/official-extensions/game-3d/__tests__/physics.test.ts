@@ -111,6 +111,10 @@ interface API {
   setOpacity(obj: unknown, opacity: number): void
   remove(w: World, obj: unknown): void
   dispose(w: World): void
+  setBackground(w: World, color: string): void
+  setFOV(w: World, deg: number): void
+  isometricCamera(w: World, follow?: unknown): void
+  crosserHit(o: Obj3D, w: World): boolean
 }
 
 function loadRuntime(): {
@@ -253,7 +257,9 @@ function loadRuntime(): {
     OrthographicCamera: class {
       position = new V3(4, 4, 4)
       up = new V3(0, 1, 0)
+      zoom = 1
       lookAt() {}
+      updateProjectionMatrix() {}
     },
     Group: class {
       position = new V3(0, 0, 0)
@@ -820,3 +826,85 @@ describe('gameThreeDRuntime — ciclo de vida de listeners por mundo', () => {
 })
 // lookAtObject/lookAtPoint/moveForward/faceVelocity usam THREE.lookAt/getWorldDirection
 // (matemática de matriz) — verificados no browser real (o fake de THREE não os reproduz).
+
+// ── Full review (R1): correções de runtime, cada uma com red→green ──────────
+describe('gameThreeDRuntime — full review R1 (correções de runtime)', () => {
+  it('R1/A1: crosserHit pega o carro durante o pulo para a faixa de destino', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const crosser = api.createBox(world, { size: 1 }) // personagem, ligado ao mundo
+    const car = api.createBox(world, { size: 1 })
+    // Estado mínimo de travessia: um carro só na linha 1 (a de DESTINO do pulo).
+    ;(world as unknown as { _crossing: unknown })._crossing = {
+      gameOver: false,
+      rowByIndex: { 1: { type: 'car', vehicles: [{ ref: car }] } },
+    }
+    // Boneco pulando da linha 0 (segura) para a linha 1 (carros): g.row ainda é 0.
+    ;(crosser as unknown as { userData: { grid: unknown } }).userData.grid = {
+      row: 0,
+      col: 0,
+      moving: true,
+      queue: ['forward'],
+      tile: 2,
+      yUp: false,
+    }
+    api.setPosition(crosser, 0, 0, 0)
+    api.setPosition(car, 0, 0, 0) // sobreposto ao boneco no meio do pulo
+    expect(api.crosserHit(crosser, world)).toBe(true)
+  })
+
+  it('R1/A2: gravidade não concede "chão" ao encostar na lateral (sem pulo de parede)', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const ground = api.createBlock(world, { width: 4, height: 4, depth: 4 })
+    api.setPosition(ground, 0, 0, 0) // topo em y = 2
+    const obj = api.createBox(world, { size: 1 })
+    api.setPosition(obj, 2.4, 0, 0) // encostado na LATERAL, na mesma altura do bloco
+    api.setVelocity(obj, 0, -0.05, 0)
+    api.applyGravity(obj, ground)
+    const meta = (obj as unknown as { userData: { sz: Meta } }).userData.sz
+    expect(meta.grounded).toBe(false) // não pode pular de parede
+  })
+
+  it('R1/A3: setBackground descarta a textura de céu anterior (não vaza GPU)', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    let disposed = false
+    ;(world.scene as unknown as { background: unknown }).background = {
+      isTexture: true,
+      dispose: () => {
+        disposed = true
+      },
+    }
+    api.setBackground(world, '#123456')
+    expect(disposed).toBe(true)
+  })
+
+  it('R1/A5: câmera isométrica que segue NÃO fica presa à rotação do alvo', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const target = api.createModel(world) as Obj3D // Group ligado ao mundo (tem .add)
+    api.setPosition(target, 5, 0, 3)
+    api.isometricCamera(world, target)
+    const cam = world.camera as unknown as { parent: unknown; position: Vec3 }
+    // A câmera não pode ser FILHA do alvo (senão herda a rotação e gira a vista).
+    expect(cam.parent).not.toBe(target)
+    expect(cam.parent).toBe(world.scene)
+    // Mas segue a POSIÇÃO: offset do molde iso (12,12,12) + alvo (5,0,3).
+    expect(cam.position.x).toBeCloseTo(17, 5)
+    expect(cam.position.z).toBeCloseTo(15, 5)
+  })
+
+  it('R1/A6: "Lente" (setFOV) aproxima a câmera isométrica via zoom (não é mais no-op)', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const target = api.createModel(world) as Obj3D
+    api.isometricCamera(world, target)
+    const cam = world.camera as unknown as { zoom: number }
+    expect(cam.zoom).toBe(1)
+    api.setFOV(world, 30) // luneta: aproxima 2x
+    expect(cam.zoom).toBeCloseTo(2, 5)
+    api.setFOV(world, 120) // afasta
+    expect(cam.zoom).toBeCloseTo(0.5, 5)
+  })
+})

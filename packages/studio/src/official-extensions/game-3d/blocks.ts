@@ -6,12 +6,6 @@ import { GAME3D_DROPDOWN_OPTIONS } from '../../three/game3dContract'
 // Jogo 3D = UMA cor da categoria: AMARELO/dourado. A categoria inteira fica em
 // TONS de amarelo, variando por área/kit.
 const C = '#f0b80a' // base (cena/objetos/física)
-const EVENT_C = '#f8d23f' // perguntas/eventos
-const KIT_C = '#d49e00' // Kit Desvie
-const GRID_C = '#fae07a' // grade/isométrico
-const KIT2_C = '#e6ad00' // Kit Travessia
-const RACE_C = '#b88700' // Kit Corrida
-const STACK_C = '#ffe89a' // Kit Empilhar
 
 const AUDIO_ACTION_PLACEMENT = {
   root: [],
@@ -36,7 +30,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip:
       'Cria cena + câmera + renderizador + luz, prontos para desenhar. Crie um <canvas> no HTML antes.',
   },
@@ -50,7 +43,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip:
       'Atalho: cria a tela (canvas) ocupando a janela inteira, já responsiva, mais a cena + câmera + luz. A cor do fundo fica atrás dos objetos da cena. Não precisa criar a tela de desenho no HTML.',
   },
@@ -64,7 +56,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Troca a cor que aparece atrás de todos os objetos da cena 3D.',
   },
   {
@@ -80,7 +71,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Move a câmera (ela sempre olha para o centro 0,0,0).',
   },
   {
@@ -96,7 +86,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Cria um cubo com todos os lados do mesmo tamanho e a cor escolhida.',
   },
   {
@@ -112,7 +101,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Cria uma esfera com o raio e a cor escolhidos.',
   },
   {
@@ -130,7 +118,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip:
       'Cria uma caixa retangular (ótima para o chão). Depois use "Posição do objeto" para colocá-la no lugar.',
   },
@@ -147,7 +134,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Coloca o objeto nas coordenadas x, y e z da cena 3D.',
   },
   {
@@ -163,7 +149,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Gira o objeto. Anime dentro de "A cada frame 3D" usando uma variável que aumenta.',
   },
   {
@@ -177,7 +162,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Aumenta ou diminui o objeto (1 = tamanho normal, 2 = o dobro).',
   },
   {
@@ -190,7 +174,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip:
       'Loop de animação 3D (setAnimationLoop): roda o "fazer" e redesenha a cena a cada quadro.',
   },
@@ -207,7 +190,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip:
       'Anda no plano (frente/trás/lados) com W A S D ou as setas. Use dentro de "A cada frame 3D".',
   },
@@ -224,7 +206,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Define o quanto o objeto anda por quadro em cada eixo.',
   },
   {
@@ -238,7 +219,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip:
       'Dá um impulso para cima, só funciona se o objeto estiver no chão. Combine com "se a tecla espaço está apertada".',
   },
@@ -252,7 +232,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip:
       'Puxa o objeto para baixo e o faz parar/quicar no chão, andando pela velocidade. Use dentro de "A cada frame 3D".',
   },
@@ -266,7 +245,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip:
       'A câmera acompanha o objeto mantendo o mesmo enquadramento. Use dentro de "A cada frame 3D".',
   },
@@ -283,7 +261,6 @@ export const gameThreeDBlocks = [
       },
     ],
     output: 'JSValue',
-    colour: EVENT_C,
     tooltip:
       'Verdadeiro enquanto a tecla está sendo segurada. Use dentro de um "se", no "A cada frame 3D".',
   },
@@ -295,7 +272,6 @@ export const gameThreeDBlocks = [
       { type: 'field_name_picker', name: 'B', text: 'chao', kind: 'object3d' },
     ],
     output: 'JSValue',
-    colour: EVENT_C,
     tooltip: 'Verdadeiro enquanto os dois objetos 3D estão se tocando. Use dentro de um "se".',
   },
   {
@@ -306,7 +282,6 @@ export const gameThreeDBlocks = [
       { type: 'field_name_picker', name: 'GROUP', text: 'inimigos', kind: 'group3d' },
     ],
     output: 'JSValue',
-    colour: EVENT_C,
     tooltip: 'Verdadeiro se o objeto bateu em qualquer um do grupo (ótimo para o fim de jogo).',
   },
 
@@ -318,7 +293,6 @@ export const gameThreeDBlocks = [
     args0: [{ type: 'field_input', name: 'NAME', text: 'inimigos' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: KIT_C,
     tooltip: 'Cria uma lista vazia para guardar vários objetos (ex.: os inimigos).',
   },
   {
@@ -335,7 +309,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: KIT_C,
     tooltip:
       'Cria inimigos que vêm de longe acelerando e os move sozinho (limpa os que passam). Use dentro de "A cada frame 3D".',
   },
@@ -346,7 +319,6 @@ export const gameThreeDBlocks = [
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: KIT_C,
     tooltip: 'Para o loop de animação (game over). Use dentro de um "se" de colisão.',
   },
 
@@ -357,11 +329,12 @@ export const gameThreeDBlocks = [
     message0: 'Câmera isométrica na cena %1 seguindo o objeto %2',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
-      { type: 'field_name_picker', name: 'FOLLOW', text: 'jogador', kind: 'g3d-object' },
+      // R4/B2: default em BRANCO (= não segue), casando com a "Câmera aérea"
+      // (top_camera) e com o próprio tooltip ("deixe em branco para não seguir").
+      { type: 'field_name_picker', name: 'FOLLOW', text: '', kind: 'g3d-object' },
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: GRID_C,
     tooltip:
       'Troca a câmera por uma isométrica (vista de cima em ângulo). Deixe o objeto em branco para não seguir ninguém.',
   },
@@ -377,7 +350,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: GRID_C,
     tooltip: 'Coloca o objeto numa casa da grade (linha e coluna).',
   },
   {
@@ -387,7 +359,6 @@ export const gameThreeDBlocks = [
     args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: GRID_C,
     tooltip:
       'Anda uma casa por vez (com um pulinho) ao apertar as setas. Use dentro de "A cada frame 3D".',
   },
@@ -405,7 +376,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: GRID_C,
     tooltip: 'Enfileira um passo na grade (ótimo para botões na tela).',
   },
   {
@@ -421,7 +391,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: GRID_C,
     tooltip:
       'Move todos os objetos do grupo numa faixa, dando a volta nas bordas. Velocidade negativa = sentido contrário. Use dentro de "A cada frame 3D".',
   },
@@ -433,7 +402,6 @@ export const gameThreeDBlocks = [
       { type: 'field_name_picker', name: 'GROUP', text: 'carros', kind: 'group3d' },
     ],
     output: 'JSValue',
-    colour: EVENT_C,
     tooltip:
       'Verdadeiro se o objeto bate em algum do grupo (caixa real, funciona com modelos como carros). Use num "se".',
   },
@@ -449,7 +417,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: KIT2_C,
     tooltip:
       'Monta a cena com câmera isométrica e luz, pronta para o jogo de atravessar. Crie um <canvas> no HTML antes.',
   },
@@ -464,7 +431,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: KIT2_C,
     tooltip: 'Cria o personagem (galinha) que pula de casa em casa. A câmera passa a segui-lo.',
   },
   {
@@ -481,7 +447,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: KIT2_C,
     tooltip:
       'Enfileira um passo do personagem (não sai do tabuleiro nem sobe em árvore). Ótimo para botões na tela.',
   },
@@ -495,7 +460,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: KIT2_C,
     tooltip:
       'Move o personagem com as setas (em grade), gera mais ruas, segue com a câmera e conta a pontuação. Use dentro de "A cada frame 3D".',
   },
@@ -509,7 +473,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: KIT2_C,
     tooltip: 'Volta o personagem ao início e recria o mapa (botão Recomeçar).',
   },
   {
@@ -534,7 +497,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: KIT2_C,
     tooltip:
       'Cria uma linha do mapa: grama, floresta com árvores, ou uma pista com carros/caminhões andando.',
   },
@@ -549,7 +511,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: KIT2_C,
     tooltip:
       'Cria várias linhas sorteadas (grama/floresta/carros/caminhões) à frente do personagem.',
   },
@@ -560,7 +521,6 @@ export const gameThreeDBlocks = [
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'g3d-world' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: KIT2_C,
     tooltip: 'Faz os carros e caminhões andarem e darem a volta. Use dentro de "A cada frame 3D".',
   },
   {
@@ -571,7 +531,6 @@ export const gameThreeDBlocks = [
       { type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'g3d-world' },
     ],
     output: 'JSValue',
-    colour: EVENT_C,
     tooltip:
       'Verdadeiro quando o personagem é atropelado. Use num "se" para mostrar o fim de jogo.',
   },
@@ -580,7 +539,6 @@ export const gameThreeDBlocks = [
     message0: 'a pontuação (linha) do personagem %1',
     args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' }],
     output: 'JSValue',
-    colour: EVENT_C,
     tooltip:
       'Quantas linhas o personagem avançou (a pontuação). Use num "se" ou para mostrar o placar.',
   },
@@ -596,7 +554,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: GRID_C,
     tooltip:
       'Vê a cena de cima (vista aérea). Deixe o objeto em branco para a câmera ficar parada mostrando tudo.',
   },
@@ -612,7 +569,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip:
       'Faz o objeto girar numa circunferência (centro no meio da cena), virado para a direção do movimento. Use dentro de "A cada frame 3D".',
   },
@@ -624,7 +580,6 @@ export const gameThreeDBlocks = [
       { type: 'field_name_picker', name: 'B', text: 'rival', kind: 'object3d' },
     ],
     output: 'JSValue',
-    colour: EVENT_C,
     tooltip: 'A distância entre dois objetos (no chão). Use numa conta ou num "se".',
   },
   {
@@ -637,7 +592,6 @@ export const gameThreeDBlocks = [
     ],
     inputsInline: true,
     output: 'JSValue',
-    colour: EVENT_C,
     tooltip: 'Verdadeiro quando os dois objetos estão a menos da distância dada. Use num "se".',
   },
 
@@ -652,7 +606,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: RACE_C,
     tooltip:
       'Monta a cena com câmera aérea e luz, pronta para a corrida. Crie um <canvas> no HTML antes.',
   },
@@ -663,7 +616,6 @@ export const gameThreeDBlocks = [
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'g3d-world' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: RACE_C,
     tooltip: 'Cria a pista oval (grama + asfalto + árvores).',
   },
   {
@@ -677,7 +629,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: RACE_C,
     tooltip: 'Cria o carro do jogador na largada da pista.',
   },
   {
@@ -690,7 +641,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: RACE_C,
     tooltip:
       'Dá voltas na pista: ↑ acelera, ↓ freia. Conta as voltas. Use dentro de "A cada frame 3D".',
   },
@@ -708,7 +658,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: RACE_C,
     tooltip: 'Muda a marcha do carro (ótimo para botões na tela).',
   },
   {
@@ -718,7 +667,6 @@ export const gameThreeDBlocks = [
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'g3d-world' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: RACE_C,
     tooltip: 'Cria e move carros/caminhões rivais pela pista. Use dentro de "A cada frame 3D".',
   },
   {
@@ -731,7 +679,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: RACE_C,
     tooltip: 'Volta o carro à largada e limpa os rivais (botão Recomeçar).',
   },
   {
@@ -742,7 +689,6 @@ export const gameThreeDBlocks = [
       { type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'g3d-world' },
     ],
     output: 'JSValue',
-    colour: EVENT_C,
     tooltip:
       'Verdadeiro quando o carro encosta num rival. Use num "se" para mostrar o fim de jogo.',
   },
@@ -751,7 +697,6 @@ export const gameThreeDBlocks = [
     message0: 'as voltas (pontuação) do carro %1',
     args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'carro', kind: 'object3d' }],
     output: 'JSValue',
-    colour: EVENT_C,
     tooltip:
       'Quantas voltas o carro completou (a pontuação). Use num "se" ou para mostrar o placar.',
   },
@@ -764,7 +709,6 @@ export const gameThreeDBlocks = [
     args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'peca', kind: 'object3d' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip:
       'Solta o objeto em queda livre, girando, até sumir da tela (gravidade). Use dentro de "A cada frame 3D".',
   },
@@ -786,7 +730,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip:
       'Faz o objeto ir e voltar entre dois limites num eixo (ótimo para plataformas). Use dentro de "A cada frame 3D".',
   },
@@ -806,7 +749,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip:
       'Gira o objeto continuamente num eixo (moedas, hélices, planetas). Use dentro de "A cada frame 3D".',
   },
@@ -822,7 +764,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: STACK_C,
     tooltip:
       'Monta a cena com câmera isométrica (que sobe com a torre) e luz. Crie um <canvas> no HTML antes.',
   },
@@ -833,17 +774,15 @@ export const gameThreeDBlocks = [
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'torre', kind: 'g3d-world' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: STACK_C,
     tooltip: 'Cria a base e o primeiro bloco que desliza, pronto para empilhar.',
   },
   {
     type: 'sz_g3d_stack_drop',
-    placement: 'command',
+    placement: 'action-command',
     message0: 'Soltar o bloco do mundo %1',
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'torre', kind: 'g3d-world' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: STACK_C,
     tooltip:
       'Encaixa o bloco que se move: a parte que sobra é cortada e cai. Errar o encaixe acaba o jogo. Ligue ao clique ou à tecla espaço.',
   },
@@ -854,7 +793,6 @@ export const gameThreeDBlocks = [
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'torre', kind: 'g3d-world' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: STACK_C,
     tooltip:
       'Desliza o bloco do topo, sobe a câmera e faz as sobras caírem. Use dentro de "A cada frame 3D".',
   },
@@ -865,7 +803,6 @@ export const gameThreeDBlocks = [
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'torre', kind: 'g3d-world' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: STACK_C,
     tooltip: 'Limpa a torre e começa de novo (botão Recomeçar).',
   },
   {
@@ -873,7 +810,6 @@ export const gameThreeDBlocks = [
     message0: 'a pontuação (andares) da torre %1',
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'torre', kind: 'g3d-world' }],
     output: 'JSValue',
-    colour: EVENT_C,
     tooltip: 'Quantos andares já foram empilhados (a pontuação). Use num "se" ou no placar.',
   },
   {
@@ -881,7 +817,6 @@ export const gameThreeDBlocks = [
     message0: 'a torre %1 caiu (fim de jogo)?',
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'torre', kind: 'g3d-world' }],
     output: 'JSValue',
-    colour: EVENT_C,
     tooltip: 'Verdadeiro quando o jogador erra o encaixe. Use num "se" para mostrar o fim de jogo.',
   },
 
@@ -898,7 +833,6 @@ export const gameThreeDBlocks = [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
     ],
     output: 'JSValue',
-    colour: EVENT_C,
     tooltip: 'Lê uma coordenada da posição do objeto. Use numa conta ou num "se".',
   },
   {
@@ -913,7 +847,6 @@ export const gameThreeDBlocks = [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
     ],
     output: 'JSValue',
-    colour: EVENT_C,
     tooltip: 'Lê o giro do objeto num eixo (em radianos).',
   },
   {
@@ -921,7 +854,6 @@ export const gameThreeDBlocks = [
     message0: 'tamanho (escala) do objeto %1',
     args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' }],
     output: 'JSValue',
-    colour: EVENT_C,
     tooltip: 'Lê o tamanho atual do objeto (1 = normal).',
   },
   {
@@ -936,7 +868,6 @@ export const gameThreeDBlocks = [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
     ],
     output: 'JSValue',
-    colour: EVENT_C,
     tooltip:
       'Lê a velocidade do objeto num eixo (a mesma que "Mudar a velocidade" grava). Use numa conta ou num "se".',
   },
@@ -945,7 +876,6 @@ export const gameThreeDBlocks = [
     message0: 'velocidade total do objeto %1',
     args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' }],
     output: 'JSValue',
-    colour: EVENT_C,
     tooltip: 'O quão rápido o objeto se move, juntando os três eixos. É sempre 0 ou positivo.',
   },
   {
@@ -953,7 +883,6 @@ export const gameThreeDBlocks = [
     message0: 'o objeto %1 está se movendo?',
     args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' }],
     output: 'JSValue',
-    colour: EVENT_C,
     tooltip: 'Verdadeiro quando o objeto tem alguma velocidade em qualquer eixo. Use num "se".',
   },
   {
@@ -961,7 +890,6 @@ export const gameThreeDBlocks = [
     message0: 'tempo desde o último quadro (cena %1)',
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' }],
     output: 'JSValue',
-    colour: EVENT_C,
     tooltip:
       'Segundos desde o quadro anterior. Multiplique a velocidade por ele para o jogo correr igual em qualquer computador.',
   },
@@ -980,7 +908,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip:
       'Soma à posição atual (move em relação a onde já está). Use dentro de "A cada frame 3D".',
   },
@@ -1000,7 +927,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Soma ao giro atual num eixo (radianos). Use dentro de "A cada frame 3D".',
   },
   {
@@ -1017,7 +943,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip:
       'Aproxima o objeto do ponto aos poucos (força 0 a 1; 0.1 = bem suave). Ótimo para câmera/perseguição.',
   },
@@ -1033,7 +958,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Faz o primeiro objeto apontar para o segundo (mira/perseguição).',
   },
   {
@@ -1049,7 +973,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Faz o objeto apontar para um ponto da cena.',
   },
   {
@@ -1063,7 +986,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip:
       'Move o objeto para frente, na direção para onde ele está virado. Use dentro de "A cada frame 3D".',
   },
@@ -1074,7 +996,6 @@ export const gameThreeDBlocks = [
     args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Vira o objeto para onde ele está se movendo (use com velocidade/física).',
   },
   {
@@ -1085,7 +1006,6 @@ export const gameThreeDBlocks = [
       { type: 'field_name_picker', name: 'B', text: 'alvo', kind: 'object3d' },
     ],
     output: 'JSValue',
-    colour: EVENT_C,
     tooltip: 'O ângulo (em radianos) de A para B no plano do chão. Use para mirar/girar.',
   },
 
@@ -1095,7 +1015,6 @@ export const gameThreeDBlocks = [
     message0: 'objeto sob o mouse na cena %1',
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' }],
     output: 'JSValue',
-    colour: EVENT_C,
     tooltip:
       'O objeto 3D que está embaixo do ponteiro (ou vazio). Guarde numa variável para usá-lo.',
   },
@@ -1107,7 +1026,6 @@ export const gameThreeDBlocks = [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
     ],
     output: 'JSValue',
-    colour: EVENT_C,
     tooltip: 'Verdadeiro quando o ponteiro está em cima daquele objeto. Use num "se".',
   },
   {
@@ -1120,7 +1038,6 @@ export const gameThreeDBlocks = [
     ],
     inputsInline: true,
     output: 'JSValue',
-    colour: EVENT_C,
     tooltip:
       'O objeto à frente, na direção que o objeto olha (tiro/mira). Vazio se não houver nada.',
   },
@@ -1132,7 +1049,6 @@ export const gameThreeDBlocks = [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
     ],
     output: 'JSValue',
-    colour: EVENT_C,
     tooltip:
       'Verdadeiro quando há um objeto logo abaixo (pisando no chão/plataforma). Use num "se".',
   },
@@ -1144,7 +1060,6 @@ export const gameThreeDBlocks = [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
     ],
     output: 'JSValue',
-    colour: EVENT_C,
     tooltip: 'A altura (y) do topo do objeto que está logo abaixo. Útil para encostar no chão.',
   },
 
@@ -1160,7 +1075,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Liga a física no objeto (a gravidade puxa para baixo; use número negativo).',
   },
   {
@@ -1173,7 +1087,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip:
       'Aplica a gravidade e empurra para fora dos objetos sólidos. Use dentro de "A cada frame 3D".',
   },
@@ -1184,7 +1097,6 @@ export const gameThreeDBlocks = [
     args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'chao', kind: 'object3d' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Diz que esse objeto é parede/chão: a física não deixa atravessá-lo.',
   },
   {
@@ -1200,7 +1112,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip:
       'Anda com WASD/setas + pula no espaço, com gravidade e colisão. Use dentro de "A cada frame 3D".',
   },
@@ -1216,7 +1127,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip:
       'Anda com WASD na direção que o jogador olha (combine com a câmera de primeira pessoa). Use dentro de "A cada frame 3D".',
   },
@@ -1230,7 +1140,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Se A está dentro de B, empurra A para fora (colisão manual entre dois objetos).',
   },
 
@@ -1245,7 +1154,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: GRID_C,
     tooltip:
       'Põe a câmera nos olhos do objeto e olha com o mouse (clique para travar o ponteiro). Combine com o controle de primeira pessoa.',
   },
@@ -1259,7 +1167,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: GRID_C,
     tooltip: 'Gira a câmera ao redor de um objeto arrastando o mouse (e a roda dá zoom).',
   },
   {
@@ -1275,7 +1182,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: GRID_C,
     tooltip:
       'A câmera segue atrás e acima do objeto (estilo aventura). Use no início ou a cada frame.',
   },
@@ -1289,7 +1195,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: GRID_C,
     tooltip: 'Aponta a câmera para um objeto.',
   },
   {
@@ -1303,7 +1208,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: GRID_C,
     tooltip: 'Muda o "zoom" da câmera (graus): menos = mais zoom, mais = grande angular.',
   },
 
@@ -1322,7 +1226,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Cria um cilindro com o raio, a altura e a cor escolhidos.',
   },
   {
@@ -1339,7 +1242,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Cria um cone com o raio da base, a altura e a cor escolhidos.',
   },
   {
@@ -1356,7 +1258,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Um plano fino deitado no chão (ótimo para o chão do jogo).',
   },
   {
@@ -1373,7 +1274,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Cria um anel 3D; raio controla o tamanho e grossura controla o tubo.',
   },
   {
@@ -1386,7 +1286,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Um grupo vazio para montar um modelo com várias peças (use "adicionar ao modelo").',
   },
   {
@@ -1399,7 +1298,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Junta uma peça (objeto) ao modelo. Mover o modelo move todas as peças juntas.',
   },
   {
@@ -1416,7 +1314,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Mostra ou esconde o objeto (continua existindo, só não aparece).',
   },
   {
@@ -1429,7 +1326,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Tira o objeto da cena de vez (apaga e libera memória).',
   },
   {
@@ -1442,7 +1338,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Troca a cor do objeto.',
   },
   {
@@ -1456,7 +1351,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Deixa o objeto transparente (1 = opaco, 0 = invisível).',
   },
   {
@@ -1473,7 +1367,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Muda o estilo da superfície (metal, vidro, brilhante ou só linhas).',
   },
   {
@@ -1486,7 +1379,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: C,
     tooltip: 'Põe uma imagem (asset adicionado ao projeto) na superfície do objeto.',
   },
 
@@ -1503,7 +1395,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: EVENT_C,
     tooltip:
       'Luz suave que clareia tudo por igual (sem sombra). Crie uma vez, fora do "a cada quadro".',
   },
@@ -1519,7 +1410,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: EVENT_C,
     tooltip: 'Luz direcional vinda do alto (como o sol), faz sombras.',
   },
   {
@@ -1537,7 +1427,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: EVENT_C,
     tooltip: 'Uma lâmpada/tocha que brilha de um ponto para todos os lados.',
   },
   {
@@ -1553,7 +1442,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: EVENT_C,
     tooltip: 'Faz o que está longe sumir na névoa (começa em "perto", some em "longe").',
   },
   {
@@ -1567,7 +1455,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: EVENT_C,
     tooltip: 'Pinta o fundo com um degradê do topo até o horizonte (céu).',
   },
   {
@@ -1584,7 +1471,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: EVENT_C,
     tooltip: 'Liga ou desliga as sombras da cena (desligar deixa o jogo mais leve).',
   },
 
@@ -1599,7 +1485,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: '#f472b6',
     tooltip: 'Cria um enxame vazio para guardar muitas cópias de um objeto.',
   },
   {
@@ -1616,7 +1501,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: '#f472b6',
     tooltip: 'Cria uma cópia de um objeto e a coloca no enxame, na posição dada.',
   },
   {
@@ -1624,7 +1508,6 @@ export const gameThreeDBlocks = [
     message0: 'quantidade de cópias no enxame %1',
     args0: [{ type: 'field_name_picker', name: 'SWARM', text: 'enxame', kind: 'swarm3d' }],
     output: 'JSValue',
-    colour: '#f472b6',
     tooltip: 'Mostra quantas cópias existem agora no enxame.',
   },
   {
@@ -1641,7 +1524,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: '#f472b6',
     tooltip: 'Repete os blocos de dentro para cada objeto do enxame (o objeto da vez é "item").',
   },
   {
@@ -1654,7 +1536,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: '#f472b6',
     tooltip: 'Remove uma cópia do enxame e da cena (ótimo dentro do "para cada").',
   },
   {
@@ -1674,7 +1555,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: '#f472b6',
     tooltip: 'Limpa do enxame as cópias que passaram dos limites (saíram da tela), higiene.',
   },
   {
@@ -1688,7 +1568,6 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: '#f472b6',
     tooltip: 'Toca um bip (mais Hz = mais agudo). Precisa de um clique antes (o navegador exige).',
   },
   {
@@ -1704,7 +1583,6 @@ export const gameThreeDBlocks = [
     ],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    colour: '#f472b6',
     tooltip: 'Toca um efeito sonoro pronto (moeda, pulo, explosão ou acerto).',
   },
 ] satisfies BlockDefinition[]
@@ -1714,10 +1592,9 @@ export const gameThreeDBlocks = [
  * para a criança achar mais fácil. `leftover` garante que nenhum bloco novo
  * desapareça da paleta se esquecer de ser mapeado aqui.
  */
-const SUBCATS: { name: string; colour: string; types: string[] }[] = [
+const SUBCAT_DEFINITIONS: { name: string; types: string[] }[] = [
   {
     name: '🧱 Cena & objetos',
-    colour: C,
     types: [
       'sz_g3d_create_scene',
       'sz_g3d_create_fullscreen_scene',
@@ -1734,7 +1611,6 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   },
   {
     name: '🎮 Física & controles',
-    colour: C,
     types: [
       'sz_g3d_control_keys',
       'sz_g3d_set_velocity',
@@ -1749,7 +1625,6 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   },
   {
     name: '🎥 Câmera & grade 3D',
-    colour: GRID_C,
     types: [
       'sz_g3d_isometric_camera',
       'sz_g3d_grid_position',
@@ -1761,7 +1636,6 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   },
   {
     name: '❓ Perguntas',
-    colour: EVENT_C,
     types: [
       'sz_g3d_key_down',
       'sz_g3d_collides',
@@ -1773,7 +1647,6 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   },
   {
     name: '📐 Posição & direção',
-    colour: GRID_C,
     types: [
       'sz_g3d_get_pos',
       'sz_g3d_get_rot',
@@ -1789,7 +1662,6 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   },
   {
     name: '🧭 Olhar & apontar',
-    colour: GRID_C,
     types: [
       'sz_g3d_look_at_object',
       'sz_g3d_look_at_point',
@@ -1800,7 +1672,6 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   },
   {
     name: '🎯 Mira & clique',
-    colour: GRID_C,
     types: [
       'sz_g3d_pick_at_mouse',
       'sz_g3d_pointer_over',
@@ -1811,7 +1682,6 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   },
   {
     name: '🏃 Corpo & colisões',
-    colour: C,
     types: [
       'sz_g3d_body',
       'sz_g3d_step_body',
@@ -1823,7 +1693,6 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   },
   {
     name: '🎥 Câmera viva',
-    colour: GRID_C,
     types: [
       'sz_g3d_fps_camera',
       'sz_g3d_orbit_camera',
@@ -1834,7 +1703,6 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   },
   {
     name: '🧊 Formas & modelos',
-    colour: C,
     types: [
       'sz_g3d_create_cylinder',
       'sz_g3d_create_cone',
@@ -1848,12 +1716,10 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   },
   {
     name: '🎨 Aparência',
-    colour: C,
     types: ['sz_g3d_set_color', 'sz_g3d_set_opacity', 'sz_g3d_set_material', 'sz_g3d_set_texture'],
   },
   {
     name: '💡 Luz & céu',
-    colour: EVENT_C,
     types: [
       'sz_g3d_add_ambient_light',
       'sz_g3d_add_sun_light',
@@ -1865,7 +1731,6 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   },
   {
     name: '👯 Enxames & som',
-    colour: '#f472b6',
     types: [
       'sz_g3d_create_swarm',
       'sz_g3d_spawn_in_swarm',
@@ -1879,12 +1744,10 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   },
   {
     name: '👾 Kit Desvie',
-    colour: KIT_C,
     types: ['sz_g3d_create_group', 'sz_g3d_run_enemies', 'sz_g3d_stop'],
   },
   {
     name: '🐔 Kit Travessia',
-    colour: KIT2_C,
     types: [
       'sz_g3d_create_crossing_scene',
       'sz_g3d_create_crosser',
@@ -1900,7 +1763,6 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   },
   {
     name: '🏎️ Kit Corrida',
-    colour: RACE_C,
     types: [
       'sz_g3d_create_race_scene',
       'sz_g3d_create_race_track',
@@ -1915,7 +1777,6 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   },
   {
     name: '📦 Kit Empilhar',
-    colour: STACK_C,
     types: [
       'sz_g3d_create_stack_scene',
       'sz_g3d_create_stack_tower',
@@ -1928,16 +1789,13 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
   },
 ]
 
-// Cada sub-categoria recebe um TOM do amarelo da categoria (derivado da base C por
-// categoryShades) — sobrepõe os consts/hex dos SUBCATS, inclusive o "Enxames & som"
-// que estava com ROSA hardcoded (#f472b6) e fugia da família amarela.
-const SUBCAT_SHADES = categoryShades(C, SUBCATS.length)
-SUBCATS.forEach((sc, i) => {
-  sc.colour = SUBCAT_SHADES[i] ?? C
-})
-// Cor = navegação: pinta cada bloco com o TOM da sua sub-categoria, sobrepondo o
-// const usado na definição — sem isto o bloco não seguia a cor do seu grupo
-// (game-2d já fazia; o game-3d não tinha este loop).
+// Cada subcategoria recebe um tom derivado da cor base. Esta é a única fonte de
+// cor dos blocos e das categorias da paleta.
+const SUBCAT_SHADES = categoryShades(C, SUBCAT_DEFINITIONS.length)
+const SUBCATS = SUBCAT_DEFINITIONS.map((subcategory, index) => ({
+  ...subcategory,
+  colour: SUBCAT_SHADES[index] ?? C,
+}))
 const COLOUR_BY_TYPE = new Map<string, string>(
   SUBCATS.flatMap((sc) => sc.types.map((t) => [t, sc.colour] as const)),
 )
@@ -1954,7 +1812,7 @@ const STACKED_INPUT_TYPES = new Set([
   'sz_g3d_add_point_light',
   'sz_g3d_spawn_in_swarm',
 ])
-for (const b of gameThreeDBlocks) {
+for (const b of gameThreeDBlocks as BlockDefinition[]) {
   const colour = COLOUR_BY_TYPE.get(b.type)
   if (colour) b.colour = colour
   if (STACKED_INPUT_TYPES.has(b.type)) (b as { inputsInline?: boolean }).inputsInline = false

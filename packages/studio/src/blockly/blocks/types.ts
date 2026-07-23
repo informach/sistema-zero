@@ -61,6 +61,7 @@ export type BlockPlacementPreset =
   | 'loop-body'
   | 'loop-command'
   | 'runtime-command'
+  | 'action-command'
   | 'legacy-start'
   | 'start-only-command'
   | 'resource-creator'

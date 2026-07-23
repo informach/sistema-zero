@@ -5,8 +5,14 @@ import { canvasExpressionIRToBlock, canvasStatementIRToBlock } from '../codecs/w
 import { createCSSIRToBlocks } from '../codecs/web/cssIRToBlocks'
 import { htmlIRToBlock } from '../codecs/web/htmlIRToBlock'
 import { htmlElementForTag, isSupportedHTMLImageLoading } from '../html/catalog'
-import { CANVAS3D_ADDON_CLASSES } from '../three/canvas3dAddons'
-import { statementUsesCanvas3D } from '../three/canvas3dContract'
+import {
+  type Canvas3DStatementContext,
+  type Canvas3DStatementContextIndex,
+  canvas3DContextHasImportedClass,
+  canvas3DContextHasSymbol,
+  createCanvas3DStatementContextIndex,
+} from '../ir/programmingReferences'
+import type { Canvas3DSymbolKind } from '../three/canvas3dContract'
 import {
   FRAME_APPEARANCE,
   FRAME_EVENTS,
@@ -152,20 +158,19 @@ export function buildWorkspaceStateFromIR(
     ...normalized.behavior.events,
     ...normalized.behavior.loops,
   ]
-  // Gate dos facilitadores do Canvas 3D: só reconhece as formas canônicas do
-  // three.js (scene.add, obj.position.set, obj.visible=…) como bloco amigável
-  // quando o projeto REALMENTE usa three — senão `Set.add`/`Map.set`/`x.visible`
-  // de um projeto 2D viraria bloco 3D (teal, categoria errada). O sinal é o
-  // import da lib (o bloco-raiz) ou um `new THREE.…` de topo.
-  recognizeThree = allStatements.some(statementUsesCanvas3D)
-  canvas3dImportedNames = collectCanvas3DImportedNames(allStatements)
-  audioLoaderVars = collectAudioLoaderVars(allStatements)
-  const startChildren = statementsToBlocks(normalized.behavior.start, true)
-  const eventChildren = statementsToBlocks(normalized.behavior.events, true)
-  const loopChildren = statementsToBlocks(normalized.behavior.loops, true)
-  recognizeThree = false
-  canvas3dImportedNames = new Set()
-  audioLoaderVars = new Set()
+  const previousContextIndex = canvas3dContextIndex
+  canvas3dContextIndex = createCanvas3DStatementContextIndex(allStatements)
+  let startChildren: SerializedBlocklyBlock[]
+  let eventChildren: SerializedBlocklyBlock[]
+  let loopChildren: SerializedBlocklyBlock[]
+  try {
+    startChildren = statementsToBlocks(normalized.behavior.start, true)
+    eventChildren = statementsToBlocks(normalized.behavior.events, true)
+    loopChildren = statementsToBlocks(normalized.behavior.loops, true)
+  } finally {
+    canvas3dContextIndex = previousContextIndex
+    activeCanvas3DContext = undefined
+  }
 
   // Uma área por categoria, somente quando tem conteúdo. A disposição canônica
   // usa duas linhas: HTML/CSS acima e lifecycle abaixo.
@@ -283,66 +288,30 @@ const STYLE_PROP_VALUES: ReadonlySet<string> = new Set([
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Canvas 3D — RECONHECIMENTO das formas canônicas do three.js (IR genérica →
-// bloco FACILITADOR amigável). É o inverso EXATO do buildIR dos `sz_t3d_*`
-// facilitadores: o que aquele compila para memberCall/memberSet, estes
-// reconhecem de volta, para o bloco amigável sobreviver a um round-trip pela
-// Ponte. Gated por `recognizeThree` (setado em buildWorkspaceStateFromIR) — sem
-// isso, `Set.add`/`Map.set`/`x.visible` de um projeto 2D viraria bloco 3D à toa.
-// Devolvem null → o statement cai no bloco genérico (chamar método / definir
-// propriedade). Registro-espelho: allowlist, valueSockets, LEGACY_VALUE_FIELDS.
+// bloco FACILITADOR amigável). É o inverso EXATO do buildIR dos `sz_t3d_*`.
+// A decisão usa a foto léxica do statement: um método só vira facilitador se o
+// receptor foi realmente declarado com a capacidade 3D exigida naquele escopo.
+// Assim Set.add, objetos comuns com `visible` e classes locais homônimas continuam
+// sendo programação genérica mesmo em projetos que também usam Three.js.
 // ─────────────────────────────────────────────────────────────────────────────
-let recognizeThree = false
+let canvas3dContextIndex: Canvas3DStatementContextIndex = new WeakMap()
+let activeCanvas3DContext: Canvas3DStatementContext | undefined
 
-let canvas3dImportedNames: ReadonlySet<string> = new Set()
-
-function collectCanvas3DImportedNames(statements: readonly JSStatement[]): Set<string> {
-  const names = new Set<string>()
-  for (const statement of statements) {
-    if (
-      statement.type === 'importNamed' &&
-      (statement.module === 'three' || statement.module.startsWith('three/addons/'))
-    ) {
-      for (const name of statement.names) names.add(name)
-    }
-  }
-  return names
+function hasCanvas3DSymbol(rawName: string, kind: Canvas3DSymbolKind): boolean {
+  return canvas3DContextHasSymbol(activeCanvas3DContext, rawName, kind)
 }
 
-// Latch-irmão do `recognizeThree`, para DISCRIMINAR o bloco do nó `loaderLoad`:
-// variáveis declaradas como AudioLoader (`new THREE.AudioLoader()` ou
-// `const x = new AudioLoader()`) fazem `x.load('nome', …)` voltar como o bloco
-// "carregar o som" (sz_t3d_load_sound) em vez de "carregar o modelo". Sem
-// AudioLoader declarado, decai para o load_model (o valor sobrevive; só o rótulo
-// fica genérico). Setado/zerado junto do recognizeThree.
-let audioLoaderVars: ReadonlySet<string> = new Set()
+function isCanvas3DConstructor(namespace: string | undefined, className: string): boolean {
+  const normalizedNamespace = namespace?.trim() ?? ''
+  return (
+    normalizedNamespace === 'THREE' ||
+    (!normalizedNamespace && canvas3DContextHasImportedClass(activeCanvas3DContext, className))
+  )
+}
 
-/** Anda o IR (recursão por corpos/valores) coletando nomes de AudioLoader. */
-function collectAudioLoaderVars(stmts: readonly JSStatement[]): Set<string> {
-  const out = new Set<string>()
-  const visit = (node: unknown): void => {
-    if (!node || typeof node !== 'object') return
-    if (Array.isArray(node)) {
-      for (const item of node) visit(item)
-      return
-    }
-    const rec = node as Record<string, unknown>
-    if (
-      rec.type === 'newInstance' &&
-      rec.className === 'AudioLoader' &&
-      typeof rec.varName === 'string'
-    ) {
-      out.add(rec.varName)
-    }
-    if (rec.type === 'var' && typeof rec.name === 'string') {
-      const v = rec.value as Record<string, unknown> | null | undefined
-      if (v && typeof v === 'object' && v.type === 'newExpr' && v.className === 'AudioLoader') {
-        out.add(rec.name)
-      }
-    }
-    for (const val of Object.values(rec)) visit(val)
-  }
-  visit(stmts)
-  return out
+function constructorReference(namespace: string | undefined, className: string): string {
+  const normalizedNamespace = namespace?.trim() ?? ''
+  return normalizedNamespace ? `${normalizedNamespace}.${className}` : className
 }
 
 type VarExpr = Extract<JSExpr, { type: 'var' }>
@@ -373,12 +342,17 @@ function valueSocketsOf(
 function recognizeT3dCall(
   stmt: Extract<JSStatement, { type: 'memberCall' }>,
 ): SerializedBlocklyBlock | null {
-  if (!recognizeThree) return null
   const { object, method, args } = stmt
   // obj.<prop>.set(x, y, z) — posição / rotação / escala
   const setProp = asMemberGet(object)
   const setBase = setProp && asVar(setProp.object)
-  if (method === 'set' && args.length === 3 && setProp && setBase) {
+  if (
+    method === 'set' &&
+    args.length === 3 &&
+    setProp &&
+    setBase &&
+    hasCanvas3DSymbol(setBase.name, 'object3d')
+  ) {
     const type =
       setProp.name === 'position'
         ? 'sz_t3d_set_position'
@@ -400,7 +374,7 @@ function recognizeT3dCall(
   if (method === 'set' && args.length === 1) {
     const colorProp = asMemberGet(object, 'color')
     const owner = colorProp && asVar(colorProp.object)
-    if (owner) {
+    if (owner && hasCanvas3DSymbol(owner.name, 'color-target3d')) {
       const vs = valueSocketsOf([['COLOR', args[0] as JSExpr]])
       if (vs) return block('sz_t3d_set_color', { OBJ: owner.name }, {}, stmt.__id, vs)
     }
@@ -411,7 +385,12 @@ function recognizeT3dCall(
     const mesh = asVar(object)
     const matProp = asMemberGet(args[1] as JSExpr, 'matrix')
     const dummy = matProp && asVar(matProp.object)
-    if (mesh && dummy) {
+    if (
+      mesh &&
+      dummy &&
+      hasCanvas3DSymbol(mesh.name, 'instanced-mesh3d') &&
+      hasCanvas3DSymbol(dummy.name, 'object3d')
+    ) {
       const vs = valueSocketsOf([['I', args[0] as JSExpr]])
       if (vs) {
         return block(
@@ -425,7 +404,12 @@ function recognizeT3dCall(
     }
   }
   // camera.lookAt(x, y, z)
-  if (method === 'lookAt' && args.length === 3 && objVar) {
+  if (
+    method === 'lookAt' &&
+    args.length === 3 &&
+    objVar &&
+    hasCanvas3DSymbol(objVar.name, 'object3d')
+  ) {
     const vs = valueSocketsOf([
       ['X', args[0] as JSExpr],
       ['Y', args[1] as JSExpr],
@@ -434,12 +418,22 @@ function recognizeT3dCall(
     if (vs) return block('sz_t3d_look_at', { OBJ: objVar.name }, {}, stmt.__id, vs)
   }
   // cena.add(objeto)
-  if (method === 'add' && args.length === 1 && objVar) {
+  if (
+    method === 'add' &&
+    args.length === 1 &&
+    objVar &&
+    hasCanvas3DSymbol(objVar.name, 'object3d')
+  ) {
     const vs = valueSocketsOf([['OBJ', args[0] as JSExpr]])
     if (vs) return block('sz_t3d_add_to', { TARGET: objVar.name }, {}, stmt.__id, vs)
   }
   // renderizador.setSize(w, h)
-  if (method === 'setSize' && args.length === 2 && objVar) {
+  if (
+    method === 'setSize' &&
+    args.length === 2 &&
+    objVar &&
+    hasCanvas3DSymbol(objVar.name, 'renderer3d')
+  ) {
     const vs = valueSocketsOf([
       ['W', args[0] as JSExpr],
       ['H', args[1] as JSExpr],
@@ -447,10 +441,20 @@ function recognizeT3dCall(
     if (vs) return block('sz_t3d_renderer_size', { R: objVar.name }, {}, stmt.__id, vs)
   }
   // renderizador.render(cena, camera)
-  if (method === 'render' && args.length === 2 && objVar) {
+  if (
+    method === 'render' &&
+    args.length === 2 &&
+    objVar &&
+    hasCanvas3DSymbol(objVar.name, 'renderer3d')
+  ) {
     const scene = asVar(args[0] as JSExpr)
     const cam = asVar(args[1] as JSExpr)
-    if (scene && cam) {
+    if (
+      scene &&
+      cam &&
+      hasCanvas3DSymbol(scene.name, 'scene3d') &&
+      hasCanvas3DSymbol(cam.name, 'camera3d')
+    ) {
       return block(
         'sz_t3d_render',
         { SCENE: scene.name, CAMERA: cam.name, R: objVar.name },
@@ -460,7 +464,12 @@ function recognizeT3dCall(
     }
   }
   // composer.render() — desenhar passando pela esteira de efeitos (0 args).
-  if (method === 'render' && args.length === 0 && objVar) {
+  if (
+    method === 'render' &&
+    args.length === 0 &&
+    objVar &&
+    hasCanvas3DSymbol(objVar.name, 'composer3d')
+  ) {
     return block('sz_t3d_render_effects', { COMPOSER: objVar.name }, {}, stmt.__id)
   }
   return null
@@ -469,13 +478,13 @@ function recognizeT3dCall(
 function recognizeT3dSet(
   stmt: Extract<JSStatement, { type: 'memberSet' }>,
 ): SerializedBlocklyBlock | null {
-  if (!recognizeThree) return null
   const { object, name, value } = stmt
   const objVar = asVar(object)
   // cena.background = new THREE.Color(cor)
   if (
     name === 'background' &&
     objVar &&
+    hasCanvas3DSymbol(objVar.name, 'scene3d') &&
     value.type === 'newExpr' &&
     value.namespace === 'THREE' &&
     value.className === 'Color' &&
@@ -488,6 +497,7 @@ function recognizeT3dSet(
   if (
     name === 'fog' &&
     objVar &&
+    hasCanvas3DSymbol(objVar.name, 'scene3d') &&
     value.type === 'newExpr' &&
     value.namespace === 'THREE' &&
     value.className === 'Fog' &&
@@ -503,7 +513,13 @@ function recognizeT3dSet(
   // copias.instanceMatrix.needsUpdate = true
   const instProp = asMemberGet(object, 'instanceMatrix')
   const instOwner = instProp && asVar(instProp.object)
-  if (name === 'needsUpdate' && instOwner && value.type === 'bool' && value.value === true) {
+  if (
+    name === 'needsUpdate' &&
+    instOwner &&
+    hasCanvas3DSymbol(instOwner.name, 'instanced-mesh3d') &&
+    value.type === 'bool' &&
+    value.value === true
+  ) {
     return block('sz_t3d_instances_dirty', { MESH: instOwner.name }, {}, stmt.__id)
   }
   // obj.rotation.<axis> += delta → obj.rotation.<axis> = obj.rotation.<axis> + delta
@@ -511,6 +527,7 @@ function recognizeT3dSet(
   const rotOwner = rotProp && asVar(rotProp.object)
   if (
     rotOwner &&
+    hasCanvas3DSymbol(rotOwner.name, 'object3d') &&
     (name === 'x' || name === 'y' || name === 'z') &&
     value.type === 'binop' &&
     value.op === '+'
@@ -526,7 +543,12 @@ function recognizeT3dSet(
     }
   }
   // obj.visible = true/false
-  if (name === 'visible' && objVar && value.type === 'bool') {
+  if (
+    name === 'visible' &&
+    objVar &&
+    hasCanvas3DSymbol(objVar.name, 'object3d') &&
+    value.type === 'bool'
+  ) {
     return block(
       'sz_t3d_set_visible',
       { OBJ: objVar.name, VAL: value.value ? 'true' : 'false' },
@@ -535,7 +557,13 @@ function recognizeT3dSet(
     )
   }
   // obj.castShadow / obj.receiveShadow = true/false
-  if ((name === 'castShadow' || name === 'receiveShadow') && objVar && value.type === 'bool') {
+  const shadowKind =
+    name === 'receiveShadow'
+      ? 'shadow-receiver3d'
+      : name === 'castShadow'
+        ? 'shadow-caster3d'
+        : null
+  if (shadowKind && objVar && hasCanvas3DSymbol(objVar.name, shadowKind) && value.type === 'bool') {
     return block(
       'sz_t3d_set_shadow',
       {
@@ -550,11 +578,17 @@ function recognizeT3dSet(
   // renderizador.shadowMap.enabled = true
   const shadowMap = asMemberGet(object, 'shadowMap')
   const shadowOwner = shadowMap && asVar(shadowMap.object)
-  if (name === 'enabled' && shadowOwner && value.type === 'bool' && value.value === true) {
+  if (
+    name === 'enabled' &&
+    shadowOwner &&
+    hasCanvas3DSymbol(shadowOwner.name, 'renderer3d') &&
+    value.type === 'bool' &&
+    value.value === true
+  ) {
     return block('sz_t3d_enable_shadows', { R: shadowOwner.name }, {}, stmt.__id)
   }
   // luz.intensity = n
-  if (name === 'intensity' && objVar) {
+  if (name === 'intensity' && objVar && hasCanvas3DSymbol(objVar.name, 'light3d')) {
     const vs = valueSocketsOf([['N', value]])
     if (vs) return block('sz_t3d_set_intensity', { OBJ: objVar.name }, {}, stmt.__id, vs)
   }
@@ -562,6 +596,16 @@ function recognizeT3dSet(
 }
 
 function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
+  const previousContext = activeCanvas3DContext
+  activeCanvas3DContext = canvas3dContextIndex.get(stmt)
+  try {
+    return statementToBlockInner(stmt)
+  } finally {
+    activeCanvas3DContext = previousContext
+  }
+}
+
+function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null {
   const canvasBlock = canvasStatementIRToBlock(stmt, {
     block,
     expressionToBlock: exprToValueBlock,
@@ -4551,6 +4595,16 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     }
     case 'g3k:spawnFrom':
       return block('sz_g3k_spawn_from', { MOLD: stmt.mold, FROM: stmt.fromVar }, {}, stmt.__id)
+    case 'g3k:spawnRing': {
+      const count = exprToValueBlock(valueToExpr(stmt.count))
+      const speed = exprToValueBlock(valueToExpr(stmt.speed))
+      return count === null || speed === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_spawn_ring', { MOLD: stmt.mold, FROM: stmt.fromVar }, {}, stmt.__id, {
+            COUNT: count,
+            SPEED: speed,
+          })
+    }
     case 'g3k:startSpawner': {
       const sec = exprToValueBlock(valueToExpr(stmt.seconds))
       return sec === null
@@ -4937,9 +4991,22 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         ? rawJSBlock(stmt)
         : block('sz_g3k_hurt', { WHO: stmt.charVar }, {}, stmt.__id, { AMOUNT: amount })
     }
+    case 'g3k:heal': {
+      const amount = exprToValueBlock(valueToExpr(stmt.amount))
+      return amount === null
+        ? rawJSBlock(stmt)
+        : block('sz_g3k_heal', { WHO: stmt.charVar }, {}, stmt.__id, { AMOUNT: amount })
+    }
     case 'g3k:onEntityDeath':
       return block(
         'sz_g3k_on_entity_death',
+        { ITEM: stmt.itemName, MOLD: stmt.mold },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g3k:onHurt':
+      return block(
+        'sz_g3k_on_hurt',
         { ITEM: stmt.itemName, MOLD: stmt.mold },
         { BODY: statementsToBlocks(stmt.body) },
         stmt.__id,
@@ -5844,12 +5911,9 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       // Canvas 3D: com namespace (`new THREE.X`) OU classe de ADDON conhecida sob um
       // projeto three (`new GLTFLoader()`) → o bloco Canvas 3D, com CLASS = referência
       // completa (`THREE.Scene` / `GLTFLoader`). Senão → o bloco genérico do aluno.
-      const t3dNamed =
-        !!stmt.namespace ||
-        (recognizeThree &&
-          (CANVAS3D_ADDON_CLASSES.has(stmt.className) || canvas3dImportedNames.has(stmt.className)))
+      const t3dNamed = isCanvas3DConstructor(stmt.namespace, stmt.className)
       if (t3dNamed) {
-        const ref = stmt.namespace ? `${stmt.namespace}.${stmt.className}` : stmt.className
+        const ref = constructorReference(stmt.namespace, stmt.className)
         return callWithArgs(
           'sz_t3d_new_var',
           { VARNAME: stmt.varName, CLASS: ref },
@@ -5859,7 +5923,7 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       }
       return callWithArgs(
         'sz_js_new_var',
-        { VARNAME: stmt.varName, CLASS: stmt.className },
+        { VARNAME: stmt.varName, CLASS: constructorReference(stmt.namespace, stmt.className) },
         stmt.args ?? [],
         stmt,
       )
@@ -5979,15 +6043,12 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
     case 'mountRenderer':
       return block('sz_t3d_mount_renderer', { R: stmt.renderer }, {}, stmt.__id)
     case 'loaderLoad': {
-      if (!recognizeThree) return rawJSBlock(stmt)
       // URL é o NOME do asset (campo seletor) — sempre string (o parser só casa
-      // literal de string). Round-trip fiel com o `field_asset_picker`. O TIPO do
-      // bloco é discriminado pelo loader: declarado como AudioLoader → bloco de SOM.
+      // literal de string). O parser já classificou o recurso semanticamente;
+      // não precisamos procurar loaders homônimos fora do escopo do statement.
       const url = stmt.url.type === 'str' ? stmt.url.value : ''
       return block(
-        stmt.resourceKind === 'audio' || audioLoaderVars.has(stmt.loaderVar)
-          ? 'sz_t3d_load_sound'
-          : 'sz_t3d_load_model',
+        stmt.resourceKind === 'audio' ? 'sz_t3d_load_sound' : 'sz_t3d_load_model',
         {
           LOADER: stmt.loaderVar,
           PARAM: stmt.param,
@@ -6002,7 +6063,6 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       )
     }
     case 'traverseEach': {
-      if (!recognizeThree) return rawJSBlock(stmt)
       // `objeto.traverse((parte) => { … })` — o objeto vem no soquete OBJ.
       const obj = exprToValueBlock(stmt.object)
       if (!obj) return rawJSBlock(stmt)
@@ -6055,8 +6115,10 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         : rawJSBlock(stmt)
     }
     case 'rendererConfig':
-      // Forward-only: só chega aqui via block→IR→block (o parser não reconstrói o nó);
-      // remonta os dropdowns. Do CÓDIGO, as linhas voltam como blocos genéricos.
+      // Nó semântico: o gerador o envolve num marcador versionado (canvas3dMacroCodec),
+      // então o parser o RECONSTITUI do código (marcador intacto) — este case remonta o
+      // bloco tanto no block→IR→block quanto no código→IR→block. Só decai para os blocos
+      // genéricos (memberSet/memberCall) se o aluno editar a receita e quebrar o checksum.
       return block(
         'sz_t3d_renderer_config',
         {
@@ -6106,8 +6168,9 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         : rawJSBlock(stmt)
     }
     case 'bloomSetup': {
-      // Macro Brilho (forward-only): só chega aqui via block→IR→block. Do CÓDIGO, a
-      // esteira volta como blocos primitivos (new EffectComposer/addPass/…).
+      // Macro Brilho (nó semântico — ver rendererConfig): reconstituído do marcador
+      // versionado; decai para os primitivos (new EffectComposer/addPass/…) só se o
+      // aluno editar a receita expandida e quebrar o checksum.
       const vs = valueSocketsOf([
         ['STRENGTH', stmt.strength],
         ['RADIUS', stmt.radius],
@@ -6123,8 +6186,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       )
     }
     case 'particlesSetup': {
-      // Macro Partículas (forward-only): só chega aqui via block→IR→block. Do CÓDIGO,
-      // vira os blocos primitivos (BufferGeometry/Points/laço).
+      // Macro Partículas (nó semântico — ver rendererConfig): reconstituído do marcador;
+      // decai para os primitivos (BufferGeometry/Points/laço) só se a receita for editada.
       const vs = valueSocketsOf([
         ['COUNT', stmt.count],
         ['SIZE', stmt.size],
@@ -6141,7 +6204,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
       )
     }
     case 'waterSetup': {
-      // Macro Água (forward-only): só chega aqui via block→IR→block.
+      // Macro Água (nó semântico — ver rendererConfig): reconstituído do marcador;
+      // decai para os primitivos só se a receita for editada.
       const vs = valueSocketsOf([
         ['SIZE', stmt.size],
         ['COLOR', stmt.color],
@@ -6156,7 +6220,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         : rawJSBlock(stmt)
     }
     case 'grassSetup': {
-      // Macro Grama (forward-only): só chega aqui via block→IR→block.
+      // Macro Grama (nó semântico — ver rendererConfig): reconstituído do marcador;
+      // decai para os primitivos só se a receita for editada.
       const vs = valueSocketsOf([
         ['COUNT', stmt.count],
         ['SIZE', stmt.size],
@@ -6173,7 +6238,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
         : rawJSBlock(stmt)
     }
     case 'signSetup': {
-      // Macro Letreiro (forward-only): só chega aqui via block→IR→block.
+      // Macro Letreiro (nó semântico — ver rendererConfig): reconstituído do marcador;
+      // decai para os primitivos só se a receita for editada.
       const vs = valueSocketsOf([
         ['SIZE', stmt.size],
         ['COLOR', stmt.color],
@@ -7461,19 +7527,22 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       // Com namespace (`new THREE.X()`) OU classe de ADDON sob three (`new
       // GLTFLoader()`) → o bloco Canvas 3D (CLASS = referência completa); senão → o
       // bloco genérico de classe do aluno.
-      const t3dNamed =
-        !!expr.namespace ||
-        (recognizeThree &&
-          (CANVAS3D_ADDON_CLASSES.has(expr.className) || canvas3dImportedNames.has(expr.className)))
+      const t3dNamed = isCanvas3DConstructor(expr.namespace, expr.className)
       const b = t3dNamed
         ? block(
             'sz_t3d_new',
-            { CLASS: expr.namespace ? `${expr.namespace}.${expr.className}` : expr.className },
+            { CLASS: constructorReference(expr.namespace, expr.className) },
             {},
             expr.__id,
             valueInputs,
           )
-        : block('sz_val_new', { CLASS: expr.className }, {}, expr.__id, valueInputs)
+        : block(
+            'sz_val_new',
+            { CLASS: constructorReference(expr.namespace, expr.className) },
+            {},
+            expr.__id,
+            valueInputs,
+          )
       if (expr.args.length > 0) b.extraState = { items: expr.args.length }
       return b
     }

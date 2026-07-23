@@ -929,4 +929,212 @@ describe('Mundo 3D — playthrough (o mundo joga na bancada)', () => {
     releaseKey('w', 'KeyW')
     expect(api.carPos('z')).toBeLessThan(13.2)
   })
+
+  // ---- Full review 2026-07-23: sistemas que ficaram presos ao carrinho ----
+  // A R15/R21 unificou câmera/grama/festa/árbitro do E no JOGADOR ATIVO
+  // (focusState/playerXZ). Estes quatro ficaram para trás, medindo do carState
+  // — quebrados a pé / de barco (mundos sem carrinho). Um teste por achado.
+
+  it('R-A1 (review): say() posiciona o balão sobre o jogador a pé (mundo sem carrinho)', async () => {
+    const { api, step } = await loadStartedWorld((a) => {
+      ;(a as unknown as { person(c: string, h: string): void }).person('#3b82f6', 'nenhum')
+    })
+    step(3)
+    api.say('Oi', 3)
+    step(2)
+    // Sem carrinho, o stepSay antigo dava return em !carState e NUNCA escrevia
+    // left/top — o balão aparecia mas ficava preso no canto. Com playerXZ ele é
+    // projetado e posicionado (rect 0 no happy-dom → '0px', mas ≠ '').
+    const bubble = Array.from(document.querySelectorAll('#szw3d-stage div')).find(
+      (d) => d.textContent === 'Oi',
+    ) as HTMLElement | undefined
+    expect(bubble).toBeTruthy()
+    expect(bubble?.style.left).not.toBe('')
+  })
+
+  it('R-A2 (review): a neve nasce em volta do jogador a pé (não na origem do carro ausente)', async () => {
+    const { api, renderers, step } = await loadStartedWorld((a) => {
+      ;(a as unknown as { person(c: string, h: string): void }).person('#3b82f6', 'nenhum')
+    })
+    const w2 = api as unknown as { personPos(a: string): number }
+    pressKey('w', 'KeyW')
+    step(100)
+    releaseKey('w', 'KeyW')
+    step(2)
+    const px = w2.personPos('x')
+    const pz = w2.personPos('z')
+    expect(Math.hypot(px, pz)).toBeGreaterThan(6)
+    api.weather('neve')
+    step(3)
+    const centroids: Array<{ x: number; z: number }> = []
+    renderers[0]?.scene?.traverse((o) => {
+      const pts = o as unknown as {
+        isPoints?: boolean
+        geometry?: { attributes?: { position?: { array: ArrayLike<number>; count: number } } }
+      }
+      const pos = pts.isPoints ? pts.geometry?.attributes?.position : undefined
+      if (!pos) return
+      if (!pos.count) return
+      let sx = 0
+      let sz = 0
+      for (let i = 0; i < pos.count; i++) {
+        sx += pos.array[i * 3] ?? 0
+        sz += pos.array[i * 3 + 2] ?? 0
+      }
+      centroids.push({ x: sx / pos.count, z: sz / pos.count })
+    })
+    // Com o bug, o centro é a origem (carState nulo → 0,0); com o fix, o jogador.
+    const nearPlayer = centroids.some((c) => Math.hypot(c.x - px, c.z - pz) < Math.hypot(c.x, c.z))
+    expect(nearPlayer).toBe(true)
+  })
+
+  it('R-A3 (review): o sol/sombra acompanha o jogador a pé (não fica no carro ausente)', async () => {
+    const { api, renderers, step } = await loadStartedWorld((a) => {
+      ;(a as unknown as { person(c: string, h: string): void }).person('#3b82f6', 'nenhum')
+    })
+    const w2 = api as unknown as { personPos(a: string): number }
+    const sun = findMesh(
+      renderers[0]?.scene ?? null,
+      (o) =>
+        !!(o as unknown as { isDirectionalLight?: boolean; castShadow?: boolean })
+          .isDirectionalLight && !!(o as unknown as { castShadow?: boolean }).castShadow,
+    ) as unknown as { position: { x: number; z: number } } | null
+    expect(sun).toBeTruthy()
+    const sunX0 = sun?.position.x ?? 0
+    const sunZ0 = sun?.position.z ?? 0
+    pressKey('w', 'KeyW')
+    step(100)
+    releaseKey('w', 'KeyW')
+    step(2)
+    expect(Math.hypot(w2.personPos('x'), w2.personPos('z'))).toBeGreaterThan(6)
+    // Com o bug (updateSun usa carState ausente), o sol fica parado; com o fix,
+    // segue o jogador (posição = jogador + offset fixo).
+    const moved = Math.hypot((sun?.position.x ?? 0) - sunX0, (sun?.position.z ?? 0) - sunZ0)
+    expect(moved).toBeGreaterThan(0.5)
+  })
+
+  it('R-A4 (review): dirigindo perto de um amigo, E fala e NÃO desce do carro', async () => {
+    let falou = 0
+    const { api, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      const w = a as unknown as {
+        person(c: string, h: string): void
+        npc(n: string, x: number, z: number, c: string, h: string): void
+        npcTalk(n: string, fn: () => void): void
+      }
+      w.person('#3b82f6', 'bone')
+      w.npc('Lia', 40, 40, '#f97316', 'palha')
+      w.npcTalk('Lia', () => {
+        falou++
+      })
+    })
+    const w2 = api as unknown as {
+      isDriving(): boolean
+      personPlace(x: number, z: number, d: number): void
+    }
+    // Entra no carrinho (E vence pela prioridade 2 do "E: entrar").
+    w2.personPlace(api.carPos('x') + 1.5, api.carPos('z'), 0)
+    step(2)
+    pressKey('e', 'KeyE')
+    step(2)
+    releaseKey('e', 'KeyE')
+    expect(w2.isDriving()).toBe(true)
+    // Leva o carro para ao lado da Lia (1,5 m < raio 2,6 do "E: falar").
+    api.carPlace(38.5, 40, 0)
+    step(3)
+    pressKey('e', 'KeyE')
+    step(2)
+    releaseKey('e', 'KeyE')
+    // O árbitro do E fala com a Lia; o "descer" NÃO rouba o mesmo aperto.
+    expect(falou).toBe(1)
+    expect(w2.isDriving()).toBe(true)
+  })
+
+  // ---- Full review 2026-07-23: cobertura de sistemas que só tinham smoke ----
+  // Kit Corrida, Boliche, pontos/zonas e barco só eram validados por schema
+  // (nunca RODAVAM). Estes exercícios fecham a lacuna fim-a-fim.
+
+  it('R-B1 (review): o barco pilotado na água anda (a câmera acompanha o barco)', async () => {
+    const { api, renderers, step } = await loadStartedWorld((a) => {
+      const w = a as unknown as { islands(n: number, y: number): void; boat(c: string): void }
+      w.islands(4, 0)
+      w.boat('#f8fafc')
+    })
+    step(3)
+    expect((api as unknown as { isDriving(): boolean }).isDriving()).toBe(true)
+    const cam = renderers[0]?.camera
+    expect(cam).toBeTruthy()
+    const cam0 = cam?.position.clone()
+    pressKey('w', 'KeyW')
+    step(80)
+    releaseKey('w', 'KeyW')
+    // Sem getter público de barco, a câmera (que segue o focusState=barco) é a
+    // prova: se o barco não andasse, a câmera ficaria parada.
+    const moved = cam0 ? (cam?.position.distanceTo(cam0) ?? 0) : 0
+    expect(moved).toBeGreaterThan(1.5)
+  })
+
+  it('R-B2 (review): a corrida corre fim-a-fim — larga, cruza o checkpoint e o gancho de fim dispara', async () => {
+    let finished = 0
+    const { api, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+    })
+    api.raceCreate(0, 0, 0, 1)
+    api.raceCheckpoint(0, 15)
+    api.raceOnFinish(() => {
+      finished++
+    })
+    // Arma a largada (afasta), volta à largada (começa), cruza o checkpoint (fim).
+    api.carPlace(0, 30, 0)
+    step(2)
+    api.carPlace(0, 0, 0)
+    step(2)
+    expect(api.raceTime()).toBeGreaterThanOrEqual(0)
+    api.carPlace(0, 15, 0)
+    step(3)
+    expect(finished).toBe(1)
+    expect(api.raceTime()).toBeGreaterThan(0)
+    expect(api.raceBest()).toBeGreaterThan(0)
+  })
+
+  it('R-B3 (review): dirigir o carro contra os pinos derruba pelo menos um', async () => {
+    const { api, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+    })
+    ;(api as unknown as { bowlingCreate(x: number, z: number): void }).bowlingCreate(0, 11)
+    step(2)
+    // Carro com pista de 6 m, olhando +z (deg 0), acelera contra o triângulo.
+    api.carPlace(0, 5, 0)
+    pressKey('w', 'KeyW')
+    step(90)
+    releaseKey('w', 'KeyW')
+    expect(api.pinsDown()).toBeGreaterThan(0)
+  })
+
+  it('R-B4 (review): ponto + E dispara onPoint; entrar numa zona dispara onZone', async () => {
+    let pontoN = 0
+    let zonaN = 0
+    const { api, step } = await loadStartedWorld((a) => {
+      a.car('passeio', '#ef4444')
+      a.point('casa', 6, 0)
+      a.onPoint('casa', () => {
+        pontoN++
+      })
+      a.zone('jardim', 22, 0, 4)
+      a.onZone('jardim', () => {
+        zonaN++
+      })
+    })
+    // Ponto: chega em cima (raio 4) e aperta E.
+    api.carPlace(6, 0, 0)
+    step(2)
+    pressKey('e', 'KeyE')
+    step(2)
+    releaseKey('e', 'KeyE')
+    expect(pontoN).toBe(1)
+    // Zona: entra dirigindo (dispara na ENTRADA, uma vez).
+    api.carPlace(22, 0, 0)
+    step(3)
+    expect(zonaN).toBe(1)
+  })
 })

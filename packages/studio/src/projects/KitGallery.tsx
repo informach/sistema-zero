@@ -38,6 +38,7 @@ const EXPERIENCE_BADGE_CLASS: Record<ExampleExperience, string> = {
 
 /** Emoji decorativo por nome de exemplo (novo/renomeado cai no controle 🎮). */
 const KIT_EMOJI: Record<string, string> = {
+  'Pegue a moeda': '💰',
   'Pong simples': '🏓',
   'Herói que anda': '🏃',
   'Mini plataforma': '🦘',
@@ -58,6 +59,7 @@ const KIT_EMOJI: Record<string, string> = {
   'Quadra Maluca': '🏀',
   'Guardião do Portal': '🌀',
   'Tiro ao Alvo': '🎯',
+  'O Chefão das Sombras': '🌑',
   'Vila do Dragão': '👑',
   'Floresta Ninja': '🥷',
   'Salto na Floresta': '🌳',

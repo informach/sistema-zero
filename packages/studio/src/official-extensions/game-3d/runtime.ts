@@ -72,12 +72,29 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   function clearKeys() { keys = {}; }
   function keyDown(code) { return !!keys[code]; }
 
-  function listen(world, target, name, handler, options) {
+  function listen(world, target, name, handler, options, owner) {
     if (!target || !target.addEventListener) return;
     target.addEventListener(name, handler, options);
     if (!world) return;
     if (!world._listeners) world._listeners = [];
-    world._listeners.push({ target: target, name: name, handler: handler, options: options });
+    world._listeners.push({
+      target: target,
+      name: name,
+      handler: handler,
+      options: options,
+      owner: owner || null
+    });
+  }
+  function removeObjectListeners(world, objects) {
+    var entries = world && world._listeners ? world._listeners : [];
+    for (var i = entries.length - 1; i >= 0; i--) {
+      var entry = entries[i];
+      if (!entry.owner || objects.indexOf(entry.owner) === -1) continue;
+      if (entry.target && entry.target.removeEventListener) {
+        try { entry.target.removeEventListener(entry.name, entry.handler, entry.options); } catch (e) {}
+      }
+      entries.splice(i, 1);
+    }
   }
   function removeWorldListeners(world) {
     var entries = world && world._listeners ? world._listeners : [];
@@ -256,6 +273,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   function unregisterObjectTree(world, root) {
     if (!world || !root) return;
     var nodes = objectTree(root);
+    removeObjectListeners(world, nodes);
     for (var i = 0; i < nodes.length; i++) {
       var node = nodes[i];
       removeFromArray(world._objects, node);
@@ -453,7 +471,12 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   }
 
   function setBackground(world, color) {
-    if (world && world.scene) world.scene.background = new THREE.Color(color);
+    if (!world || !world.scene) return;
+    // Se havia um céu (a CanvasTexture de degradê do setSky), descarta antes de
+    // trocar pela cor sólida — senão a textura vaza na GPU até o dispose do mundo.
+    var old = world.scene.background;
+    if (old && old.isTexture && old.dispose) try { old.dispose(); } catch (e) {}
+    world.scene.background = new THREE.Color(color);
   }
 
   function setCameraPosition(world, x, y, z) {
@@ -687,12 +710,20 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       var top = ground.position.y + halfY(ground, gs);
       var bottomBefore = previousY - halfY(obj, s);
       if (bottomBefore >= top - Math.max(0.1, Math.abs(s.vy * scale))) {
+        // Veio de cima: pousa apoiado no topo do chão.
         obj.position.y = top + halfY(obj, s);
+        s.grounded = true;
+        s.vy = 0;
       } else {
+        // Penetrou de lado (parede) ou por baixo: separa pelo menor eixo. Só
+        // conta como "chão" (e libera o pulo) quando a separação deixou o objeto
+        // APOIADO no topo. Encostar na lateral não pode virar pulo de parede.
         resolveAABB(obj, ground);
+        if (obj.position.y - halfY(obj, s) >= top - 0.001) {
+          s.grounded = true;
+          s.vy = 0;
+        }
       }
-      s.grounded = true;
-      s.vy = 0;
     }
   }
 
@@ -1437,6 +1468,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       world._orbitTarget = null;
       if (world._orbit) world._orbit.dragging = false;
     }
+    if (mode !== 'isometric' && mode !== 'top') world._orthoFollow = null;
     if (previous === 'fps' && mode !== 'fps' && document &&
         document.pointerLockElement === world._canvas && document.exitPointerLock) {
       try { document.exitPointerLock(); } catch (e) {}
@@ -1565,14 +1597,24 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   }
   function setFOV(world, deg) {
     if (!world || !world.camera) return;
-    if (typeof world.camera.fov === 'number') {
-      world.camera.fov = clamp(deg, 10, 120, 60);
-      if (world.camera.updateProjectionMatrix) world.camera.updateProjectionMatrix();
+    var cam = world.camera;
+    if (typeof cam.fov === 'number') {
+      cam.fov = clamp(deg, 10, 120, 60);
+      if (cam.updateProjectionMatrix) cam.updateProjectionMatrix();
+    } else if (typeof cam.zoom === 'number') {
+      // Câmera ortográfica (isométrica/aérea) não tem FOV. "Lente" vira zoom:
+      // 60 = normal, 30 = aproxima 2x (luneta), 120 = afasta. Antes era um no-op
+      // silencioso e o bloco "Lente" não fazia nada nessas câmeras.
+      cam.zoom = clamp(60 / clamp(deg, 10, 120, 60), 0.5, 6, 1);
+      if (cam.updateProjectionMatrix) cam.updateProjectionMatrix();
     }
   }
   function _updateCameras(world) {
     if (world._cameraMode === 'orbit') updateOrbit(world);
     else if (world._cameraMode === 'third-person') updateThirdPerson(world);
+    else if ((world._cameraMode === 'isometric' || world._cameraMode === 'top') && world._orthoFollow) {
+      updateOrthoFollow(world);
+    }
   }
 
   function animate(world, fn) {
@@ -1599,7 +1641,9 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
             console.error('SZGame3D: erro em um bloco de animação. Esse bloco foi pausado:', callbackError);
             removeFromArray(world._animationCallbacks, callbacks[i]);
           }
+          if (!world._animationLoopInstalled) return;
         }
+        if (!world._animationLoopInstalled) return;
         _updateCameras(world);
         world.renderer.render(world.scene, world.camera);
       } catch (e) {
@@ -1815,7 +1859,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
         : e.code === 'ArrowRight' ? 'right'
         : null;
       if (dir) { if (e.preventDefault) e.preventDefault(); enqueueMove(obj, dir, world); }
-    });
+    }, undefined, obj);
   }
 
   /** Anima um passo em grade (lerp + saltinho + giro). Devolve true ao COMPLETAR. */
@@ -1877,13 +1921,33 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       camera = factory(world._canvas);
       camera.userData = camera.userData || {};
       camera.userData.szCameraKind = kind;
+      // Guarda o deslocamento do molde (a posição inicial já é o offset em relação
+      // ao alvo) para o "seguir" recompor a posição a cada quadro SEM parentear —
+      // parentear herdaria a ROTAÇÃO do alvo e giraria a vista junto com ele.
+      camera.userData.szCamOffset = {
+        x: camera.position ? camera.position.x : 0,
+        y: camera.position ? camera.position.y : 0,
+        z: camera.position ? camera.position.z : 0
+      };
     }
     world.camera = camera;
     world._resizeCamera = resizeCamera;
-    var parent = followObj && followObj.add ? followObj : world.scene;
-    if (camera.parent !== parent) parent.add(camera);
+    // A câmera ortográfica fica SEMPRE na cena (nunca filha do alvo): quem segue
+    // é o _updateCameras, copiando só a POSIÇÃO do alvo (nunca a rotação).
+    attachCameraToScene(world);
+    world._orthoFollow = followObj || null;
+    if (world._orthoFollow) updateOrthoFollow(world);
     if (world._resize) world._resize();
     return camera;
+  }
+  /** Recoloca a câmera ortográfica "que segue": posição do alvo + offset do molde. */
+  function updateOrthoFollow(world) {
+    var target = world._orthoFollow;
+    var cam = world.camera;
+    if (!target || !target.position || !cam || !cam.position) return;
+    var off = (cam.userData && cam.userData.szCamOffset) || { x: 0, y: 0, z: 0 };
+    cam.position.set(target.position.x + off.x, target.position.y + off.y, target.position.z + off.z);
+    if (cam.lookAt) cam.lookAt(target.position.x, target.position.y, target.position.z);
   }
   function isometricCamera(world, followObj) {
     installOrthographicCamera(world, 'isometric', followObj, makeYUpIsoCamera, resizeIsoCamera);
@@ -2219,12 +2283,24 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     if (!belongsToWorld(world, obj, 'crosser-hit-world', 'Verificar uma batida na travessia')) return false;
     if (cs.gameOver) return true;
     var g = gridData(obj);
-    var meta = cs.rowByIndex[g.row];
-    if (!meta || (meta.type !== 'car' && meta.type !== 'truck')) return false;
     var pb = boxOf(obj);
-    for (var i = 0; i < meta.vehicles.length; i++) {
-      var ref = meta.vehicles[i] && meta.vehicles[i].ref;
-      if (ref && pb.intersectsBox(boxOf(ref))) { cs.gameOver = true; return true; }
+    // Durante o pulo (hop) o boneco já se moveu para a faixa de destino, mas
+    // g.row só avança quando o passo TERMINA (ver animateStep). Checar apenas
+    // g.row deixaria o personagem ATRAVESSAR o carro ileso durante a animação.
+    // Então, enquanto anda, testamos também a linha de destino do passo em curso.
+    var rows = [g.row];
+    if (g.moving && g.queue.length) {
+      var dir = g.queue[0];
+      if (dir === 'forward') rows.push(g.row + 1);
+      else if (dir === 'backward') rows.push(g.row - 1);
+    }
+    for (var r = 0; r < rows.length; r++) {
+      var meta = cs.rowByIndex[rows[r]];
+      if (!meta || (meta.type !== 'car' && meta.type !== 'truck')) continue;
+      for (var i = 0; i < meta.vehicles.length; i++) {
+        var ref = meta.vehicles[i] && meta.vehicles[i].ref;
+        if (ref && pb.intersectsBox(boxOf(ref))) { cs.gameOver = true; return true; }
+      }
     }
     return false;
   }
@@ -2710,13 +2786,23 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     createStackTower(world);
   }
 
+  function handlePageHide(event) {
+    // Uma página guardada no bfcache volta com o mesmo contexto JavaScript.
+    // Descartar o WebGL aqui deixaria a cena perdida ao navegar de volta.
+    if (event && event.persisted) {
+      clearKeys();
+      return;
+    }
+    disposeAll();
+  }
+
   // Auto-registro: não dependemos de GC preguiçoso nem de o host chamar dispose.
-  // pagehide cobre o caso moderno (inclui bfcache); beforeunload é o fallback.
+  // pagehide definitivo e beforeunload liberam GPU, áudio e listeners.
   if (typeof window !== 'undefined' && window.addEventListener) {
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
     window.addEventListener('blur', clearKeys);
-    window.addEventListener('pagehide', disposeAll);
+    window.addEventListener('pagehide', handlePageHide);
     window.addEventListener('beforeunload', disposeAll);
   }
   if (typeof document !== 'undefined' && document.addEventListener) {

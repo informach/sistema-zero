@@ -9,6 +9,9 @@ export interface Canvas3DAddonGroup {
   items: readonly Canvas3DAddon[]
 }
 
+/** Valor de UI que pede ao Studio para resolver o módulo pelo catálogo. */
+export const CANVAS3D_AUTO_ADDON_MODULE = 'automático'
+
 /**
  * Catálogo completo para compatibilidade de parser e projetos salvos. O picker
  * usa somente as entradas suportadas pelo sandbox do Studio.
@@ -48,7 +51,9 @@ export const CANVAS3D_ADDON_GROUPS: readonly Canvas3DAddonGroup[] = [
       {
         name: 'PointerLockControls',
         module: 'three/addons/controls/PointerLockControls.js',
-        preview: 'unavailable',
+        // O sandbox do preview ganhou `allow-pointer-lock` (PreviewIframe/StudioProjectPlayer),
+        // então o modo FPS com `requestPointerLock` roda no preview — oferecido no picker.
+        preview: 'supported',
       },
     ],
   },
@@ -126,6 +131,42 @@ export const CANVAS3D_ADDON_CLASSES: ReadonlySet<string> = new Set(
 export const CANVAS3D_STUDIO_ADDON_NAMES: readonly string[] = CANVAS3D_STUDIO_ADDON_GROUPS.flatMap(
   (group) => group.items.map((item) => item.name),
 )
+
+export interface Canvas3DResolvedAddonImport {
+  names: string[]
+  module: string
+}
+
+/**
+ * Resolve os nomes conhecidos pelo módulo real e preserva nomes livres no caminho
+ * manual informado. Addons de arquivos diferentes não podem compartilhar uma
+ * declaração import, inclusive quando a Ponte trouxe um caminho explícito.
+ */
+export function resolveCanvas3DAddonImports(
+  names: readonly string[],
+  selectedModule: string,
+): Canvas3DResolvedAddonImport[] | null {
+  const grouped = new Map<string, string[]>()
+  for (const rawName of names) {
+    const name = rawName.trim()
+    if (!name) continue
+    const module = CANVAS3D_ADDON_MODULES[name] ?? selectedModule
+    if (!module || module === CANVAS3D_AUTO_ADDON_MODULE) return null
+    const moduleNames = grouped.get(module) ?? []
+    moduleNames.push(name)
+    grouped.set(module, moduleNames)
+  }
+  if (grouped.size === 0) return null
+  return Array.from(grouped, ([module, moduleNames]) => ({ names: moduleNames, module }))
+}
+
+/** Um import estruturado não pode ligar um nome conhecido a outro arquivo. */
+export function isCanvas3DAddonImportCanonical(names: readonly string[], module: string): boolean {
+  return names.every((rawName) => {
+    const canonicalModule = CANVAS3D_ADDON_MODULES[rawName.trim()]
+    return !canonicalModule || canonicalModule === module
+  })
+}
 
 export function canvas3DAddonImport(name: string): { name: string; module: string } {
   const module = CANVAS3D_ADDON_MODULES[name]

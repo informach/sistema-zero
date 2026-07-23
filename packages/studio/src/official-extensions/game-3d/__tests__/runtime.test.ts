@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+import { GAME_3D_LIFECYCLE } from '#extensions'
 import { gameThreeDRuntime } from '../runtime'
 
 // O runtime é um SCRIPT MODULE (começa com `import * as THREE from 'three'`).
@@ -41,7 +42,7 @@ interface SZGame3DSurface {
 
 interface LoadedRuntime {
   api: SZGame3DSurface
-  fireEvent: (name: string) => void
+  fireEvent: (name: string, event?: Record<string, unknown>) => void
   listenerCount: (name: string) => number
   geometries: FakeGeometry[]
 }
@@ -151,8 +152,8 @@ function loadRuntime(getElementById?: (id: string) => unknown): LoadedRuntime {
 
   return {
     api: (win as unknown as { SZGame3D: SZGame3DSurface }).SZGame3D,
-    fireEvent: (name: string) => {
-      for (const fn of listeners[name] ?? []) fn({})
+    fireEvent: (name: string, event = {}) => {
+      for (const fn of listeners[name] ?? []) fn(event)
     },
     listenerCount: (name: string) => (listeners[name] ?? []).length,
     geometries,
@@ -200,18 +201,27 @@ describe('gameThreeDRuntime — higiene de GPU', () => {
     expect(listenerCount('beforeunload')).toBe(1)
   })
 
-  it('pagehide descarta TODOS os mundos vivos liberando o contexto WebGL', () => {
+  it('pagehide persistido preserva os mundos para a volta pelo histórico', () => {
+    const { api, fireEvent } = loadRuntime()
+    const world = api.createScene('tela')
+
+    fireEvent('pagehide', { persisted: true })
+
+    expect(world.renderer.forceContextLossCalls).toBe(0)
+  })
+
+  it('pagehide definitivo descarta TODOS os mundos vivos liberando o contexto WebGL', () => {
     const { api, fireEvent } = loadRuntime()
     const a = api.createScene('tela-a')
     const b = api.createScene('tela-b')
 
-    fireEvent('pagehide')
+    fireEvent('pagehide', { persisted: false })
 
     expect(a.renderer.forceContextLossCalls).toBe(1)
     expect(b.renderer.forceContextLossCalls).toBe(1)
 
     // Já descartados pelo pagehide: um segundo pagehide não redescarta.
-    fireEvent('pagehide')
+    fireEvent('pagehide', { persisted: false })
     expect(a.renderer.forceContextLossCalls).toBe(1)
     expect(b.renderer.forceContextLossCalls).toBe(1)
   })
@@ -354,5 +364,24 @@ describe('gameThreeDRuntime — teto de objetos (anti-vazamento de GPU)', () => 
     for (let i = 0; i < 300; i++) api.createBox(world)
     const overflow = api.createBox(world)
     expect(() => api.setPosition(overflow, 1, 2, 3)).not.toThrow()
+  })
+
+  // R3 (full review): o teardown do 3D é por dispose no pagehide (full-reload),
+  // NÃO managedProjectRun (padrão só do Jogo 2D). O `disposeMethod` do contrato
+  // é METADADO descritivo — o preview nunca o invoca; quem dispara é o próprio
+  // runtime no pagehide. Este teste amarra as duas pontas e trava o drift do nome.
+  it('R3: o disposeMethod do contrato nomeia o auto-dispose real disparado no pagehide', () => {
+    const { api, fireEvent } = loadRuntime()
+    // O contrato NOMEIA o auto-dispose real: aqui provamos que o nome é o método
+    // tipado api.disposeAll (trava o drift se alguém renomear um sem o outro).
+    expect(GAME_3D_LIFECYCLE.disposeMethod).toBe('disposeAll')
+    // (1) o método nomeado existe e descarta o mundo (libera o contexto WebGL).
+    const a = api.createScene('tela-a')
+    api.disposeAll()
+    expect(a.renderer.forceContextLossCalls).toBe(1)
+    // (2) o pagehide — o caminho REAL de teardown — dispara o mesmo auto-dispose.
+    const b = api.createScene('tela-b')
+    fireEvent('pagehide')
+    expect(b.renderer.forceContextLossCalls).toBe(1)
   })
 })

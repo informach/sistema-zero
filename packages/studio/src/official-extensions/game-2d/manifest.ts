@@ -5,6 +5,7 @@ import {
   asteroidsExample,
   balloonExample,
   cameraAdventureExample,
+  catchCoinExample,
   codeDrawnExample,
   dinoRunExample,
   enemyPlatformerExample,
@@ -20,7 +21,7 @@ import { withGameTwoDLifecycleGuidance } from './pedagogy'
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.37.10',
+  version: '0.38.1',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, vidas automáticas em corações ou barra, colisões, mapas, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
@@ -45,10 +46,12 @@ blocos de Canvas continuam sendo respeitadas.
 - [[G2D_LIFECYCLE_LOOP]]
 
 Esses são os destinos no projeto. Na paleta, os blocos ficam organizados pelo que
-fazem: **🎛️ Controles** reúne teclado e clique/toque; **💥 Colisões** reúne contato
-entre sprites e grupos; **⏱️ Tempo e repetição** reúne os três “A cada…”, recarga e
-tempo de vida. Assim você procura pelo assunto e usa as aulas para aprender em
-qual área colocar cada bloco.
+fazem: **🎮 Sprites** reúne criar e desenhar os personagens; **📐 Posição & tamanho**
+e **💨 Velocidade** reúnem os bloquinhos de VALOR que leem onde o sprite está e o quão
+rápido ele vai; **🎛️ Controles** reúne teclado e clique/toque; **💥 Colisões** reúne
+contato entre sprites e grupos; **⏱️ Tempo e repetição** reúne os três “A cada…”, recarga
+e tempo de vida; **🏆 Placar e HUD** reúne pontos, textos e barras na tela. Assim você
+procura pelo assunto e usa as aulas para aprender em qual área colocar cada bloco.
 
 - **Preparar o jogo em tela cheia**. Atalho para começar: prepara a tela (largura × altura) ocupando a janela, responsiva (mantém a proporção e redimensiona sozinha), **centralizada**, com uma **cor de fundo** que combina com o jogo (vai no canvas e na sobra ao redor). Não precisa criar o canvas no HTML. Os blocos individuais continuam disponíveis para montar na mão.
 - **Preparar o jogo para ocupar a tela toda**. Como o de cima, mas **sem dimensões**: o canvas preenche a tela INTEIRA (sem barras nas laterais) e a área do jogo **acompanha** o tamanho da janela. A resolução do jogo passa a ser o tamanho da tela. Aqui "a largura/altura da tela" mudam com a janela, então centralize por eles (não por números fixos). Combine com "entrar em tela cheia" para o jogo tomar o monitor todo. Use UM dos dois "Preparar", no começo.
@@ -68,7 +71,9 @@ existe apenas para migrar projetos salvos e não aparece na paleta.
 
 ### Faça o jogo reagir
 
-- **Definir gravidade** / **Aplicar velocidade**. Integra vx/vy e soma a gravidade.
+- **Definir gravidade** / **Aplicar velocidade**. Integra vx/vy e soma uma gravidade
+  explícita e finita. Zero desliga; valores negativos puxam para cima. Plataforma,
+  pulo no chão e inimigos terrestres respeitam o mesmo valor.
 - **Ricochetear nas bordas**. Quica o sprite nas bordas do canvas.
 - **Colisão por círculo**. Colisão mais justa para objetos redondos.
 - **Tocar som**. Bip sintetizado via Web Audio (sem arquivos). Permissão \`audio\`.
@@ -92,7 +97,9 @@ pronta. Se o nome não existir ou a carga falhar, o sprite usa um retângulo da 
 
 Use estes blocos dentro do **"A cada quadro do jogo"**:
 
-- **Plataforma**. Esquerda/direita + pulo com gravidade (chão = base da tela).
+- **Plataforma**. Esquerda/direita + pulo com gravidade. O chão é a borda para a qual
+  a gravidade puxa: base com gravidade positiva e teto com gravidade negativa. Usa
+  a gravidade do mundo quando definida; sem o bloco, mantém o padrão 0,6.
 - **4 direções (top-down)**. Anda nas 4 direções; a diagonal não fica mais rápida.
 - **Seguir o ponteiro**. O sprite persegue o mouse/dedo.
 - **Manter dentro da tela**. Gruda nas bordas em vez de sumir.
@@ -192,8 +199,9 @@ Para começar rápido, o bloco **Preparar o jogo em tela cheia** (no grupo ✨ A
 
 Para jogos de **corrida** (estilo "Dino Run"), em que o personagem não anda para os lados, só pula e abaixa:
 
-- **Fazer o sprite pular no chão** (genérico, em Movimento). Gravidade + pouso na base da tela + pulo
-  com ↑/Espaço/W ou um toque. Serve a qualquer jogo de pulo.
+- **Fazer o sprite pular no chão** (genérico, em Movimento). Gravidade + pouso na borda
+  atraída (base com gravidade positiva, teto com gravidade negativa) + pulo com
+  ↑/Espaço/W ou um toque. Serve a qualquer jogo de pulo.
 - A categoria **🦕 Kit dino** reúne atalhos PRONTOS: **criar dinossauro** (desenhado, com perninhas que
   correm sozinhas), **controlar o dinossauro** (pula e abaixa, com gravidade/chão/poeira já embutidos),
   **criar obstáculo no grupo** (cacto/pedra no chão para pular, pássaro no alto para abaixar, ou sorteado),
@@ -323,6 +331,17 @@ mão. Em vez de \`x + largura / 2\`, ela encaixa um bloco pronto:
 - **o centro x / y do sprite**. O MEIO do sprite (já soma metade da largura/altura). Ótimo para atirar,
   mirar ou posicionar uma coisa a partir do centro de outra (ex.: o tiro sai do centro da nave).
 
+### Leia a velocidade do sprite
+
+Bloquinhos de VALOR (na categoria **💨 Velocidade**) para ler o quão rápido o sprite se move, sem a
+criança fazer as contas na mão:
+
+- **a velocidade x / y do sprite**. A velocidade horizontal (vx) e vertical (vy) do sprite.
+- **a velocidade total do sprite**. A rapidez geral do sprite (junta vx e vy), sempre positiva.
+- **o sprite está se movendo?** (e **… na horizontal?** / **… na vertical?**). Perguntas de sim/não para
+  reagir ao movimento, por exemplo tocar a animação de "andando" SÓ quando o sprite está andando, ou virar
+  o personagem só quando ele anda para os lados.
+
 ### Sorteie posições na tela
 
 Na categoria **🎯 Mira e contas**, dois valores para um sprite nascer num lugar SORTEADO sem a criança
@@ -365,6 +384,8 @@ Na categoria **😈 Inimigos**, CLASSES de inimigo prontas (como o Goomba e o Ko
 - **Criar tipo de inimigo**. Defina UMA vez comportamento e atributos (vida, velocidade, dano
   de contato, tamanho, cor OU imagem): patrulha (anda e vira na parede/borda), perseguidor,
   voador (deitado ou em pé), saltador e atirador (fica no chão e atira no alvo).
+  A patrulha fica horizontal em jogos top-down; para ela cair num jogo de plataforma,
+  declare a gravidade do mundo em **Ao iniciar**.
 - **Soltar um inimigo do tipo**. Solte quantos quiser, cada um nasce com a vida/dano do tipo.
 - **Atualizar os inimigos do tipo** (dentro do "a cada quadro"). Move pelo comportamento,
   anima, atira e REMOVE os derrotados (vida 0 → partículas + "Quando for derrotado").
@@ -384,6 +405,7 @@ Na categoria **🎨 Desenho**, faça o visual do sprite com formas, sem imagem n
 - **a largura / a altura da figura**. O tamanho do sprite que está sendo desenhado (para centralizar). Veja o exemplo **"Jogo desenhado por código"**.
 `),
   examples: [
+    catchCoinExample,
     pongExample,
     animatedHeroExample,
     platformerExample,

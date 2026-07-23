@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import { generateJS } from '#generators'
 import type { BehaviorIR } from '#ir'
 import {
+  chefaoDasSombrasExample,
   defesaDaTorreExample,
   guardiaoDoPortalExample,
   parkourDoVulcaoExample,
@@ -315,5 +316,51 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
     }
     expect(api.state()).toBe('vitoria') // 12 pontos antes dos 25 s
     expect(tituloDaTela(stage, 'vitoria')).toBe('Olho de águia!')
+  })
+
+  it('⭐ O Chefão das Sombras: clicar no chefão o derrota nas 3 fases (onHurt + spawnRing + heal)', async () => {
+    const { api, step, stage, renderers } = await loadExampleKit(
+      jsDoExemplo(chefaoDasSombrasExample),
+    )
+    apertarBotaoDe(stage, 'menu') // "Enfrentar"
+    expect(api.state()).toBe('jogando')
+
+    // Os DOIS blocos novos de barra de vida (chefão + herói) sobem.
+    step(2)
+    expect(stage.querySelectorAll('.szg3k-bar').length).toBe(2)
+
+    // Point-and-click no chefão (mesma projeção do Tiro): o chefão fica parado no
+    // centro, então o clique sempre acha. Os i-frames gastam o dano a 1 acerto/
+    // 0,5 s e o onHurt cura 8 duas vezes (as fases), então ~120 quadros vencem.
+    const canvas = stage.querySelector('canvas')
+    if (!canvas) throw new Error('canvas do exemplo não montou')
+    const clicarNoChefao = (): boolean => {
+      const alvo = primeiroVivo(api, 'chefao')
+      const cam = renderers[0]?.camera
+      if (!alvo || !cam) return false
+      const v = new THREE.Vector3(api.posOf(alvo, 'x'), api.posOf(alvo, 'y'), api.posOf(alvo, 'z'))
+      v.project(cam)
+      if (v.z > 1 || Math.abs(v.x) > 0.98 || Math.abs(v.y) > 0.98) return false
+      canvas.dispatchEvent(
+        new PointerEvent('pointerdown', {
+          bubbles: true,
+          clientX: (v.x + 1) / 2,
+          clientY: (1 - v.y) / 2,
+        }),
+      )
+      window.dispatchEvent(new PointerEvent('pointerup'))
+      return true
+    }
+    let viuFaseAvancada = false
+    for (let i = 0; i < 900 && api.state() === 'jogando'; i++) {
+      clicarNoChefao()
+      step(1)
+      const hud = stage.querySelector('.szg3k-hud-top-left')?.textContent ?? ''
+      if (hud.includes('Fase 2') || hud.includes('Fase 3')) viuFaseAvancada = true
+    }
+    expect(api.state()).toBe('vitoria')
+    expect(tituloDaTela(stage, 'vitoria')).toBe('Sombra derrotada!')
+    // Provou que o onHurt trocou de fase lendo a vida DURANTE a luta (não só o fim).
+    expect(viuFaseAvancada).toBe(true)
   })
 })

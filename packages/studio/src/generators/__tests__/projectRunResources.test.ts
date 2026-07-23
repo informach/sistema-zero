@@ -471,7 +471,7 @@ function runPropertyEventRestartScenario(): {
 
 function runRestartScenario(
   target: ProjectLifecycleTarget,
-  restartMethod: 'restart' | 'restartGame',
+  restartMethod: 'restart' | 'restartGame' | 'setStatePlaying',
 ) {
   let nextFrameId = 1
   const frames = new Map<number, FrameRequestCallback>()
@@ -510,19 +510,23 @@ function runRestartScenario(
     restartGame(): void {
       projectFactory?.()
     },
+    setState(state: string): void {
+      if (state === 'jogando') projectFactory?.()
+    },
   }
 
   const code = generateJS({ behavior: BEHAVIOR, lifecycle: target })
   new Function(
     'SZGame2D',
     'SZGameKit',
+    'SZGameKit3D',
     'window',
     'document',
     'requestAnimationFrame',
     'cancelAnimationFrame',
     'console',
     code,
-  )(engine, engine, testWindow, documentTarget, requestFrame, cancelFrame, {
+  )(engine, engine, engine, testWindow, documentTarget, requestFrame, cancelFrame, {
     log: (value: unknown) => logs.push(value),
   })
 
@@ -530,7 +534,8 @@ function runRestartScenario(
   expect(logs).toEqual(['clique'])
   expect(frames.size).toBe(1)
 
-  engine[restartMethod]()
+  if (restartMethod === 'setStatePlaying') engine.setState('jogando')
+  else engine[restartMethod]()
   documentTarget.dispatchEvent(new Event('click'))
 
   expect(logs).toEqual(['clique', 'clique'])
@@ -539,7 +544,7 @@ function runRestartScenario(
 
 function runAllManagedResourcesScenario(
   target: ProjectLifecycleTarget,
-  restartMethod: 'restart' | 'restartGame',
+  restartMethod: 'restart' | 'restartGame' | 'setStatePlaying',
 ): void {
   let nextId = 1
   const frames = new Map<number, FrameRequestCallback>()
@@ -597,12 +602,16 @@ function runAllManagedResourcesScenario(
     restartGame(): void {
       projectFactory?.()
     },
+    setState(state: string): void {
+      if (state === 'jogando') projectFactory?.()
+    },
   }
 
   const code = generateJS({ behavior: ALL_MANAGED_RESOURCES_BEHAVIOR, lifecycle: target })
   new Function(
     'SZGame2D',
     'SZGameKit',
+    'SZGameKit3D',
     'window',
     'document',
     'requestAnimationFrame',
@@ -614,6 +623,7 @@ function runAllManagedResourcesScenario(
     'console',
     code,
   )(
+    engine,
     engine,
     engine,
     testWindow,
@@ -632,7 +642,8 @@ function runAllManagedResourcesScenario(
   expect(timers.size).toBe(5)
   expect(frames.size).toBe(3)
 
-  engine[restartMethod]()
+  if (restartMethod === 'setStatePlaying') engine.setState('jogando')
+  else engine[restartMethod]()
   documentTarget.dispatchEvent(new Event('click'))
 
   expect({ logs, timers: timers.size, frames: frames.size }).toEqual({
@@ -705,6 +716,10 @@ describe('recursos genéricos da execução do projeto', () => {
     runRestartScenario('game-2d-advanced', 'restartGame')
   })
 
+  it('descarta listener e RAF anteriores ao reiniciar Jogo 3D Avançado', () => {
+    runRestartScenario('game-3d-advanced', 'setStatePlaying')
+  })
+
   it('descarta listeners nomeados, timers e RAFs avulsos ao reiniciar Jogo 2D', () => {
     runAllManagedResourcesScenario('game-2d', 'restart')
   })
@@ -713,9 +728,14 @@ describe('recursos genéricos da execução do projeto', () => {
     runAllManagedResourcesScenario('game-2d-advanced', 'restartGame')
   })
 
+  it('descarta listeners nomeados, timers e RAFs avulsos ao reiniciar Jogo 3D Avançado', () => {
+    runAllManagedResourcesScenario('game-3d-advanced', 'setStatePlaying')
+  })
+
   it.each([
     'game-2d',
     'game-2d-advanced',
+    'game-3d-advanced',
   ] as const)('remove somente a infraestrutura gerada no round-trip de %s', (target) => {
     const code = generateJS({ behavior: ALL_MANAGED_RESOURCES_BEHAVIOR, lifecycle: target })
     const reparsed = parseProjectFilesFromParts({

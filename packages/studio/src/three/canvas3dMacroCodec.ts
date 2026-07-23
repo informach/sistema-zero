@@ -6,6 +6,7 @@ const MACRO_END = '/*__SZ_CANVAS3D_END__*/'
 const RUNTIME_PREFIX = '/*__SZ_CANVAS3D_RUNTIME__'
 const RUNTIME_END = '/*__SZ_CANVAS3D_RUNTIME_END__*/'
 const PLACEHOLDER = '__szCanvas3DMacro'
+const MACRO_VERSION = 'v2'
 
 /**
  * Marcadores versionados mantêm a receita semântica dos macros quando o aluno
@@ -21,7 +22,8 @@ export function wrapCanvas3DMacro(statement: JSStatement, code: string): string 
   const payload = encodeURIComponent(
     JSON.stringify(statement, (key, value: unknown) => (key === '__id' ? undefined : value)),
   )
-  return `${MACRO_PREFIX}${checksum(code)}:${payload}${MACRO_SUFFIX}\n${code}\n${MACRO_END}`
+  const integrity = checksum(`${payload}\n${code}`)
+  return `${MACRO_PREFIX}${MACRO_VERSION}:${code.length}:${integrity}:${payload}${MACRO_SUFFIX}\n${code}\n${MACRO_END}`
 }
 
 /** Kernel gerado é infraestrutura, não centenas de blocos do projeto. */
@@ -80,8 +82,8 @@ export function prepareCanvas3DSourceForParse(source: string): Canvas3DPreparedS
     let cursor = 0
     let output = ''
     while (cursor < segment.length) {
-      const macroAt = segment.indexOf(MACRO_PREFIX, cursor)
-      const runtimeAt = segment.indexOf(RUNTIME_PREFIX, cursor)
+      const macroAt = findLinePrefix(segment, MACRO_PREFIX, cursor)
+      const runtimeAt = findLinePrefix(segment, RUNTIME_PREFIX, cursor)
       const candidates = [macroAt, runtimeAt].filter((value) => value >= 0)
       if (candidates.length === 0) return output + segment.slice(cursor)
       const start = Math.min(...candidates)
@@ -89,7 +91,7 @@ export function prepareCanvas3DSourceForParse(source: string): Canvas3DPreparedS
 
       if (start === runtimeAt) {
         const markerEnd = segment.indexOf(MACRO_SUFFIX, start + RUNTIME_PREFIX.length)
-        const closing = markerEnd < 0 ? -1 : segment.indexOf(RUNTIME_END, markerEnd)
+        const closing = markerEnd < 0 ? -1 : findStandaloneMarker(segment, RUNTIME_END, markerEnd)
         if (markerEnd < 0 || closing < 0) {
           output += segment.slice(start)
           return output
@@ -113,19 +115,30 @@ export function prepareCanvas3DSourceForParse(source: string): Canvas3DPreparedS
         output += segment.slice(start)
         return output
       }
-      const closing = findMatchingMacroEnd(segment, markerEnd + MACRO_SUFFIX.length)
+      const header = segment.slice(start + MACRO_PREFIX.length, markerEnd)
+      const metadata = parseMacroHeader(header)
+      const versionedBounds =
+        metadata?.bodyLength !== undefined
+          ? versionedMacroBounds(segment, markerEnd + MACRO_SUFFIX.length, metadata.bodyLength)
+          : null
+      const closing =
+        versionedBounds?.closing ?? findMatchingMacroEnd(segment, markerEnd + MACRO_SUFFIX.length)
       if (closing < 0) {
         output += segment.slice(start)
         return output
       }
-      const header = segment.slice(start + MACRO_PREFIX.length, markerEnd)
-      const separator = header.indexOf(':')
-      const expected = separator < 0 ? '' : header.slice(0, separator)
-      const payload = separator < 0 ? '' : header.slice(separator + 1)
-      const bodyStart = markerEnd + MACRO_SUFFIX.length
-      const body = unwrapBody(segment.slice(bodyStart, closing))
+      const bodyStart = versionedBounds?.bodyStart ?? markerEnd + MACRO_SUFFIX.length
+      const bodyEnd = versionedBounds?.bodyEnd ?? closing
+      const body = versionedBounds
+        ? segment.slice(bodyStart, bodyEnd)
+        : unwrapBody(segment.slice(bodyStart, bodyEnd))
       const fullEnd = closing + MACRO_END.length
-      const statement = checksum(body) === expected ? decodeStatement(payload) : null
+      const integrityMatches = metadata
+        ? metadata.version === MACRO_VERSION
+          ? checksum(`${metadata.payload}\n${body}`) === metadata.expected
+          : checksum(body) === metadata.expected
+        : false
+      const statement = integrityMatches ? decodeStatement(metadata?.payload ?? '') : null
       if (statement) {
         const id = `canvas3d_${nextId}`
         nextId += 1
@@ -133,8 +146,8 @@ export function prepareCanvas3DSourceForParse(source: string): Canvas3DPreparedS
         output += `${PLACEHOLDER}(${JSON.stringify(id)});`
       } else {
         output += segment.slice(start, bodyStart)
-        output += process(segment.slice(bodyStart, closing))
-        output += MACRO_END
+        output += process(segment.slice(bodyStart, bodyEnd))
+        output += segment.slice(bodyEnd, fullEnd)
       }
       cursor = fullEnd
     }
@@ -142,6 +155,57 @@ export function prepareCanvas3DSourceForParse(source: string): Canvas3DPreparedS
   }
 
   return { source: process(source), macros }
+}
+
+interface MacroHeader {
+  version: 'legacy' | typeof MACRO_VERSION
+  bodyLength?: number
+  expected: string
+  payload: string
+}
+
+function parseMacroHeader(header: string): MacroHeader | null {
+  if (header.startsWith(`${MACRO_VERSION}:`)) {
+    const lengthEnd = header.indexOf(':', MACRO_VERSION.length + 1)
+    const checksumEnd = lengthEnd < 0 ? -1 : header.indexOf(':', lengthEnd + 1)
+    if (lengthEnd < 0 || checksumEnd < 0) return null
+    const rawLength = header.slice(MACRO_VERSION.length + 1, lengthEnd)
+    if (!/^\d+$/.test(rawLength)) return null
+    const bodyLength = Number(rawLength)
+    if (!Number.isSafeInteger(bodyLength)) return null
+    return {
+      version: MACRO_VERSION,
+      bodyLength,
+      expected: header.slice(lengthEnd + 1, checksumEnd),
+      payload: header.slice(checksumEnd + 1),
+    }
+  }
+  const separator = header.indexOf(':')
+  if (separator < 0) return null
+  return {
+    version: 'legacy',
+    expected: header.slice(0, separator),
+    payload: header.slice(separator + 1),
+  }
+}
+
+function skipLineBreak(source: string, index: number): number {
+  if (source.startsWith('\r\n', index)) return index + 2
+  if (source.startsWith('\n', index)) return index + 1
+  return index
+}
+
+function versionedMacroBounds(
+  source: string,
+  afterHeader: number,
+  bodyLength: number,
+): { bodyStart: number; bodyEnd: number; closing: number } | null {
+  const bodyStart = skipLineBreak(source, afterHeader)
+  const bodyEnd = bodyStart + bodyLength
+  if (bodyEnd > source.length) return null
+  const closing = skipLineBreak(source, bodyEnd)
+  if (!isStandaloneMarkerAt(source, MACRO_END, closing)) return null
+  return { bodyStart, bodyEnd, closing }
 }
 
 export function canvas3DMacroFromPlaceholder(
@@ -178,8 +242,8 @@ function findMatchingMacroEnd(source: string, from: number): number {
   let depth = 1
   let cursor = from
   while (cursor < source.length) {
-    const child = source.indexOf(MACRO_PREFIX, cursor)
-    const end = source.indexOf(MACRO_END, cursor)
+    const child = findLinePrefix(source, MACRO_PREFIX, cursor)
+    const end = findStandaloneMarker(source, MACRO_END, cursor)
     if (end < 0) return -1
     if (child >= 0 && child < end) {
       depth += 1
@@ -193,7 +257,59 @@ function findMatchingMacroEnd(source: string, from: number): number {
   return -1
 }
 
-/** FNV-1a de 32 bits, determinístico em navegador e Bun. */
+function lineStartAt(source: string, index: number): number {
+  const previousBreak = source.lastIndexOf('\n', Math.max(0, index - 1))
+  return previousBreak < 0 ? 0 : previousBreak + 1
+}
+
+function lineEndAt(source: string, index: number): number {
+  const nextBreak = source.indexOf('\n', index)
+  return nextBreak < 0 ? source.length : nextBreak
+}
+
+function isLinePrefixAt(source: string, index: number): boolean {
+  return source.slice(lineStartAt(source, index), index).trim().length === 0
+}
+
+function findLinePrefix(source: string, prefix: string, from: number): number {
+  let cursor = from
+  while (cursor < source.length) {
+    const found = source.indexOf(prefix, cursor)
+    if (found < 0) return -1
+    if (isLinePrefixAt(source, found)) return found
+    cursor = found + prefix.length
+  }
+  return -1
+}
+
+function isStandaloneMarkerAt(source: string, marker: string, index: number): boolean {
+  if (!source.startsWith(marker, index) || !isLinePrefixAt(source, index)) return false
+  return source.slice(index + marker.length, lineEndAt(source, index)).trim().length === 0
+}
+
+function findStandaloneMarker(source: string, marker: string, from: number): number {
+  let cursor = from
+  while (cursor < source.length) {
+    const found = source.indexOf(marker, cursor)
+    if (found < 0) return -1
+    if (isStandaloneMarkerAt(source, marker, found)) return found
+    cursor = found + marker.length
+  }
+  return -1
+}
+
+/**
+ * FNV-1a de 32 bits, determinístico em navegador e Bun. Em macros v2, cobre
+ * payload canônico + JavaScript expandido; metadado e receita não podem divergir.
+ *
+ * ⚠️ Invariantes de solidez (aceitas para uma IDE kids, mas conscientes):
+ * (a) o checksum tem 32 bits — uma COLISÃO (~2⁻³² por edição) faria o parser confiar no
+ *     metadado e restaurar a receita antiga por cima de uma edição real do aluno;
+ * (b) `decodeStatement` valida com `JSStatementSchema.safeParse` — se um dia um campo de
+ *     nó semântico de macro virar OBRIGATÓRIO no schema, marcadores JÁ SALVOS falham o
+ *     parse e decaem silenciosamente para o JavaScript visível (nunca quebram, mas perdem
+ *     o bloco-macro). Toda evolução do schema desses nós deve ser retrocompatível.
+ */
 function checksum(value: string): string {
   let hash = 0x811c9dc5
   for (let index = 0; index < value.length; index += 1) {

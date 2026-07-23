@@ -11,20 +11,22 @@ A paleta permanece extensa por decisão de produto: são 196 definições de blo
 sendo responsabilidade do perfil de aprendizagem e de cada aula.
 
 A correção técnica desta auditoria foi publicada como **Jogo 2D 0.34.0**. O
-manifesto vigente está em **0.37.10** após os fechamentos subsequentes: grupos
+manifesto vigente está em **0.38.1** após os fechamentos subsequentes: grupos
 seguros também no modo Código, ciclo de vida gerenciado e HUD acessível em todos
-os caminhos públicos e legados.
+os caminhos públicos e legados, e o full review de 23/07 (inimigo "patrulha" que
+respeita jogos sem gravidade, cartão de porta de entrada "Pegue a moeda" e redes
+de teste para blocos antes sem execução).
 Não há achados abertos no escopo desta revisão.
 
 ## Escopo revisado
 
-- 42 arquivos próprios da extensão;
+- 43 arquivos próprios da extensão;
 - 196 definições de blocos e 24 subcategorias;
 - 195 métodos e valores públicos em `window.SZGame2D`;
 - dez fragmentos que compõem o runtime injetado;
 - definição → Blockly → IR → JavaScript → parser → workspace state;
 - manifesto, permissões, documentação do aluno e contexto da IA;
-- 14 exemplos, assets, classificação pedagógica e execução no Chromium;
+- 15 exemplos, assets, classificação pedagógica e execução no Chromium;
 - ciclo de vida, pausa, reinício, câmera, grupos, colisões, áudio, DPR,
   segurança, desempenho e tratamento de erros;
 - testes da extensão e integrações externas de Blockly/parser.
@@ -212,7 +214,7 @@ descrição interna a partir do título do projeto e continua alimentando
 - **Campos semânticos:** sprites, grupos, mapas, imagens e animações usam pickers;
 - **Ciclo de vida:** preparação, eventos e loops têm áreas próprias e múltiplas
   raízes coexistem;
-- **Exemplos:** 14 cartões classificados, com objetivo/controles e primeiro frame;
+- **Exemplos:** 15 cartões classificados, com objetivo/controles e primeiro frame;
 - **Acessibilidade:** canvas nomeado, descrição associada, foco e anúncio de cena;
 - **Segurança:** sem `eval`, `new Function`, scripts remotos ou armazenamento
   próprio no bootstrap;
@@ -311,6 +313,44 @@ no boot do Vite com `process is not defined` antes de abrir a galeria.
   realmente contém esses blocos;
 - regressões cruzam todos os criadores nomeados com o contrato de posicionamento e
   cada localização explícita do manual com a categoria real da toolbox.
+
+### Entrega inicial do full review de 23/07 — 0.38.0
+
+- a primeira implementação fez a patrulha distinguir jogos top-down de jogos de
+  plataforma por um sinal implícito dos helpers de movimento; esse desenho foi
+  substituído pelo contrato explícito descrito na correção 0.38.1 abaixo;
+- a vitrine ganhou o cartão **Pegue a moeda**, o primeiro jogo completo e mínimo
+  (andar, encostar na moeda, placar e vitória), levando os exemplos de 14 para 15;
+- o manual do aluno passou a nomear as categorias **🎮 Sprites**, **💨 Velocidade**
+  e **🏆 Placar e HUD** e a documentar os leitores de velocidade;
+- novas redes de teste cobrem `randomChance`, `tileAtSprite` e o reporter `touches`,
+  antes só auditados estruturalmente.
+
+### Correções dos achados do full review — 0.38.1
+
+- a gravidade do mundo agora possui estado explícito de configuração: patrulhas
+  só caem quando `setGravity` declara valor não zero, e valores negativos mantêm o
+  mesmo sentido em sprites, patrulhas, saltadores e demais helpers físicos;
+- `platformer` e `jumpOnGround` não deixam mais um modo global pegajoso, e
+  `topDown` remove o estado aéreo anterior antes de `autoAnimate` escolher a pose;
+- entradas públicas críticas rejeitam `NaN`/`Infinity` usando o saneamento numérico
+  compartilhado, sem contaminar gravidade, câmera, tamanho ou transformação;
+- **Pegue a moeda** possui playthrough completo de cinco coletas, vitória, reinício
+  e placar zerado; `playJump` percorre o `AudioContext` controlado e verifica
+  frequência inicial, rampa e duração reais;
+- o título da galeria deriva a quantidade dos contratos de QA, eliminando o número
+  manual que havia ficado em 67, e o inventário documental registra os 43 arquivos.
+
+### Verificação da correção — 0.38.1
+
+- os 19 arquivos de teste próprios do Jogo 2D aprovam 694 testes e 3.774
+  asserções;
+- os 25 cenários Chromium da categoria aprovam a criação, o primeiro frame, os
+  controles, o novo jogo completo, DPR 1/2/3 e o layout estreito;
+- o typecheck do workspace Studio e o Biome sobre 795 arquivos passam sem erros;
+- a suíte global ainda encontra uma falha fora deste pacote: o contrato exaustivo
+  de “Programação” instancia `FieldColourSZ` sem DOM e recebe
+  `ReferenceError: document is not defined`; a falha também se reproduz sozinha.
 
 ## Conclusão
 

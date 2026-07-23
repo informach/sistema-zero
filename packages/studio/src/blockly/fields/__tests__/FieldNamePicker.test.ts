@@ -415,6 +415,19 @@ describe('FieldNamePicker', () => {
       expect(collectPhysicsWorlds(ws)).toEqual(['fisica'])
     })
 
+    it('infere objeto 3D conectado a uma variável genérica', () => {
+      const ws = new Blockly.Workspace()
+      const declaration = ws.newBlock('sz_js_const_create')
+      declaration.setFieldValue('cubo', 'NAME')
+      const constructorBlock = ws.newBlock('sz_t3d_new')
+      constructorBlock.setFieldValue('THREE.Mesh', 'CLASS')
+      declaration
+        .getInput('VALUE')
+        ?.connection?.connect(constructorBlock.outputConnection as Blockly.Connection)
+
+      expect(collectObjects3d(ws)).toContain('cubo')
+    })
+
     it('mostra recursos Canvas 3D somente depois da declaração e no mesmo escopo', () => {
       const ws = new Blockly.Workspace()
       const before = ws.newBlock('sz_t3d_renderer_create')

@@ -23,7 +23,7 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   // Move o sprite A na direção do sprite B (px por quadro). Move a posição direto.
   function moveToward(a, b, speed) {
     if (!a || !b) return;
-    var sp = (typeof speed === 'number' && Number.isFinite(speed)) ? Math.max(0, speed) : 3;
+    var sp = Math.max(0, _finiteNumber(speed, 3));
     var dx = (b.x + (b.w || 0) / 2) - (a.x + (a.w || 0) / 2);
     var dy = (b.y + (b.h || 0) / 2) - (a.y + (a.h || 0) / 2);
     var len = Math.sqrt(dx * dx + dy * dy);
@@ -38,8 +38,8 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   }
   // Sorteia um número inteiro de min a max (inclusive).
   function randomBetween(min, max) {
-    var rawLo = (typeof min === 'number' && Number.isFinite(min)) ? min : 0;
-    var rawHi = (typeof max === 'number' && Number.isFinite(max)) ? max : 1;
+    var rawLo = _finiteNumber(min, 0);
+    var rawHi = _finiteNumber(max, 1);
     if (rawHi < rawLo) { var t = rawLo; rawLo = rawHi; rawHi = t; }
     var lo = Math.ceil(rawLo);
     var hi = Math.floor(rawHi);
@@ -50,7 +50,7 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   }
   // Verdadeiro com a chance dada (em %). Ex.: randomChance(30) ~ 30% das vezes.
   function randomChance(percent) {
-    var p = (typeof percent === 'number') ? percent : 50;
+    var p = _finiteNumber(percent, 50);
     return Math.random() * 100 < p;
   }
   // ---- Vida e tempo do sprite ----
@@ -65,7 +65,7 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   }
   function setHealth(s, n) {
     if (!s) return;
-    var valid = typeof n === 'number' && Number.isFinite(n);
+    var valid = _isFiniteNumber(n);
     if (!valid) warnOnce('vida-inicial-invalida', 'a vida inicial precisa ser um número; usei 0.');
     var v = valid ? Math.max(0, Math.floor(n)) : 0;
     s.hp = v; s.hpMax = v;
@@ -73,7 +73,7 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   function changeHealth(s, delta) {
     if (!s) return;
     if (!_hasInitializedHealth(s)) { _warnHealthNotInitialized(); return; }
-    if (typeof delta !== 'number' || !Number.isFinite(delta)) {
+    if (!_isFiniteNumber(delta)) {
       warnOnce('mudanca-de-vida-invalida', 'a mudança de vida precisa ser um número.');
       return;
     }
@@ -97,7 +97,7 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   function damageSprite(s, amount, invincibilityFrames) {
     if (!s || isInvincible(s)) return;
     if (!_hasInitializedHealth(s)) { _warnHealthNotInitialized(); return; }
-    if (typeof amount !== 'number' || !Number.isFinite(amount)) {
+    if (!_isFiniteNumber(amount)) {
       warnOnce('dano-invalido', 'o dano precisa ser um número.');
       return;
     }
@@ -106,26 +106,26 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
     var before = s.hp;
     changeHealth(s, -damage);
     if (s.hp < before) {
-      var frames = (typeof invincibilityFrames === 'number' && Number.isFinite(invincibilityFrames))
+      var frames = _isFiniteNumber(invincibilityFrames)
         ? Math.max(1, Math.floor(invincibilityFrames))
         : 45;
       blink(s, frames);
     }
   }
   // Geometria do sprite (valores prontos p/ a criança não precisar fazer x+w/2 na mão).
-  function spriteX(s) { return s ? (s.x || 0) : 0; }
-  function spriteY(s) { return s ? (s.y || 0) : 0; }
-  function spriteW(s) { return s ? (s.w || 0) : 0; }
-  function spriteH(s) { return s ? (s.h || 0) : 0; }
-  function centerX(s) { return s ? (s.x || 0) + (s.w || 0) / 2 : 0; }
-  function centerY(s) { return s ? (s.y || 0) + (s.h || 0) / 2 : 0; }
+  function spriteX(s) { return s ? _finiteNumber(s.x, 0) : 0; }
+  function spriteY(s) { return s ? _finiteNumber(s.y, 0) : 0; }
+  function spriteW(s) { return s ? _finiteNumber(s.w, 0) : 0; }
+  function spriteH(s) { return s ? _finiteNumber(s.h, 0) : 0; }
+  function centerX(s) { return s ? _finiteNumber(s.x, 0) + _finiteNumber(s.w, 0) / 2 : 0; }
+  function centerY(s) { return s ? _finiteNumber(s.y, 0) + _finiteNumber(s.h, 0) / 2 : 0; }
   // Velocidade do sprite (vx/vy) — valores prontos p/ ler/decidir. "Movendo" usa um
   // limiar pequeno (abaixo dele é resíduo sub-pixel do atrito, invisível na tela).
-  function spriteVx(s) { return s ? (s.vx || 0) : 0; }
-  function spriteVy(s) { return s ? (s.vy || 0) : 0; }
-  function spriteSpeed(s) { return s ? Math.sqrt((s.vx || 0) * (s.vx || 0) + (s.vy || 0) * (s.vy || 0)) : 0; }
-  function isMovingH(s) { return !!s && Math.abs(s.vx || 0) > 0.01; }
-  function isMovingV(s) { return !!s && Math.abs(s.vy || 0) > 0.01; }
+  function spriteVx(s) { return s ? _finiteNumber(s.vx, 0) : 0; }
+  function spriteVy(s) { return s ? _finiteNumber(s.vy, 0) : 0; }
+  function spriteSpeed(s) { var vx = spriteVx(s), vy = spriteVy(s); return Math.sqrt(vx * vx + vy * vy); }
+  function isMovingH(s) { return !!s && Math.abs(_finiteNumber(s.vx, 0)) > 0.01; }
+  function isMovingV(s) { return !!s && Math.abs(_finiteNumber(s.vy, 0)) > 0.01; }
   function isMoving(s) { return isMovingH(s) || isMovingV(s); }
   // Posição aleatória NA TELA — DINÂMICO: lê o tamanho REAL do palco a cada chamada
   // (largura lógica do jogo, ou o canvas), nunca um valor fixo. Evita a continha
@@ -135,7 +135,7 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   // Verdadeiro no máximo a cada "frames" quadros (recarga POR sprite). Use num "se".
   function cooldownReady(s, frames, key) {
     if (!s) return false;
-    var n = (typeof frames === 'number' && Number.isFinite(frames) && frames > 0) ? Math.round(frames) : 1;
+    var n = (_isFiniteNumber(frames) && frames > 0) ? Math.round(frames) : 1;
     var id = (typeof key === 'string' && key) ? key : 'default';
     if (!s._cooldowns || typeof s._cooldowns !== 'object') s._cooldowns = Object.create(null);
     if (typeof s._cooldowns[id] !== 'number') s._cooldowns[id] = 0;
@@ -146,7 +146,7 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   // Tira do grupo quem "nasceu" há mais de N segundos (tempo de vida).
   function pruneOld(group, seconds) {
     if (!group || !group.items) return;
-    var max = (typeof seconds === 'number' ? seconds : 3) * 1000;
+    var max = _finiteNumber(seconds, 3) * 1000;
     var t = now();
     for (var i = group.items.length - 1; i >= 0; i--) {
       var s = group.items[i];
@@ -159,19 +159,21 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   function flipSprite(s, dir) { if (s) s.facing = (dir === 'left') ? -1 : 1; }
   function setOpacity(s, percent) {
     if (!s) return;
-    var p = (typeof percent === 'number') ? percent : 100;
+    var p = _finiteNumber(percent, 100);
     s.opacity = Math.max(0, Math.min(1, p / 100));
   }
   function setSize(s, w, h) {
     if (!s) return;
-    if (typeof w === 'number') s.w = w;
-    if (typeof h === 'number') s.h = h;
+    if (_isFiniteNumber(w) && w > 0) s.w = w;
+    if (_isFiniteNumber(h) && h > 0) s.h = h;
   }
   function scaleSprite(s, factor) {
     if (!s) return;
-    var f = (typeof factor === 'number' && factor > 0) ? factor : 1;
-    var cx = s.x + (s.w || 0) / 2, cy = s.y + (s.h || 0) / 2;
-    s.w = (s.w || 0) * f; s.h = (s.h || 0) * f;
+    var f = (_isFiniteNumber(factor) && factor > 0) ? factor : 1;
+    var sx = _finiteNumber(s.x, 0), sy = _finiteNumber(s.y, 0);
+    var sw = _finiteNumber(s.w, 0), sh = _finiteNumber(s.h, 0);
+    var cx = sx + sw / 2, cy = sy + sh / 2;
+    s.w = sw * f; s.h = sh * f;
     s.x = cx - s.w / 2; s.y = cy - s.h / 2;
   }
   // ---- Mundo: dar a volta na tela (Pac-Man/Asteroids) ----
@@ -223,17 +225,17 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
     if (!s) return;
     var c = ensureStage();
     var vw = c ? stageW(c) : 0, vh = c ? stageH(c) : 0;
-    var x = (s.x + (s.w || 0) / 2) - vw / 2;
-    var y = (s.y + (s.h || 0) / 2) - vh / 2;
+    var x = (_finiteNumber(s.x, 0) + _finiteNumber(s.w, 0) / 2) - vw / 2;
+    var y = (_finiteNumber(s.y, 0) + _finiteNumber(s.h, 0) / 2) - vh / 2;
     // Presa às bordas do mundo. Se o mundo não for maior que a tela num eixo, a
     // câmera fica em 0 nesse eixo (ex.: plataforma horizontal mantém o chão embaixo).
-    if (typeof worldW === 'number' && worldW > 0) x = Math.max(0, Math.min(x, Math.max(0, worldW - vw)));
-    if (typeof worldH === 'number' && worldH > 0) y = Math.max(0, Math.min(y, Math.max(0, worldH - vh)));
+    if (_isFiniteNumber(worldW) && worldW > 0) x = Math.max(0, Math.min(x, Math.max(0, worldW - vw)));
+    if (_isFiniteNumber(worldH) && worldH > 0) y = Math.max(0, Math.min(y, Math.max(0, worldH - vh)));
     camera.x = x; camera.y = y;
   }
   function setCamera(x, y) {
-    camera.x = (typeof x === 'number') ? x : 0;
-    camera.y = (typeof y === 'number') ? y : 0;
+    camera.x = _finiteNumber(x, 0);
+    camera.y = _finiteNumber(y, 0);
   }
   function cameraX() { return camera.x; }
   function cameraY() { return camera.y; }
@@ -256,12 +258,13 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   function setTileAt(map, px, py, index) {
     if (!map || !map.rows || !map.tile) return;
     var t = tileScreenSize(map);
-    var col = Math.floor((px - (map.ox || 0)) / t);
-    var row = Math.floor((py - (map.oy || 0)) / t);
+    if (!_isFiniteNumber(px) || !_isFiniteNumber(py) || t <= 0) return;
+    var col = Math.floor((px - _finiteNumber(map.ox, 0)) / t);
+    var row = Math.floor((py - _finiteNumber(map.oy, 0)) / t);
     if (row < 0 || row >= map.rows.length) return;
     var r = map.rows[row];
     if (!r || col < 0 || col >= r.length) return;
-    r[col] = (typeof index === 'number') ? index : -1;
+    r[col] = _isFiniteNumber(index) ? Math.floor(index) : -1;
   }
   function _spriteCenter(s) { return { x: s.x + (s.w || 0) / 2, y: s.y + (s.h || 0) / 2 }; }
   function breakTileAtSprite(map, s) {
@@ -279,12 +282,24 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
   function bringToFront(group, s) {
     if (!group || !group.items) return;
     var i = group.items.indexOf(s);
-    if (i >= 0) { group.items.splice(i, 1); group.items.push(s); _touchGroup(group); }
+    if (i >= 0) {
+      var ordered = group.items.slice();
+      ordered.splice(i, 1);
+      ordered.push(s);
+      group.items = ordered;
+      _touchGroup(group);
+    }
   }
   function sendToBack(group, s) {
     if (!group || !group.items) return;
     var i = group.items.indexOf(s);
-    if (i >= 0) { group.items.splice(i, 1); group.items.unshift(s); _touchGroup(group); }
+    if (i >= 0) {
+      var ordered = group.items.slice();
+      ordered.splice(i, 1);
+      ordered.unshift(s);
+      group.items = ordered;
+      _touchGroup(group);
+    }
   }
   // ---- Depuração: caixa de colisão e contador de FPS ----
   function drawHitbox(s) {
@@ -315,7 +330,7 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
     c.save();
     c.fillStyle = '#00ff88';
     c.font = 'bold 16px monospace';
-    c.fillText('FPS: ' + _fpsValue, typeof x === 'number' ? x : 8, typeof y === 'number' ? y : 20);
+    c.fillText('FPS: ' + _fpsValue, _finiteNumber(x, 8), _finiteNumber(y, 20));
     c.restore();
   }
 

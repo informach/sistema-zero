@@ -65,4 +65,6 @@ test('o runtime injetado não contém referências ou propriedades semanticament
     .map(formatDiagnostic)
 
   expect(errors).toEqual([])
-})
+  // O tsc completo do runtime leva ~5-9s sob carga (roda junto da suíte inteira);
+  // o default de 5s piscava. 20s dá folga sem mascarar uma regressão real.
+}, 20000)

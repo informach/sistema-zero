@@ -9,6 +9,7 @@ import {
   folioCanvasProceduralExample,
   gorilasNaMaoExample,
   invadersNaMaoExample,
+  passeio3dNaMaoExample,
   plataformaVerticalNaMaoExample,
   portasDoCasteloNaMaoExample,
 } from './core'
@@ -34,6 +35,38 @@ describe('CORE_EXAMPLES — Folio 3D procedural (Canvas 3D sem extensão)', () =
     expect(code).toContain('function createSZPhysicsLite')
     expect(code).not.toContain('Rapier')
     expect(code).not.toContain('WebAssembly')
+  })
+})
+
+describe('CORE_EXAMPLES — passeio3dNaMaoExample (Passeio 3D na mão, com som)', () => {
+  it('está em CORE_EXAMPLES, sem extensões e com IR válido', () => {
+    expect(CORE_EXAMPLES).toContain(passeio3dNaMaoExample)
+    expect(passeio3dNaMaoExample.ir.extensions).toEqual([])
+    expect(SZIRV2Schema.safeParse(passeio3dNaMaoExample.ir).success).toBe(true)
+  })
+
+  it('NÃO usa código avançado (rawJS/rawHTML) nem blocos de extensão', () => {
+    const types = collectTypes(passeio3dNaMaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('rawHTML')).toBe(false)
+    expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
+  })
+
+  it('gera Three.js de verdade (na unha)', () => {
+    const types = collectTypes(passeio3dNaMaoExample.ir)
+    expect(types.has('importStar')).toBe(true)
+    const code = generateJS({ statements: behaviorStatements(passeio3dNaMaoExample.ir) })
+    expect(code).toContain("import * as THREE from 'three'")
+  })
+
+  it('embute os 2 sons dentro do orçamento de bundle (WAVs gerados ~3KB)', () => {
+    const assets = passeio3dNaMaoExample.assets ?? []
+    expect(assets.map((asset) => asset.name).sort()).toEqual(['buzina', 'motor'])
+    for (const asset of assets) {
+      expect(asset.kind, asset.name).toBe('audio')
+      // WAVs PCM gerados por script (motor 2750, buzina 3282 chars) — teto real com folga.
+      expect(asset.dataUrl.length, asset.name).toBeLessThan(4_000)
+    }
   })
 })
 

@@ -80,4 +80,19 @@ describe('catálogo da Carreira do Criador', () => {
   test('curso bônus não participa da trava', () => {
     expect(resolveCareerCourseLock({}, 'avancado-3d', null)).toEqual({ locked: false })
   })
+
+  test('sem curso-base publicado na etapa, foundation-first falha ABERTA', () => {
+    // A posição 2 travaria (foundation-first) por padrão…
+    expect(resolveCareerCourseLock({}, 'iniciante-2d', 2)).toMatchObject({
+      locked: true,
+      reason: 'foundation-first',
+    })
+    // …mas sem base alcançável (foundationAvailable=false) não pode prender o aluno.
+    expect(resolveCareerCourseLock({}, 'iniciante-2d', 2, false)).toEqual({ locked: false })
+    // future-tier NÃO é afetado pelo fail-open (a base da etapa futura é irrelevante).
+    expect(resolveCareerCourseLock({}, 'intermediario-2d', 2, false)).toMatchObject({
+      locked: true,
+      reason: 'future-tier',
+    })
+  })
 })

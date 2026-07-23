@@ -452,6 +452,8 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_g3k_for_each_near: { RADIUS: 'number' },
   sz_g3k_touches: { DIST: 'number' },
   sz_g3k_hurt: { AMOUNT: 'number' },
+  sz_g3k_heal: { AMOUNT: 'number' },
+  sz_g3k_spawn_ring: { COUNT: 'number', SPEED: 'number' },
   sz_g3k_define_effect: {
     COUNT: 'number',
     SPREAD: 'number',

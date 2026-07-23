@@ -24,7 +24,14 @@ export function careerLocksForCourses(
   const locks = new Map<string, CareerCourseLockView>()
   for (const course of courses) {
     const tier = courseTier(course.level, course.track)
-    const lock = resolveCareerCourseLock(qualified, tier, course.careerSlot)
+    // Sem um curso-base publicado na etapa, a trava foundation-first falha aberta
+    // (senão as posições 2+ ficariam presas sem nada a concluir para liberar).
+    const lock = resolveCareerCourseLock(
+      qualified,
+      tier,
+      course.careerSlot,
+      foundationByTier.has(tier),
+    )
     locks.set(course.id, {
       locked: lock.locked,
       ...(lock.reason ? { reason: lock.reason } : {}),

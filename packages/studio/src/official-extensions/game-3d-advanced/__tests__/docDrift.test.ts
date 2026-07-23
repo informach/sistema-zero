@@ -146,6 +146,14 @@ describe('g3k — a doc não pode citar categoria que não existe', () => {
     expect([...citados].filter((n) => !apiKeys.has(n))).toEqual([])
   })
 
+  it('a description guarda folga sob o teto de 500 chars', () => {
+    // 500 = MAX_DESCRIPTION_CHARS (src/extensions/manifest.ts): passar dele lança
+    // ZodError no IMPORT do manifest → cascata em ~113 testes que o carregam
+    // (state/*, components/*, studio/*). Antes deste review estava em 493/500 —
+    // uma vírgula a mais estourava. Manter ≤ 480 dá folga para editar a copy.
+    expect(gameKit3DManifest.description.length).toBeLessThanOrEqual(480)
+  })
+
   it('todo bloco está na toolbox em UM lugar só — e a categoria "Mais" não existe', () => {
     // Bloco fora do SUBCATS cai no grupo genérico "Mais" sem erro nenhum — é a
     // versão silenciosa do chip fantasma (o bloco some do lugar certo).

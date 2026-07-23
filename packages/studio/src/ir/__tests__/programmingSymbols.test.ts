@@ -216,6 +216,22 @@ describe('símbolos léxicos da Programação', () => {
     ).toBe(true)
   })
 
+  it('infere capacidade Canvas 3D de newExpr guardado por variável genérica', () => {
+    const parsed = SZIRSchema.safeParse(
+      legacyProject([
+        { type: 'importStar', name: 'THREE', module: 'three' },
+        {
+          type: 'var',
+          name: 'cubo',
+          value: { type: 'newExpr', namespace: 'THREE', className: 'Mesh', args: [] },
+        },
+        { type: 'disposeObject', object: 'cubo' },
+      ]),
+    )
+
+    expect(parsed.success).toBe(true)
+  })
+
   it('faz hoisting de funções apenas no escopo onde foram declaradas', () => {
     const valid = SZIRSchema.safeParse(
       legacyProject([

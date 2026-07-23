@@ -198,7 +198,7 @@ describe('Kit equilibrista / Kit balão — fumaça do runtime', () => {
     expect(() => api.restartBalloon(jogo)).not.toThrow()
   })
 
-  it('expõe placar e estado do Equilibrista no HUD acessível', () => {
+  it('expõe placar e estado do Equilibrista no HUD acessível', async () => {
     document.body.innerHTML = ''
     const api = loadRuntime()
     const jogo = api.createStickHero(mockCtx(360, 480)) as { phase: string; score: number }
@@ -206,13 +206,14 @@ describe('Kit equilibrista / Kit balão — fumaça do runtime', () => {
     jogo.phase = 'over'
 
     api.updateStickHero(jogo)
+    await Promise.resolve()
 
     const hud = document.getElementById('sz-game-hud-status')
     expect(hud?.textContent).toContain('Pontos: 2')
     expect(hud?.textContent).toContain('Caiu! Toque para recomeçar')
   })
 
-  it('expõe distância, combustível e estado do Balão no HUD acessível', () => {
+  it('expõe distância, combustível e estado do Balão no HUD acessível', async () => {
     document.body.innerHTML = ''
     const api = loadRuntime()
     const jogo = api.createBalloon(mockCtx(560, 360)) as {
@@ -225,6 +226,7 @@ describe('Kit equilibrista / Kit balão — fumaça do runtime', () => {
     jogo.over = true
 
     api.updateBalloon(jogo)
+    await Promise.resolve()
 
     const hud = document.getElementById('sz-game-hud-status')
     expect(hud?.textContent).toContain('Distância: 12 metros')
@@ -232,10 +234,11 @@ describe('Kit equilibrista / Kit balão — fumaça do runtime', () => {
     expect(hud?.textContent).toContain('Fim! Toque para recomeçar')
   })
 
-  it('expõe vento e leitura da mira do kit Gorilas no HUD acessível', () => {
+  it('expõe vento e leitura da mira do kit Gorilas no HUD acessível', async () => {
     document.body.innerHTML = ''
     let api = loadRuntime()
     api.drawWind(mockCtx(480, 270), { W: 480, H: 270, wind: 0.03 })
+    await Promise.resolve()
     expect(document.getElementById('sz-game-hud-status')?.textContent).toContain(
       'Vento para a direita: 50%',
     )
@@ -243,6 +246,7 @@ describe('Kit equilibrista / Kit balão — fumaça do runtime', () => {
     document.body.innerHTML = ''
     api = loadRuntime()
     api.drawAimReadout(mockCtx(480, 270))
+    await Promise.resolve()
     expect(document.getElementById('sz-game-hud-status')?.textContent).toContain(
       'Ângulo: 0 graus. Força: 0',
     )

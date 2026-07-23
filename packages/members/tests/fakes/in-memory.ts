@@ -398,6 +398,21 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
   }
 
+  async hasPublishedFoundationCourse(
+    audience: CourseAudience,
+    level: CourseLevel,
+    track: CourseTrack,
+  ): Promise<boolean> {
+    return this.courses.some(
+      (c) =>
+        c.status === 'published' &&
+        c.audience === audience &&
+        c.level === level &&
+        c.track === track &&
+        c.careerSlot === 1,
+    )
+  }
+
   async findOutline(
     courseId: string,
     opts?: { publishedOnly?: boolean },

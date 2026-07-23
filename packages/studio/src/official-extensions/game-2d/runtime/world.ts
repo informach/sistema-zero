@@ -79,7 +79,7 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
     // tile = tamanho do tile NA ARTE (para fatiar o tileset). O tamanho NA TELA
     // (draw) é calculado no desenho: o mapa ENCAIXA no canvas (a arte é ampliada
     // com nitidez pelo drawFrame). Assim um tile de 16px não fica minúsculo.
-    var t = (typeof opts.tile === 'number' && opts.tile > 0) ? opts.tile : 32;
+    var t = _positiveFiniteNumber(opts.tile, 32);
     var solid = parseSolidList(opts.solid);
     // Peças PLATAFORMA (one-way: pisa por cima, atravessa por baixo). Sólido
     // vence no conflito (uma peça não é sólida E plataforma ao mesmo tempo).
@@ -123,7 +123,7 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
     if (meta.solid && typeof meta.solid.length === 'number') {
       for (var i = 0; i < meta.solid.length; i++) {
         var n = meta.solid[i];
-        if (typeof n === 'number' && n >= 0) {
+        if (_isFiniteNumber(n) && n >= 0) {
           solidText += (solidText === '' ? '' : ' ') + Math.floor(n);
         }
       }
@@ -132,7 +132,7 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
     if (meta.platform && typeof meta.platform.length === 'number') {
       for (var j = 0; j < meta.platform.length; j++) {
         var m = meta.platform[j];
-        if (typeof m === 'number' && m >= 0) {
+        if (_isFiniteNumber(m) && m >= 0) {
           platformText += (platformText === '' ? '' : ' ') + Math.floor(m);
         }
       }
@@ -140,7 +140,7 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
     // A folha embutida entra como dataUrl direto — loadImage aceita url/dataUrl.
     return createTileMap({
       image: meta.tileset.dataUrl,
-      tile: (typeof meta.tileSize === 'number' && meta.tileSize > 0) ? meta.tileSize : 32,
+      tile: _positiveFiniteNumber(meta.tileSize, 32),
       solid: solidText,
       platform: platformText,
       grid: meta.grid
@@ -156,7 +156,10 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
   }
   /** Tamanho do tile NA TELA (o efetivo do último desenho; cai no da arte se não desenhou). */
   function tileScreenSize(map) {
-    return (map && map.draw > 0) ? map.draw : (map ? map.tile : 0);
+    if (!map) return 0;
+    return (_isFiniteNumber(map.draw) && map.draw > 0)
+      ? map.draw
+      : _positiveFiniteNumber(map.tile, 0);
   }
   /** Verdadeiro se a célula (col,row) tem um índice marcado como sólido. */
   function isSolidCell(map, col, row) {
@@ -178,8 +181,9 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
   function tileAt(map, px, py) {
     if (!map || !map.rows || !map.tile) return -1;
     var t = tileScreenSize(map);
-    var col = Math.floor((px - (map.ox || 0)) / t);
-    var row = Math.floor((py - (map.oy || 0)) / t);
+    if (!_isFiniteNumber(px) || !_isFiniteNumber(py) || t <= 0) return -1;
+    var col = Math.floor((px - _finiteNumber(map.ox, 0)) / t);
+    var row = Math.floor((py - _finiteNumber(map.oy, 0)) / t);
     if (row < 0 || row >= map.rows.length) return -1;
     var r = map.rows[row];
     if (!r || col < 0 || col >= r.length) return -1;
@@ -202,12 +206,12 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
     // vazio) mantém o encaixe automático. Com tamanho manual o mapa continua
     // centralizado; maior que a tela, transborda igual dos dois lados (a câmera
     // rola por cima via x/y).
-    var manual = (typeof size === 'number' && size > 0) ? Math.max(1, Math.floor(size)) : 0;
+    var manual = (_isFiniteNumber(size) && size > 0) ? Math.max(1, Math.floor(size)) : 0;
     var cell = manual || (hasCanvas ? Math.max(1, Math.floor(Math.min(cw / cols, ch / rowsN))) : map.tile);
     map.draw = cell;
     // Sem tamanho de canvas (contexto atípico): não encaixa nem centraliza (fica em x/y).
-    var ox = (x || 0) + (hasCanvas ? Math.floor((cw - cols * cell) / 2) : 0);
-    var oy = (y || 0) + (hasCanvas ? Math.floor((ch - rowsN * cell) / 2) : 0);
+    var ox = _finiteNumber(x, 0) + (hasCanvas ? Math.floor((cw - cols * cell) / 2) : 0);
+    var oy = _finiteNumber(y, 0) + (hasCanvas ? Math.floor((ch - rowsN * cell) / 2) : 0);
     map.ox = ox;
     map.oy = oy;
     map._drawn = true;
@@ -238,12 +242,33 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
    * zera a velocidade nesse eixo — assim ele pousa sobre o chão e bate nas
    * paredes. Usa o canto (ox/oy) do último drawTileMap para alinhar a colisão.
    */
+  // Contato exato não tem sobreposição. Ainda assim, ele é apoio quando a face
+  // horizontal coincide, o sprite continua caindo nessa direção (ou já estava
+  // apoiado no quadro anterior) e há sobreposição REAL no eixo X.
+  function _touchesGravitySupport(sprite, x, y, w, h, gravity) {
+    if (!sprite) return false;
+    var overlapX = Math.min(sprite.x + sprite.w, x + w) - Math.max(sprite.x, x);
+    if (overlapX <= 0) return false;
+    var pullsUp = _gravityPullsUp(gravity);
+    var touchingFace = pullsUp
+      ? Math.abs(sprite.y - (y + h)) <= 0.0001
+      : Math.abs(sprite.y + sprite.h - y) <= 0.0001;
+    var vy = _finiteNumber(sprite.vy, 0);
+    var movesTowardFace = pullsUp ? vy < 0 : vy > 0;
+    return touchingFace && (movesTowardFace || sprite._groundedLastFrame === true);
+  }
+  function _restOnGravitySupport(sprite, y, h, gravity) {
+    if (!sprite) return;
+    sprite.y = _gravityPullsUp(gravity) ? y + h : y - sprite.h;
+    sprite.vy = 0;
+    sprite.onGround = true;
+  }
   function collideTileMap(sprite, map) {
     if (!sprite || !map || !map.rows || !map.tile) return;
     // Antes do 1º "Desenhar o mapa" não sabemos onde ele fica na tela (o encaixe é
     // calculado no desenho) — a colisão usaria o canto (0,0) e ficaria torta.
     if (map && !map._drawn) warnOnce('colmapfirst', 'desenhe o mapa (bloco "Desenhar o mapa") ANTES de "Impedir de atravessar os tiles" — senão a colisão fica fora do lugar no 1º quadro.');
-    var t = tileScreenSize(map), ox = map.ox || 0, oy = map.oy || 0;
+    var t = tileScreenSize(map), ox = _finiteNumber(map.ox, 0), oy = _finiteNumber(map.oy, 0);
     if (!_isFiniteNumber(t) || t <= 0 ||
         !_isFiniteNumber(sprite.x) || !_isFiniteNumber(sprite.y) ||
         !_isFiniteNumber(sprite.w) || !_isFiniteNumber(sprite.h)) return;
@@ -257,23 +282,36 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
     var c1 = Math.min(colsN - 1, Math.floor((sprite.x + sprite.w - 1 - ox) / t));
     var r0 = Math.max(0, Math.floor((sprite.y - oy) / t));
     var r1 = Math.min(rowsN - 1, Math.floor((sprite.y + sprite.h - 1 - oy) / t));
+    var gravity = _worldGravityOr(0.6);
+    var pullsUp = _gravityPullsUp(gravity);
+    var vy = _finiteNumber(sprite.vy, 0);
+    if (pullsUp ? (vy < 0 || sprite._groundedLastFrame === true) : (vy > 0 || sprite._groundedLastFrame === true)) {
+      if (pullsUp) r0 = Math.max(0, Math.floor((sprite.y - oy) / t) - 1);
+      else r1 = Math.min(rowsN - 1, Math.floor((sprite.y + sprite.h - oy) / t));
+    }
     if (c0 > c1 || r0 > r1) return;
     for (var r = r0; r <= r1; r++) {
       for (var c = c0; c <= c1; c++) {
-        // Peça PLATAFORMA (one-way): só segura o sprite CAINDO (vy>0) e quando o
-        // pé, no início do quadro, estava no topo da peça ou acima (o helper de
-        // gravidade já fez y += vy, então o pé anterior = y + h - vy). Subindo,
-        // andando de lado ou parado dentro dela: atravessa.
+        // Peça PLATAFORMA (one-way): segura o sprite na face para a qual a
+        // gravidade puxa. Com gravidade normal, pousa por cima; com gravidade
+        // negativa, pousa por baixo. Atravessar pela face oposta, andar de lado
+        // ou ficar parado dentro dela continua permitido.
         if (isPlatformCell(map, c, r)) {
           var pty = oy + r * t;
           var pox = ox + c * t;
           var pOverlapX = Math.min(sprite.x + sprite.w, pox + t) - Math.max(sprite.x, pox);
           var pOverlapY = Math.min(sprite.y + sprite.h, pty + t) - Math.max(sprite.y, pty);
-          if (pOverlapX > 0 && pOverlapY > 0 && (sprite.vy || 0) > 0 &&
-              (sprite.y + sprite.h - (sprite.vy || 0)) <= pty + 1) {
-            sprite.y = pty - sprite.h;
-            sprite.vy = 0;
-            sprite.onGround = true;
+          var platformPullsUp = pullsUp;
+          var platformVY = _finiteNumber(sprite.vy, 0);
+          var crossesPlatformFace = platformPullsUp
+            ? sprite.y - platformVY >= pty + t - 1
+            : sprite.y + sprite.h - platformVY <= pty + 1;
+          var movesTowardPlatform = platformPullsUp ? platformVY < 0 : platformVY > 0;
+          var touchesPlatformFace = _touchesGravitySupport(sprite, pox, pty, t, t, gravity);
+          if (pOverlapX > 0 && (pOverlapY > 0 || touchesPlatformFace) &&
+              (movesTowardPlatform || sprite._groundedLastFrame === true) &&
+              (crossesPlatformFace || touchesPlatformFace)) {
+            _restOnGravitySupport(sprite, pty, t, gravity);
           }
           continue;
         }
@@ -281,18 +319,31 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
         var tx = ox + c * t, ty = oy + r * t;
         var overlapX = Math.min(sprite.x + sprite.w, tx + t) - Math.max(sprite.x, tx);
         var overlapY = Math.min(sprite.y + sprite.h, ty + t) - Math.max(sprite.y, ty);
+        if (_touchesGravitySupport(sprite, tx, ty, t, t, gravity)) {
+          _restOnGravitySupport(sprite, ty, t, gravity);
+          continue;
+        }
         if (overlapX <= 0 || overlapY <= 0) continue;
         if (overlapX < overlapY) {
           if (sprite.x < tx) sprite.x -= overlapX; else sprite.x += overlapX;
           sprite.vx = 0;
         } else {
+          var collisionGravity = gravity;
           if (sprite.y < ty) {
             sprite.y -= overlapY;
             // Pousou num tile (empurrado p/ CIMA enquanto caía): está no chão.
             // Nunca seta false — o helper de gravidade do quadro já fez isso.
-            if ((sprite.vy || 0) > 0) { sprite.vy = 0; sprite.onGround = true; }
+            if (!_gravityPullsUp(collisionGravity) && (sprite.vy || 0) > 0) {
+              sprite.vy = 0; sprite.onGround = true;
+            }
           }
-          else { sprite.y += overlapY; if ((sprite.vy || 0) < 0) sprite.vy = 0; }
+          else {
+            sprite.y += overlapY;
+            if ((sprite.vy || 0) < 0) {
+              sprite.vy = 0;
+              if (_gravityPullsUp(collisionGravity)) sprite.onGround = true;
+            }
+          }
         }
       }
     }
@@ -309,6 +360,11 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
   // item): eixo de menor sobreposição, zera a velocidade nesse eixo, pousa em cima.
   function collideSprite(sprite, o) {
     if (!sprite || !o || o === sprite) return;
+    var collisionGravity = _worldGravityOr(0.6);
+    if (_touchesGravitySupport(sprite, o.x, o.y, o.w, o.h, collisionGravity)) {
+      _restOnGravitySupport(sprite, o.y, o.h, collisionGravity);
+      return;
+    }
     var overlapX = Math.min(sprite.x + sprite.w, o.x + o.w) - Math.max(sprite.x, o.x);
     var overlapY = Math.min(sprite.y + sprite.h, o.y + o.h) - Math.max(sprite.y, o.y);
     if (overlapX <= 0 || overlapY <= 0) return;
@@ -320,10 +376,15 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
       var cy = sprite.y + sprite.h / 2, ocy = o.y + o.h / 2;
       if (cy < ocy) {
         sprite.y -= overlapY;
-        if ((sprite.vy || 0) > 0) { sprite.vy = 0; sprite.onGround = true; }
+        if (!_gravityPullsUp(collisionGravity) && (sprite.vy || 0) > 0) {
+          sprite.vy = 0; sprite.onGround = true;
+        }
       } else {
         sprite.y += overlapY;
-        if ((sprite.vy || 0) < 0) sprite.vy = 0;
+        if ((sprite.vy || 0) < 0) {
+          sprite.vy = 0;
+          if (_gravityPullsUp(collisionGravity)) sprite.onGround = true;
+        }
       }
     }
   }
@@ -463,10 +524,51 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
   // cada item, sem motor novo. Teto rígido p/ não vazar memória se o aluno
   // criar sprites sem parar (ex.: um tiro por quadro).
   var MAX_GROUP = 400;
+  // Um sprite pode pertencer a mais de um grupo no modo Código. O redraw de uma
+  // imagem pendente pertence ao SPRITE, não a um vínculo isolado: só o liberamos
+  // quando o último grupo gerenciado deixa de possuir aquele objeto.
+  var _managedGroups = new WeakSet();
+  var _spriteGroupOwners = new WeakMap();
+  function _trackableGroupItem(sprite) {
+    return !!sprite && (typeof sprite === 'object' || typeof sprite === 'function');
+  }
+  function _uniqueTrackableItems(items) {
+    var unique = new Set();
+    for (var i = 0; i < items.length; i++) {
+      if (_trackableGroupItem(items[i])) unique.add(items[i]);
+    }
+    return unique;
+  }
+  function _syncGroupOwnership(previousItems, nextItems) {
+    var previous = _uniqueTrackableItems(previousItems);
+    var next = _uniqueTrackableItems(nextItems);
+    next.forEach(function (sprite) {
+      if (previous.has(sprite)) return;
+      _spriteGroupOwners.set(sprite, (_spriteGroupOwners.get(sprite) || 0) + 1);
+    });
+    previous.forEach(function (sprite) {
+      if (next.has(sprite)) return;
+      var owners = _spriteGroupOwners.get(sprite) || 0;
+      if (owners <= 1) {
+        _spriteGroupOwners.delete(sprite);
+        _disposeSprite(sprite);
+      } else {
+        _spriteGroupOwners.set(sprite, owners - 1);
+      }
+    });
+  }
+  function _disposeUnmanagedGroupItem(sprite) {
+    if (!_trackableGroupItem(sprite) || (_spriteGroupOwners.get(sprite) || 0) > 0) return;
+    _disposeSprite(sprite);
+  }
   /** Marca uma mudança de pertencimento/ordem para varreduras com snapshot. */
   function _touchGroup(group) {
     if (!group) return;
-    group._revision = (typeof group._revision === 'number' ? group._revision : 0) + 1;
+    group._revision = _finiteNumber(group._revision, 0) + 1;
+  }
+  /** Atualiza ownership e libera somente sprites que ficaram sem nenhum grupo dono. */
+  function _disposeRemovedGroupItems(previousItems, nextItems) {
+    _syncGroupOwnership(previousItems, nextItems);
   }
   /**
    * O array do grupo faz parte da API pública no modo Código. Rastreá-lo aqui
@@ -474,39 +576,83 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
    * atribuição por índice ou substituição direta de items feita pela criança.
    */
   function _trackGroupItems(group, initialItems) {
-    return new Proxy(initialItems, {
+    var mutatingMethods = {
+      copyWithin: true,
+      fill: true,
+      pop: true,
+      push: true,
+      reverse: true,
+      shift: true,
+      sort: true,
+      splice: true,
+      unshift: true
+    };
+    var methodWrappers = Object.create(null);
+    var proxy = null;
+    proxy = new Proxy(initialItems, {
+      get: function (target, property, receiver) {
+        var arrayMethod = typeof property === 'string' ? Array.prototype[property] : null;
+        if (!mutatingMethods[property] || typeof arrayMethod !== 'function' || target[property] !== arrayMethod) {
+          return Reflect.get(target, property, receiver);
+        }
+        if (!methodWrappers[property]) {
+          methodWrappers[property] = function () {
+            var previousItems = target.slice();
+            var result = arrayMethod.apply(target, arguments);
+            _disposeRemovedGroupItems(previousItems, target);
+            _touchGroup(group);
+            return result === target ? proxy : result;
+          };
+        }
+        return methodWrappers[property];
+      },
       set: function (target, property, value) {
+        var previousItems = target.slice();
         var hadProperty = Object.prototype.hasOwnProperty.call(target, property);
         var previous = target[property];
         target[property] = value;
-        if (!hadProperty || previous !== value) _touchGroup(group);
+        if (!hadProperty || previous !== value) {
+          _disposeRemovedGroupItems(previousItems, target);
+          _touchGroup(group);
+        }
         return true;
       },
       deleteProperty: function (target, property) {
         if (!Object.prototype.hasOwnProperty.call(target, property)) return true;
+        var previousItems = target.slice();
         delete target[property];
+        _disposeRemovedGroupItems(previousItems, target);
         _touchGroup(group);
         return true;
       },
       defineProperty: function (target, property, descriptor) {
+        var previousItems = target.slice();
         var hadProperty = Object.prototype.hasOwnProperty.call(target, property);
         var previous = target[property];
         Object.defineProperty(target, property, descriptor);
-        if (!hadProperty || previous !== target[property]) _touchGroup(group);
+        if (!hadProperty || previous !== target[property]) {
+          _disposeRemovedGroupItems(previousItems, target);
+          _touchGroup(group);
+        }
         return true;
       }
     });
+    return proxy;
   }
   /** Cria um grupo vazio com pertencimento observável inclusive no modo Código. */
   function createGroup() {
     var group = { _revision: 0 };
+    _managedGroups.add(group);
     var items = _trackGroupItems(group, []);
     Object.defineProperty(group, 'items', {
       enumerable: true,
       get: function () { return items; },
       set: function (nextItems) {
         if (nextItems === items) return;
-        items = _trackGroupItems(group, Array.isArray(nextItems) ? nextItems : []);
+        var previousItems = items.slice();
+        var replacement = Array.isArray(nextItems) ? nextItems.slice() : [];
+        items = _trackGroupItems(group, replacement);
+        _disposeRemovedGroupItems(previousItems, replacement);
         _touchGroup(group);
       }
     });
@@ -516,12 +662,12 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
   function _beginGroupTraversal(group) {
     return {
       items: group.items.slice(),
-      revision: typeof group._revision === 'number' ? group._revision : 0,
+      revision: _finiteNumber(group._revision, 0),
       members: new Set(group.items)
     };
   }
   function _refreshGroupTraversal(group, traversal) {
-    var revision = typeof group._revision === 'number' ? group._revision : 0;
+    var revision = _finiteNumber(group._revision, 0);
     if (revision === traversal.revision) return;
     traversal.revision = revision;
     traversal.members = new Set(group.items);
@@ -530,16 +676,20 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
   function _removeGroupItemAt(group, index) {
     if (!group || !group.items || index < 0 || index >= group.items.length) return null;
     var sprite = group.items[index];
-    if (sprite) _disposeSprite(sprite);
     group.items.splice(index, 1);
-    _touchGroup(group);
+    if (!_managedGroups.has(group)) {
+      _disposeUnmanagedGroupItem(sprite);
+      _touchGroup(group);
+    }
     return sprite;
   }
   function _clearGroupItems(group) {
     if (!group || !group.items || !group.items.length) return;
-    for (var i = 0; i < group.items.length; i++) {
-      if (group.items[i]) _disposeSprite(group.items[i]);
+    if (_managedGroups.has(group)) {
+      group.items.length = 0;
+      return;
     }
+    for (var i = 0; i < group.items.length; i++) _disposeUnmanagedGroupItem(group.items[i]);
     group.items.length = 0;
     _touchGroup(group);
   }
@@ -560,10 +710,10 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
     if (!group || !group.items) return null;
     if (group.items.length >= MAX_GROUP) return null;
     opts = opts || {};
-    var r = (typeof opts.radius === 'number' && opts.radius > 0) ? opts.radius : 5;
+    var r = _positiveFiniteNumber(opts.radius, 5);
     var s = createSprite({
-      x: (opts.x || 0) - r,
-      y: (opts.y || 0) - r,
+      x: _finiteNumber(opts.x, 0) - r,
+      y: _finiteNumber(opts.y, 0) - r,
       w: r * 2,
       h: r * 2,
       color: opts.color,
@@ -595,7 +745,7 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
   // combine com "prender o sprite na tela").
   function arrowsX(sprite, speed) {
     if (!sprite) return;
-    var sp = (typeof speed === 'number') ? speed : 5;
+    var sp = _finiteNumber(speed, 5);
     // Grava a velocidade horizontal p/ os getters (parado → 0); só mexe no eixo X.
     sprite.vx = (keys.right ? sp : 0) - (keys.left ? sp : 0);
     if (keys.left) sprite.x -= sp;
@@ -604,7 +754,7 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
   // Faz o sprite PISCAR por N quadros (ex.: invencibilidade ao levar dano).
   function blink(sprite, frames) {
     if (!sprite) return;
-    sprite.blinkFrames = (typeof frames === 'number' && frames > 0) ? Math.floor(frames) : 60;
+    sprite.blinkFrames = Math.floor(_positiveFiniteNumber(frames, 60));
   }
   /** Move cada sprite do grupo pela sua velocidade (e gravidade do mundo). */
   function updateGroup(group) {
@@ -620,8 +770,8 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
     for (var i = 0; i < group.items.length; i++) {
       var s = group.items[i];
       if (!s) continue;
-      s.x += s.vx || 0;
-      s.y += s.vy || 0;
+      s.x = _finiteNumber(s.x, 0) + _finiteNumber(s.vx, 0);
+      s.y = _finiteNumber(s.y, 0) + _finiteNumber(s.vy, 0);
     }
   }
   /** Desenha todos os sprites do grupo. */
@@ -665,7 +815,7 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
   function pruneOffscreen(ctx, group, margin, onLeave) {
     if (!ctx || !ctx.canvas || !group || !group.items) return;
     var generation = _driverGeneration;
-    var m = typeof margin === 'number' ? margin : 40;
+    var m = _finiteNumber(margin, 40);
     var visible = _visibleWorldRect(ctx);
     for (var i = group.items.length - 1; i >= 0; i--) {
       var s = group.items[i];
@@ -785,7 +935,7 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
   }
   var secondTimers = Object.create(null);
   function everySeconds(key, secs) {
-    var period = (typeof secs === 'number' && secs > 0) ? secs * 1000 : 1000;
+    var period = _positiveFiniteNumber(secs, 1) * 1000;
     var t = now();
     var last = secondTimers[key];
     if (last === undefined) { secondTimers[key] = t; return false; }

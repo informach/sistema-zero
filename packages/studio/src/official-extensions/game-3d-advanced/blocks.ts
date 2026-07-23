@@ -922,6 +922,21 @@ export const gameKit3DBlocks = [
       'Tira vida da entidade e a deixa piscando e invencível por meio segundo (para não perder tudo de uma vez). Vida no zero = ela é derrotada (roda o "quando for derrotado" e é recolhida sozinha).',
   },
   {
+    type: 'sz_g3k_heal',
+    placement: 'command',
+    message0: 'Curar %1 somando %2 de vida',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'entity3d' },
+      { type: 'input_value', name: 'AMOUNT', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Devolve vida à entidade, sem passar do máximo com que ela nasceu. É o oposto do "Machucar": bom para poções, pontos de descanso ou um chefão que se recupera entre as fases.',
+  },
+  {
     type: 'sz_g3k_health_of',
     message0: 'a vida de %1',
     args0: [{ type: 'field_name_picker', name: 'CHAR', text: 'heroi', kind: 'entity3d' }],
@@ -959,6 +974,40 @@ export const gameKit3DBlocks = [
     colour: C,
     tooltip:
       'Roda o "fazer" quando a vida de uma entidade desse molde chegar a zero (pelo "Machucar"). Depois o motor a recolhe sozinho. Bom para somar pontos e soltar som.',
+  },
+  {
+    type: 'sz_g3k_on_hurt',
+    placement: 'event',
+    message0: 'Quando %1 do molde %2 levar dano',
+    args0: [
+      { type: 'field_input', name: 'ITEM', text: 'ela' },
+      { type: 'field_name_picker', name: 'MOLD', text: 'chefao', kind: 'mold3d' },
+    ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Roda o "fazer" toda vez que uma entidade desse molde leva dano (pelo "Machucar"). Leia a vida dela ali dentro para trocar de fase, piscar ou revidar. É o coração de um chefão em várias fases.',
+  },
+  {
+    type: 'sz_g3k_spawn_ring',
+    placement: 'command',
+    message0: 'Disparar um anel de %1: %2 tiros ao redor de %3, velocidade %4',
+    args0: [
+      { type: 'field_name_picker', name: 'MOLD', text: 'tiro', kind: 'mold3d' },
+      { type: 'input_value', name: 'COUNT', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'FROM', text: 'chefao', kind: 'entity3d' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Faz nascer vários tiros do molde ao redor da entidade, espalhados em círculo e voando para fora. É o ataque clássico de chefão. Combine com "cortar longe" para limpar os tiros que saem do mundo.',
   },
 
   // ---- 💥 Faíscas 3D ----
@@ -2003,6 +2052,7 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
       'sz_g3k_spawn',
       'sz_g3k_spawn_named',
       'sz_g3k_spawn_from',
+      'sz_g3k_spawn_ring',
       'sz_g3k_start_spawner',
       'sz_g3k_stop_spawner',
     ],
@@ -2149,10 +2199,12 @@ const SUBCATS: { name: string; colour: string; types: string[] }[] = [
     colour: C,
     types: [
       'sz_g3k_hurt',
+      'sz_g3k_heal',
       'sz_g3k_health_of',
       'sz_g3k_max_health_of',
       'sz_g3k_show_health_bar',
       'sz_g3k_on_entity_death',
+      'sz_g3k_on_hurt',
     ],
   },
   {
@@ -2314,6 +2366,8 @@ export const G3K_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g3k_for_each_near: { RADIUS: numShadow(10) },
   sz_g3k_touches: { DIST: numShadow(1.5) },
   sz_g3k_hurt: { AMOUNT: numShadow(10) },
+  sz_g3k_heal: { AMOUNT: numShadow(20) },
+  sz_g3k_spawn_ring: { COUNT: numShadow(8), SPEED: numShadow(6) },
   sz_g3k_define_effect: {
     COUNT: numShadow(24),
     SPREAD: numShadow(6),

@@ -25,6 +25,7 @@ interface Api {
   updateGroup: (g: { items: Sprite[] }) => void
   updateGroupNoGravity: (g: { items: Sprite[] }) => void
   setGravity: (v: number) => void
+  applyVelocity: (s: Sprite) => void
 }
 
 function load(): Api {
@@ -90,6 +91,32 @@ describe('collideGroup — obstáculos sólidos sem tilemap', () => {
     expect(heroi.x).toBe(0)
     api.collideGroup(heroi, api.createGroup()) // vazio
     expect(heroi.x).toBe(0)
+  })
+
+  it('mantém o chão ao tocar exatamente a plataforma (grupo e sprite único)', () => {
+    const api = load()
+    api.setGravity(0.6)
+    const piso = api.createSprite({ x: 0, y: 32, w: 32, h: 16 })
+    const grupo = api.createGroup()
+    grupo.items.push(piso)
+    const noGrupo = api.createSprite({ x: 0, y: 10, w: 16, h: 16, vy: 8 })
+
+    api.applyVelocity(noGrupo)
+    api.collideGroup(noGrupo, grupo)
+    api.applyVelocity(noGrupo)
+    api.collideGroup(noGrupo, grupo)
+    expect(noGrupo.onGround).toBe(true)
+    expect(noGrupo.y).toBe(16)
+    expect(noGrupo.vy).toBe(0)
+
+    const unico = api.createSprite({ x: 0, y: 10, w: 16, h: 16, vy: 8 })
+    api.applyVelocity(unico)
+    api.collideSprite(unico, piso)
+    api.applyVelocity(unico)
+    api.collideSprite(unico, piso)
+    expect(unico.onGround).toBe(true)
+    expect(unico.y).toBe(16)
+    expect(unico.vy).toBe(0)
   })
 })
 

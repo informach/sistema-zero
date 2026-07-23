@@ -87,6 +87,22 @@ export const defesaDaTorreExample: ExtensionExample = {
           },
         },
         {
+          type: 'g3k:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'O cristal caiu!',
+          },
+          text: {
+            type: 'str',
+            value: 'Os invasores passaram. Proteja o cristal na próxima!',
+          },
+          button: {
+            type: 'str',
+            value: 'Tentar de novo',
+          },
+        },
+        {
           type: 'g3k:defineMold',
           name: 'cristal',
           health: {
@@ -5046,6 +5062,1012 @@ export const tiroAoAlvoExample: ExtensionExample = {
                   name: 'vitoria',
                 },
               ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+}
+
+export const chefaoDasSombrasExample: ExtensionExample = {
+  name: 'O Chefão das Sombras',
+  experience: 'game',
+  description:
+    'Enfrente um chefão em três fases: clique nele para atacar e desvie do anel de tiros. A cada fase ele fica mais bravo e se cura um pouco.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 50,
+          },
+          sky: '#1e1b4b',
+          ground: '#312e81',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1.4,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'O Chefão das Sombras',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Clique no chefão para atacar e desvie do anel de tiros com WASD. Ele fica mais bravo (e se cura) a cada fase!',
+          },
+          button: {
+            type: 'str',
+            value: 'Enfrentar',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Sombra derrotada!',
+          },
+          text: {
+            type: 'str',
+            value: 'Você venceu as três fases do chefão.',
+          },
+          button: {
+            type: 'str',
+            value: 'Enfrentar de novo',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'O herói caiu...',
+          },
+          text: {
+            type: 'str',
+            value: 'O anel de tiros te pegou. Desvie mais na próxima!',
+          },
+          button: {
+            type: 'str',
+            value: 'Tentar de novo',
+          },
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'chefao',
+          health: {
+            type: 'num',
+            value: 100,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'metal',
+              color: '#4c1d95',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 3,
+              },
+              h: {
+                type: 'num',
+                value: 3,
+              },
+              d: {
+                type: 'num',
+                value: 3,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'brilho',
+              color: '#f472b6',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 1.2,
+              },
+              h: {
+                type: 'num',
+                value: 1.2,
+              },
+              d: {
+                type: 'num',
+                value: 1.2,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'cone',
+              material: 'normal',
+              color: '#a21caf',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.6,
+              },
+              h: {
+                type: 'num',
+                value: 1.4,
+              },
+              d: {
+                type: 'num',
+                value: 0.6,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 2,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'cone',
+              material: 'normal',
+              color: '#a21caf',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.6,
+              },
+              h: {
+                type: 'num',
+                value: 1.4,
+              },
+              d: {
+                type: 'num',
+                value: 0.6,
+              },
+              x: {
+                type: 'num',
+                value: 1.6,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'cone',
+              material: 'normal',
+              color: '#a21caf',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.6,
+              },
+              h: {
+                type: 'num',
+                value: 1.4,
+              },
+              d: {
+                type: 'num',
+                value: 0.6,
+              },
+              x: {
+                type: 'num',
+                value: -1.6,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'heroi',
+          health: {
+            type: 'num',
+            value: 60,
+          },
+          speed: {
+            type: 'num',
+            value: 8,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#22d3ee',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.9,
+              },
+              h: {
+                type: 'num',
+                value: 1,
+              },
+              d: {
+                type: 'num',
+                value: 0.9,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.5,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'brilho',
+              color: '#a5f3fc',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.7,
+              },
+              h: {
+                type: 'num',
+                value: 0.7,
+              },
+              d: {
+                type: 'num',
+                value: 0.7,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1.3,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'tiro',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'brilho',
+              color: '#f472b6',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.5,
+              },
+              h: {
+                type: 'num',
+                value: 0.5,
+              },
+              d: {
+                type: 'num',
+                value: 0.5,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:showHealthBar',
+          mold: 'chefao',
+          on: true,
+        },
+        {
+          type: 'g3k:showHealthBar',
+          mold: 'heroi',
+          on: true,
+        },
+        {
+          type: 'g3k:defineEffect',
+          name: 'explosao',
+          count: {
+            type: 'num',
+            value: 30,
+          },
+          colorFrom: '#f472b6',
+          colorTo: '#1e1b4b',
+          spread: {
+            type: 'num',
+            value: 8,
+          },
+          sizeFrom: {
+            type: 'num',
+            value: 0.7,
+          },
+          sizeTo: {
+            type: 'num',
+            value: 0,
+          },
+          life: {
+            type: 'num',
+            value: 0.7,
+          },
+          gravity: {
+            type: 'num',
+            value: -2,
+          },
+        },
+        {
+          type: 'g3k:defineEffect',
+          name: 'faisca',
+          count: {
+            type: 'num',
+            value: 10,
+          },
+          colorFrom: '#a5f3fc',
+          colorTo: '#4c1d95',
+          spread: {
+            type: 'num',
+            value: 3,
+          },
+          sizeFrom: {
+            type: 'num',
+            value: 0.3,
+          },
+          sizeTo: {
+            type: 'num',
+            value: 0,
+          },
+          life: {
+            type: 'num',
+            value: 0.3,
+          },
+          gravity: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'fase',
+          value: {
+            type: 'num',
+            value: 1,
+          },
+        },
+        {
+          type: 'g3k:stateTimer',
+          mold: 'chefao',
+          state: 'parado',
+          sec: {
+            type: 'num',
+            value: 1.5,
+          },
+          next: 'atirando',
+        },
+      ],
+      events: [
+        {
+          type: 'g3k:onEnterState',
+          name: 'jogando',
+          body: [
+            {
+              type: 'assign',
+              name: 'fase',
+              value: {
+                type: 'num',
+                value: 1,
+              },
+            },
+            {
+              type: 'g3k:setSeed',
+              seed: {
+                type: 'num',
+                value: 7,
+              },
+            },
+            {
+              type: 'g3k:setAmbient',
+              intensity: {
+                type: 'num',
+                value: 0.5,
+              },
+            },
+            {
+              type: 'g3k:setFog',
+              color: '#1e1b4b',
+              near: {
+                type: 'num',
+                value: 30,
+              },
+              far: {
+                type: 'num',
+                value: 80,
+              },
+            },
+            {
+              type: 'g3k:spawnNamed',
+              varName: 'chefe',
+              mold: 'chefao',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1.5,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:spawnNamed',
+              varName: 'heroi',
+              mold: 'heroi',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1,
+              },
+              z: {
+                type: 'num',
+                value: 12,
+              },
+            },
+            {
+              type: 'g3k:cameraTop',
+              height: {
+                type: 'num',
+                value: 40,
+              },
+            },
+            {
+              type: 'g3k:say',
+              charVar: 'chefe',
+              text: {
+                type: 'str',
+                value: 'Ninguém vence a Sombra!',
+              },
+              seconds: {
+                type: 'num',
+                value: 3,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEnterEntityState',
+          mold: 'chefao',
+          state: 'atirando',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:spawnRing',
+              mold: 'tiro',
+              count: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'num',
+                  value: 4,
+                },
+                right: {
+                  type: 'binop',
+                  op: '*',
+                  left: {
+                    type: 'var',
+                    name: 'fase',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 2,
+                  },
+                },
+              },
+              fromVar: 'ela',
+              speed: {
+                type: 'num',
+                value: 7,
+              },
+            },
+            {
+              type: 'g3k:playEffect',
+              fx: 'laser',
+            },
+            {
+              type: 'g3k:cameraShake',
+              strength: {
+                type: 'num',
+                value: 0.3,
+              },
+              seconds: {
+                type: 'num',
+                value: 0.2,
+              },
+            },
+            {
+              type: 'g3k:setEntityState',
+              charVar: 'ela',
+              state: 'parado',
+            },
+          ],
+        },
+        {
+          type: 'g3k:onHurt',
+          mold: 'chefao',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'var',
+              name: 'vida',
+              value: {
+                type: 'g3k:healthOf',
+                charVar: 'ela',
+              },
+              kind: 'const',
+            },
+            {
+              type: 'var',
+              name: 'teto',
+              value: {
+                type: 'g3k:maxHealthOf',
+                charVar: 'ela',
+              },
+              kind: 'const',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: {
+                  type: 'binop',
+                  op: '<=',
+                  left: {
+                    type: 'var',
+                    name: 'vida',
+                  },
+                  right: {
+                    type: 'binop',
+                    op: '*',
+                    left: {
+                      type: 'var',
+                      name: 'teto',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0.33,
+                    },
+                  },
+                },
+                right: {
+                  type: 'binop',
+                  op: '<',
+                  left: {
+                    type: 'var',
+                    name: 'fase',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 3,
+                  },
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'fase',
+                  value: {
+                    type: 'num',
+                    value: 3,
+                  },
+                },
+                {
+                  type: 'g3k:say',
+                  charVar: 'ela',
+                  text: {
+                    type: 'str',
+                    value: 'Você vai se arrepender!',
+                  },
+                  seconds: {
+                    type: 'num',
+                    value: 2,
+                  },
+                },
+                {
+                  type: 'g3k:heal',
+                  charVar: 'ela',
+                  amount: {
+                    type: 'num',
+                    value: 8,
+                  },
+                },
+                {
+                  type: 'g3k:cameraShake',
+                  strength: {
+                    type: 'num',
+                    value: 0.6,
+                  },
+                  seconds: {
+                    type: 'num',
+                    value: 0.4,
+                  },
+                },
+              ],
+              elseif: [
+                {
+                  cond: {
+                    type: 'logical',
+                    op: '&&',
+                    left: {
+                      type: 'binop',
+                      op: '<=',
+                      left: {
+                        type: 'var',
+                        name: 'vida',
+                      },
+                      right: {
+                        type: 'binop',
+                        op: '*',
+                        left: {
+                          type: 'var',
+                          name: 'teto',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 0.66,
+                        },
+                      },
+                    },
+                    right: {
+                      type: 'binop',
+                      op: '<',
+                      left: {
+                        type: 'var',
+                        name: 'fase',
+                      },
+                      right: {
+                        type: 'num',
+                        value: 2,
+                      },
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'fase',
+                      value: {
+                        type: 'num',
+                        value: 2,
+                      },
+                    },
+                    {
+                      type: 'g3k:say',
+                      charVar: 'ela',
+                      text: {
+                        type: 'str',
+                        value: 'Impossível!',
+                      },
+                      seconds: {
+                        type: 'num',
+                        value: 2,
+                      },
+                    },
+                    {
+                      type: 'g3k:heal',
+                      charVar: 'ela',
+                      amount: {
+                        type: 'num',
+                        value: 8,
+                      },
+                    },
+                    {
+                      type: 'g3k:cameraShake',
+                      strength: {
+                        type: 'num',
+                        value: 0.4,
+                      },
+                      seconds: {
+                        type: 'num',
+                        value: 0.3,
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityDeath',
+          mold: 'chefao',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:burstOn',
+              effect: 'explosao',
+              charVar: 'ela',
+            },
+            {
+              type: 'g3k:playEffect',
+              fx: 'win',
+            },
+            {
+              type: 'g3k:setState',
+              name: 'vitoria',
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityDeath',
+          mold: 'heroi',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:burstOn',
+              effect: 'explosao',
+              charVar: 'ela',
+            },
+            {
+              type: 'g3k:playEffect',
+              fx: 'gameover',
+            },
+            {
+              type: 'g3k:endGame',
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'heroi',
+          state: 'parado',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:moveWithKeys',
+              charVar: 'ela',
+              speed: {
+                type: 'num',
+                value: 8,
+              },
+            },
+            {
+              type: 'g3k:faceVelocity',
+              charVar: 'ela',
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'tiro',
+          state: 'parado',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:forEachNear',
+              charVar: 'ela',
+              mold: 'heroi',
+              radius: {
+                type: 'num',
+                value: 1.4,
+              },
+              itemName: 'vitima',
+              body: [
+                {
+                  type: 'g3k:hurt',
+                  charVar: 'vitima',
+                  amount: {
+                    type: 'num',
+                    value: 6,
+                  },
+                },
+                {
+                  type: 'g3k:burstOn',
+                  effect: 'faisca',
+                  charVar: 'ela',
+                },
+                {
+                  type: 'g3k:recycle',
+                  charVar: 'ela',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:mousePressed',
+              },
+              then: [
+                {
+                  type: 'g3k:pick',
+                  varName: 'alvo',
+                  mold: 'chefao',
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'g3k:exists',
+                    charVar: 'alvo',
+                  },
+                  then: [
+                    {
+                      type: 'g3k:hurt',
+                      charVar: 'alvo',
+                      amount: {
+                        type: 'num',
+                        value: 15,
+                      },
+                    },
+                    {
+                      type: 'g3k:burstOn',
+                      effect: 'explosao',
+                      charVar: 'alvo',
+                    },
+                    {
+                      type: 'g3k:playEffect',
+                      fx: 'hit',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'g3k:cullFar',
+              mold: 'tiro',
+              dist: {
+                type: 'num',
+                value: 28,
+              },
+            },
+            {
+              type: 'g3k:hudText',
+              slot: 'top-left',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '+',
+                  left: {
+                    type: 'str',
+                    value: 'Fase ',
+                  },
+                  right: {
+                    type: 'var',
+                    name: 'fase',
+                  },
+                },
+                right: {
+                  type: 'str',
+                  value: ' de 3',
+                },
+              },
+            },
+            {
+              type: 'g3k:hudText',
+              slot: 'top-right',
+              text: {
+                type: 'str',
+                value: 'Clique no chefão!',
+              },
             },
           ],
         },

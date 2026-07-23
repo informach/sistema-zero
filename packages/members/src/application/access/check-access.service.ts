@@ -79,10 +79,21 @@ export class CheckAccessService {
         learnerId ?? userId,
         course.audience,
       )
+      // A base (slot 1) nunca depende de si mesma; nos demais slots, sem um
+      // curso-base PUBLICADO a trava foundation-first falha aberta (senão a
+      // etapa inteira ficaria presa) — mesma regra do projetor da listagem.
+      const foundationAvailable =
+        course.careerSlot === 1 ||
+        (await this.courses.hasPublishedFoundationCourse(
+          course.audience,
+          course.level,
+          course.track,
+        ))
       const lock = resolveCareerCourseLock(
         qualified,
         courseTier(course.level, course.track),
         course.careerSlot,
+        foundationAvailable,
       )
       if (lock.locked && lock.reason) {
         throw new CourseCareerLockedError(lock.reason, lock.requiredLevel)

@@ -102,6 +102,7 @@ interface RuntimeApi {
   createModel(world: RuntimeWorld): RealThree.Group
   addToModel(model: RealThree.Group, part: RealThree.Object3D): void
   animate(world: RuntimeWorld, callback: (delta: number) => void): void
+  stop(world: RuntimeWorld): void
   remove(world: RuntimeWorld, object: RealThree.Object3D): void
   setSolid(object: RealThree.Object3D): void
   setPosition(object: RealThree.Object3D, x: number, y: number, z: number): void
@@ -269,6 +270,9 @@ function loadRuntime() {
     },
     fire(name: string, event: Record<string, unknown> = {}) {
       for (const listener of listeners.get(name) ?? []) listener(event)
+    },
+    listenerCount(name: string) {
+      return (listeners.get(name) ?? new Set()).size
     },
     audioCloseCalls: () => audioCloseCalls,
     audioOscillatorCount: () => oscillators.length,
@@ -484,6 +488,36 @@ describe('gameThreeDRuntime - ciclo de vida real com Three.js', () => {
 
     expect(chamadas).toEqual(['primeiro', 'segundo'])
     expect(world.renderer.renderCalls).toBe(1)
+  })
+
+  it('parar interrompe os callbacks restantes e não desenha o quadro encerrado', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const chamadas: string[] = []
+
+    api.animate(world, () => {
+      chamadas.push('primeiro')
+      api.stop(world)
+    })
+    api.animate(world, () => chamadas.push('segundo'))
+    world.renderer.loop?.(16)
+
+    expect(chamadas).toEqual(['primeiro'])
+    expect(world.renderer.renderCalls).toBe(0)
+    expect(world.renderer.loop).toBeNull()
+  })
+
+  it('remove o listener de teclado do personagem substituído', () => {
+    const runtime = loadRuntime()
+    const world = runtime.api.createCrossingScene('travessia')
+    const first = runtime.api.createCrosser(world)
+    const baseline = runtime.listenerCount('keydown')
+    runtime.api.crosserStep(first, world)
+    expect(runtime.listenerCount('keydown')).toBe(baseline + 1)
+
+    runtime.api.createCrosser(world)
+
+    expect(runtime.listenerCount('keydown')).toBe(baseline)
   })
 
   it('isola o erro de um bloco animado e mantém os demais blocos e o desenho ativos', () => {
@@ -717,6 +751,7 @@ describe('gameThreeDRuntime - ciclo de vida real com Three.js', () => {
     expect(traffic!.position.distanceTo(trafficPosition)).toBe(0)
 
     api.crosserReset(player, world)
+    api.addRow(world, 1, 'grass', 'right', 150)
     api.crosserMove(player, 'forward')
     for (let frame = 0; frame < 20; frame += 1) api.crosserStep(player, world)
     expect(player.position.distanceTo(playerPosition)).toBeGreaterThan(0)

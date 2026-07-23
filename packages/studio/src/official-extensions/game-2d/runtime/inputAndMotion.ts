@@ -76,30 +76,33 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
   }
 
   // ---- Movimento (v0.4.0) ----
-  /** Plataforma: esq/dir + pulo (só no chão) + gravidade. O chão é a base do canvas. */
+  /** Plataforma: esq/dir + pulo (só no chão) + gravidade. */
   function platformer(sprite, ctx, speed, jump) {
     if (!sprite || !ctx || !ctx.canvas) return;
-    var s = typeof speed === 'number' ? speed : 4;
-    var j = typeof jump === 'number' ? jump : 11;
+    var s = _finiteNumber(speed, 4);
+    var j = _positiveFiniteNumber(jump, 11);
+    var g = _worldGravityOr(0.6);
     // Grava a velocidade horizontal p/ os getters (vx/velocidade/está se movendo) —
     // o vy já é real (gravidade/pulo abaixo).
     sprite.vx = (keys.right ? s : 0) - (keys.left ? s : 0);
     if (keys.left) sprite.x -= s;
     if (keys.right) sprite.x += s;
-    sprite.vy = (sprite.vy || 0) + 0.6; // gravidade
+    sprite.vy = _finiteNumber(sprite.vy, 0) + g;
     sprite.y += sprite.vy;
-    var floor = _visibleWorldRect(ctx).bottom - sprite.h;
+    var visible = _visibleWorldRect(ctx);
     // Persiste "no chão" NO sprite: a animação por estado (autoAnimate) e os
     // jogos leem s.onGround p/ saber se está pulando/caindo.
-    sprite.onGround = false;
-    if (sprite.y >= floor) { sprite.y = floor; sprite.vy = 0; sprite.onGround = true; }
-    if (keys.up && sprite.onGround) sprite.vy = -j;
+    _resolveGravityGround(sprite, visible.top, visible.bottom, g);
+    if (keys.up && sprite.onGround) {
+      sprite.vy = _jumpVelocityForGravity(g, j);
+      sprite.onGround = false;
+    }
   }
 
   /** Top-down: 4 direções com diagonal normalizada (diagonal não fica mais rápida). */
   function topDown(sprite, speed) {
     if (!sprite) return;
-    var s = typeof speed === 'number' ? speed : 3;
+    var s = _finiteNumber(speed, 3);
     var dx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
     var dy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
     if (dx && dy) { dx *= 0.7071; dy *= 0.7071; }
@@ -109,12 +112,18 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     sprite.vy = dy * s;
     sprite.x += dx * s;
     sprite.y += dy * s;
+    // Top-down não possui estado aéreo. Apaga a marca deixada por um helper de
+    // plataforma para que autoAnimate resolva parado/andando/vertical corretamente.
+    // A marca transitória também não pode sobreviver: collideTileMap a consulta
+    // para confirmar um apoio exato no quadro seguinte.
+    delete sprite.onGround;
+    delete sprite._groundedLastFrame;
   }
 
   /** Faz o sprite andar em direção ao ponteiro (mouse/toque). */
   function followPointer(sprite, speed) {
     if (!sprite) return;
-    var s = typeof speed === 'number' ? speed : 3;
+    var s = _finiteNumber(speed, 3);
     var cx = sprite.x + sprite.w / 2, cy = sprite.y + sprite.h / 2;
     var pointerWorldX = pointer.x + camera.x, pointerWorldY = pointer.y + camera.y;
     var dx = pointerWorldX - cx, dy = pointerWorldY - cy;
@@ -141,36 +150,37 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
   // Ângulo do sprite em RADIANOS; 0 = apontando pra cima; positivo = horário.
   // "Pra frente" = (sin a, -cos a). Os blocos falam em GRAUS; convertemos aqui.
   var DEG = Math.PI / 180;
-  function _ensureAngle(s) { if (typeof s.angle !== 'number') s.angle = 0; return s.angle; }
+  function _ensureAngle(s) { s.angle = _finiteNumber(s.angle, 0); return s.angle; }
   function _forward(s) {
-    var a = (typeof s.angle === 'number') ? s.angle : 0;
+    var a = _finiteNumber(s.angle, 0);
     return { x: Math.sin(a), y: -Math.cos(a) };
   }
   /** Gira o sprite em N GRAUS (positivo = horário; negativo = anti-horário). */
   function rotateSprite(s, deg) {
     if (!s) return;
     _ensureAngle(s);
-    s.angle += (typeof deg === 'number' ? deg : 0) * DEG;
+    s.angle += _finiteNumber(deg, 0) * DEG;
   }
   /** Aponta o sprite para um ângulo em GRAUS (0 = pra cima, horário). */
   function pointSprite(s, deg) {
     if (!s) return;
-    s.angle = (typeof deg === 'number' ? deg : 0) * DEG;
+    s.angle = _finiteNumber(deg, 0) * DEG;
   }
   /** Soma força à velocidade na direção apontada (impulso pra frente). */
   function thrust(s, force) {
     if (!s) return;
-    var f = (typeof force === 'number') ? force : 0.1;
+    var f = _finiteNumber(force, 0.1);
     var d = _forward(s);
-    s.vx = (s.vx || 0) + d.x * f;
-    s.vy = (s.vy || 0) + d.y * f;
+    s.vx = _finiteNumber(s.vx, 0) + d.x * f;
+    s.vy = _finiteNumber(s.vy, 0) + d.y * f;
   }
   /** Freia o sprite aos poucos: multiplica a velocidade pelo fator (0..1). */
   function applyFriction(s, factor) {
     if (!s) return;
-    var k = (typeof factor === 'number') ? factor : 0.97;
-    s.vx = (s.vx || 0) * k;
-    s.vy = (s.vy || 0) * k;
+    var k = Math.max(0, Math.min(1, _finiteNumber(factor, 0.97)));
+    if (k === 0) { s.vx = 0; s.vy = 0; return; }
+    s.vx = _finiteNumber(s.vx, 0) * k;
+    s.vy = _finiteNumber(s.vy, 0) * k;
   }
   /**
    * Controle estilo NAVE (asteroids): vira com esquerda/A e direita/D, acelera
@@ -180,19 +190,19 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
   function steerThrust(sprite, speed, turnDeg) {
     if (!sprite) return;
     _ensureAngle(sprite);
-    var sp = (typeof speed === 'number') ? speed : 3;
-    var turn = (typeof turnDeg === 'number') ? turnDeg : 3;
+    var sp = _finiteNumber(speed, 3);
+    var turn = _finiteNumber(turnDeg, 3);
     if (keys.left) sprite.angle -= turn * DEG;
     if (keys.right) sprite.angle += turn * DEG;
     var d = _forward(sprite);
     if (keys.up) { sprite.vx = d.x * sp; sprite.vy = d.y * sp; }
-    else { sprite.vx = (sprite.vx || 0) * 0.97; sprite.vy = (sprite.vy || 0) * 0.97; }
-    sprite.x += sprite.vx || 0;
-    sprite.y += sprite.vy || 0;
+    else { sprite.vx = _finiteNumber(sprite.vx, 0) * 0.97; sprite.vy = _finiteNumber(sprite.vy, 0) * 0.97; }
+    sprite.x = _finiteNumber(sprite.x, 0) + _finiteNumber(sprite.vx, 0);
+    sprite.y = _finiteNumber(sprite.y, 0) + _finiteNumber(sprite.vy, 0);
   }
   /** Devolve a direção (em GRAUS) que o sprite está apontando. */
   function spriteAngleDeg(s) {
-    if (!s || typeof s.angle !== 'number') return 0;
+    if (!s || !_isFiniteNumber(s.angle)) return 0;
     return s.angle / DEG;
   }
   /**
@@ -202,7 +212,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
   function shootFrom(sprite, group, opts) {
     if (!sprite || !group) return null;
     opts = opts || {};
-    var speed = (typeof opts.speed === 'number') ? opts.speed : 6;
+    var speed = _finiteNumber(opts.speed, 6);
     var d = _forward(sprite);
     var cx = sprite.x + (sprite.w || 0) / 2, cy = sprite.y + (sprite.h || 0) / 2;
     var nose = Math.max(sprite.w || 0, sprite.h || 0) / 2 + 4;
@@ -226,8 +236,8 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
     var H = visible.height || 360;
     var left = visible.left, top = visible.top;
     var right = left + W, bottom = top + H;
-    var speed = (typeof opts.speed === 'number') ? opts.speed : 1.5;
-    var base = (typeof opts.size === 'number' && opts.size > 0) ? opts.size : 40;
+    var speed = _finiteNumber(opts.speed, 1.5);
+    var base = _positiveFiniteNumber(opts.size, 40);
     var m = base;
     var side = Math.floor(Math.random() * 4);
     var x, y;
@@ -295,7 +305,7 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
   }
   function shake(ctx, intensity) {
     if (!ctx || !ctx.canvas) return;
-    var inten = typeof intensity === 'number' ? intensity : 8;
+    var inten = _finiteNumber(intensity, 8);
     if (inten > shakeAmount) shakeAmount = inten;
     shakeCanvas = ctx.canvas;
     if (shakeActive) { _scheduleShake(); return; }
@@ -312,13 +322,14 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
   var _particlesDrawnThisFrame = false;
   /** Explosão de N partículas no ponto x/y, espalhando em todas as direções. */
   function emitParticles(x, y, count, color) {
-    var n = Math.min(typeof count === 'number' ? count : 12, 80);
+    var n = Math.max(0, Math.min(Math.floor(_finiteNumber(count, 12)), 80));
+    var px = _finiteNumber(x, 0), py = _finiteNumber(y, 0);
     for (var i = 0; i < n; i++) {
       if (particles.length >= MAX_PARTICLES) break;
       var angle = Math.random() * Math.PI * 2;
       var speed = Math.random() * 3 + 1;
       particles.push({
-        x: x || 0, y: y || 0,
+        x: px, y: py,
         vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
         life: 1, size: Math.random() * 3 + 2, color: color || '#fbbf24'
       });

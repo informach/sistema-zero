@@ -33,12 +33,18 @@ export type ProBuildResponse = ProBuildSuccess | ProBuildFailure
 const EXECUTION_ID = /^[a-z0-9][a-z0-9-]{15,95}$/
 const PATH_SEGMENT = /^[A-Za-z0-9._-]+$/
 const FILE_EXTENSION = /\.(?:ts|tsx|js|jsx|mjs|cjs|json|html|css|svg|txt|md)$/i
+// Nomes que o runtime SEMPRE escreve server-side (config confiável) — o projeto
+// da criança nunca pode fornecê-los. Inclui `vite.config.cjs`: a extensão `.cjs`
+// é permitida pelo FILE_EXTENSION, então sem esta entrada o Vite poderia resolver
+// um config enviado pela criança (a precedência `.mjs` sobre `.cjs` protege hoje,
+// mas o modelo de segurança não deve depender da ordem de resolução do Vite).
 const RESERVED_PATHS = new Set([
   'package.json',
   'package-lock.json',
   'npm-shrinkwrap.json',
   'vite.config.js',
   'vite.config.mjs',
+  'vite.config.cjs',
   'vite.config.ts',
 ])
 

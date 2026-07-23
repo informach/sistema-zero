@@ -108,6 +108,127 @@ describe('Canvas 3D — limites, lifecycle e carregamento', () => {
     if (!result.success) expect(result.error.issues[0]?.message).toContain('fora do laço')
   })
 
+  it('rejeita construtor persistente encaixado como valor dentro do laço', () => {
+    const result = SZIRSchema.safeParse({
+      html: [],
+      css: [],
+      extensions: [],
+      js: [
+        { type: 'importStar', name: 'THREE', module: 'three' },
+        {
+          type: 'newInstance',
+          varName: 'cena',
+          namespace: 'THREE',
+          className: 'Scene',
+          args: [],
+        },
+        {
+          type: 'animationLoop',
+          body: [
+            {
+              type: 'memberCall',
+              object: { type: 'var', name: 'cena' },
+              method: 'add',
+              args: [{ type: 'newExpr', namespace: 'THREE', className: 'Mesh', args: [] }],
+            },
+          ],
+        },
+      ],
+    })
+
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.issues.some((issue) => issue.message.includes('fora do laço'))).toBe(true)
+    }
+  })
+
+  it('mantém valores matemáticos temporários disponíveis dentro do laço', () => {
+    const result = SZIRSchema.safeParse({
+      html: [],
+      css: [],
+      extensions: [],
+      js: [
+        { type: 'importStar', name: 'THREE', module: 'three' },
+        {
+          type: 'animationLoop',
+          body: [
+            {
+              type: 'var',
+              name: 'direcao',
+              value: { type: 'newExpr', namespace: 'THREE', className: 'Vector3', args: [] },
+            },
+          ],
+        },
+      ],
+    })
+
+    expect(result.success).toBe(true)
+  })
+
+  it('distingue classe local de addon realmente importado no lifecycle', () => {
+    const localClass = SZIRSchema.safeParse({
+      html: [],
+      css: [],
+      extensions: [],
+      js: [
+        { type: 'classDecl', name: 'Water', ctorBody: [], methods: [] },
+        {
+          type: 'animationLoop',
+          body: [
+            {
+              type: 'var',
+              name: 'gota',
+              value: { type: 'newExpr', className: 'Water', args: [] },
+            },
+          ],
+        },
+      ],
+    })
+    expect(localClass.success).toBe(true)
+
+    const importedExpression = SZIRSchema.safeParse({
+      html: [],
+      css: [],
+      extensions: [],
+      js: [
+        {
+          type: 'importNamed',
+          names: ['Water'],
+          module: 'three/addons/objects/Water.js',
+        },
+        {
+          type: 'animationLoop',
+          body: [
+            {
+              type: 'var',
+              name: 'agua',
+              value: { type: 'newExpr', className: 'Water', args: [] },
+            },
+          ],
+        },
+      ],
+    })
+    expect(importedExpression.success).toBe(false)
+
+    const importedStatement = SZIRSchema.safeParse({
+      html: [],
+      css: [],
+      extensions: [],
+      js: [
+        {
+          type: 'importNamed',
+          names: ['Water'],
+          module: 'three/addons/objects/Water.js',
+        },
+        {
+          type: 'animationLoop',
+          body: [{ type: 'newInstance', varName: 'agua', className: 'Water', args: [] }],
+        },
+      ],
+    })
+    expect(importedStatement.success).toBe(false)
+  })
+
   it('rejeita toda preparação persistente que ainda podia ser recriada a cada quadro', () => {
     const creators: JSStatement[] = [
       {

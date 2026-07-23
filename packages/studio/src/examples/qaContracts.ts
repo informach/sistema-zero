@@ -35,6 +35,14 @@ export interface ExampleQAContract {
  */
 export const EXAMPLE_QA_CONTRACTS = [
   {
+    key: 'game-2d:Pegue a moeda',
+    name: 'Pegue a moeda',
+    experience: 'game',
+    promise: 'Andar com as setas, encostar na moeda e fazer cinco pontos para vencer.',
+    scenario: 'Começar, mover o herói, coletar cinco moedas, vencer e reiniciar.',
+    interactions: ['start', 'arrows'],
+  },
+  {
     key: 'game-2d:Pong simples',
     name: 'Pong simples',
     experience: 'game',
@@ -401,6 +409,14 @@ export const EXAMPLE_QA_CONTRACTS = [
     promise: 'Defender um portal durante trinta segundos determinísticos.',
     scenario: 'Perder parado, defender até vencer e reiniciar a mesma semente.',
     interactions: ['wasd', 'space'],
+  },
+  {
+    key: 'game-3d-advanced:O Chefão das Sombras',
+    name: 'O Chefão das Sombras',
+    experience: 'game',
+    promise: 'Enfrentar um chefão em três fases, atacando com clique e desviando do anel de tiros.',
+    scenario: 'Clicar no chefão, sobreviver às três fases, vencer/perder e reiniciar.',
+    interactions: ['click', 'wasd'],
   },
   {
     key: 'game-3d-advanced:Tiro ao Alvo',

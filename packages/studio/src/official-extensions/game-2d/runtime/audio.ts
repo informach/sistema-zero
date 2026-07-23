@@ -65,10 +65,10 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
       var osc = ctx.createOscillator();
       var gain = ctx.createGain();
       osc.type = 'square';
-      osc.frequency.value = typeof freq === 'number' && freq > 0 ? freq : 440;
+      osc.frequency.value = _positiveFiniteNumber(freq, 440);
       osc.connect(gain);
       gain.connect(ctx.destination);
-      var dur = (typeof ms === 'number' && ms > 0 ? ms : 200) / 1000;
+      var dur = _positiveFiniteNumber(ms, 200) / 1000;
       var t = ctx.currentTime;
       gain.gain.setValueAtTime(0.12, t);
       gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
@@ -91,7 +91,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
         if (slide === 'exp') osc.frequency.exponentialRampToValueAtTime(Math.max(1, toHz), t + durSec);
         else osc.frequency.linearRampToValueAtTime(toHz, t + durSec);
       }
-      var pk = (typeof peak === 'number') ? peak : 0.1;
+      var pk = _finiteNumber(peak, 0.1);
       gain.gain.setValueAtTime(pk, t);
       gain.gain.exponentialRampToValueAtTime(0.0001, t + durSec);
       osc.connect(gain); gain.connect(ctx.destination);
@@ -105,7 +105,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
     try {
       if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
       var t0 = ctx.currentTime;
-      var pk = (typeof peak === 'number') ? peak : 0.1;
+      var pk = _finiteNumber(peak, 0.1);
       for (var i = 0; i < notes.length; i++) {
         var n = notes[i];
         var osc = ctx.createOscillator(), gain = ctx.createGain();
@@ -172,7 +172,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
   MUSIC_TUNES.victory = { wave: 'square', step: 200, notes: [523, 523, 523, 659, 784, 0, 784, 1047] };
   function _scheduleMusic(delay) {
     if (_musicStop || !_musicState || _paused) return;
-    var wait = Math.max(0, typeof delay === 'number' ? delay : _musicState.step);
+    var wait = Math.max(0, _finiteNumber(delay, _musicState.step));
     _musicState.remaining = wait;
     _musicState.deadline = _wallNow() + wait;
     _musicTimer = setTimeout(_musicNext, wait);
@@ -195,7 +195,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
     if (!_musicStop && _musicState && _musicName === resolvedName) return;
     stopMusic();
     var tune = MUSIC_TUNES[resolvedName];
-    var step = (typeof tune.step === 'number' && tune.step > 0) ? tune.step : 200;
+    var step = _positiveFiniteNumber(tune.step, 200);
     _musicStop = false;
     _musicName = resolvedName;
     _musicState = { tune: tune, step: step, index: 0, remaining: 0, deadline: 0 };
@@ -228,7 +228,7 @@ export const gameTwoDAudioRuntime = `  // ---- Áudio (Web Audio, sem assets) --
   var NOTE_FREQS = { C: 262, D: 294, E: 330, F: 349, G: 392, A: 440, B: 494, C5: 523 };
   function playNote(note, ms) {
     var f = NOTE_FREQS[note];
-    playSound(typeof f === 'number' ? f : 440, ms);
+    playSound(_positiveFiniteNumber(f, 440), ms);
   }
 
   _registerRuntimeDomain('audio', {

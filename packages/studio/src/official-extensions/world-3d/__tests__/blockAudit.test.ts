@@ -1,4 +1,6 @@
 import { beforeAll, describe, expect, it } from 'bun:test'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import * as Blockly from 'blockly/core'
 import { compileStatements } from '#generators'
 import { behaviorStatements, type JSStatement, SZIRSchema } from '#ir'
@@ -114,6 +116,25 @@ beforeAll(() => {
 })
 
 describe('Auditoria Mundo 3D — inventário', () => {
+  it('coleta identificadores para todos os comandos Mundo 3D que o compilador emite', () => {
+    const generator = readFileSync(join(import.meta.dir, '../../../generators/js.ts'), 'utf8')
+    const collectorAt = generator.indexOf('function collectStatementIdentifiers')
+    const compiled = generator.slice(generator.indexOf("case 'w3d:setup':"), collectorAt)
+    const collectionStart = generator.indexOf('// ---- Mundo 3D (world-3d) ----', collectorAt)
+    const collected = generator.slice(
+      collectionStart,
+      generator.indexOf("case 'classDecl':", collectionStart),
+    )
+    const commandTypes = (source: string) =>
+      new Set(
+        [...source.matchAll(/case '([^']+)'/g)]
+          .map((match) => match[1] ?? '')
+          .filter((type) => type.startsWith('w3d:')),
+      )
+
+    expect([...commandTypes(compiled)].sort()).toEqual([...commandTypes(collected)].sort())
+  })
+
   it('todo def é statement (previousStatement) ou reporter (output)', () => {
     expect(statementDefs.length + exprDefs.length).toBe(world3DBlocks.length)
     expect(world3DBlocks.length).toBe(137)

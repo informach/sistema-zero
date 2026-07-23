@@ -216,4 +216,75 @@ describe('Canvas 3D — facilitadores (round-trip completo)', () => {
     expect(json).not.toContain('"sz_t3d_load_model"')
     expect(json).not.toContain('"sz_t3d_traverse"')
   })
+
+  it('não toma métodos de objetos comuns só porque o mesmo projeto usa Three.js', () => {
+    const src = [
+      "import * as THREE from 'three';",
+      'const cena = new THREE.Scene();',
+      'const itens = new Set();',
+      "itens.add('moeda');",
+      'const estado = { visible: false };',
+      'estado.visible = true;',
+    ].join('\n')
+
+    const json = JSON.stringify(
+      buildWorkspaceStateFromIR({ html: [], css: [], js: parseJS(src), extensions: [] }),
+    )
+
+    expect(json).toContain('"sz_js_method_on"')
+    expect(json).toContain('"sz_js_member_set"')
+    expect(json).not.toContain('"sz_t3d_add_to"')
+    expect(json).not.toContain('"sz_t3d_set_visible"')
+  })
+
+  it('reconhece facilitadores aninhados e respeita shadowing léxico', () => {
+    const ir: SZIR = {
+      html: [],
+      css: [],
+      extensions: [],
+      js: [
+        {
+          type: 'event',
+          target: 'document',
+          event: 'click',
+          body: [
+            { type: 'threeSceneSetup', scene: 'cena' },
+            {
+              type: 'newInstance',
+              varName: 'grupo',
+              namespace: 'THREE',
+              className: 'Group',
+              args: [],
+            },
+            {
+              type: 'memberCall',
+              object: { type: 'var', name: 'cena' },
+              method: 'add',
+              args: [{ type: 'var', name: 'grupo' }],
+            },
+          ],
+        },
+        { type: 'threeSceneSetup', scene: 'alvo' },
+        {
+          type: 'event',
+          target: 'document',
+          event: 'click',
+          body: [
+            { type: 'var', name: 'alvo', value: { type: 'num', value: 1 } },
+            {
+              type: 'memberSet',
+              object: { type: 'var', name: 'alvo' },
+              name: 'visible',
+              value: { type: 'bool', value: true },
+            },
+          ],
+        },
+      ],
+    }
+
+    const json = JSON.stringify(buildWorkspaceStateFromIR(ir))
+    expect(json).toContain('"sz_t3d_add_to"')
+    expect(json).toContain('"sz_js_member_set"')
+    expect(json).not.toContain('"sz_t3d_set_visible"')
+  })
 })

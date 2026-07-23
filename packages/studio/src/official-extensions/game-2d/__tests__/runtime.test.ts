@@ -60,6 +60,8 @@ interface SZGame2DSurface {
       color: string
       vx: number
       vy: number
+      angle?: number
+      opacity?: number
     }
     isColliding: (a: unknown, b: unknown) => boolean
     drawSprite: (ctx: unknown, sprite: unknown) => void
@@ -100,6 +102,177 @@ describe('gameTwoDRuntime', () => {
     expect(s.w).toBe(32)
     expect(s.color).toBe('#22d3ee')
     expect(s.vx).toBe(0)
+  })
+
+  it('fronteiras públicas não deixam NaN ou Infinity contaminar o mundo', () => {
+    const sz = api as unknown as {
+      setGravity: (value: number) => void
+      applyVelocity: (sprite: { x: number; y: number; vx: number; vy: number }) => void
+      setCamera: (x: number, y: number) => void
+      cameraX: () => number
+      cameraY: () => number
+      setSize: (sprite: { w: number; h: number }, w: number, h: number) => void
+      setOpacity: (sprite: { opacity?: number }, percent: number) => void
+      scaleSprite: (sprite: { x: number; y: number; w: number; h: number }, factor: number) => void
+      arrowsX: (sprite: { x: number; vx: number }, speed: number) => void
+      rotateSprite: (sprite: { angle?: number }, degrees: number) => void
+      thrust: (sprite: { angle?: number; vx: number; vy: number }, force: number) => void
+      createEnemyType: (options: Record<string, unknown>) => {
+        config: { jumpRate: number }
+      }
+      setEnemyTypeParam: (
+        type: { config: { jumpRate: number } },
+        param: string,
+        value: number,
+      ) => void
+    }
+    const warning = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const sprite = api.createSprite({
+        x: Number.POSITIVE_INFINITY,
+        y: Number.NaN,
+        w: Number.NaN,
+        h: Number.POSITIVE_INFINITY,
+      })
+      expect(sprite).toMatchObject({ x: 0, y: 0, w: 32, h: 32 })
+
+      sz.setGravity(0.25)
+      sz.setGravity(Number.POSITIVE_INFINITY)
+      sz.applyVelocity(sprite)
+      expect(sprite.vy).toBe(0.25)
+
+      sz.setCamera(Number.NaN, Number.POSITIVE_INFINITY)
+      expect(sz.cameraX()).toBe(0)
+      expect(sz.cameraY()).toBe(0)
+
+      sz.setSize(sprite, Number.NaN, Number.POSITIVE_INFINITY)
+      expect(sprite.w).toBe(32)
+      expect(sprite.h).toBe(32)
+      sz.setSize(sprite, -20, -30)
+      expect(sprite.w).toBe(32)
+      expect(sprite.h).toBe(32)
+      sz.setOpacity(sprite, Number.NaN)
+      expect(sprite.opacity).toBe(1)
+      sz.scaleSprite(sprite, Number.POSITIVE_INFINITY)
+      expect(sprite.w).toBe(32)
+      expect(sprite.h).toBe(32)
+
+      api.keys.right = true
+      sz.arrowsX(sprite, Number.POSITIVE_INFINITY)
+      api.keys.right = false
+      expect(Number.isFinite(sprite.x)).toBe(true)
+      expect(Number.isFinite(sprite.vx)).toBe(true)
+
+      sz.rotateSprite(sprite, Number.POSITIVE_INFINITY)
+      sz.thrust(sprite, 1)
+      expect(Number.isFinite(sprite.angle)).toBe(true)
+      expect(Number.isFinite(sprite.vx)).toBe(true)
+      expect(Number.isFinite(sprite.vy)).toBe(true)
+
+      const enemyType = sz.createEnemyType({})
+      sz.setEnemyTypeParam(enemyType, 'ritmo', Number.POSITIVE_INFINITY)
+      expect(enemyType.config.jumpRate).toBe(90)
+    } finally {
+      warning.mockRestore()
+    }
+  })
+
+  it('todas as famílias públicas normalizam números não finitos na entrada', () => {
+    interface NumericSprite {
+      x: number
+      y: number
+      w: number
+      h: number
+      vy: number
+      anim: { from: number; to: number; fps: number } | null
+      skin?: { fullH?: number }
+    }
+    interface NumericSheet {
+      frameW: number
+      frameH: number
+    }
+    interface NumericMap {
+      draw: number
+      ox: number
+      oy: number
+    }
+    const sz = api as unknown as {
+      loadSpriteSheet: (name: string, frameW: number, frameH: number) => NumericSheet
+      setAnimation: (
+        sprite: NumericSprite,
+        sheet: NumericSheet,
+        from: number,
+        to: number,
+        fps: number,
+      ) => void
+      createTileMap: (options: Record<string, unknown>) => NumericMap
+      drawTileMap: (ctx: unknown, map: NumericMap, x: number, y: number, size: number) => void
+      createDino: (options: Record<string, unknown>) => NumericSprite
+      controlDino: (sprite: NumericSprite, ctx: unknown, jump: number) => void
+      drawStarfield: (ctx: unknown, speed: number) => void
+      emitParticles: (x: number, y: number, count: number, color: string) => void
+      drawParticles: (ctx: unknown) => void
+    }
+    const numericCalls: number[][] = []
+    const noop = () => undefined
+    const ctx = new Proxy(
+      {
+        canvas: { width: 320, height: 240 },
+        createLinearGradient: () => ({ addColorStop: noop }),
+        arc: (...values: number[]) => numericCalls.push(values),
+        fillRect: (...values: number[]) => numericCalls.push(values),
+      },
+      {
+        get(target, key, receiver) {
+          return Reflect.has(target, key) ? Reflect.get(target, key, receiver) : noop
+        },
+        set(target, key, value, receiver) {
+          return Reflect.set(target, key, value, receiver)
+        },
+      },
+    )
+    const warning = spyOn(console, 'warn').mockImplementation(() => {})
+
+    try {
+      const sheet = sz.loadSpriteSheet('folha', Number.POSITIVE_INFINITY, Number.NaN)
+      expect(sheet).toMatchObject({ frameW: 32, frameH: 32 })
+
+      const animated = api.createSprite({}) as unknown as NumericSprite
+      sz.setAnimation(
+        animated,
+        sheet,
+        Number.POSITIVE_INFINITY,
+        Number.NEGATIVE_INFINITY,
+        Number.NaN,
+      )
+      expect(animated.anim).toMatchObject({ from: 0, to: 0, fps: 8 })
+
+      const map = sz.createTileMap({ grid: '1', tile: 32, solid: '1', image: '' })
+      sz.drawTileMap(
+        ctx,
+        map,
+        Number.POSITIVE_INFINITY,
+        Number.NEGATIVE_INFINITY,
+        Number.POSITIVE_INFINITY,
+      )
+      expect([map.draw, map.ox, map.oy].every(Number.isFinite)).toBe(true)
+
+      const dino = sz.createDino({ size: Number.POSITIVE_INFINITY })
+      dino.y = 500
+      api.keys.down = true
+      sz.controlDino(dino, ctx, Number.POSITIVE_INFINITY)
+      api.keys.down = false
+      expect([dino.x, dino.y, dino.w, dino.h, dino.skin?.fullH].every(Number.isFinite)).toBe(true)
+
+      sz.drawStarfield(ctx, Number.NEGATIVE_INFINITY)
+      sz.drawStarfield(ctx, 1)
+      sz.emitParticles(Number.POSITIVE_INFINITY, Number.NaN, 1, '#fff')
+      sz.drawParticles(ctx)
+      expect(numericCalls.flat().every(Number.isFinite)).toBe(true)
+    } finally {
+      api.keys.down = false
+      warning.mockRestore()
+    }
   })
 
   it('randomBetween sempre devolve um inteiro, inclusive com limites fracionários', () => {
@@ -334,6 +507,8 @@ describe('gameTwoDRuntime — Kit dino + pulo no chão (v0.9.0)', () => {
     drawSprite(ctx: unknown, s: unknown): void
     createGroup(): DinoGroup
     createSprite(o: Partial<DinoSprite>): DinoSprite
+    setGravity(value: number): void
+    keys: { up: boolean }
   }
 
   function dinoApi(): DinoSZ {
@@ -432,6 +607,24 @@ describe('gameTwoDRuntime — Kit dino + pulo no chão (v0.9.0)', () => {
     expect(dino.y + dino.h).toBe(227)
     expect(dino.skin.onGround).toBe(true)
   })
+
+  it('controlDino usa o teto como chão e pula para baixo com gravidade negativa', () => {
+    const sz = dinoApi()
+    const ctx = fakeDinoCtx(480, 270)
+    const dino = sz.createDino({ x: 100, y: 30, size: 64, color: '#5fb45f' })
+    sz.setGravity(-1)
+    for (let i = 0; i < 20; i++) sz.controlDino(dino, ctx, 15)
+    expect(dino.y).toBe(0)
+    expect(dino.skin.onGround).toBe(true)
+
+    sz.keys.up = true
+    sz.controlDino(dino, ctx, 15)
+    sz.keys.up = false
+    expect(dino.vy).toBe(15)
+    expect(dino.skin.onGround).toBe(false)
+    sz.controlDino(dino, ctx, 15)
+    expect(dino.y).toBeGreaterThan(0)
+  })
 })
 
 describe('gameTwoDRuntime — palco implícito (ctx escondido)', () => {
@@ -480,6 +673,9 @@ describe('gameTwoDRuntime — imagens / spritesheet / animação', () => {
       fh: number,
     ) => { image: { img: FakeImg; loaded: boolean }; frameW: number; frameH: number }
     setAnimation: (s: unknown, sheet: unknown, from: number, to: number, fps: number) => void
+    createGroup: () => { items: unknown[] }
+    bringToFront: (group: { items: unknown[] }, sprite: unknown) => void
+    sendToBack: (group: { items: unknown[] }, sprite: unknown) => void
     clearGroup: (group: { items: unknown[] }) => void
     removeFromGroup: (group: { items: unknown[] }, sprite: unknown) => void
     drawSprite: (ctx: unknown, s: unknown) => void
@@ -727,6 +923,89 @@ describe('gameTwoDRuntime — imagens / spritesheet / animação', () => {
     expect(created[0]?.listenerCount('error')).toBe(0)
     created[0]?.fireLoad()
     expect(calls.filter((call) => call.fn === 'drawImage')).toEqual([])
+  })
+
+  it('mutações públicas de group.items também cancelam redraws removidos', () => {
+    const { api, created } = loadImaging({ heroi: 'data:image/png;base64,AAAA' })
+    const first = api.createSprite({ x: 5, y: 6, w: 20, h: 20, image: 'heroi' })
+    const second = api.createSprite({ x: 30, y: 6, w: 20, h: 20, image: 'heroi' })
+    const { ctx, calls } = fakeCtx()
+    const group = api.createGroup()
+    group.items.push(first, second)
+    api.drawSprite(ctx, first)
+    api.drawSprite(ctx, second)
+    expect(created[0]?.listenerCount('load')).toBe(2)
+
+    group.items.splice(0, 1)
+    expect(created[0]?.listenerCount('load')).toBe(1)
+    group.items = []
+    expect(created[0]?.listenerCount('load')).toBe(0)
+    expect(created[0]?.listenerCount('error')).toBe(0)
+
+    created[0]?.fireLoad()
+    expect(calls.filter((call) => call.fn === 'drawImage')).toEqual([])
+  })
+
+  it('remover de um grupo preserva o redraw enquanto outro grupo ainda possui o sprite', () => {
+    const { api, created } = loadImaging({ heroi: 'data:image/png;base64,AAAA' })
+    const sprite = api.createSprite({ x: 5, y: 6, w: 20, h: 20, image: 'heroi' })
+    const firstGroup = api.createGroup()
+    const secondGroup = api.createGroup()
+    firstGroup.items.push(sprite)
+    secondGroup.items.push(sprite)
+    const { ctx, calls } = fakeCtx()
+    api.drawSprite(ctx, sprite)
+    expect(created[0]?.listenerCount('load')).toBe(1)
+
+    firstGroup.items.splice(0, 1)
+
+    expect(firstGroup.items).toEqual([])
+    expect(secondGroup.items).toEqual([sprite])
+    expect(created[0]?.listenerCount('load')).toBe(1)
+    created[0]?.fireLoad()
+    expect(calls.filter((call) => call.fn === 'drawImage')).toHaveLength(1)
+  })
+
+  it('atribuição, length e delete descartam só quem deixou o grupo', () => {
+    const { api, created } = loadImaging({ heroi: 'data:image/png;base64,AAAA' })
+    const first = api.createSprite({ x: 5, y: 6, w: 20, h: 20, image: 'heroi' })
+    const second = api.createSprite({ x: 30, y: 6, w: 20, h: 20, image: 'heroi' })
+    const third = api.createSprite({ x: 55, y: 6, w: 20, h: 20, image: 'heroi' })
+    const draw = fakeCtx()
+    const group = api.createGroup()
+    group.items.push(first, second, third)
+    api.drawSprite(draw.ctx, first)
+    api.drawSprite(draw.ctx, second)
+    api.drawSprite(draw.ctx, third)
+
+    group.items[0] = second
+    expect(created[0]?.listenerCount('load')).toBe(2)
+    group.items.length = 1
+    expect(created[0]?.listenerCount('load')).toBe(1)
+    delete group.items[0]
+    expect(created[0]?.listenerCount('load')).toBe(0)
+
+    created[0]?.fireLoad()
+    expect(draw.calls.filter((call) => call.fn === 'drawImage')).toEqual([])
+  })
+
+  it('reordenar o grupo preserva o redraw pendente dos sprites', () => {
+    const { api, created } = loadImaging({ heroi: 'data:image/png;base64,AAAA' })
+    const first = api.createSprite({ x: 5, y: 6, w: 20, h: 20, image: 'heroi' })
+    const second = api.createSprite({ x: 30, y: 6, w: 20, h: 20, image: 'heroi' })
+    const draw = fakeCtx()
+    const group = api.createGroup()
+    group.items.push(first, second)
+    api.drawSprite(draw.ctx, first)
+    api.drawSprite(draw.ctx, second)
+
+    api.bringToFront(group, first)
+    api.sendToBack(group, first)
+    expect(group.items).toEqual([first, second])
+    expect(created[0]?.listenerCount('load')).toBe(2)
+
+    created[0]?.fireLoad()
+    expect(draw.calls.filter((call) => call.fn === 'drawImage')).toHaveLength(2)
   })
 
   it('redraw assíncrono da imagem atual passa pela câmera e transformação do sprite', () => {
@@ -996,6 +1275,7 @@ describe('gameTwoDRuntime — música e pausa', () => {
     const timers = new Map<number, () => void>()
     const listeners: Record<string, Listener[]> = {}
     const frequencies: number[] = []
+    const frequencyRamps: number[] = []
     const sourceStops: number[][] = []
     const setTimeoutControlled = (callback: () => void) => {
       const id = nextTimerId
@@ -1023,7 +1303,9 @@ describe('gameTwoDRuntime — música e pausa', () => {
             setValueAtTime(value: number) {
               frequencies.push(value)
             },
-            exponentialRampToValueAtTime() {},
+            exponentialRampToValueAtTime(value: number) {
+              frequencyRamps.push(value)
+            },
             linearRampToValueAtTime() {},
           },
           connect() {},
@@ -1066,6 +1348,7 @@ describe('gameTwoDRuntime — música e pausa', () => {
         SZGame2D: {
           playMusic: (name: string) => void
           playSound: (frequency: number, durationMs: number) => void
+          playJump: () => void
           pauseGame: () => void
           resumeGame: () => void
           restart: () => void
@@ -1078,6 +1361,7 @@ describe('gameTwoDRuntime — música e pausa', () => {
     return {
       api,
       frequencies,
+      frequencyRamps,
       sourceStops,
       timers,
       fireKeydown() {
@@ -1151,6 +1435,17 @@ describe('gameTwoDRuntime — música e pausa', () => {
     expect(sourceStops).toEqual([[10, 0]])
   })
 
+  it('playJump executa o oscilador real após o gesto de áudio', () => {
+    const { api, fireKeydown, frequencies, frequencyRamps, sourceStops } = loadMusicRuntime()
+    fireKeydown()
+
+    api.playJump()
+
+    expect(frequencies.at(-1)).toBe(330)
+    expect(frequencyRamps.at(-1)).toBe(760)
+    expect(sourceStops.at(-1)).toEqual([0.14])
+  })
+
   it('trata nomes herdados do protótipo como músicas desconhecidas', () => {
     const { api, fireKeydown, frequencies } = loadMusicRuntime()
     const warning = spyOn(console, 'warn').mockImplementation(() => {})
@@ -1190,6 +1485,7 @@ describe('gameTwoDRuntime — tiles / tilemaps (v0.5.0)', () => {
     drawTileMap: (ctx: unknown, map: unknown, x: number, y: number, size?: number) => void
     collideTileMap: (sprite: TileSprite, map: unknown) => void
     tileAt: (map: unknown, px: number, py: number) => number
+    tileAtSprite: (map: unknown, s: { x: number; y: number; w: number; h: number }) => number
     setupStage: (width: number, height: number, background: string) => void
   }
 
@@ -1249,6 +1545,15 @@ describe('gameTwoDRuntime — tiles / tilemaps (v0.5.0)', () => {
     expect(api.tileAt(map, 40, 5)).toBe(1) // col 1, linha 0
     expect(api.tileAt(map, 40, 40)).toBe(-1) // col 1, linha 1 = vazio
     expect(api.tileAt(map, -5, 0)).toBe(-1) // fora do mapa
+  })
+
+  it('tileAtSprite devolve o índice do tile onde está o CENTRO do sprite', () => {
+    const api = load()
+    const map = api.createTileMap({ image: 'tileset', tile: 32, solid: '1', grid: '0 1;2 .' })
+    // Sprite 16×16: o centro cai no meio da célula 32×32 escolhida (col×32+16).
+    expect(api.tileAtSprite(map, { x: 8, y: 8, w: 16, h: 16 })).toBe(0) // centro (16,16): col 0, linha 0
+    expect(api.tileAtSprite(map, { x: 40, y: 8, w: 16, h: 16 })).toBe(1) // centro (48,16): col 1, linha 0
+    expect(api.tileAtSprite(map, { x: 40, y: 40, w: 16, h: 16 })).toBe(-1) // centro (48,48): célula vazia
   })
 
   it('drawTileMap desenha uma vez por célula NÃO vazia (placeholder até o tileset carregar)', () => {
@@ -2353,7 +2658,7 @@ describe('gameTwoDRuntime — nave clássica: girar + impulsionar (v0.10.0)', ()
     expect(s2.vy).toBeCloseTo(0, 6)
   })
 
-  it('applyFriction multiplica a velocidade pelo fator', () => {
+  it('applyFriction multiplica a velocidade pelo fator e limita o atrito a 0..1', () => {
     const api = load()
     const s = api.createSprite({ x: 0, y: 0 })
     s.vx = 10
@@ -2361,6 +2666,18 @@ describe('gameTwoDRuntime — nave clássica: girar + impulsionar (v0.10.0)', ()
     api.applyFriction(s, 0.5)
     expect(s.vx).toBeCloseTo(5, 6)
     expect(s.vy).toBeCloseTo(-2, 6)
+
+    s.vx = 10
+    s.vy = -4
+    api.applyFriction(s, -1)
+    expect(s.vx).toBe(0)
+    expect(s.vy).toBe(0)
+
+    s.vx = 10
+    s.vy = -4
+    api.applyFriction(s, 2)
+    expect(s.vx).toBe(10)
+    expect(s.vy).toBe(-4)
   })
 
   it('steerThrust: ↑ acelera na frente e integra a posição; ← → giram', () => {
