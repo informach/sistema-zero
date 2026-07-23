@@ -80,10 +80,10 @@ export function CourseCard({ course, foundationTitle, theme = 'cyan' }: CourseCa
         {foundationFirst ? (
           // Bloqueado pelo curso-base: CTA de largura total que NOMEIA o curso a
           // fazer (o card inteiro leva a ele). Sem repetir "curso-base" solto.
-          <span className="sz-btn-gradient mt-1 flex w-full flex-col gap-0.5 px-3 py-2">
+          <span className="sz-btn-gradient-block mt-1">
             <span className="font-normal text-[11px] opacity-90">Ir para o curso-base:</span>
             <span className="flex items-center gap-1.5">
-              <span className="line-clamp-1 flex-1 text-left font-semibold text-sm">
+              <span className="line-clamp-1 flex-1 font-semibold text-sm">
                 {foundationTitle ?? 'Curso-base da etapa'}
               </span>
               <ArrowRight className="size-4 shrink-0" />

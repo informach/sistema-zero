@@ -89,10 +89,10 @@ export function CatalogCourseCard({
           // card é um <div>, não pode parecer botão).
           <div className="mt-auto border-t border-border pt-3">
             {foundationFirst ? (
-              <span className="sz-btn-gradient flex w-full flex-col gap-0.5 px-3 py-2">
+              <span className="sz-btn-gradient-block">
                 <span className="font-normal text-[11px] opacity-90">Ir para o curso-base:</span>
                 <span className="flex items-center gap-1.5">
-                  <span className="line-clamp-1 flex-1 text-left font-semibold text-sm">
+                  <span className="line-clamp-1 flex-1 font-semibold text-sm">
                     {foundationTitle ?? 'Curso-base da etapa'}
                   </span>
                   <ArrowRight className="size-4 shrink-0" />

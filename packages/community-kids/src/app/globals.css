@@ -372,6 +372,36 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   stroke: currentColor;
 }
 
+/* Variante em BLOCO do CTA gradiente: largura total, altura AUTOMÁTICA e duas
+   linhas (legenda + destino). O `.sz-btn-gradient` é pílula de linha única e
+   altura fixa (2.5rem, sem padding vertical) — enfiar duas linhas nela deixa um
+   vão no meio e o texto colado nas bordas. Usada no CTA "Ir para o curso-base:
+   <nome>" dos cards bloqueados pela carreira. */
+.sz-btn-gradient-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  width: 100%;
+  padding: 0.625rem 1rem;
+  border-radius: 1rem;
+  border: 0;
+  background-image: var(--sz-gradient);
+  color: var(--sz-primary-fg);
+  font-family: inherit;
+  text-align: left;
+  box-shadow: 0 4px 0 color-mix(in oklch, var(--sz-cta) 60%, black);
+  transition:
+    transform 0.12s ease,
+    filter 0.12s ease;
+}
+.sz-btn-gradient-block:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+.sz-btn-gradient-block svg {
+  stroke: currentColor;
+}
+
 /* Hot badge — vermelho da marca com pulso sutil */
 .sz-hot-badge {
   display: inline-flex;
