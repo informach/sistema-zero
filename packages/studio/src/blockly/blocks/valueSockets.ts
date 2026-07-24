@@ -74,11 +74,19 @@ export const VALUE_SOCKETS: Record<string, Record<string, number>> = {
   // Tempo.
   sz_js_set_timeout: { MS: 1000 },
   sz_js_set_interval: { MS: 1000 },
+  sz_js_set_timeout_seconds: { S: 1 },
+  sz_js_set_interval_seconds: { S: 1 },
+  sz_js_set_timeout_call: { MS: 1000 },
+  // Escolha (switch): o caso compara com um valor — nasce com o número 1 editável.
+  sz_js_case: { MATCH: 1 },
   // DOM dinâmico.
   sz_js_set_dataset: { VALUE: 0 },
   sz_js_set_property: { VALUE: 0 },
   // Item da lista por índice.
   sz_val_array_index: { INDEX: 0 },
+  // Objetos/listas: índice numérico e valor escrito (o alvo vai em CUSTOM_SOCKETS).
+  sz_val_index_get: { INDEX: 0 },
+  sz_js_index_set: { INDEX: 0, VALUE: 0 },
   // For clássico (contar de/até/passo).
   sz_js_for_range: { FROM: 0, TO: 10, STEP: 1 },
   sz_js_repeat: { TIMES: 5 },
@@ -181,6 +189,13 @@ export const TEXT_SOCKETS: Record<string, Record<string, string>> = {
   sz_canvas_fill_text: { TEXT: 'Olá' },
   sz_canvas_stroke_text: { TEXT: 'Olá' },
   sz_canvas_measure_text: { TEXT: 'Olá' },
+  // Programação: mostrar/erro nascem com um texto editável.
+  sz_js_console_log_value: { VALUE: 'Olá' },
+  sz_js_throw: { MESSAGE: 'Algo deu errado' },
+  // DOM: valor de estilo/atributo é texto CSS/HTML de verdade.
+  sz_js_set_style: { VALUE: 'red' },
+  sz_js_set_style_text: { VALUE: 'color: red' },
+  sz_js_set_attribute: { VALUE: 'valor' },
 }
 
 interface CompareSeed {
@@ -202,6 +217,8 @@ export type SocketShadow =
   // Como bloco real, os operandos (sombras) voltam a ser substituíveis um a um.
   | { block: CompareSeed }
   | { shadow: { type: 'sz_val_variable'; fields: { NAME: string } } }
+  // "ao clicar no elemento …": o alvo nasce como "o elemento com id …" editável.
+  | { shadow: { type: 'sz_val_get_element'; fields: { ID: string } } }
 
 /**
  * Sombras dos slots que NÃO são número/cor (condições, etc.): tipo do bloco →
@@ -211,6 +228,35 @@ export type SocketShadow =
 /** Sombra padrão de um soquete de OBJETO: variável editável chamada "objeto". */
 const OBJ_VAR_SHADOW: SocketShadow = {
   shadow: { type: 'sz_val_variable', fields: { NAME: 'objeto' } },
+}
+
+/** Sombra padrão de um soquete de LISTA: variável editável chamada "lista". */
+const LIST_VAR_SHADOW: SocketShadow = {
+  shadow: { type: 'sz_val_variable', fields: { NAME: 'lista' } },
+}
+
+/** Condição-semente `x > 0` (a mesma do Se/enquanto): operandos substituíveis um a um. */
+const COND_COMPARE_SEED: SocketShadow = {
+  block: {
+    type: 'sz_val_compare',
+    fields: { OP: '>' },
+    inputs: {
+      LEFT: { shadow: { type: 'sz_val_variable', fields: { NAME: 'x' } } },
+      RIGHT: { shadow: { type: 'sz_val_number', fields: { NUM: 0 } } },
+    },
+  },
+}
+
+/** Condição-semente dos blocos de lista (`item > 0`): fala do ITEM do laço. */
+const ITEM_COMPARE_SEED: SocketShadow = {
+  block: {
+    type: 'sz_val_compare',
+    fields: { OP: '>' },
+    inputs: {
+      LEFT: { shadow: { type: 'sz_val_variable', fields: { NAME: 'item' } } },
+      RIGHT: { shadow: { type: 'sz_val_number', fields: { NUM: 0 } } },
+    },
+  },
 }
 
 const CUSTOM_SOCKETS: Record<string, Record<string, SocketShadow>> = {
@@ -251,56 +297,40 @@ const CUSTOM_SOCKETS: Record<string, Record<string, SocketShadow>> = {
     OBJ1: { shadow: { type: 'sz_val_variable', fields: { NAME: 'player' } } },
     OBJ2: { shadow: { type: 'sz_val_variable', fields: { NAME: 'enemy' } } },
   },
-  sz_js_if_else: {
-    COND: {
-      block: {
-        type: 'sz_val_compare',
-        fields: { OP: '>' },
-        inputs: {
-          LEFT: { shadow: { type: 'sz_val_variable', fields: { NAME: 'x' } } },
-          RIGHT: { shadow: { type: 'sz_val_number', fields: { NUM: 0 } } },
-        },
-      },
-    },
-  },
+  sz_js_if_else: { COND: COND_COMPARE_SEED },
   // while / do-while: a condição já vem como uma comparação `x > 0` (igual ao "Se").
-  sz_js_while: {
-    COND: {
-      block: {
-        type: 'sz_val_compare',
-        fields: { OP: '>' },
-        inputs: {
-          LEFT: { shadow: { type: 'sz_val_variable', fields: { NAME: 'x' } } },
-          RIGHT: { shadow: { type: 'sz_val_number', fields: { NUM: 0 } } },
-        },
-      },
-    },
-  },
-  sz_js_do_while: {
-    COND: {
-      block: {
-        type: 'sz_val_compare',
-        fields: { OP: '>' },
-        inputs: {
-          LEFT: { shadow: { type: 'sz_val_variable', fields: { NAME: 'x' } } },
-          RIGHT: { shadow: { type: 'sz_val_number', fields: { NUM: 0 } } },
-        },
-      },
-    },
-  },
+  sz_js_while: { COND: COND_COMPARE_SEED },
+  sz_js_do_while: { COND: COND_COMPARE_SEED },
   // Ternário: a condição já vem como uma comparação `x > 0` (igual ao "Se").
-  sz_val_ternary: {
-    COND: {
-      block: {
-        type: 'sz_val_compare',
-        fields: { OP: '>' },
-        inputs: {
-          LEFT: { shadow: { type: 'sz_val_variable', fields: { NAME: 'x' } } },
-          RIGHT: { shadow: { type: 'sz_val_number', fields: { NUM: 0 } } },
-        },
-      },
-    },
+  sz_val_ternary: { COND: COND_COMPARE_SEED },
+  // "não …": nasce negando uma comparação (igual ao "Se") — nada de tomada vazia.
+  sz_val_not: { VALUE: COND_COMPARE_SEED },
+  // Escolha (switch): o valor observado começa numa variável "x".
+  sz_js_switch: {
+    SUBJECT: { shadow: { type: 'sz_val_variable', fields: { NAME: 'x' } } },
   },
+  // Laços/operações de lista: a lista-alvo nasce como a variável "lista".
+  sz_js_for_each: { ARRAY: LIST_VAR_SHADOW },
+  sz_val_array_filter: { ARRAY: LIST_VAR_SHADOW, COND: ITEM_COMPARE_SEED },
+  sz_val_array_find: { COND: ITEM_COMPARE_SEED },
+  // Transformar lista: cada item começa virando ele mesmo (identidade editável).
+  sz_val_array_map: {
+    TRANSFORM: { shadow: { type: 'sz_val_variable', fields: { NAME: 'item' } } },
+  },
+  // Async: esperar/juntar promessas aponta p/ variáveis com nomes que ensinam.
+  sz_js_await: {
+    VALUE: { shadow: { type: 'sz_val_variable', fields: { NAME: 'promessa' } } },
+  },
+  sz_val_promise_all: { LIST: LIST_VAR_SHADOW },
+  // "ao clicar no elemento …": o alvo nasce como "o elemento com id botao1".
+  sz_js_element_onclick: {
+    TARGET: { shadow: { type: 'sz_val_get_element', fields: { ID: 'botao1' } } },
+  },
+  // Objetos: alvo genérico = variável "objeto"; item por índice fala de "lista".
+  sz_val_object_op: { OBJ: OBJ_VAR_SHADOW },
+  sz_val_member_get_optional: { OBJ: OBJ_VAR_SHADOW },
+  sz_val_index_get: { OBJ: LIST_VAR_SHADOW },
+  sz_js_index_set: { OBJ: LIST_VAR_SHADOW },
 }
 
 /**

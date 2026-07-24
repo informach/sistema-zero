@@ -582,6 +582,22 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_w3d_bowling_create: { X: 'number', Z: 'number', DEG: 'number' },
   sz_w3d_stack: { N: 'number', X: 'number', Z: 'number' },
   sz_w3d_camera_shake: { FORCE: 'number', SECS: 'number' },
+  // Programação (núcleo) — soquetes nascidos input_value que ganharam sombra na
+  // paleta (auditoria 24/07): entradas inertes na migração, ativas na emissão de
+  // sombra IR→blocos e na cura do load. Soquete de tipo MISTO (ex.: um case que
+  // compara texto) só vira sombra quando o literal casa o kind — o resto fica
+  // como bloco real, escolha da criança.
+  sz_js_console_log_value: { VALUE: 'text' },
+  sz_js_throw: { MESSAGE: 'text' },
+  sz_js_case: { MATCH: 'number' },
+  sz_js_set_timeout_seconds: { S: 'number' },
+  sz_js_set_interval_seconds: { S: 'number' },
+  sz_js_set_timeout_call: { MS: 'number' },
+  sz_js_set_style: { VALUE: 'text' },
+  sz_js_set_style_text: { VALUE: 'text' },
+  sz_js_set_attribute: { VALUE: 'text' },
+  sz_val_index_get: { INDEX: 'number' },
+  sz_js_index_set: { INDEX: 'number', VALUE: 'number' },
 }
 
 interface BlockNode {

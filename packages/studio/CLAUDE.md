@@ -403,6 +403,15 @@ bloco visível some (preserva 🔎 Pesquisar e os flyouts dinâmicos `custom`); 
 6. `blockly/workspaceState.ts` — IR→bloco (`statementToBlock`/`exprToValueBlock`/`htmlNodeToBlock`; **5º arg do `block()` = inputs de VALOR**).
 7. `state/projectStore.ts` — type em `CORE_BLOCKLY_BLOCK_TYPES` (drift `blockAllowlist.test.ts`; faltar = `sanitizeImportedBlocksState` zera TODOS os blocos).
 8. **`blockly/blockLevels.ts` — DEGRAU do bloco** (curadoria por bloco; reforma 2D/3D 07/2026 = escada TOTAL de 6: `iniciante-2d` < `iniciante-3d` < `intermediario-2d` < `intermediario-3d` < `avancado-2d` < `avancado-3d`, a MESMA ordem da carreira do aluno): a categoria **Programação** tem progressão própria e exaustiva em `programmingContract.ts` (orçamento iniciante explícito; bloco novo cai no intermediário, nunca no iniciante por omissão); os demais facilitadores core usam o default **iniciante-2d**. **Todo `sz_g3d_*` é iniciante-3d** (a aula filtra quais mostrar); os pisos por prefixo decidem g3d→ini-3d, gk→int-2d, w3d→int-3d, g3k/t3d→av-3d. ⚠️ NUNCA pôr bloco 3D nos sets `*_2D` (o split protege a promessa do eixo — travado no teste). Valores LEGADOS (`iniciante`/`intermediario`/`avancado`) seguem aceitos nas props públicas e normalizam via `normalizeBlockLevel` (`core/levels.ts`: legado→`iniciante-2d`/`intermediario-3d`/`avancado-3d`, preservando os conjuntos antigos; lixo→`iniciante-2d` fail-closed). Os testes cobram tipos reais, tiers exaustivos e ausência de duplicação entre o contrato de Programação e os sets genéricos.
+8b. **SOMBRA nos soquetes (`blocks/valueSockets.ts`)** — todo `input_value` novo precisa nascer
+   PREENCHIDO na paleta (feedback dela 24/07: "vários blocos sem sombra"): número em
+   `VALUE_SOCKETS`, texto em `TEXT_SOCKETS`, cor em `COLOR_SOCKETS`, composto (variável nomeada /
+   comparação-semente `x > 0` / `sz_val_get_element`) em `CUSTOM_SOCKETS` — reuse
+   `OBJ_VAR_SHADOW`/`LIST_VAR_SHADOW`/`COND_COMPARE_SEED`/`ITEM_COMPARE_SEED`. E soquete de
+   literal (number/text/color) TAMBÉM entra em `LEGACY_VALUE_FIELDS` (`migrateValueFields.ts`) p/
+   a sombra SOBREVIVER à Ponte e ser curada no load (entrada inerte na migração; soquete de tipo
+   misto só vira sombra quando o literal casa o kind). Sombra composta (variável/comparação) é
+   SÓ de paleta — não entra no LEGACY.
 9. teste de round-trip + `bun run typecheck/test/check`.
 
 **Contratos transversais das categorias web:** não replique invariantes nos
