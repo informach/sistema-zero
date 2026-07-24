@@ -709,6 +709,10 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   BFF local `/api/studio/pro-runtime/build`, que exige sessão admin estrita e chama o executor remoto
   com `STUDIO_PRO_RUNTIME_URL` + `STUDIO_PRO_RUNTIME_TOKEN`. O mesmo adapter visualiza entregas Pro,
   sem exigir COEP/WebContainer na rota do Admin. O members recusa template Pro fora da allowlist.
+  ⚠️ **O `proRuntime` vai ao `<StudioLesson>` INCONDICIONALMENTE** (fix 24/07): o StudioCore trava o
+  adapter no MOUNT (`useState` latch) — condicionado a `seed.kind === 'pro'` ele chegava tarde quando
+  o autor trocava blocos→Pro na mesma sessão e o preview caía no WebContainer ('unsupported', a página
+  do admin não tem COOP/COEP). Inerte em projeto de blocos (ProPreview só monta no Pro).
   Campos à
   parte: nível, modos liberados, categorias sempre visíveis, **lista de blocos** (RESTRITIVA —
   `components/studio/studio-blocks-picker.tsx`, busca + grupos por categoria, carrega o `BLOCK_CATALOG`
