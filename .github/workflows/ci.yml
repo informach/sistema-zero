@@ -171,7 +171,7 @@ jobs:
                   packages/marketing-app/*) add marketing-app ;; # front da ferramenta de marketing
                   # packages/helpdesk/*) add helpdesk ;; # help desk com IA (API) — descomentar c/ SVC_ID
                   # packages/helpdesk-app/*) add helpdesk-app ;; # front do help desk — descomentar c/ SVC_ID
-                  packages/studio/*) add community; add community-kids ;; # lib embarcada pelos 2 apps de aluno (editor/player)
+                  packages/studio/*) add community; add community-kids; add admin ;; # lib embarcada: 2 apps de aluno (editor/player) + admin (studio-embed de autoria/entregas, transpilePackages)
                   packages/pensa/*) add community-kids ;; # app de planejamento embarcado (kids v1)
                   packages/pinta/*) add community-kids ;; # editor de assets embarcado (kids v1)
                 esac
