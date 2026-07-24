@@ -74,14 +74,17 @@ export class CheckAccessService {
       { masterType: course.audience === 'adult' ? 'all_courses' : 'all_kids_courses' },
     )
     if (!entitlement) throw new AccessDeniedError()
-    if (course.audience === 'kids' && course.careerSlot !== null) {
+    // Trava pedagógica de TODO curso kids: posições seguem a trilha
+    // (future-tier/foundation-first) e o bônus é recompensa da etapa
+    // (tier-reward — abre quando ela completa).
+    if (course.audience === 'kids') {
       const qualified = await this.gamification.listQualifyingCareerSlots(
         learnerId ?? userId,
         course.audience,
       )
-      // A base (slot 1) nunca depende de si mesma; nos demais slots, sem um
-      // curso-base PUBLICADO a trava foundation-first falha aberta (senão a
-      // etapa inteira ficaria presa) — mesma regra do projetor da listagem.
+      // A base (slot 1) nunca depende de si mesma; nos demais (posições 2+ E
+      // bônus), sem um curso-base PUBLICADO a trava falha aberta (senão a etapa
+      // inteira ficaria presa) — mesma regra do projetor da listagem.
       const foundationAvailable =
         course.careerSlot === 1 ||
         (await this.courses.hasPublishedFoundationCourse(

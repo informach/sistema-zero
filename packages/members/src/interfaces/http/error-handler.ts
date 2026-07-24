@@ -83,7 +83,7 @@ export function buildErrorResponse(input: {
     retryAvailableAt?: string
     details?: { gate: string; missing: string[] }
     careerLock?: {
-      reason: 'future-tier' | 'foundation-first'
+      reason: 'future-tier' | 'foundation-first' | 'tier-reward'
       requiredLevel?: string
     }
   }

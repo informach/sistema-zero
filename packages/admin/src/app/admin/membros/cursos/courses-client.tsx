@@ -225,7 +225,11 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
                     {c.audience === 'kids' ? (
                       <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                         {c.careerSlot == null ? (
-                          'Curso bônus — não conta para subir de nível'
+                          `Bônus — recompensa da etapa ${
+                            COURSE_TIER_OPTIONS.find(
+                              (option) => option.level === c.level && option.track === c.track,
+                            )?.label ?? `${c.level} ${c.track}`
+                          } (abre quando ela completa); não conta para subir de nível`
                         ) : (
                           <>
                             <span>

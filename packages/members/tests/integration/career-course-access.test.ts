@@ -149,6 +149,25 @@ describe('Carreira do Criador — acesso pedagógico aos cursos', () => {
     expect(bySlug.get('base-3d')?.careerLock).not.toHaveProperty('foundationCourseSlug')
   })
 
+  test('catálogo: bônus travado vira recompensa (tier-reward, sem foundationCourseSlug)', async () => {
+    const { app, courses, entitlements } = buildApp()
+    seedSampleCourse(courses, 'base-2d', 'published', 'kids', false, 'iniciante', '2d', 1)
+    seedSampleCourse(courses, 'bonus-2d', 'published', 'kids')
+    grantAllKidsCourses(entitlements, { userId: ACCOUNT })
+
+    const response = await app.handle(
+      new Request('http://localhost/members/catalog?audience=kids', { headers }),
+    )
+    const body = (await response.json()) as { courses: Record<string, any>[] }
+    const bonus = body.courses.find((course) => course.courseSlug === 'bonus-2d')
+    expect(bonus).toMatchObject({
+      hasAccess: true,
+      careerLock: { locked: true, reason: 'tier-reward', requiredLevel: 'hacker' },
+    })
+    // A chave da recompensa é a ETAPA inteira, não um curso específico.
+    expect(bonus?.careerLock).not.toHaveProperty('foundationCourseSlug')
+  })
+
   test('família: a qualificação é POR PERFIL — o irmão não herda o destravamento', async () => {
     const PROFILE_B = '99999999-9999-4999-8999-999999999999'
     const { app, courses, entitlements, gamification } = buildApp()
@@ -205,27 +224,94 @@ describe('Carreira do Criador — acesso pedagógico aos cursos', () => {
     })
   })
 
-  test('curso bônus não participa da trava; equipe ignora a trava pedagógica', async () => {
+  test('bônus é RECOMPENSA da etapa: trava até completar todos os obrigatórios', async () => {
+    const { app, courses, entitlements, gamification } = buildApp()
+    const slots = Array.from({ length: 6 }, (_, index) =>
+      seedSampleCourse(
+        courses,
+        `slot-${index + 1}`,
+        'published',
+        'kids',
+        false,
+        'iniciante',
+        '2d',
+        index + 1,
+      ),
+    )
+    const bonus = seedSampleCourse(courses, 'bonus-2d', 'published', 'kids')
+    grantAllKidsCourses(entitlements, { userId: ACCOUNT })
+
+    // Etapa incompleta → 423 apontando o nível-alvo (o que completa a etapa).
+    const locked = await app.handle(
+      new Request('http://localhost/members/courses/bonus-2d', { headers }),
+    )
+    expect(locked.status).toBe(423)
+    expect(await locked.json()).toMatchObject({
+      error: { code: 'COURSE_CAREER_LOCKED' },
+      careerLock: { reason: 'tier-reward', requiredLevel: 'hacker' },
+    })
+
+    // Defesa em profundidade: a trava também barra as rotas INTERNAS do curso
+    // (todas passam pelo CheckAccessService — aula por URL direta inclusa).
+    expect(
+      (
+        await app.handle(
+          new Request(`http://localhost/members/courses/bonus-2d/lessons/${bonus.lessonIds[0]}`, {
+            headers,
+          }),
+        )
+      ).status,
+    ).toBe(423)
+
+    // Qualificar TODOS os slots (concluir + publicar cada um) → recompensa abre.
+    for (const slot of slots) await qualify(gamification, slot.courseId)
+    expect(
+      (await app.handle(new Request('http://localhost/members/courses/bonus-2d', { headers })))
+        .status,
+    ).toBe(200)
+  })
+
+  test('bônus sem curso-base publicado na etapa segue aberto (fail-open do rollout)', async () => {
     const { app, courses, entitlements } = buildApp()
-    seedSampleCourse(courses, 'bonus', 'published', 'kids')
+    // Sem nenhuma etapa montada (cenário do deploy em prod): nada trava.
+    seedSampleCourse(courses, 'bonus-solto', 'published', 'kids')
+    grantAllKidsCourses(entitlements, { userId: ACCOUNT })
+    expect(
+      (await app.handle(new Request('http://localhost/members/courses/bonus-solto', { headers })))
+        .status,
+    ).toBe(200)
+  })
+
+  test('equipe ignora a trava pedagógica (bônus-recompensa e etapa futura)', async () => {
+    const { app, courses, entitlements } = buildApp()
+    seedSampleCourse(courses, 'base-2d', 'published', 'kids', false, 'iniciante', '2d', 1)
+    seedSampleCourse(courses, 'bonus-2d', 'published', 'kids')
     seedSampleCourse(courses, 'futuro', 'published', 'kids', false, 'avancado', '3d', 1)
     grantAllKidsCourses(entitlements, { userId: ACCOUNT })
 
+    const staffHeaders = {
+      'x-auth-user-id': USER,
+      'x-auth-user-role': 'staff',
+      'x-auth-user-status': 'active',
+    }
     expect(
-      (await app.handle(new Request('http://localhost/members/courses/bonus', { headers }))).status,
+      (
+        await app.handle(
+          new Request('http://localhost/members/courses/bonus-2d', { headers: staffHeaders }),
+        )
+      ).status,
     ).toBe(200)
     expect(
       (
         await app.handle(
-          new Request('http://localhost/members/courses/futuro', {
-            headers: {
-              'x-auth-user-id': USER,
-              'x-auth-user-role': 'staff',
-              'x-auth-user-status': 'active',
-            },
-          }),
+          new Request('http://localhost/members/courses/futuro', { headers: staffHeaders }),
         )
       ).status,
     ).toBe(200)
+    // Aluno comum: com a etapa montada (base publicada), o bônus trava de verdade.
+    expect(
+      (await app.handle(new Request('http://localhost/members/courses/bonus-2d', { headers })))
+        .status,
+    ).toBe(423)
   })
 })

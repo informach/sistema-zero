@@ -244,7 +244,7 @@ export function missingCareerSlots(
   return missing
 }
 
-export type CareerCourseLockReason = 'future-tier' | 'foundation-first'
+export type CareerCourseLockReason = 'future-tier' | 'foundation-first' | 'tier-reward'
 
 export interface CareerCourseLock {
   locked: boolean
@@ -254,14 +254,21 @@ export interface CareerCourseLock {
 }
 
 /**
- * Política de acesso aos cursos da carreira. Cursos bônus (`careerSlot=null`)
- * permanecem fora desta trava e seguem apenas a autorização comercial normal.
+ * Política de acesso aos cursos da carreira.
+ *
+ * Cursos com POSIÇÃO seguem a trilha: etapa futura trava (`future-tier`) e, na
+ * etapa atual, o curso-base (posição 1) destrava os demais (`foundation-first`).
+ * Cursos BÔNUS (`careerSlot=null`) são RECOMPENSA da etapa (`tier-reward`,
+ * decisão 24/07): abrem quando a etapa correspondente COMPLETA — todos os slots
+ * dela qualificados, que é exatamente o momento do level-up.
  *
  * `foundationAvailable` diz se existe um curso-base (`careerSlot=1`) PUBLICADO na
- * etapa. Sem ele NÃO há como destravar as posições 2+ (concluir+publicar a base é
- * a única chave), então a trava `foundation-first` faria a etapa inteira — e a
- * carreira — congelar. Nesse caso a política falha ABERTA: a trava pedagógica só
- * vale quando existe base alcançável. Default `true` para compatibilidade.
+ * etapa. Sem ele NÃO há como destravar (concluir+publicar os obrigatórios é a
+ * única chave), então tanto `foundation-first` quanto `tier-reward` falhariam a
+ * etapa — e a carreira — para sempre. Nesse caso a política falha ABERTA: a trava
+ * pedagógica só vale quando existe base alcançável. (No bônus isso também protege
+ * o ROLLOUT: um catálogo sem etapas montadas nasce todo-bônus e nada trava.)
+ * Default `true` para compatibilidade.
  */
 export function resolveCareerCourseLock(
   qualified: QualifiedCareerSlots,
@@ -269,14 +276,29 @@ export function resolveCareerCourseLock(
   careerSlot: number | null,
   foundationAvailable = true,
 ): CareerCourseLock {
-  if (careerSlot === null) return { locked: false }
-
   const level = creatorCareerLevel(computeCareerLevelSlug(qualified))
   if (level.learningTier === null) return { locked: false }
 
   const learningIndex = CAREER_COURSE_TIERS.indexOf(level.learningTier)
   const courseIndex = CAREER_COURSE_TIERS.indexOf(courseTier)
+  // Etapa já COMPLETADA: posição vira revisão; bônus é recompensa GANHA.
   if (courseIndex < learningIndex) return { locked: false }
+
+  if (careerSlot === null) {
+    if (!foundationAvailable) return { locked: false }
+    // O nível-alvo é o que o aluno VIRA ao completar esta etapa: o 1º nível cuja
+    // régua cumulativa já exige TODOS os slots dela.
+    const fullSlots = CREATOR_CAREER_LEVELS.at(-1)?.requiredSlots[courseTier] ?? []
+    const requiredLevel = CREATOR_CAREER_LEVELS.find(
+      (candidate) => (candidate.requiredSlots[courseTier]?.length ?? 0) >= fullSlots.length,
+    )?.slug
+    return {
+      locked: true,
+      reason: 'tier-reward',
+      requiredLevel,
+      requiredTier: courseTier,
+    }
+  }
 
   if (courseIndex > learningIndex) {
     // O nível-alvo é o PRIMEIRO que passa a estudar esta etapa (só faz sentido

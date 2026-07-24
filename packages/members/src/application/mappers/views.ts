@@ -453,7 +453,7 @@ export function toCatalogCourseView(
 
 export interface CareerCourseLockView {
   locked: boolean
-  reason?: 'future-tier' | 'foundation-first'
+  reason?: 'future-tier' | 'foundation-first' | 'tier-reward'
   requiredLevel?: StudentLevelSlug
   /** Curso-base (posição 1) que explica e resolve a trava, quando publicado. */
   foundationCourseSlug?: string

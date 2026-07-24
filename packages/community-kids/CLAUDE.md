@@ -512,7 +512,28 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   `gamification.level` / `PublicProfileDTO.level` (members deriva). O **DEGRAU do CURSO** (dificuldade × eixo 2D/3D, ≠ do
   nível do aluno) é o `course-level-chip.tsx` (`CourseLevelChip level+track` → 6 rótulos
   "Iniciante 2D"…"Avançado 3D" via `courseTierOf` do member-shell) sobre a capa nos cards
-  (`course-card.tsx`/`catalog-course-card.tsx`); o filtro do catálogo tem os 6 degraus. **COMEMORAÇÃO de SUBIDA de nível:**
+  (`course-card.tsx`/`catalog-course-card.tsx`); o filtro do catálogo tem os 6 degraus.
+  **Trava da carreira nos cards (24/07):** os dois cards tratam o `careerLock.reason` —
+  `foundation-first` (CTA que NOMEIA o curso-base), **`tier-reward`** (🎁 "Recompensa: complete a
+  etapa X" — bônus `careerSlot=null` virou recompensa, abre quando a etapa completa) e
+  `future-tier` ("Em breve na sua carreira"); deep-link em curso travado cai no 423 →
+  `KidsLockedCourse` com copy por motivo (`careerLockReason`, testado em
+  `tests/career-lock-reason.test.ts`).
+  **MAPA DA CARREIRA em /cursos (24/07):** a página de cursos virou o MAPA — serpentina vertical
+  com os 8 níveis (`components/kids/career-map.tsx` + regras PURAS em `lib/career-map.ts`:
+  `LEVEL_TIER` espelha o learningTier do core, `careerNodeState`, `trilhaLocked`; teste em
+  `tests/career-map.test.ts`). Nó = ilustração Dedé/Debinha em **`public/carreira/<slug>.webp`**
+  (**as 8 COMMITADAS 24/07**; fallback `onError` → ícone do LEVEL_INFO; pipeline =
+  `fluxo-criativo/scripts/preparar-poses-carreira.py` — lê `~/Downloads/<slug>.png` do ChatGPT,
+  recorta o chroma `#00B140` e escreve os WebP aqui; o script já trata os casos especiais do 1º
+  lote: fundo em DEGRADÊ no `god` [corte por cor de fundo POR LINHA] e brilhos VERDES pintados
+  pela IA em `god`/`elite`/`noob` [hue girado p/ o acento do nível]); nível não atingido = `grayscale` + cadeado e NÃO navega (wiggle +
+  toast); liberado → **rota nova `/cursos/trilha/[tier]`** (segmento estático `trilha` NÃO colide
+  com o detalhe `/cursos/[slug]`) com a grade da trilha (obrigatórios+bônus, filtro server-side
+  por `courseTierOf`). Deep-link em trilha bloqueada → recado gentil (regra `trilhaLocked` tem
+  escape p/ EQUIPE: algum curso liberado no tier → nunca mura). Gamificação fora → grade clássica.
+  ⚠️ O catálogo com filtros MORREU no kids: `course-catalog-client.tsx`/`catalog-filter-bar.tsx`/
+  `lib/use-catalog-filters.ts` REMOVIDOS (o hook segue no member-shell p/ o community adulto). **COMEMORAÇÃO de SUBIDA de nível:**
   `level-up-celebration.tsx` (overlay Zappy + confete + som + insígnia GRANDE na cor do nível,
   `useModalA11y`, auto-fecha em 7s) disparada pelo `level-up-watcher.tsx` (cliente) — compara o
   `level.slug` do servidor com o ÚLTIMO visto em `localStorage` (`sz:kids:level:<profileId>`) e

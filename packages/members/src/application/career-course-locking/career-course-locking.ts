@@ -24,8 +24,9 @@ export function careerLocksForCourses(
   const locks = new Map<string, CareerCourseLockView>()
   for (const course of courses) {
     const tier = courseTier(course.level, course.track)
-    // Sem um curso-base publicado na etapa, a trava foundation-first falha aberta
-    // (senão as posições 2+ ficariam presas sem nada a concluir para liberar).
+    // Sem um curso-base publicado na etapa, a trava falha aberta — vale p/ as
+    // posições 2+ (foundation-first) E p/ o bônus-recompensa (tier-reward):
+    // sem base não há nada a concluir para liberar.
     const lock = resolveCareerCourseLock(
       qualified,
       tier,

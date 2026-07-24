@@ -26,17 +26,29 @@ A carreira possui seis etapas:
 | Avançado 2D | 1 a 5 |
 | Avançado 3D | 1 a 5 |
 
-São 31 posições obrigatórias. `careerSlot = null` identifica um curso bônus, que não participa da progressão pedagógica.
+São 31 posições obrigatórias. `careerSlot = null` identifica um curso bônus, que não conta para subir de nível.
 
 A posição 1 é o curso base de cada etapa. Ao entrar em uma etapa, a criança abre primeiro esse curso. Os demais cursos da mesma etapa só abrem depois que o curso base for concluído e publicado. Cursos de etapas futuras mostram uma mensagem de continuação da carreira e não criam um link para um curso que ainda está bloqueado.
 
+### Curso bônus é RECOMPENSA da etapa (`tier-reward`, 24/07)
+
+O bônus **não abre de cara**: ele é o prêmio da etapa em que está tagueado (`level` + `track`). Abre quando a criança completa **todos os cursos com posição** daquela etapa (concluídos **e** publicados no Mural — a mesma régua da carreira), o que é exatamente o momento do level-up. Etapa já completada = recompensa ganha para sempre; etapa atual ou futura = o card mostra 🎁 "Recompensa: complete a etapa X" (motivo `tier-reward` no 423). O bônus continua **fora da contagem** de nível (não qualifica slot) e a tag de etapa do bônus agora importa de verdade — confira o degrau dos bônus ao montar cada etapa.
+
+**Regressão aceita ao montar uma etapa:** quando você publica o curso-base de uma etapa, os bônus dela passam a valer a trava — uma criança que estava no MEIO de um bônus perde o acesso a ele até completar a etapa (decisão de produto de 24/07; só acontece em etapa com base publicada, pelo fail-open). O que **não** é afetado: jogo já publicado continua no Mural e no link público de jogar (o post é um snapshot independente do curso), e todo XP/marco já ganho fica.
+
 ### Sem curso base publicado, a etapa não trava (fail-open)
 
-A trava da posição 1 só faz sentido quando existe um curso base **publicado** para destravar. Se a etapa tiver cursos nas posições 2 ou seguintes mas nenhum curso base publicado (ainda não cadastrado, em rascunho ou removido), a trava `foundation-first` é ignorada e esses cursos ficam acessíveis. Sem isso a etapa inteira — e, no caso do Iniciante 2D, a carreira toda — congelaria: não haveria nada a concluir para liberar as demais posições. A regra vive em `resolveCareerCourseLock` (parâmetro `foundationAvailable`) e vale tanto na listagem quanto no acesso direto por URL.
+A trava da posição 1 só faz sentido quando existe um curso base **publicado** para destravar. Se a etapa tiver cursos nas posições 2 ou seguintes mas nenhum curso base publicado (ainda não cadastrado, em rascunho ou removido), a trava `foundation-first` é ignorada e esses cursos ficam acessíveis. **O mesmo vale para o bônus-recompensa**: etapa sem curso base publicado não tem o que completar, então o `tier-reward` também falha aberto — é o que garante que, no deploy em produção (onde todo curso kids nasce bônus antes de as etapas serem montadas), nada tranca. Sem isso a etapa inteira — e, no caso do Iniciante 2D, a carreira toda — congelaria: não haveria nada a concluir para liberar. A regra vive em `resolveCareerCourseLock` (parâmetro `foundationAvailable`) e vale tanto na listagem quanto no acesso direto por URL.
 
 Isso é uma rede de segurança, não o estado desejado: o painel de prontidão continua marcando a posição 1 vazia como "Falta curso". Cadastre e publique o curso base para que a progressão pedagógica volte a valer.
 
 ⚠️ **Armadilha do Mural:** a posição 1 só *qualifica* quando a criança conclui o curso base **e publica no Mural**. Se o curso base não tiver um bloco de Estúdio com vitrine (`showcase.enabled`), ela conclui o curso mas nunca publica — a posição 1 nunca qualifica e os demais cursos da etapa seguem travados. Todo curso base precisa terminar com um projeto publicável.
+
+O Admin agora **avisa sozinho** (full review 24/07): a listagem admin do members marca cada curso-base kids com `hasShowcaseBlock` (existe aula **publicada** com bloco de Estúdio `showcase.enabled`?). Curso-base publicado sem vitrine aparece com ⚠️ **"Sem vitrine"** no painel de prontidão (e **não conta como pronto**) e com um alerta no formulário de edição. O aviso não bloqueia salvar — é sinalização para o operador adicionar o bloco de vitrine.
+
+## Mapa da Carreira na página de cursos (kids, 24/07)
+
+No Community Kids, a página **/cursos** é o **Mapa da Carreira**: uma trilha serpenteante com os 8 níveis ilustrados pelos personagens Dedé e Debinha (`public/carreira/<slug>.webp`; sem a arte, cai no ícone do nível). Nível não atingido fica **preto-e-branco com cadeado e não navega** (balança + recado); nível atingido abre **`/cursos/trilha/<degrau>`** com a listagem dos cursos daquela trilha (obrigatórios e bônus). O nó do nível atual mostra "Você está aqui" + quantos cursos faltam. A Lenda é o nó final de celebração (sem trilha). Deep-link numa trilha bloqueada mostra recado gentil; a equipe nunca é murada (qualquer curso liberado no degrau abre a listagem). Sem gamificação disponível, a página cai na grade clássica. A régua REAL de acesso continua no members — o mapa é apresentação.
 
 ## Matriz dos níveis
 
@@ -84,13 +96,13 @@ Nas aulas, o professor pode criar um projeto Pro antes de a criança chegar à L
 
 No painel **Cursos** (`/admin/membros/cursos`), o formulário de curso (tanto ao criar quanto ao editar — o botão **"Editar curso"** também aparece dentro do editor de conteúdo de cada curso) tem o campo **Posição na Carreira do Criador**. Ele só fica habilitado quando a Audiência é **Kids**.
 
-* **Nenhuma — curso bônus:** fora da trava (o curso aparece mas não segura os outros).
+* **Nenhuma — bônus:** recompensa da etapa (abre quando a criança completa os cursos com posição da etapa do bônus; não conta para subir de nível).
 * **1 — Curso-base da etapa:** o curso que destrava as demais posições.
 * **2 em diante:** os demais cursos da etapa, liberados após o curso base.
 
 O select mostra qual curso já ocupa cada posição da etapa selecionada e desabilita posições ocupadas por outro curso (o banco recusa duplicata na mesma etapa). Iniciante 2D aceita posições 1 a 6; as demais etapas, 1 a 5.
 
-O painel **Carreira do Criador** no topo da página é clicável: uma posição vazia abre o cadastro já mirando a etapa e a posição corretas; uma posição ocupada abre a edição daquele curso. Use-o para preencher a etapa Iniciante 2D primeiro, começando pela posição 1.
+O painel **Carreira do Criador** no topo da página é clicável: uma posição vazia abre o cadastro já mirando a etapa e a posição corretas; uma posição ocupada abre a edição daquele curso. Use-o para preencher a etapa Iniciante 2D primeiro, começando pela posição 1. A posição 1 publicada sem aula publicada com bloco de Estúdio de vitrine aparece como ⚠️ **"Sem vitrine"** (ver a Armadilha do Mural) — resolva antes do lançamento da etapa.
 
 ### Autoria do bloco Estúdio (blocos ou Pro)
 

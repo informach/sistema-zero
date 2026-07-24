@@ -349,20 +349,29 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    (o Mural é kids); a estrutura é por audiência (extensível ao adulto).
 12. **TRAVA PEDAGÓGICA ENTRE CURSOS (curso-base):** separada da matrícula comercial. Cada curso Kids
    tem `careerSlot` (`courses.career_slot`, migrations `0047`–`0049`): **posição 1 = curso-base** da
-   etapa (`level`+`track`), 2+ = demais; `null` = bônus (fora da trava). A política PURA é
+   etapa (`level`+`track`), 2+ = demais; **`null` = bônus-RECOMPENSA da etapa (24/07)** — não abre
+   de cara: destrava quando a etapa do bônus COMPLETA (todos os slots dela qualificados = o momento
+   do level-up; reason `tier-reward`, com `requiredLevel` = o nível que completa a etapa). Bônus
+   segue FORA da contagem de nível. A política PURA é
    `resolveCareerCourseLock(qualified, tier, slot, foundationAvailable)` (core `@sistemazero/core/career`):
    curso de etapa FUTURA → `future-tier`; na etapa atual, se não é o slot 1 e o slot 1 ainda não
-   qualificou → `foundation-first`. ⚠️ **Fail-open (fix 23/07):** sem um curso-base PUBLICADO na
-   etapa não há como destravar (concluir+publicar a base é a única chave), então a trava
-   `foundation-first` é IGNORADA — senão a etapa inteira (e, no Iniciante 2D, a carreira toda)
-   congelaria. `foundationAvailable` = `foundationByTier.has(tier)` na projeção da listagem
+   qualificou → `foundation-first`. ⚠️ **Fail-open (fix 23/07; estendido ao bônus 24/07):** sem um
+   curso-base PUBLICADO na etapa não há como destravar (concluir+publicar os obrigatórios é a única
+   chave), então tanto `foundation-first` quanto `tier-reward` são IGNORADOS — senão a etapa inteira
+   (e, no Iniciante 2D, a carreira toda) congelaria; no bônus isso também protege o ROLLOUT em prod
+   (catálogo nasce todo-bônus antes de as etapas serem montadas → nada tranca no deploy). `foundationAvailable` = `foundationByTier.has(tier)` na projeção da listagem
    (`careerLocksForCourses`) e `CourseRepository.hasPublishedFoundationCourse(audience, level, track)`
    no gate em profundidade (`CheckAccessService`, que lança `CourseCareerLockedError` → **423
    `COURSE_CAREER_LOCKED`**). LISTA e gate usam a MESMA política (mesmo `qualified` do PERFIL). Flag
    liga só p/ `audience==='kids' && !privileged` (equipe ignora). Autoria admin valida o slot em
    `assertCareerSlot` (kids-only, máx 6 iniciante-2d senão 5, conflito → 409 `CAREER_SLOT_CONFLICT`).
    ⚠️ **Armadilha:** curso-base sem bloco de Estúdio com vitrine (`showcase.enabled`) conclui mas
-   nunca publica → slot 1 nunca qualifica → demais da etapa presos. Doc: `docs/carreira-do-criador.md`.
+   nunca publica → slot 1 nunca qualifica → demais da etapa presos. **Aviso automático (24/07):** a
+   listagem admin (`CourseAdminService.list`) anexa `hasShowcaseBlock` aos cursos-base kids
+   (`ContentAdminRepository.listCourseIdsWithShowcaseBlock` — EXISTS de aula PUBLICADA com bloco
+   `studio` `showcase.enabled`) e o painel do admin mostra ⚠️ "Sem vitrine". O 423 `foundation-first`
+   NÃO carrega `requiredLevel` (a chave é o curso-base, não um nível — só `future-tier` o traz).
+   Doc: `docs/carreira-do-criador.md`.
 
 ## Arquitetura (DDD + Hexagonal — espelha auth/catalog)
 

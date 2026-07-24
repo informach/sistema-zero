@@ -594,10 +594,13 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   no paste — localStorage guarda legado p/ sempre).
   **Posição na carreira (curso-base):** `careerSlot` é opcional. Só curso Kids pode ocupá-la;
   Iniciante 2D aceita 1..6 e as demais etapas 1..5; **posição 1 = curso-base** (destrava as demais
-  da etapa). O dialog de curso virou o COMPONENTE COMPARTILHADO `cursos/course-form-dialog.tsx`
+  da etapa); **sem posição = bônus-RECOMPENSA da etapa (24/07)** — abre quando o aluno completa os
+  cursos com posição da etapa do bônus (a listagem rotula "Bônus — recompensa da etapa X"; etapa
+  sem base publicada não trava o bônus, fail-open). O dialog de curso virou o COMPONENTE
+  COMPARTILHADO `cursos/course-form-dialog.tsx`
   (`CourseFormDialog`), reusado pela LISTAGEM (`courses-client.tsx`) E pelo EDITOR do curso
   (`[courseId]/course-editor-client.tsx` — botão "Editar curso" no header, atende "editar tb, não
-  só criar"). O campo posição é um **`Select` com rótulos** ("Nenhuma — curso bônus", "1 —
+  só criar"). O campo posição é um **`Select` com rótulos** ("Nenhuma — bônus (recompensa…)", "1 —
   Curso-base…", 2…) que mostra a OCUPAÇÃO da etapa selecionada e desabilita posição ocupada por
   OUTRO curso (evita o 409 `CAREER_SLOT_CONFLICT` do members); trocar de etapa (6→5) faz clamp.
   O `CourseFormDialog` busca os cursos Kids sozinho (`careerCourses` opcional) p/ a ocupação e
@@ -605,7 +608,11 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   ausente LIMPA a chave — mandar tudo é o contrato seguro). O card de prontidão `CareerReadiness`
   é **CLICÁVEL** (`canWrite`): posição vazia → cria já mirando etapa+posição (`prefill`); ocupada →
   edita o curso. Ele carrega TODAS as páginas Kids com `loadAllPages` (as 31 posições, sem cortar
-  nos primeiros 100). A matriz operacional, o fail-open (etapa sem base publicada não trava) e as
+  nos primeiros 100). **Aviso "Sem vitrine" (24/07):** curso-base PUBLICADO sem aula publicada com
+  bloco de Estúdio de vitrine (`CourseView.hasShowcaseBlock === false`, campo da listagem do
+  members) aparece ⚠️ "Sem vitrine" no painel (NÃO conta como pronto) e o `CourseFormDialog` mostra
+  um alerta ao editar — sem isso o slot 1 nunca qualifica e a etapa não destrava (Armadilha do
+  Mural). A matriz operacional, o fail-open (etapa sem base publicada não trava) e as
   migrations `0048`/`0049` estão em `docs/carreira-do-criador.md`.
   **Convite multi-plataforma**: `POST /auth/admin/users` aceita
   `platform: 'main'|'kids'` (select "Plataforma do convite" no dialog — decide a base do link do

@@ -346,7 +346,9 @@ quiser); em branco (ou no Estúdio Completo, que não passa) → a IA gera o ras
 `champion`→`god`) + `StudentLevelView` (com `remaining` por DEGRAU — `StudentLevelRemaining`, 6
 chaves `iniciante-2d`…`avancado-3d` + `any`, mirror do members) — `GamificationMeView.level?` e
 `PublicProfileGameView.level?` (OPCIONAIS). E `CourseLevelSlug` + **`CourseTrack`** (`2d`|`3d`) em
-`CatalogCourseView`/`MyCourseView`/`CourseDetailView` (`level?`/`track?`). **`lib/course-tier.ts`**
+`CatalogCourseView`/`MyCourseView`/`CourseDetailView` (`level?`/`track?`).
+`CareerCourseLockView.reason` = `future-tier` | `foundation-first` | **`tier-reward`** (24/07 —
+bônus `careerSlot=null` é RECOMPENSA da etapa; regra no core/members, apresentação no kids). **`lib/course-tier.ts`**
 é o helper compartilhado dos apps de aluno (`COURSE_TIERS`/`COURSE_TIER_LABELS`/`courseTierOf` —
 track ausente → `2d`; o admin NÃO importa daqui, duplicação intencional); o filtro `nivel` do
 `use-catalog-filters` usa os 6 degraus. **`lib/studio-tier.ts`**: `resolveStudioTier` mapeia os 8

@@ -231,7 +231,7 @@ export interface MyCourseView {
 
 export interface CareerCourseLockView {
   locked: boolean
-  reason?: 'future-tier' | 'foundation-first'
+  reason?: 'future-tier' | 'foundation-first' | 'tier-reward'
   requiredLevel?: StudentLevelSlug
   foundationCourseSlug?: string
 }

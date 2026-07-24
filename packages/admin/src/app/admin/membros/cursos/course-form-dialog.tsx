@@ -335,10 +335,10 @@ export function CourseFormDialog({
         <Field
           label="Posição na Carreira do Criador"
           htmlFor="career-slot"
-          tooltip="Ordena os cursos Kids dentro da etapa. A posição 1 é o CURSO-BASE: o aluno precisa concluí-lo e publicar no Mural para as demais posições da etapa liberarem. 'Curso bônus' fica fora da trava (aparece, mas não segura os outros)."
+          tooltip="Ordena os cursos Kids dentro da etapa. A posição 1 é o CURSO-BASE: o aluno precisa concluí-lo e publicar no Mural para as demais posições da etapa liberarem. 'Bônus' é a RECOMPENSA da etapa: abre quando o aluno completa todos os cursos com posição (etapa sem curso-base publicado não trava o bônus)."
           hint={
             isKids
-              ? '1 é o curso-base da etapa (destrava as demais posições). Deixe em bônus para cursos extras.'
+              ? '1 é o curso-base da etapa (destrava as demais posições). Bônus vira recompensa: abre quando a etapa completa.'
               : 'Disponível apenas para cursos Kids.'
           }
         >
@@ -348,7 +348,7 @@ export function CourseFormDialog({
             disabled={!isKids}
             onChange={(e) => setForm((f) => ({ ...f, careerSlot: e.target.value }))}
           >
-            <option value="">Nenhuma — curso bônus (fora da trava)</option>
+            <option value="">Nenhuma — bônus (recompensa: abre quando a etapa completa)</option>
             {Array.from({ length: maxSlot }, (_, i) => i + 1).map((slot) => {
               const occ = occupantBySlot.get(slot)
               const takenByOther = !!occ && occ.id !== editing?.id

@@ -1,6 +1,7 @@
 import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
+import { COURSE_TIER_LABELS, courseTierOf } from '@sistemazero/member-shell/lib/course-tier'
 import { Card } from '@sistemazero/ui/card'
-import { ArrowRight, BookOpen, Lock } from 'lucide-react'
+import { ArrowRight, BookOpen, Gift, Lock } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import type { MyCourseView } from '@/lib/types'
@@ -22,6 +23,12 @@ export function CourseCard({ course, foundationTitle, theme = 'cyan' }: CourseCa
   const done = progress.totalLessons > 0 && progress.completedLessons >= progress.totalLessons
   const careerLocked = course.careerLock?.locked === true
   const foundationFirst = careerLocked && course.careerLock?.reason === 'foundation-first'
+  // Bônus = recompensa da etapa: abre sozinho quando os obrigatórios completam.
+  const tierReward = careerLocked && course.careerLock?.reason === 'tier-reward'
+  const rewardTier = courseTierOf(course.level, course.track)
+  const rewardLabel = rewardTier
+    ? `Recompensa: complete a etapa ${COURSE_TIER_LABELS[rewardTier]}`
+    : 'Recompensa: complete os cursos da etapa'
 
   const card = (
     <Card
@@ -56,7 +63,11 @@ export function CourseCard({ course, foundationTitle, theme = 'cyan' }: CourseCa
         {careerLocked ? (
           <div className="absolute inset-0 grid place-items-center bg-background/55 backdrop-blur-[2px]">
             <span className="grid size-12 place-items-center rounded-full bg-background/90 shadow-sm">
-              <Lock className="size-5 text-primary" />
+              {tierReward ? (
+                <Gift className="size-5 text-primary" />
+              ) : (
+                <Lock className="size-5 text-primary" />
+              )}
             </span>
           </div>
         ) : null}
@@ -88,6 +99,12 @@ export function CourseCard({ course, foundationTitle, theme = 'cyan' }: CourseCa
               </span>
               <ArrowRight className="size-4 shrink-0" />
             </span>
+          </span>
+        ) : tierReward ? (
+          // Recompensa da etapa: não é clicável → rótulo muted com presente.
+          <span className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-full bg-muted px-3 py-2 text-muted-foreground text-xs">
+            <Gift className="size-3.5" />
+            {rewardLabel}
           </span>
         ) : careerLocked ? (
           // Etapa futura: não é clicável → rótulo muted, sem cara de botão.

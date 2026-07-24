@@ -80,8 +80,38 @@ describe('catálogo da Carreira do Criador', () => {
     })
   })
 
-  test('curso bônus não participa da trava', () => {
-    expect(resolveCareerCourseLock({}, 'avancado-3d', null)).toEqual({ locked: false })
+  test('curso bônus é RECOMPENSA da etapa: abre quando ela completa', () => {
+    // Etapa atual incompleta → travado como recompensa, apontando o nível-alvo
+    // (o que o aluno vira ao completar a etapa).
+    expect(resolveCareerCourseLock({}, 'iniciante-2d', null)).toEqual({
+      locked: true,
+      reason: 'tier-reward',
+      requiredLevel: 'hacker',
+      requiredTier: 'iniciante-2d',
+    })
+    // Etapa completa (learningTier passou dela) → recompensa GANHA.
+    expect(
+      resolveCareerCourseLock({ 'iniciante-2d': [1, 2, 3, 4, 5, 6] }, 'iniciante-2d', null),
+    ).toEqual({ locked: false })
+    // Bônus de etapa FUTURA é recompensa DELA (não `future-tier`).
+    expect(resolveCareerCourseLock({}, 'avancado-3d', null)).toMatchObject({
+      locked: true,
+      reason: 'tier-reward',
+      requiredLevel: 'god',
+    })
+    // Etapa sem curso-base publicado não tem o que completar → fail-open
+    // (também é o que protege o rollout de um catálogo todo-bônus).
+    expect(resolveCareerCourseLock({}, 'iniciante-2d', null, false)).toEqual({ locked: false })
+    // Lenda: tudo aberto.
+    const all = {
+      'iniciante-2d': [1, 2, 3, 4, 5, 6],
+      'iniciante-3d': [1, 2, 3, 4, 5],
+      'intermediario-2d': [1, 2, 3, 4, 5],
+      'intermediario-3d': [1, 2, 3, 4, 5],
+      'avancado-2d': [1, 2, 3, 4, 5],
+      'avancado-3d': [1, 2, 3, 4, 5],
+    } as const
+    expect(resolveCareerCourseLock(all, 'avancado-3d', null)).toEqual({ locked: false })
   })
 
   test('sem curso-base publicado na etapa, foundation-first falha ABERTA', () => {

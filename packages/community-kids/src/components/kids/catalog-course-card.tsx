@@ -1,5 +1,6 @@
+import { COURSE_TIER_LABELS, courseTierOf } from '@sistemazero/member-shell/lib/course-tier'
 import { Card } from '@sistemazero/ui/card'
-import { ArrowRight, BookOpen, Lock, ShieldCheck } from 'lucide-react'
+import { ArrowRight, BookOpen, Gift, Lock, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import type { CatalogCourseView } from '@/lib/types'
@@ -33,6 +34,12 @@ export function CatalogCourseCard({
   const careerLocked = course.hasAccess && course.careerLock?.locked === true
   const available = course.hasAccess && !careerLocked
   const foundationFirst = careerLocked && course.careerLock?.reason === 'foundation-first'
+  // Bônus = recompensa da etapa: abre sozinho quando os obrigatórios completam.
+  const tierReward = careerLocked && course.careerLock?.reason === 'tier-reward'
+  const rewardTier = courseTierOf(course.level, course.track)
+  const rewardLabel = rewardTier
+    ? `Recompensa: complete a etapa ${COURSE_TIER_LABELS[rewardTier]}`
+    : 'Recompensa: complete os cursos da etapa'
   const body = (
     <Card
       className={cn(
@@ -65,7 +72,11 @@ export function CatalogCourseCard({
         {!available ? (
           <div className="absolute inset-0 flex items-center justify-center bg-background/55 backdrop-blur-[2px]">
             <span className="flex size-12 items-center justify-center rounded-full border border-border bg-background/90 shadow-sm">
-              <Lock className="size-5 text-muted-foreground" />
+              {tierReward ? (
+                <Gift className="size-5 text-muted-foreground" />
+              ) : (
+                <Lock className="size-5 text-muted-foreground" />
+              )}
             </span>
           </div>
         ) : null}
@@ -97,6 +108,11 @@ export function CatalogCourseCard({
                   </span>
                   <ArrowRight className="size-4 shrink-0" />
                 </span>
+              </span>
+            ) : tierReward ? (
+              <span className="flex w-full items-center justify-center gap-1.5 rounded-full bg-muted px-3 py-2 text-muted-foreground text-xs">
+                <Gift className="size-3.5" />
+                {rewardLabel}
               </span>
             ) : (
               <span className="flex w-full items-center justify-center gap-1.5 rounded-full bg-muted px-3 py-2 text-muted-foreground text-xs">

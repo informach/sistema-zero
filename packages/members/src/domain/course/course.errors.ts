@@ -26,18 +26,20 @@ export class LessonLockedError extends DomainError {
   }
 }
 
-/** Curso futuro na Carreira do Criador ou aguardando o curso-base. → 423. */
+const CAREER_LOCK_MESSAGES = {
+  'foundation-first': 'Conclua e publique o curso-base desta etapa para liberar este curso',
+  'tier-reward': 'Este curso é uma recompensa: complete os cursos da etapa para liberar',
+  'future-tier': 'Continue sua carreira para liberar este curso',
+} as const
+
+/** Curso futuro na carreira, aguardando o curso-base, ou bônus-recompensa da etapa. → 423. */
 export class CourseCareerLockedError extends DomainError {
   readonly code = 'COURSE_CAREER_LOCKED'
   constructor(
-    readonly reason: 'future-tier' | 'foundation-first',
+    readonly reason: keyof typeof CAREER_LOCK_MESSAGES,
     readonly requiredLevel?: string,
   ) {
-    super(
-      reason === 'foundation-first'
-        ? 'Conclua e publique o curso-base desta etapa para liberar este curso'
-        : 'Continue sua carreira para liberar este curso',
-    )
+    super(CAREER_LOCK_MESSAGES[reason])
   }
 }
 
