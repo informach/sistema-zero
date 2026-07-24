@@ -549,7 +549,11 @@ describe('Gamificação — ranking por vitrine (?audience= + ?ranking=true)', (
     grantLifetime(entitlements, { userId: STAFF, courseRef: kidsCourse.slug })
 
     // Staff (mesmo COM matrícula) pontua mais que o cliente…
-    const staffHeaders = { 'x-auth-user-id': STAFF, 'x-auth-user-role': 'staff' }
+    const staffHeaders = {
+      'x-auth-user-id': STAFF,
+      'x-auth-user-role': 'staff',
+      'x-auth-user-status': 'active',
+    }
     await complete(app, kidsCourse.lessonIds[0], staffHeaders)
     await complete(app, kidsCourse.lessonIds[1], staffHeaders)
     await complete(app, kidsCourse.lessonIds[0])
@@ -623,6 +627,7 @@ describe('Gamificação — resiliência e impersonação', () => {
     const res = await complete(app, course.lessonIds[0], {
       'x-auth-user-id': STAFF,
       'x-auth-user-role': 'staff',
+      'x-auth-user-status': 'active',
     })
     expect(res.status).toBe(200)
     const body = await readJson(res)
@@ -1060,7 +1065,11 @@ describe('Gamificação — correções do full review (freeze/streak display/ra
     const kids = seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
     const STAFF = '66666666-6666-6666-6666-666666666666'
     grantLifetime(entitlements, { userId: STAFF, courseRef: kids.slug })
-    const staffHeaders = { 'x-auth-user-id': STAFF, 'x-auth-user-role': 'staff' }
+    const staffHeaders = {
+      'x-auth-user-id': STAFF,
+      'x-auth-user-role': 'staff',
+      'x-auth-user-status': 'active',
+    }
     await complete(app, kids.lessonIds[0], staffHeaders) // pontua como equipe (privileged)
 
     const me = await readJson(

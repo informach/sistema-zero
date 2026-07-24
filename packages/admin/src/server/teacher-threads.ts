@@ -35,8 +35,11 @@ export function listTeacherThreads(
 }
 
 /** Uma conversa (cabeçalho + turnos): `GET /members/admin/teacher-threads/:id`. */
-export function getTeacherThread(id: string): Promise<GatewayResponse<TeacherThreadView>> {
-  return gatewayFetch(`/members/admin/teacher-threads/${enc(id)}`)
+export function getTeacherThread(
+  id: string,
+  before?: string,
+): Promise<GatewayResponse<TeacherThreadView>> {
+  return gatewayFetch(`/members/admin/teacher-threads/${enc(id)}`, { query: { before } })
 }
 
 /** Professor responde: `POST /members/admin/teacher-threads/:id/messages`. */

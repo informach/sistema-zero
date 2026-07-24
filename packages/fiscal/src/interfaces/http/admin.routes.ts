@@ -124,7 +124,14 @@ export function adminRoutes(deps: AdminRoutesDeps) {
             set.status = 409
             return envelope('INVALID_STATE', 'Só notas FAILED podem ser reprocessadas')
           }
-          await deps.invoices.retry(params.id, new Date())
+          const retried = await deps.invoices.retry(params.id, new Date())
+          if (!retried) {
+            set.status = 409
+            return envelope(
+              'INVALID_STATE',
+              'A nota mudou de estado; atualize a página e tente de novo',
+            )
+          }
           await deps.invoices.appendEvent(params.id, 'RETRIED_BY_ADMIN', adminActor(headers), {})
           deps.logger.info('fiscal.admin_retry', { invoiceId: params.id })
           return { ok: true }
@@ -140,12 +147,22 @@ export function adminRoutes(deps: AdminRoutesDeps) {
             set.status = 404
             return envelope('INVOICE_NOT_FOUND', 'Nota não encontrada')
           }
-          if (invoice.status !== 'EMITTED') {
+          if (invoice.status !== 'EMITTED' && invoice.status !== 'CANCEL_FAILED') {
             set.status = 409
-            return envelope('INVALID_STATE', 'Só notas EMITTED podem ser canceladas')
+            return envelope(
+              'INVALID_STATE',
+              'Só notas EMITTED ou CANCEL_FAILED podem ser canceladas',
+            )
           }
           const actor = adminActor(headers)
-          await deps.invoices.requestCancel(params.id, actor, body.reason)
+          const requested = await deps.invoices.requestCancel(params.id, actor, body.reason)
+          if (!requested) {
+            set.status = 409
+            return envelope(
+              'INVALID_STATE',
+              'A nota mudou de estado; atualize a página e tente de novo',
+            )
+          }
           await deps.invoices.appendEvent(params.id, 'CANCEL_REQUESTED', actor, {
             reason: body.reason,
           })
@@ -222,7 +239,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           // Substituta agendada p/ AGORA: o worker emite a DPS nova com o grupo
           // subst apontando a chave da original (o sistema nacional cancela a
           // original por substituição; quando emitir, original → SUBSTITUTED).
-          const substitute = await deps.invoices.schedule({
+          const substitute = await deps.invoices.scheduleIfAbsent({
             paymentId: original.paymentId,
             customer: {
               name: body.customerName ?? original.customer.name,
@@ -238,6 +255,13 @@ export function adminRoutes(deps: AdminRoutesDeps) {
             ambiente: original.ambiente,
             substitutesId: original.id,
           })
+          if (!substitute) {
+            set.status = 409
+            return envelope(
+              'SUBSTITUTE_IN_PROGRESS',
+              'Uma substituta foi criada por outra solicitação; atualize a página',
+            )
+          }
           await deps.invoices.appendEvent(substitute.id, 'SUBSTITUTION_CREATED', actor, {
             substitutes: original.id,
           })
@@ -273,7 +297,14 @@ export function adminRoutes(deps: AdminRoutesDeps) {
             set.status = 409
             return envelope('INVALID_STATE', 'Só notas SCHEDULED podem ser antecipadas')
           }
-          await deps.invoices.expedite(params.id)
+          const expedited = await deps.invoices.expedite(params.id)
+          if (!expedited) {
+            set.status = 409
+            return envelope(
+              'INVALID_STATE',
+              'A nota mudou de estado; atualize a página e tente de novo',
+            )
+          }
           await deps.invoices.appendEvent(params.id, 'EMIT_NOW_REQUESTED', adminActor(headers), {})
           deps.logger.info('fiscal.admin_emit_now', { invoiceId: params.id })
           // O worker emite no próximo ciclo (≤30s); a re-verificação de pagamento
@@ -311,8 +342,11 @@ export function adminRoutes(deps: AdminRoutesDeps) {
             set.status = 422
             return envelope('INVALID_DOCUMENT', 'Pagamento sem CPF válido do comprador')
           }
-          const existing = await deps.invoices.findActiveByPaymentId(body.paymentId)
-          if (existing) {
+          // Inclui substitutas: depois que a original vira SUBSTITUTED, a NFS-e
+          // ativa do pagamento é a substituta (que fica fora da unique normal).
+          const activeInvoices = await deps.invoices.findActiveManyByPaymentId(body.paymentId)
+          if (activeInvoices.length > 0) {
+            const existing = activeInvoices[0]!
             set.status = 409
             return envelope(
               'INVOICE_ALREADY_EXISTS',
@@ -339,7 +373,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           const serviceDescription = composeServiceDescription(deps.serviceDescPrefix, productName)
 
           const actor = adminActor(headers)
-          const invoice = await deps.invoices.schedule({
+          const invoice = await deps.invoices.scheduleIfAbsent({
             paymentId: body.paymentId,
             customer: {
               name: snapshot.customer?.name ?? '',
@@ -354,6 +388,13 @@ export function adminRoutes(deps: AdminRoutesDeps) {
             scheduledFor: new Date(),
             ambiente: deps.ambiente,
           })
+          if (!invoice) {
+            set.status = 409
+            return envelope(
+              'INVOICE_ALREADY_EXISTS',
+              'Uma nota ativa foi criada por outra solicitação; atualize a página',
+            )
+          }
           await deps.invoices.appendEvent(invoice.id, 'SCHEDULED', actor, {
             manual: true,
             paymentId: body.paymentId,

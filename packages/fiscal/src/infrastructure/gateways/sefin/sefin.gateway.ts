@@ -27,6 +27,7 @@ interface SefinErrorBody {
 export class SefinHttpGateway implements SefinNacionalGateway {
   private readonly fetch: ReturnType<typeof createMtlsFetch>
   private readonly base: string
+  private readonly adnContribuintes: string
   private readonly perReqMs: number
   private readonly totalBudgetMs: number
   private readonly sigAlgo: SigAlgo
@@ -44,7 +45,9 @@ export class SefinHttpGateway implements SefinNacionalGateway {
     private readonly certRef = cert,
   ) {
     this.fetch = createMtlsFetch(cert, opts.timeoutMs)
-    this.base = sefinUrls(opts.ambiente).sefin
+    const urls = sefinUrls(opts.ambiente)
+    this.base = urls.sefin
+    this.adnContribuintes = urls.adnContribuintes
     this.perReqMs = opts.timeoutMs
     this.totalBudgetMs = opts.totalBudgetMs
     this.sigAlgo = opts.sigAlgo
@@ -76,7 +79,7 @@ export class SefinHttpGateway implements SefinNacionalGateway {
       return {
         kind: 'accepted',
         accessKey: body.chaveAcesso,
-        nfseXml: body.nfseXmlGZipB64 ? safeGunzip(body.nfseXmlGZipB64) : '',
+        nfseXml: body.nfseXmlGZipB64 ? gunzipRequired(body.nfseXmlGZipB64, 'nfseXmlGZipB64') : '',
         dpsXml: signed,
       }
     }
@@ -89,9 +92,7 @@ export class SefinHttpGateway implements SefinNacionalGateway {
       }))
       // Número reusado já virou NFS-e num envio anterior? → duplicate (não FAILED).
       // A chave resolvida AQUI viaja no resultado — o serviço NÃO reconsulta.
-      const existing = await this.findNfseByDpsId(input.dpsId, this.remaining(deadline)).catch(
-        () => null,
-      )
+      const existing = await this.findNfseByDpsId(input.dpsId, this.remaining(deadline))
       if (existing) {
         this.logger.info('fiscal.sefin_duplicate_detected', { dpsId: input.dpsId })
         return { kind: 'duplicate', accessKey: existing.accessKey, dpsXml: signed }
@@ -101,14 +102,13 @@ export class SefinHttpGateway implements SefinNacionalGateway {
 
     // 403 = certificado (expirado/revogado/sem permissão) — erro ACIONÁVEL distinto
     // (senão o lastError da nota FAILED era um "403" cru sem ligação com o A1).
-    const text = await res.text().catch(() => '')
     if (res.status === 403) {
       throw new Error(
-        `Sefin recusou o certificado A1 (403) — expirado/revogado? Verifique NFSE_CERT_* e a validade (vence 23/09/2026). ${text.slice(0, 160)}`,
+        'Sefin recusou o certificado A1 (403) — expirado/revogado? Verifique NFSE_CERT_* e a validade.',
       )
     }
     // 5xx = instabilidade — re-tentável (alertável).
-    throw new Error(`Sefin respondeu ${res.status}: ${text.slice(0, 300)}`)
+    throw new Error(`Sefin respondeu ${res.status}`)
   }
 
   async findNfseByDpsId(dpsId: string, timeoutMs?: number): Promise<{ accessKey: string } | null> {
@@ -120,34 +120,84 @@ export class SefinHttpGateway implements SefinNacionalGateway {
   }
 
   async cancelNfse(input: { accessKey: string; cMotivo: '1' | '2' | '9'; xMotivo: string }) {
+    const deadline = Date.now() + this.totalBudgetMs
     const { xml } = buildCancelEventXml(this.profile, input)
     const signed = signXml(xml, 'infPedReg', this.certRef, this.sigAlgo)
 
-    const res = await this.fetch(`${this.base}/nfse/${input.accessKey}/eventos`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ pedidoRegistroEventoXmlGZipB64: gzipBase64(signed) }),
-    })
+    const res = await this.fetch(
+      `${this.base}/nfse/${input.accessKey}/eventos`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ pedidoRegistroEventoXmlGZipB64: gzipBase64(signed) }),
+      },
+      this.remaining(deadline),
+    )
 
     if (res.status === 201) {
       const body = (await res.json()) as { eventoXmlGZipB64?: string }
       return {
         kind: 'accepted' as const,
-        eventXml: body.eventoXmlGZipB64 ? safeGunzip(body.eventoXmlGZipB64) : signed,
+        eventXml: body.eventoXmlGZipB64
+          ? gunzipRequired(body.eventoXmlGZipB64, 'eventoXmlGZipB64')
+          : signed,
       }
     }
     if (res.status === 400) {
       const body = (await res.json().catch(() => ({}))) as SefinErrorBody
+      const errors = (body.erros ?? []).map((e) => ({
+        code: e.Codigo ?? 'DESCONHECIDO',
+        message: e.Descricao ?? '',
+      }))
+      // Um 400 pode ser a repetição de um e101101 que a Sefin JÁ aceitou, mas
+      // cuja resposta se perdeu antes de conseguirmos persistir a transição.
+      // O ADN é a fonte de verdade desses eventos: só classificamos como
+      // rejeição depois de confirmar que o cancelamento ainda não existe lá.
+      const recovered = await this.findCancellationEvent(input.accessKey, this.remaining(deadline))
+      if (recovered.found) {
+        this.logger.info('fiscal.sefin_cancel_duplicate_recovered', {
+          accessKey: input.accessKey,
+        })
+        return {
+          kind: 'accepted' as const,
+          // O ADN pode expor somente metadados na listagem. O pedido assinado
+          // identifica exatamente o e101101 neste caso e já é o fallback dos
+          // 201 sem XML de evento.
+          eventXml: recovered.eventXml ?? signed,
+          recovered: true,
+        }
+      }
+      // A distribuição para o ADN pode atrasar a resposta do POST que criou o
+      // evento. Uma indicação explícita de duplicidade sem evento visível ainda
+      // é ambígua; lançar mantém a nota em CANCEL_PENDING para reconciliação.
+      if (isDuplicateCancellation(errors)) {
+        throw new Error('Cancelamento possivelmente registrado; aguardando disponibilidade no ADN')
+      }
       return {
         kind: 'rejected' as const,
-        errors: (body.erros ?? []).map((e) => ({
-          code: e.Codigo ?? 'DESCONHECIDO',
-          message: e.Descricao ?? '',
-        })),
+        errors,
       }
     }
-    const text = await res.text().catch(() => '')
-    throw new Error(`Sefin eventos respondeu ${res.status}: ${text.slice(0, 300)}`)
+    throw new Error(`Sefin eventos respondeu ${res.status}`)
+  }
+
+  /**
+   * Consulta de eventos no ADN (a Sefin emissora aceita só o POST em produção).
+   * O manual oficial do contribuinte define `GET /NFSe/{chaveAcesso}/Eventos`;
+   * toleramos o envelope listado pelo ADN e conservamos o XML quando presente.
+   */
+  private async findCancellationEvent(
+    accessKey: string,
+    timeoutMs?: number,
+  ): Promise<{ found: boolean; eventXml?: string }> {
+    const res = await this.fetch(
+      `${this.adnContribuintes}/NFSe/${encodeURIComponent(accessKey)}/Eventos`,
+      {},
+      timeoutMs,
+    )
+    if (res.status === 404) return { found: false }
+    if (!res.ok) throw new Error(`ADN GET eventos respondeu ${res.status}`)
+    return findCancellationEventInBody(await res.json())
   }
 }
 
@@ -174,10 +224,38 @@ export class AdnDanfseClient implements DanfseClient {
   }
 }
 
-function safeGunzip(b64: string): string {
+function gunzipRequired(b64: string, field: string): string {
   try {
     return gunzipBase64(b64)
-  } catch {
-    return ''
+  } catch (error) {
+    throw new Error(
+      `${field} inválido na resposta da Sefin: ${error instanceof Error ? error.message : String(error)}`,
+    )
   }
+}
+
+function findCancellationEventInBody(body: unknown): { found: boolean; eventXml?: string } {
+  if (!body || typeof body !== 'object') return { found: false }
+  const events = (body as { eventos?: unknown }).eventos
+  if (!Array.isArray(events)) return { found: false }
+  for (const event of events) {
+    if (!event || typeof event !== 'object') continue
+    const record = event as Record<string, unknown>
+    const type = record.tipo ?? record.tipoEvento
+    if (String(type).replace(/^e/i, '') !== '101101') continue
+    const xml = record.xml ?? record.eventoXml
+    if (typeof xml === 'string') return { found: true, eventXml: xml }
+    const compressed = record.xmlGZipB64 ?? record.eventoXmlGZipB64
+    if (typeof compressed === 'string') {
+      return { found: true, eventXml: gunzipRequired(compressed, 'eventoXmlGZipB64') }
+    }
+    return { found: true }
+  }
+  return { found: false }
+}
+
+function isDuplicateCancellation(errors: Array<{ code: string; message: string }>): boolean {
+  return errors.some(({ message }) =>
+    /(?:j[áa]\s+)?(?:registrad[oa]|duplicad[oa])|j[áa]\s+existe/i.test(message),
+  )
 }

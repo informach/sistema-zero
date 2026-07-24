@@ -10,7 +10,7 @@ import {
 export interface RenewalReminderOptions {
   /** Janela: lembra quando faltam ≤ N dias p/ o vencimento (default 7). */
   daysBefore: number
-  /** Teto de matrículas processadas por CICLO (o próximo continua o resto). */
+  /** Teto de compras processadas por CICLO (o próximo continua o resto). */
   batchLimit?: number
   /** URL pública do FUNIL (base do link `/renovar?oferta=<slug>`). */
   funnelUrl: string

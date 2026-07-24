@@ -9,6 +9,7 @@ import {
   formatDateOnly,
   formatDocument,
   formatDps,
+  INVOICE_FAILURE_STATUSES,
   invoiceMainDate,
   invoiceStatusLabel,
   invoiceStatusVariant,
@@ -123,19 +124,29 @@ describe('formatDateOnly', () => {
 })
 
 describe('sumStatusCounts', () => {
-  const byStatus = { EMITTED: 10, SCHEDULED: 3, CANCEL_PENDING: 1, CANCELLED: 2 }
+  const byStatus = {
+    EMITTED: 10,
+    SCHEDULED: 3,
+    CANCEL_PENDING: 1,
+    CANCEL_FAILED: 4,
+    CANCELLED: 2,
+  }
 
   test('soma o grupo pedido, ignorando ausentes', () => {
     expect(sumStatusCounts(byStatus, ['EMITTED'])).toBe(10)
     expect(sumStatusCounts(byStatus, ['CANCEL_PENDING', 'CANCELLED', 'SUBSTITUTED'])).toBe(3)
+    expect(sumStatusCounts(byStatus, INVOICE_FAILURE_STATUSES)).toBe(4)
     expect(sumStatusCounts(byStatus, ['FAILED'])).toBe(0)
     expect(sumStatusCounts({}, ['EMITTED'])).toBe(0)
   })
 })
 
 describe('gates de ação por estado', () => {
-  test('PDF: só EMITTED com pdfStoredAt', () => {
+  test('PDF: NFS-e válida emitida ou com cancelamento recusado, desde que armazenada', () => {
     expect(canDownloadPdf({ status: 'EMITTED', pdfStoredAt: '2026-06-10T12:00:00Z' })).toBe(true)
+    expect(canDownloadPdf({ status: 'CANCEL_FAILED', pdfStoredAt: '2026-06-10T12:00:00Z' })).toBe(
+      true,
+    )
     expect(canDownloadPdf({ status: 'EMITTED', pdfStoredAt: null })).toBe(false)
     expect(canDownloadPdf({ status: 'FAILED', pdfStoredAt: '2026-06-10T12:00:00Z' })).toBe(false)
   })

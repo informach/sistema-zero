@@ -1,5 +1,6 @@
 import type { Logger } from '@sistemazero/core/logging'
 import { serializeError } from '@sistemazero/core/logging'
+import { redactDocuments, redactSensitiveText } from '../../domain/invoice/redact-documents'
 import type { InvoiceRepository } from '../../domain/ports/invoice-repository.port'
 import type { SefinNacionalGateway } from '../../domain/ports/sefin-gateway.port'
 
@@ -13,8 +14,8 @@ export interface CancellationWorkerOpts {
  * Processa CANCEL_PENDING → evento e101101 na Sefin → CANCELLED. Motivo do
  * evento: estorno automático usa 2 (Serviço não Prestado — o dinheiro voltou);
  * cancelamento manual do admin usa 9 (Outros) com o motivo digitado. Rejeição
- * da Sefin NÃO transiciona (fica CANCEL_PENDING visível no admin + ERROR no
- * Sentry — pode exigir análise fiscal após o prazo).
+ * da Sefin vira CANCEL_FAILED (visível no admin, sem martelar a SEFIN); uma nova
+ * tentativa requer ação explícita do admin após a análise fiscal.
  */
 export class CancellationWorker {
   private timer: ReturnType<typeof setInterval> | null = null
@@ -53,7 +54,13 @@ export class CancellationWorker {
         }
         try {
           // Renova o lease por-nota (lote longo não estoura o claim — ver emissão).
-          await this.invoices.touchClaim(invoice.id)
+          if (
+            !invoice.claimToken ||
+            !(await this.invoices.touchClaim(invoice.id, invoice.claimToken))
+          ) {
+            this.logger.info('fiscal.cancel_claim_lost', { invoiceId: invoice.id })
+            continue
+          }
           const result = await this.sefin.cancelNfse({
             accessKey: invoice.accessKey,
             cMotivo: invoice.cancelRequestedBy === 'system:refund' ? '2' : '9',
@@ -63,23 +70,45 @@ export class CancellationWorker {
             xMotivo: normalizeMotivo(invoice.cancelReason),
           })
           if (result.kind === 'accepted') {
-            await this.invoices.markCancelled(invoice.id, result.eventXml)
+            const cancelled = await this.invoices.markCancelled(
+              invoice.id,
+              result.eventXml,
+              invoice.claimToken,
+            )
+            if (!cancelled) {
+              this.logger.info('fiscal.cancel_transition_lost', { invoiceId: invoice.id })
+              continue
+            }
             await this.invoices.appendEvent(invoice.id, 'CANCELLED', 'system', {})
             this.logger.info('fiscal.invoice_cancelled', { invoiceId: invoice.id })
           } else {
+            // A Sefin pode ecoar CPF/CNPJ na rejeição. O mesmo dado vai ao banco,
+            // timeline, logs e Sentry, portanto a redação precisa acontecer ANTES
+            // de qualquer efeito observável.
+            const errors = redactDocuments(result.errors)
+            const detail = errors.map((e) => `${e.code}: ${e.message}`).join(' | ')
+            const failed = await this.invoices.markCancelFailed(
+              invoice.id,
+              detail,
+              invoice.claimToken,
+            )
+            if (!failed) {
+              this.logger.info('fiscal.cancel_transition_lost', { invoiceId: invoice.id })
+              continue
+            }
             await this.invoices.appendEvent(invoice.id, 'CANCEL_FAILED', 'system', {
-              errors: result.errors,
+              errors,
             })
             this.logger.error('fiscal.cancel_rejected', {
               invoiceId: invoice.id,
-              errors: result.errors,
+              errors,
             })
           }
         } catch (error) {
           // Rede/5xx: permanece CANCEL_PENDING; o lease expira e re-tenta.
           this.logger.warn('fiscal.cancel_retry_later', {
             invoiceId: invoice.id,
-            error: error instanceof Error ? error.message : String(error),
+            error: redactSensitiveText(error instanceof Error ? error.message : String(error)),
           })
         }
       }

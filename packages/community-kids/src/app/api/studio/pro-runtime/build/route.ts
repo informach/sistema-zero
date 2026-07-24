@@ -8,7 +8,10 @@ import {
   isProStudioProject,
   opaqueStudioRuntimeExecutionId,
   proProjectTemplateId,
+  STUDIO_PRO_BUILD_LIMITS,
+  StudioProRuntimeInputError,
   StudioProRuntimeUpstreamError,
+  studioProRuntimePublicStatus,
 } from '@sistemazero/member-shell/server/studio-pro-runtime'
 import type { Project } from '@sistemazero/studio'
 import { getLesson } from '@/server/members'
@@ -16,7 +19,7 @@ import { getSession } from '@/server/session'
 
 export const runtime = 'nodejs'
 
-const MAX_REQUEST_BYTES = 2_000_000
+const MAX_REQUEST_BYTES = STUDIO_PRO_BUILD_LIMITS.maxBffRequestBytes
 const RUNTIME_TIMEOUT_MS = 55_000
 
 interface BuildBody {
@@ -29,6 +32,13 @@ interface BuildBody {
 export async function POST(request: Request): Promise<Response> {
   const session = await getSession()
   if (!session?.id) return response({ error: { message: 'Entre novamente para continuar.' } }, 401)
+
+  // Atividade Pro é autorizada pela matrícula/leitura da aula abaixo. Produto e
+  // tier Pro controlam apenas o Estúdio livre; exigir ambos aqui impediria o
+  // professor de usar Pro antes de a criança chegar à Lenda.
+  if (!session.activeProfile) {
+    return response({ error: { message: 'Escolha um perfil para continuar.' } }, 403)
+  }
 
   let body: BuildBody | null = null
   try {
@@ -88,6 +98,9 @@ export async function POST(request: Request): Promise<Response> {
     })
     return response(result)
   } catch (error) {
+    if (error instanceof StudioProRuntimeInputError) {
+      return response({ error: { message: error.message } }, error.status)
+    }
     if (error instanceof StudioProRuntimeUpstreamError) {
       return response(
         {
@@ -96,7 +109,7 @@ export async function POST(request: Request): Promise<Response> {
             output: error.output,
           },
         },
-        error.status === 429 ? 429 : error.status === 422 ? 422 : 502,
+        studioProRuntimePublicStatus(error.status),
       )
     }
     console.error('Falha ao chamar o Studio Pro Runtime', error)

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
-import type { ProjectTree } from '#core'
+import { createEmptyProject, type ProjectTree, studioProBuildRequestByteLength } from '#core'
+import { createProjectStore } from './projectStore'
 import {
   addProDir,
   addProFile,
@@ -161,6 +162,9 @@ describe('sanitizeProTree', () => {
         { maxTotalChars: 3 },
       ),
     ).toBeNull()
+    const tooManyFiles: Record<string, { kind: 'file'; content: string }> = {}
+    for (let i = 0; i < 81; i++) tooManyFiles[`f${i}.ts`] = { kind: 'file', content: '' }
+    expect(sanitizeProTree(tooManyFiles, { maxFiles: 80 })).toBeNull()
   })
 
   it('rejeita árvore onde um arquivo é pai de outro path', () => {
@@ -186,5 +190,58 @@ describe('sanitizeProMeta', () => {
     expect(sanitizeProMeta({ devScript: 'dev' })).toBeNull()
     expect(sanitizeProMeta(null)).toBeNull()
     expect(sanitizeProMeta({})).toBeNull()
+  })
+})
+
+describe('cotas do runtime Pro na store', () => {
+  function proProject(): ReturnType<typeof createEmptyProject> & {
+    kind: 'pro'
+    tree: ProjectTree
+    proMeta: { templateId: 'vanilla-js'; devScript: 'dev' }
+  } {
+    return {
+      ...createEmptyProject('pro-1', 'Projeto Pro'),
+      kind: 'pro',
+      mode: 'code',
+      tree: {
+        'package.json': { kind: 'file', content: '{}' },
+        'index.html': { kind: 'file', content: '' },
+      },
+      proMeta: { templateId: 'vanilla-js', devScript: 'dev' },
+    }
+  }
+
+  it('bloqueia nova edição que ultrapassa a cota antes de persistir ou compilar', () => {
+    const store = createProjectStore({
+      proBuildLimits: { maxFiles: 2, maxFileChars: 5, maxTotalChars: 8, maxRequestBytes: 100 },
+    })
+    store.getState().hydrateProject(proProject())
+
+    expect(store.getState().addProFile('src/extra.js')).toContain('no máximo 2 arquivos')
+    store.getState().setProFileContent('index.html', '123456')
+    expect(store.getState().project?.tree?.['index.html']).toEqual({ kind: 'file', content: '' })
+    expect(store.getState().saveError).toContain('tamanho permitido')
+  })
+
+  it('bloqueia edição cujo JSON serializado excederia o Worker', () => {
+    const initial = proProject()
+    const files = {
+      'package.json': '{}',
+      'index.html': '',
+    }
+    const store = createProjectStore({
+      proBuildLimits: {
+        maxFiles: 80,
+        maxFileChars: 100,
+        maxTotalChars: 200,
+        maxRequestBytes: studioProBuildRequestByteLength(files) + 1,
+      },
+    })
+    store.getState().hydrateProject(initial)
+
+    store.getState().setProFileContent('index.html', '""')
+
+    expect(store.getState().project?.tree?.['index.html']).toEqual({ kind: 'file', content: '' })
+    expect(store.getState().saveError).toContain('enviar ao compilador')
   })
 })

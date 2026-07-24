@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { PayloadTooLargeError } from '@sistemazero/core/http'
 import type { Logger } from '@sistemazero/core/logging'
 import type { CourseAudience } from '../../domain/course/course'
@@ -8,6 +9,7 @@ import {
   gradeStudioActivity,
   type StudioCheckResult,
 } from '../../domain/course/studio-activity'
+import { deterministicSourceId } from '../../domain/gamification/source-id'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
@@ -16,6 +18,9 @@ import type { AwardGamificationService } from '../gamification/award-gamificatio
 import { assertLessonUnlocked } from '../lesson-locking/lesson-locking'
 import type { GamificationDeltaView } from '../mappers/views'
 import type { TeacherThreadsService } from '../teacher-threads/teacher-threads.service'
+
+// Namespace fixo para tornar o retry do MESMO envio idempotente no histórico.
+const STUDIO_SUBMIT_NOTE_NAMESPACE = '4a250e86-0c7b-4a2e-8f07-b3a12715e5b6'
 
 export interface StudioSubmissionResultView {
   submittedAt: string
@@ -90,17 +95,9 @@ export class SubmitStudioProjectService {
 
     // Bloco sem atividade: comportamento clássico (só entrega).
     if (!activity) {
-      await this.submissions.upsert({
-        id: this.newId(),
-        userId,
-        accountId: accountId ?? userId,
-        blockId,
-        lessonId,
-        courseId: lesson.courseId,
-        project,
-        submittedAt,
-        message: note,
-      })
+      // O recado é a confirmação da entrega para a equipe. Persiste-o antes da
+      // linha "último vence": se o canal estiver indisponível, a entrega não é
+      // parcialmente confirmada e o aluno pode reenviar com segurança.
       await this.mirrorSubmitNote({
         note,
         userId,
@@ -111,6 +108,18 @@ export class SubmitStudioProjectService {
         lessonId,
         title: lesson.title,
         authorName,
+        project,
+      })
+      await this.submissions.upsert({
+        id: this.newId(),
+        userId,
+        accountId: accountId ?? userId,
+        blockId,
+        lessonId,
+        courseId: lesson.courseId,
+        project,
+        submittedAt,
+        message: note,
       })
       // Marco de missão "enviar ao professor" (amount 0, idempotente por bloco).
       await this.gamification.awardStudioSubmitted({
@@ -128,6 +137,19 @@ export class SubmitStudioProjectService {
     // `passed_at` é STICKY: aprovou uma vez = destrava para sempre (não regride no
     // reenvio pior). O repositório mantém o valor existente com bloqueio advisory.
     const passedAt = grade.passed ? submittedAt : null
+
+    await this.mirrorSubmitNote({
+      note,
+      userId,
+      accountId: accountId ?? userId,
+      audience: course.audience,
+      blockId,
+      courseId: lesson.courseId,
+      lessonId,
+      title: lesson.title,
+      authorName,
+      project,
+    })
 
     await this.submissions.upsert(
       {
@@ -148,18 +170,6 @@ export class SubmitStudioProjectService {
       },
       { preservePassedAt: true },
     )
-
-    await this.mirrorSubmitNote({
-      note,
-      userId,
-      accountId: accountId ?? userId,
-      audience: course.audience,
-      blockId,
-      courseId: lesson.courseId,
-      lessonId,
-      title: lesson.title,
-      authorName,
-    })
 
     // Marco de missão "enviar ao professor" (amount 0, idempotente por bloco) — SEMPRE
     // que entrega, independentemente de nota. Distinto do `studio_passed` (XP quando
@@ -197,8 +207,9 @@ export class SubmitStudioProjectService {
    * Espelha o recado do ENVIO na conversa professor↔aluno (contexto `studio_submission`,
    * ref = blockId) para o HISTÓRICO sobreviver ao reenvio — o upsert acima sobrescreve o
    * `message` da linha da entrega, mas cada recado vira um turno permanente do aluno na
-   * conversa (o professor vê tudo no painel da Entrega). FAIL-OPEN: a conversa NUNCA
-   * derruba a entrega (espelha o award de gamificação). No-op sem recado.
+   * conversa (o professor vê tudo no painel da Entrega). A confirmação do envio só
+   * acontece se o espelho também persistir: falha é devolvida para o cliente tentar
+   * novamente, com id determinístico para não duplicar o turno. No-op sem recado.
    */
   private async mirrorSubmitNote(args: {
     note: string | null
@@ -210,8 +221,10 @@ export class SubmitStudioProjectService {
     lessonId: string
     title: string | null
     authorName: string | null
+    project: unknown
   }): Promise<void> {
     if (!args.note) return
+    const projectHash = createHash('sha256').update(JSON.stringify(args.project)).digest('hex')
     try {
       await this.teacherThreads.studentPostByContext({
         userId: args.userId,
@@ -224,6 +237,10 @@ export class SubmitStudioProjectService {
         title: args.title,
         authorName: args.authorName,
         body: args.note,
+        dedupeId: deterministicSourceId(
+          STUDIO_SUBMIT_NOTE_NAMESPACE,
+          `${args.userId}:${args.blockId}:${projectHash}:${args.note}`,
+        ),
       })
     } catch (error) {
       this.logger.error('teacher_thread.submit_note_failed', {
@@ -231,6 +248,7 @@ export class SubmitStudioProjectService {
         blockId: args.blockId,
         error: error instanceof Error ? error.message : String(error),
       })
+      throw error
     }
   }
 }

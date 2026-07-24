@@ -409,13 +409,60 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
     expect(thread).not.toBeNull()
     expect(thread.contextType).toBe('studio_submission')
     expect(thread.messages).toHaveLength(2)
-    expect(thread.messages.map((m: { body: string }) => m.body)).toEqual([
-      'Primeiro recado',
-      'Segundo recado (reenvio)',
-    ])
+    expect(thread.messages.map((m: { body: string }) => m.body)).toEqual(
+      expect.arrayContaining(['Primeiro recado', 'Segundo recado (reenvio)']),
+    )
     expect(thread.messages.every((m: { authorRole: string }) => m.authorRole === 'student')).toBe(
       true,
     )
+  })
+
+  test('falha ao espelhar recado não confirma a entrega e o retry não duplica o histórico', async () => {
+    const { app, courses, entitlements, teacherThreadsRepo } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const blockId = seedStudioBlock(courses, lessonIds[0])
+    const originalAppend = teacherThreadsRepo.appendMessage.bind(teacherThreadsRepo)
+    teacherThreadsRepo.appendMessage = async () => {
+      throw new Error('indisponível')
+    }
+
+    const request = () =>
+      app.handle(
+        new Request(
+          `http://localhost/members/lessons/${lessonIds[0]}/blocks/${blockId}/studio-submission`,
+          {
+            method: 'POST',
+            headers: authHeaders,
+            body: JSON.stringify({ project: STUDENT_PROJECT, message: 'Meu recado importante' }),
+          },
+        ),
+      )
+
+    expect((await request()).status).toBe(500)
+    expect(
+      await app
+        .handle(
+          new Request(
+            `http://localhost/members/lessons/${lessonIds[0]}/blocks/${blockId}/studio-submission`,
+            { headers: authHeaders },
+          ),
+        )
+        .then(readJson),
+    ).toEqual({ project: null })
+    teacherThreadsRepo.appendMessage = originalAppend
+    expect((await request()).status).toBe(200)
+    expect((await request()).status).toBe(200)
+
+    const { thread } = await app
+      .handle(
+        new Request(
+          `http://localhost/members/admin/teacher-threads/by-context?userId=${USER}&contextType=studio_submission&contextRef=${blockId}`,
+        ),
+      )
+      .then(readJson)
+    expect(thread.messages).toHaveLength(1)
+    expect(thread.messages[0].body).toBe('Meu recado importante')
   })
 
   test('envio SEM recado não cria conversa', async () => {

@@ -20,6 +20,7 @@ export const invoiceStatusEnum = fiscalSchema.enum('invoice_status', [
   'SKIPPED', // nunca será emitida (refund/cancel antes; skip_reason preenchido)
   'FAILED', // esgotou tentativas ou rejeição determinística (admin pode reprocessar)
   'CANCEL_PENDING', // cancelamento solicitado (manual/pós-refund), evento ainda não aceito
+  'CANCEL_FAILED', // rejeição determinística do cancelamento; admin pode reenfileirar
   'CANCELLED', // evento de cancelamento aceito pela Sefin
   'SUBSTITUTED', // substituída por outra nota (substituted_by_id)
 ])
@@ -62,6 +63,8 @@ export const invoices = fiscalSchema.table(
     // Worker (claim por lease, espelha charge_attempts/charge_claimed_at do payments):
     attempts: integer('attempts').notNull().default(0),
     claimedAt: timestamp('claimed_at', { withTimezone: true }),
+    /** Token da réplica que reivindicou a nota; evita que um lease antigo a reanime. */
+    claimToken: text('claim_token'),
     nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }),
     lastError: text('last_error'),
     skipReason: text('skip_reason'),
@@ -173,9 +176,19 @@ export const processedWebhooks = fiscalSchema.table(
     deliveryId: text('delivery_id').primaryKey(),
     paymentId: text('payment_id'),
     eventName: text('event_name'),
-    processedAt: timestamp('processed_at', { withTimezone: true }).notNull().defaultNow(),
+    /** Nulo enquanto a entrega foi reservada, preenchido somente após sucesso. */
+    processedAt: timestamp('processed_at', { withTimezone: true }),
+    /** Lease curto da reserva; crash permite reentrega depois de expirar. */
+    processingAt: timestamp('processing_at', { withTimezone: true }),
+    /** Identifica a tentativa dona do lease; evita liberar claim de outra réplica. */
+    processingToken: text('processing_token'),
   },
-  (t) => [index('processed_webhooks_processed_at_idx').on(t.processedAt)],
+  (t) => [
+    index('processed_webhooks_processed_at_idx').on(t.processedAt),
+    index('processed_webhooks_processing_at_idx')
+      .on(t.processingAt)
+      .where(sql`processed_at IS NULL`),
+  ],
 )
 
 /** Numeração da DPS por série — alocação transacional (UPDATE ... RETURNING). */

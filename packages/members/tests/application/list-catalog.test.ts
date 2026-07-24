@@ -16,6 +16,7 @@ function makeCourse(over: Partial<Course> & { slug: string; title: string }): Co
   const created = new Date('2026-06-01T00:00:00.000Z')
   return {
     id: randomUUID(),
+    version: 0,
     subtitle: null,
     description: null,
     coverImageUrl: null,

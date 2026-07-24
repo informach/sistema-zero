@@ -16,7 +16,7 @@ export interface ProTemplate {
 }
 
 // Versões PINADAS (em sincronia com WEB_CONTAINER_PACKAGE_DEPENDENCIES).
-const VITE = '8.0.14'
+const VITE = '8.0.16'
 const TYPESCRIPT = '5.9.3'
 const PLUGIN_REACT = '6.0.2'
 const REACT = '19.2.0'

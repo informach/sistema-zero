@@ -46,6 +46,8 @@ export function isCourseAccessible(status: CourseStatus): boolean {
 
 export interface Course {
   id: string
+  /** Versão de concorrência otimista da autoria; incrementa a cada PATCH do curso. */
+  version: number
   slug: string
   title: string
   subtitle: string | null

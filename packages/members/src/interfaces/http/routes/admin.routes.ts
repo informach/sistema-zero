@@ -29,6 +29,7 @@ import {
   AdminActivityQuery,
   AdminGamificationQuery,
   AdminTeacherThreadByContextQuery,
+  AdminTeacherThreadPageQuery,
   AdminTeacherThreadPostBody,
   AdminTeacherThreadsQuery,
   AiUsageStatsQuery,
@@ -199,6 +200,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           requireAdmin(headers, deps.requireAdminEnabled)
           return {
             threads: await deps.teacherThreads.listForAdmin({
+              staffUserId: resolveUserId(headers),
               audience: query.audience,
               contextType: query.context,
               courseId: query.courseId,
@@ -240,17 +242,18 @@ export function adminRoutes(deps: AdminRoutesDeps) {
             query.userId,
             query.contextType,
             query.contextRef,
+            query.before,
           )
         },
         { query: AdminTeacherThreadByContextQuery },
       )
       .get(
         '/teacher-threads/:id',
-        async ({ params, headers }) => {
+        async ({ params, query, headers }) => {
           requireAdmin(headers, deps.requireAdminEnabled)
-          return deps.teacherThreads.getForAdmin(params.id)
+          return deps.teacherThreads.getForAdmin(params.id, query.before)
         },
-        { params: IdParams },
+        { params: IdParams, query: AdminTeacherThreadPageQuery },
       )
       .post(
         '/teacher-threads/:id/messages',
@@ -269,7 +272,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         '/teacher-threads/:id/read',
         async ({ params, headers }) => {
           requireAdmin(headers, deps.requireAdminEnabled)
-          return deps.teacherThreads.markReadByTeacher(params.id)
+          return deps.teacherThreads.markReadByTeacher(params.id, resolveUserId(headers))
         },
         { params: IdParams },
       )

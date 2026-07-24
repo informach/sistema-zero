@@ -30,6 +30,13 @@ const EnvSchema = z
     // o R2 do jogo). OPCIONAL: ausente → a rota é no-op (não há como autenticar o
     // chamador, então nada é apagado). ≥16 chars quando presente.
     GATEWAY_HMAC_SECRET: z.string().min(16, 'GATEWAY_HMAC_SECRET deve ter ≥16 chars').optional(),
+    // Chave estável do cookie temporário da Área dos Pais do community-kids. Em
+    // produção aquele app a exige no boot; aqui permanece opcional porque o shell
+    // também serve apps que não possuem esse portão.
+    PARENT_GATE_HMAC_SECRET: z
+      .string()
+      .min(32, 'PARENT_GATE_HMAC_SECRET deve ter ≥32 chars')
+      .optional(),
     // Cloudflare R2 (upload de avatar). OPCIONAIS: ausentes → upload responde 503
     // amigável (MEDIA_NOT_CONFIGURED), nunca quebra o boot.
     R2_ACCOUNT_ID: z.string().optional(),

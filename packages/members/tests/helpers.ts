@@ -504,6 +504,7 @@ export function seedSampleCourse(
   const ebookBlockId = randomUUID()
   courses.courses.push({
     id: courseId,
+    version: 0,
     slug,
     title: 'Curso Demo',
     subtitle: null,
@@ -798,7 +799,7 @@ export function signedWebhookHeaders(
   const ts = Math.floor(Date.now() / 1000)
   const sig = signHmac(
     WEBHOOK_SECRET,
-    canonicalHmacMessage({ method: 'POST', path, body: rawBody }),
+    canonicalHmacMessage({ method: 'POST', path, deliveryId, body: rawBody }),
     ts,
   )
   const headers: Record<string, string> = {

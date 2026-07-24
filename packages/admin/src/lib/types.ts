@@ -625,6 +625,7 @@ export interface TeacherThreadView {
   lastMessageAt: string
   createdAt: string
   messages: TeacherMessageView[]
+  nextCursor: string | null
 }
 
 /** Resumo de conversa na caixa de entrada do PROFESSOR (espelha o members). */
@@ -953,6 +954,7 @@ export const INVOICE_STATUSES = [
   'SKIPPED',
   'FAILED',
   'CANCEL_PENDING',
+  'CANCEL_FAILED',
   'CANCELLED',
   'SUBSTITUTED',
 ] as const

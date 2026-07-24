@@ -8,6 +8,7 @@ import type {
   StudioShareAdapter,
   StudioShareResult,
 } from '@sistemazero/studio'
+import { STUDIO_PRO_BUILD_LIMITS } from '@sistemazero/studio'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { useBodyScrollLock } from '@sistemazero/ui/scroll-lock'
@@ -139,6 +140,7 @@ export function StudioBlockView({
   const proRuntime = useMemo<StudioProRuntimeAdapter | undefined>(() => {
     if (!isProLesson || !player?.courseSlug || !lessonId) return undefined
     return {
+      limits: STUDIO_PRO_BUILD_LIMITS,
       async build({ project, signal }) {
         const res = await fetch('/api/studio/pro-runtime/build', {
           method: 'POST',
@@ -147,7 +149,10 @@ export function StudioBlockView({
             courseSlug: player.courseSlug,
             lessonId,
             blockId,
-            project,
+            // O BFF só precisa da árvore para compilar. Não envie assets, estado
+            // clássico nem metadados fora do runtime; isso mantém o envelope sob
+            // a cota que o editor e o Worker validam.
+            project: { kind: 'pro', tree: project.tree },
           }),
           signal,
         })

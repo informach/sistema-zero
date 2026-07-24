@@ -21,6 +21,9 @@ ENV NODE_ENV=production
 ENV PORT=3008
 # `::` p/ a rede privada IPv6 do Railway (mesma lição do HOST :: dos serviços Bun).
 ENV HOSTNAME=::
+# Este app assina o cookie curto da Área dos Pais; a chave precisa sobreviver a
+# restarts e múltiplas réplicas. O launcher compartilhado valida a env no boot.
+ENV REQUIRE_PARENT_GATE_HMAC_SECRET=1
 # O standalone espelha a árvore do monorepo (outputFileTracingRoot = raiz):
 # server.js fica em packages/community-kids/, com o node_modules traçado na raiz.
 COPY --from=build /app/packages/community-kids/.next/standalone ./

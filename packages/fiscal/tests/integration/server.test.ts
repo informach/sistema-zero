@@ -42,6 +42,7 @@ function build(opts: { secret?: string; metricsToken?: string } = {}) {
     serviceDescPrefix: 'Treinamento on-line',
     webhookHmacSecret: opts.secret,
     webhookToleranceSeconds: 300,
+    webhookProcessingStaleMs: 60_000,
     metricsToken: opts.metricsToken,
     readiness: async () => {},
   })
@@ -153,6 +154,20 @@ describe('POST /webhooks/payments', () => {
     expect(await processedWebhooks.isProcessed('evt-1')).toBe(false)
   })
 
+  test('perda do lease ao finalizar → 502 para o payments reenviar', async () => {
+    const { app, payments, catalog, processedWebhooks } = build({ secret: SECRET })
+    payments.set(paidSnapshot())
+    catalog.set({ id: 'offer-1', name: 'O', productName: 'Curso', guaranteeDays: 7 })
+    // Simula a atualização condicional que não afetou nenhuma linha porque outra
+    // réplica reassumiu o lease antes da confirmação final.
+    processedWebhooks.markProcessed = async () => false
+
+    const res = await app.handle(delivery(PAID_BODY, { secret: SECRET }))
+
+    expect(res.status).toBe(502)
+    expect(await processedWebhooks.isProcessed('evt-1')).toBe(false)
+  })
+
   test('sem x-delivery-id → 400; corpo não-JSON → 400', async () => {
     const { app } = build()
     const noId = await app.handle(
@@ -185,8 +200,8 @@ describe('GET /fiscal/files/:token (capability-URL do DANFSe)', () => {
       ambiente: 'producao-restrita',
     })
     const token = 'a'.repeat(64)
-    Object.assign(invoice, { pdfToken: token })
-    await invoices.storePdf(invoice.id, new TextEncoder().encode('%PDF-ok'))
+    Object.assign(invoice, { status: 'EMITTED', pdfToken: token, claimToken: 'pdf-test-claim' })
+    await invoices.storePdf(invoice.id, new TextEncoder().encode('%PDF-ok'), 'pdf-test-claim')
 
     const ok = await app.handle(new Request(`http://localhost/fiscal/files/${token}.pdf`))
     expect(ok.status).toBe(200)
@@ -246,6 +261,7 @@ describe('health', () => {
       ambiente: 'producao-restrita',
       serviceDescPrefix: 'Treinamento on-line',
       webhookToleranceSeconds: 300,
+      webhookProcessingStaleMs: 60_000,
       readiness: async () => {
         throw new Error('db down')
       },
@@ -274,6 +290,7 @@ describe('Rotas admin (/fiscal/admin/*)', () => {
       ambiente: 'producao-restrita',
       serviceDescPrefix: 'Treinamento on-line',
       webhookToleranceSeconds: 300,
+      webhookProcessingStaleMs: 60_000,
       requireAdminEnabled: true,
       internalToken: 'tok-interno-fiscal-16',
       readiness: async () => {},
@@ -344,10 +361,11 @@ describe('Rotas admin (/fiscal/admin/*)', () => {
     expect(body.events.length).toBeGreaterThan(0)
   })
 
-  test('retry: só FAILED (409 p/ EMITTED); cancel: só EMITTED com motivo', async () => {
+  test('retry: só FAILED (409 p/ EMITTED); cancel: EMITTED/CANCEL_FAILED com motivo', async () => {
     const { app, invoices } = buildAdmin()
     const emitted = await seedInvoice(invoices, 'EMITTED')
     const failed = await seedInvoice(invoices, 'FAILED')
+    const cancelFailed = await seedInvoice(invoices, 'CANCEL_FAILED')
 
     const retryWrong = await app.handle(
       new Request(`http://localhost/fiscal/admin/invoices/${emitted.id}/retry`, {
@@ -388,6 +406,59 @@ describe('Rotas admin (/fiscal/admin/*)', () => {
     const after = await invoices.findById(emitted.id)
     expect(after?.status).toBe('CANCEL_PENDING')
     expect(after?.cancelRequestedBy).toBe('admin:u-1')
+
+    const retryCancel = await app.handle(
+      new Request(`http://localhost/fiscal/admin/invoices/${cancelFailed.id}/cancel`, {
+        method: 'POST',
+        headers: { ...ADMIN, 'content-type': 'application/json' },
+        body: JSON.stringify({ reason: 'Nova tentativa após a rejeição da Sefin' }),
+      }),
+    )
+    expect(retryCancel.status).toBe(200)
+    expect((await invoices.findById(cancelFailed.id))?.status).toBe('CANCEL_PENDING')
+  })
+
+  test('cancelamento que perde a corrida → 409 sem evento de auditoria falso', async () => {
+    const { app, invoices } = buildAdmin()
+    const emitted = await seedInvoice(invoices, 'EMITTED')
+    invoices.requestCancel = async () => false // a transição guardada perdeu para outro ator
+
+    const response = await app.handle(
+      new Request(`http://localhost/fiscal/admin/invoices/${emitted.id}/cancel`, {
+        method: 'POST',
+        headers: { ...ADMIN, 'content-type': 'application/json' },
+        body: JSON.stringify({ reason: 'Dados cadastrais incorretos na nota fiscal' }),
+      }),
+    )
+
+    expect(response.status).toBe(409)
+    expect(invoices.events.some((e) => e.type === 'CANCEL_REQUESTED')).toBe(false)
+  })
+
+  test('retry e emit-now que perdem a corrida → 409 sem auditoria falsa', async () => {
+    const { app, invoices } = buildAdmin()
+    const failed = await seedInvoice(invoices, 'FAILED')
+    const scheduled = await seedInvoice(invoices, 'SCHEDULED')
+    invoices.retry = async () => false
+    invoices.expedite = async () => false
+
+    const retry = await app.handle(
+      new Request(`http://localhost/fiscal/admin/invoices/${failed.id}/retry`, {
+        method: 'POST',
+        headers: ADMIN,
+      }),
+    )
+    const emitNow = await app.handle(
+      new Request(`http://localhost/fiscal/admin/invoices/${scheduled.id}/emit-now`, {
+        method: 'POST',
+        headers: ADMIN,
+      }),
+    )
+
+    expect(retry.status).toBe(409)
+    expect(emitNow.status).toBe(409)
+    expect(invoices.events.some((e) => e.type === 'RETRIED_BY_ADMIN')).toBe(false)
+    expect(invoices.events.some((e) => e.type === 'EMIT_NOW_REQUESTED')).toBe(false)
   })
 
   test('substitute: cria SCHEDULED(now) vinculada; exige ≥1 campo e CPF válido', async () => {
@@ -458,6 +529,39 @@ describe('Rotas admin (/fiscal/admin/*)', () => {
     expect(res.status).toBe(409)
   })
 
+  test('substitute que perde a corrida de criação → 409 sem auditoria falsa', async () => {
+    const { app, invoices, payments } = buildAdmin()
+    const original = await seedInvoice(invoices, 'EMITTED')
+    payments.set(paidSnapshot({ id: original.paymentId }))
+    const getPayment = payments.getPayment.bind(payments)
+    payments.getPayment = async (paymentId) => {
+      await invoices.schedule({
+        paymentId,
+        customer: original.customer,
+        amountInCents: original.amountInCents,
+        serviceDescription: 'Correção concorrente',
+        offerId: original.offerId,
+        guaranteeDays: original.guaranteeDays,
+        paidAt: original.paidAt,
+        scheduledFor: new Date(),
+        ambiente: original.ambiente,
+        substitutesId: original.id,
+      })
+      return getPayment(paymentId)
+    }
+
+    const res = await app.handle(
+      new Request(`http://localhost/fiscal/admin/invoices/${original.id}/substitute`, {
+        method: 'POST',
+        headers: { ...ADMIN, 'content-type': 'application/json' },
+        body: JSON.stringify({ customerName: 'Correção solicitada depois' }),
+      }),
+    )
+
+    expect(res.status).toBe(409)
+    expect(invoices.events.some((event) => event.type === 'SUBSTITUTION_CREATED')).toBe(false)
+  })
+
   test('stats agrupa por status', async () => {
     const { app, invoices } = buildAdmin()
     await seedInvoice(invoices, 'EMITTED')
@@ -491,6 +595,7 @@ describe('Emissão manual', () => {
       ambiente: 'producao-restrita',
       serviceDescPrefix: 'Treinamento on-line',
       webhookToleranceSeconds: 300,
+      webhookProcessingStaleMs: 60_000,
       requireAdminEnabled: true,
       internalToken: 'tok-interno-fiscal-16',
       readiness: async () => {},
@@ -610,6 +715,86 @@ describe('Emissão manual', () => {
     expect(((await dup.json()) as { error: { code: string } }).error.code).toBe(
       'INVOICE_ALREADY_EXISTS',
     )
+  })
+
+  test('manual que perde a corrida de criação → 409 sem auditoria falsa', async () => {
+    const { app, invoices, payments, catalog } = buildManual()
+    const paymentId = crypto.randomUUID()
+    const snapshot = paidSnapshot({ id: paymentId })
+    payments.set(snapshot)
+    catalog.set({ id: 'offer-1', name: 'Oferta', productName: 'Produto', guaranteeDays: 7 })
+    const getOfferById = catalog.getOfferById.bind(catalog)
+    catalog.getOfferById = async (offerId) => {
+      await invoices.schedule({
+        paymentId,
+        customer: {
+          name: snapshot.customer!.name,
+          email: snapshot.customer!.email,
+          document: snapshot.customer!.document!,
+        },
+        amountInCents: snapshot.amountInCents,
+        serviceDescription: 'Nota automática concorrente',
+        offerId,
+        guaranteeDays: 7,
+        paidAt: snapshot.paidAt!,
+        scheduledFor: new Date(Date.now() + 7 * 24 * 3600_000),
+        ambiente: 'producao-restrita',
+      })
+      return getOfferById(offerId)
+    }
+
+    const res = await app.handle(
+      new Request('http://localhost/fiscal/admin/invoices', {
+        method: 'POST',
+        headers: { ...ADMIN, 'content-type': 'application/json' },
+        body: JSON.stringify({ paymentId }),
+      }),
+    )
+
+    expect(res.status).toBe(409)
+    expect(invoices.events.some((event) => event.type === 'SCHEDULED')).toBe(false)
+  })
+
+  test('manual: substituta EMITTED também bloqueia nova nota para o mesmo pagamento', async () => {
+    const { app, invoices, payments } = buildManual()
+    const paymentId = crypto.randomUUID()
+    payments.set(paidSnapshot({ id: paymentId }))
+    const original = await invoices.schedule({
+      paymentId,
+      customer: { name: 'M', email: 'm@m.com', document: '52998224725' },
+      amountInCents: 3700n,
+      serviceDescription: 'Curso',
+      offerId: null,
+      guaranteeDays: null,
+      paidAt: new Date(),
+      scheduledFor: new Date(),
+      ambiente: 'producao-restrita',
+    })
+    Object.assign(original, { status: 'SUBSTITUTED' })
+    const substitute = await invoices.schedule({
+      paymentId,
+      customer: original.customer,
+      amountInCents: original.amountInCents,
+      serviceDescription: original.serviceDescription,
+      offerId: original.offerId,
+      guaranteeDays: original.guaranteeDays,
+      paidAt: original.paidAt,
+      scheduledFor: new Date(),
+      ambiente: original.ambiente,
+      substitutesId: original.id,
+    })
+    Object.assign(substitute, { status: 'EMITTED', accessKey: '1'.repeat(50) })
+
+    const res = await app.handle(
+      new Request('http://localhost/fiscal/admin/invoices', {
+        method: 'POST',
+        headers: { ...ADMIN, 'content-type': 'application/json' },
+        body: JSON.stringify({ paymentId }),
+      }),
+    )
+
+    expect(res.status).toBe(409)
+    expect(invoices.invoices.size).toBe(2)
   })
 
   test('manual: payments fora do ar → 502; CPF inválido no pagamento → 422', async () => {

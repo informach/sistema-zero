@@ -62,6 +62,6 @@ describe('contrato do executor Pro', () => {
     expect(dockerfile).toContain('COPY runtime/package-lock.json')
     expect(dockerfile).toContain('npm ci --ignore-scripts')
     expect(lockfile.lockfileVersion).toBeGreaterThanOrEqual(3)
-    expect(lockfile.packages[''].dependencies.vite).toBe('8.0.14')
+    expect(lockfile.packages[''].dependencies.vite).toBe('8.0.16')
   })
 })

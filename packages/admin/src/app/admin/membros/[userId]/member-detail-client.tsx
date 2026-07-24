@@ -15,7 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from '@sistemazero/ui/table'
-import { ArrowLeft, CreditCard, LogIn, Pencil, Plus } from 'lucide-react'
+import { Textarea } from '@sistemazero/ui/textarea'
+import { ArrowLeft, CreditCard, LogIn, Mail, Pencil, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -83,6 +84,7 @@ export function MemberDetailClient({
   currentUser: { id: string; role: string }
 }) {
   const canWrite = currentUser.role === 'superadmin' || currentUser.role === 'admin'
+  const canMessage = canWrite || currentUser.role === 'staff'
 
   const [detail, setDetail] = useState<MemberDetail | null>(null)
   const [loading, setLoading] = useState(true)
@@ -94,6 +96,11 @@ export function MemberDetailClient({
   const [impersonatePlatform, setImpersonatePlatform] = useState('main')
 
   const [grantOpen, setGrantOpen] = useState(false)
+  const [recadoOpen, setRecadoOpen] = useState(false)
+  const [recadoTargetId, setRecadoTargetId] = useState(userId)
+  const [recadoTitle, setRecadoTitle] = useState('')
+  const [recadoBody, setRecadoBody] = useState('')
+  const [sendingRecado, setSendingRecado] = useState(false)
 
   const [extendOpen, setExtendOpen] = useState(false)
   const [extendTarget, setExtendTarget] = useState<AdminEntitlementView | null>(null)
@@ -188,6 +195,31 @@ export function MemberDetailClient({
     await manage(extendTarget.id, 'extend', iso)
   }
 
+  async function sendGeneralRecado() {
+    const body = recadoBody.trim()
+    const target = learners.find((item) => item.id === recadoTargetId) ?? learners[0]
+    if (!body || !target || sendingRecado) return
+    setSendingRecado(true)
+    try {
+      await apiSend('/api/members/teacher-threads', 'POST', {
+        userId: target.id,
+        accountId: target.audience === 'kids' ? userId : undefined,
+        audience: target.audience,
+        contextType: 'general',
+        title: recadoTitle.trim() || undefined,
+        body,
+      })
+      toast.success('Recado enviado.')
+      setRecadoOpen(false)
+      setRecadoTitle('')
+      setRecadoBody('')
+    } catch (err) {
+      toast.error((err as ApiError).message ?? 'Não foi possível enviar o recado.')
+    } finally {
+      setSendingRecado(false)
+    }
+  }
+
   // "Entrar como" (suporte): pede o handoff e abre a community já logada como o aluno.
   // `platform` escolhe o app: 'main' = comunidade adulta; 'kids' = Community Kids (grade
   // de perfis das crianças). O BFF repassa `?platform=kids`; o auth resolve a `communityUrl`.
@@ -260,6 +292,11 @@ export function MemberDetailClient({
             <Link href="/admin/usuarios" className={buttonVariants({ variant: 'outline' })}>
               <Pencil className="size-4" /> Editar
             </Link>
+            {canMessage ? (
+              <Button variant="outline" onClick={() => setRecadoOpen(true)}>
+                <Mail className="size-4" /> Enviar recado
+              </Button>
+            ) : null}
             {canWrite ? (
               <Button onClick={() => setGrantOpen(true)}>
                 <Plus className="size-4" /> Conceder acesso
@@ -345,6 +382,59 @@ export function MemberDetailClient({
         onClose={() => setGrantOpen(false)}
         onGranted={load}
       />
+
+      <Dialog
+        open={recadoOpen}
+        onClose={() => setRecadoOpen(false)}
+        title="Enviar recado"
+        description="Abre uma nova conversa privada com o aluno selecionado."
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setRecadoOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => void sendGeneralRecado()}
+              disabled={!recadoBody.trim() || sendingRecado}
+            >
+              <Mail className="size-4" /> {sendingRecado ? 'Enviando…' : 'Enviar'}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <Field label="Destinatário" htmlFor="recado-target">
+            <Select
+              id="recado-target"
+              value={recadoTargetId}
+              onChange={(event) => setRecadoTargetId(event.target.value)}
+            >
+              {learners.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.label} ({item.audience === 'kids' ? 'Kids' : 'Adulto'})
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <Field label="Assunto (opcional)" htmlFor="recado-title">
+            <Input
+              id="recado-title"
+              value={recadoTitle}
+              maxLength={200}
+              onChange={(event) => setRecadoTitle(event.target.value)}
+            />
+          </Field>
+          <Field label="Mensagem" htmlFor="recado-body">
+            <Textarea
+              id="recado-body"
+              value={recadoBody}
+              maxLength={8000}
+              rows={6}
+              onChange={(event) => setRecadoBody(event.target.value)}
+            />
+          </Field>
+        </div>
+      </Dialog>
 
       <Dialog
         open={impersonateOpen}

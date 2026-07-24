@@ -22,6 +22,7 @@ import {
   BlockBody,
   CourseBody,
   CourseIdParams,
+  CourseUpdateBody,
   IdParams,
   LessonBody,
   LessonIdParams,
@@ -47,11 +48,13 @@ export interface ContentRoutesDeps {
 }
 
 type CourseInput = typeof CourseBody.static
+type CourseUpdateInput = typeof CourseUpdateBody.static
 type ModuleInput = typeof ModuleBody.static
 type LessonInput = typeof LessonBody.static
 type AttachmentInput = typeof AttachmentBody.static
 
-const courseFields = (b: CourseInput): CourseFields => ({
+const courseFields = (b: CourseInput | CourseUpdateInput): CourseFields => ({
+  version: 'version' in b ? b.version : undefined,
   slug: b.slug,
   title: b.title,
   subtitle: b.subtitle ?? null,
@@ -158,7 +161,7 @@ export function contentRoutes(deps: ContentRoutesDeps) {
           guard(headers)
           return deps.courses.update(params.id, courseFields(body))
         },
-        { body: CourseBody, params: IdParams },
+        { body: CourseUpdateBody, params: IdParams },
       )
       .delete(
         '/courses/:id',

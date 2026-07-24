@@ -288,7 +288,10 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    opcional — ausente no CREATE → `adult`; ausente no UPDATE → **PRESERVA a atual**
    (≠ do `salesPageUrl`, que limpa: um PATCH de build antigo do admin não pode rebaixar
    curso kids em silêncio). Views (`MyCourseView`/`CatalogCourseView`/`CourseDetailView`/
-   `CourseView` admin) expõem `audience`. O front kids é o `@sistemazero/community-kids`.
+   `CourseView` admin) expõem `audience`. `PATCH /members/admin/courses/:id` exige a
+   `version` devolvida pelo GET/POST anterior; versão divergente → `409 COURSE_CONFLICT`
+   (nunca sobrescreve uma edição concorrente). O front kids é o
+   `@sistemazero/community-kids`.
 10. **Trava sequencial das aulas (estilo Duolingo)** (06/2026, migration `0027`): coluna
    `courses.sequential_lock` (boolean, default `true` — backfill LIGADO p/ os cursos
    existentes; toggle por curso no admin, decisão da usuária). Ligada → uma aula só fica
@@ -421,7 +424,8 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   `"<MÉTODO>.<path>.<corpo BRUTO>"` (06/2026 — método+path impedem replay
   cross-endpoint) com `GATEWAY_HMAC_SECRET` (= segredo de resign do gateway),
   header `x-signature: t=,v1=`. HMAC é checado no hook `transform` (**antes** da
-  validação do corpo → 401 antes de 422). Dedupe por `x-delivery-id` (tabela
+  validação do corpo → 401 antes de 422). `x-delivery-id` é **obrigatório**; dedupe por
+  ele (tabela
   `processed_webhooks`): checa ANTES, marca só DEPOIS do sucesso. Falha de concessão → o
   funil devolve 502 e o gateway re-entrega (members é idempotente pela `idempotencyKey`).
   ⚠️ **Marcar-após-sucesso é DELIBERADO** (não trocar por "claim-first"): duas entregas
@@ -1230,9 +1234,11 @@ implementa as DUAS sobre os mesmos arrays. 5 serviços (`content-admin/content-a
 - Anexos: `POST /lessons/:lessonId/attachments`, `PATCH/DELETE /attachments/:id`, `…/attachments/reorder`.
 
 Slug duplicado (curso global, aula por curso) → 23505 → `DUPLICATE_SLUG`(409). Reordenar exige os
-ids EXATOS dos filhos atuais (senão 400). Cursos têm `version` (concorrência otimista, last-write-wins
-na prática — sem version do cliente); módulos/aulas/blocos/anexos não têm version. Erros novos:
-`CONTENT_NOT_FOUND`→404, `DUPLICATE_SLUG`→409, `CONCURRENCY_CONFLICT`→409.
+ids EXATOS dos filhos atuais (senão 400). Cursos têm `version` (concorrência otimista): o
+`PATCH /members/admin/courses/:id` DEVE enviar a versão recebida no curso; versão ausente ou
+desatualizada → `CONCURRENCY_CONFLICT` (409), sem sobrescrever a edição concorrente.
+Módulos/aulas/blocos/anexos não têm version. Erros novos: `CONTENT_NOT_FOUND`→404,
+`DUPLICATE_SLUG`→409, `CONCURRENCY_CONFLICT`→409.
 
 **Publicação por aula** (`lessons.is_published`, migration `0003`): `LessonBody` aceita
 `isPublished` opcional — **ausente → `false`** (aula nova nasce RASCUNHO; aulas pré-existentes
@@ -1281,7 +1287,7 @@ repo para o aluno, o professor e o webhook do Mural.
   `POST …/:id/read`. O `author_name` = nome do professor (header do gateway; vazio → a UI kids
   mostra "Professor(a)").
 - **Webhook do Mural** `POST /members/webhooks/mural-message` (hub→members, HMAC + dedupe
-  `x-delivery-id`, canal `mural-message`): a equipe escondeu/recusou um jogo COM motivo → mensagem
+  obrigatório por `x-delivery-id`, canal `mural-message`): a equipe escondeu/recusou um jogo COM motivo → mensagem
   `teacher` numa conversa `mural_publication`. `context_ref` = id do tópico no HUB (**texto, NÃO
   uuid**). **Idempotente** por id determinístico do turno (`deterministicSourceId(namespace,
   deliveryId)` + `onConflictDoNothing`) — retry da mesma entrega não duplica o recado (o

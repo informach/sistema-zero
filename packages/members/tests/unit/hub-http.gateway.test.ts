@@ -29,13 +29,15 @@ describe('createHubHttpGateway', () => {
     expect(JSON.parse(capturedBody)).toEqual({ userId: 'user-1', event: 'grant' })
     expect(typeof capturedHeaders['x-delivery-id']).toBe('string')
 
-    // A assinatura PRECISA ser aceita pela MESMA verificação que o hub roda
-    // (canonical `<MÉTODO>.<path>.<corpo>` + verifyHmacSignature do core).
+    // A assinatura PRECISA ser aceita pela MESMA verificação que o hub roda.
+    // O delivery id também faz parte da mensagem canônica: ele é a chave de
+    // dedupe e não pode ser alterado sem invalidar o HMAC.
     const result = verifyHmacSignature({
       secret: SECRET,
       body: canonicalHmacMessage({
         method: 'POST',
         path: '/hub/webhooks/grant',
+        deliveryId: capturedHeaders['x-delivery-id'],
         body: capturedBody,
       }),
       signatureHeader: capturedHeaders['x-signature'],

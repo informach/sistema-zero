@@ -313,11 +313,13 @@ export function getTeacherThreadByContext(q: {
   userId: string
   contextType: string
   contextRef: string
+  before?: string
 }): Promise<GatewayResponse<{ thread: TeacherThreadView | null }>> {
   const qs = new URLSearchParams({
     userId: q.userId,
     contextType: q.contextType,
     contextRef: q.contextRef,
+    ...(q.before ? { before: q.before } : {}),
   })
   return gatewayFetch(`/members/admin/teacher-threads/by-context?${qs.toString()}`)
 }

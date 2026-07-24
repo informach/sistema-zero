@@ -166,6 +166,44 @@ describe('createGatewayClient (assinatura HMAC de borda)', () => {
     })
     expect(verdict.valid).toBe(true)
   })
+
+  test('grantMembersAccess assina e envia o delivery id determinístico da compra', async () => {
+    let captured: { url: string; init: RequestInit } | undefined
+    const fetchImpl = (async (url: string, init: RequestInit) => {
+      captured = { url, init }
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      })
+    }) as unknown as typeof fetch
+    const gw = createGatewayClient({
+      baseUrl: 'http://gateway',
+      consumerId: 'funnel',
+      hmacSecret: SECRET,
+      fetchImpl,
+    })
+
+    await gw.grantMembersAccess({ userId: 'u1', offerRef: 'oferta', paymentId: 'pay_123' })
+
+    const headers = captured?.init.headers as Record<string, string>
+    const rawBody = captured?.init.body as string
+    expect(captured?.url).toBe('http://gateway/members/webhooks/grant')
+    expect(headers['x-delivery-id']).toBe('grant:pay_123')
+    expect(
+      verifyHmacSignature({
+        secret: SECRET,
+        body: canonicalHmacMessage({
+          method: 'POST',
+          path: '/members/webhooks/grant',
+          deliveryId: 'grant:pay_123',
+          body: rawBody,
+        }),
+        signatureHeader: headers['x-signature'],
+        nowSeconds: Math.floor(Date.now() / 1000),
+        toleranceSeconds: 300,
+      }).valid,
+    ).toBe(true)
+  })
 })
 
 describe('timeout/falha de rede (nunca pendura o handler nem lança)', () => {

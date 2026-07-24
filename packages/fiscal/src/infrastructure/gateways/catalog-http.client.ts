@@ -18,8 +18,7 @@ export class CatalogHttpClient implements CatalogClient {
     const body = (await res.json()) as Record<string, unknown>
     const id = typeof body.id === 'string' ? body.id : offerId
     const name = typeof body.name === 'string' ? body.name : ''
-    const guaranteeRaw = body.guaranteeDays
-    const guaranteeDays = typeof guaranteeRaw === 'number' ? guaranteeRaw : null
+    const guaranteeDays = parseGuaranteeDays(body.guaranteeDays)
     // O nome do PRODUTO principal (discriminação da nota) vem em product.name;
     // fallback no nome da oferta (parse defensivo contra drift).
     const product = body.product as { name?: unknown } | undefined
@@ -27,4 +26,12 @@ export class CatalogHttpClient implements CatalogClient {
 
     return { id, name, productName, guaranteeDays }
   }
+}
+
+function parseGuaranteeDays(value: unknown): number | null {
+  if (value === null || value === undefined) return null
+  if (typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= 365) {
+    return value
+  }
+  throw new Error('catalog: guaranteeDays inválido na view')
 }

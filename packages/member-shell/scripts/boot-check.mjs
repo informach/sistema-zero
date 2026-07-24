@@ -39,6 +39,12 @@ if (prod) {
       'JWT_HS256_SECRET não deve existir em produção (use só JWKS — HS256 forjaria sessão)',
     )
   }
+  if (process.env.REQUIRE_PARENT_GATE_HMAC_SECRET === '1') {
+    const parentGateSecret = process.env.PARENT_GATE_HMAC_SECRET?.trim()
+    if (!parentGateSecret || parentGateSecret.length < 32) {
+      problems.push('PARENT_GATE_HMAC_SECRET com pelo menos 32 chars (portão dos pais)')
+    }
+  }
 }
 
 if (problems.length > 0) {

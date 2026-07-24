@@ -37,6 +37,7 @@ type AttachmentRow = typeof lessonAttachments.$inferSelect
 
 const toCourse = (r: CourseRow): Course => ({
   id: r.id,
+  version: r.version,
   slug: r.slug,
   title: r.title,
   subtitle: r.subtitle,
@@ -237,9 +238,9 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
   }
 
   async updateCourse(course: Course): Promise<boolean> {
-    // O caso de uso carrega (com a version atual) e nos passa o curso já mesclado.
-    const expectedVersion = await this.currentVersion(course.id)
-    if (expectedVersion === null) return false
+    // O caso de uso recebe a versão que o editor leu e a propaga até aqui. Não
+    // reler a versão: isso aceitaria um payload velho e perderia a edição alheia.
+    const expectedVersion = course.version
     try {
       const updated = await this.db
         .update(courses)
@@ -268,15 +269,6 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         throw new DuplicateSlugError('Já existe um curso com esse slug')
       throw error
     }
-  }
-
-  private async currentVersion(id: string): Promise<number | null> {
-    const [row] = await this.db
-      .select({ version: courses.version })
-      .from(courses)
-      .where(eq(courses.id, id))
-      .limit(1)
-    return row ? row.version : null
   }
 
   async countPublishedLessons(

@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react'
-import type { Project } from '#core'
+import type { Project, StudioProBuildLimits } from '#core'
 
 export interface StudioProRuntimeBuildInput {
   project: Project
@@ -18,6 +18,8 @@ export interface StudioProRuntimeBuildResult {
  * Ausente, o Estúdio mantém o runtime local do modo Pro completo.
  */
 export interface StudioProRuntimeAdapter {
+  /** Cotas do compilador remoto; o Studio as impõe antes de persistir/compilar. */
+  limits?: StudioProBuildLimits
   build(input: StudioProRuntimeBuildInput): Promise<StudioProRuntimeBuildResult>
 }
 

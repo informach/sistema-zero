@@ -18,6 +18,8 @@ export type {
   ProjectTree,
   ProNode,
   ProProjectMeta,
+  StudioProBuildFileLimitError,
+  StudioProBuildLimits,
 } from '#core'
 export {
   BLOCK_LEVEL_OPTIONS,
@@ -29,6 +31,9 @@ export {
   MODE_LABELS,
   normalizeBlockLevel,
   normalizeProPath,
+  STUDIO_PRO_BUILD_LIMITS,
+  studioProBuildFileLimitError,
+  studioProBuildRequestByteLength,
 } from '#core'
 export type { PersonalAsset, SavePersonalAssetResult } from './asset-library/personal'
 export { BLOCK_CATALOG, type BlockCatalogEntry } from './blockly/blockCatalog'

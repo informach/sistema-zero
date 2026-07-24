@@ -52,7 +52,11 @@ export function StudioCore(props: StudioCoreProps): JSX.Element {
   // 1x por instância; StrictMode-safe (re-render descarta a duplicata).
   // `persistence` e `limits` são estáticos por instância (lidos só aqui).
   const [stores] = useState(() =>
-    createStudioStores({ persistence: props.persistence, limits: props.limits }),
+    createStudioStores({
+      persistence: props.persistence,
+      limits: props.limits,
+      proBuildLimits: props.proRuntime?.limits,
+    }),
   )
   return (
     <StudioStoresContext.Provider value={stores}>
@@ -163,7 +167,9 @@ function StudioCoreBody({
   // (array que muda de referência a cada render do host com allowedModes inline).
   // biome-ignore lint/correctness/useExhaustiveDependencies: ver acima — depende de resolvedModesKey, não do array config.allowedModes
   const sanitized = useMemo(() => {
-    const project = sanitizeProjectForHost(sourceProject)
+    const project = sanitizeProjectForHost(sourceProject, {
+      proBuildLimits: proRuntime?.limits,
+    })
     if (!project) return null
     // Coerção de modo (D2): os modos dependem do TIPO do projeto (modesForKind)
     // intersectados com a allowlist do host — pro = só Código; básico = Blocos/

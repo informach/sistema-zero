@@ -5,6 +5,8 @@ export const InvoiceStatus = {
   SKIPPED: 'SKIPPED',
   FAILED: 'FAILED',
   CANCEL_PENDING: 'CANCEL_PENDING',
+  /** Rejeição determinística do cancelamento; requer nova ação explícita do admin. */
+  CANCEL_FAILED: 'CANCEL_FAILED',
   CANCELLED: 'CANCELLED',
   SUBSTITUTED: 'SUBSTITUTED',
 } as const

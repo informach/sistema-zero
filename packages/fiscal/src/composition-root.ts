@@ -176,6 +176,7 @@ export function createApplication(env: Env): Application {
     batchSize: env.NFSE_WORKER_BATCH_SIZE,
     staleMs: env.NFSE_CLAIM_STALE_MS,
     retryDelayMs: env.NFSE_DELIVERY_RETRY_DELAY_MS,
+    deliverEmail: messagingEnabled,
   })
 
   const app = createServer({
@@ -189,6 +190,7 @@ export function createApplication(env: Env): Application {
     serviceDescPrefix: env.NFSE_SERVICE_DESC_PREFIX,
     webhookHmacSecret: env.PAYMENTS_WEBHOOK_HMAC_SECRET,
     webhookToleranceSeconds: env.PAYMENTS_WEBHOOK_TOLERANCE_SECONDS,
+    webhookProcessingStaleMs: env.WEBHOOK_PROCESSING_STALE_MS,
     requireAdminEnabled: env.REQUIRE_ADMIN,
     internalToken: env.INTERNAL_API_TOKEN,
     metricsToken: env.METRICS_TOKEN,
@@ -207,7 +209,9 @@ export function createApplication(env: Env): Application {
       server = app.listen({ hostname: env.HOST, port: env.PORT })
       emissionWorker.start()
       cancellationWorker.start()
-      if (messagingEnabled) deliveryWorker.start()
+      // DANFSe é um artefato fiscal e precisa de recuperação mesmo sem messaging;
+      // nesse modo a fila ignora apenas o e-mail pendente.
+      deliveryWorker.start()
       // Saúde do certificado (por-réplica, FORA do advisory lock — cada réplica
       // tem o MESMO cert e precisa parar a sua própria emissão se ele expirar).
       const checkCertHealth = () => {
@@ -236,8 +240,11 @@ export function createApplication(env: Env): Application {
       checkCertHealth()
       retentionTimer = setInterval(() => {
         checkCertHealth()
-        void withAdvisoryLock(connection.db, FISCAL_RETENTION_LOCK_KEY, async () => {
-          const pruned = await processedWebhooks.pruneOlderThan(PROCESSED_WEBHOOK_RETENTION_DAYS)
+        void withAdvisoryLock(connection.db, FISCAL_RETENTION_LOCK_KEY, async (tx) => {
+          const pruned = await processedWebhooks.pruneOlderThan(
+            PROCESSED_WEBHOOK_RETENTION_DAYS,
+            tx,
+          )
           if (pruned > 0) logger.info('fiscal.retention_pruned', { pruned })
         }).catch((error) => logger.error('fiscal.retention_failed', { error: String(error) }))
       }, RETENTION_INTERVAL_MS)

@@ -1,4 +1,9 @@
-import { isStudioProTemplateId, type StudioProTemplateId } from '@sistemazero/core/studio'
+import {
+  isStudioProTemplateId,
+  STUDIO_PRO_BUILD_LIMITS,
+  type StudioProTemplateId,
+  studioProBuildFileLimitError,
+} from '@sistemazero/core/studio'
 import type { Project, StudioProRuntimeBuildResult } from '@sistemazero/studio'
 
 interface RuntimeFailure {
@@ -15,6 +20,10 @@ interface RuntimeSuccess {
   durationMs?: number
 }
 
+type FetchImpl = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
+
+export { STUDIO_PRO_BUILD_LIMITS }
+
 export class StudioProRuntimeUpstreamError extends Error {
   constructor(
     readonly status: number,
@@ -24,6 +33,27 @@ export class StudioProRuntimeUpstreamError extends Error {
     super(message)
     this.name = 'StudioProRuntimeUpstreamError'
   }
+}
+
+/** Erro de contrato local: o BFF o devolve sem chamar o runtime externo. */
+export class StudioProRuntimeInputError extends Error {
+  constructor(
+    readonly status: 400 | 413,
+    message: string,
+  ) {
+    super(message)
+    this.name = 'StudioProRuntimeInputError'
+  }
+}
+
+/**
+ * Status que o BFF pode repassar ao editor: erro de projeto (400/413), código
+ * inválido (422) e rate limit (429) são acionáveis; falhas internas do runtime
+ * continuam mascaradas como 502.
+ */
+export function studioProRuntimePublicStatus(status: number): 400 | 413 | 422 | 429 | 502 {
+  if (status === 400 || status === 413 || status === 422 || status === 429) return status
+  return 502
 }
 
 export function isProStudioProject(value: unknown): value is Project & { kind: 'pro' } {
@@ -54,7 +84,7 @@ export async function buildStudioProProject(options: {
   runtimeUrl: string
   runtimeToken: string
   signal?: AbortSignal
-  fetchImpl?: typeof fetch
+  fetchImpl?: FetchImpl
 }): Promise<StudioProRuntimeBuildResult> {
   const files = Object.fromEntries(
     Object.entries(options.project.tree ?? {})
@@ -64,6 +94,28 @@ export async function buildStudioProProject(options: {
       })
       .map(([path, node]) => [path, node.content]),
   )
+  const limitError = studioProBuildFileLimitError(files)
+  if (limitError === 'EMPTY') {
+    throw new StudioProRuntimeInputError(400, 'O projeto Pro não tem arquivos para compilar.')
+  }
+  if (limitError === 'TOO_MANY_FILES') {
+    throw new StudioProRuntimeInputError(
+      400,
+      'O projeto Pro tem arquivos demais para esta atividade.',
+    )
+  }
+  if (limitError === 'FILE_TOO_LARGE' || limitError === 'TOTAL_TOO_LARGE') {
+    throw new StudioProRuntimeInputError(
+      413,
+      'O projeto Pro ficou grande demais para esta atividade.',
+    )
+  }
+  if (limitError === 'REQUEST_TOO_LARGE') {
+    throw new StudioProRuntimeInputError(
+      413,
+      'O projeto Pro ficou grande demais para enviar ao compilador.',
+    )
+  }
   const runtimeUrl = options.runtimeUrl.trim().replace(/\/$/, '')
   const upstream = await (options.fetchImpl ?? fetch)(`${runtimeUrl}/v1/build`, {
     method: 'POST',

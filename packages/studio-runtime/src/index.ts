@@ -1,5 +1,10 @@
 import { getSandbox, Sandbox } from '@cloudflare/sandbox'
 import {
+  InvalidJsonBodyError,
+  RequestBodyTooLargeError,
+  readJsonBodyWithLimit,
+} from '@sistemazero/core/http'
+import {
   InvalidBuildRequestError,
   PRO_BUILD_LIMITS,
   type ProBuildFailure,
@@ -43,7 +48,7 @@ export function createStudioRuntimeHandler(
       }
 
       try {
-        const raw = await request.json()
+        const raw = await readJsonBodyWithLimit(request, PRO_BUILD_LIMITS.maxRequestBytes)
         const input = parseBuildRequest(raw)
         const rate = await env.BUILD_RATE_LIMITER.limit({ key: input.executionId })
         if (!rate.success) {
@@ -119,6 +124,26 @@ export function createStudioRuntimeHandler(
           await sandbox.exec('rm -rf ./* ./.??*', { cwd, timeout: 5_000 }).catch(() => undefined)
         }
       } catch (error) {
+        if (error instanceof RequestBodyTooLargeError) {
+          return json(
+            {
+              ok: false,
+              code: 'INVALID_REQUEST',
+              message: 'O projeto ultrapassou o tamanho permitido.',
+            },
+            413,
+          )
+        }
+        if (error instanceof InvalidJsonBodyError) {
+          return json(
+            {
+              ok: false,
+              code: 'INVALID_REQUEST',
+              message: 'O corpo da requisição precisa ser um JSON válido.',
+            },
+            400,
+          )
+        }
         if (error instanceof InvalidBuildRequestError) {
           return json({ ok: false, code: 'INVALID_REQUEST', message: error.message }, 400)
         }

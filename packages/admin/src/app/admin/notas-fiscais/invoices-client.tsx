@@ -24,6 +24,7 @@ import { formatCentsStr, formatDate } from '@/lib/format'
 import {
   formatDocument,
   formatDps,
+  INVOICE_FAILURE_STATUSES,
   invoiceMainDate,
   invoiceStatusLabel,
   sumStatusCounts,
@@ -122,9 +123,9 @@ export function InvoicesClient({ currentRole }: { currentRole: string }) {
         />
         <OverviewCard
           title="Falhas"
-          value={byStatus ? sumStatusCounts(byStatus, ['FAILED']) : '—'}
+          value={byStatus ? sumStatusCounts(byStatus, INVOICE_FAILURE_STATUSES) : '—'}
           icon={TriangleAlert}
-          description="Emissões que precisam de atenção"
+          description="Emissões ou cancelamentos que precisam de atenção"
         />
         <OverviewCard
           title="Canceladas"

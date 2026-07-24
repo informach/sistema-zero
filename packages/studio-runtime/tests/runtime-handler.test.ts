@@ -75,6 +75,19 @@ function request(body: unknown, token = TOKEN): Request {
   })
 }
 
+function oversizedRequest(token = TOKEN): Request {
+  return new Request('https://runtime.test/v1/build', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      // O Worker precisa rejeitar pelo header ANTES de materializar o JSON.
+      'Content-Length': '2000001',
+    },
+    body: JSON.stringify(validBody),
+  })
+}
+
 async function execute(setupResult: ReturnType<typeof setup>, input: Request): Promise<Response> {
   type WorkerRequest = Parameters<NonNullable<typeof setupResult.handler.fetch>>[0]
   return setupResult.handler.fetch!(
@@ -100,6 +113,14 @@ describe('handler do Studio Runtime', () => {
     const response = await execute(context, request(validBody))
 
     expect(response.status).toBe(429)
+    expect(context.factoryCalls()).toBe(0)
+  })
+
+  test('rejeita corpo maior que o contrato antes de criar sandbox', async () => {
+    const context = setup()
+    const response = await execute(context, oversizedRequest())
+
+    expect(response.status).toBe(413)
     expect(context.factoryCalls()).toBe(0)
   })
 

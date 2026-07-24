@@ -1,0 +1,1 @@
+ALTER TYPE "fiscal"."invoice_status" ADD VALUE 'CANCEL_FAILED' BEFORE 'CANCELLED';

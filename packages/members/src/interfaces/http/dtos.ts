@@ -701,7 +701,7 @@ const NULLABLE_URL = t.Optional(
 )
 
 /** Corpo de `POST/PATCH /members/admin/courses[/:id]`. */
-export const CourseBody = t.Object({
+const CourseBodyProperties = {
   slug: SLUG,
   title: TITLE,
   subtitle: NULLABLE_TEXT,
@@ -724,6 +724,12 @@ export const CourseBody = t.Object({
   track: t.Optional(t.Union([COURSE_TRACK, t.Null()])),
   // Slot da Carreira do Criador: 1 = curso-base; null = bônus/fora da carreira.
   careerSlot: t.Optional(t.Union([t.Integer({ minimum: 1, maximum: 6 }), t.Null()])),
+}
+export const CourseBody = t.Object(CourseBodyProperties)
+/** PATCH exige a versão lida para impedir que uma aba antiga sobrescreva outra edição. */
+export const CourseUpdateBody = t.Object({
+  ...CourseBodyProperties,
+  version: t.Integer({ minimum: 0 }),
 })
 
 /** Query de `GET /members/admin/courses`. */
@@ -1038,11 +1044,20 @@ export const TeacherThreadsQuery = t.Object({
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
   offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),
 })
+/** Cursor opaco da página anterior do histórico de uma conversa. */
+export const TeacherThreadPageQuery = t.Object({
+  audience: t.Optional(AUDIENCE),
+  before: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
+})
 /** Query de `GET /members/admin/teacher-threads/by-context` — abrir a conversa da Entrega. */
 export const AdminTeacherThreadByContextQuery = t.Object({
   userId: UUID,
   contextType: t.Union([t.Literal('studio_submission'), t.Literal('mural_publication')]),
   contextRef: t.String({ minLength: 1, maxLength: 200 }),
+  before: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
+})
+export const AdminTeacherThreadPageQuery = t.Object({
+  before: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
 })
 /** Query da caixa de entrada do PROFESSOR (`GET /members/admin/teacher-threads`). */
 export const AdminTeacherThreadsQuery = t.Object({

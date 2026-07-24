@@ -4,29 +4,33 @@ import { canonicalHmacMessage, verifyHmacSignature } from '@sistemazero/core/sec
 /**
  * Verifica a assinatura HMAC de um webhook de entrada (o gateway re-assina a
  * chamada do funil como consumer `gateway`). Mensagem canônica:
- * `"<MÉTODO>.<path>.<corpo>"` (sem Idempotency-Key — o funil não envia nas
- * chamadas de concessão; método+path impedem replay cross-endpoint). O path
+ * `"<MÉTODO>.<path>.delivery=<id>.<corpo>"` quando há `x-delivery-id` (sem
+ * Idempotency-Key — o funil não envia nas chamadas de concessão; método+path
+ * impedem replay cross-endpoint). O path
  * assinado pelo resign do gateway é o `upstreamPath` final = o pathname que este
  * serviço enxerga. Header `x-signature: t=<ts>,v1=<hex>`. Lança 401 se
  * inválida/expirada (anti-replay).
  *
- * NOTA (limitação herdada do gateway): o `x-delivery-id` NÃO faz parte da mensagem
- * assinada. Um replay com novo delivery-id NO MESMO endpoint passaria o HMAC e não
- * seria deduplicado — porém o grant/revoke são IDEMPOTENTES (chave da matrícula /
- * subscriptionId), então re-executar é inócuo. Anti-replay por nonce está em
- * aberto no gateway (ver api-gateway §8).
+ * O delivery id é autenticado junto do corpo: trocar apenas o header invalida a
+ * assinatura e não pode criar uma segunda entrega do mesmo evento.
  */
 export function assertWebhookSignature(input: {
   secret: string
   method: string
   path: string
   rawBody: string
+  deliveryId: string | undefined
   signatureHeader: string | undefined
   toleranceSeconds: number
 }): void {
   const result = verifyHmacSignature({
     secret: input.secret,
-    body: canonicalHmacMessage({ method: input.method, path: input.path, body: input.rawBody }),
+    body: canonicalHmacMessage({
+      method: input.method,
+      path: input.path,
+      deliveryId: input.deliveryId,
+      body: input.rawBody,
+    }),
     signatureHeader: input.signatureHeader,
     nowSeconds: Math.floor(Date.now() / 1000),
     toleranceSeconds: input.toleranceSeconds,

@@ -8,6 +8,7 @@ import { Select } from '@sistemazero/ui/select'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { type RefObject, useEffect, useMemo, useState } from 'react'
 import { createAdminProRuntimeAdapter } from '@/lib/studio-pro-authoring'
+import { loadStudioEmbedModule } from './studio-embed-loader'
 
 type StudioComponent = typeof import('@sistemazero/studio')['StudioLesson']
 type StudioModule = typeof import('@sistemazero/studio')
@@ -41,6 +42,8 @@ export function StudioEmbed({
   className = 'h-[32rem]',
 }: Props) {
   const [studioModule, setStudioModule] = useState<StudioModule | null>(null)
+  const [loadError, setLoadError] = useState(false)
+  const [loadAttempt, setLoadAttempt] = useState(0)
   const [seed, setSeed] = useState<Project | null>(initialProject ?? null)
   const [templateId, setTemplateId] = useState(initialProject?.proMeta?.templateId ?? 'vanilla-js')
   const [pendingKind, setPendingKind] = useState<ProjectKindChoice | null>(null)
@@ -49,9 +52,17 @@ export function StudioEmbed({
 
   useEffect(() => {
     let active = true
+    if (loadAttempt > 0) setStudioModule(null)
     void (async () => {
-      const mod = await import('@sistemazero/studio')
+      setLoadError(false)
+      const result = await loadStudioEmbedModule()
       if (!active) return
+      if (!result.module) {
+        console.error('Não foi possível carregar o editor da autoria.', result.error)
+        setLoadError(true)
+        return
+      }
+      const mod = result.module
       setStudioModule(mod)
       setTemplateId((current) =>
         mod.listProTemplates().some((template) => template.id === current) ? current : 'vanilla-js',
@@ -64,7 +75,7 @@ export function StudioEmbed({
     return () => {
       active = false
     }
-  }, [initialProject, defaultName])
+  }, [initialProject, defaultName, loadAttempt])
 
   function replaceProject(kind: ProjectKindChoice) {
     if (!studioModule || !seed) return
@@ -75,6 +86,24 @@ export function StudioEmbed({
     setSeed(next)
     handleRef.current?.replaceProject(next)
     setPendingKind(null)
+  }
+
+  if (loadError) {
+    return (
+      <div className={className}>
+        <div className="flex h-full flex-col items-center justify-center gap-3 rounded-lg border border-border bg-muted p-6 text-center text-sm text-muted-foreground">
+          <p>Não foi possível carregar o Estúdio.</p>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => setLoadAttempt((n) => n + 1)}
+          >
+            Tentar novamente
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   if (!StudioLesson || !seed) {

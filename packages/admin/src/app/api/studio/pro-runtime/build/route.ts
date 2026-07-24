@@ -8,7 +8,10 @@ import {
   isProStudioProject,
   opaqueStudioRuntimeExecutionId,
   proProjectTemplateId,
+  STUDIO_PRO_BUILD_LIMITS,
+  StudioProRuntimeInputError,
   StudioProRuntimeUpstreamError,
+  studioProRuntimePublicStatus,
 } from '@sistemazero/member-shell/server/studio-pro-runtime'
 import { NextResponse } from 'next/server'
 import { getEnv } from '@/lib/env'
@@ -16,7 +19,7 @@ import { requireLocalAdminSession } from '@/server/local-admin-session'
 
 export const runtime = 'nodejs'
 
-const MAX_REQUEST_BYTES = 2_000_000
+const MAX_REQUEST_BYTES = STUDIO_PRO_BUILD_LIMITS.maxBffRequestBytes
 const RUNTIME_TIMEOUT_MS = 55_000
 
 export async function POST(request: Request): Promise<Response> {
@@ -61,10 +64,13 @@ export async function POST(request: Request): Promise<Response> {
     })
     return response(result)
   } catch (error) {
+    if (error instanceof StudioProRuntimeInputError) {
+      return response({ error: { message: error.message } }, error.status)
+    }
     if (error instanceof StudioProRuntimeUpstreamError) {
       return response(
         { error: { message: error.message, output: error.output } },
-        error.status === 429 ? 429 : error.status === 422 ? 422 : 502,
+        studioProRuntimePublicStatus(error.status),
       )
     }
     console.error('Falha ao chamar o Studio Pro Runtime na autoria', error)

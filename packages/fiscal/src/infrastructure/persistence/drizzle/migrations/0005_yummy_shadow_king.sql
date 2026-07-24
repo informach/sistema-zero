@@ -1,0 +1,1 @@
+ALTER TABLE "fiscal"."invoices" ADD COLUMN "claim_token" text;

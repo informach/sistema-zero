@@ -83,6 +83,7 @@ import {
   StudioSubmissionBody,
   StudioSubmissionParams,
   splitRequestedRefs,
+  TeacherThreadPageQuery,
   TeacherThreadReplyBody,
   TeacherThreadsQuery,
   VacationBody,
@@ -764,13 +765,17 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         '/teacher-threads',
         async ({ headers, query }) => {
           const userId = resolveUserId(headers)
+          const limit = query.limit ?? 30
+          const offset = query.offset ?? 0
+          const page = await deps.teacherThreads.listForStudent(
+            userId,
+            query.audience ?? 'adult',
+            limit + 1,
+            offset,
+          )
           return {
-            threads: await deps.teacherThreads.listForStudent(
-              userId,
-              query.audience ?? 'adult',
-              query.limit ?? 30,
-              query.offset ?? 0,
-            ),
+            threads: page.slice(0, limit),
+            nextOffset: page.length > limit ? offset + limit : null,
           }
         },
         { query: TeacherThreadsQuery },
@@ -787,9 +792,14 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         '/teacher-threads/:id',
         async ({ headers, params, query }) => {
           const userId = resolveUserId(headers)
-          return deps.teacherThreads.getForStudent(userId, query.audience ?? 'adult', params.id)
+          return deps.teacherThreads.getForStudent(
+            userId,
+            query.audience ?? 'adult',
+            params.id,
+            query.before,
+          )
         },
-        { params: IdParams, query: AudienceQuery },
+        { params: IdParams, query: TeacherThreadPageQuery },
       )
       .post(
         '/teacher-threads/:id/messages',
@@ -806,11 +816,11 @@ export function membersRoutes(deps: MembersRoutesDeps) {
       )
       .post(
         '/teacher-threads/:id/read',
-        async ({ headers, params }) => {
+        async ({ headers, params, query }) => {
           const userId = resolveUserId(headers)
-          return deps.teacherThreads.markReadByStudent(userId, params.id)
+          return deps.teacherThreads.markReadByStudent(userId, query.audience ?? 'adult', params.id)
         },
-        { params: IdParams },
+        { params: IdParams, query: AudienceQuery },
       )
       // Estado do bloco certificado p/ a UI (emitir vs baixar): `eligible` (aulas
       // anteriores concluídas) + `issued`/serial/data se já emitido.

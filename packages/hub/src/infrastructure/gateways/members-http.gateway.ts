@@ -215,7 +215,7 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
   }
 
   /**
-   * POST assinado (HMAC canônico `<MÉTODO>.<path>.<corpo>` + `x-delivery-id`) com
+   * POST assinado (HMAC canônico incluindo `x-delivery-id`) com
    * retry — BEST-EFFORT: NUNCA lança (os chamadores disparam em fire-and-forget
    * `void`; uma rejeição viraria unhandled rejection e derrubaria o processo).
    * Sem segredo HMAC (dev/local) → no-op.
@@ -234,7 +234,7 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
         const ts = Math.floor(now().getTime() / 1000)
         const signature = signHmac(
           opts.hmacSecret,
-          canonicalHmacMessage({ method: 'POST', path, body: rawBody }),
+          canonicalHmacMessage({ method: 'POST', path, deliveryId, body: rawBody }),
           ts,
         )
         const res = await doFetch(`${base}${path}`, {

@@ -38,17 +38,32 @@ Achados implementados (correção/fiscal/segurança/concorrência):
   estornada). `schedule()` recupera o 23505 da substituta via `findActiveSubstituteFor`.
 - **`markEmittedAsSubstitute`** (substituiu `markSubstituted`): grava EMITTED da substituta + marca a
   original SUBSTITUTED na MESMA transação (atomicidade), e SÓ se a original ainda EMITTED — um estorno
-  que a moveu p/ CANCEL_PENDING NÃO é sobrescrito (alerta `fiscal.substitute_original_not_emitted`).
+  que já iniciou ou concluiu o cancelamento NÃO é sobrescrito; a substituta real entra em
+  CANCEL_PENDING na mesma transação (inclusive original CANCELLED/CANCEL_FAILED por `system:refund`).
 - **Cancelamento**: `xMotivo` = TSMotivo do XSD = **15–255** chars (borda valida; worker normaliza
   defensivamente). Antes minLength 3/maxLength 500 → Sefin rejeitava → nota presa em CANCEL_PENDING.
+- **Recuperação do cancelamento**: um `400` ao repetir o e101101 não vira `CANCEL_FAILED` sem antes
+  consultar os eventos no ADN (`GET /contribuintes/NFSe/{chave}/Eventos`). Isso reconcilia o caso em
+  que a Sefin aceitou o evento, mas a resposta/gravação local se perdeu. Se a Sefin indicar evento
+  duplicado e o ADN ainda não o distribuiu, o erro é retentável e a nota permanece `CANCEL_PENDING`.
+  Transições terminais de cancelamento retornam `boolean`; a timeline só registra o resultado quando
+  o UPDATE guardado venceu.
+- **PII em erros externos**: respostas HTTP externas não são ecoadas em exceções; CPF/CNPJ (com ou sem
+  pontuação) e e-mail são redigidos antes de persistência, logs, timeline ou Sentry.
 - **Coletor de presas** (`failExhausted`, no início do tick): nota SCHEDULED com `attempts > maxAttempts`
   E lease expirado (crash entre claim e transição) vira FAILED — não derruba emissão ainda em andamento
   noutra réplica e não some do `/metrics` p/ sempre.
 - **Idempotência por pagamento** (`findAnyByPaymentId`): re-entrega do `paid` após SKIPPED/FAILED não
   cria 2ª nota. Oferta paga 404 no catalog → **retryable** (não emite cedo com garantia default).
+- **Webhook**: a deduplicação reserva a entrega numa transação curta (`PROCESSING`) e só a marca
+  concluída após sucesso; calls para payments/catalog acontecem fora da transação, evitando esgotar
+  o pool. Claim abandonado expira e pode ser reentregue.
+- **Entrega**: o `DeliveryWorker` sempre roda para recuperar o DANFSe; sem messaging, ignora apenas
+  o e-mail pendente (não entra em loop e não perde o PDF após falha temporária).
 - **Cert**: `leafCertPem` explícito (não o 1º bloco da cadeia — bag order pode pôr CA antes do leaf).
   **Circuit-breaker**: cert expirado em prod PARA os workers (por-réplica) + `fiscal.cert_expired_emission_halted`.
-- **env refines novos**: série × ambiente (staging≠2, prod∉{901,902}; default agora **901**); URLs S2S
+- **env refines novos**: série × ambiente (staging≠2, prod∉{901,902}; default agora **901**); lease
+  `NFSE_CLAIM_STALE_MS ≥ 2× (S2S_TIMEOUT_MS + maior timeout Sefin/DANFSe)`; URLs S2S
   não-localhost em prod/staging; `GATEWAY_URL`+`FISCAL_HMAC_SECRET` co-dependentes e obrigatórios em
   produção; `NFSE_SIG_ALGO` (sha1|sha256, escape). Cliente de e-mail no-op retorna `false` → **não marca
   `emailSentAt` fantasma**.
@@ -100,7 +115,8 @@ A Produção Restrita usa o MESMO certificado real e **não gera nota com valida
 ## Máquina de estados
 
 `SCHEDULED → EMITTED | SKIPPED | FAILED` · `EMITTED → CANCEL_PENDING | SUBSTITUTED` ·
-`CANCEL_PENDING → CANCELLED` · `FAILED → SCHEDULED` (retry admin). Central: `domain/invoice/invoice.status.ts`.
+`CANCEL_PENDING → CANCELLED | CANCEL_FAILED` · `CANCEL_FAILED → CANCEL_PENDING` (nova tentativa
+explícita do admin) · `FAILED → SCHEDULED` (retry de emissão). Central: `domain/invoice/invoice.status.ts`.
 Transições no repositório são UPDATEs **guardados por status de origem** (corrida perdida = no-op).
 ⚠️ **Exceção de reconciliação:** `markEmitted` retorna `boolean`; se NÃO casar (0 linhas
 porque um estorno marcou SKIPPED entre a emissão CONFIRMADA na Sefin e a gravação), o

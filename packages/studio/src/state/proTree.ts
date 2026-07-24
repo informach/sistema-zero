@@ -1,4 +1,10 @@
-import { normalizeProPath, type ProjectTree, type ProNode, type ProProjectMeta } from '#core'
+import {
+  normalizeProPath,
+  type ProjectTree,
+  type ProNode,
+  type ProProjectMeta,
+  studioProBuildRequestByteLength,
+} from '#core'
 
 /**
  * Manipulação PURA da árvore de arquivos do modo profissional (`ProjectTree`
@@ -168,10 +174,13 @@ export function removeProNode(tree: ProjectTree, path: string): ProjectTree {
 // --- Sanitizer anti-DoS (load) -------------------------------------------------
 
 export interface ProTreeLimits {
+  /** Teto de arquivos (pastas não contam) — usado pelo runtime remoto Pro. */
+  maxFiles?: number
   maxNodes?: number
   maxDepth?: number
   maxFileChars?: number
   maxTotalChars?: number
+  maxRequestBytes?: number
 }
 
 const MAX_PRO_TREE_NODES = 5000
@@ -197,6 +206,7 @@ export function sanitizeProTree(raw: unknown, limits: ProTreeLimits = {}): Proje
   const out: ProjectTree = {}
   let total = 0
   let nodeCount = 0
+  let fileCount = 0
   for (const [key, value] of entries) {
     const norm = normalizeProPath(key)
     if (!norm) return null
@@ -204,6 +214,8 @@ export function sanitizeProTree(raw: unknown, limits: ProTreeLimits = {}): Proje
     if (!value || typeof value !== 'object') return null
     const v = value as Record<string, unknown>
     if (v.kind === 'file') {
+      fileCount += 1
+      if (limits.maxFiles != null && fileCount > limits.maxFiles) return null
       if (typeof v.content !== 'string' || v.content.length > maxFileChars) return null
       total += v.content.length
       if (total > maxTotal) return null
@@ -239,6 +251,17 @@ export function sanitizeProTree(raw: unknown, limits: ProTreeLimits = {}): Proje
     const lower = key.toLowerCase()
     if (seenLower.has(lower)) return null
     seenLower.add(lower)
+  }
+
+  if (limits.maxRequestBytes != null) {
+    const files = Object.fromEntries(
+      Object.entries(out)
+        .filter(
+          (entry): entry is [string, { kind: 'file'; content: string }] => entry[1].kind === 'file',
+        )
+        .map(([path, node]) => [path, node.content]),
+    )
+    if (studioProBuildRequestByteLength(files) > limits.maxRequestBytes) return null
   }
 
   return Object.keys(out).length > 0 ? out : null

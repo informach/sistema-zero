@@ -34,6 +34,18 @@ export interface TeacherMessageRecord {
   createdAt: Date
 }
 
+/** Cursor estável: página anterior a esta mensagem, por `(created_at, id)`. */
+export interface TeacherMessageCursor {
+  createdAt: Date
+  id: string
+}
+
+/** Janela cronológica do histórico; o banco busca do fim para o começo e a devolve em ASC. */
+export interface TeacherMessagePage {
+  messages: TeacherMessageRecord[]
+  nextCursor: TeacherMessageCursor | null
+}
+
 /**
  * Resumo de conversa para uma CAIXA DE ENTRADA. `unread` é relativo ao lado que
  * pediu a lista (aluno: há mensagem do professor não lida; professor: há mensagem
@@ -95,6 +107,8 @@ export interface AppendMessageInput {
 
 /** Filtros da caixa de entrada do PROFESSOR. */
 export interface AdminThreadsFilter {
+  /** Identidade do professor para calcular não-lidas individualmente. */
+  staffUserId: string
   audience?: CourseAudience
   contextType?: TeacherThreadContext
   courseId?: string
@@ -122,8 +136,8 @@ export interface TeacherThreadRepository {
     contextType: TeacherThreadContext,
     contextRef: string,
   ): Promise<TeacherThreadRecord | null>
-  /** Turnos da conversa (createdAt ASC). */
-  listMessages(threadId: string): Promise<TeacherMessageRecord[]>
+  /** Últimos turnos da conversa, paginados por cursor e devolvidos em ordem cronológica. */
+  listMessages(threadId: string, before?: TeacherMessageCursor): Promise<TeacherMessagePage>
   /** Caixa do ALUNO: as próprias conversas da vitrine, mais recente primeiro. */
   listForStudent(
     userId: string,
@@ -135,8 +149,8 @@ export interface TeacherThreadRepository {
   listForAdmin(filter: AdminThreadsFilter): Promise<TeacherThreadSummary[]>
   /** Nº de conversas com mensagem do professor NÃO lida pelo aluno (badge do sino). */
   countUnreadForStudent(userId: string, audience: CourseAudience): Promise<number>
-  /** Marca a conversa lida pelo aluno (watermark = agora). No-op se não for do aluno. */
-  markReadByStudent(threadId: string, userId: string, now: Date): Promise<void>
-  /** Marca a conversa lida pelo professor (watermark = agora). */
-  markReadByTeacher(threadId: string, now: Date): Promise<void>
+  /** Marca a conversa lida pelo aluno até a última mensagem PERSISTIDA. No-op fora da vitrine dele. */
+  markReadByStudent(threadId: string, userId: string, audience: CourseAudience): Promise<void>
+  /** Marca a conversa lida por UM professor até a última mensagem PERSISTIDA. */
+  markReadByTeacher(threadId: string, staffUserId: string): Promise<void>
 }

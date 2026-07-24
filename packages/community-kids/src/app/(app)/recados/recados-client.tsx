@@ -2,6 +2,8 @@
 
 import { Mail } from 'lucide-react'
 import Link from 'next/link'
+import { useState } from 'react'
+import { apiGet } from '@/lib/api'
 import type { TeacherThreadContext, TeacherThreadSummaryView } from '@/lib/types'
 
 const CONTEXT_LABEL: Record<TeacherThreadContext, string> = {
@@ -11,7 +13,38 @@ const CONTEXT_LABEL: Record<TeacherThreadContext, string> = {
 }
 
 /** Lista das conversas com o professor (mais recente primeiro; "NOVO" no não-lido). */
-export function RecadosClient({ initialThreads }: { initialThreads: TeacherThreadSummaryView[] }) {
+export function RecadosClient({
+  initialThreads,
+  initialNextOffset,
+}: {
+  initialThreads: TeacherThreadSummaryView[]
+  initialNextOffset: number | null
+}) {
+  const [threads, setThreads] = useState(initialThreads)
+  const [nextOffset, setNextOffset] = useState(initialNextOffset)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const loadMore = async () => {
+    if (nextOffset === null || loadingMore) return
+    setLoadingMore(true)
+    setError(null)
+    try {
+      const page = await apiGet<{ threads: TeacherThreadSummaryView[]; nextOffset: number | null }>(
+        `/api/members/teacher-threads?offset=${nextOffset}`,
+      )
+      setThreads((current) => [
+        ...current,
+        ...page.threads.filter((item) => !current.some((thread) => thread.id === item.id)),
+      ])
+      setNextOffset(page.nextOffset)
+    } catch {
+      setError('Não consegui carregar mais recados. Tente de novo.')
+    } finally {
+      setLoadingMore(false)
+    }
+  }
+
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-6">
       <h1 className="mb-1 font-bold text-2xl [font-family:var(--font-display)]">
@@ -21,7 +54,7 @@ export function RecadosClient({ initialThreads }: { initialThreads: TeacherThrea
         De vez em quando o professor deixa um recado pra você aqui. 💬
       </p>
 
-      {initialThreads.length === 0 ? (
+      {threads.length === 0 ? (
         <div className="rounded-2xl border-2 border-border border-dashed bg-card p-8 text-center">
           <Mail className="mx-auto mb-3 size-10 text-muted-foreground" />
           <p className="font-bold">Tudo tranquilo por aqui 🎈</p>
@@ -32,7 +65,7 @@ export function RecadosClient({ initialThreads }: { initialThreads: TeacherThrea
         </div>
       ) : (
         <ul className="flex flex-col gap-3">
-          {initialThreads.map((t) => (
+          {threads.map((t) => (
             <li key={t.id}>
               <Link
                 href={`/recados/${t.id}`}
@@ -62,6 +95,17 @@ export function RecadosClient({ initialThreads }: { initialThreads: TeacherThrea
           ))}
         </ul>
       )}
+      {error ? <p className="mt-3 text-destructive text-sm">{error}</p> : null}
+      {nextOffset !== null ? (
+        <button
+          type="button"
+          onClick={loadMore}
+          disabled={loadingMore}
+          className="mt-4 rounded-full border-2 border-border px-4 py-2 font-bold text-sm hover:border-primary disabled:opacity-50"
+        >
+          {loadingMore ? 'Carregando…' : 'Ver mais recados'}
+        </button>
+      ) : null}
     </div>
   )
 }

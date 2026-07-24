@@ -2,6 +2,7 @@ import { randomBytes } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
 import { dCompetBRT } from '../../domain/dps/dps-builder'
 import { SkipReason } from '../../domain/invoice/invoice.status'
+import { redactDocuments, redactSensitiveText } from '../../domain/invoice/redact-documents'
 import type { PaymentsClient } from '../../domain/ports/clients.port'
 import type { Invoice, InvoiceRepository } from '../../domain/ports/invoice-repository.port'
 import type { MessagingClient } from '../../domain/ports/messaging-client.port'
@@ -43,21 +44,27 @@ export class EmitInvoiceService {
     private readonly logger: Logger,
   ) {}
 
-  async execute(invoice: Invoice): Promise<void> {
+  async execute(invoice: Invoice, claimToken: string): Promise<void> {
     // 1. Re-verificação fail-closed.
     let snapshot: Awaited<ReturnType<PaymentsClient['getPayment']>>
     try {
       snapshot = await this.payments.getPayment(invoice.paymentId)
     } catch (error) {
-      await this.backoffOrFail(invoice, `re-verificação no payments falhou: ${msg(error)}`)
+      await this.backoffOrFail(
+        invoice,
+        claimToken,
+        `re-verificação no payments falhou: ${msg(error)}`,
+      )
       return
     }
     if (snapshot?.status !== 'PAID' || snapshot.refundedAt) {
-      await this.invoices.skip(
+      const skipped = await this.invoices.skip(
         invoice.id,
         SkipReason.PAYMENT_NOT_PAID_AT_EMISSION,
         `status=${snapshot?.status ?? 'NOT_FOUND'}`,
+        claimToken,
       )
+      if (!skipped) return
       await this.invoices.appendEvent(invoice.id, 'SKIPPED', 'system', {
         reason: SkipReason.PAYMENT_NOT_PAID_AT_EMISSION,
         status: snapshot?.status ?? 'NOT_FOUND',
@@ -70,11 +77,14 @@ export class EmitInvoiceService {
     }
 
     // 2. Numeração (alocada uma vez; reuso no retry).
-    const { dpsNumber, dpsId } = await this.invoices.allocateDpsNumber(
+    const allocation = await this.invoices.allocateDpsNumber(
       invoice.id,
       this.config.serie,
       (n) => this.config.buildDpsId(this.config.serie, n),
+      claimToken,
     )
+    if (!allocation) return
+    const { dpsNumber, dpsId } = allocation
 
     // 3. Competência = HOJE em BRT, na MESMA base/margem do dhEmi (dps-builder):
     // sem isso, na virada da meia-noite dCompet podia ficar 1 dia à frente do
@@ -92,13 +102,16 @@ export class EmitInvoiceService {
     if (invoice.substitutesId) {
       const original = await this.invoices.findById(invoice.substitutesId)
       if (!original?.accessKey) {
-        await this.invoices.markFailed(
+        const failed = await this.invoices.markFailed(
           invoice.id,
           `nota original ${invoice.substitutesId} sem chave de acesso (não dá para substituir)`,
+          claimToken,
         )
-        await this.invoices.appendEvent(invoice.id, 'EMIT_FAILED', 'system', {
-          reason: 'SUBSTITUTED_ORIGINAL_WITHOUT_KEY',
-        })
+        if (failed) {
+          await this.invoices.appendEvent(invoice.id, 'EMIT_FAILED', 'system', {
+            reason: 'SUBSTITUTED_ORIGINAL_WITHOUT_KEY',
+          })
+        }
         return
       }
       substituicao = {
@@ -121,7 +134,7 @@ export class EmitInvoiceService {
         substituicao,
       })
     } catch (error) {
-      await this.backoffOrFail(invoice, `Sefin indisponível: ${msg(error)}`)
+      await this.backoffOrFail(invoice, claimToken, `Sefin indisponível: ${msg(error)}`)
       return
     }
 
@@ -130,16 +143,18 @@ export class EmitInvoiceService {
       // sequências longas de dígitos antes de persistir/logar (vai p/ o Sentry).
       const errors = redactDocuments(result.errors)
       const detail = errors.map((e) => `${e.code}: ${e.message}`).join(' | ')
-      await this.invoices.markFailed(invoice.id, detail)
-      await this.invoices.appendEvent(invoice.id, 'EMIT_FAILED', 'system', { errors })
-      this.logger.error('fiscal.emit_rejected', { invoiceId: invoice.id, errors })
+      const failed = await this.invoices.markFailed(invoice.id, detail, claimToken)
+      if (failed) {
+        await this.invoices.appendEvent(invoice.id, 'EMIT_FAILED', 'system', { errors })
+        this.logger.error('fiscal.emit_rejected', { invoiceId: invoice.id, errors })
+      }
       return
     }
 
     if (result.kind === 'duplicate') {
       // Resposta perdida num envio anterior: o gateway JÁ resolveu a chave na
       // consulta do Id da DPS (sem 2ª consulta aqui).
-      await this.finishEmission(invoice, {
+      await this.finishEmission(invoice, claimToken, {
         accessKey: result.accessKey,
         nfseXml: '',
         dpsXml: result.dpsXml,
@@ -149,7 +164,7 @@ export class EmitInvoiceService {
       return
     }
 
-    await this.finishEmission(invoice, {
+    await this.finishEmission(invoice, claimToken, {
       accessKey: result.accessKey,
       nfseXml: result.nfseXml,
       dpsXml: result.dpsXml,
@@ -158,21 +173,27 @@ export class EmitInvoiceService {
     })
   }
 
-  async retryDelivery(invoiceId: string): Promise<InvoiceDeliveryResult> {
+  async retryDelivery(invoiceId: string, claimToken: string): Promise<InvoiceDeliveryResult> {
     const invoice = await this.invoices.findById(invoiceId)
     if (!invoice) return { complete: true }
-    if (invoice.status !== 'EMITTED') return { complete: true }
+    if (invoice.status !== 'EMITTED' || invoice.claimToken !== claimToken) return { complete: true }
     if (!invoice.accessKey || !invoice.pdfToken) {
       return { complete: false, error: 'nota emitida sem chave de acesso ou pdfToken' }
     }
 
-    const result = await this.deliverInvoiceArtifacts(invoice, invoice.accessKey, invoice.pdfToken)
-    if (result.complete) await this.invoices.markDeliveryComplete(invoice.id)
+    const result = await this.deliverInvoiceArtifacts(
+      invoice,
+      invoice.accessKey,
+      invoice.pdfToken,
+      claimToken,
+    )
+    if (result.complete) await this.invoices.markDeliveryComplete(invoice.id, claimToken)
     return result
   }
 
   private async finishEmission(
     invoice: Invoice,
+    claimToken: string,
     data: {
       accessKey: string
       nfseXml: string
@@ -194,16 +215,19 @@ export class EmitInvoiceService {
     // a original presa EMITTED p/ sempre).
     let recorded: boolean
     let originalSubstituted = false
+    let substituteCancelPending = false
     if (invoice.substitutesId) {
       const res = await this.invoices.markEmittedAsSubstitute(
         invoice.id,
         emitData,
         invoice.substitutesId,
+        claimToken,
       )
       recorded = res.recorded
       originalSubstituted = res.originalSubstituted
+      substituteCancelPending = res.substituteCancelPending
     } else {
-      recorded = await this.invoices.markEmitted(invoice.id, emitData)
+      recorded = await this.invoices.markEmitted(invoice.id, emitData, claimToken)
     }
     if (!recorded) {
       // A NFS-e foi autorizada na Sefin, mas o status mudou no meio (corrida):
@@ -223,6 +247,20 @@ export class EmitInvoiceService {
         await this.invoices.appendEvent(invoice.substitutesId, 'SUBSTITUTED', 'system', {
           substituteId: invoice.id,
         })
+      } else if (substituteCancelPending) {
+        // O estorno venceu a corrida com a substituição. A transação do
+        // repositório gravou a NFS-e real e já moveu a substituta para
+        // CANCEL_PENDING; não entrega PDF/e-mail de uma venda reembolsada.
+        await this.invoices.appendEvent(invoice.id, 'EMITTED_THEN_CANCEL_PENDING', 'system', {
+          accessKey: data.accessKey,
+          racedFrom: 'SUBSTITUTE_REFUND',
+        })
+        this.logger.error('fiscal.substitute_emitted_after_refund', {
+          invoiceId: invoice.id,
+          originalId: invoice.substitutesId,
+          accessKey: data.accessKey,
+        })
+        return
       } else {
         // A original já tinha saído de EMITTED (ex.: um estorno a moveu p/
         // CANCEL_PENDING entre o agendamento da substituta e esta gravação). NÃO
@@ -240,13 +278,21 @@ export class EmitInvoiceService {
       }
     }
 
-    const delivery = await this.deliverInvoiceArtifacts(invoice, data.accessKey, pdfToken)
+    const delivery = await this.deliverInvoiceArtifacts(
+      invoice,
+      data.accessKey,
+      pdfToken,
+      claimToken,
+    )
     if (!delivery.complete && delivery.error) {
       await this.invoices.releaseDeliveryRetry(
         invoice.id,
         new Date(Date.now() + 15 * 60_000),
         delivery.error,
+        claimToken,
       )
+    } else if (delivery.complete) {
+      await this.invoices.markDeliveryComplete(invoice.id, claimToken)
     }
   }
 
@@ -259,6 +305,7 @@ export class EmitInvoiceService {
     invoice: Invoice,
     accessKey: string,
     pdfToken: string,
+    claimToken: string,
   ): Promise<InvoiceDeliveryResult> {
     // DANFSe: persistir o PDF blinda contra a troca do padrão em jul/2026; falha
     // aqui NUNCA reverte a emissão.
@@ -266,7 +313,8 @@ export class EmitInvoiceService {
     try {
       if (!pdfStored) {
         const pdf = await this.danfse.fetchPdf(accessKey)
-        await this.invoices.storePdf(invoice.id, pdf)
+        const stored = await this.invoices.storePdf(invoice.id, pdf, claimToken)
+        if (!stored) return { complete: false, error: 'claim de entrega perdido' }
         await this.invoices.appendEvent(invoice.id, 'PDF_STORED', 'system', { bytes: pdf.length })
         pdfStored = true
       }
@@ -299,7 +347,8 @@ export class EmitInvoiceService {
         // Só marca "enviado" se o e-mail foi REALMENTE despachado — o cliente no-op
         // (sem gateway) retorna false e NÃO deixa emailSentAt fantasma no admin.
         if (dispatched) {
-          await this.invoices.markEmailSent(invoice.id)
+          const marked = await this.invoices.markEmailSent(invoice.id, claimToken)
+          if (!marked) return { complete: false, error: 'claim de entrega perdido' }
           await this.invoices.appendEvent(invoice.id, 'EMAIL_QUEUED', 'system', {})
         }
       } catch (error) {
@@ -359,21 +408,37 @@ export class EmitInvoiceService {
   }
 
   /** Backoff exponencial (1min × 2^attempts, teto 6h) ou FAILED se esgotou. */
-  private async backoffOrFail(invoice: Invoice, reason: string): Promise<void> {
+  private async backoffOrFail(invoice: Invoice, claimToken: string, reason: string): Promise<void> {
     if (invoice.attempts >= this.config.maxAttempts) {
-      await this.invoices.markFailed(invoice.id, `tentativas esgotadas: ${reason}`)
-      await this.invoices.appendEvent(invoice.id, 'EMIT_FAILED', 'system', { reason, final: true })
-      this.logger.error('fiscal.emit_exhausted', { invoiceId: invoice.id, reason })
+      const failed = await this.invoices.markFailed(
+        invoice.id,
+        `tentativas esgotadas: ${reason}`,
+        claimToken,
+      )
+      if (failed) {
+        await this.invoices.appendEvent(invoice.id, 'EMIT_FAILED', 'system', {
+          reason,
+          final: true,
+        })
+        this.logger.error('fiscal.emit_exhausted', { invoiceId: invoice.id, reason })
+      }
       return
     }
     const delayMs = Math.min(60_000 * 2 ** invoice.attempts, 6 * 3600_000)
-    await this.invoices.releaseForRetry(invoice.id, new Date(Date.now() + delayMs), reason)
-    this.logger.warn('fiscal.emit_retry_scheduled', {
-      invoiceId: invoice.id,
-      attempt: invoice.attempts,
-      delayMs,
+    const released = await this.invoices.releaseForRetry(
+      invoice.id,
+      new Date(Date.now() + delayMs),
       reason,
-    })
+      claimToken,
+    )
+    if (released) {
+      this.logger.warn('fiscal.emit_retry_scheduled', {
+        invoiceId: invoice.id,
+        attempt: invoice.attempts,
+        delayMs,
+        reason,
+      })
+    }
   }
 }
 
@@ -390,10 +455,5 @@ function centsToReais(cents: bigint): string {
 }
 
 function msg(error: unknown): string {
-  return error instanceof Error ? error.message : String(error)
-}
-
-/** Mascara sequências de ≥11 dígitos (CPF/CNPJ que a Sefin pode ecoar no erro). */
-function redactDocuments<T extends { code: string; message: string }>(errors: T[]): T[] {
-  return errors.map((e) => ({ ...e, message: e.message.replace(/\d{11,}/g, '***') }))
+  return redactSensitiveText(error instanceof Error ? error.message : String(error))
 }

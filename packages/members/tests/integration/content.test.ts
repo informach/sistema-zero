@@ -36,6 +36,12 @@ async function createCourse(app: App, over: Record<string, unknown> = {}) {
   return readJson(res)
 }
 
+/** Simula o editor: lê a versão atual e a ecoa no PATCH. */
+async function patchCourse(app: App, id: string, body: Record<string, unknown>) {
+  const current = await readJson(await get(app, `/members/admin/courses/${id}`))
+  return send(app, `/members/admin/courses/${id}`, 'PATCH', { ...body, version: current.version })
+}
+
 describe('Members HTTP — autoria: cursos', () => {
   test('ciclo de vida: criar → listar → árvore → editar → excluir', async () => {
     const { app } = buildApp()
@@ -50,7 +56,7 @@ describe('Members HTTP — autoria: cursos', () => {
     const tree = await readJson(await get(app, `/members/admin/courses/${created.id}`))
     expect(tree.modules).toEqual([])
 
-    const patched = await send(app, `/members/admin/courses/${created.id}`, 'PATCH', {
+    const patched = await patchCourse(app, created.id, {
       ...COURSE,
       title: 'Curso Editado',
     })
@@ -61,6 +67,28 @@ describe('Members HTTP — autoria: cursos', () => {
     expect((await get(app, `/members/admin/courses/${created.id}`)).status).toBe(404)
   })
 
+  test('PATCH exige a versão lida e rejeita uma edição concorrente obsoleta', async () => {
+    const { app } = buildApp()
+    const created = await createCourse(app)
+
+    const first = await send(app, `/members/admin/courses/${created.id}`, 'PATCH', {
+      ...COURSE,
+      title: 'Edição atual',
+      version: created.version,
+    })
+    expect(first.status).toBe(200)
+
+    const stale = await send(app, `/members/admin/courses/${created.id}`, 'PATCH', {
+      ...COURSE,
+      title: 'Edição obsoleta',
+      version: created.version,
+    })
+    expect(stale.status).toBe(409)
+
+    const course = await readJson(await get(app, `/members/admin/courses/${created.id}`))
+    expect(course.title).toBe('Edição atual')
+  })
+
   test('salesPageUrl: cria, devolve na view, troca e limpa (metadata.salesPageUrl)', async () => {
     const { app } = buildApp()
     const created = await createCourse(app, {
@@ -69,7 +97,7 @@ describe('Members HTTP — autoria: cursos', () => {
     expect(created.salesPageUrl).toBe('https://funil.example.com/oferta')
 
     // PATCH troca a URL (form manda o estado completo).
-    const patched = await send(app, `/members/admin/courses/${created.id}`, 'PATCH', {
+    const patched = await patchCourse(app, created.id, {
       ...COURSE,
       salesPageUrl: 'https://funil.example.com/black-friday',
     })
@@ -81,7 +109,7 @@ describe('Members HTTP — autoria: cursos', () => {
     expect(fetched.salesPageUrl).toBe('https://funil.example.com/black-friday')
 
     // PATCH com null limpa (metadata volta a null — chave removida).
-    const cleared = await send(app, `/members/admin/courses/${created.id}`, 'PATCH', {
+    const cleared = await patchCourse(app, created.id, {
       ...COURSE,
       salesPageUrl: null,
     })
@@ -99,7 +127,7 @@ describe('Members HTTP — autoria: cursos', () => {
     expect(kids.audience).toBe('kids')
 
     // PATCH SEM o campo preserva (build antigo do admin não rebaixa kids → adult).
-    const preserved = await send(app, `/members/admin/courses/${kids.id}`, 'PATCH', {
+    const preserved = await patchCourse(app, kids.id, {
       ...COURSE,
       slug: 'curso-kids',
       title: 'Curso Kids Editado',
@@ -107,7 +135,7 @@ describe('Members HTTP — autoria: cursos', () => {
     expect((await readJson(preserved)).audience).toBe('kids')
 
     // PATCH explícito troca.
-    const switched = await send(app, `/members/admin/courses/${kids.id}`, 'PATCH', {
+    const switched = await patchCourse(app, kids.id, {
       ...COURSE,
       slug: 'curso-kids',
       audience: 'adult',
@@ -148,7 +176,7 @@ describe('Members HTTP — autoria: cursos', () => {
     })
     expect(created.careerSlot).toBe(1)
 
-    const preserved = await send(app, `/members/admin/courses/${created.id}`, 'PATCH', {
+    const preserved = await patchCourse(app, created.id, {
       ...COURSE,
       slug: 'base-kids',
       audience: 'kids',
@@ -157,7 +185,7 @@ describe('Members HTTP — autoria: cursos', () => {
     })
     expect((await readJson(preserved)).careerSlot).toBe(1)
 
-    const invalidSix = await send(app, `/members/admin/courses/${created.id}`, 'PATCH', {
+    const invalidSix = await patchCourse(app, created.id, {
       ...COURSE,
       slug: 'base-kids',
       audience: 'kids',
@@ -167,7 +195,7 @@ describe('Members HTTP — autoria: cursos', () => {
     })
     expect(invalidSix.status).toBe(400)
 
-    const removed = await send(app, `/members/admin/courses/${created.id}`, 'PATCH', {
+    const removed = await patchCourse(app, created.id, {
       ...COURSE,
       slug: 'base-kids',
       audience: 'kids',
@@ -454,7 +482,7 @@ describe('Members HTTP — autoria: publicação por aula', () => {
     const { app } = buildApp()
     const { course, lesson } = await seedDraftTree(app)
 
-    const blocked = await send(app, `/members/admin/courses/${course.id}`, 'PATCH', {
+    const blocked = await patchCourse(app, course.id, {
       ...COURSE,
       status: 'published',
     })
@@ -467,7 +495,7 @@ describe('Members HTTP — autoria: publicação por aula', () => {
       estimatedMinutes: 5,
       isPublished: true,
     })
-    const ok = await send(app, `/members/admin/courses/${course.id}`, 'PATCH', {
+    const ok = await patchCourse(app, course.id, {
       ...COURSE,
       status: 'published',
     })
@@ -493,7 +521,7 @@ describe('Members HTTP — autoria: publicação por aula', () => {
       estimatedMinutes: 5,
       isPublished: true,
     })
-    await send(app, `/members/admin/courses/${course.id}`, 'PATCH', {
+    await patchCourse(app, course.id, {
       ...COURSE,
       status: 'published',
     })
@@ -541,7 +569,7 @@ describe('Members HTTP — autoria: publicação por aula', () => {
     expect((await readJson(blocked)).error.code).toBe('NO_PUBLISHED_LESSON')
 
     // Curso despublicado → módulo pode sair livremente.
-    await send(app, `/members/admin/courses/${course.id}`, 'PATCH', { ...COURSE, status: 'draft' })
+    await patchCourse(app, course.id, { ...COURSE, status: 'draft' })
     expect((await send(app, `/members/admin/modules/${mod.id}`, 'DELETE')).status).toBe(200)
   })
 
@@ -609,7 +637,9 @@ describe('Members HTTP — autoria: not found + RBAC', () => {
   test('editar/excluir inexistente → 404', async () => {
     const { app } = buildApp()
     const rid = '00000000-0000-0000-0000-000000000000'
-    expect((await send(app, `/members/admin/courses/${rid}`, 'PATCH', COURSE)).status).toBe(404)
+    expect(
+      (await send(app, `/members/admin/courses/${rid}`, 'PATCH', { ...COURSE, version: 0 })).status,
+    ).toBe(404)
     expect(
       (await send(app, `/members/admin/modules/${rid}`, 'PATCH', { title: 'x', summary: null }))
         .status,

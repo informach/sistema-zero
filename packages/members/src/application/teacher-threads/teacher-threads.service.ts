@@ -2,6 +2,7 @@ import type { CourseAudience } from '../../domain/course/course'
 import { ContentNotFoundError } from '../../domain/course/course.errors'
 import type {
   AdminThreadsFilter,
+  TeacherMessagePage,
   TeacherMessageRecord,
   TeacherMessageRole,
   TeacherThreadContext,
@@ -40,6 +41,8 @@ export interface TeacherThreadView {
   lastMessageAt: string
   createdAt: string
   messages: TeacherMessageView[]
+  /** Cursor para a página anterior; null quando o histórico chegou ao início. */
+  nextCursor: string | null
 }
 
 export interface TeacherThreadSummaryView {
@@ -72,10 +75,7 @@ function toMessageView(m: TeacherMessageRecord): TeacherMessageView {
   }
 }
 
-function toThreadView(
-  thread: TeacherThreadRecord,
-  messages: TeacherMessageRecord[],
-): TeacherThreadView {
+function toThreadView(thread: TeacherThreadRecord, page: TeacherMessagePage): TeacherThreadView {
   return {
     id: thread.id,
     userId: thread.userId,
@@ -88,7 +88,33 @@ function toThreadView(
     title: thread.title,
     lastMessageAt: thread.lastMessageAt.toISOString(),
     createdAt: thread.createdAt.toISOString(),
-    messages: messages.map(toMessageView),
+    messages: page.messages.map(toMessageView),
+    nextCursor: page.nextCursor
+      ? encodeCursor(page.nextCursor.createdAt, page.nextCursor.id)
+      : null,
+  }
+}
+
+function encodeCursor(createdAt: Date, id: string): string {
+  return Buffer.from(`${createdAt.toISOString()}|${id}`).toString('base64url')
+}
+
+function decodeCursor(raw: string | undefined): { createdAt: Date; id: string } | undefined {
+  if (!raw) return undefined
+  try {
+    const [iso, id, extra] = Buffer.from(raw, 'base64url').toString('utf8').split('|')
+    const createdAt = new Date(iso ?? '')
+    if (
+      extra ||
+      !id ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id) ||
+      Number.isNaN(createdAt.getTime())
+    ) {
+      throw new Error('invalid cursor')
+    }
+    return { createdAt, id }
+  } catch {
+    throw new ValidationError('Cursor de mensagens inválido')
   }
 }
 
@@ -165,10 +191,11 @@ export class TeacherThreadsService {
     userId: string,
     audience: CourseAudience,
     threadId: string,
+    before?: string,
   ): Promise<TeacherThreadView> {
     const thread = await this.ownedThread(threadId, userId, audience)
-    const messages = await this.repo.listMessages(threadId)
-    return toThreadView(thread, messages)
+    const page = await this.repo.listMessages(threadId, decodeCursor(before))
+    return toThreadView(thread, page)
   }
 
   /** Aluno responde a uma conversa SUA existente (não pode iniciar do zero). */
@@ -187,13 +214,17 @@ export class TeacherThreadsService {
       body: cleanBody(rawBody),
       now: this.now(),
     })
-    const messages = await this.repo.listMessages(thread.id)
+    const page = await this.repo.listMessages(thread.id)
     const fresh = (await this.repo.findById(thread.id)) ?? thread
-    return toThreadView(fresh, messages)
+    return toThreadView(fresh, page)
   }
 
-  async markReadByStudent(userId: string, threadId: string): Promise<{ ok: true }> {
-    await this.repo.markReadByStudent(threadId, userId, this.now())
+  async markReadByStudent(
+    userId: string,
+    audience: CourseAudience,
+    threadId: string,
+  ): Promise<{ ok: true }> {
+    await this.repo.markReadByStudent(threadId, userId, audience)
     return { ok: true }
   }
 
@@ -210,11 +241,11 @@ export class TeacherThreadsService {
     return rows.map(toSummaryView)
   }
 
-  async getForAdmin(threadId: string): Promise<TeacherThreadView> {
+  async getForAdmin(threadId: string, before?: string): Promise<TeacherThreadView> {
     const thread = await this.repo.findById(threadId)
     if (!thread) throw new ContentNotFoundError('Conversa não encontrada')
-    const messages = await this.repo.listMessages(threadId)
-    return toThreadView(thread, messages)
+    const page = await this.repo.listMessages(threadId, decodeCursor(before))
+    return toThreadView(thread, page)
   }
 
   /** Conversa por CONTEXTO (Entrega/Mural) p/ o professor abrir direto da Entrega. */
@@ -222,11 +253,12 @@ export class TeacherThreadsService {
     userId: string,
     contextType: TeacherThreadContext,
     contextRef: string,
+    before?: string,
   ): Promise<{ thread: TeacherThreadView | null }> {
     const thread = await this.repo.findByContext(userId, contextType, contextRef)
     if (!thread) return { thread: null }
-    const messages = await this.repo.listMessages(thread.id)
-    return { thread: toThreadView(thread, messages) }
+    const page = await this.repo.listMessages(thread.id, decodeCursor(before))
+    return { thread: toThreadView(thread, page) }
   }
 
   async adminReplyToThread(
@@ -245,9 +277,9 @@ export class TeacherThreadsService {
       body: cleanBody(rawBody),
       now: this.now(),
     })
-    const messages = await this.repo.listMessages(threadId)
+    const page = await this.repo.listMessages(threadId)
     const fresh = (await this.repo.findById(threadId)) ?? thread
-    return toThreadView(fresh, messages)
+    return toThreadView(fresh, page)
   }
 
   /** Professor posta por CONTEXTO (Entregas/geral): cria a conversa se preciso. */
@@ -256,8 +288,8 @@ export class TeacherThreadsService {
     return this.getForAdmin(threadId)
   }
 
-  async markReadByTeacher(threadId: string): Promise<{ ok: true }> {
-    await this.repo.markReadByTeacher(threadId, this.now())
+  async markReadByTeacher(threadId: string, staffUserId: string): Promise<{ ok: true }> {
+    await this.repo.markReadByTeacher(threadId, staffUserId)
     return { ok: true }
   }
 

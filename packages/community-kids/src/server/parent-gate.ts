@@ -1,8 +1,9 @@
 import 'server-only'
-import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { expireCookieOptions, prefixedCookieName } from '@/lib/cookies'
+import { getEnv } from '@/lib/env'
+import { createParentGateTokenCodec } from '@/server/parent-gate-token'
 import { getSession } from '@/server/session'
 
 /**
@@ -31,37 +32,37 @@ const PARENT_COOKIE = prefixedCookieName('sz_kids_parent', PROD)
 const PARENT_TTL_SECONDS = 15 * 60
 
 /**
- * Segredo de assinatura do portão — aleatório POR PROCESSO, em `globalThis` via
- * `Symbol.for` (réplica única; o Turbopack dá cópias próprias do módulo a
- * proxy/RSC/handlers, então um `const` de escopo de módulo divergiria entre eles —
- * mesmo gotcha do estado compartilhado do member-shell). Reiniciar invalida portões
- * abertos → re-pede a senha (aceitável: TTL é 15 min). Sem env nova.
+ * A chave vem da env de produção: assim, um token emitido por uma réplica continua
+ * válido nas demais e após um restart. Desenvolvimento local pode usar uma chave
+ * efêmera para não obrigar segredo adicional no `.env` de cada máquina.
  */
-const SECRET_KEY = Symbol.for('sz.kids.parentGate.secret')
-function gateSecret(): Buffer {
-  const g = globalThis as { [SECRET_KEY]?: Buffer }
-  if (!g[SECRET_KEY]) g[SECRET_KEY] = randomBytes(32)
-  return g[SECRET_KEY]
+const DEV_SECRET_KEY = Symbol.for('sz.kids.parentGate.devSecret')
+function parentGateCodec() {
+  const configured = getEnv().PARENT_GATE_HMAC_SECRET
+  if (configured) return createParentGateTokenCodec(configured)
+  if (PROD) throw new Error('PARENT_GATE_HMAC_SECRET é obrigatório em produção')
+
+  const g = globalThis as { [DEV_SECRET_KEY]?: string }
+  if (!g[DEV_SECRET_KEY]) g[DEV_SECRET_KEY] = crypto.randomUUID() + crypto.randomUUID()
+  return createParentGateTokenCodec(g[DEV_SECRET_KEY])
 }
 
-/** Assinatura HMAC-SHA256 do accountId (hex). */
+/** Token `accountId.HMAC-SHA256` emitido para a sessão da conta. */
 function sign(accountId: string): string {
-  return createHmac('sha256', gateSecret()).update(accountId).digest('hex')
+  return parentGateCodec().issue(accountId)
 }
 
 /** Verifica o token `accountId.HMAC` contra o accountId esperado (timing-safe). */
 function verifyToken(value: string, accountId: string): boolean {
   const dot = value.lastIndexOf('.')
   if (dot <= 0 || value.slice(0, dot) !== accountId) return false
-  const sig = Buffer.from(value.slice(dot + 1), 'hex')
-  const expected = Buffer.from(sign(accountId), 'hex')
-  return sig.length === expected.length && timingSafeEqual(sig, expected)
+  return parentGateCodec().verify(value, accountId)
 }
 
 /** Emite o cookie do portão (após verificar a senha) — token assinado p/ a conta. */
 export async function setParentVerified(accountId: string): Promise<void> {
   const store = await cookies()
-  store.set(PARENT_COOKIE, `${accountId}.${sign(accountId)}`, {
+  store.set(PARENT_COOKIE, sign(accountId), {
     httpOnly: true,
     sameSite: 'lax',
     secure: PROD,

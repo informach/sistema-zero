@@ -26,12 +26,21 @@ export function canonicalHmacMessage(input: {
   method: string
   path: string
   idempotencyKey?: string | null
+  /** Identificador de entrega de webhook; quando presente, também é autenticado. */
+  deliveryId?: string | null
   body: string
 }): string {
   const head = `${input.method.toUpperCase()}.${input.path}`
+  // Preserva o formato já publicado para chamadas sem delivery id. Para webhooks,
+  // o header é a chave de dedupe e PRECISA estar coberto pela assinatura: sem isso,
+  // alguém que reutilize uma assinatura válida poderia trocar só o header e furar a
+  // deduplicação. JSON torna o campo inequívoco mesmo se o id tiver pontuação.
+  const delivery = input.deliveryId ? `.delivery=${JSON.stringify(input.deliveryId)}` : ''
   return input.idempotencyKey
-    ? `${head}.${input.idempotencyKey}.${input.body}`
-    : `${head}.${input.body}`
+    ? `${head}.${input.idempotencyKey}${delivery}.${input.body}`
+    : delivery
+      ? `${head}${delivery}.${input.body}`
+      : `${head}.${input.body}`
 }
 
 export interface HmacVerifyResult {

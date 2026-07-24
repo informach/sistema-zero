@@ -173,11 +173,18 @@ export function createGatewayClient(opts: GatewayClientOptions) {
     path: string,
     rawBody: string,
     idempotencyKey?: string,
+    deliveryId?: string,
   ): Record<string, string> {
     const ts = Math.floor(Date.now() / 1000)
     // O path assinado é o MESMO usado na URL (pathname, sem query) — o gateway
     // verifica com o pathname que recebe na requisição.
-    const message = canonicalHmacMessage({ method, path, idempotencyKey, body: rawBody })
+    const message = canonicalHmacMessage({
+      method,
+      path,
+      idempotencyKey,
+      deliveryId,
+      body: rawBody,
+    })
     const signature = signHmac(opts.hmacSecret, message, ts)
     const headers: Record<string, string> = {
       'content-type': 'application/json',
@@ -185,6 +192,7 @@ export function createGatewayClient(opts: GatewayClientOptions) {
       'x-signature': `t=${ts},v1=${signature}`,
     }
     if (idempotencyKey) headers['idempotency-key'] = idempotencyKey
+    if (deliveryId) headers['x-delivery-id'] = deliveryId
     return headers
   }
 
@@ -349,14 +357,20 @@ export function createGatewayClient(opts: GatewayClientOptions) {
      * POST /members/webhooks/grant (gateway → @sistemazero/members). Concede o
      * acesso (matrícula) ao comprador. Assina HMAC de borda (consumer `funnel`); o
      * gateway re-assina como `gateway` e a área de membros verifica. Sem
-     * Idempotency-Key — a concessão é idempotente pela chave derivada do pagamento.
+     * Delivery id determinístico pelo pagamento — a entrega é deduplicável e o
+     * header integra a assinatura HMAC de ponta a ponta.
      */
     async grantMembersAccess(input: GrantMembersInput): Promise<GatewayResult> {
       const rawBody = JSON.stringify(input)
       const path = '/members/webhooks/grant'
+      const deliveryId = `grant:${input.paymentId}`
       return requestJson(
         `${opts.baseUrl}${path}`,
-        { method: 'POST', headers: buildHeaders('POST', path, rawBody), body: rawBody },
+        {
+          method: 'POST',
+          headers: buildHeaders('POST', path, rawBody, undefined, deliveryId),
+          body: rawBody,
+        },
         timeoutMs,
       )
     },

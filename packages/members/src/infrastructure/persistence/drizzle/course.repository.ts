@@ -19,6 +19,7 @@ import { courses, lessonAttachments, lessonBlocks, lessons, modules } from './sc
 function toCourse(row: typeof courses.$inferSelect): Course {
   return {
     id: row.id,
+    version: row.version,
     slug: row.slug,
     title: row.title,
     subtitle: row.subtitle,

@@ -1,7 +1,9 @@
 import {
   isStudioProTemplateId,
+  STUDIO_PRO_BUILD_LIMITS,
   STUDIO_PRO_TEMPLATE_IDS,
   type StudioProTemplateId,
+  studioProBuildFileLimitError,
 } from '@sistemazero/core/studio'
 
 export const PRO_TEMPLATE_IDS = STUDIO_PRO_TEMPLATE_IDS
@@ -48,12 +50,7 @@ const RESERVED_PATHS = new Set([
   'vite.config.ts',
 ])
 
-export const PRO_BUILD_LIMITS = {
-  maxFiles: 80,
-  maxFileChars: 256_000,
-  maxTotalChars: 1_500_000,
-  maxOutputChars: 2_500_000,
-} as const
+export const PRO_BUILD_LIMITS = STUDIO_PRO_BUILD_LIMITS
 
 export class InvalidBuildRequestError extends Error {
   constructor(message: string) {
@@ -78,26 +75,27 @@ export function parseBuildRequest(value: unknown): ProBuildRequest {
   }
 
   const entries = Object.entries(input.files as Record<string, unknown>)
-  if (entries.length === 0 || entries.length > PRO_BUILD_LIMITS.maxFiles) {
-    throw new InvalidBuildRequestError(
-      `O projeto precisa ter entre 1 e ${PRO_BUILD_LIMITS.maxFiles} arquivos.`,
-    )
-  }
-
   const files: Record<string, string> = {}
-  let totalChars = 0
   for (const [path, content] of entries) {
     const normalized = normalizeBuildPath(path)
     if (!normalized) throw new InvalidBuildRequestError(`Caminho de arquivo inválido: ${path}`)
     if (RESERVED_PATHS.has(normalized.toLowerCase())) continue
-    if (typeof content !== 'string' || content.length > PRO_BUILD_LIMITS.maxFileChars) {
-      throw new InvalidBuildRequestError(`Arquivo muito grande ou inválido: ${normalized}`)
-    }
-    totalChars += content.length
-    if (totalChars > PRO_BUILD_LIMITS.maxTotalChars) {
-      throw new InvalidBuildRequestError('O projeto ultrapassou o tamanho permitido.')
-    }
+    if (typeof content !== 'string')
+      throw new InvalidBuildRequestError(`Arquivo inválido: ${normalized}`)
     files[normalized] = content
+  }
+
+  const limitError = studioProBuildFileLimitError(files)
+  if (limitError === 'EMPTY' || limitError === 'TOO_MANY_FILES') {
+    throw new InvalidBuildRequestError(
+      `O projeto precisa ter entre 1 e ${PRO_BUILD_LIMITS.maxFiles} arquivos.`,
+    )
+  }
+  if (limitError === 'FILE_TOO_LARGE') {
+    throw new InvalidBuildRequestError('Um arquivo do projeto ultrapassou o tamanho permitido.')
+  }
+  if (limitError === 'TOTAL_TOO_LARGE') {
+    throw new InvalidBuildRequestError('O projeto ultrapassou o tamanho permitido.')
   }
 
   if (!files['index.html']) {
@@ -129,7 +127,7 @@ export function normalizeBuildPath(input: string): string | null {
 
 export function trustedPackageJson(templateId: ProTemplateId): string {
   const dependencies: Record<string, string> = {}
-  const devDependencies: Record<string, string> = { vite: '8.0.14' }
+  const devDependencies: Record<string, string> = { vite: '8.0.16' }
   if (templateId === 'vanilla-vite') devDependencies.typescript = '5.9.3'
   if (templateId === 'react-ts') {
     dependencies.react = '19.2.0'

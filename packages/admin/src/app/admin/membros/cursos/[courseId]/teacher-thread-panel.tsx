@@ -43,6 +43,7 @@ export function TeacherThreadPanel({
   const [loading, setLoading] = useState(true)
   const [reply, setReply] = useState('')
   const [sending, setSending] = useState(false)
+  const [loadingOlder, setLoadingOlder] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -92,6 +93,27 @@ export function TeacherThreadPanel({
     }
   }
 
+  const loadOlder = async () => {
+    if (!thread?.nextCursor || loadingOlder) return
+    setLoadingOlder(true)
+    try {
+      const older = await apiGet<{ thread: TeacherThreadView | null }>(
+        `/api/members/teacher-threads/by-context?userId=${encodeURIComponent(userId)}&contextType=studio_submission&contextRef=${encodeURIComponent(blockId)}&before=${encodeURIComponent(thread.nextCursor)}`,
+      )
+      const olderThread = older.thread
+      if (!olderThread) return
+      setThread((current) =>
+        current
+          ? { ...olderThread, messages: [...olderThread.messages, ...current.messages] }
+          : olderThread,
+      )
+    } catch (err) {
+      toast.error((err as ApiError).message ?? 'Falha ao carregar mensagens anteriores.')
+    } finally {
+      setLoadingOlder(false)
+    }
+  }
+
   return (
     <Card className="space-y-3 p-3">
       <div className="flex items-center gap-1.5 font-medium text-sm">
@@ -102,6 +124,13 @@ export function TeacherThreadPanel({
         <p className="text-muted-foreground text-xs">Carregando conversa…</p>
       ) : thread && thread.messages.length > 0 ? (
         <ul className="flex max-h-64 flex-col gap-2 overflow-y-auto">
+          {thread.nextCursor ? (
+            <li className="self-center">
+              <Button variant="outline" size="sm" disabled={loadingOlder} onClick={loadOlder}>
+                {loadingOlder ? 'Carregando…' : 'Carregar mensagens anteriores'}
+              </Button>
+            </li>
+          ) : null}
           {thread.messages.map((m) => {
             const teacher = m.authorRole === 'teacher'
             return (

@@ -1,0 +1,1 @@
+ALTER TABLE "fiscal"."processed_webhooks" ADD COLUMN "processing_token" text;

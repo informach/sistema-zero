@@ -42,6 +42,7 @@ export function internalRoutes(deps: InternalRoutesDeps) {
       method: request.method,
       path: new URL(request.url).pathname,
       rawBody: getRawBody(request),
+      deliveryId: headers['x-delivery-id'],
       signatureHeader: headers['x-signature'],
       toleranceSeconds: deps.toleranceSeconds,
     })

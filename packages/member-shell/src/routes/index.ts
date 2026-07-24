@@ -1200,9 +1200,13 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   // ── Recados (conversas com o professor — canal de retorno) ────────────────
   /** Caixa de entrada do aluno (suas conversas com o professor). */
   const teacherThreadsList = {
-    GET: async () => {
-      const { status, body } = await members.listTeacherThreads()
-      return NextResponse.json(body ?? { threads: [] }, { status })
+    GET: async (req: Request) => {
+      const { searchParams } = new URL(req.url)
+      const offset = Number(searchParams.get('offset'))
+      const { status, body } = await members.listTeacherThreads({
+        ...(Number.isInteger(offset) && offset >= 0 ? { offset } : {}),
+      })
+      return NextResponse.json(body ?? { threads: [], nextOffset: null }, { status })
     },
   }
   /** Contador de conversas não-lidas — alimenta o sino. */
@@ -1214,10 +1218,11 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   }
   /** Uma conversa (cabeçalho + turnos). Impersonação PODE ler (só escrita é bloqueada). */
   const teacherThreadGet = {
-    GET: async (_req: Request, ctx: { params: Promise<{ threadId: string }> }) => {
+    GET: async (req: Request, ctx: { params: Promise<{ threadId: string }> }) => {
       const { threadId } = await ctx.params
       if (!UUID_RE.test(threadId)) return invalidInput()
-      const { status, body } = await members.getTeacherThread(threadId)
+      const before = new URL(req.url).searchParams.get('before') ?? undefined
+      const { status, body } = await members.getTeacherThread(threadId, before)
       return NextResponse.json(body ?? { error: { code: 'NOT_FOUND' } }, { status })
     },
   }

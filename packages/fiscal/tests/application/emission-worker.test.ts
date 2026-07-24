@@ -175,6 +175,29 @@ describe('claimDueForEmission — fidelidade do fake', () => {
     expect(claimed).toHaveLength(0)
   })
 
+  test('claim antigo não consegue renovar o lease reassumido por outra réplica', async () => {
+    const invoices = new InMemoryInvoiceRepository()
+    const inv = await invoices.schedule(due('pay-1'))
+    const [first] = await invoices.claimDueForEmission({
+      batchSize: 1,
+      staleMs: 0,
+      maxAttempts: 10,
+    })
+    const firstToken = first?.claimToken
+    Object.assign(inv, { claimedAt: new Date(Date.now() - 1_000) })
+    const [second] = await invoices.claimDueForEmission({
+      batchSize: 1,
+      staleMs: 0,
+      maxAttempts: 10,
+    })
+
+    expect(firstToken).toBeString()
+    expect(second?.claimToken).toBeString()
+    expect(firstToken).not.toBe(second?.claimToken)
+    if (!firstToken) throw new Error('primeiro claim sem token')
+    expect(await invoices.touchClaim(inv.id, firstToken)).toBe(false)
+  })
+
   test('transições bumpam version (contrato de auditoria)', async () => {
     const invoices = new InMemoryInvoiceRepository()
     const inv = await invoices.schedule(due('pay-1'))

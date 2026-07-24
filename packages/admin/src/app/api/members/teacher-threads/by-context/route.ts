@@ -11,6 +11,7 @@ export async function GET(req: Request) {
     userId: url.searchParams.get('userId') ?? '',
     contextType: url.searchParams.get('contextType') ?? '',
     contextRef: url.searchParams.get('contextRef') ?? '',
+    before: url.searchParams.get('before') ?? undefined,
   })
   return forwardUpstream({ status, body })
 }

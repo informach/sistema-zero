@@ -158,7 +158,11 @@ describe('Carreira do Criador — acesso pedagógico aos cursos', () => {
       (
         await app.handle(
           new Request('http://localhost/members/courses/futuro', {
-            headers: { 'x-auth-user-id': USER, 'x-auth-user-role': 'staff' },
+            headers: {
+              'x-auth-user-id': USER,
+              'x-auth-user-role': 'staff',
+              'x-auth-user-status': 'active',
+            },
           }),
         )
       ).status,

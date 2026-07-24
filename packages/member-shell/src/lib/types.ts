@@ -1220,6 +1220,8 @@ export interface TeacherThreadView {
   lastMessageAt: string
   createdAt: string
   messages: TeacherMessageView[]
+  /** Cursor opaco para carregar mensagens mais antigas; null no início do histórico. */
+  nextCursor: string | null
 }
 
 /** Resumo p/ a caixa de entrada + badge (mirror do members). */

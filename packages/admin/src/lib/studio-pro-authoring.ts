@@ -1,4 +1,5 @@
 import type { StudioProRuntimeAdapter } from '@sistemazero/studio'
+import { STUDIO_PRO_BUILD_LIMITS } from '@sistemazero/studio'
 
 interface ErrorEnvelope {
   error?: {
@@ -11,11 +12,16 @@ export function createAdminProRuntimeAdapter(
   fetchImpl: typeof fetch = fetch,
 ): StudioProRuntimeAdapter {
   return {
+    limits: STUDIO_PRO_BUILD_LIMITS,
     async build({ project, signal }) {
       const response = await fetchImpl('/api/studio/pro-runtime/build', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ project }),
+        // A autoria remota só consome a árvore e o template confiável. Projetar
+        // o payload evita que assets/estado do editor contaminem a cota do BFF.
+        body: JSON.stringify({
+          project: { kind: 'pro', tree: project.tree, proMeta: project.proMeta },
+        }),
         cache: 'no-store',
         signal,
       })

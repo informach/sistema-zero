@@ -44,7 +44,9 @@ const PRIVILEGED_ROLES = new Set(['superadmin', 'admin', 'staff'])
 /** Requisição vem de equipe interna (superadmin/admin/staff)? Status já é `active` (gateway). */
 export function isPrivilegedActor(headers: Record<string, string | undefined>): boolean {
   const role = headers['x-auth-user-role']
-  return role !== undefined && PRIVILEGED_ROLES.has(role)
+  return (
+    headers['x-auth-user-status'] === 'active' && role !== undefined && PRIVILEGED_ROLES.has(role)
+  )
 }
 
 /**

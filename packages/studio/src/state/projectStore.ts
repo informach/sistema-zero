@@ -22,10 +22,12 @@ import {
   type ProjectFiles,
   type ProjectTree,
   type ProProjectMeta,
+  type StudioProBuildLimits,
   sanitizeProjectAssets,
   sanitizeSpriteMeta,
   sanitizeTilemapMeta,
   sanitizeTilesetMeta,
+  studioProBuildFileLimitError,
   t,
 } from '#core'
 import {
@@ -1080,7 +1082,11 @@ function boundProjectIdFromBody(raw: unknown): string {
   return ulid()
 }
 
-function sanitizeStoredProject(raw: unknown, requestedId?: string): Project | null {
+function sanitizeStoredProject(
+  raw: unknown,
+  requestedId?: string,
+  proBuildLimits?: StudioProBuildLimits,
+): Project | null {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !isPlainRecord(raw)) {
     return null
   }
@@ -1115,7 +1121,7 @@ function sanitizeStoredProject(raw: unknown, requestedId?: string): Project | nu
   let tree: ProjectTree | undefined
   let proMeta: ProProjectMeta | undefined
   if (r.kind === 'pro') {
-    const sanitizedTree = sanitizeProTree(r.tree)
+    const sanitizedTree = sanitizeProTree(r.tree, proBuildLimits)
     const sanitizedMeta = sanitizeProMeta(r.proMeta)
     if (sanitizedTree && sanitizedMeta) {
       tree = sanitizedTree
@@ -1180,8 +1186,11 @@ export async function loadSanitizedProjectBlocksStateById(
  * mesmas regras aplicadas a projetos persistidos — protege contra JSON
  * malformado/hostil passado pelo app que embarca o editor.
  */
-export function sanitizeProjectForHost(raw: unknown): Project | null {
-  return sanitizeStoredProject(raw)
+export function sanitizeProjectForHost(
+  raw: unknown,
+  options: { proBuildLimits?: StudioProBuildLimits } = {},
+): Project | null {
+  return sanitizeStoredProject(raw, undefined, options.proBuildLimits)
 }
 
 function getAllowedBlocklyBlockTypes(
@@ -1783,12 +1792,36 @@ function countJSExpr(expr: JSExpr): number {
 export interface CreateProjectStoreOptions {
   /** Limites de política do host — anti-DoS profundos continuam internos. */
   limits?: StudioLimits
+  /** Cotas do compilador remoto Pro desta instância, quando houver. */
+  proBuildLimits?: StudioProBuildLimits
 }
 
 export function createProjectStore(
   options: CreateProjectStoreOptions = {},
 ): StoreApi<ProjectStore> {
   const limits: ResolvedLimits = { ...PROJECT_FILE_LIMITS, ...options.limits }
+  const proBuildLimits = options.proBuildLimits
+  const proTreeLimitError = (tree: ProjectTree): string | null => {
+    if (!proBuildLimits) return null
+    const files = Object.fromEntries(
+      Object.entries(tree)
+        .filter(
+          (entry): entry is [string, { kind: 'file'; content: string }] =>
+            entry[1]?.kind === 'file' && typeof entry[1].content === 'string',
+        )
+        .map(([path, node]) => [path, node.content]),
+    )
+    const error = studioProBuildFileLimitError(files, proBuildLimits)
+    if (error === 'TOO_MANY_FILES') {
+      return `Esta atividade aceita no máximo ${proBuildLimits.maxFiles} arquivos.`
+    }
+    if (error === 'FILE_TOO_LARGE') return 'Um arquivo excede o tamanho permitido nesta atividade.'
+    if (error === 'TOTAL_TOO_LARGE') return 'O projeto excede o tamanho permitido nesta atividade.'
+    if (error === 'REQUEST_TOO_LARGE') {
+      return 'O projeto excede o tamanho permitido para enviar ao compilador.'
+    }
+    return null
+  }
   // Sequência monotônica de carga (single-flight, igual ao loadInFlight do
   // settingsStore): dois loads que se sobrepõem (aluno clica projeto A e logo B)
   // podem resolver FORA DE ORDEM — sem o guard, o mais LENTO (mais antigo)
@@ -2371,6 +2404,8 @@ export function createProjectStore(
       if (!p?.tree) return 'Nenhum projeto profissional carregado.'
       const result = addProFile(p.tree, path)
       if (!result.tree) return result.error ?? 'Falha ao criar arquivo.'
+      const limitError = proTreeLimitError(result.tree)
+      if (limitError) return limitError
       set({ project: bump({ ...p, tree: result.tree }), isDirty: true, saveError: null })
       return null
     },
@@ -2387,6 +2422,11 @@ export function createProjectStore(
       if (!p?.tree) return
       const next = setProFileContent(p.tree, path, content)
       if (next === p.tree) return
+      const limitError = proTreeLimitError(next)
+      if (limitError) {
+        set({ saveError: limitError })
+        return
+      }
       set({ project: bump({ ...p, tree: next }), isDirty: true, saveError: null })
     },
     renameProNode: (from, to) => {

@@ -5,6 +5,7 @@ import {
   type EmitterProfile,
   INFORMACH_BASE,
 } from '../../src/domain/dps/emitter-profile'
+import { createNullMessagingClient } from '../../src/infrastructure/messaging/gateway-messaging-client'
 import { CancellationWorker } from '../../src/infrastructure/workers/cancellation-worker'
 import { DeliveryWorker } from '../../src/infrastructure/workers/delivery-worker'
 import {
@@ -71,7 +72,7 @@ describe('e-mail da nota (pós-emissão, best-effort)', () => {
     payments.set(paidSnapshot())
     const invoice = await claimed(invoices)
 
-    await service.execute(invoice)
+    await service.execute(invoice, invoice.claimToken!)
 
     expect(messaging.sent).toHaveLength(1)
     const sent = messaging.sent[0]!
@@ -92,7 +93,7 @@ describe('e-mail da nota (pós-emissão, best-effort)', () => {
     danfse.failWith = new Error('DANFSe fora do ar')
     const invoice = await claimed(invoices)
 
-    await service.execute(invoice)
+    await service.execute(invoice, invoice.claimToken!)
 
     expect((await invoices.findById(invoice.id))?.status).toBe('EMITTED')
     expect(messaging.sent).toHaveLength(0)
@@ -104,7 +105,7 @@ describe('e-mail da nota (pós-emissão, best-effort)', () => {
     messaging.failWith = new Error('gateway 503')
     const invoice = await claimed(invoices)
 
-    await service.execute(invoice)
+    await service.execute(invoice, invoice.claimToken!)
 
     const after = await invoices.findById(invoice.id)
     expect(after?.status).toBe('EMITTED')
@@ -117,7 +118,7 @@ describe('e-mail da nota (pós-emissão, best-effort)', () => {
     danfse.failWith = new Error('DANFSe fora do ar')
     const invoice = await claimed(invoices)
 
-    await service.execute(invoice)
+    await service.execute(invoice, invoice.claimToken!)
     const afterEmission = await invoices.findById(invoice.id)
     expect(afterEmission?.status).toBe('EMITTED')
     expect(invoices.pdfs.has(invoice.id)).toBe(false)
@@ -131,6 +132,7 @@ describe('e-mail da nota (pós-emissão, best-effort)', () => {
       batchSize: 10,
       staleMs: 0,
       retryDelayMs: 60_000,
+      deliverEmail: true,
     })
 
     await worker.tick()
@@ -148,7 +150,7 @@ describe('e-mail da nota (pós-emissão, best-effort)', () => {
     messaging.failWith = new Error('gateway 503')
     const invoice = await claimed(invoices)
 
-    await service.execute(invoice)
+    await service.execute(invoice, invoice.claimToken!)
     const afterEmission = await invoices.findById(invoice.id)
     expect(invoices.pdfs.has(invoice.id)).toBe(true)
     expect(afterEmission?.emailSentAt).toBeNull()
@@ -160,12 +162,48 @@ describe('e-mail da nota (pós-emissão, best-effort)', () => {
       batchSize: 10,
       staleMs: 0,
       retryDelayMs: 60_000,
+      deliverEmail: true,
     })
 
     await worker.tick()
 
     expect(messaging.sent).toHaveLength(1)
     expect((await invoices.findById(invoice.id))?.emailSentAt).not.toBeNull()
+  })
+
+  test('DeliveryWorker sem messaging não reivindica nota que só aguarda e-mail', async () => {
+    const { invoices, payments, sefin, danfse } = build()
+    const service = new EmitInvoiceService(
+      invoices,
+      payments,
+      sefin,
+      danfse,
+      createNullMessagingClient(),
+      {
+        serie: '2',
+        maxAttempts: 10,
+        buildDpsId: (serie, numero) => buildDpsId(profile, serie, numero),
+        selfUrl: 'http://fiscal.test:3009',
+      },
+      silentLogger,
+    )
+    payments.set(paidSnapshot())
+    const invoice = await claimed(invoices)
+    await service.execute(invoice, invoice.claimToken!)
+    expect((await invoices.findById(invoice.id))?.pdfStoredAt).not.toBeNull()
+    expect((await invoices.findById(invoice.id))?.emailSentAt).toBeNull()
+    invoices.touched = []
+
+    const worker = new DeliveryWorker(invoices, service, silentLogger, {
+      intervalMs: 60_000,
+      batchSize: 10,
+      staleMs: 0,
+      retryDelayMs: 60_000,
+      deliverEmail: false,
+    })
+    await worker.tick()
+
+    expect(invoices.touched).toEqual([])
   })
 })
 
@@ -239,7 +277,7 @@ describe('CancellationWorker', () => {
     expect(sefin.cancelled[0]?.xMotivo.length).toBeGreaterThanOrEqual(15)
   })
 
-  test('rejeição da Sefin → permanece CANCEL_PENDING (visível) com evento CANCEL_FAILED', async () => {
+  test('rejeição determinística da Sefin → CANCEL_FAILED e não é reenviada automaticamente', async () => {
     const { invoices } = build()
     const sefin = new ScriptedSefinGateway()
     sefin.nextCancelResults.push({
@@ -256,8 +294,82 @@ describe('CancellationWorker', () => {
     await invoices.requestCancel(invoice.id, 'admin:u-1', 'Motivo')
     await worker.tick()
 
-    expect((await invoices.findById(invoice.id))?.status).toBe('CANCEL_PENDING')
+    expect((await invoices.findById(invoice.id))?.status).toBe('CANCEL_FAILED')
     expect(invoices.events.some((e) => e.type === 'CANCEL_FAILED')).toBe(true)
+
+    await worker.tick()
+    expect(sefin.cancelled).toHaveLength(1)
+  })
+
+  test('rejeição de cancelamento redige CPF antes de persistir a auditoria', async () => {
+    const { invoices } = build()
+    const sefin = new ScriptedSefinGateway()
+    sefin.nextCancelResults.push({
+      kind: 'rejected',
+      errors: [{ code: 'E0207', message: 'CPF 52998224725 não encontrado' }],
+    })
+    const worker = new CancellationWorker(invoices, sefin, silentLogger, {
+      intervalMs: 60_000,
+      batchSize: 10,
+      staleMs: 0,
+    })
+    const invoice = await emittedInvoice(invoices)
+    await invoices.requestCancel(invoice.id, 'admin:u-1', 'Dados cadastrais incorretos')
+
+    await worker.tick()
+
+    expect((await invoices.findById(invoice.id))?.lastError).not.toContain('52998224725')
+    const event = invoices.events.find((e) => e.type === 'CANCEL_FAILED')
+    expect(JSON.stringify(event?.detail)).not.toContain('52998224725')
+  })
+
+  test('rejeição de cancelamento também redige CPF formatado e e-mail', async () => {
+    const { invoices } = build()
+    const sefin = new ScriptedSefinGateway()
+    sefin.nextCancelResults.push({
+      kind: 'rejected',
+      errors: [
+        { code: 'E0207', message: 'CPF 529.982.247-25 de maria@example.com não encontrado' },
+      ],
+    })
+    const worker = new CancellationWorker(invoices, sefin, silentLogger, {
+      intervalMs: 60_000,
+      batchSize: 10,
+      staleMs: 0,
+    })
+    const invoice = await emittedInvoice(invoices)
+    await invoices.requestCancel(invoice.id, 'admin:u-1', 'Dados cadastrais incorretos')
+
+    await worker.tick()
+
+    const persisted = await invoices.findById(invoice.id)
+    const event = invoices.events.find((e) => e.type === 'CANCEL_FAILED')
+    expect(persisted?.lastError).not.toContain('529.982.247-25')
+    expect(persisted?.lastError).not.toContain('maria@example.com')
+    expect(JSON.stringify(event?.detail)).not.toContain('529.982.247-25')
+    expect(JSON.stringify(event?.detail)).not.toContain('maria@example.com')
+  })
+
+  test('não cria evento CANCELLED quando perde a transição guardada', async () => {
+    class LostCancellationTransitionRepository extends InMemoryInvoiceRepository {
+      override async markCancelled(): Promise<boolean> {
+        return false
+      }
+    }
+
+    const invoices = new LostCancellationTransitionRepository()
+    const sefin = new ScriptedSefinGateway()
+    const worker = new CancellationWorker(invoices, sefin, silentLogger, {
+      intervalMs: 60_000,
+      batchSize: 10,
+      staleMs: 0,
+    })
+    const invoice = await emittedInvoice(invoices)
+    await invoices.requestCancel(invoice.id, 'admin:u-1', 'Dados cadastrais incorretos')
+
+    await worker.tick()
+
+    expect(invoices.events.some((event) => event.type === 'CANCELLED')).toBe(false)
   })
 
   test('erro de rede → permanece CANCEL_PENDING e re-tenta no próximo ciclo (lease)', async () => {

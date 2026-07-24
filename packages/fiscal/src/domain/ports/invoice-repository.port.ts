@@ -22,6 +22,8 @@ export interface Invoice {
   scheduledFor: Date
   attempts: number
   claimedAt: Date | null
+  /** Identifica a réplica dona do lease atual da fila. */
+  claimToken: string | null
   nextAttemptAt: Date | null
   lastError: string | null
   skipReason: string | null
@@ -96,9 +98,15 @@ export interface InvoiceRepository {
    * Retorna a nota (criada ou a já existente).
    */
   schedule(input: ScheduleInvoiceInput): Promise<Invoice>
+  /**
+   * Insere somente quando ainda não existe nota ativa equivalente. Diferente de
+   * `schedule()`, não recupera a linha concorrente: a API administrativa usa o
+   * `null` para informar 409 e jamais auditar uma criação que não venceu.
+   */
+  scheduleIfAbsent(input: ScheduleInvoiceInput): Promise<Invoice | null>
 
   /** SCHEDULED → SKIPPED (refund antes da emissão / não-PAID na re-verificação). */
-  skip(id: string, reason: SkipReason, detail?: string): Promise<void>
+  skip(id: string, reason: SkipReason, detail?: string, claimToken?: string): Promise<boolean>
 
   /**
    * Claim de lote p/ emissão: SCHEDULED vencidas (scheduled_for/next_attempt_at
@@ -124,14 +132,15 @@ export interface InvoiceRepository {
    * (que outra réplica re-reivindicaria). Atualiza só claimed_at (não mexe na
    * ordenação da fila de cancelamento por updated_at).
    */
-  touchClaim(id: string): Promise<void>
+  touchClaim(id: string, claimToken: string): Promise<boolean>
 
   /** Aloca (uma única vez) número/série/dpsId; retry reusa o já alocado. */
   allocateDpsNumber(
     id: string,
     series: string,
     buildDpsId: (n: bigint) => string,
-  ): Promise<{ dpsNumber: bigint; dpsId: string }>
+    claimToken: string,
+  ): Promise<{ dpsNumber: bigint; dpsId: string } | null>
 
   /**
    * Resultado de emissão bem-sucedida (SCHEDULED → EMITTED). Retorna `false`
@@ -148,6 +157,7 @@ export interface InvoiceRepository {
       competenceDate: string
       pdfToken: string
     },
+    claimToken: string,
   ): Promise<boolean>
 
   /**
@@ -170,25 +180,37 @@ export interface InvoiceRepository {
   ): Promise<void>
 
   /** Falha re-tentável: devolve à fila com backoff. */
-  releaseForRetry(id: string, nextAttemptAt: Date, lastError: string): Promise<void>
+  releaseForRetry(
+    id: string,
+    nextAttemptAt: Date,
+    lastError: string,
+    claimToken: string,
+  ): Promise<boolean>
 
   /** Falha permanente (rejeição determinística / attempts esgotados). */
-  markFailed(id: string, lastError: string): Promise<void>
+  markFailed(id: string, lastError: string, claimToken?: string): Promise<boolean>
 
-  /** EMITTED → CANCEL_PENDING (admin ou pós-refund). */
-  requestCancel(id: string, by: string, reason: string): Promise<void>
+  /** EMITTED/CANCEL_FAILED → CANCEL_PENDING (admin ou pós-refund). */
+  requestCancel(id: string, by: string, reason: string): Promise<boolean>
 
   /** CANCEL_PENDING vencidas p/ o worker de cancelamento (mesmo modelo de claim). */
   claimCancelPending(opts: { batchSize: number; staleMs: number }): Promise<Invoice[]>
 
-  /** CANCEL_PENDING → CANCELLED (evento aceito pela Sefin). */
-  markCancelled(id: string, cancelEventXml: string): Promise<void>
+  /**
+   * CANCEL_PENDING → CANCELLED (evento aceito pela Sefin). `false` indica que
+   * outra réplica venceu a corrida; nesse caso o caller NÃO pode auditar este
+   * resultado como próprio.
+   */
+  markCancelled(id: string, cancelEventXml: string, claimToken: string): Promise<boolean>
+
+  /** CANCEL_PENDING → CANCEL_FAILED (rejeição determinística da Sefin). */
+  markCancelFailed(id: string, lastError: string, claimToken: string): Promise<boolean>
 
   /** FAILED → SCHEDULED (reprocessamento via admin). */
-  retry(id: string, scheduledFor: Date): Promise<void>
+  retry(id: string, scheduledFor: Date): Promise<boolean>
 
   /** Antecipação manual: SCHEDULED → scheduledFor=AGORA (limpa backoff). */
-  expedite(id: string): Promise<void>
+  expedite(id: string): Promise<boolean>
 
   /**
    * Substituta emitida: grava EMITTED da substituta E marca a original SUBSTITUTED
@@ -206,7 +228,13 @@ export interface InvoiceRepository {
       pdfToken: string
     },
     originalId: string,
-  ): Promise<{ recorded: boolean; originalSubstituted: boolean }>
+    claimToken: string,
+  ): Promise<{
+    recorded: boolean
+    originalSubstituted: boolean
+    /** Estorno venceu a corrida: a substituta real já foi encaminhada ao cancelamento. */
+    substituteCancelPending: boolean
+  }>
 
   /** Trilha de auditoria (append-only). */
   appendEvent(
@@ -216,18 +244,33 @@ export interface InvoiceRepository {
     detail?: Record<string, unknown>,
   ): Promise<void>
 
-  storePdf(invoiceId: string, content: Uint8Array, contentType?: string): Promise<void>
+  storePdf(
+    invoiceId: string,
+    content: Uint8Array,
+    claimToken: string,
+    contentType?: string,
+  ): Promise<boolean>
   findPdfByToken(
     token: string,
   ): Promise<{ invoiceId: string; content: Uint8Array; contentType: string } | null>
-  markEmailSent(id: string): Promise<void>
+  markEmailSent(id: string, claimToken: string): Promise<boolean>
 
   /**
    * Claim de notas EMITTED que ainda precisam do DANFSe e/ou e-mail. Reusa
    * claimed_at/next_attempt_at como lease/backoff de pós-emissão; emissão e
    * cancelamento filtram por status, então não disputam a mesma linha.
    */
-  claimEmittedNeedingDelivery(opts: { batchSize: number; staleMs: number }): Promise<Invoice[]>
-  releaseDeliveryRetry(id: string, nextAttemptAt: Date, lastError: string): Promise<void>
-  markDeliveryComplete(id: string): Promise<void>
+  claimEmittedNeedingDelivery(opts: {
+    batchSize: number
+    staleMs: number
+    /** Sem messaging, recupera somente o DANFSe — e-mail pendente não é trabalho. */
+    includeEmail: boolean
+  }): Promise<Invoice[]>
+  releaseDeliveryRetry(
+    id: string,
+    nextAttemptAt: Date,
+    lastError: string,
+    claimToken: string,
+  ): Promise<boolean>
+  markDeliveryComplete(id: string, claimToken: string): Promise<boolean>
 }

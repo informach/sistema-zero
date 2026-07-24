@@ -557,9 +557,19 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     const now = new Date()
     // Mirror do SQL: `salesPageUrl` vira a chave do metadata (jsonb), não coluna;
     // `audience` ausente cai no default da coluna (`adult`).
-    const { salesPageUrl, audience, sequentialLock, level, track, careerSlot, ...rest } = fields
+    const {
+      version: _version,
+      salesPageUrl,
+      audience,
+      sequentialLock,
+      level,
+      track,
+      careerSlot,
+      ...rest
+    } = fields
     const course: Course = {
       id: randomUUID(),
+      version: 0,
       ...rest,
       audience: audience ?? 'adult',
       sequentialLock: sequentialLock ?? true,
@@ -577,6 +587,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   async updateCourse(course: Course): Promise<boolean> {
     const idx = this.courses.findIndex((c) => c.id === course.id)
     if (idx === -1) return false
+    if (this.courses[idx]?.version !== course.version) return false
     if (this.courses.some((c) => c.id !== course.id && c.slug === course.slug)) {
       throw new DuplicateSlugError()
     }
@@ -593,7 +604,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     ) {
       throw new CareerSlotConflictError()
     }
-    this.courses[idx] = { ...course, updatedAt: new Date() }
+    this.courses[idx] = { ...course, version: course.version + 1, updatedAt: new Date() }
     return true
   }
 
@@ -1455,6 +1466,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
 export class InMemoryTeacherThreadRepository implements TeacherThreadRepository {
   readonly threads: TeacherThreadRecord[] = []
   readonly messages: TeacherMessageRecord[] = []
+  readonly staffReads = new Map<string, Date>()
 
   async ensureThread(input: EnsureThreadInput): Promise<string> {
     if (input.contextType !== 'general' && input.contextRef != null) {
@@ -1503,9 +1515,12 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
     this.messages.push(record)
     const thread = this.threads.find((t) => t.id === input.threadId)
     if (thread) {
-      thread.lastMessageAt = input.now
-      if (input.authorRole === 'teacher') thread.teacherLastReadAt = input.now
-      else thread.studentLastReadAt = input.now
+      if (input.now > thread.lastMessageAt) thread.lastMessageAt = input.now
+      if (input.authorRole === 'teacher' && input.authorId) {
+        this.staffReads.set(this.staffReadKey(input.threadId, input.authorId), input.now)
+      } else if (input.authorRole === 'student') {
+        thread.studentLastReadAt = input.now
+      }
     }
     return record
   }
@@ -1526,10 +1541,32 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
     )
   }
 
-  async listMessages(threadId: string): Promise<TeacherMessageRecord[]> {
-    return this.messages
+  async listMessages(
+    threadId: string,
+    before?: { createdAt: Date; id: string },
+  ): Promise<{
+    messages: TeacherMessageRecord[]
+    nextCursor: { createdAt: Date; id: string } | null
+  }> {
+    const ordered = this.messages
       .filter((m) => m.threadId === threadId)
-      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+      .filter(
+        (m) =>
+          !before ||
+          m.createdAt < before.createdAt ||
+          (m.createdAt.getTime() === before.createdAt.getTime() && m.id < before.id),
+      )
+      .sort((a, b) => {
+        const byDate = b.createdAt.getTime() - a.createdAt.getTime()
+        return byDate || b.id.localeCompare(a.id)
+      })
+    const page = ordered.slice(0, 50)
+    const oldest = page[page.length - 1]
+    return {
+      messages: page.reverse(),
+      nextCursor:
+        ordered.length > 50 && oldest ? { createdAt: oldest.createdAt, id: oldest.id } : null,
+    }
   }
 
   async listForStudent(
@@ -1551,12 +1588,17 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
         if (filter.audience && t.audience !== filter.audience) return false
         if (filter.contextType && t.contextType !== filter.contextType) return false
         if (filter.courseId && t.courseId !== filter.courseId) return false
-        if (filter.unreadOnly && !this.unreadFor(t, 'teacher')) return false
+        if (filter.unreadOnly && !this.unreadFor(t, 'teacher', filter.staffUserId)) return false
         return true
       })
-      .sort((a, b) => b.lastMessageAt.getTime() - a.lastMessageAt.getTime())
+      .sort((a, b) => {
+        const byUnread =
+          Number(this.unreadFor(b, 'teacher', filter.staffUserId)) -
+          Number(this.unreadFor(a, 'teacher', filter.staffUserId))
+        return byUnread || b.lastMessageAt.getTime() - a.lastMessageAt.getTime()
+      })
       .slice(filter.offset, filter.offset + filter.limit)
-      .map((t) => this.toSummary(t, 'teacher'))
+      .map((t) => this.toSummary(t, 'teacher', filter.staffUserId))
   }
 
   async countUnreadForStudent(userId: string, audience: CourseAudience): Promise<number> {
@@ -1565,18 +1607,33 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
     ).length
   }
 
-  async markReadByStudent(threadId: string, userId: string, now: Date): Promise<void> {
-    const t = this.threads.find((x) => x.id === threadId && x.userId === userId)
-    if (t) t.studentLastReadAt = now
+  async markReadByStudent(
+    threadId: string,
+    userId: string,
+    audience: CourseAudience,
+  ): Promise<void> {
+    const t = this.threads.find(
+      (x) => x.id === threadId && x.userId === userId && x.audience === audience,
+    )
+    if (t) t.studentLastReadAt = t.lastMessageAt
   }
 
-  async markReadByTeacher(threadId: string, now: Date): Promise<void> {
+  async markReadByTeacher(threadId: string, staffUserId: string): Promise<void> {
     const t = this.threads.find((x) => x.id === threadId)
-    if (t) t.teacherLastReadAt = now
+    if (t) this.staffReads.set(this.staffReadKey(threadId, staffUserId), t.lastMessageAt)
   }
 
-  private unreadFor(thread: TeacherThreadRecord, side: 'student' | 'teacher'): boolean {
-    const watermark = side === 'student' ? thread.studentLastReadAt : thread.teacherLastReadAt
+  private unreadFor(
+    thread: TeacherThreadRecord,
+    side: 'student' | 'teacher',
+    staffUserId?: string,
+  ): boolean {
+    const watermark =
+      side === 'student'
+        ? thread.studentLastReadAt
+        : staffUserId
+          ? this.staffReads.get(this.staffReadKey(thread.id, staffUserId))
+          : undefined
     const fromRole = side === 'student' ? 'teacher' : 'student'
     return this.messages.some(
       (m) =>
@@ -1589,6 +1646,7 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
   private toSummary(
     thread: TeacherThreadRecord,
     side: 'student' | 'teacher',
+    staffUserId?: string,
   ): TeacherThreadSummary {
     const msgs = this.messages
       .filter((m) => m.threadId === thread.id)
@@ -1609,8 +1667,12 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
       lastMessagePreview: last ? last.body.slice(0, 140) : null,
       lastMessageRole: last ? last.authorRole : null,
       messageCount: msgs.length,
-      unread: this.unreadFor(thread, side),
+      unread: this.unreadFor(thread, side, staffUserId),
     }
+  }
+
+  private staffReadKey(threadId: string, staffUserId: string): string {
+    return `${threadId}:${staffUserId}`
   }
 }
 

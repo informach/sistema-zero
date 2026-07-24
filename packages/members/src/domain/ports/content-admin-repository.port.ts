@@ -14,6 +14,8 @@ import type { LessonBlockContent, LessonBlockKind } from '../course/lesson-block
 // ── Inputs de autoria ───────────────────────────────────────────────────────
 
 export interface CourseFields {
+  /** Versão devolvida pelo GET/POST anterior; obrigatória no PATCH para evitar lost updates. */
+  version?: number
   slug: string
   title: string
   subtitle: string | null

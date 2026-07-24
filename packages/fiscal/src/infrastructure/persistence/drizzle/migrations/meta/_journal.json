@@ -15,6 +15,34 @@
       "when": 1781397125090,
       "tag": "0001_orange_aaron_stack",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784883414440,
+      "tag": "0002_cancel-failed-status",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1784886781923,
+      "tag": "0003_webhook-claims",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1784887001691,
+      "tag": "0004_webhook-claim-token",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1784888570874,
+      "tag": "0005_yummy_shadow_king",
+      "breakpoints": true
     }
   ]
 }

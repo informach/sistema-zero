@@ -30,6 +30,7 @@ export function ThreadDialog({ threadId, studentName, onClose }: Props) {
   const [loading, setLoading] = useState(true)
   const [reply, setReply] = useState('')
   const [sending, setSending] = useState(false)
+  const [loadingOlder, setLoadingOlder] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -74,6 +75,23 @@ export function ThreadDialog({ threadId, studentName, onClose }: Props) {
     }
   }
 
+  const loadOlder = async () => {
+    if (!thread?.nextCursor || loadingOlder) return
+    setLoadingOlder(true)
+    try {
+      const older = await apiGet<TeacherThreadView>(
+        `/api/members/teacher-threads/${threadId}?before=${encodeURIComponent(thread.nextCursor)}`,
+      )
+      setThread((current) =>
+        current ? { ...older, messages: [...older.messages, ...current.messages] } : older,
+      )
+    } catch (err) {
+      toast.error((err as ApiError).message ?? 'Falha ao carregar mensagens anteriores.')
+    } finally {
+      setLoadingOlder(false)
+    }
+  }
+
   return (
     <Dialog open onClose={onClose} title={`Conversa com ${studentName}`} className="max-w-2xl">
       {loading || !thread ? (
@@ -87,6 +105,13 @@ export function ThreadDialog({ threadId, studentName, onClose }: Props) {
           {thread.title ? <p className="text-xs text-muted-foreground">{thread.title}</p> : null}
 
           <ul className="flex max-h-[50dvh] flex-col gap-2 overflow-y-auto">
+            {thread.nextCursor ? (
+              <li className="self-center">
+                <Button variant="outline" size="sm" disabled={loadingOlder} onClick={loadOlder}>
+                  {loadingOlder ? 'Carregando…' : 'Carregar mensagens anteriores'}
+                </Button>
+              </li>
+            ) : null}
             {thread.messages.map((m) => {
               const teacher = m.authorRole === 'teacher'
               return (

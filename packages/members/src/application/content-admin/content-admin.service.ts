@@ -101,6 +101,9 @@ export class CourseAdminService {
   async update(id: string, fields: CourseFields): Promise<CourseView> {
     const existing = await this.courses.findCourseById(id)
     if (!existing) throw new CourseNotFoundError()
+    if (fields.version === undefined || fields.version !== existing.version) {
+      throw new CourseConflictError()
+    }
     // Guard: curso `published` exige ≥1 aula publicada (visível ao aluno).
     if (fields.status === 'published' && (await this.content.countPublishedLessons(id)) === 0) {
       throw new NoPublishedLessonError()
@@ -112,7 +115,16 @@ export class CourseAdminService {
     // `sequentialLock` AUSENTE também PRESERVA a atual (mesma régua do audience).
     // `level` AUSENTE idem (build antigo do admin sem o campo não rebaixa a dificuldade).
     // `track` AUSENTE idem (build antigo sem o eixo 2D/3D não re-tagueia o curso).
-    const { salesPageUrl, audience, sequentialLock, level, track, careerSlot, ...rest } = fields
+    const {
+      salesPageUrl,
+      audience,
+      sequentialLock,
+      level,
+      track,
+      careerSlot,
+      version: _version,
+      ...rest
+    } = fields
     const merged = {
       ...existing,
       ...rest,

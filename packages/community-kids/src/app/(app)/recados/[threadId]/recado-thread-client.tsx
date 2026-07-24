@@ -24,7 +24,10 @@ export function RecadoThreadClient({ threadId }: { threadId: string }) {
   const [state, setState] = useState<'loading' | 'ready' | 'notfound'>('loading')
   const [reply, setReply] = useState('')
   const [sending, setSending] = useState(false)
+  const [loadingOlder, setLoadingOlder] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const endRef = useRef<HTMLDivElement | null>(null)
+  const scrollOnNextMessages = useRef(true)
 
   useEffect(() => {
     let alive = true
@@ -37,7 +40,12 @@ export function RecadoThreadClient({ threadId }: { threadId: string }) {
         apiSend(`/api/members/teacher-threads/${threadId}/read`, 'POST').catch(() => {})
       })
       .catch((e: ApiError) => {
-        if (alive) setState(e?.status === 404 ? 'notfound' : 'ready')
+        if (!alive) return
+        if (e?.status === 404) setState('notfound')
+        else {
+          setError('Não consegui abrir esse recado. Atualize a página e tente de novo.')
+          setState('ready')
+        }
       })
     return () => {
       alive = false
@@ -46,13 +54,15 @@ export function RecadoThreadClient({ threadId }: { threadId: string }) {
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: rola ao fim quando chegam turnos
   useEffect(() => {
-    endRef.current?.scrollIntoView({ block: 'end' })
+    if (scrollOnNextMessages.current) endRef.current?.scrollIntoView({ block: 'end' })
+    scrollOnNextMessages.current = true
   }, [thread?.messages.length])
 
   const send = async () => {
     const body = reply.trim()
     if (!body || sending) return
     setSending(true)
+    scrollOnNextMessages.current = true
     try {
       const updated = await apiSend<TeacherThreadView>(
         `/api/members/teacher-threads/${threadId}/messages`,
@@ -62,9 +72,27 @@ export function RecadoThreadClient({ threadId }: { threadId: string }) {
       setThread(updated)
       setReply('')
     } catch {
-      // erro → mantém o texto p/ tentar de novo
+      setError('Não consegui enviar agora. Seu texto ficou aqui para você tentar de novo.')
     } finally {
       setSending(false)
+    }
+  }
+
+  const loadOlder = async () => {
+    if (!thread?.nextCursor || loadingOlder) return
+    setLoadingOlder(true)
+    scrollOnNextMessages.current = false
+    try {
+      const older = await apiGet<TeacherThreadView>(
+        `/api/members/teacher-threads/${threadId}?before=${encodeURIComponent(thread.nextCursor)}`,
+      )
+      setThread((current) =>
+        current ? { ...older, messages: [...older.messages, ...current.messages] } : older,
+      )
+    } catch {
+      setError('Não consegui carregar as mensagens anteriores.')
+    } finally {
+      setLoadingOlder(false)
     }
   }
 
@@ -100,10 +128,23 @@ export function RecadoThreadClient({ threadId }: { threadId: string }) {
       </div>
 
       <div className="max-h-[60vh] overflow-y-auto rounded-2xl border-2 border-border bg-card p-3">
+        {error ? <p className="mb-3 text-destructive text-sm">{error}</p> : null}
         {state === 'loading' ? (
           <p className="py-8 text-center text-muted-foreground text-sm">Carregando…</p>
         ) : thread && thread.messages.length > 0 ? (
           <ul className="flex flex-col gap-2">
+            {thread.nextCursor ? (
+              <li className="self-center">
+                <button
+                  type="button"
+                  onClick={loadOlder}
+                  disabled={loadingOlder}
+                  className="rounded-full border-2 border-border px-3 py-1 font-bold text-xs hover:border-primary disabled:opacity-50"
+                >
+                  {loadingOlder ? 'Carregando…' : 'Ver mensagens anteriores'}
+                </button>
+              </li>
+            ) : null}
             {thread.messages.map((m) => {
               const mine = m.authorRole === 'student'
               return (

@@ -1,10 +1,10 @@
-import { resolveStudioTier } from '@sistemazero/member-shell/lib/studio-tier'
 import { redirect } from 'next/navigation'
 import { KidsLockedStudio } from '@/components/kids/kids-locked-studio'
 import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable'
 import { StudioProClient } from '@/components/kids/studio-pro-client'
 import { checkStudioAccessReadonly, getGamificationReadonly } from '@/server/members'
 import { getSession } from '@/server/session'
+import { resolveStudioProAccess } from '@/server/studio-pro-access'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,14 +30,15 @@ export default async function EstudioProPage({ params }: { params: Promise<{ id:
     getSession(),
     getGamificationReadonly({ withRanking: true }).catch(() => null),
   ])
-  if (res.status !== 200) return <KidsStudioUnavailable />
-  if (res.body?.access?.['estudio-completo'] !== true) return <KidsLockedStudio />
-
-  if (gam?.status !== 200) return <KidsStudioUnavailable />
-  const levelSlug = gam.body?.level?.slug ?? 'noob'
-  const tier = resolveStudioTier(levelSlug, session?.role)
-  // Modo Código é SÓ da Lenda/admin — defesa em profundidade contra acesso por URL.
-  if (!tier.pro) redirect('/estudio')
+  if (res.status !== 200 || gam?.status !== 200) return <KidsStudioUnavailable />
+  const access = resolveStudioProAccess({
+    session,
+    studioAccess: res.body?.access?.['estudio-completo'] === true,
+    levelSlug: gam.body?.level?.slug,
+  })
+  if (!access.allowed && access.code === 'STUDIO_ACCESS_REQUIRED') return <KidsLockedStudio />
+  // A página é protegida pelo proxy, mas mantém o redirect defensivo para URL direta.
+  if (!access.allowed) redirect('/estudio')
 
   return <StudioProClient viewerId={session?.id ?? null} projectId={id} />
 }

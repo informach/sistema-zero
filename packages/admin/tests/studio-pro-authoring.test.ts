@@ -24,7 +24,9 @@ describe('autoria do Estúdio Pro', () => {
 
     const result = await adapter.build({ project })
 
-    expect(sent).toEqual({ project })
+    expect(sent).toEqual({
+      project: { kind: 'pro', tree: project.tree, proMeta: project.proMeta },
+    })
     expect(result.html).toContain('Pronto')
   })
 

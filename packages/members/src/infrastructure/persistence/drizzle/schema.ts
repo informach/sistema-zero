@@ -982,8 +982,28 @@ export const teacherMessages = members.table(
     body: varchar('body', { length: 8000 }).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   },
-  // Cobre o EXISTS de não-lido (thread + papel + data) e a listagem dos turnos.
-  (t) => [index('teacher_messages_thread_idx').on(t.threadId, t.authorRole, t.createdAt)],
+  // Cobre o EXISTS de não-lido (thread + papel + data), a paginação do histórico
+  // (`thread, created_at, id`) e a última mensagem por conversa da caixa.
+  (t) => [
+    index('teacher_messages_thread_idx').on(t.threadId, t.authorRole, t.createdAt),
+    index('teacher_messages_thread_created_idx').on(t.threadId, t.createdAt, t.id),
+  ],
+)
+
+/** Watermark de leitura por membro da equipe (não compartilhado entre professores). */
+export const teacherThreadStaffReads = members.table(
+  'teacher_thread_staff_reads',
+  {
+    threadId: uuid('thread_id')
+      .notNull()
+      .references(() => teacherThreads.id, { onDelete: 'cascade' }),
+    staffUserId: uuid('staff_user_id').notNull(),
+    readAt: timestamp('read_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.threadId, t.staffUserId] }),
+    index('teacher_thread_staff_reads_staff_idx').on(t.staffUserId, t.readAt),
+  ],
 )
 
 // ── Uso de IA por CONTA (quota diária/mensal — 07/2026) ─────────────────────

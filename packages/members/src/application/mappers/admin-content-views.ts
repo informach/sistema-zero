@@ -13,6 +13,8 @@ import { resolveSalesPageUrl } from './views'
 
 export interface CourseView {
   id: string
+  /** Envie este valor no próximo PATCH para detectar edição concorrente. */
+  version: number
   slug: string
   title: string
   subtitle: string | null
@@ -38,6 +40,7 @@ export interface CourseView {
 export function toCourseView(c: Course): CourseView {
   return {
     id: c.id,
+    version: c.version,
     slug: c.slug,
     title: c.title,
     subtitle: c.subtitle,

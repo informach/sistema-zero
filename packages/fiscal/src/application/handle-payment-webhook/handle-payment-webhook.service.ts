@@ -1,8 +1,9 @@
 import type { Logger } from '@sistemazero/core/logging'
 import { composeServiceDescription } from '../../domain/dps/emitter-profile'
 import { SkipReason } from '../../domain/invoice/invoice.status'
+import { redactSensitiveText } from '../../domain/invoice/redact-documents'
 import type { CatalogClient, PaymentsClient } from '../../domain/ports/clients.port'
-import type { InvoiceRepository } from '../../domain/ports/invoice-repository.port'
+import type { Invoice, InvoiceRepository } from '../../domain/ports/invoice-repository.port'
 
 export interface WebhookDelivery {
   deliveryId: string
@@ -175,50 +176,69 @@ export class HandlePaymentWebhookService {
     }
 
     for (const invoice of active) {
-      if (invoice.status === 'SCHEDULED') {
-        await this.invoices.skip(invoice.id, SkipReason.REFUNDED_BEFORE_EMISSION)
-        await this.invoices.appendEvent(invoice.id, 'SKIPPED', 'system:refund', { paymentId })
-        this.logger.info('fiscal.invoice_skipped_on_refund', { invoiceId: invoice.id, paymentId })
+      // O snapshot acima pode envelhecer enquanto o worker emite uma substituta.
+      // Releia a linha antes da transição e só registre o evento quando o UPDATE
+      // guardado realmente venceu a corrida.
+      const current = await this.invoices.findById(invoice.id)
+      if (!current) continue
+      if (current.status === 'SCHEDULED') {
+        const skipped = await this.invoices.skip(current.id, SkipReason.REFUNDED_BEFORE_EMISSION)
+        if (!skipped) {
+          const afterRace = await this.invoices.findById(current.id)
+          if (afterRace?.status === 'EMITTED') {
+            await this.requestRefundCancellation(afterRace, paymentId)
+          }
+          continue
+        }
+        await this.invoices.appendEvent(current.id, 'SKIPPED', 'system:refund', { paymentId })
+        this.logger.info('fiscal.invoice_skipped_on_refund', { invoiceId: current.id, paymentId })
         continue
       }
 
-      if (invoice.status === 'EMITTED') {
-        // emittedAt nulo numa EMITTED é anômalo — trata como RECÉM-emitida (idade 0)
-        // p/ falhar FECHADO em direção ao cancelamento (≠ de `?? 0` = epoch = ~56
-        // anos = fora da janela = NÃO cancela uma venda estornada).
-        const emittedMs = invoice.emittedAt?.getTime()
-        const ageDays = emittedMs == null ? 0 : (Date.now() - emittedMs) / (24 * 3600_000)
-        if (ageDays > this.config.cancelWindowDays) {
-          // Fora da janela técnica de cancelamento — só sinaliza (ação manual).
-          this.logger.error('fiscal.refund_after_cancel_window', {
-            invoiceId: invoice.id,
-            paymentId,
-            ageDays: Math.floor(ageDays),
-          })
-          await this.invoices.appendEvent(
-            invoice.id,
-            'CANCEL_REQUESTED_OUT_OF_WINDOW',
-            'system:refund',
-            {},
-          )
-          continue
-        }
-        await this.invoices.requestCancel(
-          invoice.id,
-          'system:refund',
-          'Pagamento reembolsado ao consumidor',
-        )
-        await this.invoices.appendEvent(invoice.id, 'CANCEL_REQUESTED', 'system:refund', {
-          paymentId,
-        })
-        this.logger.info('fiscal.cancel_requested_on_refund', { invoiceId: invoice.id, paymentId })
+      if (current.status === 'EMITTED') {
+        await this.requestRefundCancellation(current, paymentId)
       }
-      // CANCEL_PENDING — já a caminho do cancelamento; idempotente.
+      // CANCEL_PENDING/CANCEL_FAILED — já em análise; não reenvia rejeição determinística.
     }
     return { kind: 'ok' }
+  }
+
+  private async requestRefundCancellation(invoice: Invoice, paymentId: string): Promise<void> {
+    if (invoice.status !== 'EMITTED') return
+    // emittedAt nulo numa EMITTED é anômalo — trata como RECÉM-emitida (idade 0)
+    // p/ falhar FECHADO em direção ao cancelamento (≠ de `?? 0` = epoch = ~56
+    // anos = fora da janela = NÃO cancela uma venda estornada).
+    const emittedMs = invoice.emittedAt?.getTime()
+    const ageDays = emittedMs == null ? 0 : (Date.now() - emittedMs) / (24 * 3600_000)
+    if (ageDays > this.config.cancelWindowDays) {
+      // Fora da janela técnica de cancelamento — só sinaliza (ação manual).
+      this.logger.error('fiscal.refund_after_cancel_window', {
+        invoiceId: invoice.id,
+        paymentId,
+        ageDays: Math.floor(ageDays),
+      })
+      await this.invoices.appendEvent(
+        invoice.id,
+        'CANCEL_REQUESTED_OUT_OF_WINDOW',
+        'system:refund',
+        {},
+      )
+      return
+    }
+    const requested = await this.invoices.requestCancel(
+      invoice.id,
+      'system:refund',
+      'Pagamento reembolsado ao consumidor',
+    )
+    if (requested) {
+      await this.invoices.appendEvent(invoice.id, 'CANCEL_REQUESTED', 'system:refund', {
+        paymentId,
+      })
+      this.logger.info('fiscal.cancel_requested_on_refund', { invoiceId: invoice.id, paymentId })
+    }
   }
 }
 
 function msg(error: unknown): string {
-  return error instanceof Error ? error.message : String(error)
+  return redactSensitiveText(error instanceof Error ? error.message : String(error))
 }

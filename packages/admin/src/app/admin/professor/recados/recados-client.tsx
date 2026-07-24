@@ -82,9 +82,6 @@ export function RecadosClient() {
       .catch(() => {})
   }, [])
 
-  // Não-lidas primeiro DENTRO da página (o members ordena por última mensagem).
-  const sorted = [...threads].sort((a, b) => Number(b.unread) - Number(a.unread))
-
   return (
     <div className="space-y-6">
       <AdminHeader
@@ -130,14 +127,14 @@ export function RecadosClient() {
           <Skeleton className="h-16 w-full" />
           <Skeleton className="h-16 w-full" />
         </div>
-      ) : sorted.length === 0 ? (
+      ) : threads.length === 0 ? (
         <Card className="p-8 text-center text-sm text-muted-foreground">
           <Mail className="mx-auto mb-2 size-6" />
           Nenhuma conversa por aqui{unreadOnly ? ' (sem não-lidas)' : ''}.
         </Card>
       ) : (
         <ul className="space-y-2">
-          {sorted.map((t) => (
+          {threads.map((t) => (
             <li key={t.id}>
               <button
                 onClick={() => setOpen(t)}
