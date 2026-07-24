@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { KidsLockedCourse } from '@/components/kids/kids-locked-course'
+import { careerLockReason, KidsLockedCourse } from '@/components/kids/kids-locked-course'
 import { KidsLockedLesson } from '@/components/kids/kids-locked-lesson'
 import type { LessonOutlineView } from '@/lib/types'
 import { computeAgeFromBirthDate } from '@/lib/user-display'
@@ -28,7 +28,8 @@ export default async function LessonPage({
     listProfilesReadonly(),
   ])
   if (courseRes.status === 404 || courseRes.status === 403) notFound()
-  if (courseRes.status === 423) return <KidsLockedCourse />
+  if (courseRes.status === 423)
+    return <KidsLockedCourse reason={careerLockReason(courseRes.body)} />
   if (courseRes.status !== 200 || !courseRes.body) throw new Error('Falha ao carregar o curso')
   const course = courseRes.body
 

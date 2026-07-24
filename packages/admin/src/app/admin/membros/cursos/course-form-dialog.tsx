@@ -7,6 +7,7 @@ import { Field } from '@sistemazero/ui/label'
 import { Select } from '@sistemazero/ui/select'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { Textarea } from '@sistemazero/ui/textarea'
+import { TriangleAlert } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { ImageUploader } from '@/components/media/image-uploader'
@@ -365,6 +366,16 @@ export function CourseFormDialog({
               )
             })}
           </Select>
+          {editing?.careerSlot === 1 &&
+          editing.status === 'published' &&
+          editing.hasShowcaseBlock === false ? (
+            <p className="mt-1.5 flex items-start gap-1.5 text-destructive text-xs" role="alert">
+              <TriangleAlert className="mt-0.5 size-3.5 shrink-0" />
+              Este curso-base ainda não tem aula publicada com bloco de Estúdio com vitrine
+              (Publicar no Mural). Sem isso o aluno nunca qualifica a posição 1 e a etapa não
+              destrava.
+            </p>
+          ) : null}
         </Field>
         <Field
           label="Trava sequencial das aulas"

@@ -67,8 +67,25 @@ export class CourseAdminService {
     filter: ListCoursesAdminFilter,
   ): Promise<{ items: CourseView[]; total: number; limit: number; offset: number }> {
     const { items, total } = await this.content.listCoursesAdmin(filter)
+    // Curso-base (kids, slot 1) sem bloco de Estúdio com vitrine em aula publicada
+    // nunca qualifica → a etapa não destrava. Marca p/ o painel avisar o operador.
+    const foundationIds = items
+      .filter((course) => course.audience === 'kids' && course.careerSlot === 1)
+      .map((course) => course.id)
+    const withShowcase = new Set(
+      foundationIds.length > 0
+        ? await this.content.listCourseIdsWithShowcaseBlock(foundationIds)
+        : [],
+    )
     return {
-      items: items.map(toCourseView),
+      items: items.map((course) =>
+        toCourseView(
+          course,
+          course.audience === 'kids' && course.careerSlot === 1
+            ? withShowcase.has(course.id)
+            : undefined,
+        ),
+      ),
       total,
       limit: filter.limit,
       offset: filter.offset,

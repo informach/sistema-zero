@@ -98,6 +98,13 @@ export interface ContentAdminRepository {
     courseId: string,
     opts?: { excludeLessonId?: string; excludeModuleId?: string },
   ): Promise<number>
+  /**
+   * Dos cursos pedidos, quais têm ≥1 aula PUBLICADA com bloco de Estúdio de
+   * vitrine (`showcase.enabled`)? Sem ela o aluno nunca publica no Mural — um
+   * curso-base assim nunca qualifica o slot 1 e a etapa não destrava (o painel
+   * usa isso p/ avisar o operador).
+   */
+  listCourseIdsWithShowcaseBlock(courseIds: string[]): Promise<string[]>
 
   // ── Módulos ──
   findModuleById(id: string): Promise<Module | null>

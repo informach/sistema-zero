@@ -540,6 +540,17 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     return { items: all.slice(filter.offset, filter.offset + filter.limit), total: all.length }
   }
 
+  async listCourseIdsWithShowcaseBlock(courseIds: string[]): Promise<string[]> {
+    const wanted = new Set(courseIds)
+    const found = new Set<string>()
+    for (const block of this.blocks) {
+      if (block.content.kind !== 'studio' || block.content.showcase?.enabled !== true) continue
+      const lesson = this.lessons.find((l) => l.id === block.lessonId)
+      if (lesson?.isPublished && wanted.has(lesson.courseId)) found.add(lesson.courseId)
+    }
+    return [...found]
+  }
+
   async createCourse(fields: CourseFields): Promise<Course> {
     if (this.courses.some((c) => c.slug === fields.slug)) throw new DuplicateSlugError()
     if (

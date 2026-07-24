@@ -3,7 +3,7 @@ import { PlayCircle } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { CourseTrail } from '@/components/kids/course-trail'
-import { KidsLockedCourse } from '@/components/kids/kids-locked-course'
+import { careerLockReason, KidsLockedCourse } from '@/components/kids/kids-locked-course'
 import type { CourseDetailView, LessonOutlineView } from '@/lib/types'
 import { getMyCourse } from '@/server/members'
 
@@ -28,7 +28,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
   const { slug } = await params
   const { status, body } = await getMyCourse(slug)
   if (status === 404 || status === 403) notFound()
-  if (status === 423) return <KidsLockedCourse />
+  if (status === 423) return <KidsLockedCourse reason={careerLockReason(body)} />
   if (status !== 200 || !body) throw new Error('Falha ao carregar o curso')
   const course = body
 

@@ -13,13 +13,14 @@ const headers = {
 async function qualify(
   gamification: ReturnType<typeof buildApp>['gamification'],
   courseId: string,
+  userId = USER,
 ) {
   const events: XpEventInput[] = [
     { sourceType: 'course_complete', sourceId: courseId, amount: 0 },
     { sourceType: 'course_showcased', sourceId: courseId, amount: 0 },
   ]
   await gamification.award({
-    userId: USER,
+    userId,
     accountId: ACCOUNT,
     audience: 'kids',
     events,
@@ -45,10 +46,13 @@ describe('Carreira do Criador — acesso pedagógico aos cursos', () => {
       new Request('http://localhost/members/courses/segundo-2d', { headers }),
     )
     expect(locked.status).toBe(423)
-    expect(await locked.json()).toMatchObject({
+    const lockedBody = (await locked.json()) as { error: object; careerLock: object }
+    expect(lockedBody).toMatchObject({
       error: { code: 'COURSE_CAREER_LOCKED' },
-      careerLock: { reason: 'foundation-first', requiredLevel: 'noob' },
+      careerLock: { reason: 'foundation-first' },
     })
+    // A chave do foundation-first é o CURSO-BASE, não um nível — sem requiredLevel.
+    expect(lockedBody.careerLock).not.toHaveProperty('requiredLevel')
   })
 
   test('sem curso-base PUBLICADO na etapa, os demais NÃO ficam presos (fail-open)', async () => {
@@ -143,6 +147,62 @@ describe('Carreira do Criador — acesso pedagógico aos cursos', () => {
       },
     })
     expect(bySlug.get('base-3d')?.careerLock).not.toHaveProperty('foundationCourseSlug')
+  })
+
+  test('família: a qualificação é POR PERFIL — o irmão não herda o destravamento', async () => {
+    const PROFILE_B = '99999999-9999-4999-8999-999999999999'
+    const { app, courses, entitlements, gamification } = buildApp()
+    const base = seedSampleCourse(
+      courses,
+      'base-2d',
+      'published',
+      'kids',
+      false,
+      'iniciante',
+      '2d',
+      1,
+    )
+    seedSampleCourse(courses, 'segundo-2d', 'published', 'kids', false, 'iniciante', '2d', 2)
+    // UMA matrícula da CONTA cobre os dois perfis…
+    grantAllKidsCourses(entitlements, { userId: ACCOUNT })
+    // …mas só o perfil A (USER) concluiu+publicou o curso-base.
+    await qualify(gamification, base.courseId, USER)
+
+    const headersFor = (profileId: string) => ({
+      'x-auth-user-id': profileId,
+      'x-auth-account-id': ACCOUNT,
+    })
+    expect(
+      (
+        await app.handle(
+          new Request('http://localhost/members/courses/segundo-2d', {
+            headers: headersFor(USER),
+          }),
+        )
+      ).status,
+    ).toBe(200)
+    expect(
+      (
+        await app.handle(
+          new Request('http://localhost/members/courses/segundo-2d', {
+            headers: headersFor(PROFILE_B),
+          }),
+        )
+      ).status,
+    ).toBe(423)
+
+    // O catálogo aplica a MESMA régua por perfil (matrícula da conta, trava do perfil).
+    const catalogB = await app.handle(
+      new Request('http://localhost/members/catalog?audience=kids', {
+        headers: headersFor(PROFILE_B),
+      }),
+    )
+    const body = (await catalogB.json()) as { courses: Record<string, unknown>[] }
+    const segundo = body.courses.find((course) => course.courseSlug === 'segundo-2d')
+    expect(segundo).toMatchObject({
+      hasAccess: true,
+      careerLock: { locked: true, reason: 'foundation-first', foundationCourseSlug: 'base-2d' },
+    })
   })
 
   test('curso bônus não participa da trava; equipe ignora a trava pedagógica', async () => {

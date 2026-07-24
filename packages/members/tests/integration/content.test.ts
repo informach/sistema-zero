@@ -158,6 +158,50 @@ describe('Members HTTP — autoria: cursos', () => {
     expect(onlyKids.items[0].slug).toBe('curso-kids')
   })
 
+  test('listagem marca hasShowcaseBlock SÓ no curso-base kids (aviso "sem vitrine")', async () => {
+    const { app } = buildApp()
+    const base = await createCourse(app, { slug: 'base-2d', audience: 'kids', careerSlot: 1 })
+    await createCourse(app, { slug: 'bonus-kids', audience: 'kids' })
+
+    type Item = { slug: string; hasShowcaseBlock?: boolean }
+    const listBySlug = async () => {
+      const list = await readJson(await get(app, '/members/admin/courses?audience=kids'))
+      return new Map((list.items as Item[]).map((c) => [c.slug, c]))
+    }
+
+    // Curso-base sem bloco de vitrine → false (alimenta o aviso); bônus → sem o campo.
+    let bySlug = await listBySlug()
+    expect(bySlug.get('base-2d')?.hasShowcaseBlock).toBe(false)
+    expect(bySlug.get('bonus-kids')).not.toHaveProperty('hasShowcaseBlock')
+
+    // Módulo + aula PUBLICADA + bloco de Estúdio com `showcase.enabled` → true.
+    const mod = await readJson(
+      await send(app, `/members/admin/courses/${base.id}/modules`, 'POST', {
+        title: 'Módulo 1',
+        summary: null,
+      }),
+    )
+    const lesson = await readJson(
+      await send(app, `/members/admin/modules/${mod.id}/lessons`, 'POST', {
+        slug: 'aula-final',
+        title: 'Aula final',
+        estimatedMinutes: null,
+        isPublished: true,
+      }),
+    )
+    const block = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+      content: {
+        kind: 'studio',
+        initialProject: { name: 'Jogo', files: { 'index.html': '' } },
+        showcase: { enabled: true, title: 'Meu jogo' },
+      },
+    })
+    expect(block.status).toBe(201)
+
+    bySlug = await listBySlug()
+    expect(bySlug.get('base-2d')?.hasShowcaseBlock).toBe(true)
+  })
+
   test('careerSlot: só Kids, respeita o teto da etapa, preserva e pode ser removido', async () => {
     const { app } = buildApp()
 

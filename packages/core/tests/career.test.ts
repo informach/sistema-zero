@@ -57,9 +57,12 @@ describe('catálogo da Carreira do Criador', () => {
   test('curso-base abre primeiro e depois libera os pares da etapa', () => {
     const none = {}
     expect(resolveCareerCourseLock(none, 'iniciante-2d', 1)).toEqual({ locked: false })
-    expect(resolveCareerCourseLock(none, 'iniciante-2d', 2)).toMatchObject({
+    // foundation-first NÃO carrega requiredLevel: a chave é o curso-base, não um
+    // nível (o 1º nível com este learningTier seria `noob` — dado sem sentido).
+    expect(resolveCareerCourseLock(none, 'iniciante-2d', 2)).toEqual({
       locked: true,
       reason: 'foundation-first',
+      requiredTier: 'iniciante-2d',
     })
     expect(resolveCareerCourseLock({ 'iniciante-2d': [1] }, 'iniciante-2d', 2)).toEqual({
       locked: false,

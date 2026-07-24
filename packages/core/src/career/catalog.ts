@@ -278,10 +278,12 @@ export function resolveCareerCourseLock(
   const courseIndex = CAREER_COURSE_TIERS.indexOf(courseTier)
   if (courseIndex < learningIndex) return { locked: false }
 
-  const requiredLevel = CREATOR_CAREER_LEVELS.find(
-    (candidate) => candidate.learningTier === courseTier,
-  )?.slug
   if (courseIndex > learningIndex) {
+    // O nível-alvo é o PRIMEIRO que passa a estudar esta etapa (só faz sentido
+    // no future-tier; noob e coder compartilham o learningTier inicial).
+    const requiredLevel = CREATOR_CAREER_LEVELS.find(
+      (candidate) => candidate.learningTier === courseTier,
+    )?.slug
     return {
       locked: true,
       reason: 'future-tier',
@@ -294,10 +296,11 @@ export function resolveCareerCourseLock(
   // Sem curso-base publicado na etapa, travar as demais posições prenderia o aluno
   // para sempre (nada a concluir para liberar). Fail-open.
   if (!foundationAvailable) return { locked: false }
+  // Sem `requiredLevel` aqui: a chave do foundation-first é o CURSO-BASE, não um
+  // nível — o aluno já está na etapa certa.
   return {
     locked: true,
     reason: 'foundation-first',
-    requiredLevel,
     requiredTier: courseTier,
   }
 }

@@ -1,5 +1,12 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test'
 
+// O portão dos pais assina o cookie via `parentGateCodec()`, que chama `getEnv()` do
+// member-shell — e o schema de env EXIGE `JWT_HS256_SECRET`/`JWT_JWKS_URL` (≥16 chars)
+// ou lança. Sem `.env` (CI), esse throw derruba os testes ANTES de o codec cair no
+// segredo efêmero de dev. Semeia um segredo de teste (não sobrescreve o local) p/ o
+// `getEnv()` validar; `PARENT_GATE_HMAC_SECRET` segue ausente → caminho dev/efêmero.
+process.env.JWT_HS256_SECRET ||= 'test-hs256-secret-parent-gate-0123456789'
+
 const getSession = mock()
 let parentToken: string | null = null
 

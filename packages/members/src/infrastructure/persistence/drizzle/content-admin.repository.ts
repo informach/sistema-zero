@@ -201,6 +201,24 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     return { items: rows.map(toCourse), total: counted?.c ?? 0 }
   }
 
+  async listCourseIdsWithShowcaseBlock(courseIds: string[]): Promise<string[]> {
+    if (courseIds.length === 0) return []
+    const rows = await this.db
+      .selectDistinct({ courseId: lessons.courseId })
+      .from(lessonBlocks)
+      .innerJoin(lessons, eq(lessonBlocks.lessonId, lessons.id))
+      .where(
+        and(
+          inArray(lessons.courseId, courseIds),
+          eq(lessons.isPublished, true),
+          eq(lessonBlocks.kind, 'studio'),
+          // `enabled` é boolean no jsonb → `->>` devolve o texto 'true'.
+          sql`${lessonBlocks.content} -> 'showcase' ->> 'enabled' = 'true'`,
+        ),
+      )
+    return rows.map((row) => row.courseId)
+  }
+
   async createCourse(fields: CourseFields): Promise<Course> {
     const now = new Date()
     const row = {

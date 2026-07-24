@@ -13,7 +13,15 @@ import {
   TableHeader,
   TableRow,
 } from '@sistemazero/ui/table'
-import { CheckCircle2, CircleDashed, Pencil, Plus, Search, SquarePen } from 'lucide-react'
+import {
+  CheckCircle2,
+  CircleDashed,
+  Pencil,
+  Plus,
+  Search,
+  SquarePen,
+  TriangleAlert,
+} from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -305,17 +313,26 @@ function CareerReadiness({
           (item.track ?? '2d') === tier.track &&
           item.careerSlot === slot,
       )
-      return { slot, course }
+      // Curso-base publicado SEM aula publicada com bloco de Estúdio de vitrine:
+      // o aluno nunca publica no Mural → o slot 1 nunca qualifica e a etapa não
+      // destrava. Publicado sem vitrine NÃO conta como pronto.
+      const missingShowcase =
+        slot === 1 && course?.status === 'published' && course.hasShowcaseBlock === false
+      return {
+        slot,
+        course,
+        missingShowcase,
+        ready: course?.status === 'published' && !missingShowcase,
+      }
     })
     return {
       ...tier,
       slots,
-      ready: slots.every((item) => item.course?.status === 'published'),
+      ready: slots.every((item) => item.ready),
     }
   })
   const readyCount = tiers.reduce(
-    (total, tier) =>
-      total + tier.slots.filter((item) => item.course?.status === 'published').length,
+    (total, tier) => total + tier.slots.filter((item) => item.ready).length,
     0,
   )
   const requiredCount = tiers.reduce((total, tier) => total + tier.slots.length, 0)
@@ -359,7 +376,7 @@ function CareerReadiness({
               )}
             </div>
             <div className="space-y-1.5">
-              {tier.slots.map(({ slot, course }) => {
+              {tier.slots.map(({ slot, course, missingShowcase }) => {
                 const inner = (
                   <>
                     <span
@@ -374,15 +391,24 @@ function CareerReadiness({
                         (slot === 1 ? 'Curso-base ainda vazio' : 'Posição ainda vazia')}
                     </span>
                     {course ? (
-                      <span
-                        className={
-                          course.status === 'published'
-                            ? 'text-success-foreground'
-                            : 'text-amber-700 dark:text-amber-300'
-                        }
-                      >
-                        {course.status === 'published' ? 'Publicado' : 'Falta publicar'}
-                      </span>
+                      missingShowcase ? (
+                        <span
+                          className="inline-flex items-center gap-1 text-destructive"
+                          title="Nenhuma aula publicada tem bloco de Estúdio com vitrine (Publicar no Mural). Sem isso o curso-base nunca qualifica e a etapa não destrava para os alunos."
+                        >
+                          <TriangleAlert className="size-3.5" /> Sem vitrine
+                        </span>
+                      ) : (
+                        <span
+                          className={
+                            course.status === 'published'
+                              ? 'text-success-foreground'
+                              : 'text-amber-700 dark:text-amber-300'
+                          }
+                        >
+                          {course.status === 'published' ? 'Publicado' : 'Falta publicar'}
+                        </span>
+                      )
                     ) : (
                       <span className="text-destructive">Falta curso</span>
                     )}

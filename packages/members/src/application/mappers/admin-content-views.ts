@@ -33,11 +33,17 @@ export interface CourseView {
   careerSlot: number | null
   /** Trava sequencial das aulas (estilo Duolingo) ligada para este curso. */
   sequentialLock: boolean
+  /**
+   * SÓ na listagem e SÓ p/ curso-base kids (careerSlot 1): tem ≥1 aula publicada
+   * com bloco de Estúdio de vitrine (`showcase.enabled`)? `false` = o slot 1
+   * nunca qualifica e a etapa não destrava — o painel avisa o operador.
+   */
+  hasShowcaseBlock?: boolean
   createdAt: string
   updatedAt: string
 }
 
-export function toCourseView(c: Course): CourseView {
+export function toCourseView(c: Course, hasShowcaseBlock?: boolean): CourseView {
   return {
     id: c.id,
     version: c.version,
@@ -53,6 +59,7 @@ export function toCourseView(c: Course): CourseView {
     track: c.track,
     careerSlot: c.careerSlot,
     sequentialLock: c.sequentialLock,
+    ...(hasShowcaseBlock === undefined ? {} : { hasShowcaseBlock }),
     createdAt: c.createdAt.toISOString(),
     updatedAt: c.updatedAt.toISOString(),
   }

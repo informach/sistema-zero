@@ -129,9 +129,10 @@ export function nextLevelHint(level: StudentLevelView | undefined): string | nul
   for (const tier of TIER_HINTS) {
     const n = r[tier.key]
     if (typeof n === 'number' && n > 0) {
+      // "da carreira" = só os cursos com posição contam (bônus não movem o número).
       return n === 1
-        ? `Falta 1 ${tier.one} concluído e o projeto publicado no Mural para virar ${next}`
-        : `Faltam ${n} ${tier.many} concluídos e com os projetos no Mural para virar ${next}`
+        ? `Falta 1 ${tier.one} da carreira concluído e o projeto publicado no Mural para virar ${next}`
+        : `Faltam ${n} ${tier.many} da carreira concluídos e com os projetos no Mural para virar ${next}`
     }
   }
   if (r.any > 0)
