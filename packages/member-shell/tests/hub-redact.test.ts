@@ -111,6 +111,21 @@ describe('redactAuthors', () => {
     expect(out.challengeKey).toBe('m:2026-07')
   })
 
+  test('studioMeta (estrutural — selo de nível do remix) sobrevive à redação', () => {
+    const out = redactAuthors(
+      {
+        id: 'p1',
+        authorId: OTHER,
+        isShowcase: true,
+        playId: 'play-uuid',
+        studioMeta: { pro: false, extensions: ['world-3d'] },
+      },
+      ME,
+    )
+    expect(out.authorId).toBeNull()
+    expect(out.studioMeta).toEqual({ pro: false, extensions: ['world-3d'] })
+  })
+
   test('autor PÚBLICO (opt-in dos pais): expõe authorProfileId (alvo do link) + nome', () => {
     const out = redactAuthors(
       { id: 't1', authorId: OTHER as string | null, authorPublic: true, authorDisplayName: 'Lia' },

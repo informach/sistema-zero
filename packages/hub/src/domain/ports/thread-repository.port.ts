@@ -1,5 +1,5 @@
 import type { CursorPos } from '../../application/cursor'
-import type { Comment, ContentStatus, Thread } from '../thread/thread'
+import type { Comment, ContentStatus, Thread, ThreadStudioMeta } from '../thread/thread'
 
 export interface CreateThreadInput {
   id: string
@@ -45,6 +45,8 @@ export interface CreateShowcaseThreadInput {
   playId: string | null
   /** Desafio mensal (`m:YYYY-MM`), já VALIDADO pelo service — `null`/ausente = post normal. */
   challengeKey?: string | null
+  /** Metadado do projeto ({pro, extensions[]}, já saneado pelo service) — selo de nível do remix. */
+  studioMeta?: ThreadStudioMeta | null
   /** Chave de idempotência (hash perfil:curso:cadeia[:clientKey]) — UNIQUE; conflito devolve o existente. */
   idempotencyKey: string
   now: Date

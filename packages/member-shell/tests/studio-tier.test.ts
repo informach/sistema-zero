@@ -1,6 +1,11 @@
 import { describe, expect, test } from 'bun:test'
 import { ESSENTIAL_2D_ALLOW_BLOCKS } from '@sistemazero/studio'
-import { resolveStudioTier } from '../src/lib/studio-tier'
+import {
+  minCareerLevelForRemix,
+  remixRequirementFromSnapshot,
+  resolveStudioTier,
+  studioTierCoversRemix,
+} from '../src/lib/studio-tier'
 
 describe('resolveStudioTier — ferramentas conquistadas', () => {
   test('Faísca usa o Estúdio apenas dentro das aulas', () => {
@@ -54,5 +59,61 @@ describe('resolveStudioTier — ferramentas conquistadas', () => {
       expect(tier.freeStudio).toBe(false)
       expect(tier.pro).toBe(false)
     }
+  })
+})
+
+describe('remix do Mural — cobertura de ferramentas por nível', () => {
+  test('studioTierCoversRemix: Faísca nunca cobre (sem Estúdio livre)', () => {
+    const tier = resolveStudioTier('noob', undefined)
+    expect(studioTierCoversRemix(tier, { pro: false, extensions: [] })).toBe(false)
+  })
+
+  test('studioTierCoversRemix: extensão fora da allowlist do degrau → não cobre', () => {
+    const coder = resolveStudioTier('coder', undefined)
+    expect(studioTierCoversRemix(coder, { pro: false, extensions: ['game-2d'] })).toBe(true)
+    expect(studioTierCoversRemix(coder, { pro: false, extensions: ['world-3d'] })).toBe(false)
+  })
+
+  test('studioTierCoversRemix: jogo Pro exige a Lenda (ou equipe)', () => {
+    expect(
+      studioTierCoversRemix(resolveStudioTier('champion', undefined), {
+        pro: true,
+        extensions: [],
+      }),
+    ).toBe(false)
+    expect(
+      studioTierCoversRemix(resolveStudioTier('god', undefined), { pro: true, extensions: [] }),
+    ).toBe(true)
+    expect(
+      studioTierCoversRemix(resolveStudioTier('noob', 'admin'), { pro: true, extensions: [] }),
+    ).toBe(true)
+  })
+
+  test('minCareerLevelForRemix: primeiro nível com Estúdio livre que cobre as extensões', () => {
+    // Sem extensão → o primeiro nível com Estúdio livre (Construtor).
+    expect(minCareerLevelForRemix({ pro: false, extensions: [] })).toBe('coder')
+    expect(minCareerLevelForRemix({ pro: false, extensions: ['game-2d'] })).toBe('coder')
+    // 3D abre no Explorador de Mundos (perfil iniciante-3d).
+    expect(minCareerLevelForRemix({ pro: false, extensions: ['game-3d'] })).toBe('explorer')
+    expect(minCareerLevelForRemix({ pro: false, extensions: ['world-3d'] })).toBe('architect')
+    expect(minCareerLevelForRemix({ pro: false, extensions: ['game-3d-advanced'] })).toBe('god')
+    // Pro é só da Lenda.
+    expect(minCareerLevelForRemix({ pro: true, extensions: [] })).toBe('god')
+  })
+
+  test('minCareerLevelForRemix: extensão desconhecida (metadado forjado) → null', () => {
+    expect(minCareerLevelForRemix({ pro: false, extensions: ['hax-ext'] })).toBeNull()
+  })
+
+  test('remixRequirementFromSnapshot: extrai kind + ids de extensão; lixo → vazio', () => {
+    expect(
+      remixRequirementFromSnapshot({
+        kind: 'pro',
+        installedExtensions: [{ id: 'game-2d' }, { id: 'world-3d' }, { nope: true }, null],
+      }),
+    ).toEqual({ pro: true, extensions: ['game-2d', 'world-3d'] })
+    expect(remixRequirementFromSnapshot({ files: {} })).toEqual({ pro: false, extensions: [] })
+    expect(remixRequirementFromSnapshot(null)).toEqual({ pro: false, extensions: [] })
+    expect(remixRequirementFromSnapshot('lixo')).toEqual({ pro: false, extensions: [] })
   })
 })

@@ -280,6 +280,17 @@ que cada app trata com uma página "aula bloqueada". O gate confiável é o memb
 público) e **`challengeKey?`** (tag do Desafio do mês) — ambos estruturais, sobrevivem à redação.
 No Clube (07/2026) ganhou também **`authorAvatarUrl?`/`authorLevel?`** (rosto+aura, só KIDS,
 estruturais/NUNCA PII — ver "Full review do Clube dos Criadores"); idem `HubCommentView`.
+**Gate de nível do remix (24/07/2026):** ganhou **`studioMeta?`** (`{pro, extensions[]}` — snapshot
+das ferramentas do projeto, gravado no publish; estrutural, sobrevive à redação) e os DOIS publish
+(`studioPublish`/`studioPublishStandalone` em `routes/studio.ts`) passaram a DERIVAR o metadado do
+projeto JÁ saneado (`kind === 'pro'` + ids de `installedExtensions`) e enviá-lo ao hub
+(`createShowcaseThreadStudio[Standalone].studioMeta`). É COSMÉTICO (selo "remix a partir do nível X"
+no card do Mural do kids) — o gate real é a checagem no clique. Helpers PUROS novos em
+`lib/studio-tier.ts`: `StudioRemixRequirement`/`StudioRemixCapability`, `studioRemixCovered(cap, req)`,
+`studioTierCoversRemix(tier, req)` (= freeStudio + covered), `minCareerLevelForRemix(req)` (1º nível
+da carreira com Estúdio livre que cobre extensões+pro — alimenta o selo; extensão desconhecida →
+`null`, fail-closed cosmético) e `remixRequirementFromSnapshot(snapshot)` (extrai kind+extensões do
+snapshot jogável cru — a checagem AUTORITATIVA do clique no kids). Testes em `tests/studio-tier.test.ts`.
 
 **Fase 5 (07/2026) — plays/carreira/desafio/arte no shell:**
 - **Contador de jogadas:** o `studioPlay.GET` (público) deduplica por **`ip:playId`** (TTL 30min,

@@ -1,5 +1,18 @@
 export type ContentStatus = 'pending' | 'visible' | 'hidden' | 'deleted' | 'rejected'
 
+/**
+ * Metadado do PROJETO de um post de vitrine do Estúdio (snapshot no publish):
+ * `pro` = projeto do modo Código; `extensions` = ids das extensões instaladas.
+ * É COSMÉTICO (alimenta o selo "remix a partir do nível X" no card do Mural) —
+ * o gate REAL do remix é a checagem no clique sobre o snapshot jogável + a trava
+ * de abertura do próprio Estúdio. Vem do BFF (corpo da rota interna, alcançável
+ * na borda) — por isso NUNCA vira fronteira de segurança.
+ */
+export interface ThreadStudioMeta {
+  pro: boolean
+  extensions: string[]
+}
+
 /** Tópico (postagem) de um canal. `body` é Markdown. */
 export interface Thread {
   id: string
@@ -29,6 +42,8 @@ export interface Thread {
   playsCount: number
   /** Desafio mensal (game jam): `m:YYYY-MM` — só com posse Clube+Estúdio no mês certo. */
   challengeKey: string | null
+  /** Metadado do projeto (vitrine do Estúdio) — selo de nível do remix. `null` = post antigo/sem projeto. */
+  studioMeta: ThreadStudioMeta | null
   lastActivityAt: Date
   createdAt: Date
   editedAt: Date | null

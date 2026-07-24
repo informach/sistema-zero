@@ -8,6 +8,7 @@ import type { CommunityReadRepository } from '../../domain/ports/community-read-
 import type { MembersGateway } from '../../domain/ports/members-gateway.port'
 import type { ThreadRepository } from '../../domain/ports/thread-repository.port'
 import type { Channel } from '../../domain/space/space'
+import type { ThreadStudioMeta } from '../../domain/thread/thread'
 import type { Actor } from '../access/access-resolution.service'
 import { type ThreadView, toThreadView } from '../mappers/thread-views'
 import { threadSlug } from '../slug'
@@ -41,6 +42,23 @@ function currentChallengeKey(now: Date): string {
   return `m:${SP_MONTH_FORMAT.format(now)}`
 }
 
+/** Teto de ids de extensão gravados no metadado (espelha o DTO). */
+const MAX_STUDIO_META_EXTENSIONS = 8
+
+/**
+ * Saneia o metadado do projeto (dedupe + teto — a forma já passou pelo DTO).
+ * COSMÉTICO por contrato: alimenta o selo de nível do remix no card; o gate real
+ * é a checagem do cliente sobre o snapshot jogável + a trava do próprio Estúdio.
+ */
+function sanitizeStudioMeta(meta: ThreadStudioMeta | null | undefined): ThreadStudioMeta | null {
+  if (!meta) return null
+  const extensions = [...new Set(meta.extensions.map((id) => id.trim()).filter(Boolean))].slice(
+    0,
+    MAX_STUDIO_META_EXTENSIONS,
+  )
+  return { pro: meta.pro === true, extensions }
+}
+
 export interface CreateShowcaseCommand {
   /** Slug do servidor do Mural (ex.: `mural-dos-criadores`). */
   spaceSlug: string
@@ -62,6 +80,8 @@ export interface CreateShowcaseFromStudioCommand {
   playId: string
   /** Chave de idempotência gerada no cliente (UUID) — dedup-a duplo-clique/retry. */
   clientIdempotencyKey: string
+  /** Metadado do projeto ({pro, extensions[]}) — selo de nível do remix (cosmético). */
+  studioMeta?: ThreadStudioMeta | null
 }
 
 export interface CreateStandaloneShowcaseCommand {
@@ -81,6 +101,8 @@ export interface CreateStandaloneShowcaseCommand {
    * publicação da criança NUNCA falha por causa do desafio).
    */
   challengeKey?: string | null
+  /** Metadado do projeto ({pro, extensions[]}) — selo de nível do remix (cosmético). */
+  studioMeta?: ThreadStudioMeta | null
 }
 
 /**
@@ -343,6 +365,7 @@ export class ShowcaseService {
       body,
       coverImageUrl,
       playId: cmd.playId,
+      studioMeta: sanitizeStudioMeta(cmd.studioMeta),
       idempotencyKey,
       now: this.clock(),
     })
@@ -453,6 +476,7 @@ export class ShowcaseService {
       coverImageUrl,
       playId: cmd.playId,
       challengeKey,
+      studioMeta: sanitizeStudioMeta(cmd.studioMeta),
       idempotencyKey,
       now: this.clock(),
     })

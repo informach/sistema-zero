@@ -1187,6 +1187,13 @@ export interface HubThreadView {
   playsCount?: number
   /** Desafio mensal (`m:YYYY-MM`) — a UI mostra o selo/prateleira do mês. */
   challengeKey?: string | null
+  /**
+   * Metadado do projeto publicado ({pro, extensions[]}, snapshot no publish) — alimenta
+   * o selo "remix a partir do nível X" no card do Mural. ESTRUTURAL (sobrevive à redação
+   * de `authorId`); COSMÉTICO por contrato — o gate real do remix é a checagem no clique
+   * sobre o snapshot jogável. Ausente/`null` = post antigo ou sem projeto.
+   */
+  studioMeta?: { pro: boolean; extensions: string[] } | null
   reactions: HubReaction[]
   attachments: HubAttachmentView[]
   lastActivityAt: string

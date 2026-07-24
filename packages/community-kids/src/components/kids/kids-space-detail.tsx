@@ -13,6 +13,7 @@ import {
   Flag,
   Gamepad2,
   Hammer,
+  Lock,
   MessageCircle,
   Play,
   QrCode,
@@ -124,12 +125,19 @@ function PlayLinkActions({
   title,
   coverImageUrl = null,
   onRemix = null,
+  remixLock = null,
 }: {
   playUrl: string
   title: string
   coverImageUrl?: string | null
-  /** "Fazer a minha versão" (remix) — presente SÓ com a posse do Estúdio Completo. */
+  /** "Fazer a minha versão" (remix) — presente SÓ com posse do Estúdio + rank com Estúdio livre. */
   onRemix?: (() => void) | null
+  /**
+   * Jogo usa ferramentas ALÉM do degrau do viewer → o botão vira o selo "no nível X"
+   * (cadeado; `levelLabel` null = nível irresoluto, selo genérico). O clique continua
+   * vivo — mostra o recado gentil (o handler checa antes de importar).
+   */
+  remixLock?: { levelLabel: string | null } | null
 }) {
   const [cardOpen, setCardOpen] = useState(false)
   const shareOrCopy = useCallback(async () => {
@@ -186,13 +194,25 @@ function PlayLinkActions({
         </button>
       </div>
       {onRemix ? (
-        <button
-          type="button"
-          onClick={onRemix}
-          className="inline-flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-xl border-2 border-primary px-3 font-bold text-primary text-sm transition-colors hover:bg-(--kids-cyan-tint)"
-        >
-          <Hammer className="size-4" /> Fazer a minha versão
-        </button>
+        remixLock ? (
+          <button
+            type="button"
+            onClick={onRemix}
+            title="Continue a sua jornada de criador para remixar este jogo"
+            className="inline-flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-xl border-2 border-border border-dashed px-3 font-bold text-muted-foreground text-sm transition-colors hover:bg-muted/60"
+          >
+            <Lock className="size-4" /> Fazer a minha versão
+            {remixLock.levelLabel ? ` · no nível ${remixLock.levelLabel}` : ''}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onRemix}
+            className="inline-flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-xl border-2 border-primary px-3 font-bold text-primary text-sm transition-colors hover:bg-(--kids-cyan-tint)"
+          >
+            <Hammer className="size-4" /> Fazer a minha versão
+          </button>
+        )
       ) : null}
       {cardOpen ? (
         <GameCardDialog
@@ -211,11 +231,14 @@ export function ShowcaseCard({
   viewerId,
   onOpen,
   onRemix = null,
+  remixLock = null,
 }: {
   thread: HubThreadView
   viewerId: string
   onOpen: () => void
   onRemix?: ((thread: HubThreadView) => void) | null
+  /** Selo "no nível X" do remix (jogo além do degrau do viewer) — ver `PlayLinkActions`. */
+  remixLock?: { levelLabel: string | null } | null
 }) {
   const playUrl = playPathFor(thread)
   const plays = thread.playsCount ?? 0
@@ -271,6 +294,7 @@ export function ShowcaseCard({
           title={thread.title}
           coverImageUrl={thread.coverImageUrl ?? null}
           onRemix={onRemix ? () => onRemix(thread) : null}
+          remixLock={remixLock}
         />
       ) : null}
     </article>
@@ -383,6 +407,7 @@ export function ThreadDetail({
   onReport,
   authorLabel,
   onRemix = null,
+  remixLock = null,
   canReply,
 }: {
   thread: HubThreadView
@@ -404,6 +429,8 @@ export function ThreadDetail({
   onReport: (target: 'threads' | 'comments', id: string) => void
   authorLabel: (item: AuthorItem) => ReactNode
   onRemix?: ((thread: HubThreadView) => void) | null
+  /** Selo "no nível X" do remix (jogo além do degrau do viewer) — ver `PlayLinkActions`. */
+  remixLock?: { levelLabel: string | null } | null
 }) {
   // memo: o corpo do tópico não muda quando um comentário recebe reação.
   const threadBody = useMemo(() => renderUgcMarkdown(thread.body), [thread.body])
@@ -442,6 +469,7 @@ export function ThreadDetail({
             title={thread.title}
             coverImageUrl={thread.coverImageUrl ?? null}
             onRemix={onRemix ? () => onRemix(thread) : null}
+            remixLock={remixLock}
           />
         ) : null}
         <AttachmentList attachments={thread.attachments} />

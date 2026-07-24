@@ -249,6 +249,14 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
 1. **Workers cross-bundler**: todo worker nasce de `new Worker(new URL('./caminho-relativo.ts', import.meta.url), { type: 'module' })` com URL **literal inline** — nada de `?worker` (Vite-only), nada de bare specifier dentro de `new URL()` (Vite não resolve), nada de variável/helper no 1º argumento (quebra a análise estática de Vite/Turbopack/webpack). Os workers do Monaco usam os wrappers em `src/monaco/workers/`. Plano B se um bundler de host falhar: extrair a criação p/ factory injetável via prop.
 2. **`loader.config({ monaco })` em `src/monaco/workers.ts` é intocável**: sem ele o `@monaco-editor/react` injeta o loader AMD, que colide com o UMD do Blockly ("Can only have one anonymous define").
 3. **CSS**: `src/styles/studio.css` é o CSS exportado — SEM `@import "tailwindcss"`, SEM `@source`, SEM `@custom-variant dark` (sobrescreveria a variant dos apps) e SEM regras globais de app (html/body/scrollbar — vivem no `playground/styles.css`). Tema escopado por `[data-sz-theme]` no root do componente, NUNCA no `<html>` do host. Conteúdo PORTALADO p/ document.body precisa de `<StudioThemeScope>` (ver Modal/ProjectCard/Menu). ⚠️ O dropdown da Topbar (`Menu` de `#ui`) é PORTALADO de propósito: inline (`absolute`) ele ficava ATRÁS do `<iframe>` do preview (iframe = stacking context próprio, vence qualquer z-index local).
+3b. **A raiz do Studio é uma CERCA de stacking (`isolation: isolate` no style inline do
+   `StudioCore`, 24/07/2026)**: o Blockly injeta `.blocklyToolbox { z-index: 70 }` e, sem a
+   cerca, a paleta vazava por CIMA dos modais do host (o `Dialog` do `@sistemazero/ui` é overlay
+   `z-50` SEM portal — bug visto no ConfirmDialog de trocar o tipo do projeto no admin). Com a
+   cerca, os z-index internos só competem entre si e o editor inteiro pinta abaixo de qualquer
+   overlay da página. NÃO remover; o que precisa flutuar sobre o host (menus da Topbar,
+   `.blocklyWidgetDiv`/`.blocklyDropDownDiv`) é PORTALADO pro `document.body` — fora da cerca,
+   não é afetado.
 4. **Sem react-router**: navegação é do host. Páginas/cards recebem callbacks (`onOpenProject`, `onExit`).
 5. **Globais residuais de multi-instância**: WebContainer é singleton por aba; o atalho da busca de blocos (`startSearch`) fica com a última instância (PtSearchCategory desregistra antes de registrar — NÃO remover, era crash na 2ª instância). `deleteProject` cancela autosaves em voo em TODAS as instâncias via registro de serviços.
 6. **Testes = bun:test** (`bun test src`). O CI também executa o subconjunto Playwright do Jogo 2D e Jogo 2D Avançado (`examples-gallery.spec.ts --grep "game-2d(?:-advanced)?:"`); a suíte E2E completa continua manual via `bun run e2e`. Gotchas que esta suíte já paga:

@@ -12,6 +12,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core'
 import type { AccessConfig } from '../../../domain/access/access-config'
+import type { ThreadStudioMeta } from '../../../domain/thread/thread'
 
 // Compartilha o MESMO Postgres do payments/auth/catalog/members/funnel, mas é dono
 // do schema `hub` (isolamento por `pgSchema`). Todo o DDL gerado fica em `hub.*`.
@@ -165,6 +166,10 @@ export const threads = hub.table(
     // Desafio mensal (game jam): `m:YYYY-MM` (SP) validado pelo hub no publish
     // standalone — só entra com a posse Clube+Estúdio e o mês corrente.
     challengeKey: text('challenge_key'),
+    // Metadado do projeto (vitrine do Estúdio): {pro, extensions[]} — snapshot no
+    // publish, COSMÉTICO (selo "remix a partir do nível X" no card). O gate real do
+    // remix é do cliente (snapshot jogável) + do próprio Estúdio na abertura.
+    studioMeta: jsonb('studio_meta').$type<ThreadStudioMeta>(),
     lastActivityAt: timestamp('last_activity_at', { withTimezone: true }).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     editedAt: timestamp('edited_at', { withTimezone: true }),

@@ -303,7 +303,16 @@ function StudioCoreBody({
                     <div
                       data-sz-theme={effectiveTheme}
                       className={['h-full min-h-0', className].filter(Boolean).join(' ')}
-                      style={{ fontFamily: 'var(--font-family-sans)', ...style }}
+                      // `isolation` cerca os z-index INTERNOS do editor (o Blockly injeta
+                      // `.blocklyToolbox { z-index: 70 }`) — sem a cerca, a paleta vazava por
+                      // cima de modais do HOST (overlay `z-50` do Dialog, sem portal). O que
+                      // precisa flutuar sobre o host (menus da Topbar, dropdowns do Blockly)
+                      // é PORTALADO pro document.body — fora da cerca, segue intacto.
+                      style={{
+                        fontFamily: 'var(--font-family-sans)',
+                        isolation: 'isolate',
+                        ...style,
+                      }}
                     >
                       {sanitized === null ? (
                         <div className="flex h-full flex-col items-center justify-center gap-2 bg-sz-bg text-sz-fg-soft">

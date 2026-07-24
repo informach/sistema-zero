@@ -5,6 +5,13 @@ import {
   type UploadedAttachment,
 } from '@sistemazero/member-shell/components/attachment-uploader'
 import { RichEditor } from '@sistemazero/member-shell/components/rich-editor'
+import {
+  minCareerLevelForRemix,
+  remixRequirementFromSnapshot,
+  type StudioRemixCapability,
+  type StudioRemixRequirement,
+  studioRemixCovered,
+} from '@sistemazero/member-shell/lib/studio-tier'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Textarea } from '@sistemazero/ui/textarea'
@@ -15,6 +22,7 @@ import { toast } from 'sonner'
 import { KidsAccessUnavailable } from '@/components/kids/kids-access-unavailable'
 import { KidsSpaceSkeleton } from '@/components/kids/kids-space-skeleton'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import { levelInfo } from '@/lib/level-info'
 import type {
   HubChannelView,
   HubCommentView,
@@ -40,6 +48,14 @@ import { pickInitialChannel } from './space-channel'
 
 /** Modo de apresentação: fórum (Clube — conversa) ou vitrine (Mural — cards de projeto). */
 export type SpaceViewMode = 'forum' | 'wall'
+
+/**
+ * Capacidade de remix do VIEWER (posse do Estúdio + rank já resolvidos no servidor):
+ * `pro` = pode abrir projeto do modo Código (Lenda/equipe); `allowedExtensions` = a
+ * allowlist acumulada do degrau. `null` na prop = sem remix (sem posse, Faísca ou
+ * rank indisponível) — o botão nem renderiza.
+ */
+export type RemixTier = StudioRemixCapability
 
 // Emojis rápidos (subconjunto da allowlist kids do hub — 07/2026: ampliado de 5 p/ 8
 // p/ dar mais expressão às crianças; o hub aceita estes 12: 👍❤️😂😮😢👏🎉🔥⭐🤩🙌✅).
@@ -83,7 +99,7 @@ export function KidsSpaceViewClient({
   isStaff = false,
   lockedView,
   unavailableTitle,
-  canRemix = false,
+  remixTier = null,
   challenge = null,
 }: {
   slug: string
@@ -92,11 +108,14 @@ export function KidsSpaceViewClient({
   /** Viewer é da EQUIPE (superadmin/admin/staff) → pode escrever nos canais `staff_only`. */
   isStaff?: boolean
   /**
-   * A criança POSSUI o Estúdio Completo → o card do Mural ganha "Fazer a minha
-   * versão" (remix: importa o snapshot público como projeto novo no /estudio).
-   * Produto vendido à parte: sem posse o botão nem renderiza.
+   * Capacidade de remix do viewer (posse do Estúdio Completo + rank com Estúdio
+   * livre) → o card do Mural ganha "Fazer a minha versão" (remix: importa o
+   * snapshot público como projeto novo no /estudio). `null` = sem remix (produto
+   * vendido à parte / Faísca / rank indisponível): o botão nem renderiza. Jogo que
+   * usa ferramentas ALÉM do degrau → selo "nível X" no card + recado gentil no
+   * clique (a checagem autoritativa roda sobre o snapshot baixado).
    */
-  canRemix?: boolean
+  remixTier?: RemixTier | null
   /**
    * DESAFIO do mês: no Mural (wall), os posts com `challengeKey` do mês corrente
    * ganham uma PRATELEIRA no topo da grade. Visível a quem vê o Mural (ver não
@@ -185,6 +204,32 @@ export function KidsSpaceViewClient({
     [viewerId],
   )
 
+  const canRemix = remixTier !== null
+
+  // Recado gentil quando o jogo usa ferramentas ALÉM do degrau do viewer — nomeia o
+  // nível que destrava (a mesma régua do selo do card). Sem nível resolvível
+  // (metadado desconhecido) → copy genérica; nunca destrava nada.
+  const remixBlockedMessage = useCallback((req: StudioRemixRequirement): string => {
+    const slug = minCareerLevelForRemix(req)
+    const label = slug ? levelInfo(slug).label : null
+    return label
+      ? `Esse jogo usa ferramentas do nível ${label}. Continue a sua jornada de criador para fazer a sua versão! 🚀`
+      : 'Esse jogo usa ferramentas que você ainda vai conquistar na sua carreira. 🚀'
+  }, [])
+
+  // Selo do card: o `studioMeta` do post (snapshot no publish) diz as ferramentas do
+  // jogo; fora do degrau → rótulo do nível que destrava (`null` = sem selo). É só
+  // APRESENTAÇÃO — a checagem autoritativa do clique roda sobre o snapshot baixado.
+  const remixLockFor = useCallback(
+    (t: HubThreadView): { levelLabel: string | null } | null => {
+      if (!remixTier || !t.studioMeta) return null
+      if (studioRemixCovered(remixTier, t.studioMeta)) return null
+      const slug = minCareerLevelForRemix(t.studioMeta)
+      return { levelLabel: slug ? levelInfo(slug).label : null }
+    },
+    [remixTier],
+  )
+
   // Remix ("Fazer a minha versão"): baixa o snapshot PÚBLICO do jogo e o importa
   // como projeto NOVO no namespace do PERFIL (mesma lista do /estudio). Client-side
   // de ponta a ponta — o snapshot é imutável, o remix nunca toca o post original.
@@ -195,9 +240,22 @@ export function KidsSpaceViewClient({
       if (!t.playId || remixBusyRef.current) return
       remixBusyRef.current = true
       try {
+        // Selo do post já diz que falta nível → recado gentil sem nem baixar o jogo.
+        if (remixTier && t.studioMeta && !studioRemixCovered(remixTier, t.studioMeta)) {
+          toast.info(remixBlockedMessage(t.studioMeta))
+          return
+        }
         const res = await fetch(`/api/studio/play/${enc(t.playId)}`)
         if (!res.ok) throw new Error('play indisponível')
         const snapshot: unknown = await res.json()
+        // Checagem AUTORITATIVA (post antigo sem metadado / metadado divergente): as
+        // ferramentas REAIS do snapshot precisam caber no degrau — senão o projeto
+        // importado nem abriria no Estúdio (trava de conquista) e viraria beco sem saída.
+        const requirement = remixRequirementFromSnapshot(snapshot)
+        if (remixTier && !studioRemixCovered(remixTier, requirement)) {
+          toast.info(remixBlockedMessage(requirement))
+          return
+        }
         const studio = await import('@sistemazero/studio')
         studio.setStudioStorageNamespace(viewerId)
         await studio.importProjectSnapshot(snapshot, { name: `Remix de ${t.title}` })
@@ -217,7 +275,7 @@ export function KidsSpaceViewClient({
         remixBusyRef.current = false
       }
     },
-    [viewerId, router],
+    [viewerId, router, remixTier, remixBlockedMessage],
   )
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: `reloadNonce` é só o gatilho do retry — bump força a re-carga sem ser lido no corpo.
@@ -643,6 +701,7 @@ export function KidsSpaceViewClient({
                 onReport={report}
                 authorLabel={authorLabel}
                 onRemix={canRemix ? handleRemix : null}
+                remixLock={remixLockFor(thread)}
                 canReply={
                   isStaff ||
                   thread.isShowcase ||
@@ -771,6 +830,7 @@ export function KidsSpaceViewClient({
                                   viewerId={viewerId}
                                   onOpen={() => openThread(t)}
                                   onRemix={canRemix ? handleRemix : null}
+                                  remixLock={remixLockFor(t)}
                                 />
                               ))}
                             </div>
@@ -784,6 +844,7 @@ export function KidsSpaceViewClient({
                               viewerId={viewerId}
                               onOpen={() => openThread(t)}
                               onRemix={canRemix ? handleRemix : null}
+                              remixLock={remixLockFor(t)}
                             />
                           ))}
                         </div>

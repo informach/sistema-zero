@@ -731,10 +731,22 @@ proteção de sequência saíram do backlog — entregues na expansão de 6 fase
   (dados de `shell.hub.myShowcaseStatsReadonly()`, best-effort).
 - **Plays (B):** cards/detalhe do Mural mostram "🎮 N jogadas" (`thread.playsCount`; contado no
   resolve público do /jogar com dedupe ip:playId no BFF).
-- **Remix (B):** página do Mural checa `checkStudioAccessReadonly` → `canRemix` no
-  `KidsSpaceViewClient`; botão "Fazer a minha versão" no `PlayLinkActions` (só com posse do
-  Estúdio) → fetch `/api/studio/play/:id` → `setStudioStorageNamespace(viewerId)` →
+- **Remix (B):** página do Mural checa `checkStudioAccessReadonly` **+ o RANK**
+  (`getGamificationReadonly({withRanking:true})` → `resolveStudioTier`; 24/07) → prop
+  **`remixTier`** (`{pro, allowedExtensions}` | null) no `KidsSpaceViewClient`; botão "Fazer a
+  minha versão" no `PlayLinkActions` só com posse do Estúdio **E `tier.freeStudio`** (Faísca não
+  vê o botão — importaria projeto que nem consegue abrir; rank indisponível também esconde,
+  salvo equipe = Lenda) → fetch `/api/studio/play/:id` → **checagem de FERRAMENTAS**
+  (`remixRequirementFromSnapshot` × `studioRemixCovered` do member-shell — jogo Pro sem ser
+  Lenda ou extensão fora da allowlist do degrau → `toast.info` gentil nomeando o nível via
+  `minCareerLevelForRemix`+`levelInfo`, SEM importar) → `setStudioStorageNamespace(viewerId)` →
   `importProjectSnapshot(snapshot, {name: 'Remix de <título>'})` → toast + push `/estudio`.
+  **Selo no card:** `thread.studioMeta` ({pro, extensions[]}, snapshot no publish — hub migr
+  `0007`) fora do degrau → botão vira cadeado tracejado "Fazer a minha versão · no nível X"
+  (`remixLockFor` no client → prop `remixLock` de ShowcaseCard/ThreadDetail/PlayLinkActions;
+  clique continua vivo e mostra o recado). Post ANTIGO sem meta → botão normal, a checagem do
+  clique segura. Jogo só com blocos avançados do NÚCLEO (sem extensão) abre e roda — a paleta
+  curada é a pedagogia (aceito na v1).
   **Gamificado (retenção pós-cursos 07/2026):** após importar, dispara best-effort
   `POST /api/studio/remix {playId}` (shim novo sobre `shell.routes.studioRemix`, DENTRO do matcher
   do proxy — JSON pequeno, ganha o anti-CSRF) → marco da missão `weekly-remix`/`monthly-remix-3` no

@@ -1,6 +1,6 @@
 import type { Attachment } from '../../domain/attachment/attachment'
 import type { ReactionSummaryItem } from '../../domain/ports/reaction-repository.port'
-import type { Comment, ContentStatus, Thread } from '../../domain/thread/thread'
+import type { Comment, ContentStatus, Thread, ThreadStudioMeta } from '../../domain/thread/thread'
 import { encodeCursor } from '../cursor'
 
 type ReactionMap = Map<string, ReactionSummaryItem[]>
@@ -64,6 +64,8 @@ export interface ThreadView {
   playsCount: number
   /** Desafio mensal (`m:YYYY-MM`) — a UI mostra o selo/prateleira do mês. */
   challengeKey: string | null
+  /** Metadado do projeto ({pro, extensions[]}) — selo de nível do remix; `null` = post antigo. */
+  studioMeta: ThreadStudioMeta | null
   reactions: ReactionSummaryItem[]
   attachments: AttachmentView[]
   lastActivityAt: string
@@ -121,6 +123,7 @@ export function toThreadView(
     playId: t.playId,
     playsCount: t.playsCount,
     challengeKey: t.challengeKey,
+    studioMeta: t.studioMeta,
     reactions,
     attachments,
     lastActivityAt: t.lastActivityAt.toISOString(),

@@ -340,6 +340,32 @@ describe('vitrine (Mural dos Criadores)', () => {
     expect(thread.status).toBe('visible')
   })
 
+  test('studio: studioMeta persiste saneado (dedupe) e volta na view; ausente → null', async () => {
+    const withMeta = await ctx.app.handle(
+      jsonRequest('POST', '/hub/internal/showcase-thread-studio', {
+        headers: child(randomUUID()),
+        body: studioBody({
+          studioMeta: { pro: false, extensions: ['world-3d', 'game-2d', 'world-3d'] },
+        }),
+      }),
+    )
+    expect(withMeta.status).toBe(200)
+    const meta = (await withMeta.json()) as {
+      thread: { studioMeta: { pro: boolean; extensions: string[] } | null }
+    }
+    expect(meta.thread.studioMeta).toEqual({ pro: false, extensions: ['world-3d', 'game-2d'] })
+
+    const without = await ctx.app.handle(
+      jsonRequest('POST', '/hub/internal/showcase-thread-studio', {
+        headers: child(randomUUID()),
+        body: studioBody(),
+      }),
+    )
+    expect(without.status).toBe(200)
+    const noMeta = (await without.json()) as { thread: { studioMeta: unknown } }
+    expect(noMeta.thread.studioMeta).toBeNull()
+  })
+
   test('studio-play: só valida playId enquanto o post está visível', async () => {
     const playId = '55555555-5555-5555-5555-555555555555'
     const create = await ctx.app.handle(
@@ -499,6 +525,22 @@ describe('vitrine (Mural dos Criadores)', () => {
     expect(thread.title).toBe('Meu jogo livre')
     expect(thread.body).toBe('Fiz no Estúdio Completo!')
     expect(thread.playId).toBe('66666666-6666-6666-6666-666666666666')
+  })
+
+  test('standalone: studioMeta persiste ({pro:true} do modo Código) e volta na view', async () => {
+    const accountId = randomUUID()
+    ownsStudio(accountId)
+    const res = await ctx.app.handle(
+      jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
+        headers: child(accountId),
+        body: standaloneBody({ studioMeta: { pro: true, extensions: [] } }),
+      }),
+    )
+    expect(res.status).toBe(200)
+    const { thread } = (await res.json()) as {
+      thread: { studioMeta: { pro: boolean; extensions: string[] } | null }
+    }
+    expect(thread.studioMeta).toEqual({ pro: true, extensions: [] })
   })
 
   test('standalone: SEM o produto → 403 (elegibilidade = posse, re-validada no hub)', async () => {

@@ -480,6 +480,14 @@ NULL` (conserta o seq scan pré-existente do resolve do /jogar) + índice parcia
 `ALTER TABLE hub.threads ADD COLUMN IF NOT EXISTS author_account_id text` + o mesmo em `hub.comments`
 (snapshot da CONTA do responsável no create — chave de coorte da recompensa do Clube na aprovação;
 nullable p/ legado/vitrine).
+**`0007_studio_meta` (gate de nível do remix, 24/07/2026 — escrita à MÃO, journaled, NÃO aplicada):**
+`ALTER TABLE hub.threads ADD COLUMN IF NOT EXISTS studio_meta jsonb` — metadado do PROJETO nos posts
+de vitrine do Estúdio (`{pro, extensions[]}`, snapshot no publish pelas rotas `showcase-thread-studio`
+e `-standalone`; DTO `StudioMetaBody`, saneado no `ShowcaseService`, exposto em `ThreadView.studioMeta`).
+⚠️ **COSMÉTICO por contrato** (alimenta o selo "remix a partir do nível X" no card do Mural do kids):
+o corpo da rota é alcançável na borda, então o metadado pode ser forjado — o gate REAL do remix é a
+checagem no CLIQUE sobre o snapshot jogável (kids) + a trava de abertura do próprio Estúdio. NUNCA
+usar `studio_meta` como fronteira de segurança.
 `db:migrate` aplica tudo de forma idempotente (gateado pelo `when` do journal). Ao adicionar migration
 nova, CONFIRA o journal antes de gerar.
 Boot: `loadEnv` (fail-fast) → `createApplication` → `start` (listen `::`), com retenção do

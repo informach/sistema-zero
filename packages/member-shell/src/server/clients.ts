@@ -1194,6 +1194,8 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
       description: string
       playId: string
       clientIdempotencyKey: string
+      /** Metadado do projeto ({pro, extensions[]}) — selo de nível do remix no card (cosmético). */
+      studioMeta?: { pro: boolean; extensions: string[] } | null
     }): Promise<GatewayResponse<{ thread: HubThreadView; deduped: boolean }>> {
       return gw.gatewayFetch('/hub/internal/showcase-thread-studio', { method: 'POST', body })
     },
@@ -1212,6 +1214,8 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
       clientIdempotencyKey: string
       /** Tag do Desafio do mês — o hub valida (posse + mês) com drop silencioso. */
       challengeKey?: string | null
+      /** Metadado do projeto ({pro, extensions[]}) — selo de nível do remix no card (cosmético). */
+      studioMeta?: { pro: boolean; extensions: string[] } | null
     }): Promise<GatewayResponse<{ thread: HubThreadView; deduped: boolean }>> {
       return gw.gatewayFetch('/hub/internal/showcase-thread-studio-standalone', {
         method: 'POST',
