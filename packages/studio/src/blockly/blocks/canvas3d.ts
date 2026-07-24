@@ -159,12 +159,16 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
   },
   {
     // Import nomeado de um addon: `import { GLTFLoader } from 'three/addons/…'`.
+    // A linha "no arquivo …" (MODULE) fica ESCONDIDA enquanto o caminho é derivável
+    // do addon escolhido (extensão de visibilidade) — só aparece p/ addon fora da
+    // lista ou caminho não-canônico vindo da Ponte.
     type: 'sz_t3d_import_named',
     placement: 'start-declaration',
-    message0: 'usar %1',
+    message0: 'usar %1 da biblioteca',
     args0: [{ type: 'field_addon_picker', name: 'NAMES', text: 'GLTFLoader' }],
-    message1: 'da biblioteca %1',
+    message1: 'no arquivo %1',
     args1: [{ type: 'field_input', name: 'MODULE', text: CANVAS3D_AUTO_ADDON_MODULE }],
+    extensions: ['sz_addon_module_visibility'],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,

@@ -6,6 +6,7 @@ import * as Blockly from 'blockly/core'
 import * as PtBr from 'blockly/msg/pt-br'
 import { hasClipboard, runCopyBlocks, runPasteBlocks } from './blockClipboard'
 import { registerCoreBlocks } from './blocks'
+import { registerAddonModuleVisibilityExtension } from './blocks/addonModuleExtension'
 import { registerAnimLoopMutator } from './blocks/animLoopMutator'
 import { registerArgsMutator } from './blocks/argsMutator'
 import { registerArrayMutator } from './blocks/arrayMutator'
@@ -313,6 +314,8 @@ export function ensureBlocklyInitialized(): void {
   registerSafeDomAttributeExtension()
   registerSafeDomElementExtensions()
   registerEventTargetExtension()
+  // Esconde o "no arquivo …" do import de addon 3D enquanto o caminho é automático.
+  registerAddonModuleVisibilityExtension()
   registerProjectAreaSafeDeleteExtension()
   // Os mutators precisam estar registrados antes de qualquer instância dos
   // blocos que os usam ser criada (init aplica o mutator pelo nome).
