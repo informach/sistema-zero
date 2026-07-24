@@ -108,7 +108,8 @@ export const CSS_BLOCKS: BlockDefinition[] = [
   },
   {
     type: 'sz_css_padding',
-    message0: 'Almofada dentro de %1 com %2 px',
+    // Par do margin ("Espaço ao redor"): dentro × ao redor — sem metáfora solta.
+    message0: 'Espaço por dentro de %1 com %2 px',
     args0: [
       { type: 'field_input', name: 'SELECTOR', text: '#caixa' },
       { type: 'field_number', name: 'VALUE', value: 8, min: 0 },
@@ -117,7 +118,7 @@ export const CSS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'CSSEntry',
     colour: C,
     tooltip:
-      'Afasta o conteúdo da borda por dentro, como uma almofada. O nome técnico dessa almofada é padding.',
+      'Afasta o conteúdo da borda, abrindo espaço por dentro. No CSS, esse espaço se chama padding.',
   },
   {
     type: 'sz_css_margin',
