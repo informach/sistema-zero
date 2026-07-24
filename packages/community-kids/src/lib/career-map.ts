@@ -79,11 +79,23 @@ export function levelForTier(tier: CourseTierSlug): StudentLevelSlug {
  * degrau inteiro (espelha `foundationAvailable` do core), então a Faísca nunca fica
  * vazia enquanto o catálogo não está etiquetado. `god` (topo) não tem trilha.
  */
+/**
+ * Cursos da trilha da LENDA (`god`): os cursos de NÍVEL `lenda` — bônus "de formatura"
+ * FORA da carreira (não são degrau, não contam, não travam). Aparecem só ao clicar na
+ * Lenda no mapa (nó liberado só p/ quem chegou à Lenda).
+ */
+export function lendaCourses(courses: readonly CatalogCourseView[]): CatalogCourseView[] {
+  return courses.filter((course) => course.level === 'lenda')
+}
+
 export function coursesForLevel(
   levelSlug: StudentLevelSlug | string,
   courses: readonly CatalogCourseView[],
 ): CatalogCourseView[] {
   const slug = asLevelSlug(levelSlug)
+  // A Lenda (topo) não estuda um degrau da carreira: a trilha dela são os cursos
+  // de nível `lenda` (bônus da formatura). `LEVEL_TIER.god` segue `null`.
+  if (slug === 'god') return lendaCourses(courses)
   const tier = LEVEL_TIER[slug]
   if (!tier) return []
   const inTier = courses.filter((course) => courseTierOf(course.level, course.track) === tier)

@@ -77,7 +77,9 @@ export class CheckAccessService {
     // Trava pedagógica de TODO curso kids: posições seguem a trilha
     // (future-tier/foundation-first) e o bônus é recompensa da etapa
     // (tier-reward — abre quando ela completa).
-    if (course.audience === 'kids') {
+    // Curso `lenda` é FORA da carreira → sem gate pedagógico (acesso = matrícula; o
+    // portão de "ver" é o nó da Lenda no mapa).
+    if (course.audience === 'kids' && course.level !== 'lenda') {
       const qualified = await this.gamification.listQualifyingCareerSlots(
         learnerId ?? userId,
         course.audience,

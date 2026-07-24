@@ -26,6 +26,12 @@ const EnvSchema = z
     STUDIO_PRO_RUNTIME_URL: z.string().url().optional(),
     STUDIO_PRO_RUNTIME_TOKEN: z.string().min(24).optional(),
 
+    // "Ver como aluno" (editor de aula): URLs públicas dos apps de aluno — a
+    // equipe abre a aula PUBLICADA no app certo pela audience (passe livre da
+    // equipe). OPCIONAIS: ausentes → o botão fica oculto.
+    COMMUNITY_URL: z.string().url().optional(),
+    KIDS_COMMUNITY_URL: z.string().url().optional(),
+
     // ── Upload de mídia (opcionais: sem eles a feature responde "indisponível",
     //    não derruba o boot — os adapters validam presença com erro amigável) ──
     // Cloudflare R2 (imagens/anexos/legendas VTT).

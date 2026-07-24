@@ -11,7 +11,7 @@ import {
   creatorCareerLevel,
   missingCareerSlots,
 } from '@sistemazero/core/career'
-import type { CourseLevel, CourseTrack } from '../course/course'
+import type { CareerCourseLevel, CourseTrack } from '../course/course'
 
 export const STUDENT_LEVEL_SLUGS = CREATOR_CAREER_LEVELS.map((level) => level.slug)
 export type StudentLevelSlug = CareerLevelSlug
@@ -19,7 +19,8 @@ export type StudentLevelSlug = CareerLevelSlug
 export const COURSE_TIERS = CAREER_COURSE_TIERS
 export type CourseTier = CareerCourseTier
 
-export function courseTier(level: CourseLevel, track: CourseTrack): CourseTier {
+/** SÓ para níveis de CARREIRA (as 3 dificuldades) — `lenda` não é degrau. */
+export function courseTier(level: CareerCourseLevel, track: CourseTrack): CourseTier {
   return `${level}-${track}`
 }
 

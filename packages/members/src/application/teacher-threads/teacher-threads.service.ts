@@ -2,6 +2,7 @@ import type { CourseAudience } from '../../domain/course/course'
 import { ContentNotFoundError } from '../../domain/course/course.errors'
 import type {
   AdminThreadsFilter,
+  MarkAllReadFilter,
   TeacherMessagePage,
   TeacherMessageRecord,
   TeacherMessageRole,
@@ -291,6 +292,19 @@ export class TeacherThreadsService {
   async markReadByTeacher(threadId: string, staffUserId: string): Promise<{ ok: true }> {
     await this.repo.markReadByTeacher(threadId, staffUserId)
     return { ok: true }
+  }
+
+  /** Badge da Sala do Professor: conversas com mensagem do aluno não lida POR ESTE staff. */
+  async unreadCountForAdmin(staffUserId: string): Promise<{ count: number }> {
+    return { count: await this.repo.countUnreadForTeacher(staffUserId) }
+  }
+
+  /** "Marcar todas como lidas" (escopo opcional espelha os filtros da caixa). */
+  async markAllReadByTeacher(
+    staffUserId: string,
+    filter?: MarkAllReadFilter,
+  ): Promise<{ updated: number }> {
+    return { updated: await this.repo.markAllReadByTeacher(staffUserId, filter) }
   }
 
   // ── Sistema (Mural — webhook do hub, M3) ────────────────────────────────────

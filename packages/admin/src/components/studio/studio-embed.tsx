@@ -6,7 +6,7 @@ import { Button } from '@sistemazero/ui/button'
 import { ConfirmDialog } from '@sistemazero/ui/confirm-dialog'
 import { Select } from '@sistemazero/ui/select'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { type RefObject, useEffect, useMemo, useState } from 'react'
+import { type RefObject, useEffect, useMemo, useRef, useState } from 'react'
 import { createAdminProRuntimeAdapter } from '@/lib/studio-pro-authoring'
 import { loadStudioEmbedModule } from './studio-embed-loader'
 
@@ -26,6 +26,19 @@ interface Props {
   professionalAuthoring?: boolean
   /** Altura do container (o Studio preenche 100%). */
   className?: string
+  /**
+   * Esconde os botões internos "Projeto em blocos/Pro" — o FORM escolhe o tipo fora
+   * (redesenho 24/07). O seletor de modelo Pro continua aqui (só aparece no Pro).
+   */
+  hideKindChooser?: boolean
+  /**
+   * Tipo pedido pelo form (controle externo): quando difere do kind atual do projeto,
+   * dispara o MESMO fluxo confirm+replace da troca interna. Cancelar notifica o kind
+   * real via `onKindResolved` (o form desfaz o seletor).
+   */
+  requestedKind?: 'blocks' | 'pro'
+  /** Kind REAL do projeto (carga inicial / troca confirmada / cancelamento). */
+  onKindResolved?: (kind: 'blocks' | 'pro') => void
 }
 
 /**
@@ -40,6 +53,9 @@ export function StudioEmbed({
   features,
   professionalAuthoring = false,
   className = 'h-[32rem]',
+  hideKindChooser = false,
+  requestedKind,
+  onKindResolved,
 }: Props) {
   const [studioModule, setStudioModule] = useState<StudioModule | null>(null)
   const [loadError, setLoadError] = useState(false)
@@ -49,6 +65,24 @@ export function StudioEmbed({
   const [pendingKind, setPendingKind] = useState<ProjectKindChoice | null>(null)
   const proRuntime = useMemo(() => createAdminProRuntimeAdapter(), [])
   const StudioLesson: StudioComponent | null = studioModule?.StudioLesson ?? null
+  const seedKind: 'blocks' | 'pro' = seed?.kind === 'pro' ? 'pro' : 'blocks'
+  // Callback em ref: notificar não deve re-rodar os effects de sincronização.
+  const onKindResolvedRef = useRef(onKindResolved)
+  onKindResolvedRef.current = onKindResolved
+
+  // Informa o kind REAL ao form (carga inicial / troca confirmada).
+  useEffect(() => {
+    if (seed) onKindResolvedRef.current?.(seed.kind === 'pro' ? 'pro' : 'blocks')
+  }, [seed])
+
+  // Controle EXTERNO do tipo (form): pedido difere do atual → abre o confirm da troca.
+  useEffect(() => {
+    if (!requestedKind || !seed) return
+    const current = seed.kind === 'pro' ? 'pro' : 'blocks'
+    if (requestedKind !== current) {
+      setPendingKind(requestedKind === 'pro' ? 'pro' : 'classic')
+    }
+  }, [requestedKind, seed])
 
   useEffect(() => {
     let active = true
@@ -120,26 +154,29 @@ export function StudioEmbed({
     <div
       className={`${className} flex min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-muted`}
     >
-      {professionalAuthoring && studioModule ? (
+      {/* Com o chooser externo (form), a barra só aparece no Pro (seletor de modelo). */}
+      {professionalAuthoring && studioModule && (!hideKindChooser || seed.kind === 'pro') ? (
         <div className="flex flex-wrap items-end gap-3 border-border border-b bg-background p-3">
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              size="sm"
-              variant={seed.kind !== 'pro' ? 'default' : 'outline'}
-              onClick={() => seed.kind === 'pro' && setPendingKind('classic')}
-            >
-              Projeto em blocos
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant={seed.kind === 'pro' ? 'default' : 'outline'}
-              onClick={() => seed.kind !== 'pro' && setPendingKind('pro')}
-            >
-              Projeto Pro
-            </Button>
-          </div>
+          {!hideKindChooser ? (
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant={seed.kind !== 'pro' ? 'default' : 'outline'}
+                onClick={() => seed.kind === 'pro' && setPendingKind('classic')}
+              >
+                Projeto em blocos
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={seed.kind === 'pro' ? 'default' : 'outline'}
+                onClick={() => seed.kind !== 'pro' && setPendingKind('pro')}
+              >
+                Projeto Pro
+              </Button>
+            </div>
+          ) : null}
           <label className="flex min-w-64 flex-1 flex-col gap-1 font-medium text-xs">
             Modelo Pro
             <Select value={templateId} onChange={(event) => setTemplateId(event.target.value)}>
@@ -176,7 +213,11 @@ export function StudioEmbed({
       </div>
       <ConfirmDialog
         open={pendingKind !== null}
-        onClose={() => setPendingKind(null)}
+        onClose={() => {
+          setPendingKind(null)
+          // Cancelou a troca pedida pelo form → devolve o kind REAL (desfaz o seletor).
+          onKindResolvedRef.current?.(seedKind)
+        }}
         title="Trocar o tipo do projeto?"
         message="O projeto inicial atual será substituído por um projeto novo. Esta troca não pode ser desfeita depois que o bloco for salvo."
         confirmText="Trocar projeto"

@@ -159,6 +159,121 @@ describe('conversas com o professor (canal de retorno)', () => {
     expect(secondTeacherInbox.threads[0].unread).toBe(true)
   })
 
+  test('unread-count do PROFESSOR: individual por staff; read-all zera e devolve o nº', async () => {
+    const { app, clockRef } = buildApp()
+    // Duas conversas com resposta do aluno (uma kids, uma via 2º contexto).
+    const a = await readJson(await adminPost(app, studioBody()))
+    const b = await readJson(
+      await adminPost(app, studioBody({ contextType: 'general', blockId: undefined })),
+    )
+    clockRef.now = new Date('2026-06-02T12:05:00.000Z')
+    await studentReply(app, a.id, 'Consertei!')
+    await studentReply(app, b.id, 'Recebi o recado!')
+
+    const unreadCountAs = async (headers: Record<string, string>) =>
+      readJson(
+        await app.handle(
+          new Request('http://localhost/members/admin/teacher-threads/unread-count', { headers }),
+        ),
+      )
+    expect((await unreadCountAs(adminHeaders)).count).toBe(2)
+    // Individual: o 2º professor também vê 2 (watermark é POR staff).
+    expect((await unreadCountAs(adminHeaders2)).count).toBe(2)
+
+    // read-all do 1º professor zera SÓ o dele.
+    const readAll = await readJson(
+      await app.handle(
+        new Request('http://localhost/members/admin/teacher-threads/read-all', {
+          method: 'POST',
+          headers: adminHeaders,
+          body: JSON.stringify({}),
+        }),
+      ),
+    )
+    expect(readAll.updated).toBe(2)
+    expect((await unreadCountAs(adminHeaders)).count).toBe(0)
+    expect((await unreadCountAs(adminHeaders2)).count).toBe(2)
+
+    // Idempotente: repetir devolve 0.
+    const again = await readJson(
+      await app.handle(
+        new Request('http://localhost/members/admin/teacher-threads/read-all', {
+          method: 'POST',
+          headers: adminHeaders,
+          body: JSON.stringify({}),
+        }),
+      ),
+    )
+    expect(again.updated).toBe(0)
+  })
+
+  test('read-all respeita o escopo (context) e mensagem nova volta a contar', async () => {
+    const { app, clockRef } = buildApp()
+    const entrega = await readJson(await adminPost(app, studioBody()))
+    const geral = await readJson(
+      await adminPost(app, studioBody({ contextType: 'general', blockId: undefined })),
+    )
+    clockRef.now = new Date('2026-06-02T12:05:00.000Z')
+    await studentReply(app, entrega.id, 'a')
+    await studentReply(app, geral.id, 'b')
+
+    const readAllEntregas = await readJson(
+      await app.handle(
+        new Request('http://localhost/members/admin/teacher-threads/read-all', {
+          method: 'POST',
+          headers: adminHeaders,
+          body: JSON.stringify({ context: 'studio_submission' }),
+        }),
+      ),
+    )
+    expect(readAllEntregas.updated).toBe(1)
+    const count = await readJson(
+      await app.handle(
+        new Request('http://localhost/members/admin/teacher-threads/unread-count', {
+          headers: adminHeaders,
+        }),
+      ),
+    )
+    expect(count.count).toBe(1) // só a geral segue não-lida
+
+    // Mensagem NOVA do aluno depois do read-all volta a contar (watermark, não flag).
+    clockRef.now = new Date('2026-06-02T12:10:00.000Z')
+    await studentReply(app, entrega.id, 'mais uma')
+    const after = await readJson(
+      await app.handle(
+        new Request('http://localhost/members/admin/teacher-threads/unread-count', {
+          headers: adminHeaders,
+        }),
+      ),
+    )
+    expect(after.count).toBe(2)
+  })
+
+  test('filtro por aluno (?userIds=): casa userId E accountId; lixo é descartado', async () => {
+    const { app } = buildApp()
+    const PARENT = '77777777-7777-7777-7777-777777777777'
+    await adminPost(app, studioBody({ accountId: PARENT }))
+    await adminPost(app, studioBody({ userId: STUDENT2, blockId: COURSE }))
+
+    const byUser = await readJson(await adminInbox(app, `?userIds=${STUDENT}`))
+    expect(byUser.threads).toHaveLength(1)
+    expect(byUser.threads[0].userId).toBe(STUDENT)
+
+    // Pelo ACCOUNT do responsável acha a conversa da criança (família toda).
+    const byAccount = await readJson(await adminInbox(app, `?userIds=${PARENT}`))
+    expect(byAccount.threads).toHaveLength(1)
+    expect(byAccount.threads[0].userId).toBe(STUDENT)
+
+    // CSV com lixo → só o uuid válido filtra.
+    const mixed = await readJson(await adminInbox(app, `?userIds=nao-e-uuid,${STUDENT2}`))
+    expect(mixed.threads).toHaveLength(1)
+    expect(mixed.threads[0].userId).toBe(STUDENT2)
+
+    // Só lixo → filtro ignorado (caixa completa, não vazia).
+    const junk = await readJson(await adminInbox(app, '?userIds=xyz'))
+    expect(junk.threads).toHaveLength(2)
+  })
+
   test('posse: outro aluno não acessa a conversa (404 sem vazar)', async () => {
     const { app } = buildApp()
     const created = await readJson(await adminPost(app, studioBody()))

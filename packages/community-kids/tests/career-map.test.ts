@@ -104,7 +104,21 @@ describe('coursesForLevel (divisão do degrau por careerSlot)', () => {
     expect(coursesForLevel('noob', mixed).map((c) => c.courseSlug)).toEqual(['base'])
   })
 
-  test('god (topo) não tem trilha', () => {
+  test('Lenda (god) mostra só os cursos de NÍVEL lenda (bônus da formatura, fora da carreira)', () => {
+    const mix = [
+      course({ courseSlug: 'lenda1', level: 'lenda', track: '2d', careerSlot: null }),
+      course({ courseSlug: 'av3d', level: 'avancado', track: '3d', careerSlot: 3 }),
+      course({ courseSlug: 'av3d-bonus', level: 'avancado', track: '3d', careerSlot: null }),
+      course({ courseSlug: 'lenda2', level: 'lenda', track: '3d', careerSlot: null }),
+    ]
+    expect(
+      coursesForLevel('god', mix)
+        .map((c) => c.courseSlug)
+        .sort(),
+    ).toEqual(['lenda1', 'lenda2'])
+  })
+
+  test('sem curso de nível lenda → trilha da Lenda vazia', () => {
     expect(coursesForLevel('god', ini2d)).toEqual([])
   })
 })

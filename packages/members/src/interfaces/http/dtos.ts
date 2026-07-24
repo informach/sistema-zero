@@ -686,10 +686,12 @@ export const ManageEntitlementBody = t.Object({
 
 const COURSE_STATUS = t.Union([t.Literal('draft'), t.Literal('published'), t.Literal('archived')])
 // Nível (dificuldade) do curso — espelha o enum `course_level` do schema.
+// `lenda` = categoria fora da carreira (bônus da formatura, sempre careerSlot null).
 const COURSE_LEVEL = t.Union([
   t.Literal('iniciante'),
   t.Literal('intermediario'),
   t.Literal('avancado'),
+  t.Literal('lenda'),
 ])
 // Eixo 2D/3D do curso — espelha o enum `course_track` do schema.
 const COURSE_TRACK = t.Union([t.Literal('2d'), t.Literal('3d')])
@@ -1070,9 +1072,27 @@ export const AdminTeacherThreadsQuery = t.Object({
   context: t.Optional(TEACHER_CONTEXT),
   courseId: t.Optional(UUID),
   unread: t.Optional(t.Literal('true')),
+  // CSV de userIds/accountIds (filtro por aluno, 24/07) — uuids válidos, teto 20.
+  userIds: t.Optional(t.String({ maxLength: 800 })),
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
   offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),
 })
+/** Corpo de `POST /members/admin/teacher-threads/read-all` (escopo opcional da caixa). */
+export const AdminTeacherThreadsReadAllBody = t.Object({
+  audience: t.Optional(AUDIENCE),
+  context: t.Optional(TEACHER_CONTEXT),
+  courseId: t.Optional(UUID),
+})
+/** CSV de userIds (filtro por aluno) → uuids válidos; descarta lixo, teto 20. */
+export function parseUserIds(csv: string | undefined): string[] | undefined {
+  if (!csv) return undefined
+  const ids = csv
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s) => UUID_RE.test(s))
+    .slice(0, 20)
+  return ids.length > 0 ? ids : undefined
+}
 /**
  * Corpo de `POST /members/admin/teacher-threads` — o professor ABRE/CONTINUA uma
  * conversa por CONTEXTO (Entrega do Estúdio ou recado geral; o Mural entra por

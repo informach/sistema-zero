@@ -125,6 +125,7 @@ import type {
   AdminThreadsFilter,
   AppendMessageInput,
   EnsureThreadInput,
+  MarkAllReadFilter,
   TeacherMessageRecord,
   TeacherThreadRecord,
   TeacherThreadRepository,
@@ -1402,6 +1403,13 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
             ? r.answered
             : true,
       )
+      // Filtro por aluno (mirror do Drizzle): user_id OU account_id.
+      .filter(
+        (r) =>
+          !filter.userIds?.length ||
+          filter.userIds.includes(r.userId) ||
+          (r.accountId !== null && filter.userIds.includes(r.accountId)),
+      )
       // Pendentes primeiro, depois as mais recentes (espelha o repo real).
       .sort(
         (a, b) =>
@@ -1608,6 +1616,13 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
         if (filter.contextType && t.contextType !== filter.contextType) return false
         if (filter.courseId && t.courseId !== filter.courseId) return false
         if (filter.unreadOnly && !this.unreadFor(t, 'teacher', filter.staffUserId)) return false
+        // Filtro por aluno (mirror do Drizzle): user_id OU account_id.
+        if (
+          filter.userIds?.length &&
+          !filter.userIds.includes(t.userId) &&
+          !(t.accountId && filter.userIds.includes(t.accountId))
+        )
+          return false
         return true
       })
       .sort((a, b) => {
@@ -1640,6 +1655,23 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
   async markReadByTeacher(threadId: string, staffUserId: string): Promise<void> {
     const t = this.threads.find((x) => x.id === threadId)
     if (t) this.staffReads.set(this.staffReadKey(threadId, staffUserId), t.lastMessageAt)
+  }
+
+  async countUnreadForTeacher(staffUserId: string): Promise<number> {
+    return this.threads.filter((t) => this.unreadFor(t, 'teacher', staffUserId)).length
+  }
+
+  async markAllReadByTeacher(staffUserId: string, filter?: MarkAllReadFilter): Promise<number> {
+    const targets = this.threads.filter((t) => {
+      if (filter?.audience && t.audience !== filter.audience) return false
+      if (filter?.contextType && t.contextType !== filter.contextType) return false
+      if (filter?.courseId && t.courseId !== filter.courseId) return false
+      return this.unreadFor(t, 'teacher', staffUserId)
+    })
+    for (const t of targets) {
+      this.staffReads.set(this.staffReadKey(t.id, staffUserId), t.lastMessageAt)
+    }
+    return targets.length
   }
 
   private unreadFor(
@@ -2193,7 +2225,8 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       const level = sc.sourceLevel ?? ce.sourceLevel ?? course?.level
       const track = sc.sourceTrack ?? ce.sourceTrack ?? course?.track ?? '2d'
       const careerSlot = sc.sourceCareerSlot ?? ce.sourceCareerSlot ?? course?.careerSlot
-      if (level && careerSlot != null) {
+      // `lenda` é fora da carreira → nunca conta (também teria careerSlot null).
+      if (level && level !== 'lenda' && careerSlot != null) {
         const slots = result[courseTier(level, track)]
         if (!slots.includes(careerSlot)) slots.push(careerSlot)
       }

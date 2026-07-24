@@ -113,8 +113,20 @@ export interface AdminThreadsFilter {
   contextType?: TeacherThreadContext
   courseId?: string
   unreadOnly?: boolean
+  /**
+   * Filtro por ALUNO (24/07): casa `user_id` OU `account_id` — passar o accountId
+   * pega a família toda; o profileId (kids) estreita p/ uma criança.
+   */
+  userIds?: string[]
   limit: number
   offset: number
+}
+
+/** Escopo opcional do "marcar todas como lidas" (espelha os filtros da caixa). */
+export interface MarkAllReadFilter {
+  audience?: CourseAudience
+  contextType?: TeacherThreadContext
+  courseId?: string
 }
 
 export interface TeacherThreadRepository {
@@ -149,8 +161,12 @@ export interface TeacherThreadRepository {
   listForAdmin(filter: AdminThreadsFilter): Promise<TeacherThreadSummary[]>
   /** Nº de conversas com mensagem do professor NÃO lida pelo aluno (badge do sino). */
   countUnreadForStudent(userId: string, audience: CourseAudience): Promise<number>
+  /** Nº de conversas com mensagem do ALUNO não lida por ESTE professor (Sala do Professor). */
+  countUnreadForTeacher(staffUserId: string): Promise<number>
   /** Marca a conversa lida pelo aluno até a última mensagem PERSISTIDA. No-op fora da vitrine dele. */
   markReadByStudent(threadId: string, userId: string, audience: CourseAudience): Promise<void>
   /** Marca a conversa lida por UM professor até a última mensagem PERSISTIDA. */
   markReadByTeacher(threadId: string, staffUserId: string): Promise<void>
+  /** Marca TODAS as conversas não-lidas (do escopo) lidas por UM professor. Devolve o nº. */
+  markAllReadByTeacher(staffUserId: string, filter?: MarkAllReadFilter): Promise<number>
 }

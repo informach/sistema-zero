@@ -88,6 +88,11 @@ export interface StudioSubmissionGlobalFilter {
    * reabre a pendência); `answered` = com resposta. Ausente = todas.
    */
   status?: 'pending' | 'answered'
+  /**
+   * Filtro por ALUNO (24/07): casa `user_id` OU `account_id` — o accountId pega a
+   * família toda; o profileId (kids) estreita p/ uma criança.
+   */
+  userIds?: string[]
   limit: number
   offset: number
 }

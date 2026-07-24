@@ -5,6 +5,7 @@ import type {
   AdminThreadsFilter,
   AppendMessageInput,
   EnsureThreadInput,
+  MarkAllReadFilter,
   TeacherMessageCursor,
   TeacherMessagePage,
   TeacherMessageRecord,
@@ -190,14 +191,20 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
   }
 
   async listForAdmin(filter: AdminThreadsFilter): Promise<TeacherThreadSummary[]> {
-    const staffReadAt = sql`(select ${teacherThreadStaffReads.readAt} from ${teacherThreadStaffReads} where ${teacherThreadStaffReads.threadId} = ${teacherThreads.id} and ${teacherThreadStaffReads.staffUserId} = ${filter.staffUserId}::uuid)`
-    const unreadForStaff = sql`exists(select 1 from ${teacherMessages} m where m.thread_id = ${teacherThreads.id} and m.author_role = 'student' and m.created_at > coalesce(${staffReadAt}, 'epoch'::timestamptz))`
+    const unreadForStaff = this.unreadForStaffSql(filter.staffUserId)
     const where = and(
       filter.audience ? eq(teacherThreads.audience, filter.audience) : undefined,
       filter.contextType ? eq(teacherThreads.contextType, filter.contextType) : undefined,
       filter.courseId ? eq(teacherThreads.courseId, filter.courseId) : undefined,
       // Não-lido do PROFESSOR = há mensagem do ALUNO depois do watermark do professor.
       filter.unreadOnly ? unreadForStaff : undefined,
+      // Filtro por aluno (24/07): accountId pega a família; profileId estreita.
+      filter.userIds?.length
+        ? or(
+            inArray(teacherThreads.userId, filter.userIds),
+            inArray(teacherThreads.accountId, filter.userIds),
+          )
+        : undefined,
     )
     return this.selectSummaries(where, 'teacher', filter.limit, filter.offset, filter.staffUserId)
   }
@@ -246,6 +253,47 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
       on conflict (${teacherThreadStaffReads.threadId}, ${teacherThreadStaffReads.staffUserId})
       do update set ${teacherThreadStaffReads.readAt} = excluded.read_at
     `)
+  }
+
+  async countUnreadForTeacher(staffUserId: string): Promise<number> {
+    const [row] = await this.db
+      .select({ value: sql<number>`count(*)::int` })
+      .from(teacherThreads)
+      .where(this.unreadForStaffSql(staffUserId))
+    return row?.value ?? 0
+  }
+
+  async markAllReadByTeacher(staffUserId: string, filter?: MarkAllReadFilter): Promise<number> {
+    const where = and(
+      this.unreadForStaffSql(staffUserId),
+      filter?.audience ? eq(teacherThreads.audience, filter.audience) : undefined,
+      filter?.contextType ? eq(teacherThreads.contextType, filter.contextType) : undefined,
+      filter?.courseId ? eq(teacherThreads.courseId, filter.courseId) : undefined,
+    )
+    // Contagem antes do upsert (o resultado do INSERT…SELECT não separa insert de update).
+    const [row] = await this.db
+      .select({ value: sql<number>`count(*)::int` })
+      .from(teacherThreads)
+      .where(where)
+    const updated = row?.value ?? 0
+    if (updated === 0) return 0
+    // Watermark = last_message_at da PRÓPRIA thread (nunca o relógio da aplicação —
+    // mensagens que entrarem depois seguem não-lidas; régua do markReadByTeacher).
+    await this.db.execute(sql`
+      insert into ${teacherThreadStaffReads} (${teacherThreadStaffReads.threadId}, ${teacherThreadStaffReads.staffUserId}, ${teacherThreadStaffReads.readAt})
+      select ${teacherThreads.id}, ${staffUserId}::uuid, ${teacherThreads.lastMessageAt}
+      from ${teacherThreads}
+      where ${where}
+      on conflict (${teacherThreadStaffReads.threadId}, ${teacherThreadStaffReads.staffUserId})
+      do update set ${teacherThreadStaffReads.readAt} = excluded.read_at
+    `)
+    return updated
+  }
+
+  /** "Há mensagem do ALUNO depois do watermark DESTE professor" (não-lido da Sala). */
+  private unreadForStaffSql(staffUserId: string): SQL<unknown> {
+    const staffReadAt = sql`(select ${teacherThreadStaffReads.readAt} from ${teacherThreadStaffReads} where ${teacherThreadStaffReads.threadId} = ${teacherThreads.id} and ${teacherThreadStaffReads.staffUserId} = ${staffUserId}::uuid)`
+    return sql`exists(select 1 from ${teacherMessages} m where m.thread_id = ${teacherThreads.id} and m.author_role = 'student' and m.created_at > coalesce(${staffReadAt}, 'epoch'::timestamptz))`
   }
 
   // ── Interno ──────────────────────────────────────────────────────────────────

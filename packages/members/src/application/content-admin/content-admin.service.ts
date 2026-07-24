@@ -6,6 +6,7 @@ import {
   InvalidContentCommandError,
   LessonNotFoundError,
   NoPublishedLessonError,
+  NoShowcaseBlockError,
 } from '../../domain/course/course.errors'
 import {
   isCompletionGatingBlock,
@@ -153,6 +154,20 @@ export class CourseAdminService {
       metadata: withSalesPageUrl(existing.metadata, salesPageUrl),
     }
     assertCareerSlot(merged)
+    // Curso-base kids (slot 1) publicado exige uma aula PUBLICADA com bloco de Estúdio
+    // de vitrine — sem ela o aluno nunca qualifica o slot e a etapa trava (armadilha do
+    // fail-open). Guard SÓ NA TRANSIÇÃO para o estado-armadilha: um curso que JÁ está
+    // preso (rollout pré-career_slot) segue editável (título etc.) — a correção acontece
+    // no editor de AULA, e o aviso ⚠️ da listagem cobre a detecção. Caminho inverso
+    // (remover a vitrine de curso-base publicado) fica de fora — follow-up documentado.
+    const becomesTrapped =
+      merged.status === 'published' && merged.audience === 'kids' && merged.careerSlot === 1
+    const wasTrapped =
+      existing.status === 'published' && existing.audience === 'kids' && existing.careerSlot === 1
+    if (becomesTrapped && !wasTrapped) {
+      const withShowcase = await this.content.listCourseIdsWithShowcaseBlock([id])
+      if (withShowcase.length === 0) throw new NoShowcaseBlockError()
+    }
     const ok = await this.content.updateCourse(merged)
     if (!ok) throw new CourseConflictError()
     const fresh = await this.courses.findCourseById(id)
@@ -172,6 +187,11 @@ function assertCareerSlot(course: {
   careerSlot: number | null
 }): void {
   if (course.careerSlot === null) return
+  if (course.level === 'lenda') {
+    throw new InvalidContentCommandError(
+      'Curso Lenda é bônus da formatura — não ocupa posição na carreira',
+    )
+  }
   if (course.audience !== 'kids') {
     throw new InvalidContentCommandError('Somente cursos Kids podem ocupar a carreira')
   }

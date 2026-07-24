@@ -16,7 +16,7 @@ import {
   TableRow,
 } from '@sistemazero/ui/table'
 import { Textarea } from '@sistemazero/ui/textarea'
-import { ArrowLeft, CreditCard, LogIn, Mail, Pencil, Plus } from 'lucide-react'
+import { ArrowLeft, CreditCard, Inbox, LogIn, Mail, MailOpen, Pencil, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -297,6 +297,20 @@ export function MemberDetailClient({
                 <Mail className="size-4" /> Enviar recado
               </Button>
             ) : null}
+            {/* Filas do professor JÁ filtradas por este aprendiz (conta = família toda;
+                perfil selecionado = só a criança). */}
+            <Link
+              href={`/admin/professor/entregas?userId=${encodeURIComponent(learner?.id ?? userId)}`}
+              className={buttonVariants({ variant: 'outline' })}
+            >
+              <Inbox className="size-4" /> Entregas do aluno
+            </Link>
+            <Link
+              href={`/admin/professor/recados?userId=${encodeURIComponent(learner?.id ?? userId)}`}
+              className={buttonVariants({ variant: 'outline' })}
+            >
+              <MailOpen className="size-4" /> Recados do aluno
+            </Link>
             {canWrite ? (
               <Button onClick={() => setGrantOpen(true)}>
                 <Plus className="size-4" /> Conceder acesso

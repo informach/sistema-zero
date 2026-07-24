@@ -70,8 +70,25 @@ describe('nav — grupos e helpers de seção', () => {
     expect(canAccessSection('staff', '/admin/qualquer-coisa')).toBe(true)
   })
 
-  test('homeForRole: 1º item visível do 1º grupo', () => {
-    expect(homeForRole('staff')).toBe('/admin/professor/entregas')
-    expect(homeForRole('admin')).toBe('/admin/professor/entregas')
+  test('homeForRole: 1º item visível do 1º grupo (a Home do Professor, 24/07)', () => {
+    expect(homeForRole('staff')).toBe('/admin/professor')
+    expect(homeForRole('admin')).toBe('/admin/professor')
+  })
+
+  test('Início (/admin/professor) não rouba o ativo dos filhos (longest-prefix)', () => {
+    expect(activeHref('/admin/professor')).toBe('/admin/professor')
+    expect(activeHref('/admin/professor/entregas')).toBe('/admin/professor/entregas')
+    expect(activeHref('/admin/professor/recados')).toBe('/admin/professor/recados')
+  })
+
+  test('badgeKey: só Entregas/Recados/Moderação têm chip de contagem', () => {
+    const withBadge = NAV_GROUPS.flatMap((g) => g.items)
+      .filter((i) => i.badgeKey)
+      .map((i) => [i.href, i.badgeKey])
+    expect(withBadge).toEqual([
+      ['/admin/professor/entregas', 'entregas'],
+      ['/admin/professor/recados', 'recados'],
+      ['/admin/comunidade/moderacao', 'moderacao'],
+    ])
   })
 })

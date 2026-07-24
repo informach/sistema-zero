@@ -29,6 +29,7 @@ import {
   ListCoursesQuery,
   ModuleBody,
   ModuleIdParams,
+  parseUserIds,
   ReorderBody,
 } from '../dtos'
 
@@ -104,6 +105,8 @@ const GlobalStudioSubmissionsQuery = t.Object({
   courseId: t.Optional(t.String({ pattern: UUID_PATTERN })),
   audience: t.Optional(t.Union([t.Literal('adult'), t.Literal('kids')])),
   status: t.Optional(t.Union([t.Literal('pending'), t.Literal('answered')])),
+  // CSV de userIds/accountIds (filtro por aluno, 24/07) — uuids válidos, teto 20.
+  userIds: t.Optional(t.String({ maxLength: 800 })),
   limit: t.Optional(t.Numeric({ minimum: 1 })),
   offset: t.Optional(t.Numeric({ minimum: 0 })),
 })
@@ -359,6 +362,7 @@ export function contentRoutes(deps: ContentRoutesDeps) {
             courseId: query.courseId,
             audience: query.audience,
             status: query.status,
+            userIds: parseUserIds(query.userIds),
             limit: clampLimit(query.limit),
             offset: query.offset ?? 0,
           })

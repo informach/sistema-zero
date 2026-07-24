@@ -8,10 +8,13 @@ import { Select } from '@sistemazero/ui/select'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { Textarea } from '@sistemazero/ui/textarea'
 import { TriangleAlert } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { useConfirm } from '@/components/admin/use-confirm'
 import { ImageUploader } from '@/components/media/image-uploader'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import { courseSaveError } from '@/lib/course-errors'
 import { loadAllPages } from '@/lib/load-all-pages'
 import { slugify } from '@/lib/slug'
 import {
@@ -63,8 +66,11 @@ const EMPTY: FormState = {
   sequentialLock: true,
 }
 
-/** Nº de posições da etapa: só Iniciante 2D tem 6; as demais têm 5 (espelha o CHECK 0049). */
-function slotsForTier(level: string, track: string): number {
+/**
+ * Nº de posições da etapa: só Iniciante 2D tem 6; as demais têm 5 (espelha o CHECK
+ * 0049). Exportada SÓ p/ a trava de conformance admin×core (`career-tier-conformance`).
+ */
+export function slotsForTier(level: string, track: string): number {
   return level === 'iniciante' && track === '2d' ? 6 : 5
 }
 
@@ -125,6 +131,8 @@ export function CourseFormDialog({
   // Slug auto do título só na CRIAÇÃO; para quando o autor edita o slug à mão.
   const [slugDirty, setSlugDirty] = useState(false)
   const [kidsCourses, setKidsCourses] = useState<CourseView[]>(careerCourses ?? [])
+  const router = useRouter()
+  const { confirm, confirmDialog } = useConfirm()
 
   // Reinicializa o formulário toda vez que o dialog abre (ou troca de alvo aberto).
   useEffect(() => {
@@ -138,29 +146,33 @@ export function CourseFormDialog({
     }
   }, [open, editing, prefill])
 
-  // Ocupação das posições: usa a lista recebida ou busca os cursos Kids ao abrir.
+  /**
+   * Re-busca a ocupação das posições da API e SOBRESCREVE o estado — a prop
+   * `careerCourses` é só o seed inicial (num 409 de posição a lista da prop já
+   * está velha; sem o fetch o Select seguiria mentindo).
+   */
+  const refreshOccupancy = useCallback(async () => {
+    try {
+      const courses = await loadAllPages((pageOffset, limit) =>
+        apiGet<Paginated<CourseView>>(
+          `/api/members/courses?audience=kids&limit=${limit}&offset=${pageOffset}`,
+        ),
+      )
+      setKidsCourses(courses)
+    } catch {
+      /* ocupação é auxiliar — silencie a falha, o Select ainda funciona */
+    }
+  }, [])
+
+  // Ocupação das posições: usa a lista recebida (seed) ou busca os cursos Kids ao abrir.
   useEffect(() => {
     if (!open) return
     if (careerCourses) {
       setKidsCourses(careerCourses)
       return
     }
-    let cancelled = false
-    void loadAllPages((pageOffset, limit) =>
-      apiGet<Paginated<CourseView>>(
-        `/api/members/courses?audience=kids&limit=${limit}&offset=${pageOffset}`,
-      ),
-    )
-      .then((courses) => {
-        if (!cancelled) setKidsCourses(courses)
-      })
-      .catch(() => {
-        /* ocupação é auxiliar — silencie a falha, o Select ainda funciona */
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [open, careerCourses])
+    void refreshOccupancy()
+  }, [open, careerCourses, refreshOccupancy])
 
   const isKids = form.audience === 'kids'
   const maxSlot = slotsForTier(form.level, form.track)
@@ -169,6 +181,52 @@ export function CourseFormDialog({
     if (c.careerSlot != null && c.level === form.level && (c.track ?? '2d') === form.track) {
       occupantBySlot.set(c.careerSlot, c)
     }
+  }
+
+  /**
+   * Avisos PRÉ-SALVAR (informar, nunca bloquear além do que o server já bloqueia):
+   * checklist da TRANSIÇÃO p/ publicado + mudança de audiência com matrícula ativa.
+   * Zero avisos → salva direto, sem fricção.
+   */
+  async function collectSaveWarnings(): Promise<string[]> {
+    const warnings: string[] = []
+    const publishing = form.status === 'published' && editing?.status !== 'published'
+    if (publishing) {
+      if (!form.coverImageUrl.trim())
+        warnings.push('Curso sem imagem de capa — o card do catálogo fica sem arte.')
+      if (!form.description.trim()) warnings.push('Curso sem descrição.')
+      // Pré-aviso amigável do 409 NO_SHOWCASE_BLOCK (só quando dá pra saber: o campo
+      // `hasShowcaseBlock` vem na listagem — aberto pelo editor ele é undefined e o
+      // server cobre com o 409).
+      if (form.careerSlot === '1' && editing?.hasShowcaseBlock === false) {
+        warnings.push(
+          'Curso-base sem aula publicada com vitrine (Publicar no Mural) — o server vai recusar a publicação.',
+        )
+      }
+    }
+    // Mudança de AUDIÊNCIA de curso publicado: avisa quando há matrícula ativa
+    // (fetch falhou → avisa sempre; limitação aceita: matrícula só por chave-mestra
+    // não casa o filtro por courseRef).
+    if (
+      editing &&
+      form.audience !== (editing.audience ?? 'adult') &&
+      editing.status === 'published'
+    ) {
+      let suffix = ''
+      try {
+        const res = await apiGet<{ total: number }>(
+          `/api/members?courseRef=${encodeURIComponent(editing.slug)}&status=active&limit=1`,
+        )
+        if (res.total === 0) return warnings // sem matrícula → troca sem fricção
+        suffix = ` ${res.total} conta(s) com matrícula ativa mantêm o acesso, mas`
+      } catch {
+        suffix = ' Alunos matriculados mantêm o acesso, mas'
+      }
+      warnings.push(
+        `Trocar a audiência move o curso para a outra plataforma.${suffix} o curso sai da vitrine atual — e curso Kids fica fora da chave-mestra "todos os cursos".`,
+      )
+    }
+    return warnings
   }
 
   async function save() {
@@ -180,6 +238,28 @@ export function CourseFormDialog({
       toast.error('A página de vendas precisa ser uma URL completa (começando com https://).')
       return
     }
+    setSaving(true)
+    const warnings = await collectSaveWarnings()
+    if (warnings.length > 0) {
+      setSaving(false)
+      confirm({
+        title: form.status === 'published' ? 'Publicar mesmo assim?' : 'Salvar mesmo assim?',
+        message: (
+          <ul className="list-disc space-y-1 pl-5">
+            {warnings.map((w) => (
+              <li key={w}>{w}</li>
+            ))}
+          </ul>
+        ),
+        confirmText: 'Salvar mesmo assim',
+        onConfirm: () => doSave(),
+      })
+      return
+    }
+    await doSave()
+  }
+
+  async function doSave() {
     setSaving(true)
     try {
       const payload = {
@@ -207,7 +287,22 @@ export function CourseFormDialog({
       onClose()
       await onSaved()
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Não foi possível salvar.')
+      const apiErr = err as ApiError
+      const mapped = courseSaveError(apiErr.code, apiErr.message ?? 'Não foi possível salvar.')
+      if (mapped.hint === 'showcase' && editing) {
+        // A correção acontece no editor de AULA — CTA leva ao conteúdo do curso.
+        toast.error(mapped.message, {
+          action: {
+            label: 'Abrir conteúdo do curso',
+            onClick: () => router.push(`/admin/membros/cursos/${editing.id}`),
+          },
+          duration: 10000,
+        })
+      } else {
+        toast.error(mapped.message)
+      }
+      if (mapped.hint === 'occupancy') void refreshOccupancy()
+      if (mapped.hint === 'reload') await onSaved() // a listagem re-busca por trás
     } finally {
       setSaving(false)
     }
@@ -232,6 +327,7 @@ export function CourseFormDialog({
       }
     >
       <div className="flex flex-col gap-4">
+        {confirmDialog}
         <Field label="Título" htmlFor="title" hint="O slug é gerado automaticamente a partir dele.">
           <Input
             id="title"
@@ -319,8 +415,9 @@ export function CourseFormDialog({
                   ...f,
                   level: nextLevel,
                   track: nextTrack,
-                  // Trocar de etapa pode reduzir 6→5 posições: limpa se sobrar.
-                  careerSlot: slotNum > max ? '' : f.careerSlot,
+                  // Trocar de etapa pode reduzir 6→5 posições: limpa se sobrar. Lenda
+                  // é FORA da carreira → nunca tem posição.
+                  careerSlot: nextLevel === 'lenda' || slotNum > max ? '' : f.careerSlot,
                 }
               })
             }}
@@ -330,53 +427,65 @@ export function CourseFormDialog({
                 {o.label}
               </option>
             ))}
+            {/* Lenda = categoria FORA da carreira (não é degrau; não entra em
+                COURSE_TIER_OPTIONS): cursos bônus que aparecem só na trilha da Lenda. */}
+            <option value="lenda:2d">👑 Lenda (curso bônus da formatura)</option>
           </Select>
         </Field>
-        <Field
-          label="Posição na Carreira do Criador"
-          htmlFor="career-slot"
-          tooltip="Ordena os cursos Kids dentro da etapa. A posição 1 é o CURSO-BASE: o aluno precisa concluí-lo e publicar no Mural para as demais posições da etapa liberarem. 'Bônus' é a RECOMPENSA da etapa: abre quando o aluno completa todos os cursos com posição (etapa sem curso-base publicado não trava o bônus)."
-          hint={
-            isKids
-              ? '1 é o curso-base da etapa (destrava as demais posições). Bônus vira recompensa: abre quando a etapa completa.'
-              : 'Disponível apenas para cursos Kids.'
-          }
-        >
-          <Select
-            id="career-slot"
-            value={form.careerSlot}
-            disabled={!isKids}
-            onChange={(e) => setForm((f) => ({ ...f, careerSlot: e.target.value }))}
+        {form.level === 'lenda' ? (
+          <p className="rounded-lg bg-muted/50 px-3 py-2 text-muted-foreground text-xs">
+            👑 Curso bônus da <strong>Lenda</strong> (formatura): FORA da carreira — sem posição,
+            não conta pontos e não trava. Aparece só na trilha da Lenda em <code>/cursos</code>,
+            para quem já chegou ao topo.
+          </p>
+        ) : (
+          <Field
+            label="Posição na Carreira do Criador"
+            htmlFor="career-slot"
+            tooltip="Ordena os cursos Kids dentro da etapa. A posição 1 é o CURSO-BASE: o aluno precisa concluí-lo e publicar no Mural para as demais posições da etapa liberarem. 'Bônus' é a RECOMPENSA da etapa: abre quando o aluno completa todos os cursos com posição (etapa sem curso-base publicado não trava o bônus)."
+            hint={
+              isKids
+                ? '1 é o curso-base da etapa (destrava as demais posições). Bônus vira recompensa: abre quando a etapa completa.'
+                : 'Disponível apenas para cursos Kids.'
+            }
           >
-            <option value="">Nenhuma — bônus (recompensa: abre quando a etapa completa)</option>
-            {Array.from({ length: maxSlot }, (_, i) => i + 1).map((slot) => {
-              const occ = occupantBySlot.get(slot)
-              const takenByOther = !!occ && occ.id !== editing?.id
-              const base =
-                slot === 1 ? '1 — Curso-base da etapa (destrava os outros)' : String(slot)
-              const suffix = occ
-                ? occ.id === editing?.id
-                  ? ' — este curso'
-                  : ` — ocupado: ${occ.title}`
-                : ''
-              return (
-                <option key={slot} value={String(slot)} disabled={takenByOther}>
-                  {base + suffix}
-                </option>
-              )
-            })}
-          </Select>
-          {editing?.careerSlot === 1 &&
-          editing.status === 'published' &&
-          editing.hasShowcaseBlock === false ? (
-            <p className="mt-1.5 flex items-start gap-1.5 text-destructive text-xs" role="alert">
-              <TriangleAlert className="mt-0.5 size-3.5 shrink-0" />
-              Este curso-base ainda não tem aula publicada com bloco de Estúdio com vitrine
-              (Publicar no Mural). Sem isso o aluno nunca qualifica a posição 1 e a etapa não
-              destrava.
-            </p>
-          ) : null}
-        </Field>
+            <Select
+              id="career-slot"
+              value={form.careerSlot}
+              disabled={!isKids}
+              onChange={(e) => setForm((f) => ({ ...f, careerSlot: e.target.value }))}
+            >
+              <option value="">Nenhuma — bônus (recompensa: abre quando a etapa completa)</option>
+              {Array.from({ length: maxSlot }, (_, i) => i + 1).map((slot) => {
+                const occ = occupantBySlot.get(slot)
+                const takenByOther = !!occ && occ.id !== editing?.id
+                const base =
+                  slot === 1 ? '1 — Curso-base da etapa (destrava os outros)' : String(slot)
+                const suffix = occ
+                  ? occ.id === editing?.id
+                    ? ' — este curso'
+                    : ` — ocupado: ${occ.title}`
+                  : ''
+                return (
+                  <option key={slot} value={String(slot)} disabled={takenByOther}>
+                    {base + suffix}
+                  </option>
+                )
+              })}
+            </Select>
+            {/* Preventivo: já publicado OU prestes a publicar (o 409 do server cobre o resto). */}
+            {editing?.hasShowcaseBlock === false &&
+            form.careerSlot === '1' &&
+            (editing.status === 'published' || form.status === 'published') ? (
+              <p className="mt-1.5 flex items-start gap-1.5 text-destructive text-xs" role="alert">
+                <TriangleAlert className="mt-0.5 size-3.5 shrink-0" />
+                Este curso-base ainda não tem aula publicada com bloco de Estúdio com vitrine
+                (Publicar no Mural). Sem isso o aluno nunca qualifica a posição 1 e a etapa não
+                destrava.
+              </p>
+            ) : null}
+          </Field>
+        )}
         <Field
           label="Trava sequencial das aulas"
           htmlFor="csequentiallock"

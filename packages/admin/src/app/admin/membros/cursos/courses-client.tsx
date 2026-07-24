@@ -224,7 +224,9 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
                     <div className="text-xs text-muted-foreground">{c.slug}</div>
                     {c.audience === 'kids' ? (
                       <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-                        {c.careerSlot == null ? (
+                        {c.level === 'lenda' ? (
+                          '👑 Lenda — curso bônus da formatura (aparece na trilha da Lenda; fora da carreira)'
+                        ) : c.careerSlot == null ? (
                           `Bônus — recompensa da etapa ${
                             COURSE_TIER_OPTIONS.find(
                               (option) => option.level === c.level && option.track === c.track,

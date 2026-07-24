@@ -9,8 +9,25 @@ import { useEffect, useState } from 'react'
 import { cn } from '@/lib/cn'
 import type { SessionUser } from '@/lib/types'
 import { activeHref, visibleGroups } from './nav'
+import {
+  ensureProfessorCounts,
+  type ProfessorCounts,
+  useProfessorOverview,
+} from './professor-counts-store'
 import { ThemeToggle } from './theme-toggle'
 import { UserMenu } from './user-menu'
+
+/** Chave do chip → número (moderação soma fila de aprovação + denúncias abertas). */
+function badgeCount(counts: ProfessorCounts | undefined, key: string): number | null {
+  if (!counts) return null
+  if (key === 'entregas') return counts.pendingSubmissions
+  if (key === 'recados') return counts.unreadThreads
+  if (key === 'moderacao') {
+    if (counts.moderationPending === null && counts.openReports === null) return null
+    return (counts.moderationPending ?? 0) + (counts.openReports ?? 0)
+  }
+  return null
+}
 
 /**
  * Navegação do painel em SIDEBAR com grupos (Sala do Professor · Gestão ·
@@ -21,15 +38,20 @@ import { UserMenu } from './user-menu'
 export function AdminSidebar({ user }: { user: SessionUser }) {
   const pathname = usePathname()
   const [drawerOpen, setDrawerOpen] = useState(false)
+  // UM store p/ as duas renderizações de NavGroups (desktop + drawer) — single-flight
+  // + TTL no módulo; navegação revalida (no-op dentro do TTL).
+  const overview = useProfessorOverview()
   const drawerRef = useModalA11y<HTMLDivElement>({
     open: drawerOpen,
     onClose: () => setDrawerOpen(false),
   })
 
-  // Navegou → fecha o drawer (link do menu ou voltar do navegador).
+  // Navegou → fecha o drawer (link do menu ou voltar do navegador) e revalida os
+  // contadores (no-op dentro do TTL do store).
   // biome-ignore lint/correctness/useExhaustiveDependencies: pathname é o gatilho
   useEffect(() => {
     setDrawerOpen(false)
+    void ensureProfessorCounts()
   }, [pathname])
 
   return (
@@ -39,7 +61,7 @@ export function AdminSidebar({ user }: { user: SessionUser }) {
         <div className="flex h-14 shrink-0 items-center border-b border-border px-4">
           <Logo />
         </div>
-        <NavGroups pathname={pathname} role={user.role} />
+        <NavGroups pathname={pathname} role={user.role} counts={overview?.counts} />
         <div className="flex shrink-0 items-center justify-between border-t border-border px-4 py-3">
           <ThemeToggle />
           <UserMenu user={user} dropdownSide="up" />
@@ -88,7 +110,7 @@ export function AdminSidebar({ user }: { user: SessionUser }) {
                 <X className="size-5" />
               </button>
             </div>
-            <NavGroups pathname={pathname} role={user.role} />
+            <NavGroups pathname={pathname} role={user.role} counts={overview?.counts} />
           </div>
         </div>
       ) : null}
@@ -120,7 +142,15 @@ function Logo() {
   )
 }
 
-function NavGroups({ pathname, role }: { pathname: string; role: string }) {
+function NavGroups({
+  pathname,
+  role,
+  counts,
+}: {
+  pathname: string
+  role: string
+  counts?: ProfessorCounts
+}) {
   const groups = visibleGroups(role)
   const active = activeHref(pathname)
 
@@ -154,6 +184,22 @@ function NavGroups({ pathname, role }: { pathname: string; role: string }) {
                         em breve
                       </span>
                     ) : null}
+                    {(() => {
+                      const count = item.badgeKey ? badgeCount(counts, item.badgeKey) : null
+                      return count ? (
+                        <>
+                          <span
+                            aria-hidden="true"
+                            className="ml-auto rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold leading-none text-primary-foreground"
+                          >
+                            {count > 99 ? '99+' : count}
+                          </span>
+                          <span className="sr-only">
+                            , {count} pendente{count === 1 ? '' : 's'}
+                          </span>
+                        </>
+                      ) : null
+                    })()}
                   </Link>
                 </li>
               )

@@ -236,8 +236,22 @@ function CareerNode({
     )
   }
 
-  // Lenda não tem trilha p/ abrir — o nó é a própria celebração.
+  // Lenda (god): não estuda um degrau, mas TEM trilha — os cursos bônus da formatura
+  // (nível `lenda`). Liberada (a criança é Lenda) → navega como os demais.
   if (!tier) {
+    if (slug === 'god') {
+      return (
+        <li className={rowClass} style={positionStyle}>
+          <Link
+            href="/cursos/trilha/god"
+            aria-label={`${info.label} — abrir os cursos bônus da Lenda`}
+            className="relative block"
+          >
+            {inner}
+          </Link>
+        </li>
+      )
+    }
     return (
       <li className={rowClass} style={positionStyle}>
         <span className="relative block">{inner}</span>

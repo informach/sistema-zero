@@ -104,6 +104,20 @@ export class CourseConflictError extends DomainError {
   }
 }
 
+/**
+ * Curso-base kids (careerSlot=1) publicado SEM aula publicada com bloco de Estúdio de
+ * vitrine (`showcase.enabled`) — o aluno nunca qualificaria o slot e a etapa da carreira
+ * travaria (armadilha do fail-open, full review 24/07). → 409. Guard SÓ na transição.
+ */
+export class NoShowcaseBlockError extends DomainError {
+  readonly code = 'NO_SHOWCASE_BLOCK'
+  constructor(
+    message = 'Publique uma aula com bloco de Estúdio com vitrine (Publicar no Mural) antes de publicar o curso-base',
+  ) {
+    super(message)
+  }
+}
+
 /** Bloco de quiz inexistente (ou o bloco não é um quiz). → 404. */
 export class QuizBlockNotFoundError extends DomainError {
   readonly code = 'QUIZ_BLOCK_NOT_FOUND'

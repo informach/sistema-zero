@@ -5,7 +5,7 @@ import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { Download, Maximize2, MessageSquare, Minimize2 } from 'lucide-react'
+import { ArrowRight, Download, Maximize2, MessageSquare, Minimize2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { StudioEmbed } from '@/components/studio/studio-embed'
@@ -41,6 +41,12 @@ interface Props {
   courseId: string
   lessonId: string
   lessonTitle: string
+  /**
+   * "Próxima pendente" (fila global): troca a entrega SEM fechar o dialog — o
+   * professor corrige a fila em sequência. Opcional (a aba por-curso não passa).
+   */
+  onNext?: () => void
+  nextLabel?: string
 }
 
 /**
@@ -61,6 +67,8 @@ export function StudioSubmissionViewer({
   courseId,
   lessonId,
   lessonTitle,
+  onNext,
+  nextLabel,
 }: Props) {
   const [loading, setLoading] = useState(false)
   const [detail, setDetail] = useState<StudioSubmissionDetailView | null>(null)
@@ -111,6 +119,11 @@ export function StudioSubmissionViewer({
               {responsible ? <p>Responsável: {responsible}</p> : null}
             </div>
             <div className="flex items-center gap-2">
+              {onNext ? (
+                <Button size="sm" onClick={onNext}>
+                  {nextLabel ?? 'Próxima pendente'} <ArrowRight className="size-4" />
+                </Button>
+              ) : null}
               <Button variant="outline" size="sm" onClick={() => setMaximized((v) => !v)}>
                 {maximized ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
                 {maximized ? 'Restaurar' : 'Tela cheia'}
@@ -176,9 +189,10 @@ export function StudioSubmissionViewer({
             </Card>
           ) : null}
 
-          {/* key por aluno: remonta o editor (re-semeia) ao trocar de entrega. */}
+          {/* key por aluno+bloco: remonta o editor (re-semeia) ao trocar de entrega —
+              inclusive via "Próxima pendente" (mesmo aluno, bloco diferente). */}
           <StudioEmbed
-            key={userId}
+            key={`${userId}:${blockId}`}
             initialProject={detail.project}
             handleRef={viewerRef}
             className={maximized ? 'h-[75dvh]' : 'h-[32rem]'}

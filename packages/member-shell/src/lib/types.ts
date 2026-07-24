@@ -88,8 +88,12 @@ export interface AccessView {
   expiresAt: string | null
 }
 
-/** Dificuldade do curso (espelha o enum `course_level` do members). */
-export type CourseLevelSlug = 'iniciante' | 'intermediario' | 'avancado'
+/**
+ * Dificuldade do curso (espelha o enum `course_level` do members). `lenda` é uma
+ * categoria FORA da carreira (bônus da formatura, só na trilha da Lenda no kids) —
+ * NÃO é degrau: `courseTierOf` devolve `undefined` p/ ela.
+ */
+export type CourseLevelSlug = 'iniciante' | 'intermediario' | 'avancado' | 'lenda'
 
 /** Eixo 2D/3D do curso (espelha o enum `course_track` do members). Par com `level` = degrau. */
 export type CourseTrack = '2d' | '3d'

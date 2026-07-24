@@ -32,6 +32,7 @@ import {
   AdminTeacherThreadPageQuery,
   AdminTeacherThreadPostBody,
   AdminTeacherThreadsQuery,
+  AdminTeacherThreadsReadAllBody,
   AiUsageStatsQuery,
   ChallengeMonthParams,
   ChallengeOverrideBody,
@@ -44,6 +45,7 @@ import {
   ManageEntitlementBody,
   MemberDetailQuery,
   parseProfileIds,
+  parseUserIds,
   TeacherThreadReplyBody,
   UserIdParams,
 } from '../dtos'
@@ -205,12 +207,31 @@ export function adminRoutes(deps: AdminRoutesDeps) {
               contextType: query.context,
               courseId: query.courseId,
               unreadOnly: query.unread === 'true',
+              userIds: parseUserIds(query.userIds),
               limit: clampLimit(query.limit),
               offset: query.offset ?? 0,
             }),
           }
         },
         { query: AdminTeacherThreadsQuery },
+      )
+      // Badge da Sala do Professor — rota ESTÁTICA antes de `:id` (mesma régua do by-context).
+      .get('/teacher-threads/unread-count', async ({ headers }) => {
+        requireAdmin(headers, deps.requireAdminEnabled)
+        return deps.teacherThreads.unreadCountForAdmin(resolveUserId(headers))
+      })
+      // "Marcar todas como lidas" (escopo opcional = filtros da caixa) — estática antes de `:id`.
+      .post(
+        '/teacher-threads/read-all',
+        async ({ body, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.teacherThreads.markAllReadByTeacher(resolveUserId(headers), {
+            audience: body?.audience,
+            contextType: body?.context,
+            courseId: body?.courseId,
+          })
+        },
+        { body: AdminTeacherThreadsReadAllBody },
       )
       .post(
         '/teacher-threads',

@@ -45,6 +45,36 @@ BFFs novos: `GET /api/members/teacher-threads` (lista hidratada) + `[id]/{,messa
 `GET /api/members/studio-submissions` (fila global; adapter em `server/studio-submissions.ts`).
 A página Entregas REUSA o `StudioSubmissionViewer` da aba do curso (import cross-dir; mover p/
 `components/professor/` é limpeza futura). Testes puros da nav em `tests/nav.test.ts`.
+**Dia a dia do professor (full review 24/07):**
+- **Home do Professor** `/admin/professor` (item "Início", 1º do grupo → `homeForRole` aponta
+  pra cá): 4 cards de pendências (entregas pendentes/recados não-lidos/moderação/denúncias,
+  cada um linka a fila) + "Últimos recebidos" (5 entregas + 5 recados). Dados da rota agregada
+  **`GET /api/admin/professor-overview`** (fan-out paralelo BEST-EFFORT — fonte fora → count
+  `null`/"—", nunca 502; identidade dos recentes hidratada com `resolveSubmissionIdentities`).
+- **Badges na sidebar** (Entregas/Recados/Moderação): `NavItem.badgeKey` +
+  `components/admin/professor-counts-store.ts` — store singleton de MÓDULO com TTL 60s +
+  single-flight (a sidebar renderiza NavGroups 2×: desktop+drawer) + `useSyncExternalStore`;
+  revalida no mount/navegação/`visibilitychange` (no-op no TTL) e **`refreshProfessorCounts()`
+  é chamado nos pontos de MUTAÇÃO** (responder thread/panel, marcar lida, moderar, fechar o
+  viewer, read-all) — sem isso o badge mente 60s após a própria ação. NUNCA polling/SSE.
+- **Members novos** (rotas estáticas ANTES de `/:id` no members): `GET /members/admin/
+  teacher-threads/unread-count` (count POR STAFF — watermark individual) e `POST …/read-all`
+  (escopo opcional = filtros da caixa; devolve `{updated}`); o gateway wildcard já cobria.
+  Botão "Marcar todas como lidas" no recados-client (useConfirm, respeita filtros).
+- **"Próxima pendente"** no `StudioSubmissionViewer` (props opcionais `onNext`/`nextLabel` —
+  a fila global circula sem fechar o dialog; `StudioEmbed` re-keya por `userId:blockId`);
+  contador "N pendentes no total" nas Entregas (fetch paralelo `status=pending&limit=1` com o
+  MESMO escopo curso/plataforma — independe do filtro de situação/página).
+- **Modelos de resposta** (`components/professor/reply-templates.tsx`): dropdown "Modelos" nos
+  DOIS editores de resposta (thread-dialog + teacher-thread-panel) — localStorage
+  `sz:admin:reply-templates` (cap 20, por NAVEGADOR; padrão do studio-config-clipboard; members
+  é v2 se precisar compartilhar).
+- **Busca por aluno nas filas**: Entregas/Recados aceitam `?userId=` (links "Entregas do
+  aluno"/"Recados do aluno" na ficha 360, usando o APRENDIZ selecionado — conta = família,
+  perfil = só a criança; chip removível) e campo "Aluno" (busca livre com debounce 250ms →
+  BFF resolve nome/e-mail DO RESPONSÁVEL no auth `listUsers` → `userIds` csv no members, que
+  filtra `user_id OR account_id`; 0 contas → fila vazia sem ir ao members; >20 → hint "refine
+  a busca"). Buscar pelo nome da CRIANÇA exigiria busca de perfis no auth — fora de escopo.
 **Desafio do mês (07/2026):** `/admin/professor/desafio` (`desafio-client.tsx`) — janela de 12
 meses com o tema RESOLVIDO (badge Sorteado/Definido, mês corrente destacado "No ar agora"),
 dialog Alterar (fixos + custom ativos, aviso inline p/ o mês no ar: trocar tema NÃO afeta a
@@ -614,6 +644,37 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   um alerta ao editar — sem isso o slot 1 nunca qualifica e a etapa não destrava (Armadilha do
   Mural). A matriz operacional, o fail-open (etapa sem base publicada não trava) e as
   migrations `0048`/`0049` estão em `docs/carreira-do-criador.md`.
+  **Hardening da autoria (full review 24/07):**
+  - O members agora **BLOQUEIA** a transição p/ o estado-armadilha: PATCH que publica (ou dá
+    slot 1 a curso já publicado) curso kids slot-1 SEM vitrine → **409 `NO_SHOWCASE_BLOCK`**
+    (transição-only: curso JÁ preso segue editável). O dialog mapeia via
+    **`lib/course-errors.ts`** (`courseSaveError`, puro/testado): `CAREER_SLOT_CONFLICT` →
+    mensagem + **refetch da ocupação** (`refreshOccupancy` — a prop `careerCourses` virou só
+    SEED); `CONCURRENCY_CONFLICT` → "feche e reabra" (NUNCA rebasear silencioso);
+    `NO_SHOWCASE_BLOCK` → toast com action "Abrir conteúdo do curso". O alerta ⚠️ preventivo
+    também dispara quando o status VAI virar published.
+  - **Checklist pré-publicação** (informar, nunca bloquear além do server; só na TRANSIÇÃO e
+    só com aviso real): curso (sem capa/descrição/vitrine — `collectSaveWarnings` + modal
+    ÚNICO concatenado com o aviso de audiência) e aula (`saveLesson` → aula sem bloco = "aula
+    vazia", 1 GET on-demand na edição).
+  - **Mudança de audiência** de curso publicado: `GET /api/members?courseRef=&status=active&
+    limit=1` → matrícula ativa → modal com o N ("alunos mantêm acesso; curso sai da vitrine;
+    kids fica fora da chave-mestra"); fetch falhou → avisa sem o N. Limitação aceita:
+    matrícula só por chave-mestra não casa o filtro.
+  - **Ebook**: trocar o PDF agora **ATUALIZA o anexo do PDF anterior in-place**
+    (`addEbookAttachment(file, previousUrl?)` → PATCH do anexo; preserva a posição, sem
+    material órfão). O OBJETO antigo no R2 segue lá (dívida da fatia de mídia).
+  - **"Ver como aluno"** no editor de AULA: envs OPCIONAIS `COMMUNITY_URL`/`KIDS_COMMUNITY_URL`
+    (ausentes → botão oculto) → abre `<app da audience>/cursos/<slug>/aulas/<id>` em nova aba
+    com a PRÓPRIA conta de equipe (passe livre). SÓ habilita com curso E aula publicados
+    (rascunho → 404 na visão do aluno — o filtro roda ANTES do bypass de equipe); tooltip
+    avisa que travas/gamificação de aluno real não são simuladas. O editor busca a árvore do
+    curso no load (slug/audience/status + isPublished da aula).
+  - **Conformance admin×core**: `tests/career-tier-conformance.test.ts` trava
+    `COURSE_TIER_OPTIONS` ≡ `CAREER_COURSE_TIERS` (conjunto E ORDEM — o CareerReadiness deriva
+    6 slots de `index===0`) e `slotsForTier` (exportada do course-form-dialog) ≡
+    `CREATOR_CAREER_LEVELS.at(-1).requiredSlots` — import RELATIVO do core (precedente
+    badge-conformance do kids; sem dependência nova).
   **Convite multi-plataforma**: `POST /auth/admin/users` aceita
   `platform: 'main'|'kids'` (select "Plataforma do convite" no dialog — decide a base do link do
   e-mail `welcome`); impersonação aceita `?platform=kids` (`impersonateUser(id, platform?)` em
@@ -622,11 +683,29 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   Páginas em `app/admin/membros/cursos/*` (lista + editor de curso + editor
   de aula com formulários por tipo de bloco). Adapter em `src/server/members.ts`; views em
   `src/lib/types.ts`.
-  **Bloco `studio` (06/2026):** o form de bloco embute o **`@sistemazero/studio`**
-  (`components/studio/studio-embed.tsx`, dynamic ssr:false, `persistence:'none'`) — o admin monta o
-  PROJETO INICIAL (tipo/código/nome) e o `saveBlock` captura via `handleRef.getProject()`. O embed de
-  autoria oferece **Projeto em blocos** ou **Projeto Pro**, com os cinco templates
-  do catálogo compartilhado. Trocar tipo/modelo pede confirmação. Projeto Pro usa `proRuntime` pelo
+  **Bloco `studio` (06/2026; FORM REDESENHADO 24/07 — essencial × avançado):** o form embute o
+  **`@sistemazero/studio`** (`components/studio/studio-embed.tsx`, dynamic ssr:false,
+  `persistence:'none'`) — o admin monta o PROJETO INICIAL (código/nome/extensões DENTRO do
+  editor) e o `saveBlock` captura via `handleRef.getProject()`.
+  **Organização (decisão da usuária 24/07):** ESSENCIAL sempre visível = (1) **Tipo de
+  atividade** no TOPO ("Blocos e Ponte" × "Código Pro" — segmented; estado `studioKind` do
+  componente, NÃO vai no payload: o kind real vive no projeto) → (2) Projeto inicial (embed) →
+  (3) **Blocos visíveis** (picker; só no tipo Blocos) → (4) **Projeto contínuo** + toggle
+  **"Última aula do projeto — libera o Compartilhar"** (= `showcase.enabled`). O RESTO vive em
+  **"Configurações avançadas"** (colapsada; ABRE SOZINHA na edição quando algo está fora do
+  default): clipboard + nível + modos + categorias + revelar (só Blocos) · Atividade ·
+  extras da vitrine (título/resumo/capa — só editáveis com o toggle ligado). Escolher **Pro
+  esconde TODA a curadoria de blocos** (estado preservado — editar legado não perde valores)
+  e o payload OMITE `allowedModes` (o kind pro já resolve o modo Código).
+  **Modos (default NOVO 24/07):** bloco novo nasce `studioModes: ['blocks']` → emite
+  `allowedModes: ['blocks']` (aluno vê SÓ Blocos; Ponte é opt-in; Código NÃO é mais checkbox —
+  bloco LEGADO com 'code' mostra "Código (legado)" removível e preserva ao salvar; legado SEM
+  `allowedModes` segue = os 3 na edição).
+  **Props novas do StudioEmbed** (opcionais — viewer de entregas intocado): `hideKindChooser`
+  (esconde os botões internos; a barra só aparece no Pro c/ o seletor de modelo),
+  `requestedKind` (controle externo → mesmo confirm+replace da troca interna) e
+  `onKindResolved` (kind REAL: carga/troca/cancelamento — o form desfaz o segmented no cancel).
+  Trocar tipo/modelo pede confirmação. Projeto Pro usa `proRuntime` pelo
   BFF local `/api/studio/pro-runtime/build`, que exige sessão admin estrita e chama o executor remoto
   com `STUDIO_PRO_RUNTIME_URL` + `STUDIO_PRO_RUNTIME_TOKEN`. O mesmo adapter visualiza entregas Pro,
   sem exigir COEP/WebContainer na rota do Admin. O members recusa template Pro fora da allowlist.

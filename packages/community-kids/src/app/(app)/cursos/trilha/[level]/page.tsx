@@ -35,7 +35,10 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
   const levelSlug = LEVEL_ORDER.find((candidate) => candidate === raw)
   if (!levelSlug) notFound()
   const tier = LEVEL_TIER[levelSlug]
-  if (!tier) notFound() // Lenda (god) é o topo — não tem trilha própria.
+  // A Lenda (god) não estuda um degrau, mas TEM trilha: os cursos bônus da formatura
+  // (nível `lenda`). Os demais slugs sem tier não existem — 404.
+  if (!tier && levelSlug !== 'god') notFound()
+  const tierLabel = tier ? COURSE_TIER_LABELS[tier] : 'da Lenda'
 
   const [{ status, body }, gamification] = await Promise.all([
     listCatalog(),
@@ -91,9 +94,13 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
             <OwnerIcon className="size-6" style={{ color: owner.colorVar }} aria-hidden />
           </span>
           <div>
-            <h1 className="sz-display text-2xl md:text-3xl">Trilha {COURSE_TIER_LABELS[tier]}</h1>
+            <h1 className="sz-display text-2xl md:text-3xl">
+              {tier ? `Trilha ${tierLabel}` : 'Cursos da Lenda 👑'}
+            </h1>
             <p className="text-muted-foreground text-sm">
-              {trilhaSubtitle(levelSlug, COURSE_TIER_LABELS[tier], owner.label)}
+              {tier
+                ? trilhaSubtitle(levelSlug, tierLabel, owner.label)
+                : 'A formatura! Cursos extras que abriram por você ter chegado ao topo da carreira.'}
             </p>
           </div>
         </div>

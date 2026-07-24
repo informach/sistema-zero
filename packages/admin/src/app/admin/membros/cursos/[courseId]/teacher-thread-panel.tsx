@@ -6,7 +6,9 @@ import { Card } from '@sistemazero/ui/card'
 import { MessagesSquare, Send } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
 import { RichTextEditor } from '@/components/editor/rich-text-editor'
+import { ReplyTemplatesMenu } from '@/components/professor/reply-templates'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type { TeacherThreadView } from '@/lib/types'
 
@@ -86,6 +88,8 @@ export function TeacherThreadPanel({
       })
       setThread(updated)
       setReply('')
+      // Responder muda a pendência da entrega → badge da sidebar re-busca já.
+      refreshProfessorCounts()
     } catch (err) {
       toast.error((err as ApiError).message ?? 'Falha ao enviar o recado.')
     } finally {
@@ -167,7 +171,8 @@ export function TeacherThreadPanel({
         {/* Editor rico: negrito/listas/citação, código (inline e bloco) e PRINT (botão de
             imagem ou colar Ctrl+V) — para o professor explicar bem à criança. Saída markdown. */}
         <RichTextEditor content={reply} onChange={setReply} compact />
-        <div className="flex justify-end">
+        <div className="flex items-center justify-between gap-2">
+          <ReplyTemplatesMenu value={reply} onChange={setReply} />
           <Button size="sm" onClick={send} disabled={!reply.trim() || sending}>
             <Send className="size-4" /> Enviar
           </Button>

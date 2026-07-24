@@ -7,7 +7,9 @@ import { Skeleton } from '@sistemazero/ui/skeleton'
 import { Send } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
 import { RichTextEditor } from '@/components/editor/rich-text-editor'
+import { ReplyTemplatesMenu } from '@/components/professor/reply-templates'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type { TeacherThreadView } from '@/lib/types'
 
@@ -45,8 +47,11 @@ export function ThreadDialog({ threadId, studentName, onClose }: Props) {
       .finally(() => {
         if (active) setLoading(false)
       })
-    // Marca como lida ao abrir — best-effort (a lista recarrega ao fechar).
-    apiSend(`/api/members/teacher-threads/${threadId}/read`, 'POST', {}).catch(() => {})
+    // Marca como lida ao abrir — best-effort (a lista recarrega ao fechar); o badge
+    // da sidebar re-busca junto (senão fica 60s mentindo depois da leitura).
+    apiSend(`/api/members/teacher-threads/${threadId}/read`, 'POST', {})
+      .then(() => refreshProfessorCounts())
+      .catch(() => {})
     return () => {
       active = false
     }
@@ -142,7 +147,8 @@ export function ThreadDialog({ threadId, studentName, onClose }: Props) {
 
           <div className="space-y-2">
             <RichTextEditor content={reply} onChange={setReply} compact />
-            <div className="flex justify-end">
+            <div className="flex items-center justify-between gap-2">
+              <ReplyTemplatesMenu value={reply} onChange={setReply} />
               <Button size="sm" onClick={send} disabled={!reply.trim() || sending}>
                 <Send className="size-4" /> Enviar
               </Button>

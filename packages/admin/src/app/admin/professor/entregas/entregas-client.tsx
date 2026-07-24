@@ -3,10 +3,12 @@
 import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
+import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Select } from '@sistemazero/ui/select'
 import { Skeleton } from '@sistemazero/ui/skeleton'
-import { Inbox, MessageSquare } from 'lucide-react'
+import { Inbox, MessageSquare, X } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 // Viewer compartilhado com a aba "Entregas" do editor de curso (mesma tela de
@@ -14,6 +16,7 @@ import { toast } from 'sonner'
 // `teacher-thread-panel` tem WIP concorrente).
 import { StudioSubmissionViewer } from '@/app/admin/membros/cursos/[courseId]/studio-submission-viewer'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
 import { type ApiError, apiGet } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import type { CourseView, Paginated, StudioSubmissionQueueRow } from '@/lib/types'
@@ -32,6 +35,7 @@ function studentNameOf(s: StudioSubmissionQueueRow): string {
  * de entregas do curso (Estúdio embutido + conversa com o aluno).
  */
 export function EntregasClient() {
+  const searchParams = useSearchParams()
   const [items, setItems] = useState<StudioSubmissionQueueRow[]>([])
   const [total, setTotal] = useState(0)
   const [offset, setOffset] = useState(0)
@@ -41,6 +45,20 @@ export function EntregasClient() {
   const [status, setStatus] = useState('')
   const [courses, setCourses] = useState<CourseView[]>([])
   const [open, setOpen] = useState<StudioSubmissionQueueRow | null>(null)
+  /** Total de pendentes no escopo curso/plataforma (null = indisponível). */
+  const [pendingTotal, setPendingTotal] = useState<number | null>(null)
+  /** Filtro por aluno vindo da FICHA (`?userId=`) — chip removível. */
+  const [studentFilter, setStudentFilter] = useState<string | null>(
+    () => searchParams.get('userId') || null,
+  )
+  // Busca livre por RESPONSÁVEL (nome/e-mail, resolvida no auth) com debounce.
+  const [q, setQ] = useState('')
+  const [qDebounced, setQDebounced] = useState('')
+  const [hint, setHint] = useState<string | null>(null)
+  useEffect(() => {
+    const t = setTimeout(() => setQDebounced(q.trim()), 250)
+    return () => clearTimeout(t)
+  }, [q])
 
   const load = useCallback(
     async (nextOffset: number, append: boolean) => {
@@ -50,19 +68,37 @@ export function EntregasClient() {
         if (courseId) params.set('courseId', courseId)
         if (audience) params.set('audience', audience)
         if (status) params.set('status', status)
-        const res = await apiGet<{ items: StudioSubmissionQueueRow[]; total: number }>(
-          `/api/members/studio-submissions?${params}`,
-        )
+        if (studentFilter) params.set('userId', studentFilter)
+        else if (qDebounced) params.set('q', qDebounced)
+        const res = await apiGet<{
+          items: StudioSubmissionQueueRow[]
+          total: number
+          hint?: string
+        }>(`/api/members/studio-submissions?${params}`)
         setItems((prev) => (append ? [...prev, ...res.items] : res.items))
         setTotal(res.total)
         setOffset(nextOffset)
+        setHint(res.hint === 'refine' ? 'Muitos resultados no auth — refine a busca.' : null)
       } catch (err) {
         toast.error((err as ApiError).message ?? 'Falha ao carregar as entregas.')
       } finally {
         setLoading(false)
       }
+      // Total de PENDENTES do escopo curso/plataforma (independente da página e do
+      // filtro de situação) — o `total` da fila com status=pending, em paralelo.
+      try {
+        const pendingParams = new URLSearchParams({ status: 'pending', limit: '1' })
+        if (courseId) pendingParams.set('courseId', courseId)
+        if (audience) pendingParams.set('audience', audience)
+        const pending = await apiGet<{ total: number }>(
+          `/api/members/studio-submissions?${pendingParams}`,
+        )
+        setPendingTotal(pending.total)
+      } catch {
+        setPendingTotal(null)
+      }
     },
-    [courseId, audience, status],
+    [courseId, audience, status, studentFilter, qDebounced],
   )
 
   useEffect(() => {
@@ -76,7 +112,18 @@ export function EntregasClient() {
       .catch(() => {})
   }, [])
 
-  const pendingCount = items.filter((i) => !i.answered).length
+  // Próxima entrega PENDENTE depois da aberta (a fila circula: acabou → volta ao
+  // topo). Alimenta o botão "Próxima pendente" do viewer.
+  const nextPending = (() => {
+    if (!open) return null
+    const key = (s: StudioSubmissionQueueRow) => `${s.userId}:${s.blockId}`
+    const start = items.findIndex((s) => key(s) === key(open))
+    for (let step = 1; step <= items.length; step++) {
+      const candidate = items[(start + step) % items.length]
+      if (candidate && !candidate.answered && key(candidate) !== key(open)) return candidate
+    }
+    return null
+  })()
 
   return (
     <div className="space-y-6">
@@ -85,7 +132,33 @@ export function EntregasClient() {
         description="Fila unificada de entregas do Estúdio, de todos os cursos — pendentes primeiro."
       />
 
+      {studentFilter ? (
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium">
+            Filtrando por aluno{items[0] ? `: ${studentNameOf(items[0])}` : ''}
+            <button
+              type="button"
+              aria-label="Remover o filtro por aluno"
+              onClick={() => setStudentFilter(null)}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <X className="size-3.5" />
+            </button>
+          </span>
+        </div>
+      ) : null}
+
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+        {!studentFilter ? (
+          <Field label="Aluno" htmlFor="ent-q" hint="Busque pelo responsável (nome ou e-mail).">
+            <Input
+              id="ent-q"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Nome ou e-mail…"
+            />
+          </Field>
+        ) : null}
         <Field label="Curso" htmlFor="ent-course">
           <Select id="ent-course" value={courseId} onChange={(e) => setCourseId(e.target.value)}>
             <option value="">Todos</option>
@@ -112,10 +185,12 @@ export function EntregasClient() {
         </Field>
         {!loading && items.length > 0 ? (
           <p className="pb-2 text-xs text-muted-foreground">
-            {total} entregas{pendingCount > 0 ? ` · ${pendingCount} pendentes nesta página` : ''}
+            {total} entregas
+            {pendingTotal !== null ? ` · ${pendingTotal} pendentes no total` : ''}
           </p>
         ) : null}
       </div>
+      {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
 
       {loading && items.length === 0 ? (
         <div className="space-y-2">
@@ -189,8 +264,10 @@ export function EntregasClient() {
           open
           onClose={() => {
             setOpen(null)
-            // O professor pode ter respondido — recarrega p/ atualizar a pendência.
+            // O professor pode ter respondido — recarrega p/ atualizar a pendência
+            // (e o badge da sidebar junto).
             load(0, false)
+            refreshProfessorCounts()
           }}
           blockId={open.blockId}
           userId={open.userId}
@@ -200,6 +277,7 @@ export function EntregasClient() {
           courseId={open.courseId}
           lessonId={open.lessonId}
           lessonTitle={open.lessonTitle}
+          onNext={nextPending ? () => setOpen(nextPending) : undefined}
         />
       ) : null}
     </div>

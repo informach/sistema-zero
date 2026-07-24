@@ -108,4 +108,37 @@ describe('GET /members/admin/studio-submissions (fila global)', () => {
     const ids2 = page2.items.map((i: { blockId: string }) => i.blockId)
     for (const id of ids2) expect(ids1).not.toContain(id)
   })
+
+  test('filtro por aluno (?userIds=): casa userId E accountId; total acompanha', async () => {
+    const fakes = buildApp()
+    const PARENT = '44444444-4444-4444-4444-444444444444'
+    const { courseId, lessonIds } = seedSampleCourse(fakes.courses, 'curso-global-5')
+    seedSubmission(fakes, courseId, lessonIds[0], USER_A, new Date('2026-07-01T10:00:00Z'))
+    seedSubmission(fakes, courseId, lessonIds[0], USER_B, new Date('2026-07-02T10:00:00Z'))
+    // Entrega de PERFIL kids: userId = perfil, accountId = conta do responsável.
+    fakes.studioSubmissions.submissions.push({
+      id: randomUUID(),
+      userId: '55555555-5555-5555-5555-555555555555',
+      accountId: PARENT,
+      blockId: randomUUID(),
+      lessonId: lessonIds[0],
+      courseId,
+      project: { name: 'p', files: {} },
+      submittedAt: new Date('2026-07-03T10:00:00Z'),
+    })
+
+    const byUser = await readJson(await listAll(fakes.app, `?userIds=${USER_A}`))
+    expect(byUser.total).toBe(1)
+    expect(byUser.items[0].userId).toBe(USER_A)
+
+    // Pelo ACCOUNT do responsável acha a entrega da criança.
+    const byAccount = await readJson(await listAll(fakes.app, `?userIds=${PARENT}`))
+    expect(byAccount.total).toBe(1)
+    expect(byAccount.items[0].accountId).toBe(PARENT)
+
+    // CSV com lixo → só o uuid válido filtra; só lixo → filtro ignorado.
+    const mixed = await readJson(await listAll(fakes.app, `?userIds=lixo,${USER_B}`))
+    expect(mixed.total).toBe(1)
+    expect((await readJson(await listAll(fakes.app, '?userIds=lixo'))).total).toBe(3)
+  })
 })

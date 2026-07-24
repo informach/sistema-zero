@@ -298,13 +298,19 @@ export const AUDIENCE_LABELS: Record<CourseAudience, string> = {
   kids: 'Kids',
 }
 
-/** Dificuldade do curso. Alimenta o nível do ALUNO (cursos qualificados por degrau). */
-export const COURSE_LEVELS = ['iniciante', 'intermediario', 'avancado'] as const
+/**
+ * Dificuldade do curso. As 3 primeiras alimentam o nível do ALUNO (degraus da
+ * carreira). `lenda` é uma categoria À PARTE, FORA da carreira: cursos bônus "de
+ * formatura" que aparecem só na trilha da Lenda (kids) — NÃO é degrau, por isso NÃO
+ * entra em `COURSE_TIER_OPTIONS` (travado por conformance com o core).
+ */
+export const COURSE_LEVELS = ['iniciante', 'intermediario', 'avancado', 'lenda'] as const
 export type CourseLevel = (typeof COURSE_LEVELS)[number]
 export const LEVEL_LABELS: Record<CourseLevel, string> = {
   iniciante: 'Iniciante',
   intermediario: 'Intermediário',
   avancado: 'Avançado',
+  lenda: 'Lenda',
 }
 
 /** Eixo 2D/3D do curso (par com `level` = DEGRAU pedagógico; reforma 07/2026). */
@@ -330,8 +336,9 @@ export const COURSE_TIER_OPTIONS: readonly {
   { level: 'avancado', track: '3d', label: 'Avançado 3D' },
 ]
 
-/** Rótulo do degrau de um curso (listagens/badges). */
+/** Rótulo do degrau de um curso (listagens/badges). `lenda` não é degrau → "Lenda". */
 export function courseTierLabel(level: string, track?: string): string {
+  if (level === 'lenda') return 'Lenda'
   const found = COURSE_TIER_OPTIONS.find((o) => o.level === level && o.track === (track ?? '2d'))
   return found?.label ?? level
 }

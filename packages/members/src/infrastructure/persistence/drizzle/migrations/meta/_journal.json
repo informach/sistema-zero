@@ -365,6 +365,13 @@
       "when": 1785000100000,
       "tag": "0051_teacher_thread_staff_reads",
       "breakpoints": true
+    },
+    {
+      "idx": 52,
+      "version": "7",
+      "when": 1785000200000,
+      "tag": "0052_course_level_lenda",
+      "breakpoints": true
     }
   ]
 }

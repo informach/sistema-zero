@@ -1,6 +1,6 @@
 import 'server-only'
 import { type GatewayResponse, gatewayFetch } from '@/server/gateway'
-import { batchGetUsers, getUserProfiles } from '@/server/users'
+import { batchGetUsers, getUserProfiles, listUsers } from '@/server/users'
 
 /** Linha crua da fila global (members) — identidade hidratada aqui no BFF. */
 export interface RawGlobalSubmission extends RawSubmissionIdentity {
@@ -24,6 +24,8 @@ export function listAllStudioSubmissions(p: {
   courseId?: string
   audience?: string
   status?: string
+  /** Filtro por aluno (userId do perfil OU accountId do responsável — csv no members). */
+  userIds?: string[]
   limit?: number
   offset?: number
 }): Promise<GatewayResponse<{ items: RawGlobalSubmission[]; total: number }>> {
@@ -32,10 +34,28 @@ export function listAllStudioSubmissions(p: {
       courseId: p.courseId,
       audience: p.audience,
       status: p.status,
+      userIds: p.userIds?.length ? p.userIds.join(',') : undefined,
       limit: p.limit,
       offset: p.offset,
     },
   })
+}
+
+/**
+ * Busca livre → userIds (degrau 2): resolve `q` (nome/e-mail do RESPONSÁVEL) no
+ * auth e devolve os ids p/ o filtro do members. `null` = sem busca (não filtra);
+ * `[]` = busca sem resultado (a fila devolve vazio SEM ir ao members). >20 contas →
+ * usa as 20 primeiras (a UI avisa "refine a busca" via `hint`).
+ */
+export async function resolveStudentQuery(
+  q: string | undefined,
+): Promise<{ userIds: string[] | null; hint?: 'refine' }> {
+  const query = q?.trim()
+  if (!query) return { userIds: null }
+  const res = await listUsers({ q: query, limit: 20 })
+  if (res.status !== 200 || !res.body) return { userIds: [] }
+  const ids = res.body.items.map((u) => u.id)
+  return { userIds: ids, hint: res.body.total > 20 ? 'refine' : undefined }
 }
 
 /** Campos mínimos de uma entrega p/ resolver a identidade (quem entregou/responsável). */

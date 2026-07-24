@@ -260,7 +260,172 @@ describe('Members HTTP — autoria: cursos', () => {
     expect(conflict.status).toBe(409)
     expect((await readJson(conflict)).error.code).toBe('CAREER_SLOT_CONFLICT')
   })
+})
 
+describe('Members HTTP — autoria: vitrine do curso-base (NO_SHOWCASE_BLOCK, 24/07)', () => {
+  /** Módulo + aula (publicada ou rascunho) + opcionalmente o bloco de Estúdio de vitrine. */
+  async function addLesson(
+    app: App,
+    courseId: string,
+    opts: { isPublished: boolean; showcase: boolean },
+  ): Promise<{ lessonId: string; blockId: string | null }> {
+    const mod = await readJson(
+      await send(app, `/members/admin/courses/${courseId}/modules`, 'POST', {
+        title: 'Módulo 1',
+        summary: null,
+      }),
+    )
+    const lesson = await readJson(
+      await send(app, `/members/admin/modules/${mod.id}/lessons`, 'POST', {
+        slug: `aula-${opts.isPublished ? 'pub' : 'draft'}-${opts.showcase ? 'vitrine' : 'comum'}`,
+        title: 'Aula',
+        estimatedMinutes: null,
+        isPublished: opts.isPublished,
+      }),
+    )
+    let blockId: string | null = null
+    if (opts.showcase) {
+      const block = await readJson(
+        await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+          content: {
+            kind: 'studio',
+            initialProject: { name: 'Jogo', files: { 'index.html': '' } },
+            showcase: { enabled: true, title: 'Meu jogo' },
+          },
+        }),
+      )
+      blockId = block.id
+    }
+    return { lessonId: lesson.id, blockId }
+  }
+
+  test('publicar curso-base kids SEM vitrine → 409 NO_SHOWCASE_BLOCK', async () => {
+    const { app } = buildApp()
+    const base = await createCourse(app, {
+      slug: 'base-sem-vitrine',
+      audience: 'kids',
+      careerSlot: 1,
+    })
+    await addLesson(app, base.id, { isPublished: true, showcase: false })
+    const res = await patchCourse(app, base.id, {
+      ...COURSE,
+      slug: 'base-sem-vitrine',
+      audience: 'kids',
+      careerSlot: 1,
+      status: 'published',
+    })
+    expect(res.status).toBe(409)
+    expect((await readJson(res)).error.code).toBe('NO_SHOWCASE_BLOCK')
+  })
+
+  test('com bloco de vitrine em aula publicada → publica 200', async () => {
+    const { app } = buildApp()
+    const base = await createCourse(app, { slug: 'base-ok', audience: 'kids', careerSlot: 1 })
+    await addLesson(app, base.id, { isPublished: true, showcase: true })
+    const res = await patchCourse(app, base.id, {
+      ...COURSE,
+      slug: 'base-ok',
+      audience: 'kids',
+      careerSlot: 1,
+      status: 'published',
+    })
+    expect(res.status).toBe(200)
+    expect((await readJson(res)).status).toBe('published')
+  })
+
+  test('vitrine SÓ em aula rascunho não conta → 409', async () => {
+    const { app } = buildApp()
+    const base = await createCourse(app, { slug: 'base-draft', audience: 'kids', careerSlot: 1 })
+    await addLesson(app, base.id, { isPublished: true, showcase: false }) // satisfaz NO_PUBLISHED_LESSON
+    await addLesson(app, base.id, { isPublished: false, showcase: true }) // vitrine escondida
+    const res = await patchCourse(app, base.id, {
+      ...COURSE,
+      slug: 'base-draft',
+      audience: 'kids',
+      careerSlot: 1,
+      status: 'published',
+    })
+    expect(res.status).toBe(409)
+    expect((await readJson(res)).error.code).toBe('NO_SHOWCASE_BLOCK')
+  })
+
+  test('fail-open: adult, kids sem slot e kids slot 2 publicam sem vitrine', async () => {
+    const { app } = buildApp()
+    for (const [slug, over] of [
+      ['adulto', {}],
+      ['kids-bonus', { audience: 'kids' }],
+      ['kids-slot2', { audience: 'kids', careerSlot: 2 }],
+    ] as const) {
+      const course = await createCourse(app, { slug, ...over })
+      await addLesson(app, course.id, { isPublished: true, showcase: false })
+      const res = await patchCourse(app, course.id, {
+        ...COURSE,
+        slug,
+        ...over,
+        status: 'published',
+      })
+      expect(res.status).toBe(200)
+    }
+  })
+
+  test('dar slot 1 a curso kids JÁ publicado sem vitrine → 409 (2º caminho da armadilha)', async () => {
+    const { app } = buildApp()
+    const course = await createCourse(app, { slug: 'kids-vira-base', audience: 'kids' })
+    await addLesson(app, course.id, { isPublished: true, showcase: false })
+    expect(
+      (
+        await patchCourse(app, course.id, {
+          ...COURSE,
+          slug: 'kids-vira-base',
+          audience: 'kids',
+          status: 'published',
+        })
+      ).status,
+    ).toBe(200)
+    const res = await patchCourse(app, course.id, {
+      ...COURSE,
+      slug: 'kids-vira-base',
+      audience: 'kids',
+      careerSlot: 1,
+      status: 'published',
+    })
+    expect(res.status).toBe(409)
+    expect((await readJson(res)).error.code).toBe('NO_SHOWCASE_BLOCK')
+  })
+
+  test('curso JÁ preso segue editável (guard é só na TRANSIÇÃO)', async () => {
+    const { app } = buildApp()
+    // Entra no estado-armadilha por um caminho legal: publica COM vitrine e depois
+    // remove o bloco (o caminho inverso é desguardado DE PROPÓSITO — follow-up doc).
+    const base = await createCourse(app, { slug: 'base-presa', audience: 'kids', careerSlot: 1 })
+    const { blockId } = await addLesson(app, base.id, { isPublished: true, showcase: true })
+    expect(
+      (
+        await patchCourse(app, base.id, {
+          ...COURSE,
+          slug: 'base-presa',
+          audience: 'kids',
+          careerSlot: 1,
+          status: 'published',
+        })
+      ).status,
+    ).toBe(200)
+    expect((await send(app, `/members/admin/blocks/${blockId}`, 'DELETE')).status).toBe(200)
+    // Preso — mas um PATCH de título que MANTÉM published+slot1 não é transição → 200.
+    const res = await patchCourse(app, base.id, {
+      ...COURSE,
+      slug: 'base-presa',
+      audience: 'kids',
+      careerSlot: 1,
+      status: 'published',
+      title: 'Título corrigido',
+    })
+    expect(res.status).toBe(200)
+    expect((await readJson(res)).title).toBe('Título corrigido')
+  })
+})
+
+describe('Members HTTP — autoria: cursos (validações de borda)', () => {
   test('slug de curso duplicado → 409 DUPLICATE_SLUG', async () => {
     const { app } = buildApp()
     await createCourse(app)

@@ -816,7 +816,8 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     // `level` nunca é null na prática (todo marco pós-deploy tem snapshot); o guard
     // descarta uma linha residual sem dificuldade (curso apagado + snapshot legado null).
     for (const row of rows) {
-      if (!row.level || !row.track || row.careerSlot === null) continue
+      // `lenda` é FORA da carreira (também teria careerSlot null) → nunca conta.
+      if (!row.level || row.level === 'lenda' || !row.track || row.careerSlot === null) continue
       const slots = result[courseTier(row.level, row.track)]
       const slot = Number(row.careerSlot)
       if (!slots.includes(slot)) slots.push(slot)
@@ -867,7 +868,8 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       )
       .groupBy(xpEvents.userId, level, track, careerSlot)
     for (const row of rows) {
-      if (!row.level || !row.track || row.careerSlot === null) continue
+      // `lenda` é FORA da carreira (também teria careerSlot null) → nunca conta.
+      if (!row.level || row.level === 'lenda' || !row.track || row.careerSlot === null) continue
       let q = result.get(row.userId)
       if (!q) {
         q = emptyQualifyingByTier()

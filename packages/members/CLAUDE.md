@@ -1266,6 +1266,14 @@ foram backfilled `true` pelo default do DDL). Guard: criar/publicar curso com `s
 exige **≥1 aula publicada** → `NO_PUBLISHED_LESSON`(409) — e o invariante vale **pelo avesso**
 (06/2026): despublicar/excluir a ÚLTIMA aula publicada, ou excluir o módulo com as últimas,
 num curso `published` → 409 (`countPublishedLessons` com `excludeLessonId/excludeModuleId`).
+**Vitrine do curso-base (24/07):** o PATCH que TRANSICIONA um curso kids para
+`published`+`careerSlot=1` sem aula publicada com bloco de Estúdio `showcase.enabled` →
+**409 `NO_SHOWCASE_BLOCK`** (`NoShowcaseBlockError`; reusa `listCourseIdsWithShowcaseBlock`) —
+fecha a armadilha "aluno nunca qualifica o slot e a etapa trava". SÓ na transição (curso JÁ
+preso segue editável — rollout pré-career_slot); ⚠️ o caminho INVERSO (remover a vitrine de
+curso-base publicado) é desguardado DE PROPÓSITO — o aviso ⚠️ "Sem vitrine" da listagem cobre
+a detecção (follow-up se doer). Testes em `tests/integration/content.test.ts` (describe
+"vitrine do curso-base", 6 casos).
 Visão do ALUNO filtra rascunhos em tudo: outline (`findOutline(..., {publishedOnly:true})`),
 GET da aula/complete/posição de vídeo/quiz-attempt → 404 em aula rascunho, e o progresso usa
 numerador E denominador sobre publicadas (`countCompletedPublished*` × `countPublishedLessons*`
@@ -1300,12 +1308,19 @@ repo para o aluno, o professor e o webhook do Mural.
   `GET …/:id`, `POST …/:id/messages` (responder), `POST …/:id/read`. O aluno só RESPONDE a
   conversas SUAS (posse + vitrine conferidas → **404 sem vazar**); INICIAR é do professor/sistema.
 - **Rotas do PROFESSOR** (`admin.routes`, `requireAdmin`): `GET /members/admin/teacher-threads`
-  (filtros audience/context/course/unread), `GET …/by-context` (`?userId&contextType&contextRef` —
+  (filtros audience/context/course/unread + **`userIds` csv, 24/07** — uuids válidos teto 20 via
+  `parseUserIds`, casa `user_id` OU `account_id`: accountId pega a família, profileId estreita),
+  `GET …/by-context` (`?userId&contextType&contextRef` —
   o viewer da Entrega abre a conversa direto; `{thread:null}` = ainda não há; vem ANTES de `:id`),
+  **`GET …/unread-count`** (badge da Sala do Professor — count POR STAFF sobre o MESMO EXISTS do
+  `unreadForStaff`; estática ANTES de `:id`), **`POST …/read-all`** (marca TODAS as não-lidas
+  lidas p/ ESTE staff; escopo opcional audience/context/courseId; devolve `{updated}`; watermark
+  = `last_message_at` da própria thread — mensagem nova volta a contar; 24/07),
   `POST /members/admin/teacher-threads` (ABRIR/continuar por CONTEXTO — `studio_submission` exige
   `blockId`; `general` sem ref; o Mural entra por webhook), `GET …/:id`, `POST …/:id/messages`,
   `POST …/:id/read`. O `author_name` = nome do professor (header do gateway; vazio → a UI kids
-  mostra "Professor(a)").
+  mostra "Professor(a)"). A fila GLOBAL de entregas (`GET /members/admin/studio-submissions`)
+  também aceita **`userIds` csv** (mesma semântica user_id OR account_id; 24/07).
 - **Webhook do Mural** `POST /members/webhooks/mural-message` (hub→members, HMAC + dedupe
   obrigatório por `x-delivery-id`, canal `mural-message`): a equipe escondeu/recusou um jogo COM motivo → mensagem
   `teacher` numa conversa `mural_publication`. `context_ref` = id do tópico no HUB (**texto, NÃO

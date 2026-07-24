@@ -42,6 +42,9 @@ export const courseLevelEnum = members.enum('course_level', [
   'iniciante',
   'intermediario',
   'avancado',
+  // `lenda` = categoria de curso FORA da carreira (bônus da formatura; não é degrau,
+  // não conta p/ nível, não trava). Renderizado só na trilha da Lenda no kids.
+  'lenda',
 ])
 // Eixo 2D/3D do curso (ortogonal à dificuldade). Par (level, track) = o DEGRAU
 // pedagógico ("Iniciante 2D" … "Avançado 3D") que alimenta a carreira de 8 níveis.

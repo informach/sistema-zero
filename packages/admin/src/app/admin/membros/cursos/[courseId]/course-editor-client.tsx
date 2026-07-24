@@ -232,6 +232,37 @@ export function CourseEditorClient({
       toast.error('Informe slug e título da aula.')
       return
     }
+    // Checklist leve na TRANSIÇÃO p/ publicada: aula sem bloco = aula VAZIA pro
+    // aluno (permitido — só informa). Edição checa o conteúdo real (1 GET
+    // on-demand); criação com publicar ligado nasce sem blocos por definição.
+    const publishing = lessonForm.isPublished && !editingLesson?.isPublished
+    if (publishing) {
+      let empty = !editingLesson
+      if (editingLesson) {
+        try {
+          const content = await apiGet<{ blocks: unknown[] }>(
+            `/api/members/lessons/${editingLesson.id}/content`,
+          )
+          empty = content.blocks.length === 0
+        } catch {
+          empty = false // conteúdo indisponível → não atrapalha o salvar
+        }
+      }
+      if (empty) {
+        confirm({
+          title: 'Publicar aula vazia?',
+          message:
+            'Esta aula ainda não tem nenhum bloco de conteúdo — o aluno verá uma aula vazia. Publicar mesmo assim?',
+          confirmText: 'Publicar mesmo assim',
+          onConfirm: () => submitLesson(),
+        })
+        return
+      }
+    }
+    await submitLesson()
+  }
+
+  async function submitLesson() {
     const mins = lessonForm.estimatedMinutes.trim()
     const payload = {
       slug: lessonForm.slug.trim(),
