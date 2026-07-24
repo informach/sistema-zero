@@ -67,18 +67,42 @@ function Scene({
   // Câmera de órbita (drei `makeDefault` injeta em `state.controls`) — desligada no arraste.
   const controls = useThree((s) => s.controls) as unknown as { enabled: boolean } | null
 
-  // Células do CHÃO ocupadas por móveis (itens de parede NÃO contam) — o pet desvia delas.
+  // Células do CHÃO ocupadas por móveis (itens de parede e FILHOS em nicho NÃO contam) —
+  // o pet desvia delas.
   const occupied = useMemo(() => {
     const set = new Set<string>()
     for (const p of state.placedItems) {
       const info = ROOM_ITEM_INFO[p.itemId]
-      if (!info || info.mount === 'wall') continue
+      if (!info || info.mount === 'wall' || p.on) continue
       const fp = effectiveFootprint(info.w, info.h, (p.rot ?? 0) as Rot)
       for (let dx = 0; dx < fp.w; dx++) {
         for (let dz = 0; dz < fp.h; dz++) set.add(`${p.x + dx},${p.y + dz}`)
       }
     }
     return set
+  }, [state.placedItems])
+
+  // Filhos em SUPERFÍCIE agrupados pelo itemId do pai (24/07) — renderizam DENTRO do grupo
+  // do pai (herdam posição/rotação). `on` ambíguo (pai colocado 2×) resolve pra 1ª instância.
+  const stackedByParent = useMemo(() => {
+    const map = new Map<
+      string,
+      { index: number; itemId: string; slot: number; selected: boolean }[]
+    >()
+    state.placedItems.forEach((p, i) => {
+      if (!p.on || typeof p.slot !== 'number') return
+      const list = map.get(p.on) ?? []
+      list.push({ index: i, itemId: p.itemId, slot: p.slot, selected: selectedIndex === i })
+      map.set(p.on, list)
+    })
+    return map
+  }, [state.placedItems, selectedIndex])
+  const firstIndexByItemId = useMemo(() => {
+    const map = new Map<string, number>()
+    state.placedItems.forEach((p, i) => {
+      if (!p.on && !map.has(p.itemId)) map.set(p.itemId, i)
+    })
+    return map
   }, [state.placedItems])
 
   // Fundo/atmosfera por preset (restaura no unmount).
@@ -117,7 +141,8 @@ function Scene({
         if (i === idx) continue
         const it = state.placedItems[i]
         const inf = it && ROOM_ITEM_INFO[it.itemId]
-        if (!it || !inf) continue
+        // Filho em nicho não ocupa chão/parede.
+        if (!it || !inf || it.on) continue
         const otherWall = inf.mount === 'wall'
         if (isWall) {
           if (!otherWall || (it.wall ?? 'right') !== wall) continue
@@ -282,21 +307,27 @@ function Scene({
         painting={Boolean(paintColor)}
         onDeselect={() => onSelect?.(null)}
       />
-      {state.placedItems.map((p, i) => (
-        <FurniturePiece
-          // biome-ignore lint/suspicious/noArrayIndexKey: a ordem dos itens É a identidade aqui.
-          key={i}
-          index={i}
-          itemId={p.itemId}
-          x={p.x}
-          y={p.y}
-          rot={(p.rot ?? 0) as Rot}
-          wall={p.wall}
-          selected={editable && selectedIndex === i}
-          editable={editable}
-          onStart={startDrag}
-        />
-      ))}
+      {state.placedItems.map((p, i) =>
+        p.on ? null : (
+          <FurniturePiece
+            // biome-ignore lint/suspicious/noArrayIndexKey: a ordem dos itens É a identidade aqui.
+            key={i}
+            index={i}
+            itemId={p.itemId}
+            x={p.x}
+            y={p.y}
+            rot={(p.rot ?? 0) as Rot}
+            wall={p.wall}
+            selected={editable && selectedIndex === i}
+            editable={editable}
+            onStart={startDrag}
+            stacked={
+              firstIndexByItemId.get(p.itemId) === i ? (stackedByParent.get(p.itemId) ?? []) : []
+            }
+            onSelectChild={(idx) => onSelect?.(idx)}
+          />
+        ),
+      )}
       <Pet3D petId={state.pet} occupied={occupied} reducedMotion={reducedMotion} />
     </>
   )

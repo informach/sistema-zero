@@ -489,10 +489,16 @@ export type BadgeSlug =
   | 'pensa-first-idea'
   | 'pensa-first-launch'
   | 'pensa-creator-3'
-  // Desafio do mês (07/2026, Fase 5): 1ª participação (ledger `challenge_entry`).
+  // Desafio do mês (07/2026, Fase 5): 1ª e 3ª participações (ledger `challenge_entry`).
   | 'challenge-first'
+  | 'challenge-3'
   // Clube dos Criadores (07/2026): 1ª conversa aprovada (ledger `clube_thread`).
   | 'clube-primeiro-post'
+  // Full review 24/07: remix, decoração, estilo e apoio aos colegas.
+  | 'remix-first'
+  | 'room-decorator-5'
+  | 'avatar-style-5'
+  | 'mural-commenter-10'
 
 /**
  * Delta de UMA ação (complete/quiz aprovado) — vem NA resposta da ação (a UI
@@ -759,6 +765,10 @@ export interface RoomPlacedItem {
   rot?: 0 | 1 | 2 | 3
   /** Item de PAREDE: em qual parede (x=horizontal, y=altura). Ausente = item de chão. */
   wall?: 'left' | 'right'
+  /** EM CIMA de uma superfície (24/07): itemId do pai posicionado. O members valida. */
+  on?: string
+  /** Nicho da superfície do pai (0-based). Presente sempre que `on` está. */
+  slot?: number
 }
 /** Cor de cada parede do recorte em "L" (hex da paleta). Lado ausente = default do tema. */
 export interface RoomWallColors {

@@ -215,9 +215,12 @@ export function pensaCycleBadgeSlugs(cyclesCompleted: number): BadgeSlug[] {
   return slugs
 }
 
-/** Badge da 1ª participação no Desafio do mês (ledger `challenge_entry`). */
+/** Badges de participação no Desafio do mês (ledger `challenge_entry` — 1 marco/mês). */
 export function challengeBadgeSlugs(entries: number): BadgeSlug[] {
-  return entries >= 1 ? ['challenge-first'] : []
+  const slugs: BadgeSlug[] = []
+  if (entries >= 1) slugs.push('challenge-first')
+  if (entries >= 3) slugs.push('challenge-3')
+  return slugs
 }
 
 /** Badge da 1ª conversa aprovada no Clube (contada pelo ledger `clube_thread`). */
@@ -235,4 +238,24 @@ export function playsBadgeSlugs(milestones10: number, milestones100: number): Ba
   if (milestones10 >= 1) slugs.push('plays-10')
   if (milestones100 >= 1) slugs.push('plays-100')
   return slugs
+}
+
+/** Badge do 1º REMIX de um jogo do Mural (ledger `studio_remix`, 1 marco por original). */
+export function remixBadgeSlugs(remixes: number): BadgeSlug[] {
+  return remixes >= 1 ? ['remix-first'] : []
+}
+
+/** Badge de decorador(a): itens do quarto conquistados (ledger `room_item_buy`). */
+export function roomDecoratorBadgeSlugs(itemsBought: number): BadgeSlug[] {
+  return itemsBought >= 5 ? ['room-decorator-5'] : []
+}
+
+/** Badge de estilo: peças do avatar conquistadas (ledger `avatar_part_buy`). */
+export function avatarStyleBadgeSlugs(partsBought: number): BadgeSlug[] {
+  return partsBought >= 5 ? ['avatar-style-5'] : []
+}
+
+/** Badge de apoio aos colegas: comentários APROVADOS no Mural (ledger `mural_comment`). */
+export function muralCommenterBadgeSlugs(approvedComments: number): BadgeSlug[] {
+  return approvedComments >= 10 ? ['mural-commenter-10'] : []
 }

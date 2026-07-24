@@ -15,6 +15,10 @@ interface RoomItemInfo {
   h: number
   /** `'wall'` = item de PAREDE (espelha o members; o renderer o pendura na parede, na altura). */
   mount?: 'wall'
+  /** SUPERFÍCIE (24/07): nº de NICHOS em cima (espelha o members; offsets em SURFACE_SLOTS). */
+  surface?: number
+  /** Item pequeno que pode ir EM CIMA de uma superfície (espelha o members). */
+  stackable?: boolean
   /** Classe de animação CSS legada (sem uso no renderer 3D — tolerada). */
   anim?: 'kid-room-grow' | 'kid-room-float' | 'kid-room-twinkle' | 'kid-room-flicker'
 }
@@ -23,21 +27,21 @@ export const ROOM_ITEM_INFO: Record<string, RoomItemInfo> = {
   // Móveis (chão)
   cama: { labelPt: 'Cama', emoji: '🛏️', w: 2, h: 3 },
   cadeira: { labelPt: 'Cadeira', emoji: '🪑', w: 1, h: 2 },
-  mesa: { labelPt: 'Mesa', emoji: '🍽️', w: 2, h: 2 },
+  mesa: { labelPt: 'Mesa', emoji: '🍽️', w: 2, h: 2, surface: 2 },
   sofa: { labelPt: 'Sofá', emoji: '🛋️', w: 3, h: 2 },
-  estante: { labelPt: 'Estante', emoji: '📚', w: 2, h: 3 },
+  estante: { labelPt: 'Estante', emoji: '📚', w: 2, h: 3, surface: 3 },
   bau: { labelPt: 'Baú', emoji: '🧰', w: 2, h: 2 },
-  'mesa-estudo': { labelPt: 'Escrivaninha', emoji: '📝', w: 2, h: 1 },
+  'mesa-estudo': { labelPt: 'Escrivaninha', emoji: '📝', w: 2, h: 1, surface: 1 },
   tv: { labelPt: 'TV', emoji: '📺', w: 2, h: 1 },
   beliche: { labelPt: 'Beliche', emoji: '🛌', w: 2, h: 3 },
   pufe: { labelPt: 'Pufe', emoji: '💺', w: 1, h: 1 },
   // Decoração de chão
-  ursinho: { labelPt: 'Ursinho', emoji: '🧸', w: 1, h: 1 },
+  ursinho: { labelPt: 'Ursinho', emoji: '🧸', w: 1, h: 1, stackable: true },
   balao: { labelPt: 'Balão', emoji: '🎈', w: 1, h: 2 },
   bandeira: { labelPt: 'Bandeira', emoji: '🚩', w: 1, h: 2 },
-  globo: { labelPt: 'Globo', emoji: '🌍', w: 1, h: 1 },
+  globo: { labelPt: 'Globo', emoji: '🌍', w: 1, h: 1, stackable: true },
   guitarra: { labelPt: 'Guitarra', emoji: '🎸', w: 1, h: 2 },
-  bola: { labelPt: 'Bola', emoji: '⚽', w: 1, h: 1 },
+  bola: { labelPt: 'Bola', emoji: '⚽', w: 1, h: 1, stackable: true },
   // Decoração de PAREDE (mount: 'wall' — sobe na parede)
   quadro: { labelPt: 'Quadro', emoji: '🖼️', w: 2, h: 2, mount: 'wall' },
   estrela: { labelPt: 'Estrela', emoji: '⭐', w: 1, h: 1, mount: 'wall' },
@@ -51,20 +55,38 @@ export const ROOM_ITEM_INFO: Record<string, RoomItemInfo> = {
   arvore: { labelPt: 'Árvore', emoji: '🌳', w: 2, h: 3 },
   // Luzes
   luminaria: { labelPt: 'Luminária', emoji: '💡', w: 1, h: 2 },
-  vela: { labelPt: 'Vela', emoji: '🕯️', w: 1, h: 1 },
+  vela: { labelPt: 'Vela', emoji: '🕯️', w: 1, h: 1, stackable: true },
   // Pets (campo `pet`)
   'pet-gato': { labelPt: 'Gato', emoji: '🐱', w: 1, h: 1 },
   'pet-cachorro': { labelPt: 'Cachorro', emoji: '🐶', w: 1, h: 1 },
   'pet-passaro': { labelPt: 'Passarinho', emoji: '🐦', w: 1, h: 1 },
   // 🏆 Troféus (07/2026) — ganhos por conquista, nunca comprados (tier 'trophy').
-  'trofeu-primeiro-jogo': { labelPt: 'Troféu do 1º Jogo', emoji: '🏆', w: 1, h: 1 },
+  // Os de CHÃO são `stackable` (podem ir na mesa/estante — espelha o members).
+  'trofeu-primeiro-jogo': {
+    labelPt: 'Troféu do 1º Jogo',
+    emoji: '🏆',
+    w: 1,
+    h: 1,
+    stackable: true,
+  },
   'trofeu-diploma': { labelPt: 'Diploma na Parede', emoji: '📜', w: 1, h: 1, mount: 'wall' },
-  'trofeu-chama': { labelPt: 'Chama dos 30 Dias', emoji: '🔥', w: 1, h: 1 },
+  'trofeu-chama': { labelPt: 'Chama dos 30 Dias', emoji: '🔥', w: 1, h: 1, stackable: true },
   'trofeu-medalha-mil': { labelPt: 'Medalha Nota Mil', emoji: '🥇', w: 1, h: 1, mount: 'wall' },
-  'trofeu-foguete': { labelPt: 'Foguete do Lançamento', emoji: '🚀', w: 1, h: 2 },
-  'trofeu-console': { labelPt: 'Console de Criador', emoji: '🕹️', w: 1, h: 1 },
-  'trofeu-estrela-do-mural': { labelPt: 'Estrela do Mural', emoji: '🌟', w: 1, h: 1 },
+  'trofeu-foguete': { labelPt: 'Foguete do Lançamento', emoji: '🚀', w: 1, h: 2, stackable: true },
+  'trofeu-console': { labelPt: 'Console de Criador', emoji: '🕹️', w: 1, h: 1, stackable: true },
+  'trofeu-estrela-do-mural': {
+    labelPt: 'Estrela do Mural',
+    emoji: '🌟',
+    w: 1,
+    h: 1,
+    stackable: true,
+  },
+  // 🏆 Estante de Troféus (24/07) — vem de graça com o 1º troféu (não tem badge própria).
+  'estante-trofeus': { labelPt: 'Estante de Troféus', emoji: '🏅', w: 3, h: 2, surface: 6 },
 }
+
+/** Concedida junto com o 1º troféu (espelha `TROPHY_SHELF_ITEM_ID` do members). */
+export const TROPHY_SHELF_ITEM_ID = 'estante-trofeus'
 
 /**
  * Como GANHAR cada troféu (dica exibida na bandeja 🏆 quando ainda travado).
@@ -78,7 +100,44 @@ export const TROPHY_HINT: Record<string, string> = {
   'trofeu-foguete': 'Lance a Versão 1 de um plano no Pensa!',
   'trofeu-console': 'Complete 3 atividades do Estúdio com nota!',
   'trofeu-estrela-do-mural': 'Tenha um jogo seu jogado 100 vezes!',
+  'estante-trofeus': 'Ganhe o seu primeiro troféu e a estante vem junto!',
 }
+
+// ── Superfícies (24/07): offsets 3D dos NICHOS por item — unidades de mundo, relativos ao
+// CENTRO do móvel (os filhos renderizam DENTRO do grupo do pai e herdam posição/rotação).
+// O nº de slots TEM que casar com `surface` do members (travado na conformância).
+export interface SurfaceSlot {
+  x: number
+  y: number
+  z: number
+}
+export const SURFACE_SLOTS: Record<string, readonly SurfaceSlot[]> = {
+  // Tampo da mesa (topo ≈ y 0.81) — 2 nichos lado a lado.
+  mesa: [
+    { x: -0.5, y: 0.81, z: 0 },
+    { x: 0.5, y: 0.81, z: 0 },
+  ],
+  // Escrivaninha: 1 nicho na ponta livre do tampo (o monitor mora na esquerda).
+  'mesa-estudo': [{ x: 0.56, y: 0.84, z: 0 }],
+  // Estante: topo das 3 prateleiras (s1 tem livros à esquerda → nicho à direita).
+  estante: [
+    { x: 0.5, y: 0.76, z: 0.1 },
+    { x: 0, y: 1.44, z: 0.1 },
+    { x: 0, y: 2.1, z: 0.1 },
+  ],
+  // Estante de Troféus: 6 nichos em 2 fileiras × 3 colunas (pisos: base 0.2, prateleira 1.24).
+  'estante-trofeus': [
+    { x: -0.92, y: 0.2, z: 0.06 },
+    { x: 0, y: 0.2, z: 0.06 },
+    { x: 0.92, y: 0.2, z: 0.06 },
+    { x: -0.92, y: 1.24, z: 0.06 },
+    { x: 0, y: 1.24, z: 0.06 },
+    { x: 0.92, y: 1.24, z: 0.06 },
+  ],
+}
+
+/** Escala dos filhos num nicho (versão "de estante" menor que a de chão). */
+export const SURFACE_CHILD_SCALE = 0.72
 
 /**
  * Badges que CONCEDEM troféu (espelha as chaves do `TROPHY_FOR_BADGE` do members) —

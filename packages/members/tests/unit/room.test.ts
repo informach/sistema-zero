@@ -12,10 +12,14 @@ import {
   DEFAULT_ROOM_THEME,
   ROOM_GRID,
   ROOM_ITEMS,
+  ROOM_ITEMS_BY_ID,
   ROOM_THEMES,
   type RoomState,
+  TROPHY_SHELF_ITEM_ID,
 } from '../../src/domain/room/room-catalog'
 import {
+  InMemoryCourseRepository,
+  InMemoryEntitlementRepository,
   InMemoryGamificationRepository,
   InMemoryRoomRepository,
   silentLogger,
@@ -279,5 +283,126 @@ describe('canonicalizeRoomState — itens de PAREDE + colisão (sem sobreposiç�
       { itemId: 'estrela', x: 1, y: 1, wall: 'left' },
       { itemId: 'mesa', x: 0, y: 0 },
     ])
+  })
+})
+
+describe('canonicalizeRoomState — SUPERFÍCIES (filhos em nichos, 24/07)', () => {
+  const base = { theme: DEFAULT_ROOM_THEME, pet: null }
+
+  test('catálogo: mesa/mesa-estudo/estante/estante-trofeus têm nichos; estante é troféu', () => {
+    expect(ROOM_ITEMS_BY_ID.get('mesa')?.surface).toBe(2)
+    expect(ROOM_ITEMS_BY_ID.get('mesa-estudo')?.surface).toBe(1)
+    expect(ROOM_ITEMS_BY_ID.get('estante')?.surface).toBe(3)
+    const shelf = ROOM_ITEMS_BY_ID.get(TROPHY_SHELF_ITEM_ID)
+    expect(shelf?.surface).toBe(6)
+    expect(shelf?.tier).toBe('trophy')
+    // Troféus de CHÃO são stackable; os de parede não.
+    expect(ROOM_ITEMS_BY_ID.get('trofeu-primeiro-jogo')?.stackable).toBe(true)
+    expect(ROOM_ITEMS_BY_ID.get('trofeu-diploma')?.stackable).toBeUndefined()
+  })
+
+  test('filho válido entra no nicho (canônico x/y=0) e NÃO ocupa célula de chão', () => {
+    const s = canonicalizeRoomState(
+      {
+        ...base,
+        placedItems: [
+          { itemId: 'mesa', x: 4, y: 4 },
+          { itemId: 'bola', x: 9, y: 9, on: 'mesa', slot: 0 }, // x/y crus ignorados
+          { itemId: 'cama', x: 0, y: 0 }, // célula (0,0) segue livre p/ o chão
+        ],
+      },
+      new Set(),
+    )
+    expect(s.placedItems).toEqual([
+      { itemId: 'mesa', x: 4, y: 4 },
+      { itemId: 'cama', x: 0, y: 0 },
+      { itemId: 'bola', x: 0, y: 0, on: 'mesa', slot: 0 },
+    ])
+  })
+
+  test('filho cai quando: não-stackable, pai ausente/sem nicho, slot inválido ou ocupado', () => {
+    const s = canonicalizeRoomState(
+      {
+        ...base,
+        placedItems: [
+          { itemId: 'mesa', x: 4, y: 4 },
+          { itemId: 'cadeira', x: 0, y: 0, on: 'mesa', slot: 0 }, // não-stackable com `on` → cai
+          { itemId: 'bola', x: 0, y: 0, on: 'cama', slot: 0 }, // pai NÃO posicionado → cai
+          { itemId: 'bola', x: 0, y: 0, on: 'sofa', slot: 0 }, // pai sem surface (nem posicionado) → cai
+          { itemId: 'bola', x: 0, y: 0, on: 'mesa', slot: 2 }, // slot ≥ nichos (mesa tem 2) → cai
+          { itemId: 'bola', x: 0, y: 0, on: 'mesa', slot: 1 }, // válido → fica
+          { itemId: 'globo', x: 0, y: 0, on: 'mesa', slot: 1 }, // nicho ocupado → cai
+        ],
+      },
+      new Set(['globo']),
+    )
+    expect(s.placedItems).toEqual([
+      { itemId: 'mesa', x: 4, y: 4 },
+      { itemId: 'bola', x: 0, y: 0, on: 'mesa', slot: 1 },
+    ])
+  })
+
+  test('filho sem posse cai; filho sem slot cai; pai só de NICHO não vira pai de si', () => {
+    const s = canonicalizeRoomState(
+      {
+        ...base,
+        placedItems: [
+          { itemId: 'mesa', x: 4, y: 4 },
+          { itemId: 'ursinho', x: 0, y: 0, on: 'mesa', slot: 0 }, // pago NÃO possuído → cai
+          { itemId: 'bola', x: 0, y: 0, on: 'mesa' }, // sem slot → cai
+        ],
+      },
+      new Set(),
+    )
+    expect(s.placedItems).toEqual([{ itemId: 'mesa', x: 4, y: 4 }])
+  })
+
+  test('troféu possuído entra na estante de troféus (possuída e posicionada)', () => {
+    const owned = new Set(['trofeu-primeiro-jogo', TROPHY_SHELF_ITEM_ID])
+    const s = canonicalizeRoomState(
+      {
+        ...base,
+        placedItems: [
+          { itemId: TROPHY_SHELF_ITEM_ID, x: 0, y: 0 },
+          { itemId: 'trofeu-primeiro-jogo', x: 0, y: 0, on: TROPHY_SHELF_ITEM_ID, slot: 5 },
+        ],
+      },
+      owned,
+    )
+    expect(s.placedItems).toEqual([
+      { itemId: TROPHY_SHELF_ITEM_ID, x: 0, y: 0 },
+      { itemId: 'trofeu-primeiro-jogo', x: 0, y: 0, on: TROPHY_SHELF_ITEM_ID, slot: 5 },
+    ])
+  })
+})
+
+describe('award concede a ESTANTE DE TROFÉUS junto com o 1º troféu (24/07)', () => {
+  test('badge com troféu mapeado → troféu + estante no inventário; idempotente', async () => {
+    const now = new Date('2026-07-24T12:00:00Z')
+    const room = new InMemoryRoomRepository()
+    const repo = new InMemoryGamificationRepository({
+      entitlements: new InMemoryEntitlementRepository(),
+      courses: new InMemoryCourseRepository(),
+      room,
+    })
+    const awardOnce = (sourceId: string) =>
+      repo.award({
+        userId: 'u1',
+        accountId: 'u1',
+        audience: 'kids',
+        events: [{ sourceType: 'course_showcased', sourceId, amount: 0 }],
+        now,
+        today: '2026-07-24',
+        privileged: false,
+      })
+    const first = await awardOnce('c1')
+    expect(first.badgesUnlocked.map((b) => b.slug)).toContain('first-showcase')
+    const inv = await room.listInventory('u1', 'kids')
+    expect(inv).toContain('trofeu-primeiro-jogo')
+    expect(inv).toContain(TROPHY_SHELF_ITEM_ID)
+    // Repetir o award não duplica o inventário (dedupe do repo).
+    await awardOnce('c2')
+    const after = await room.listInventory('u1', 'kids')
+    expect(after.filter((id) => id === TROPHY_SHELF_ITEM_ID)).toHaveLength(1)
   })
 })

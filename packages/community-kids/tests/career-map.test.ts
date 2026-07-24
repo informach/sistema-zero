@@ -1,5 +1,11 @@
 import { describe, expect, test } from 'bun:test'
-import { careerNodeState, LEVEL_TIER, levelForTier, trilhaLocked } from '../src/lib/career-map'
+import {
+  careerNodeState,
+  coursesForLevel,
+  LEVEL_TIER,
+  levelForTier,
+  trilhaLocked,
+} from '../src/lib/career-map'
 import { LEVEL_ORDER } from '../src/lib/level-info'
 import type { CatalogCourseView, StudentLevelView } from '../src/lib/types'
 
@@ -43,21 +49,81 @@ describe('career-map (regras puras do Mapa da Carreira)', () => {
     expect(levelForTier('iniciante-3d')).toBe('hacker')
     expect(levelForTier('avancado-3d')).toBe('champion')
   })
+})
 
-  test('trilhaLocked: trava só trilha futura SEM curso liberado', () => {
+describe('coursesForLevel (divisão do degrau por careerSlot)', () => {
+  const ini2d = [
+    course({ courseSlug: 'base', careerSlot: 1 }),
+    course({ courseSlug: 'c2', careerSlot: 2 }),
+    course({ courseSlug: 'c3', careerSlot: 3 }),
+    course({ courseSlug: 'bonus', careerSlot: null }),
+  ]
+
+  test('Faísca (noob) mostra SÓ o curso-base (slot 1)', () => {
+    expect(coursesForLevel('noob', ini2d).map((c) => c.courseSlug)).toEqual(['base'])
+  })
+
+  test('Construtor (coder) mostra o resto (2–6) + o bônus, sem o curso-base', () => {
+    expect(
+      coursesForLevel('coder', ini2d)
+        .map((c) => c.courseSlug)
+        .sort(),
+    ).toEqual(['bonus', 'c2', 'c3'])
+  })
+
+  test('nível de degrau único (hacker) mostra o degrau inteiro (base + resto + bônus)', () => {
+    const ini3d = [
+      course({ courseSlug: 'b3', level: 'iniciante', track: '3d', careerSlot: 1 }),
+      course({ courseSlug: 'x3', level: 'iniciante', track: '3d', careerSlot: 2 }),
+      course({ courseSlug: 'bn3', level: 'iniciante', track: '3d', careerSlot: null }),
+    ]
+    expect(
+      coursesForLevel('hacker', ini3d)
+        .map((c) => c.courseSlug)
+        .sort(),
+    ).toEqual(['b3', 'bn3', 'x3'])
+  })
+
+  test('fail-open: SEM curso-base marcado, noob mostra o degrau inteiro (nunca vazio)', () => {
+    const untagged = [
+      course({ courseSlug: 'u1', careerSlot: null }),
+      course({ courseSlug: 'u2', careerSlot: null }),
+    ]
+    expect(
+      coursesForLevel('noob', untagged)
+        .map((c) => c.courseSlug)
+        .sort(),
+    ).toEqual(['u1', 'u2'])
+  })
+
+  test('só considera cursos do degrau do próprio nível', () => {
+    const mixed = [
+      course({ courseSlug: 'base', careerSlot: 1 }),
+      course({ courseSlug: 'other', level: 'avancado', track: '3d', careerSlot: 1 }),
+    ]
+    expect(coursesForLevel('noob', mixed).map((c) => c.courseSlug)).toEqual(['base'])
+  })
+
+  test('god (topo) não tem trilha', () => {
+    expect(coursesForLevel('god', ini2d)).toEqual([])
+  })
+})
+
+describe('trilhaLocked (deep-link por nível)', () => {
+  test('trava só nível FUTURO sem nenhum curso liberado', () => {
     const lockedCourse = course({
       level: 'avancado',
       track: '3d',
       careerLock: { locked: true, reason: 'future-tier' },
     })
-    // Faísca olhando avancado-3d, tudo travado → bloqueada.
-    expect(trilhaLocked(levelView('noob'), 'avancado-3d', [lockedCourse])).toBe(true)
+    // Faísca olhando a trilha do Gênio (avançado 3D), tudo travado → bloqueada.
+    expect(trilhaLocked(levelView('noob'), 'champion', [lockedCourse])).toBe(true)
     // Nível alcançado → aberta (mesmo com curso travado na lista).
-    expect(trilhaLocked(levelView('champion'), 'avancado-3d', [lockedCourse])).toBe(false)
-    // EQUIPE/estado especial: algum curso do tier liberado → nunca mura.
+    expect(trilhaLocked(levelView('champion'), 'champion', [lockedCourse])).toBe(false)
+    // EQUIPE/estado especial: algum curso do nível liberado → nunca mura.
     const openCourse = course({ level: 'avancado', track: '3d' })
-    expect(trilhaLocked(levelView('noob'), 'avancado-3d', [openCourse])).toBe(false)
+    expect(trilhaLocked(levelView('noob'), 'champion', [openCourse])).toBe(false)
     // Sem gamificação (nível nulo) → não bloqueia (fallback fica com a página).
-    expect(trilhaLocked(null, 'avancado-3d', [lockedCourse])).toBe(false)
+    expect(trilhaLocked(null, 'champion', [lockedCourse])).toBe(false)
   })
 })

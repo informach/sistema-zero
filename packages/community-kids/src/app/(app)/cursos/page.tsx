@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 
 /**
  * Mapa da Carreira (24/07): a página de cursos É o mapa — serpentina com os 8
- * níveis (Faísca→Lenda); clicar num nível liberado abre `/cursos/trilha/[tier]`
+ * níveis (Faísca→Lenda); clicar num nível liberado abre `/cursos/trilha/[level]`
  * com a listagem daquela trilha. Sem busca/filtros aqui (decisão da usuária).
  * Gamificação fora (`level` nulo) → cai na grade clássica simples (o mapa
  * precisa do nível p/ pintar os nós).

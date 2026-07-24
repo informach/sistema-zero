@@ -1,3 +1,5 @@
+import { ArrowRight } from 'lucide-react'
+import Link from 'next/link'
 import { ChallengeCard } from '@/components/kids/challenge-card'
 import { ContinueHero } from '@/components/kids/continue-hero'
 import { CourseCard } from '@/components/kids/course-card'
@@ -44,8 +46,18 @@ export default async function HomePage() {
     ])
   if (status !== 200) throw new Error('Falha ao carregar os cursos')
   const courses = body?.courses ?? []
-  // slug → título p/ o card nomear o curso-base (`foundationCourseSlug`) sem ir ao backend.
-  const titleBySlug = new Map(courses.map((c) => [c.courseSlug, c.title]))
+  // Home = superfície de AÇÃO: só cursos LIBERADOS pela carreira (os travados —
+  // futuro/recompensa — vivem no Mapa da Carreira em /cursos). Ordenação
+  // ação-primeiro: em andamento → não começados → concluídos (revisão) por último.
+  const courseRank = (c: (typeof courses)[number]) => {
+    const done =
+      c.progress.totalLessons > 0 && c.progress.completedLessons >= c.progress.totalLessons
+    if (done) return 2
+    return c.progress.completedLessons > 0 ? 0 : 1
+  }
+  const unlocked = courses
+    .filter((c) => c.careerLock?.locked !== true)
+    .sort((a, b) => courseRank(a) - courseRank(b))
   const gamification = gam.status === 200 ? (gam.body ?? null) : null
   const missionsData = missions.status === 200 ? (missions.body ?? null) : null
   const avatarPhotoUrl =
@@ -96,7 +108,15 @@ export default async function HomePage() {
       {courses.length > 0 ? <MissionsPanel initial={missionsData} /> : null}
 
       <section className="flex flex-col gap-4">
-        <h2 className="sz-display text-xl">Meus cursos</h2>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="sz-display text-xl">Meus cursos</h2>
+          <Link
+            href="/cursos"
+            className="inline-flex items-center gap-1 font-semibold text-muted-foreground text-sm transition-colors hover:text-foreground"
+          >
+            Ver o mapa da carreira <ArrowRight className="size-4" />
+          </Link>
+        </div>
         {courses.length === 0 ? (
           <div className="flex flex-col items-center gap-4 rounded-3xl border-2 border-border border-dashed py-16 text-center">
             <KidsMascot expression="sleeping" className="size-20" />
@@ -107,19 +127,21 @@ export default async function HomePage() {
               </p>
             </div>
           </div>
+        ) : unlocked.length === 0 ? (
+          // Defensivo (tudo travado pela carreira): aponta o mapa em vez de sumir.
+          <div className="flex flex-col items-center gap-4 rounded-3xl border-2 border-border border-dashed py-16 text-center">
+            <KidsMascot expression="thinking" className="size-20" />
+            <div>
+              <p className="sz-display text-lg">Seus próximos cursos estão no mapa!</p>
+              <p className="mt-1 text-muted-foreground text-sm">
+                Abra o Mapa da Carreira para ver o que vem pela frente.
+              </p>
+            </div>
+          </div>
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {courses.map((course, i) => (
-              <CourseCard
-                key={course.courseSlug}
-                course={course}
-                foundationTitle={
-                  course.careerLock?.foundationCourseSlug
-                    ? (titleBySlug.get(course.careerLock.foundationCourseSlug) ?? null)
-                    : null
-                }
-                theme={unitThemeAt(i)}
-              />
+            {unlocked.map((course, i) => (
+              <CourseCard key={course.courseSlug} course={course} theme={unitThemeAt(i)} />
             ))}
           </div>
         )}

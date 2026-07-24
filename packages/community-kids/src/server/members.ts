@@ -21,6 +21,7 @@ export const {
   getGamificationReadonly,
   getChallengeReadonly,
   getAvatarReadonly,
+  listAvatarsByProfileIdsReadonly,
   getPublicProfile,
   getRoomReadonly,
   getMissionsReadonly,

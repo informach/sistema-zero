@@ -26,7 +26,12 @@ Estúdio, na ordem da jornada) + Quarto + Clube; a aba acende nessas rotas (`Nav
 `string | string[]`). **Home (lote UX 07/2026):** o StreakCard MORREU — virou
 **`creator-career-card.tsx`** ("Carreira de Criador": aura + insígnia do rank + `nextLevelHint` +
 fogo/XP secundários; placeholder gentil quando a gamificação está fora; a home soma
-`getAvatarReadonly()` ao Promise.all p/ a foto da aura). **Festa no fim do vídeo:** a
+`getAvatarReadonly()` ao Promise.all p/ a foto da aura). **"Meus cursos" = SÓ LIBERADOS (24/07):**
+o grid da home filtra `careerLock?.locked !== true` (superfície de AÇÃO — travados vivem no Mapa
+da Carreira) com ordenação ação-primeiro (em andamento → não começados → concluídos) + link "Ver
+o mapa da carreira" no título; empty-state defensivo aponta o mapa quando tudo está travado. O
+`course-card.tsx` PERDEU os estados de cadeado (foundation/reward/future — só a trilha/catálogo
+renderizam trava agora). **Festa no fim do vídeo:** a
 auto-conclusão a 90% ARMA a celebração (`deferredCelebrationRef` no lesson-player-client) e o
 overlay completo abre no **`onVideoEnded`** (fio novo do member-shell); manual segue igual.
 **Cartão do jogo com QR** (`game-card-dialog.tsx`; dep `qrcode` client-side, canvas puro
@@ -130,7 +135,10 @@ antes de entrar na área de aprender. `src/proxy.ts` seta `requireProfileSelectP
 `(app)`, sem a sidebar kids — + `perfis-client.tsx`): rostinhos clicáveis (selecionar = 1
 clique → `/api/profiles/:id/select` → reload da home), **Área dos pais** (numa sessão de perfil
 pede a SENHA do responsável → `/api/profile-session/exit`; numa sessão da conta gerencia direto:
-criar/editar/arquivar + **foto** via `/api/profiles/:id/avatar`, multipart, FORA do matcher + a
+criar/editar/arquivar (⚠️ **SEM foto desde 24/07**: a cara da criança vem EXCLUSIVAMENTE do
+snapshot do avatar 3D — o upload `/api/profiles/:id/avatar` foi REMOVIDO do kids e do shell; a
+grade `/perfis` e os cards dos filhos pintam o rostinho via `listAvatarsByProfileIdsReadonly` em
+lote, fallback = inicial do nome) + a
 **troca de senha da CONTA** — `ParentPasswordChange` → `/api/auth/me/password`, só na sessão da
 conta, pois senha é da CONTA, não do perfil). ⚠️ **Full review 19/06: TODA mutação da CONTA exige o
 portão** — `PATCH /api/auth/me` (nome/telefone) e `POST /api/me/avatar` (foto da conta) agora são
@@ -145,7 +153,7 @@ senha"). O limite de perfis é do plano (criar acima → 409 no
 toast). Toda a lógica do BFF vive no **member-shell** (`shell.routes.profile*` + `shell.profiles`);
 os `route.ts` são shims de 1-3 linhas. `getSession().activeProfile` indica a sessão de perfil ativa.
 A página **"Meu perfil"** (`app/(app)/perfil`, sempre em sessão de perfil) edita o PRÓPRIO perfil
-(nome ≥ 3 / foto / telefone) via `/api/profiles/:id` — NUNCA a conta (full review F1: o auth recusa
+(nome ≥ 3 / telefone; a IMAGEM vem só do avatar 3D desde 24/07) via `/api/profiles/:id` — NUNCA a conta (full review F1: o auth recusa
 `/auth/me` de escrita em sessão de perfil).
 
 ## Clube dos Criadores + Mural dos Criadores (hub/fórum + vitrine)
@@ -519,19 +527,33 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   `future-tier` ("Em breve na sua carreira"); deep-link em curso travado cai no 423 →
   `KidsLockedCourse` com copy por motivo (`careerLockReason`, testado em
   `tests/career-lock-reason.test.ts`).
-  **MAPA DA CARREIRA em /cursos (24/07):** a página de cursos virou o MAPA — serpentina vertical
-  com os 8 níveis (`components/kids/career-map.tsx` + regras PURAS em `lib/career-map.ts`:
-  `LEVEL_TIER` espelha o learningTier do core, `careerNodeState`, `trilhaLocked`; teste em
-  `tests/career-map.test.ts`). Nó = ilustração Dedé/Debinha em **`public/carreira/<slug>.webp`**
-  (**as 8 COMMITADAS 24/07**; fallback `onError` → ícone do LEVEL_INFO; pipeline =
-  `fluxo-criativo/scripts/preparar-poses-carreira.py` — lê `~/Downloads/<slug>.png` do ChatGPT,
-  recorta o chroma `#00B140` e escreve os WebP aqui; o script já trata os casos especiais do 1º
-  lote: fundo em DEGRADÊ no `god` [corte por cor de fundo POR LINHA] e brilhos VERDES pintados
-  pela IA em `god`/`elite`/`noob` [hue girado p/ o acento do nível]); nível não atingido = `grayscale` + cadeado e NÃO navega (wiggle +
-  toast); liberado → **rota nova `/cursos/trilha/[tier]`** (segmento estático `trilha` NÃO colide
-  com o detalhe `/cursos/[slug]`) com a grade da trilha (obrigatórios+bônus, filtro server-side
-  por `courseTierOf`). Deep-link em trilha bloqueada → recado gentil (regra `trilhaLocked` tem
-  escape p/ EQUIPE: algum curso liberado no tier → nunca mura). Gamificação fora → grade clássica.
+  **MAPA DA CARREIRA em /cursos (24/07; FITA + divisão por slot + medalhões grandes 24/07):** a
+  página de cursos é o MAPA — os 8 níveis ligados por uma **FITA curva CONTÍNUA** (SVG) que
+  serpenteia entre eles; a parte conquistada acende no **degradê das cores dos níveis**
+  (`--level-<slug>`) e a parte à frente fica apagada com cadeado (≠ a antiga linha reta tracejada,
+  que lia como "timeline genérica"). Geometria PURA em `lib/career-path.ts` (centros dos nós + `d`
+  da fita completa/percorrida + paradas do degradê, num espaço de viewBox NORMALIZADO; o `<svg>`
+  usa `preserveAspectRatio=none` + `vector-effect: non-scaling-stroke` e os nós ficam em `top/left %`
+  → fita e medalhões alinham em qualquer largura; vars `--career-node`/`--career-row` no globals).
+  Regras PURAS em `lib/career-map.ts` (`LEVEL_TIER` espelha o learningTier do core, `LEVEL_STUDY`,
+  `coursesForLevel`, `careerNodeState`, `trilhaLocked`; testes `career-map`/`career-path`/
+  `career-conformance`). Nó = **MEDALHÃO GRANDE** (`--career-node`) com a ilustração Dedé/Debinha em
+  **`public/carreira/<slug>.webp`** (**as 8 COMMITADAS 24/07**; fallback `onError` → ícone do
+  LEVEL_INFO; pipeline = `fluxo-criativo/scripts/preparar-poses-carreira.py` — lê
+  `~/Downloads/<slug>.png` do ChatGPT, recorta o chroma `#00B140` e escreve os WebP aqui; trata os
+  casos especiais do 1º lote: fundo em DEGRADÊ no `god` [corte por cor de fundo POR LINHA] e brilhos
+  VERDES pintados pela IA em `god`/`elite`/`noob` [hue girado p/ o acento do nível]); nível não
+  atingido = `grayscale` + cadeado e NÃO navega (wiggle + toast); liberado → **rota
+  `/cursos/trilha/[level]`** (por SLUG DO NÍVEL, não mais por degrau — resolve a colisão noob/coder;
+  o segmento estático `trilha` NÃO colide com `/cursos/[slug]`). **A trilha DIVIDE o degrau por
+  `careerSlot` (`coursesForLevel`):** Faísca (noob) mostra SÓ o curso-base (slot 1), Construtor
+  (coder) o resto (2–6) + o bônus, e os níveis de degrau único (hacker→champion) o degrau inteiro.
+  **Fail-open de rollout:** etapa sem curso-base marcado (nenhum `careerSlot === 1`) → NÃO divide,
+  mostra o degrau inteiro (espelha `foundationAvailable` do core → Faísca nunca fica vazia até
+  etiquetar base=1/resto=2–6 no admin). O `LEVEL_STUDY` do kids é ESPELHO da escada do core
+  (`CREATOR_CAREER_LEVELS`), travado por `tests/career-conformance.test.ts`. Deep-link em trilha
+  bloqueada → recado gentil (`trilhaLocked` por nível, escape p/ EQUIPE: algum curso liberado →
+  nunca mura). Gamificação fora → grade clássica.
   ⚠️ O catálogo com filtros MORREU no kids: `course-catalog-client.tsx`/`catalog-filter-bar.tsx`/
   `lib/use-catalog-filters.ts` REMOVIDOS (o hook segue no member-shell p/ o community adulto). **COMEMORAÇÃO de SUBIDA de nível:**
   `level-up-celebration.tsx` (overlay Zappy + confete + som + insígnia GRANDE na cor do nível,
@@ -635,6 +657,16 @@ A `<Canvas>` precisa de
   descarta sobreposição (sets de células chão/por-parede); helpers puros `rectsOverlap`/`wallToWorld`/
   `worldToWallCell` em `coords.ts` (testados). Catálogo expandido (mesa/escrivaninha/tv/beliche/pufe/globo/
   guitarra/bola + os de parede). ⚠️ arcades no quarto foram DESCARTADOS.
+  **Superfícies (24/07):** mesa/escrivaninha/estante/`estante-trofeus` têm NICHOS (`surface` no
+  catálogo; a estante de troféus, 6 nichos, vem DE GRAÇA com o 1º troféu — award do members) e os
+  itens pequenos são `stackable` (troféus de chão + ursinho/globo/bola/vela). Filhos usam
+  `PlacedItem.on`+`slot` e renderizam DENTRO do grupo do pai (`furniture-piece.tsx` prop `stacked`,
+  offsets em `SURFACE_SLOTS` do `lib/room-catalog.ts`, escala `SURFACE_CHILD_SCALE`; herdam
+  posição/rotação — mover o pai carrega os filhos). v1 SEM drag: fluxo por BOTÃO no room-builder
+  ("Em cima…" lista superfícies com vaga / "Descer" devolve ao chão; tirar uma superfície derruba
+  os filhos pro tray com aviso); tocar num filho no 3D SELECIONA (não arrasta). Filho não ocupa
+  célula (guards em `placement.ts`/`occupied`/`isFree`); o members valida tudo de novo no save
+  (2ª passada do canonicalize). Conformância trava `surface`/`stackable`/nº de slots.
 - **Missões diárias/semanais/mensais — `missions-panel.tsx`** (na home): painel estilo Duolingo com
   TRÊS seções — "Hoje", "Esta semana" e **"Este mês"** (reforma 07/2026); busca `GET
   /api/members/gamification/missions/me` (`{daily, weekly, monthly}`) e resgata `POST /api/members/
@@ -662,8 +694,9 @@ A `<Canvas>` precisa de
   `profileId`) vêm ENRIQUECIDOS do members (`GetLeagueService` hidrata em lote; ver members). Chave
   da lista = índice (posição empata no competition ranking; `biome-ignore noArrayIndexKey`).
 - **Perfil = "Meu perfil" da CRIANÇA (full review F1, 06/2026):** a página edita o PRÓPRIO
-  PERFIL (não a conta). 1 card de identidade — foto CLICÁVEL (único caminho de troca, via
-  `/api/profiles/:id/avatar`), nome + telefone do perfil + **colocação no ranking kids**
+  PERFIL (não a conta). 1 card de identidade — avatar CLICÁVEL (leva ao configurador
+  `/meu-avatar`, ÚNICO caminho de troca da imagem desde 24/07), nome + telefone do perfil +
+  **colocação no ranking kids**
   (`getGamificationReadonly({withRanking: true})` → `ranking.position/totalStudents`; rankings
   adult/kids separados) — e botão "Editar perfil" abrindo um Dialog com nome (≥ 3) + telefone,
   que PATCHa `/api/profiles/:id`. O perfil ativo é resolvido de `listReadonly()` por `id ==
@@ -746,7 +779,8 @@ verde no typecheck/test/check dos três pacotes). Mudanças de COMPORTAMENTO/con
   e mensagem/stack — `redactPii`/`scrubPath` (member-shell).
 - **Portão dos pais cobre TODA mutação da conta** (auth/me, me/avatar, me/password — que fecha o
   portão no sucesso —, payments/my + children-stats estritos, verify com cooldown). Ver "Perfis…".
-- **`profileAvatar` autoriza ANTES de gravar no R2** (criança só troca a própria foto; UUID validado).
+- **`profileAvatar` autorizava ANTES de gravar no R2** (⚠️ handler REMOVIDO em 24/07 — a foto do
+  perfil vem SÓ do snapshot do avatar 3D; o padrão authorize-before-write segue no `avatarSnapshot`).
 - **Borda:** UUID validado em todos os path ids de perfil/hub; headers **COOP/CORP** nos dois apps;
   `watermarkImage` com `limitInputPixels` (anti OOM da réplica única).
 - **Desempenho:** `React.cache()` deduplica `getMeReadonly`/`getGamificationReadonly` por request; o

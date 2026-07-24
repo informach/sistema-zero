@@ -8,7 +8,7 @@ import { Field } from '@sistemazero/ui/label'
 import { PasswordInput } from '@sistemazero/ui/password-input'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { Pencil, Trash2 } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import type { ProfileView } from '@/lib/types'
 
@@ -16,12 +16,15 @@ const JSON_HEADERS = { 'content-type': 'application/json' }
 
 export function ProfileTile({
   profile,
+  photoUrl,
   managing,
   disabled,
   onSelect,
   onEdit,
 }: {
   profile: ProfileView
+  /** SNAPSHOT do avatar 3D (members) — a ÚNICA fonte da cara da criança (24/07). */
+  photoUrl: string | null
   managing: boolean
   disabled: boolean
   onSelect: () => void
@@ -36,7 +39,7 @@ export function ProfileTile({
     >
       <span className="relative">
         <UserAvatar
-          avatarUrl={profile.avatarUrl}
+          avatarUrl={photoUrl}
           firstName={profile.name}
           size="xl"
           className="size-20 ring-2 ring-transparent transition group-hover:ring-primary"
@@ -54,14 +57,17 @@ export function ProfileTile({
   )
 }
 
-/** Formulário de criar/editar perfil (nome + foto + remover). */
+/**
+ * Formulário de criar/editar perfil (nome + nascimento + perfil público). SEM foto
+ * (24/07): a cara da criança vem EXCLUSIVAMENTE do snapshot do avatar 3D — ela
+ * mesma troca em /meu-avatar; os pais não editam imagem.
+ */
 export function ProfileForm({
   editing,
   busy,
   onCancel,
   onSave,
   onArchive,
-  onAvatar,
 }: {
   editing: { mode: 'create' } | { mode: 'edit'; profile: ProfileView }
   busy: boolean
@@ -73,7 +79,6 @@ export function ProfileForm({
     existing?: ProfileView,
   ) => void
   onArchive: (p: ProfileView) => void
-  onAvatar: (p: ProfileView, file: File) => void
 }) {
   const isEdit = editing.mode === 'edit'
   const profile = isEdit ? editing.profile : null
@@ -82,7 +87,6 @@ export function ProfileForm({
   const [publicProfileEnabled, setPublicProfileEnabled] = useState(
     profile?.publicProfileEnabled ?? false,
   )
-  const fileRef = useRef<HTMLInputElement>(null)
   // `max` do seletor = hoje (nascimento não pode ser no futuro).
   const today = new Date().toISOString().slice(0, 10)
 
@@ -91,34 +95,6 @@ export function ProfileForm({
       <h1 className="sz-display text-2xl text-foreground">
         {isEdit ? 'Editar perfil' : 'Novo perfil'}
       </h1>
-
-      {profile ? (
-        <div className="flex items-center gap-4">
-          <UserAvatar
-            avatarUrl={profile.avatarUrl}
-            firstName={profile.name || name}
-            size="xl"
-            className="size-20"
-          />
-          <div>
-            <Button variant="secondary" disabled={busy} onClick={() => fileRef.current?.click()}>
-              Trocar foto
-            </Button>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              hidden
-              onChange={(e) => {
-                const file = e.target.files?.[0]
-                if (file) onAvatar(profile, file)
-                e.target.value = ''
-              }}
-            />
-            <p className="mt-1 text-muted-foreground text-xs">PNG, JPG ou WebP, até 5MB.</p>
-          </div>
-        </div>
-      ) : null}
 
       <Field label="Nome do perfil" htmlFor="profileName">
         <Input

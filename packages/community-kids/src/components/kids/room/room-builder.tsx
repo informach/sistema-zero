@@ -1,6 +1,8 @@
 'use client'
 
 import {
+  ArrowDownToLine,
+  ArrowUpToLine,
   Frame,
   LayoutGrid,
   Lightbulb,
@@ -91,6 +93,8 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
   const [saving, setSaving] = useState(false)
   const [tab, setTab] = useState<TabId>('moveis')
   const [brush, setBrush] = useState<string>(ROOM_WALL_PALETTE[0]?.hex ?? '#f3ede1')
+  // Lista "Colocar em cima de…" aberta p/ a peça stackable selecionada (superfícies, 24/07).
+  const [stackPicker, setStackPicker] = useState(false)
   const draftRef = useRef(draft)
 
   function updateDraft(updater: (current: RoomStateView) => RoomStateView) {
@@ -175,6 +179,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
         break
       case 'Escape':
         setSelected(null)
+        setStackPicker(false)
         break
     }
   }
@@ -186,13 +191,18 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
 
   const ownedById = useMemo(() => new Map((data?.items ?? []).map((i) => [i.id, i.owned])), [data])
   const isOwned = (id: string) => ownedById.get(id) ?? false
+  /** Seleciona/desseleciona uma peça — fecha o picker de superfície (contexto muda). */
+  const selectPiece = useCallback((index: number | null) => {
+    setSelected(index)
+    setStackPicker(false)
+  }, [])
   const appearance = resolveRoomAppearance(draft)
   const paintColor = tab === 'parede' ? brush : null
 
   function moveItem(index: number, x: number, y: number, wall?: 'left' | 'right') {
     updateDraft((d) => {
       const it = d.placedItems[index]
-      if (!it) return d
+      if (!it || it.on) return d // filho em nicho não anda pela grade — "Descer" primeiro
       const info = ROOM_ITEM_INFO[it.itemId]
       if (!info) return d
       if (info.mount === 'wall') {
@@ -236,6 +246,18 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
     } else {
       const s = freeFloorSpot(current.placedItems, info.w, info.h)
       if (!s) {
+        // Chão cheio mas o item cabe num NICHO (troféu com a estante vazia, ex.) →
+        // entra direto na 1ª superfície com vaga em vez de recusar.
+        if (info.stackable) {
+          const opt = surfaceOptions()[0]
+          if (opt) {
+            const placed = placeOnSurfaceAsNew(item.id, opt.itemId)
+            if (placed) {
+              toast.success(`${info.labelPt} em cima! ✨`)
+              return
+            }
+          }
+        }
         toast('Não cabe mais nada no chão! 🧹')
         return
       }
@@ -249,8 +271,101 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
 
   function removeSelected() {
     if (selected === null) return
-    updateDraft((d) => ({ ...d, placedItems: d.placedItems.filter((_, i) => i !== selected) }))
+    updateDraft((d) => {
+      const removed = d.placedItems[selected]
+      let placedItems = d.placedItems.filter((_, i) => i !== selected)
+      // Tirar uma SUPERFÍCIE derruba os filhos junto (voltam pro tray) quando não sobra
+      // outra instância do mesmo móvel — senão o save descartaria os órfãos em silêncio.
+      if (removed && !removed.on) {
+        const stillPlaced = placedItems.some((p) => !p.on && p.itemId === removed.itemId)
+        if (!stillPlaced && placedItems.some((p) => p.on === removed.itemId)) {
+          placedItems = placedItems.filter((p) => p.on !== removed.itemId)
+          toast('O que estava em cima voltou para a bandeja! 🧺')
+        }
+      }
+      return { ...d, placedItems }
+    })
     setSelected(null)
+    setStackPicker(false)
+  }
+
+  // ── Superfícies (24/07): colocar a peça stackable selecionada num nicho / descer ────
+  /** Superfícies POSICIONADAS com nicho livre (1ª instância de cada itemId). */
+  function surfaceOptions(): { itemId: string; free: number }[] {
+    const current = draftRef.current
+    const seen = new Set<string>()
+    const out: { itemId: string; free: number }[] = []
+    for (const p of current.placedItems) {
+      if (p.on) continue
+      const info = ROOM_ITEM_INFO[p.itemId]
+      if (!info?.surface || seen.has(p.itemId)) continue
+      seen.add(p.itemId)
+      const used = current.placedItems.filter((c) => c.on === p.itemId).length
+      if (used < info.surface) out.push({ itemId: p.itemId, free: info.surface - used })
+    }
+    return out
+  }
+
+  /** 1º nicho livre do pai (por itemId — os nichos são da superfície, não da instância). */
+  function firstFreeSlot(current: RoomStateView, parentId: string): number | null {
+    const parentInfo = ROOM_ITEM_INFO[parentId]
+    const taken = new Set(current.placedItems.filter((c) => c.on === parentId).map((c) => c.slot))
+    for (let s = 0; s < (parentInfo?.surface ?? 0); s++) {
+      if (!taken.has(s)) return s
+    }
+    return null
+  }
+
+  /** Coloca um item NOVO (vindo do tray) direto num nicho livre do pai. */
+  function placeOnSurfaceAsNew(itemId: string, parentId: string): boolean {
+    const slot = firstFreeSlot(draftRef.current, parentId)
+    if (slot === null) return false
+    updateDraft((d) => ({
+      ...d,
+      placedItems: [...d.placedItems, { itemId, x: 0, y: 0, on: parentId, slot }],
+    }))
+    return true
+  }
+
+  function placeOnSurface(parentId: string) {
+    if (selected === null) return
+    const current = draftRef.current
+    const it = current.placedItems[selected]
+    const info = it && ROOM_ITEM_INFO[it.itemId]
+    if (!it || !info?.stackable) return
+    const slot = firstFreeSlot(current, parentId)
+    if (slot === null) {
+      toast('Essa superfície está cheia! 🧺')
+      return
+    }
+    updateDraft((d) => ({
+      ...d,
+      placedItems: d.placedItems.map((p, i) =>
+        i === selected ? { itemId: p.itemId, x: 0, y: 0, on: parentId, slot: slot as number } : p,
+      ),
+    }))
+    setStackPicker(false)
+    toast.success(`${info.labelPt} em cima! ✨`)
+  }
+
+  /** Tira o filho do nicho e devolve ao 1º vão livre do chão. */
+  function bringDown() {
+    if (selected === null) return
+    const current = draftRef.current
+    const it = current.placedItems[selected]
+    const info = it && ROOM_ITEM_INFO[it.itemId]
+    if (!it?.on || !info) return
+    const s = freeFloorSpot(current.placedItems, info.w, info.h)
+    if (!s) {
+      toast('Não cabe mais nada no chão! 🧹')
+      return
+    }
+    updateDraft((d) => ({
+      ...d,
+      placedItems: d.placedItems.map((p, i) =>
+        i === selected ? { itemId: p.itemId, x: s.x, y: s.y } : p,
+      ),
+    }))
   }
 
   // Movimento por TECLADO da peça selecionada (a11y: arrastar no plano 3D não é alcançável por
@@ -259,7 +374,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
     if (selected === null) return
     const current = draftRef.current
     const it = current.placedItems[selected]
-    if (!it) return
+    if (!it || it.on) return // filho em nicho não anda — "Descer" primeiro
     const info = ROOM_ITEM_INFO[it.itemId]
     if (!info) return
     if (info.mount === 'wall') {
@@ -287,7 +402,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
     if (selected === null) return
     const current = draftRef.current
     const it = current.placedItems[selected]
-    if (!it) return
+    if (!it || it.on) return // filho em nicho não gira
     const info = ROOM_ITEM_INFO[it.itemId]
     if (!info || info.mount === 'wall') return // item de parede não gira
     const rot = (((it.rot ?? 0) + 1) % 4) as Rot
@@ -299,7 +414,9 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
     const collides = current.placedItems.some((p, i) => {
       if (i === selected) return false
       const inf = ROOM_ITEM_INFO[p.itemId]
-      if (!inf || inf.mount === 'wall') return false
+      // Filho em nicho (x/y=0 fantasmas) não ocupa chão — sem este guard, girar
+      // perto do canto (0,0) travava com falso "sem espaço".
+      if (!inf || inf.mount === 'wall' || p.on) return false
       const ofp = effectiveFootprint(inf.w, inf.h, (p.rot ?? 0) as Rot)
       return rectsOverlap(x, y, fp.w, fp.h, p.x, p.y, ofp.w, ofp.h)
     })
@@ -403,7 +520,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
             mode="edit"
             avatarPhotoUrl={avatarPhotoUrl}
             selectedIndex={selected}
-            onSelect={setSelected}
+            onSelect={selectPiece}
             onMove={moveItem}
             onPaintWall={paintWall}
             paintColor={paintColor}
@@ -429,25 +546,91 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
         )}
         {selected !== null ? (
           <div className="absolute top-2 right-2 flex gap-2">
-            {ROOM_ITEM_INFO[draft.placedItems[selected]?.itemId ?? '']?.mount !== 'wall' ? (
-              <button
-                type="button"
-                onClick={rotateSelected}
-                className="inline-flex min-h-11 items-center gap-1 rounded-full bg-primary px-3 py-2.5 font-bold text-primary-foreground text-xs shadow"
-              >
-                <RotateCw className="size-3.5" /> Girar
-              </button>
-            ) : null}
-            <button
-              type="button"
-              onClick={removeSelected}
-              className="inline-flex min-h-11 items-center gap-1 rounded-full bg-(--sz-hot) px-3 py-2.5 font-bold text-(--sz-hot-fg) text-xs shadow"
-            >
-              <Trash2 className="size-3.5" /> Tirar
-            </button>
+            {(() => {
+              const sel = draft.placedItems[selected]
+              const selInfo = ROOM_ITEM_INFO[sel?.itemId ?? '']
+              const isChild = Boolean(sel?.on)
+              return (
+                <>
+                  {isChild ? (
+                    <button
+                      type="button"
+                      onClick={bringDown}
+                      className="inline-flex min-h-11 items-center gap-1 rounded-full bg-primary px-3 py-2.5 font-bold text-primary-foreground text-xs shadow"
+                    >
+                      <ArrowDownToLine className="size-3.5" /> Descer
+                    </button>
+                  ) : (
+                    <>
+                      {selInfo?.stackable && surfaceOptions().length > 0 ? (
+                        <button
+                          type="button"
+                          onClick={() => setStackPicker((v) => !v)}
+                          aria-expanded={stackPicker}
+                          className="inline-flex min-h-11 items-center gap-1 rounded-full bg-primary px-3 py-2.5 font-bold text-primary-foreground text-xs shadow"
+                        >
+                          <ArrowUpToLine className="size-3.5" /> Em cima…
+                        </button>
+                      ) : null}
+                      {selInfo?.mount !== 'wall' ? (
+                        <button
+                          type="button"
+                          onClick={rotateSelected}
+                          className="inline-flex min-h-11 items-center gap-1 rounded-full bg-primary px-3 py-2.5 font-bold text-primary-foreground text-xs shadow"
+                        >
+                          <RotateCw className="size-3.5" /> Girar
+                        </button>
+                      ) : null}
+                    </>
+                  )}
+                  <button
+                    type="button"
+                    onClick={removeSelected}
+                    className="inline-flex min-h-11 items-center gap-1 rounded-full bg-(--sz-hot) px-3 py-2.5 font-bold text-(--sz-hot-fg) text-xs shadow"
+                  >
+                    <Trash2 className="size-3.5" /> Tirar
+                  </button>
+                </>
+              )
+            })()}
           </div>
         ) : null}
       </div>
+
+      {/* Lista "Colocar em cima de…" — superfícies posicionadas com nicho livre (24/07). */}
+      {selected !== null && stackPicker ? (
+        <div
+          role="group"
+          aria-label="Colocar em cima de qual superfície?"
+          className="flex flex-wrap items-center gap-2 rounded-2xl bg-(--kids-lime-tint) px-4 py-2.5"
+        >
+          <p className="font-semibold text-sm">Colocar em cima de:</p>
+          {surfaceOptions().map((opt) => {
+            const info = ROOM_ITEM_INFO[opt.itemId]
+            return (
+              <button
+                key={opt.itemId}
+                type="button"
+                onClick={() => placeOnSurface(opt.itemId)}
+                className="inline-flex min-h-11 items-center gap-1 rounded-full border-2 border-border bg-card px-3 font-semibold text-xs"
+              >
+                <span aria-hidden="true">{info?.emoji ?? '📦'}</span>
+                {info?.labelPt ?? opt.itemId}
+                <span className="text-muted-foreground">
+                  ({opt.free} {opt.free === 1 ? 'vaga' : 'vagas'})
+                </span>
+              </button>
+            )
+          })}
+          <button
+            type="button"
+            onClick={() => setStackPicker(false)}
+            className="inline-flex min-h-11 items-center rounded-full px-3 font-semibold text-muted-foreground text-xs"
+          >
+            Cancelar
+          </button>
+        </div>
+      ) : null}
 
       {/* Lista das peças no quarto — caminho de TECLADO p/ posicionar (arrastar no 3D não é
           alcançável por teclado): escolha uma e mova com as setas (R gira, Delete tira). */}
@@ -459,12 +642,13 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
         >
           {draft.placedItems.map((p, i) => {
             const inf = ROOM_ITEM_INFO[p.itemId]
+            const parentInf = p.on ? ROOM_ITEM_INFO[p.on] : null
             return (
               <button
                 // biome-ignore lint/suspicious/noArrayIndexKey: a ordem dos itens É a identidade.
                 key={i}
                 type="button"
-                onClick={() => setSelected(selected === i ? null : i)}
+                onClick={() => selectPiece(selected === i ? null : i)}
                 aria-pressed={selected === i}
                 className={cn(
                   'inline-flex min-h-11 items-center gap-1 rounded-full border-2 px-3 py-1.5 font-semibold text-xs',
@@ -473,6 +657,9 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
               >
                 <span aria-hidden="true">{inf?.emoji ?? '📦'}</span>
                 {inf?.labelPt ?? p.itemId}
+                {parentInf ? (
+                  <span className="text-muted-foreground">· na {parentInf.labelPt}</span>
+                ) : null}
               </button>
             )
           })}

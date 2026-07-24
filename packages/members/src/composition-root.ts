@@ -319,10 +319,10 @@ export async function createApplication(env: Env): Promise<Application> {
     clock,
   )
   const equipAvatar = new EquipAvatarService(avatarRepo, clock)
-  const setAvatarPhoto = new SetAvatarPhotoService(avatarRepo, clock)
+  const setAvatarPhoto = new SetAvatarPhotoService(avatarRepo, clock, env.AVATAR_PHOTO_URL_PREFIXES)
   const roomRepo = new DrizzleRoomRepository(db)
   const getRoom = new GetRoomService(roomRepo, gamificationRepo)
-  const saveRoom = new SaveRoomService(roomRepo, clock)
+  const saveRoom = new SaveRoomService(roomRepo, clock, logger)
   const buyRoomItem = new BuyRoomItemService(roomRepo, gamificationRepo, awardGamification, clock)
   const getPublicProfile = new GetPublicProfileService(
     gamificationRepo,

@@ -37,10 +37,11 @@ export const proxy = createMemberProxy({
 })
 
 export const config = {
-  // `api/me/avatar`, o upload de imagem do hub (`api/hub/uploads/image`) e a FOTO
-  // DO PERFIL (`api/profiles/:id/avatar`) ficam FORA do matcher: são multipart e o
-  // proxy copiaria o corpo à toa; todas têm guard próprio (sessão estrita + a MESMA
-  // checagem anti-CSRF dentro do `requireUploadSession`). Idem `api/studio/publish`
+  // `api/me/avatar` e o upload de imagem do hub (`api/hub/uploads/image`) ficam
+  // FORA do matcher: são multipart e o proxy copiaria o corpo à toa; todas têm
+  // guard próprio (sessão estrita + a MESMA checagem anti-CSRF dentro do
+  // `requireUploadSession`). (A FOTO DO PERFIL morreu 24/07 — a cara da criança vem
+  // só do snapshot do avatar 3D, `api/members/avatar/snapshot`.) Idem `api/studio/publish`
   // (multipart: print + projeto inteiro) e `api/studio/play/:id` (PÚBLICA: stream do
   // JSON do projeto — fora do buffer do proxy e sem gate de sessão). O prefixo
   // `api/studio/publish` no negative-lookahead também isenta `api/studio/publish-standalone`
@@ -50,6 +51,6 @@ export const config = {
   // `api/certificates` (validação PÚBLICA do certificado pelo QR — `GET /api/certificates/:id/validate`)
   // fica FORA do matcher: é anônima (sem gate de sessão), igual a `api/studio/play`.
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|api/me/avatar|api/members/avatar/snapshot|api/hub/uploads/image|api/hub/showcase|api/studio/publish|api/studio/play|api/studio/cleanup|api/certificates|api/profiles/[^/]+/avatar).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/me/avatar|api/members/avatar/snapshot|api/hub/uploads/image|api/hub/showcase|api/studio/publish|api/studio/play|api/studio/cleanup|api/certificates).*)',
   ],
 }

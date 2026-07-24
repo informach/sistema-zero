@@ -551,6 +551,55 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   }
 }
 
+/* ============================================================
+   MAPA DA CARREIRA (/cursos) — serpentina de 8 níveis: fita
+   curva CONTÍNUA (SVG) atrás de medalhões grandes. A fita e os
+   nós compartilham o espaço normalizado (ver lib/career-path.ts):
+   nós em top/left %, <svg> com preserveAspectRatio=none e traço
+   `non-scaling-stroke` (espessura constante, sem distorção). A cor
+   da fita percorrida e da borda dos medalhões = --level-<slug>
+   (herda o tema claro/escuro).
+   ============================================================ */
+:root {
+  --career-node: 11rem; /* diâmetro do medalhão */
+  --career-row: 16rem; /* altura por nível (medalhão + legenda + respiro) */
+}
+@media (max-width: 640px) {
+  :root {
+    --career-node: 8.5rem;
+    --career-row: 13rem;
+  }
+}
+.career-ribbon {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.career-ribbon__track,
+.career-ribbon__fill {
+  fill: none;
+  stroke-width: 16;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* Trilha completa (o caminho à frente): neutra e apagada. */
+.career-ribbon__track {
+  stroke: var(--border);
+  opacity: 0.6;
+}
+@media (max-width: 640px) {
+  .career-ribbon__track,
+  .career-ribbon__fill {
+    stroke-width: 11;
+  }
+}
+.career-medal {
+  width: var(--career-node);
+  height: var(--career-node);
+}
+
 .kids-unit-cyan {
   --unit: var(--kids-cyan);
   --unit-fg: oklch(1 0 0);

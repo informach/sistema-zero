@@ -14,6 +14,23 @@ const optionalBool = (def: boolean) =>
     })
     .transform((v) => (v === undefined ? def : v.toLowerCase() === 'true' || v === '1'))
 
+/**
+ * csv → prefixos da allowlist da foto do avatar. Prefixo que termina no HOST (sem
+ * `/` de path) casaria por `startsWith` com `https://host.evil.com/…` e
+ * `https://host@evil.com/…` — força o `/` que fecha o host. Prefixo com path já é
+ * seguro (o host termina no `/`). Exportado puro p/ teste.
+ */
+export function normalizeAvatarPhotoPrefixes(value: string | undefined): string[] {
+  return (value ?? '')
+    .split(',')
+    .map((prefix) => prefix.trim())
+    .filter(Boolean)
+    .map((prefix) => {
+      const afterScheme = prefix.replace(/^https?:\/\//i, '')
+      return afterScheme.includes('/') ? prefix : `${prefix}/`
+    })
+}
+
 const EnvSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -157,6 +174,18 @@ const EnvSchema = z
     RENEWAL_REMINDER_BATCH_LIMIT: z.coerce.number().int().positive().default(200),
     // URL pública do FUNIL (base do link /renovar?oferta=<slug> do e-mail).
     FUNNEL_URL: z.string().url().optional(),
+
+    // ── Foto do avatar (snapshot 3D) ─────────────────────────────────────────
+    // Allowlist de PREFIXOS aceitos no `PUT /members/avatar/photo` (csv). A URL
+    // vira <img> renderizada p/ OUTRAS crianças (liga/Clube/perfil público) —
+    // aceitar URL externa arbitrária seria pixel-rastreador + conteúdo não
+    // moderado (full review 24/07). O fluxo legítimo (BFF → R2 público) sempre
+    // manda o prefixo do bucket. Vazio em dev = aceita qualquer http(s);
+    // OBRIGATÓRIO em produção (refine abaixo).
+    AVATAR_PHOTO_URL_PREFIXES: z
+      .string()
+      .optional()
+      .transform((value) => normalizeAvatarPhotoPrefixes(value)),
   })
   .refine((env) => env.NODE_ENV !== 'production' || Boolean(env.INTERNAL_API_TOKEN), {
     message:
@@ -167,6 +196,11 @@ const EnvSchema = z
     message:
       'CATALOG_INTERNAL_TOKEN é obrigatório em produção (o catálogo exige o token na rota S2S de entitlements)',
     path: ['CATALOG_INTERNAL_TOKEN'],
+  })
+  .refine((env) => env.NODE_ENV !== 'production' || env.AVATAR_PHOTO_URL_PREFIXES.length > 0, {
+    message:
+      'AVATAR_PHOTO_URL_PREFIXES é obrigatório em produção (allowlist da foto do avatar — sem ela qualquer URL externa viraria a cara da criança p/ os colegas)',
+    path: ['AVATAR_PHOTO_URL_PREFIXES'],
   })
   // `CATALOG_BASE_URL` tem default `localhost:3003` (conveniência de dev). Esquecer
   // a env em produção bootava VERDE e quebrava TODO grant em runtime (502

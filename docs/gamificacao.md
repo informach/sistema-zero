@@ -235,7 +235,7 @@ regressão). **Como mudar:** o gate é só `privileged`; para desligar, pare de 
 
 ## 5. Conquistas (badges)
 
-Catálogo EM CÓDIGO em `packages/members/src/domain/gamification/badges.ts:BADGE_SLUGS` (23 slugs).
+Catálogo EM CÓDIGO em `packages/members/src/domain/gamification/badges.ts:BADGE_SLUGS` (30 slugs).
 Persiste só `user_badges` (UNIQUE `user_id, audience, badge_slug` — a "1ª aula" do kids é
 independente da do adult). Título/ícone/copy vivem no app kids, não no banco.
 
@@ -243,14 +243,19 @@ independente da do adult). Título/ícone/copy vivem no app kids, não no banco.
 |---|---|---|
 | 1ª aula | `first-lesson` | 1º `lesson_complete` da vitrine (`countByType === 1`) |
 | 1º jogo no Mural | `first-showcase` (Fase 5) | `showcaseBadgeSlugs`, conta `course_showcased` (universal — todo comprador de curso alcança) |
+| Jogadas recebidas | `plays-10`, `plays-100` (jogo seu jogado 10×/100×) | `playsBadgeSlugs`, conta `play_milestone_10`/`play_milestone_100` (a de 100 concede o troféu Estrela do Mural) |
 | Streak | `streak-7/30/60/180/365` | `streakBadgeSlugs(current)` |
 | Cursos 100% | `course-complete`, `-2`, `-3` (1/2/3 cursos) | `courseBadgeSlugs`, conta `course_complete` no ledger |
 | Quiz nota mil | `quiz-perfect`, `-10`, `-30` (1/10/30) | `quizPerfectBadgeSlugs`, conta `quiz_perfect` |
 | Maestria do Estúdio | `studio-first`, `studio-master-3`, `studio-master-10` (1/3/10) | `studioMasteryBadgeSlugs`, conta `studio_passed` |
 | Pensa (planejamento) | `pensa-first-idea` (1ª etapa concluída = 1ª Carta), `pensa-first-launch`/`pensa-creator-3` (1/3 ciclos) | `pensaStageBadgeSlugs`/`pensaCycleBadgeSlugs`, contam `pensa_stage_complete`/`pensa_cycle_complete` |
-| Desafio do mês | `challenge-first` (Fase 5) | `challengeBadgeSlugs`, conta `challenge_entry` |
+| Desafio do mês | `challenge-first`, `challenge-3` (1ª/3ª participações) | `challengeBadgeSlugs`, conta `challenge_entry` |
 | Clube dos Criadores (07/2026) | `clube-primeiro-post` | `clubeBadgeSlugs`, conta `clube_thread` no ledger (1ª conversa APROVADA — **só thread destrava; comentário não**) |
 | Poupador | `coins-saver-300`, `coins-saver-1000` | `coinsSaverBadgeSlugs`, lê `lifetime_coins_earned` |
+| Remix (24/07) | `remix-first` (1º remix de jogo do Mural) | `remixBadgeSlugs`, conta `studio_remix` |
+| Decorador(a) (24/07) | `room-decorator-5` (5 itens do quarto) | `roomDecoratorBadgeSlugs`, conta `room_item_buy` |
+| Cheio de Estilo (24/07) | `avatar-style-5` (5 peças do avatar) | `avatarStyleBadgeSlugs`, conta `avatar_part_buy` |
+| Bom de Papo (24/07) | `mural-commenter-10` (10 comentários APROVADOS no Mural) | `muralCommenterBadgeSlugs`, conta `mural_comment` |
 
 As contagens são **POR VITRINE** (`countByType` filtra `userId + audience + sourceType`). Os
 marcos `course_complete`/`quiz_perfect` são eventos de **amount 0** no ledger (`xp_events`) — só
@@ -275,9 +280,13 @@ entra em `room_inventory` NA MESMA transação (`onConflictDoNothing`). Mapa atu
 `first-showcase`→`trofeu-primeiro-jogo`, `course-complete`→`trofeu-diploma`,
 `streak-30`→`trofeu-chama`, `quiz-perfect-10`→`trofeu-medalha-mil`,
 `pensa-first-launch`→`trofeu-foguete` (bônus de produto), `studio-master-3`→`trofeu-console`
-(bônus). No kids: aba "🏆 Troféus" no room-builder (não-ganho = cadeado + dica `TROPHY_HINT`),
+(bônus), `plays-100`→`trofeu-estrela-do-mural`. No kids: aba "🏆 Troféus" no room-builder
+(não-ganho = cadeado + dica `TROPHY_HINT`),
 modelos low-poly em `furniture-models.tsx`, e a celebração de aula avisa "troféu novo no quarto"
 via `TROPHY_BADGE_SLUGS`. Conformance test cobre badge↔item↔apresentação.
+**Estante de Troféus (24/07):** o 1º troféu concede TAMBÉM o móvel `estante-trofeus`
+(`TROPHY_SHELF_ITEM_ID`, furniture 3×2 com 6 nichos, tier trophy SEM badge própria — mesma tx,
+`onConflictDoNothing`). Ver §Superfícies abaixo.
 
 ### Desafio do MÊS (game jam — Fase 5, 07/2026)
 
@@ -348,6 +357,12 @@ têm cor embutida por variante).
   (member-shell `avatarSnapshot`) sobe o PNG p/ o R2 (namespace `avatar3d`) e grava a URL;
   `AvatarStateView.photoUrl` + `PublicProfileView.avatarPhotoUrl`. Config 3D (peças+cores) também
   persiste — base p/ uma futura "aventura" com o personagem.
+  ⚠️ **A URL passa por ALLOWLIST de prefixos** (env `AVATAR_PHOTO_URL_PREFIXES`, csv — obrigatória
+  em produção; full review 24/07): a rota é alcançável por qualquer aluno via gateway e a foto é
+  renderizada p/ OUTRAS crianças (liga/Clube/perfil público) — URL externa arbitrária seria
+  pixel-rastreador + conteúdo não moderado. Fora da allowlist → 400 `AVATAR_INVALID`. E a cara da
+  criança vem EXCLUSIVAMENTE deste snapshot (decisão 24/07): o upload de FOTO de perfil pelos pais
+  foi REMOVIDO do kids (grade `/perfis` e Área dos pais também mostram o snapshot).
 
 ### Como adicionar uma peça
 
@@ -390,8 +405,8 @@ efeito de jogo.
 
 | Categoria | Itens (preço / w×h) |
 |---|---|
-| **Móveis** (`furniture`, chão) | cama 0/2×3 (solteiro), cadeira 0/1×2, mesa 0/2×2, sofa 80/3×2, estante 70/2×3, bau 90/2×2, mesa-estudo 70/2×1, tv 90/2×1, beliche 120/2×3, pufe 50/1×1 |
-| **Decoração de chão** (`decor`) | ursinho 70/1×1, balao 50/1×2, bandeira 50/1×2, globo 50/1×1, guitarra 80/1×2, bola 0/1×1 |
+| **Móveis** (`furniture`, chão) | cama 0/2×3 (solteiro), cadeira 0/1×2, mesa 0/2×2 (surface 2), sofa 80/3×2, estante 70/2×3 (surface 3), bau 90/2×2, mesa-estudo 70/2×1 (surface 1), tv 90/2×1, beliche 120/2×3, pufe 50/1×1 + **estante-trofeus 0/3×2 (surface 6, tier trophy — vem com o 1º troféu)** |
+| **Decoração de chão** (`decor`) | ursinho 70/1×1*, balao 50/1×2, bandeira 50/1×2, globo 50/1×1*, guitarra 80/1×2, bola 0/1×1* (* = `stackable`, vai em superfície; vela e os troféus de chão também) |
 | **Decoração de PAREDE** (`decor`, `mount:'wall'`) | quadro 0/2×2, estrela 0/1×1, janela 60/2×2, relogio 60/1×1, prateleira 60/2×1, poster 50/1×2, espelho 60/1×2 |
 | **Plantas** (`plant`, animadas) | planta 80/1×2, arvore 130/2×3 |
 | **Luzes** (`light`, animadas) | luminaria 70/1×2, vela 60/1×1 |
@@ -409,6 +424,24 @@ os posiciona via `wallToWorld` (gira 90° na parede esquerda); modelos viraram P
 (`furniture-models.tsx`). O drag faz raycast nos planos das 2 paredes (`room-canvas-3d.tsx`) e escolhe a
 mais próxima. `canonicalizeRoomState` valida largura/altura da parede + posse; item de parede sem `wall`
 → assume `'right'`. Não giram (a rotação fica só p/ chão).
+
+### Superfícies — objetos EM CIMA de móveis (24/07)
+
+Alguns móveis viraram **superfície** (`RoomItemDef.surface` = nº de NICHOS): mesa 2,
+mesa-estudo 1, estante 3 e a **`estante-trofeus`** 6 (furniture 3×2, tier trophy, concedida
+de graça com o 1º troféu — sem badge própria; `TROPHY_SHELF_ITEM_ID`). Itens PEQUENOS são
+**`stackable`** (os 5 troféus de CHÃO + ursinho/globo/bola/vela) e podem ser colocados num
+nicho: `PlacedItem.on` = itemId do PAI posicionado + `slot` (0-based). Regras do
+`canonicalizeRoomState` (2ª passada, testadas em `room.test.ts`): filho exige `stackable` +
+posse; pai POSICIONADO no chão com `surface`; `slot < surface`; 1 filho por (pai, slot); filho
+NÃO ocupa célula de chão (x/y canônicos = 0); pai removido/inválido → a colocação do filho cai
+(a POSSE fica). `on` ambíguo (mesmo móvel colocado 2×) resolve pra 1ª instância — os nichos são
+por itemId, não por instância. No kids: `SURFACE_SLOTS` (offsets 3D por nicho, relativos ao
+CENTRO do pai — conformância trava nº de slots = `surface`), filhos renderizam DENTRO do grupo
+do pai no `furniture-piece` (herdam posição/rotação; escala `SURFACE_CHILD_SCALE` 0.72, item
+h=2 encolhe p/ 0.45); no editor v1 o fluxo é POR BOTÃO (sem drag): peça stackable selecionada →
+"Em cima…" lista as superfícies com vaga; filho selecionado → "Descer" (1º vão do chão) ou
+"Tirar"; tirar uma superfície derruba os filhos junto (voltam pro tray, com aviso).
 
 **Colisão "nada por cima de nada":** `canonicalizeRoomState` mantém sets de células ocupadas (chão e
 por-parede via `occupies`) e DESCARTA o item que sobrepor um já posicionado. Namespaces SEPARADOS — chão,
@@ -570,6 +603,11 @@ novo. Fontes novas (todas do fluxo standalone do `/estudio` + Mural):
 - **`studio_publish_day`** (XP REAL **25** + **15 moedas** no teto, sourceId = uuid determinístico do
   DIA civil SP — `studioPublishDaySourceId`): o XP diário de publicar, **máx. 1×/dia** — é o que
   mantém streak/liga de quem só CRIA (spam de republicação não infla). Mesmo webhook.
+- **`studio_activity_day`** (XP REAL **10**, SEM moeda, migration `0045`, sourceId = uuid
+  determinístico do DIA civil SP — `studioActivityDaySourceId`): CRIAR no Estúdio Completo (sem
+  publicar) também segura o foguinho — **máx. 1×/dia**, move o streak. Beacon best-effort do
+  AUTOSAVE do editor (`POST /api/studio/activity` → `POST /members/gamification/activity`,
+  `RecordStudioActivityDayService`: exige posse do Estúdio pela CONTA; equipe libera).
 - **`studio_remix`** (MARCO amount 0, sourceId = playId do jogo ORIGINAL): "Fazer a minha versão" no
   Mural — alimenta `weekly-remix`/`monthly-remix-3`. Rota de aluno `POST /members/gamification/remix`
   (`RecordStudioRemixService`): exige posse do Estúdio, **valida o playId no hub** (S2S
@@ -802,6 +840,9 @@ no código (06/2026).
 | `XP_VALUES.UNIT_COMPLETE` | 25 | `gamification/gamification.ts` | XP do baú de unidade |
 | `XP_VALUES.CLUBE_THREAD` | 5 | `gamification/gamification.ts` | XP por tópico do Clube aprovado (XP puro, sem moeda) |
 | `XP_VALUES.CLUBE_COMMENT` | 3 | `gamification/gamification.ts` | XP por comentário do Clube aprovado (XP puro, sem moeda) |
+| `CHALLENGE_ENTRY_XP` | 50 | `gamification/challenges.ts` | XP da entrada no Desafio do mês (1×/mês, move streak) |
+| `XP_VALUES.STUDIO_PUBLISH_DAY` | 25 | `gamification/gamification.ts` | XP diário de publicar no Mural standalone (1×/dia SP) |
+| `XP_VALUES.STUDIO_ACTIVITY_DAY` | 10 | `gamification/gamification.ts` | XP diário de CRIAR no Estúdio (1×/dia SP, sem moeda) |
 | `SP_DATE_FORMAT` (timeZone) | America/Sao_Paulo | `gamification/gamification.ts` | Fuso do "dia civil" do streak |
 | `STREAK_BADGES` | [7,30,60,180,365] | `gamification/gamification.ts` | Marcos de badge de streak |
 | `STREAK_BADGES`/cursos/quizzes | 1/2/3 · 1/10/30 | `gamification/gamification.ts` | Limiares das badges derivadas |
@@ -813,10 +854,11 @@ no código (06/2026).
 | `COIN_VALUES.QUIZ_SCORE_BONUS_MAX` | 5 | `gamification/coins.ts` | Cap do bônus de nota (moeda) |
 | `COIN_VALUES.UNIT_COMPLETE` | 15 | `gamification/coins.ts` | Moeda do baú de unidade |
 | `DAILY_COIN_CAP` | 100 | `gamification/coins.ts` | Teto diário de ganho de moeda |
+| `COIN_VALUES.STUDIO_PUBLISH_DAY` | 15 | `gamification/coins.ts` | Moeda diária de publicar no Mural standalone (no teto) |
 | `STREAK_COIN_MILESTONES` | 7→20,30→50,60→80,180→150,365→300 | `gamification/coins.ts` | Bônus de moeda dos marcos (exemptos do teto) |
 | `STREAK_FREEZE_PRICE` | 80 | `gamification/coins.ts` | Preço do protetor comprável |
 | `MAX_STREAK_FREEZES` | 5 | `ports/gamification-repository.port.ts` | Teto de protetores acumuláveis |
-| `BADGE_SLUGS` | 23 slugs | `gamification/badges.ts` | Catálogo de conquistas |
+| `BADGE_SLUGS` | 30 slugs | `gamification/badges.ts` | Catálogo de conquistas |
 | `AVATAR3D_PARTS` (preços) | ver §6 | `avatar/avatar3d-catalog.ts` | Catálogo + preços das peças |
 | `AVATAR_CATEGORIES` | 14 categorias | `avatar/avatar3d-catalog.ts` | Categorias do avatar 3D |
 | `DEFAULT_AVATAR_SLOTS` | conjunto grátis | `avatar/avatar3d-catalog.ts` | Avatar inicial (peça+cor) |

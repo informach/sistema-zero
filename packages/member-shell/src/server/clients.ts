@@ -552,6 +552,16 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     listAvatarsByProfileIds(ids: string[]): Promise<GatewayResponse<AvatarsBatchView>> {
       return gw.gatewayFetch('/members/avatars', { query: { ids: ids.join(','), audience } })
     },
+    /**
+     * Variante SEM refresh/escrita de cookie — Server Components (a grade `/perfis`
+     * do kids pinta os rostinhos com o SNAPSHOT do avatar 3D, decisão 24/07: a cara
+     * da criança vem exclusivamente do avatar, nunca de foto enviada).
+     */
+    listAvatarsByProfileIdsReadonly(ids: string[]): Promise<GatewayResponse<AvatarsBatchView>> {
+      return gw.gatewayFetchReadonly('/members/avatars', {
+        query: { ids: ids.join(','), audience },
+      })
+    },
 
     // ── Quarto virtual ──────────────────────────────────────────────────────
     /** Estado do quarto (montado + catálogo + saldo) — editor/lojinha client-side. */

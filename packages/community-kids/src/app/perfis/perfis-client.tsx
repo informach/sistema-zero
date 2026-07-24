@@ -62,6 +62,7 @@ type Editing = { mode: 'create' } | { mode: 'edit'; profile: ProfileView } | nul
  */
 export function PerfisClient({
   initialProfiles,
+  avatarPhotoByProfile,
   isProfileSession,
   parentVerified,
   startManaging = false,
@@ -69,6 +70,8 @@ export function PerfisClient({
   unlimitedProfiles = false,
 }: {
   initialProfiles: ProfileView[]
+  /** profileId → snapshot do avatar 3D (a ÚNICA fonte da cara da criança, 24/07). */
+  avatarPhotoByProfile: Record<string, string | null>
   isProfileSession: boolean
   parentVerified: boolean
   startManaging?: boolean
@@ -219,26 +222,6 @@ export function PerfisClient({
     toast.error('Não foi possível remover o perfil.')
   }
 
-  async function uploadAvatar(p: ProfileView, file: File) {
-    setBusy(true)
-    const form = new FormData()
-    form.append('file', file)
-    const res = await fetch(`/api/profiles/${p.id}/avatar`, { method: 'POST', body: form })
-    const body = (await res.json().catch(() => null)) as { url?: string } | null
-    setBusy(false)
-    if (res.ok && body?.url) {
-      const url = body.url
-      setProfiles((prev) => prev.map((x) => (x.id === p.id ? { ...x, avatarUrl: url } : x)))
-      setEditing((e) =>
-        e?.mode === 'edit' && e.profile.id === p.id
-          ? { mode: 'edit', profile: { ...e.profile, avatarUrl: url } }
-          : e,
-      )
-      return
-    }
-    toast.error('Não foi possível trocar a foto.')
-  }
-
   if (editing) {
     return (
       <>
@@ -248,7 +231,6 @@ export function PerfisClient({
           onCancel={() => setEditing(null)}
           onSave={saveProfile}
           onArchive={(p) => setRemoving(p)}
-          onAvatar={uploadAvatar}
         />
         <Dialog
           open={removing !== null}
@@ -294,6 +276,7 @@ export function PerfisClient({
           <li key={p.id}>
             <ProfileTile
               profile={p}
+              photoUrl={avatarPhotoByProfile[p.id] ?? null}
               managing={managing}
               disabled={busy}
               onSelect={() => selectProfile(p.id)}
@@ -338,7 +321,7 @@ export function PerfisClient({
         </p>
       ) : null}
 
-      {managing ? <ChildrenDashboard /> : null}
+      {managing ? <ChildrenDashboard avatarPhotoByProfile={avatarPhotoByProfile} /> : null}
 
       <div className="flex flex-wrap items-center justify-center gap-3">
         {managing ? (
@@ -388,7 +371,11 @@ export function PerfisClient({
  * ao montar — só renderiza no modo gestão, atrás do portão de senha. Esqueleto no load;
  * falha é best-effort (some sem quebrar a gestão de perfis).
  */
-function ChildrenDashboard() {
+function ChildrenDashboard({
+  avatarPhotoByProfile,
+}: {
+  avatarPhotoByProfile: Record<string, string | null>
+}) {
   const [children, setChildren] = useState<ChildDashboardView[] | null>(null)
   const [failed, setFailed] = useState(false)
 
@@ -416,7 +403,13 @@ function ChildrenDashboard() {
       <div className="grid gap-3 sm:grid-cols-2">
         {children === null
           ? [0, 1].map((i) => <Skeleton key={i} className="h-32 rounded-2xl" />)
-          : children.map((c) => <ChildStatsCard key={c.profileId} child={c} />)}
+          : children.map((c) => (
+              <ChildStatsCard
+                key={c.profileId}
+                child={c}
+                photoUrl={avatarPhotoByProfile[c.profileId] ?? null}
+              />
+            ))}
       </div>
       <WeeklyReportToggle />
     </section>
@@ -489,11 +482,17 @@ function WeeklyReportToggle() {
 }
 
 /** Card de stats de um filho (XP/ofensiva/medalhas/projetos/cursos + ranking). */
-function ChildStatsCard({ child }: { child: ChildDashboardView }) {
+function ChildStatsCard({
+  child,
+  photoUrl,
+}: {
+  child: ChildDashboardView
+  photoUrl: string | null
+}) {
   return (
     <div className="flex flex-col gap-3 rounded-2xl border-2 border-border bg-card p-4">
       <div className="flex items-center gap-3">
-        <UserAvatar avatarUrl={child.avatarUrl} firstName={child.name} size="lg" />
+        <UserAvatar avatarUrl={photoUrl} firstName={child.name} size="lg" />
         <div className="min-w-0">
           <p className="truncate font-semibold text-foreground">{child.name}</p>
           {child.rankingPosition !== null ? (

@@ -32,14 +32,18 @@ import {
 } from '../../src/domain/gamification/coins'
 import {
   advanceStreak,
+  avatarStyleBadgeSlugs,
   challengeBadgeSlugs,
   clubeBadgeSlugs,
   coinsSaverBadgeSlugs,
   courseBadgeSlugs,
+  muralCommenterBadgeSlugs,
   pensaCycleBadgeSlugs,
   pensaStageBadgeSlugs,
   playsBadgeSlugs,
   quizPerfectBadgeSlugs,
+  remixBadgeSlugs,
+  roomDecoratorBadgeSlugs,
   showcaseBadgeSlugs,
   streakBadgeSlugs,
   studioMasteryBadgeSlugs,
@@ -128,7 +132,11 @@ import type {
 } from '../../src/domain/ports/teacher-thread-repository.port'
 import type { VideoPositionRepository } from '../../src/domain/ports/video-position-repository.port'
 import type { CourseRating } from '../../src/domain/rating/course-rating'
-import type { RoomState } from '../../src/domain/room/room-catalog'
+import {
+  type RoomState,
+  TROPHY_FOR_BADGE,
+  TROPHY_SHELF_ITEM_ID,
+} from '../../src/domain/room/room-catalog'
 
 export const silentLogger: Logger = {
   debug() {},
@@ -1890,6 +1898,27 @@ export class InMemoryGamificationRepository implements GamificationRepository {
         badgeCandidates.add(slug)
       }
     }
+    // Full review 24/07 (mirror do Drizzle): remix + decorador + estilo + comentarista.
+    if (newEvents.some((e) => e.sourceType === 'studio_remix')) {
+      for (const slug of remixBadgeSlugs(countByType('studio_remix'))) {
+        badgeCandidates.add(slug)
+      }
+    }
+    if (newEvents.some((e) => e.sourceType === 'room_item_buy')) {
+      for (const slug of roomDecoratorBadgeSlugs(countByType('room_item_buy'))) {
+        badgeCandidates.add(slug)
+      }
+    }
+    if (newEvents.some((e) => e.sourceType === 'avatar_part_buy')) {
+      for (const slug of avatarStyleBadgeSlugs(countByType('avatar_part_buy'))) {
+        badgeCandidates.add(slug)
+      }
+    }
+    if (newEvents.some((e) => e.sourceType === 'mural_comment')) {
+      for (const slug of muralCommenterBadgeSlugs(countByType('mural_comment'))) {
+        badgeCandidates.add(slug)
+      }
+    }
 
     const key = this.profileKey(input.userId, input.audience)
     const profile = this.profiles.get(key)
@@ -2021,6 +2050,17 @@ export class InMemoryGamificationRepository implements GamificationRepository {
         unlockedAt: input.now,
       })
       badgesUnlocked.push({ slug, unlockedAt: input.now })
+    }
+
+    // 🏆 Troféus do quarto (mirror do Drizzle): badge nova com troféu mapeado concede o
+    // item + a ESTANTE DE TROFÉUS junto com o 1º (24/07). O repo do quarto deduplica.
+    const trophyIds = badgesUnlocked
+      .map((b) => TROPHY_FOR_BADGE[b.slug as BadgeSlug])
+      .filter((id): id is string => Boolean(id))
+    if (trophyIds.length > 0) {
+      for (const itemId of [...trophyIds, TROPHY_SHELF_ITEM_ID]) {
+        await this.sources?.room?.addToInventory(input.userId, input.audience, itemId, input.now)
+      }
     }
 
     return {

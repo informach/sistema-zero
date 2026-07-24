@@ -416,7 +416,9 @@ memoizadas por request via `React.cache()` — dedup layout×página, sem refres
   (`POST /members/room/items/:id/buy` — item/tema/piso/luz pago, idempotente, 402/404/400). ⚠️ O
   `RoomStateSchema` (Zod) e os tipos (`RoomPlacedItem.rot`, `RoomStateView.wallColors/floor/lighting`)
   foram alargados p/ os campos novos do quarto 3D — `rot` é UNIÃO de literais 0|1|2|3 (não `z.number`)
-  p/ casar o tipo. O renderer 3D vive no community-kids (visual); aqui é só o BFF.
+  p/ casar o tipo. **Superfícies (24/07):** `RoomPlacedItem`/`RoomStateSchema` ganharam
+  `on?` (itemId do pai) + `slot?` — só FORMA; pai/nicho/posse é portão do members
+  (`canonicalizeRoomState`). O renderer 3D vive no community-kids (visual); aqui é só o BFF.
 - **Perfil público de OUTRA criança:** `getPublicProfileIdentity(profileId)` (auth S2S → nome + flag
   `publicProfileEnabled`, nunca PII) + `getPublicProfile(profileId)` (members → xp/ranking/conquistas/
   avatar/quarto SEM identidade). O BFF junta os dois no `PublicProfileDTO` p/ a página `/crianca/[id]`;
@@ -472,7 +474,9 @@ manual com hint.
 **Perfis estilo Netflix (PR5, kids):** o shell expõe o **client de perfis**
 (`createProfilesClient` em `server/clients.ts` → `/auth/profiles*` no auth) e os **route
 handlers** `profilesList`/`profileCreate`/`profileUpdate`/`profileArchive`/`profileSelect`/
-`profileExit`/`profileAvatar` (em `createShellRoutes`). `select`/`exit` EMITEM tokens novos
+`profileExit` (em `createShellRoutes`; ⚠️ o `profileAvatar` — upload de FOTO de perfil — foi
+REMOVIDO 24/07: a imagem da criança vem só do snapshot do avatar 3D via `avatarSnapshot` +
+allowlist `AVATAR_PHOTO_URL_PREFIXES` no members). `select`/`exit` EMITEM tokens novos
 e o handler TROCA os cookies (igual ao exchange de impersonação): `select` = entrar/trocar de
 perfil (1 clique, sem PIN); `exit` = voltar à área dos pais (gateado pela senha do responsável
 no auth). **`exit` REVOGA o refresh da sessão de perfil deixada** (full review F3): captura o
@@ -480,8 +484,7 @@ refresh ATUAL antes de trocar os cookies e chama `gateway.logoutRequest` (best-e
 família NOVA da conta não é tocada (família distinta), mas o token de perfil órfão não fica vivo. A claim **`pfl`** do JWT é lida por `parseProfileClaim` (`lib/act.ts`, pura/testada) →
 `SessionUser.activeProfile` (`{accountId, name}`). O **proxy** ganhou `requireProfileSelectPath`
 (opcional, só o kids usa): conta logada SEM `pfl` na área de aprender → redireciona p/ a grade
-(ex.: `/perfis`); a própria rota é isenta. O avatar do perfil (`profileAvatar`) reusa a pipeline
-do `/me` (sharp→WebP→R2 por `profileId`) — fica FORA do matcher do proxy (multipart).
+(ex.: `/perfis`); a própria rota é isenta.
 
 **Recados (conversas com o professor — canal de retorno, 07/2026):** o shell é o BFF do
 "Recados" do aluno (o kids renderiza em `/recados`). Client members (`server/clients.ts`,
@@ -523,12 +526,13 @@ PLAIN (React escapa — sem markdown de UGC). Contrato do members: ver `../membe
    `packages/admin/scripts/r2-cors-private.ts` (`--apply`, `--bucket=` p/ prod). Foi o que quebrou o
    community-kids em 25/06 (origem do kids faltava na regra, que só tinha o community adulto). **+ full review 19/06 (lente infantil):** UGC do hub renderizado restrito + strip de
    imagem no write (pixel-rastreador entre crianças); scrub de PII no Sentry (UUID do perfil/e-mail);
-   `profileAvatar` AUTORIZA o dono ANTES de gravar no R2 (criança só troca a própria foto; UUID
-   validado); `watermarkImage` com `limitInputPixels` (anti OOM); `getMeReadonly`/`getGamificationReadonly`
+   `profileAvatar` AUTORIZAVA o dono ANTES de gravar no R2 (handler REMOVIDO em 24/07 — a foto
+   do perfil agora vem SÓ do snapshot do avatar 3D; o padrão authorize-before-write segue valendo
+   p/ `meAvatar`/`avatarSnapshot`); `watermarkImage` com `limitInputPixels` (anti OOM); `getMeReadonly`/`getGamificationReadonly`
    memoizados por request via `React.cache()` (dedup layout×página). **+ full review 20/06:**
    `meAvatar.POST` recusa sessão de PERFIL (403 `ACCOUNT_SESSION_REQUIRED`) ANTES da escrita no R2
    — a foto do `/me` é da CONTA; sem isto a criança deixava objeto R2 órfão (espelha o
-   authorize-before-write do `profileAvatar`); `watermarkCacheKey` virou `sha256(srcKey)` (INJETIVO
+   authorize-before-write do antigo `profileAvatar`, removido 24/07); `watermarkCacheKey` virou `sha256(srcKey)` (INJETIVO
    — a substituição lossy podia colidir e servir o PDF errado ao MESMO aluno) e `watermarkImage`
    ganhou teto de pixels TOTAIS p/ animados (não só por frame). **Fix aqui = fix nos dois apps;
    mudança aqui RODA NOS DOIS — rode as suítes dos dois.**

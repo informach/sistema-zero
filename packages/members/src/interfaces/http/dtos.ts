@@ -116,6 +116,11 @@ export const RoomStateBody = t.Object({
       rot: t.Optional(t.Integer({ minimum: 0, maximum: 3 })),
       // Item de PAREDE: em qual parede (x=horizontal, y=altura). Ausente = item de chão.
       wall: t.Optional(t.Union([t.Literal('left'), t.Literal('right')])),
+      // EM CIMA de uma superfície (24/07): itemId do pai + nicho. ⚠️ o normalize do
+      // Elysia REMOVE campo não declarado — sem estes dois aqui o filho chegava ao
+      // domínio como item de chão em (0,0) e a colocação se perdia em silêncio.
+      on: t.Optional(AVATAR_SLUG),
+      slot: t.Optional(t.Integer({ minimum: 0, maximum: 32 })),
     }),
     { maxItems: 60 },
   ),

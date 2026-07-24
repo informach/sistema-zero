@@ -1,4 +1,5 @@
 import {
+  Armchair,
   BrainCircuit,
   Coins,
   Crown,
@@ -8,10 +9,13 @@ import {
   Lightbulb,
   type LucideIcon,
   Medal,
+  MessageCircle,
   MessagesSquare,
   PiggyBank,
   Play,
   Rocket,
+  Shirt,
+  Shuffle,
   Sparkles,
   Star,
   Swords,
@@ -154,6 +158,31 @@ export const BADGE_INFO: Record<BadgeSlug, BadgeInfo> = {
     title: 'Voz da turma',
     description: 'Você começou a sua primeira conversa no Clube dos Criadores!',
     icon: MessagesSquare,
+  },
+  'challenge-3': {
+    title: 'Desafiante',
+    description: 'Você participou de 3 Desafios do mês. Que garra!',
+    icon: Swords,
+  },
+  'remix-first': {
+    title: 'Remixador(a)',
+    description: 'Você fez a sua versão de um jogo do Mural!',
+    icon: Shuffle,
+  },
+  'room-decorator-5': {
+    title: 'Decorador(a)',
+    description: 'Cinco itens novos no seu quarto. Tá ficando lindo!',
+    icon: Armchair,
+  },
+  'avatar-style-5': {
+    title: 'Cheio de Estilo',
+    description: 'Cinco peças novas no seu avatar. Que visual!',
+    icon: Shirt,
+  },
+  'mural-commenter-10': {
+    title: 'Bom de Papo',
+    description: 'Dez comentários seus aprovados no Mural. Os colegas adoram!',
+    icon: MessageCircle,
   },
 }
 

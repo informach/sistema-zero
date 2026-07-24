@@ -1,8 +1,4 @@
-import {
-  COURSE_TIER_LABELS,
-  COURSE_TIERS,
-  courseTierOf,
-} from '@sistemazero/member-shell/lib/course-tier'
+import { COURSE_TIER_LABELS } from '@sistemazero/member-shell/lib/course-tier'
 import { buttonVariants } from '@sistemazero/ui/button'
 import { ArrowLeft, Map as MapIcon } from 'lucide-react'
 import Link from 'next/link'
@@ -10,24 +6,36 @@ import { notFound } from 'next/navigation'
 import { CatalogCourseCard } from '@/components/kids/catalog-course-card'
 import { KidsMascot } from '@/components/kids/mascot'
 import { unitThemeAt } from '@/components/kids/unit-theme'
-import { LEVEL_TIER, levelForTier, trilhaLocked } from '@/lib/career-map'
+import { coursesForLevel, LEVEL_TIER, trilhaLocked } from '@/lib/career-map'
 import { cn } from '@/lib/cn'
-import { levelInfo, nextLevelHint } from '@/lib/level-info'
+import { LEVEL_ORDER, levelInfo, nextLevelHint } from '@/lib/level-info'
+import type { StudentLevelSlug } from '@/lib/types'
 import { getGamificationReadonly, listCatalog } from '@/server/members'
 
 export const dynamic = 'force-dynamic'
 
+/** Subtítulo por NÍVEL: Faísca abre a etapa (curso-base), Construtor continua (resto + bônus). */
+function trilhaSubtitle(slug: StudentLevelSlug, tierLabel: string, ownerLabel: string): string {
+  if (slug === 'noob') return `Comece por aqui: o curso-base de ${tierLabel}.`
+  if (slug === 'coder')
+    return `Continue a trilha de ${tierLabel} — os próximos cursos e a recompensa.`
+  return `A trilha de ${ownerLabel}.`
+}
+
 /**
- * Listagem de uma TRILHA do Mapa da Carreira (`/cursos/trilha/iniciante-2d`):
- * os cursos daquele degrau (obrigatórios E bônus) — destino do clique num nível
- * liberado do mapa. Deep-link numa trilha ainda bloqueada mostra o recado
- * gentil (a régua REAL de acesso segue no members; aqui é apresentação).
- * O segmento estático `trilha` não colide com o detalhe `/cursos/[slug]`.
+ * Listagem da trilha de um NÍVEL do Mapa da Carreira (`/cursos/trilha/coder`): os
+ * cursos daquele nível — Faísca vê só o curso-base, Construtor o resto + bônus, os
+ * demais o degrau inteiro (`coursesForLevel`). Destino do clique num nível liberado
+ * do mapa. Deep-link numa trilha ainda bloqueada mostra o recado gentil (a régua REAL
+ * de acesso segue no members; aqui é apresentação). O segmento estático `trilha` não
+ * colide com o detalhe `/cursos/[slug]`.
  */
-export default async function TrilhaPage({ params }: { params: Promise<{ tier: string }> }) {
-  const { tier: raw } = await params
-  const tier = COURSE_TIERS.find((candidate) => candidate === raw)
-  if (!tier) notFound()
+export default async function TrilhaPage({ params }: { params: Promise<{ level: string }> }) {
+  const { level: raw } = await params
+  const levelSlug = LEVEL_ORDER.find((candidate) => candidate === raw)
+  if (!levelSlug) notFound()
+  const tier = LEVEL_TIER[levelSlug]
+  if (!tier) notFound() // Lenda (god) é o topo — não tem trilha própria.
 
   const [{ status, body }, gamification] = await Promise.all([
     listCatalog(),
@@ -37,14 +45,17 @@ export default async function TrilhaPage({ params }: { params: Promise<{ tier: s
   const all = body?.courses ?? []
   const level = gamification.status === 200 ? (gamification.body?.level ?? null) : null
 
-  if (trilhaLocked(level, tier, all)) {
+  if (trilhaLocked(level, levelSlug, all)) {
     return (
       <section className="mx-auto flex w-full max-w-md flex-col items-center px-4 py-12 text-center">
         <KidsMascot expression="thinking" className="size-24" />
         <h1 className="mt-4 sz-display text-2xl">Esta parte do mapa ainda está bloqueada</h1>
+        {/* Nomeia o NÍVEL (não o degrau de curso): em `/trilha/coder` o degrau é o MESMO
+            Iniciante 2D que a Faísca já estuda — dizer "complete e Iniciante 2D abre"
+            soaria errado; "a trilha de Construtor(a)" é o que abre de fato. */}
         <p className="mt-4 text-muted-foreground">
-          Complete as trilhas anteriores da sua carreira e a trilha {COURSE_TIER_LABELS[tier]} vai
-          abrir sozinha — com direito a recompensas!
+          Complete as trilhas anteriores da sua carreira e a trilha de {levelInfo(levelSlug).label}{' '}
+          vai abrir sozinha — com direito a recompensas!
         </p>
         <Link
           href="/cursos"
@@ -56,12 +67,12 @@ export default async function TrilhaPage({ params }: { params: Promise<{ tier: s
     )
   }
 
-  const courses = all.filter((course) => courseTierOf(course.level, course.track) === tier)
+  const courses = coursesForLevel(levelSlug, all)
   const titleBySlug = new Map(all.map((c) => [c.courseSlug, c.title]))
-  const owner = levelInfo(levelForTier(tier))
+  const owner = levelInfo(levelSlug)
   const OwnerIcon = owner.icon
-  // O hint do próximo nível só aparece quando ESTA é a trilha que o aluno estuda.
-  const hint = level && LEVEL_TIER[level.slug] === tier ? nextLevelHint(level) : null
+  // O hint do próximo nível só aparece quando ESTA é a trilha que o aluno estuda agora.
+  const hint = level && level.slug === levelSlug ? nextLevelHint(level) : null
 
   return (
     <div className="flex flex-col gap-8">
@@ -81,7 +92,9 @@ export default async function TrilhaPage({ params }: { params: Promise<{ tier: s
           </span>
           <div>
             <h1 className="sz-display text-2xl md:text-3xl">Trilha {COURSE_TIER_LABELS[tier]}</h1>
-            <p className="text-muted-foreground text-sm">A trilha de {owner.label}.</p>
+            <p className="text-muted-foreground text-sm">
+              {trilhaSubtitle(levelSlug, COURSE_TIER_LABELS[tier], owner.label)}
+            </p>
           </div>
         </div>
         {hint ? <p className="text-muted-foreground text-sm">{hint}</p> : null}

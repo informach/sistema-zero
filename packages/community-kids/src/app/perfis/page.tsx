@@ -1,6 +1,6 @@
 import { redactProfilesForProfileSession } from '@sistemazero/member-shell/lib/profile-redaction'
 import { redirect } from 'next/navigation'
-import { getProfileAllowanceReadonly } from '@/server/members'
+import { getProfileAllowanceReadonly, listAvatarsByProfileIdsReadonly } from '@/server/members'
 import { isParentVerifiedFor } from '@/server/parent-gate'
 import { listReadonly } from '@/server/profiles'
 import { getSession } from '@/server/session'
@@ -45,6 +45,18 @@ export default async function PerfisPage({
   // Sessão da conta com o portão já aberto (senha verificada há pouco) → a Área
   // dos pais abre sem re-pedir a senha (ex.: logo após sair de um perfil).
   const parentVerified = !isProfileSession && (await isParentVerifiedFor(session.id))
+  // Rostinhos da grade = SNAPSHOT do avatar 3D (24/07 — a ÚNICA fonte da cara da
+  // criança; a foto enviada pelos pais MORREU). Lote no members, best-effort:
+  // members fora → tiles caem na inicial do nome.
+  const avatarsRes =
+    profiles.length > 0
+      ? await listAvatarsByProfileIdsReadonly(profiles.map((p) => p.id)).catch(() => null)
+      : null
+  const avatarPhotoByProfile = Object.fromEntries(
+    Object.entries(avatarsRes?.status === 200 ? (avatarsRes.body?.avatars ?? {}) : {}).map(
+      ([id, view]) => [id, view.photoUrl ?? null],
+    ),
+  )
   // Logo após sair de um perfil pela "Área dos pais", o reload volta com `?manage=1`
   // e o portão aberto → já entra direto na GESTÃO (sem exigir um 2º clique no botão).
   const { manage } = await searchParams
@@ -52,6 +64,7 @@ export default async function PerfisPage({
   return (
     <PerfisClient
       initialProfiles={profiles}
+      avatarPhotoByProfile={avatarPhotoByProfile}
       isProfileSession={isProfileSession}
       parentVerified={parentVerified}
       startManaging={startManaging}

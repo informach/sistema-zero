@@ -1,13 +1,18 @@
 import { describe, expect, test } from 'bun:test'
 import {
   advanceStreak,
+  avatarStyleBadgeSlugs,
+  challengeBadgeSlugs,
   courseBadgeSlugs,
   effectiveStreak,
   localDateSaoPaulo,
+  muralCommenterBadgeSlugs,
   playsBadgeSlugs,
   previousDay,
   quizPassedXp,
   quizPerfectBadgeSlugs,
+  remixBadgeSlugs,
+  roomDecoratorBadgeSlugs,
   streakBadgeSlugs,
   XP_VALUES,
 } from '../../src/domain/gamification/gamification'
@@ -185,6 +190,29 @@ describe('playsBadgeSlugs (jogadas recebidas — retenção pós-cursos 07/2026)
     expect(playsBadgeSlugs(1, 1)).toEqual(['plays-10', 'plays-100'])
     // Teórico (marco de 100 sem o de 10 no ledger): ainda destrava a de 100.
     expect(playsBadgeSlugs(0, 1)).toEqual(['plays-100'])
+  })
+})
+
+describe('badges do full review 24/07 (remix/decorador/estilo/comentarista/desafiante)', () => {
+  test('remix-first destrava no 1º remix', () => {
+    expect(remixBadgeSlugs(0)).toEqual([])
+    expect(remixBadgeSlugs(1)).toEqual(['remix-first'])
+    expect(remixBadgeSlugs(5)).toEqual(['remix-first'])
+  })
+  test('room-decorator-5 e avatar-style-5 destravam no 5º item/peça', () => {
+    expect(roomDecoratorBadgeSlugs(4)).toEqual([])
+    expect(roomDecoratorBadgeSlugs(5)).toEqual(['room-decorator-5'])
+    expect(avatarStyleBadgeSlugs(4)).toEqual([])
+    expect(avatarStyleBadgeSlugs(5)).toEqual(['avatar-style-5'])
+  })
+  test('mural-commenter-10 destrava no 10º comentário aprovado', () => {
+    expect(muralCommenterBadgeSlugs(9)).toEqual([])
+    expect(muralCommenterBadgeSlugs(10)).toEqual(['mural-commenter-10'])
+  })
+  test('challenge: 1ª participação = challenge-first; 3ª soma challenge-3', () => {
+    expect(challengeBadgeSlugs(0)).toEqual([])
+    expect(challengeBadgeSlugs(1)).toEqual(['challenge-first'])
+    expect(challengeBadgeSlugs(3)).toEqual(['challenge-first', 'challenge-3'])
   })
 })
 

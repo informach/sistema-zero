@@ -25,14 +25,18 @@ import {
 } from '../../../domain/gamification/coins'
 import {
   advanceStreak,
+  avatarStyleBadgeSlugs,
   challengeBadgeSlugs,
   clubeBadgeSlugs,
   coinsSaverBadgeSlugs,
   courseBadgeSlugs,
+  muralCommenterBadgeSlugs,
   pensaCycleBadgeSlugs,
   pensaStageBadgeSlugs,
   playsBadgeSlugs,
   quizPerfectBadgeSlugs,
+  remixBadgeSlugs,
+  roomDecoratorBadgeSlugs,
   showcaseBadgeSlugs,
   streakBadgeSlugs,
   studioMasteryBadgeSlugs,
@@ -59,7 +63,7 @@ import {
   type SpendCoinsResult,
   type XpSourceType,
 } from '../../../domain/ports/gamification-repository.port'
-import { TROPHY_FOR_BADGE } from '../../../domain/room/room-catalog'
+import { TROPHY_FOR_BADGE, TROPHY_SHELF_ITEM_ID } from '../../../domain/room/room-catalog'
 import type { Database } from './db'
 import {
   avatarInventory,
@@ -279,6 +283,30 @@ export class DrizzleGamificationRepository implements GamificationRepository {
           countByType('play_milestone_100'),
         ])
         for (const slug of playsBadgeSlugs(tens, hundreds)) {
+          badgeCandidates.add(slug)
+        }
+      }
+
+      // Badges do full review 24/07 (mesmo padrão count-no-ledger dos blocos acima):
+      // 1º remix (`studio_remix`), 5 itens do quarto (`room_item_buy`), 5 peças do
+      // avatar (`avatar_part_buy`) e 10 comentários aprovados no Mural (`mural_comment`).
+      if (newEvents.some((e) => e.sourceType === 'studio_remix')) {
+        for (const slug of remixBadgeSlugs(await countByType('studio_remix'))) {
+          badgeCandidates.add(slug)
+        }
+      }
+      if (newEvents.some((e) => e.sourceType === 'room_item_buy')) {
+        for (const slug of roomDecoratorBadgeSlugs(await countByType('room_item_buy'))) {
+          badgeCandidates.add(slug)
+        }
+      }
+      if (newEvents.some((e) => e.sourceType === 'avatar_part_buy')) {
+        for (const slug of avatarStyleBadgeSlugs(await countByType('avatar_part_buy'))) {
+          badgeCandidates.add(slug)
+        }
+      }
+      if (newEvents.some((e) => e.sourceType === 'mural_comment')) {
+        for (const slug of muralCommenterBadgeSlugs(await countByType('mural_comment'))) {
           badgeCandidates.add(slug)
         }
       }
@@ -513,10 +541,12 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         .map((b) => TROPHY_FOR_BADGE[b.slug as BadgeSlug])
         .filter((id): id is string => Boolean(id))
       if (trophyIds.length > 0) {
+        // A ESTANTE DE TROFÉUS (24/07) vem junto com o 1º troféu — nos seguintes o
+        // onConflictDoNothing ignora (mesma idempotência dos troféus).
         await tx
           .insert(roomInventory)
           .values(
-            trophyIds.map((itemId) => ({
+            [...trophyIds, TROPHY_SHELF_ITEM_ID].map((itemId) => ({
               id: randomUUID(),
               userId: input.userId,
               audience: input.audience,

@@ -672,16 +672,19 @@ user+audience+slug — a "1ª aula" do kids é independente da do adult). Domain
 `effectiveStreak` — timezone FIXA America/Sao_Paulo, cálculo SEMPRE no backend; o "dia"
 vira às 03:00Z). Decisões travadas com o usuário (06/2026): **SEM corações/vidas**;
 XP = aula 10 · quiz aprovado 20 + bônus `round(score/10)` cap +10 · baú de unidade 25;
-**catálogo de badges EM CÓDIGO** (`BADGE_SLUGS`, **23** com as expansões: first-lesson,
+**catálogo de badges EM CÓDIGO** (`BADGE_SLUGS`, **30** com as expansões: first-lesson,
 **first-showcase** (1º jogo publicado no Mural — universal, ledger `course_showcased`, Fase 5),
+**plays-10/plays-100** (jogadas recebidas, ledgers `play_milestone_*`),
 streak-7/30/60/180/365, course-complete/-2/-3, quiz-perfect/-10/-30, **studio-first/
 studio-master-3/studio-master-10** (maestria do Estúdio, ledger `studio_passed`),
 **pensa-first-idea/pensa-first-launch/pensa-creator-3** (Pensa 07/2026, ledgers
-`pensa_stage_complete`/`pensa_cycle_complete` — ver §Pensa), **challenge-first** (1ª
-participação no Desafio do mês, ledger `challenge_entry` — Fase 5), **clube-primeiro-post**
+`pensa_stage_complete`/`pensa_cycle_complete` — ver §Pensa), **challenge-first/challenge-3**
+(1ª/3ª participações no Desafio do mês, ledger `challenge_entry`), **clube-primeiro-post**
 (1ª conversa APROVADA no Clube, ledger `clube_thread` — full review 07/2026; SÓ thread
-destrava, comentário não) e **coins-saver-300/coins-saver-1000** (poupador, por
-`lifetime_coins_earned`) — sem
+destrava, comentário não), **coins-saver-300/coins-saver-1000** (poupador, por
+`lifetime_coins_earned`) e as do **full review 24/07**: **remix-first** (`studio_remix`),
+**room-decorator-5** (`room_item_buy` ≥5), **avatar-style-5** (`avatar_part_buy` ≥5),
+**mural-commenter-10** (`mural_comment` ≥10) — sem
 tabela/seed: preDeploy de prod roda só `db:migrate` e o catálogo muda junto com o código que
 o detecta). **Marcos são contados pelo LEDGER** (migrations `0010`/`0011`):
 curso 100% gera `course_complete` (sourceId = courseId) e quiz com nota 100 gera
@@ -811,6 +814,14 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
   não-possuído omitidos. Compra via `BuyRoomItemService` (`roomThing` resolve item/tema/piso/luz;
   charge-first idempotente, `reason:'spend_room'`). DTO `RoomStateBody` + rota alargados p/ os campos
   novos. Endpoints BFF kids: `GET|PUT /api/members/room` + `POST /api/members/room/items/:id/buy`.
+  **Superfícies (24/07):** `RoomItemDef.surface` (nichos: mesa 2/mesa-estudo 1/estante 3/
+  `estante-trofeus` 6) + `stackable` (troféus de CHÃO + ursinho/globo/bola/vela);
+  `PlacedItem.on` (itemId do pai posicionado) + `slot` — filho valida numa 2ª PASSADA do
+  canonicalize (stackable+posse, pai no chão com surface, slot < nichos, 1 filho/nicho, NÃO
+  ocupa célula; pai inválido → colocação cai, posse fica; `on` ambíguo → 1ª instância). O item
+  `estante-trofeus` (furniture 3×2, tier trophy SEM badge) é concedido pelo award junto com o
+  1º troféu (`TROPHY_SHELF_ITEM_ID`, mesma tx, `onConflictDoNothing`). Offsets 3D dos nichos =
+  `SURFACE_SLOTS` no kids (conformância trava nº de slots).
 - **Missões diárias/semanais/mensais** (migration `0021`, `mission_claims`): estilo Duolingo,
   content-driven — catálogo EM CÓDIGO (`DAILY_MISSIONS`/`WEEKLY_MISSIONS`/`MONTHLY_MISSIONS` em
   `domain/gamification/missions.ts`; sem seed, igual badges). Atribuição DETERMINÍSTICA por
@@ -1370,7 +1381,11 @@ grant em runtime) e `SENTRY_DSN` (projeto
 `sistema-zero-members` — ver §Sentry). **`HUB_BASE_URL`** (opcional; ex.:
 `http://hub.railway.internal:3010`) liga a notificação ao hub no grant (best-effort, assina
 com o `GATEWAY_HMAC_SECRET`; ausente = não notifica, o TTL do hub cobre; em prod, se setado,
-NÃO pode ser localhost — refine) + `HUB_REQUEST_TIMEOUT_MS` (default 4s). Opcional:
+NÃO pode ser localhost — refine) + `HUB_REQUEST_TIMEOUT_MS` (default 4s).
+**`AVATAR_PHOTO_URL_PREFIXES`** (csv de prefixos aceitos no `PUT /members/avatar/photo` —
+**OBRIGATÓRIA em produção**, refine 24/07: a foto é renderizada p/ outras crianças; setar a base
+pública do R2 de cada ambiente, ex. prod `https://cdn.sistemazero.com.br/` · staging = base
+pública do bucket `testes`; fora da allowlist → 400 `AVATAR_INVALID`). Opcional:
 `MAX_STUDIO_BODY_BYTES` (default 2 MB — teto
 de corpo das rotas de Estúdio; ver §Conceito 6) e `DATABASE_SSL` (default `false`; `true` →
 `ssl:'require'` se o Postgres passar a exigir TLS — hoje rede privada sem TLS). No GATEWAY:

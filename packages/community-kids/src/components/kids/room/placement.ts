@@ -13,7 +13,8 @@ export function freeFloorSpot(
   const occupied = new Set<string>()
   for (const item of items) {
     const info = ROOM_ITEM_INFO[item.itemId]
-    if (!info || info.mount === 'wall') continue
+    // Filho em superfície (`on`) vive no nicho do pai — não ocupa chão.
+    if (!info || info.mount === 'wall' || item.on) continue
     const footprint = effectiveFootprint(info.w, info.h, (item.rot ?? 0) as Rot)
     for (let dx = 0; dx < footprint.w; dx++) {
       for (let dy = 0; dy < footprint.h; dy++) occupied.add(`${item.x + dx},${item.y + dy}`)
@@ -69,7 +70,8 @@ export function isFreeAt(
   return items.every((item, itemIndex) => {
     if (itemIndex === index) return true
     const info = ROOM_ITEM_INFO[item.itemId]
-    if (!info) return true
+    // Filho em superfície não ocupa chão nem parede.
+    if (!info || item.on) return true
     const otherIsWall = info.mount === 'wall'
     if (isWall) {
       return (
