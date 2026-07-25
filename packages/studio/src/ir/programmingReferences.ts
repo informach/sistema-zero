@@ -1268,6 +1268,8 @@ function validateStatements(
 
 export interface ProgrammingReferenceOptions {
   canvasIds?: Iterable<string>
+  /** Pincéis já entregues por runtime de extensão (ex.: `ctx` do Jogo 2D). */
+  providedCanvasContexts?: Iterable<string>
 }
 
 function createInitialProgrammingSymbols(
@@ -1275,7 +1277,7 @@ function createInitialProgrammingSymbols(
 ): ProgrammingSymbols {
   return {
     variables: new Set(IMPLICIT_VARIABLES),
-    canvasContexts: new Set(),
+    canvasContexts: new Set(options.providedCanvasContexts ?? []),
     canvasIds: new Set(options.canvasIds ?? []),
     canvas3d: emptyCanvas3DSymbols(),
     canvas3dPhysicsBodies: new Map(),

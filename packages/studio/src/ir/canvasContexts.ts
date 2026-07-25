@@ -1,3 +1,4 @@
+import { boundCanvasContextsForChild } from './programmingExecution'
 import type { JSStatement } from './schema'
 
 export interface CanvasContextSetupSymbol {
@@ -17,6 +18,31 @@ export interface CanvasContextSymbols {
   uses: CanvasContextUseSymbol[]
 }
 
+/**
+ * Pincéis ENTREGUES PRONTOS pelo runtime de uma extensão (globais preguiçosos):
+ * o Jogo 2D define `ctx` no boot (runtime/stage.ts, `defineLazyGlobal`) —
+ * justamente para os blocos não precisarem mostrar "o pincel". O diagnóstico e a
+ * validação de referências tratam esses nomes como preparados quando a extensão
+ * está instalada — sem isso, bloco de Canvas do núcleo num jogo 2D acusava
+ * "pincel não preparado" apesar de funcionar (feedback 25/07).
+ */
+export const RUNTIME_PROVIDED_CANVAS_CONTEXTS: Readonly<Record<string, readonly string[]>> = {
+  'game-2d': ['ctx'],
+}
+
+/** Une os pincéis prontos das extensões INSTALADAS (`ir.extensions`). */
+export function runtimeProvidedCanvasContexts(
+  extensions: ReadonlyArray<{ extensionId: string }> | undefined,
+): Set<string> {
+  const provided = new Set<string>()
+  for (const extension of extensions ?? []) {
+    for (const name of RUNTIME_PROVIDED_CANVAS_CONTEXTS[extension.extensionId] ?? []) {
+      provided.add(name)
+    }
+  }
+  return provided
+}
+
 export interface CanvasNumericIssue {
   blockId?: string
   nodeType: string
@@ -25,14 +51,24 @@ export interface CanvasNumericIssue {
   value: number
 }
 
+const NO_BOUND_CONTEXTS: ReadonlySet<string> = new Set()
+
 function visitCanvasRecords(
   statements: JSStatement[],
-  visitor: (record: Record<string, unknown>, blockId: string | undefined) => void,
+  visitor: (
+    record: Record<string, unknown>,
+    blockId: string | undefined,
+    boundContexts: ReadonlySet<string>,
+  ) => void,
 ): void {
   const visited = new WeakSet<object>()
-  const visit = (value: unknown, ownerBlockId?: string): void => {
+  const visit = (
+    value: unknown,
+    ownerBlockId: string | undefined,
+    boundContexts: ReadonlySet<string>,
+  ): void => {
     if (Array.isArray(value)) {
-      for (const child of value) visit(child, ownerBlockId)
+      for (const child of value) visit(child, ownerBlockId, boundContexts)
       return
     }
     if (!value || typeof value !== 'object' || visited.has(value)) return
@@ -40,13 +76,18 @@ function visitCanvasRecords(
 
     const record = value as Record<string, unknown>
     const blockId = typeof record.__id === 'string' ? record.__id : ownerBlockId
-    visitor(record, blockId)
+    visitor(record, blockId, boundContexts)
     for (const [key, child] of Object.entries(record)) {
-      if (key !== '__id') visit(child, blockId)
+      if (key === '__id') continue
+      // Corpo que LIGA um pincel como parâmetro (figura do Jogo 2D, desenhar do
+      // Jogo 2D Avançado): dentro dele o nome está em escopo — não é "uso órfão".
+      const locals = boundCanvasContextsForChild(record as unknown as JSStatement, key)
+      const childBound = locals.length > 0 ? new Set([...boundContexts, ...locals]) : boundContexts
+      visit(child, blockId, childBound)
     }
   }
 
-  visit(statements)
+  visit(statements, undefined, NO_BOUND_CONTEXTS)
 }
 
 /**
@@ -58,7 +99,7 @@ function visitCanvasRecords(
 export function collectCanvasContextSymbols(statements: JSStatement[]): CanvasContextSymbols {
   const setups: CanvasContextSetupSymbol[] = []
   const uses: CanvasContextUseSymbol[] = []
-  visitCanvasRecords(statements, (record, blockId) => {
+  visitCanvasRecords(statements, (record, blockId, boundContexts) => {
     const nodeType = typeof record.type === 'string' ? record.type : ''
 
     if (
@@ -72,7 +113,9 @@ export function collectCanvasContextSymbols(statements: JSStatement[]): CanvasCo
       typeof record.ctxVar === 'string' &&
       record.ctxVar.trim().length > 0
     ) {
-      uses.push({ name: record.ctxVar.trim(), nodeType, blockId })
+      const name = record.ctxVar.trim()
+      // Pincel ligado pelo corpo (parâmetro) não é uso órfão — o runtime entrega.
+      if (!boundContexts.has(name)) uses.push({ name, nodeType, blockId })
     }
   })
   return { setups, uses }

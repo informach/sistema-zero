@@ -369,6 +369,17 @@ function localCanvasContextsForChild(
   }
 }
 
+/**
+ * Pincéis LIGADOS por um corpo-filho (parâmetro de callback — ex.: o `ctx` da
+ * figura do Jogo 2D, o `ctxName` do desenhar do Jogo 2D Avançado). Fonte única
+ * p/ o diagnóstico de pincel não acusar "não preparado" dentro desses corpos.
+ */
+export function boundCanvasContextsForChild(statement: JSStatement, childKey: string): string[] {
+  return localCanvasContextsForChild(statement, [childKey]).filter(
+    (name): name is string => typeof name === 'string' && name.trim().length > 0,
+  )
+}
+
 /** Fonte única dos corpos aninhados, do seu timing e dos nomes que eles declaram. */
 export function programmingChildBodyEntries(statement: JSStatement): ProgrammingChildBodyEntry[] {
   const timing = programmingBodyTiming(statement)

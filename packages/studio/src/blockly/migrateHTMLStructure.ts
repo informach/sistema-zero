@@ -222,8 +222,16 @@ function normalizeRootChain(
  * Migra estados HTML anteriores aos encaixes semânticos. É pura para o chamador:
  * clona somente o valor de trabalho e devolve a referência original quando nada
  * mudou.
+ *
+ * `preserveTopLevelDrafts` (estados ATUAIS, com marcador de versão): bloco HTML
+ * SOLTO no topo é rascunho deliberado da criança — fica intocado (não embrulha
+ * num svg/ul novo nem promove filhos). A normalização DENTRO do frame Estrutura
+ * segue valendo (cura de saves antigos/corrompidos).
  */
-export function migrateHTMLStructure(state: unknown): unknown {
+export function migrateHTMLStructure(
+  state: unknown,
+  { preserveTopLevelDrafts = false }: { preserveTopLevelDrafts?: boolean } = {},
+): unknown {
   const originalTop = topBlocks(state)
   if (!originalTop) return state
 
@@ -244,6 +252,10 @@ export function migrateHTMLStructure(state: unknown): unknown {
       continue
     }
     if (isHTMLBlock(top.type)) {
+      if (preserveTopLevelDrafts) {
+        normalizedTop.push(top)
+        continue
+      }
       normalizedTop.push(...normalizeRootChain(top, markChanged))
       continue
     }

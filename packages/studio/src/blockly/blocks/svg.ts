@@ -52,18 +52,20 @@ export const SVG_BLOCKS: BlockDefinition[] = [
     nextStatement: 'HTMLNode',
     colour: C,
     tooltip:
-      'Conta o nome do desenho para leitores de tela. Coloque este bloco no começo da área de desenho.',
+      'Dá um nome CURTO ao desenho, que o leitor de tela fala. Este bloco só encaixa DENTRO de "Criar área de desenho vetorial", no começo dela.',
   },
   {
     type: 'sz_svg_desc',
-    message0: 'Descrever o desenho %1',
+    // "em detalhes" separa do irmão "Dar um nome" (title = nome CURTO; desc =
+    // explicação LONGA) — os dois pareciam a mesma coisa (feedback 24/07).
+    message0: 'Descrever o desenho em detalhes %1',
     args0: [{ type: 'field_input', name: 'TEXT', text: 'Uma forma colorida.' }],
     ...classMsg1(),
     previousStatement: 'HTMLNode',
     nextStatement: 'HTMLNode',
     colour: C,
     tooltip:
-      'Explica o que aparece no desenho para quem usa leitor de tela. No SVG, essa descrição se chama desc.',
+      'Explica em uma frase o que aparece no desenho, para quem usa leitor de tela. O nome (bloco irmão) é curto; esta descrição pode ser mais longa. No SVG, ela se chama desc.',
   },
   {
     type: 'sz_svg_defs',

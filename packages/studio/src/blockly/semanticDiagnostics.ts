@@ -11,6 +11,7 @@ import {
   htmlAttributeRejectionReason,
   normalizeSZIR,
   prepareCSSDeclaration,
+  runtimeProvidedCanvasContexts,
   type SZIRInput,
   SZIRInputSchema,
 } from '#ir'
@@ -239,7 +240,13 @@ function addCanvasMessages(
     }
   }
 
-  const preparedContexts = new Set(setups.map((setup) => setup.name))
+  // Pincéis prontos = os preparados pela criança + os que um runtime instalado
+  // entrega de fábrica (`ctx` do Jogo 2D) — canvas do núcleo num jogo 2D funciona
+  // sem "Preparar a tela" e não pode acusar erro (feedback 25/07).
+  const preparedContexts = new Set([
+    ...setups.map((setup) => setup.name),
+    ...runtimeProvidedCanvasContexts(ir.extensions),
+  ])
   for (const use of uses) {
     if (preparedContexts.has(use.name)) continue
     valid = false

@@ -15,6 +15,7 @@ import {
   GAME3D_RUNNING_CONTEXT_STATEMENT_TYPES,
   GAME3D_START_ONLY_STATEMENT_TYPES,
 } from '../three/game3dContract'
+import { runtimeProvidedCanvasContexts } from './canvasContexts'
 import {
   isEventStatement,
   isLegacyLoadEvent,
@@ -10683,6 +10684,9 @@ export const SZIRSchema = z
     validateLegacyLifecycle(ir.js, ctx, ['js'], createCanvas3DStatementContextIndex(ir.js))
     for (const issue of collectProgrammingReferenceIssues(ir.js, ['js'], {
       canvasIds: collectCanvasIds(ir.html),
+      // Pincel entregue por runtime instalado (`ctx` do Jogo 2D) conta como
+      // preparado — canvas do núcleo num jogo 2D não é referência órfã.
+      providedCanvasContexts: runtimeProvidedCanvasContexts(ir.extensions),
     })) {
       ctx.addIssue({ code: 'custom', path: issue.path, message: issue.message })
     }

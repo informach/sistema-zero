@@ -486,9 +486,16 @@ export function normalizeBlocksStateToFrames(state: unknown): unknown {
   // `restoreShadowLiterals` CURA estados poluídos pela reconstrução IR→blocos
   // antiga (literais de preset emitidos como blocos reais → sombras de novo),
   // reativando fillFrames/applySuggestedSize em projetos já salvos.
-  const migrated = migrateHTMLStructure(
-    migrateIfElseBlocks(restoreShadowLiterals(migrateLegacyValueFields(state))),
-  )
+  const premigrated = migrateIfElseBlocks(restoreShadowLiterals(migrateLegacyValueFields(state)))
+  // ⚠️ Num estado ATUAL (marcador de versão), bloco HTML solto no topo é RASCUNHO
+  // deliberado (ex.: um filho-de-svg que o encaixe semântico recusou) — a migração
+  // de estrutura NÃO pode reescrevê-lo (embrulhar num svg novo etc.): a reescrita
+  // fazia o restore do BlocklyPanel recarregar o canvas no meio da edição ("o bloco
+  // se auto-encaixou e duplicou o resto", bug 24/07). Só estados LEGADOS normalizam
+  // o topo; o conteúdo DENTRO dos frames segue normalizado sempre (cura de saves).
+  const migrated = migrateHTMLStructure(premigrated, {
+    preserveTopLevelDrafts: hasCurrentLifecycleVersion(premigrated),
+  })
   if (!migrated) return migrated
   ensureBlocklyInitialized()
   if (hasCurrentLifecycleVersion(migrated)) return migrated

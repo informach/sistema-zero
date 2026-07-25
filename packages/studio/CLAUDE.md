@@ -330,6 +330,14 @@ tratamento.
   rascunho criado intencionalmente seja migrado depois. O sanitizador aceita a
   versão 2 conhecida para que ela chegue ao normalizador e vire versão 3;
   versões futuras continuam rejeitadas até ganharem uma migração explícita.
+  ⚠️ **O marcador também protege a migração de ESTRUTURA HTML (25/07)**: em estado
+  ATUAL (marcado), bloco HTML solto no topo é rascunho deliberado (ex.: filho-de-svg
+  que o encaixe semântico recusou) e `migrateHTMLStructure` recebe
+  `preserveTopLevelDrafts: true` — NÃO embrulha num svg/ul novo nem promove filhos.
+  Sem a cerca, a reescrita fazia o restore do BlocklyPanel RECARREGAR o canvas no
+  meio da edição ("o bloco se auto-encaixou e duplicou o resto" — bug real 24/07).
+  Estado legado (sem marcador) segue migrando o topo; o conteúdo DENTRO do frame
+  Estrutura normaliza sempre. Regressão: `__tests__/svgTitleDupRepro.test.ts`.
 - **Execução**: o gerador emite `start` → `events` → `loops` e conversa com o
   runtime pelo `RuntimeLifecycleContract` da extensão. O boot é automático;
   blocos antigos de “começar” não devem aparecer em projetos novos. Jogo 2D e
@@ -419,7 +427,16 @@ switches centrais. Conteúdo HTML phrasing vem de `html/catalog.ts`, e nomes
 acessíveis/alternativas textuais de `html/accessibility.ts`; validação e
 codificação de famílias CSS ficam em `css/googleFonts.ts`, `css/keyframes.ts`,
 `css/mediaQueries.ts` e `css/motion.ts`; declarações e usos de pincel, inclusive
-em expressões aninhadas, são descobertos por `ir/canvasContexts.ts`. Parser,
+em expressões aninhadas, são descobertos por `ir/canvasContexts.ts`. ⚠️ **O pincel
+tem DUAS fontes além do "Preparar a tela" (25/07)**: (1) corpo que LIGA um ctx como
+parâmetro (figura do g2d, onDraw/defineLook do gk — fonte única
+`boundCanvasContextsForChild` em `ir/programmingExecution.ts`, consumida pelo
+coletor com ESCOPO) e (2) runtime instalado que entrega global preguiçoso
+(`RUNTIME_PROVIDED_CANVAS_CONTEXTS` — game-2d expõe `ctx` no boot; o schema e o
+`semanticDiagnostics` contam como preparado via `runtimeProvidedCanvasContexts`).
+Sem as duas, canvas do núcleo num jogo 2D acusava "pincel não preparado" apesar
+de funcionar. Extensão nova que expuser pincel global → entra no mapa. Regressão:
+`ir/__tests__/defineShapeCtxRepro.test.ts`. Parser,
 schema, diagnóstico, Blockly e gerador consomem esses contratos puros. Ao
 acrescentar um caso nessas famílias, estenda primeiro o contrato da categoria e
 prove o caminho inválido e o round-trip nos testes.
