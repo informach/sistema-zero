@@ -1,3 +1,4 @@
+import { parse as parseBabel } from '@babel/parser'
 import type { BehaviorIR, HTMLNode, HTMLShell, JSStatement, SZIRV2 } from '#ir'
 import {
   BEHAVIOR_SECTION_MARKERS,
@@ -178,18 +179,65 @@ function stripGeneratedLifecycleEnvelope(sourceLines: string[]): string[] {
   const opener = lines[openerIndex]?.trim() ?? ''
   if (!GENERATED_LIFECYCLE_OPENERS.has(opener)) return lines
 
-  lines.splice(openerIndex, hasManagedRun ? 2 : 1)
-  while (lines.length > 0 && lines.at(-1)?.trim() === '') lines.pop()
-  if (GENERATED_ENGINE_BOOTS.has(lines.at(-1)?.trim() ?? '')) lines.pop()
-  while (lines.length > 0 && lines.at(-1)?.trim() === '') lines.pop()
-
   const expectedClose = opener.startsWith('SZGame2D.')
     ? '}, "__sz-project");'
     : opener.startsWith('(function')
       ? '})();'
       : '});'
-  if (lines.at(-1)?.trim() === expectedClose) lines.pop()
+
+  // Caminho de sempre (fixpoint do gerador): o envelope FECHA o arquivo —
+  // sequência antiga, byte-estável para todo projeto que a Ponte emitiu.
+  {
+    const tail = [...lines]
+    tail.splice(openerIndex, hasManagedRun ? 2 : 1)
+    while (tail.length > 0 && tail.at(-1)?.trim() === '') tail.pop()
+    if (GENERATED_ENGINE_BOOTS.has(tail.at(-1)?.trim() ?? '')) tail.pop()
+    while (tail.length > 0 && tail.at(-1)?.trim() === '') tail.pop()
+    if (tail.at(-1)?.trim() === expectedClose) {
+      tail.pop()
+      return tail
+    }
+  }
+
+  // Aluno COLOU código DEPOIS do envelope: o fechamento não é mais a última
+  // linha. Achar o fechamento REAL pela AST (a posição de fim do statement do
+  // wrapper) — remover só ele preserva o código colado como top-level. Sem isso,
+  // o fechamento ficava ÓRFÃO no meio do arquivo (erro de sintaxe → o resto
+  // virava UM rawJS contendo o próprio fechamento, que se re-embrulhava e
+  // DUPLICAVA os blocos a cada ida e volta da Ponte — bug 25/07).
+  const closerIndex = envelopeCloserIndexViaAst(lines, openerIndex, expectedClose)
+  if (closerIndex === null) return lines
+  lines.splice(closerIndex, 1)
+  // O boot do motor (quando existir) vem logo após o fechamento — some junto.
+  let bootProbe = closerIndex
+  while (bootProbe < lines.length && lines[bootProbe]?.trim() === '') bootProbe += 1
+  if (GENERATED_ENGINE_BOOTS.has(lines[bootProbe]?.trim() ?? '')) lines.splice(bootProbe, 1)
+  lines.splice(openerIndex, hasManagedRun ? 2 : 1)
   return lines
+}
+
+/**
+ * Linha (0-based) do fechamento do wrapper de ciclo de vida, localizada pela AST
+ * do arquivo INTEIRO: o statement top-level que COMEÇA na linha do opener termina
+ * exatamente na linha do fechamento. Falha (arquivo não parseia / linha não bate
+ * com o texto esperado) → `null`, e o chamador não mexe em nada (fail-safe).
+ */
+function envelopeCloserIndexViaAst(
+  lines: string[],
+  openerIndex: number,
+  expectedClose: string,
+): number | null {
+  try {
+    const ast = parseBabel(lines.join('\n'), { sourceType: 'script' })
+    for (const statement of ast.program.body) {
+      if (statement.loc?.start.line !== openerIndex + 1) continue
+      const closerIndex = statement.loc.end.line - 1
+      return lines[closerIndex]?.trim() === expectedClose ? closerIndex : null
+    }
+  } catch {
+    // Arquivo no meio de uma edição (sintaxe quebrada): sem AST, sem cirurgia.
+  }
+  return null
 }
 
 function pushAdvancedDiagnostic(

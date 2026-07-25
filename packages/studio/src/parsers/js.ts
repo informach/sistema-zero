@@ -2800,6 +2800,7 @@ function readEnemyTypeOptions(
   behavior: string
   color: string
   image: string
+  shape: string
   hp: JSExpr
   speed: JSExpr
   dmg: JSExpr
@@ -2810,6 +2811,7 @@ function readEnemyTypeOptions(
     behavior: string
     color: string
     image: string
+    shape: string
     hp: JSExpr
     speed: JSExpr
     dmg: JSExpr
@@ -2819,6 +2821,7 @@ function readEnemyTypeOptions(
     behavior: 'patrulha',
     color: '#e4573d',
     image: '',
+    shape: '',
     hp: { type: 'num', value: 3 },
     speed: { type: 'num', value: 2 },
     dmg: { type: 'num', value: 1 },
@@ -2843,7 +2846,7 @@ function readEnemyTypeOptions(
       const b = prop.value.value as string
       if (!(G2D_ENEMY_BEHAVIORS as readonly string[]).includes(b)) return null
       out.behavior = b
-    } else if (key === 'color' || key === 'image') {
+    } else if (key === 'color' || key === 'image' || key === 'shape') {
       if (prop.value?.type !== 'StringLiteral') return null
       out[key] = prop.value.value as string
     } else {
@@ -4251,6 +4254,8 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
       behavior: o.behavior,
       color: o.color,
       image: o.image,
+      // Chave omitida quando ausente no código — IR byte-estável c/ projetos antigos.
+      ...(o.shape ? { shape: o.shape } : {}),
       hp: o.hp,
       speed: o.speed,
       dmg: o.dmg,

@@ -1187,7 +1187,8 @@ function compileStatementCode(
     case 'g2d:autoAnimate':
       return `${pad}SZGame2D.autoAnimate(${identifiers.get(stmt.spriteVar)});`
     case 'g2d:defineEnemyType':
-      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createEnemyType({ behavior: ${JSON.stringify(stmt.behavior)}, color: ${JSON.stringify(stmt.color)}, image: ${JSON.stringify(stmt.image)}, hp: ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, speed: ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, dmg: ${compileExpr(valueToExpr(stmt.dmg), 0, identifiers, recAt(base))}, w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))} });`
+      // `shape` só entra quando definido — saída byte-idêntica p/ projetos antigos.
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createEnemyType({ behavior: ${JSON.stringify(stmt.behavior)}, color: ${JSON.stringify(stmt.color)}, image: ${JSON.stringify(stmt.image)},${stmt.shape ? ` shape: ${JSON.stringify(stmt.shape)},` : ''} hp: ${compileExpr(valueToExpr(stmt.hp), 0, identifiers, recAt(base))}, speed: ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))}, dmg: ${compileExpr(valueToExpr(stmt.dmg), 0, identifiers, recAt(base))}, w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))} });`
     case 'g2d:enemyStateAnim':
       return `${pad}SZGame2D.setEnemyStateAnimation(${identifiers.get(stmt.typeVar)}, ${JSON.stringify(stmt.state)}, ${identifiers.get(stmt.sheetVar)}, ${compileExpr(valueToExpr(stmt.from), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.to), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.fps), 0, identifiers, recAt(base))});`
     case 'g2d:setEnemyTypeParam':

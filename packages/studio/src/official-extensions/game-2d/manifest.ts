@@ -21,7 +21,7 @@ import { withGameTwoDLifecycleGuidance } from './pedagogy'
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.38.1',
+  version: '0.39.0',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, vidas automáticas em corações ou barra, colisões, mapas, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
@@ -382,8 +382,10 @@ Na categoria **🎬 Animação**, o jeito FÁCIL de o personagem trocar de anima
 Na categoria **😈 Inimigos**, CLASSES de inimigo prontas (como o Goomba e o Koopa do Mario):
 
 - **Criar tipo de inimigo**. Defina UMA vez comportamento e atributos (vida, velocidade, dano
-  de contato, tamanho, cor OU imagem): patrulha (anda e vira na parede/borda), perseguidor,
-  voador (deitado ou em pé), saltador e atirador (fica no chão e atira no alvo).
+  de contato, tamanho e o visual: cor, imagem OU uma **figura** desenhada com "Desenhar a
+  figura … assim"; a figura vence a imagem, que vence a cor): patrulha (anda e vira na
+  parede/borda), perseguidor, voador (deitado ou em pé), saltador e atirador (fica no chão e
+  atira no alvo).
   A patrulha fica horizontal em jogos top-down; para ela cair num jogo de plataforma,
   declare a gravidade do mundo em **Ao iniciar**.
 - **Soltar um inimigo do tipo**. Solte quantos quiser, cada um nasce com a vida/dano do tipo.

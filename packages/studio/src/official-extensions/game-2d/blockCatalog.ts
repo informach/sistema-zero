@@ -1115,7 +1115,7 @@ export const gameTwoDBlocks = [
     type: 'sz_g2d_define_enemy_type',
     placement: 'start-only-command',
     message0:
-      'Criar tipo de inimigo %1 que é %2 cor %3 imagem %4 vida %5 velocidade %6 dano %7 tamanho %8 x %9',
+      'Criar tipo de inimigo %1 que é %2 cor %3 imagem %4 figura %5 vida %6 velocidade %7 dano %8 tamanho %9 x %10',
     args0: [
       { type: 'field_input', name: 'NAME', text: 'zumbi' },
       {
@@ -1132,6 +1132,9 @@ export const gameTwoDBlocks = [
       },
       { type: 'field_colour_sz', name: 'COLOR', colour: '#e4573d' },
       { type: 'field_asset_picker', name: 'IMAGE', text: '' },
+      // Figura desenhada ("Desenhar a figura … assim") como visual do tipo —
+      // vazia = usa imagem/cor. Figura VENCE a imagem (setShape cancela imagem).
+      { type: 'field_name_picker', name: 'SHAPE', text: '', kind: 'shape' },
       { type: 'input_value', name: 'HP', check: 'JSValue' },
       { type: 'input_value', name: 'SPEED', check: 'JSValue' },
       { type: 'input_value', name: 'DMG', check: 'JSValue' },
@@ -1143,7 +1146,7 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Cria uma CLASSE de inimigo (como o Goomba ou o Koopa): escolha o comportamento e os atributos UMA vez, e solte quantos inimigos desse tipo quiser. Sem imagem, ele usa a cor. O tipo funciona nos blocos de grupo (para cada, contar, colisões).',
+      'Cria uma CLASSE de inimigo (como o Goomba ou o Koopa): escolha o comportamento e os atributos UMA vez, e solte quantos inimigos desse tipo quiser. O visual segue esta ordem: figura desenhada > imagem > cor. O tipo funciona nos blocos de grupo (para cada, contar, colisões).',
   },
   {
     type: 'sz_g2d_enemy_state_anim',

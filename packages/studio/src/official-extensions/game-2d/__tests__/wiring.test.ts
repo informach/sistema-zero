@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { compileStatements } from '#generators'
 import type { JSStatement } from '#ir'
+import { parseJS } from '../../../parsers/js'
 import { gameTwoDRuntime } from '../runtime'
 
 /**
@@ -84,6 +85,41 @@ function drawViaGenerator(
 const N = (value: number) => ({ type: 'num', value }) as unknown
 
 describe('g2d — fiação bloco→gerador→runtime (executa de verdade)', () => {
+  it('tipo de inimigo com FIGURA: gerador emite `shape` e a Ponte devolve; sem figura, saída de sempre', () => {
+    const base = {
+      type: 'g2d:defineEnemyType',
+      varName: 'zumbi',
+      behavior: 'patrulha',
+      color: '#e4573d',
+      image: '',
+      hp: N(3),
+      speed: N(2),
+      dmg: N(1),
+      w: N(32),
+      h: N(32),
+    } as unknown as JSStatement
+    // SEM figura: byte-idêntico ao formato antigo (projetos salvos não mudam).
+    const legacy = compileStatements([base], 0)
+    expect(legacy).toBe(
+      'const zumbi = SZGame2D.createEnemyType({ behavior: "patrulha", color: "#e4573d", image: "", hp: 3, speed: 2, dmg: 1, w: 32, h: 32 });',
+    )
+    expect(legacy).not.toContain('shape')
+
+    // COM figura: a chave entra e o round-trip da Ponte preserva.
+    const withShape = { ...(base as object), shape: 'pedra' } as unknown as JSStatement
+    const code = compileStatements([withShape], 0)
+    expect(code).toContain('shape: "pedra"')
+    const reparsed = parseJS(code).find((stmt) => stmt.type === 'g2d:defineEnemyType') as
+      | { shape?: string }
+      | undefined
+    expect(reparsed?.shape).toBe('pedra')
+    // E o caminho SEM figura re-parseia sem inventar a chave.
+    const reparsedLegacy = parseJS(legacy).find((stmt) => stmt.type === 'g2d:defineEnemyType') as
+      | { shape?: string }
+      | undefined
+    expect(reparsedLegacy && 'shape' in reparsedLegacy).toBe(false)
+  })
+
   it('gameOver usa o helper acessível do runtime e preserva o bloco na Ponte', () => {
     const code = compileStatements(
       [

@@ -2270,6 +2270,8 @@ export type JSStatement =
       behavior: string
       color: string
       image: string
+      /** Figura desenhada (defineShape) como visual do tipo — ausente = imagem/cor. */
+      shape?: string
       hp: number | JSExpr
       speed: number | JSExpr
       dmg: number | JSExpr
@@ -6041,6 +6043,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       behavior: z.enum(G2D_ENEMY_BEHAVIORS),
       color: irText(),
       image: irText(),
+      shape: irText().optional(),
       hp: z.union([JSExprSchema, z.number()]),
       speed: z.union([JSExprSchema, z.number()]),
       dmg: z.union([JSExprSchema, z.number()]),

@@ -3600,8 +3600,11 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: { type: 'g2d:autoAnimate', spriteVar: f(block, 'SPRITE') },
       }
-    case 'sz_g2d_define_enemy_type':
+    case 'sz_g2d_define_enemy_type': {
       seen.add('game-2d')
+      // Figura opcional: chave OMITIDA quando vazia (round-trip byte-estável de
+      // projetos antigos, que não têm o campo na IR).
+      const enemyShape = f(block, 'SHAPE').trim()
       return {
         kind: 'js',
         value: {
@@ -3610,6 +3613,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           behavior: f(block, 'BEHAVIOR'),
           color: f(block, 'COLOR'),
           image: f(block, 'IMAGE'),
+          ...(enemyShape ? { shape: enemyShape } : {}),
           hp: exprInput(block, 'HP', { type: 'num', value: 3 }),
           speed: exprInput(block, 'SPEED', { type: 'num', value: 2 }),
           dmg: exprInput(block, 'DMG', { type: 'num', value: 1 }),
@@ -3617,6 +3621,7 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           h: exprInput(block, 'H', { type: 'num', value: 32 }),
         },
       }
+    }
     case 'sz_g2d_enemy_state_anim':
       seen.add('game-2d')
       return {

@@ -146,6 +146,23 @@ describe('createEnemyType / spawnEnemy', () => {
     expect(e?.x).toBe(100)
   })
 
+  it('tipo com FIGURA (defineShape): o inimigo nasce com a skin custom (figura vence imagem)', () => {
+    const api = load()
+    const withShape = api.createEnemyType({ behavior: 'patrulha', shape: 'pedra', image: 'foto' })
+    const enemy = api.spawnEnemy(withShape, 10, 10) as Sprite & {
+      skin?: { kind: string; shape: string }
+      image?: unknown
+    }
+    expect(enemy?.skin).toEqual({ kind: 'custom', shape: 'pedra' })
+    // setShape cancela a imagem ("uma coisa por vez") — a figura vence.
+    expect(enemy?.image ?? null).toBeNull()
+    // Sem figura: comportamento de sempre (cor/imagem), skin custom ausente.
+    const plain = api.spawnEnemy(api.createEnemyType({}), 0, 0) as Sprite & {
+      skin?: { kind: string }
+    }
+    expect(plain?.skin?.kind === 'custom').toBe(false)
+  })
+
   it('respeita o teto MAX_GROUP (400) sem lançar', () => {
     const api = load()
     const t = api.createEnemyType({})

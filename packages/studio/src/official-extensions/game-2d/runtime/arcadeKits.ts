@@ -230,6 +230,8 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
         behavior: opts.behavior || 'patrulha',
         color: opts.color || '#e4573d',
         image: (typeof opts.image === 'string') ? opts.image : '',
+        // Figura desenhada (defineShape) como visual do tipo; '' = imagem/cor.
+        shape: (typeof opts.shape === 'string') ? opts.shape : '',
         hp: _positiveFiniteNumber(opts.hp, 3),
         speed: _finiteNumber(opts.speed, 2),
         dmg: _finiteNumber(opts.dmg, 1),
@@ -287,6 +289,8 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
       color: c.color,
       image: c.image || null
     });
+    // Figura desenhada VENCE a imagem (setShape cancela imagem — "uma coisa por vez").
+    if (c.shape) setShape(s, c.shape);
     s.dmg = c.dmg;
     setHealth(s, c.hp);
     s._dir = 1;

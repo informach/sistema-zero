@@ -1495,6 +1495,7 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
               BEHAVIOR: stmt.behavior,
               COLOR: stmt.color,
               IMAGE: stmt.image,
+              SHAPE: stmt.shape ?? '',
             },
             {},
             stmt.__id,
