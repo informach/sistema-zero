@@ -302,7 +302,13 @@ As áreas são chapéus top-level e existe no máximo uma de cada. **Projeto nov
 nasce sem áreas**; a criança adiciona somente as que a atividade precisa pela
 categoria **🗂️ Áreas do projeto**. Excluir uma área desconecta seus filhos no
 mesmo grupo de undo, preservando-os como rascunho. Duplicatas recebem o mesmo
-tratamento.
+tratamento. ⚠️ **O resgate de rascunho NÃO roda sob a cerca de carga**
+(`projectAreaSafeDelete` checa `isWorkspaceLoading()`, 25/07): o clear do
+serializer do Blockly itera um SNAPSHOT dos top blocks — o filho desplugado
+virava um top NOVO fora do snapshot, sobrevivia à limpeza e DUPLICAVA o conteúdo
+dos frames a cada reload de workspace povoado (colar código na Ponte). Regressões:
+`__tests__/projectAreaSafeDeleteLoad.test.ts` (unitária, roda no CI) +
+`e2e/bridge-paste-duplication.spec.ts` (gesto real de colar).
 
 - **Contrato de posicionamento** (`blockly/blockContracts.ts`): é a fonte comum
   para checks físicos, área-raiz, contexto aninhado, exclusões ancestrais
