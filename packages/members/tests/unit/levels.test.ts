@@ -35,7 +35,8 @@ describe('computeStudentLevel por slots obrigatórios', () => {
   test('slot 1 do Iniciante 2D libera Construtor', () => {
     const result = computeStudentLevel(q({ 'iniciante-2d': [1] }))
     expect(result.slug).toBe('coder')
-    expect(result.remaining?.['iniciante-2d']).toBe(5)
+    // Faltam 7 posições (2–8) do Iniciante 2D p/ virar Inventor.
+    expect(result.remaining?.['iniciante-2d']).toBe(7)
   })
 
   test('slot repetido e bônus não substituem slots faltantes', () => {
@@ -43,16 +44,16 @@ describe('computeStudentLevel por slots obrigatórios', () => {
   })
 
   test('cada etapa completa libera o nível seguinte', () => {
-    expect(computeStudentLevel(q({ 'iniciante-2d': slots(6) })).slug).toBe('hacker')
+    expect(computeStudentLevel(q({ 'iniciante-2d': slots(8) })).slug).toBe('hacker')
     expect(
-      computeStudentLevel(q({ 'iniciante-2d': slots(6), 'iniciante-3d': slots(5) })).slug,
+      computeStudentLevel(q({ 'iniciante-2d': slots(8), 'iniciante-3d': slots(8) })).slug,
     ).toBe('explorer')
     expect(
       computeStudentLevel(
         q({
-          'iniciante-2d': slots(6),
-          'iniciante-3d': slots(5),
-          'intermediario-2d': slots(5),
+          'iniciante-2d': slots(8),
+          'iniciante-3d': slots(8),
+          'intermediario-2d': slots(8),
         }),
       ).slug,
     ).toBe('elite')
@@ -61,12 +62,12 @@ describe('computeStudentLevel por slots obrigatórios', () => {
   test('escada completa chega à Lenda', () => {
     const result = computeStudentLevel(
       q({
-        'iniciante-2d': slots(6),
-        'iniciante-3d': slots(5),
-        'intermediario-2d': slots(5),
-        'intermediario-3d': slots(5),
-        'avancado-2d': slots(5),
-        'avancado-3d': slots(5),
+        'iniciante-2d': slots(8),
+        'iniciante-3d': slots(8),
+        'intermediario-2d': slots(8),
+        'intermediario-3d': slots(8),
+        'avancado-2d': slots(8),
+        'avancado-3d': slots(8),
       }),
     )
     expect(result.slug).toBe('god')

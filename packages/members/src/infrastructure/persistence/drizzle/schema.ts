@@ -122,8 +122,9 @@ export const courses = members.table(
       .on(t.audience, t.level, t.track, t.careerSlot)
       .where(sql`${t.careerSlot} is not null`),
     check(
+      // 8 posições por degrau (reforma 07/2026; migration `0053` alarga o CHECK de 6/5→8).
       'courses_career_slot_check',
-      sql`${t.careerSlot} is null or (${t.audience} = 'kids' and ${t.careerSlot} between 1 and case when ${t.level} = 'iniciante' and ${t.track} = '2d' then 6 else 5 end)`,
+      sql`${t.careerSlot} is null or (${t.audience} = 'kids' and ${t.careerSlot} between 1 and 8)`,
     ),
   ],
 )

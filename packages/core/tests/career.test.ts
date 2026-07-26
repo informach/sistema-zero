@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import {
+  CAREER_SLOT_MAX,
   CREATOR_CAREER_LEVELS,
   computeCareerLevelSlug,
   creatorCareerLevel,
@@ -9,6 +10,19 @@ import {
 } from '../src/career'
 
 describe('catálogo da Carreira do Criador', () => {
+  test('CAREER_SLOT_MAX é a fonte única do teto de posições por degrau', () => {
+    // Toda etapa exige exatamente as posições 1..CAREER_SLOT_MAX na Lenda — o
+    // members (validação + CHECK da migration 0053) e o admin (conformance)
+    // espelham este valor; divergir aqui é quebrar o elo canônico.
+    const god = CREATOR_CAREER_LEVELS.at(-1)
+    expect(god?.slug).toBe('god')
+    const tiers = Object.values(god?.requiredSlots ?? {})
+    expect(tiers.length).toBeGreaterThan(0)
+    for (const slots of tiers) {
+      expect(slots.length).toBe(CAREER_SLOT_MAX)
+      expect(Math.max(...slots)).toBe(CAREER_SLOT_MAX)
+    }
+  })
   test('exige o curso-base específico para virar Construtor', () => {
     expect(computeCareerLevelSlug({ 'iniciante-2d': [2, 3, 4, 5, 6] })).toBe('noob')
     expect(computeCareerLevelSlug({ 'iniciante-2d': [1] })).toBe('coder')
@@ -16,17 +30,17 @@ describe('catálogo da Carreira do Criador', () => {
 
   test('curso bônus ou slot repetido não substitui slot obrigatório', () => {
     expect(computeCareerLevelSlug({ 'iniciante-2d': [1, 1, 2, 3, 4, 99] })).toBe('coder')
-    expect(computeCareerLevelSlug({ 'iniciante-2d': [1, 2, 3, 4, 5, 6] })).toBe('hacker')
+    expect(computeCareerLevelSlug({ 'iniciante-2d': [1, 2, 3, 4, 5, 6, 7, 8] })).toBe('hacker')
   })
 
   test('a escada completa termina na Lenda', () => {
     const all = {
-      'iniciante-2d': [1, 2, 3, 4, 5, 6],
-      'iniciante-3d': [1, 2, 3, 4, 5],
-      'intermediario-2d': [1, 2, 3, 4, 5],
-      'intermediario-3d': [1, 2, 3, 4, 5],
-      'avancado-2d': [1, 2, 3, 4, 5],
-      'avancado-3d': [1, 2, 3, 4, 5],
+      'iniciante-2d': [1, 2, 3, 4, 5, 6, 7, 8],
+      'iniciante-3d': [1, 2, 3, 4, 5, 6, 7, 8],
+      'intermediario-2d': [1, 2, 3, 4, 5, 6, 7, 8],
+      'intermediario-3d': [1, 2, 3, 4, 5, 6, 7, 8],
+      'avancado-2d': [1, 2, 3, 4, 5, 6, 7, 8],
+      'avancado-3d': [1, 2, 3, 4, 5, 6, 7, 8],
     } as const
     expect(computeCareerLevelSlug(all)).toBe('god')
     expect(meetsCareerLevel(all, creatorCareerLevel('god'))).toBe(true)
@@ -34,7 +48,7 @@ describe('catálogo da Carreira do Criador', () => {
 
   test('informa exatamente quais slots faltam', () => {
     expect(missingCareerSlots({ 'iniciante-2d': [1, 3, 6] }, creatorCareerLevel('hacker'))).toEqual(
-      { 'iniciante-2d': [2, 4, 5] },
+      { 'iniciante-2d': [2, 4, 5, 7, 8] },
     )
   })
 
@@ -70,7 +84,7 @@ describe('catálogo da Carreira do Criador', () => {
   })
 
   test('etapas futuras ficam bloqueadas e etapas anteriores são revisáveis', () => {
-    const qualified = { 'iniciante-2d': [1, 2, 3, 4, 5, 6] }
+    const qualified = { 'iniciante-2d': [1, 2, 3, 4, 5, 6, 7, 8] }
     expect(resolveCareerCourseLock(qualified, 'iniciante-2d', 4)).toEqual({ locked: false })
     expect(resolveCareerCourseLock(qualified, 'iniciante-3d', 1)).toEqual({ locked: false })
     expect(resolveCareerCourseLock(qualified, 'intermediario-2d', 1)).toMatchObject({
@@ -91,7 +105,7 @@ describe('catálogo da Carreira do Criador', () => {
     })
     // Etapa completa (learningTier passou dela) → recompensa GANHA.
     expect(
-      resolveCareerCourseLock({ 'iniciante-2d': [1, 2, 3, 4, 5, 6] }, 'iniciante-2d', null),
+      resolveCareerCourseLock({ 'iniciante-2d': [1, 2, 3, 4, 5, 6, 7, 8] }, 'iniciante-2d', null),
     ).toEqual({ locked: false })
     // Bônus de etapa FUTURA é recompensa DELA (não `future-tier`).
     expect(resolveCareerCourseLock({}, 'avancado-3d', null)).toMatchObject({
@@ -104,12 +118,12 @@ describe('catálogo da Carreira do Criador', () => {
     expect(resolveCareerCourseLock({}, 'iniciante-2d', null, false)).toEqual({ locked: false })
     // Lenda: tudo aberto.
     const all = {
-      'iniciante-2d': [1, 2, 3, 4, 5, 6],
-      'iniciante-3d': [1, 2, 3, 4, 5],
-      'intermediario-2d': [1, 2, 3, 4, 5],
-      'intermediario-3d': [1, 2, 3, 4, 5],
-      'avancado-2d': [1, 2, 3, 4, 5],
-      'avancado-3d': [1, 2, 3, 4, 5],
+      'iniciante-2d': [1, 2, 3, 4, 5, 6, 7, 8],
+      'iniciante-3d': [1, 2, 3, 4, 5, 6, 7, 8],
+      'intermediario-2d': [1, 2, 3, 4, 5, 6, 7, 8],
+      'intermediario-3d': [1, 2, 3, 4, 5, 6, 7, 8],
+      'avancado-2d': [1, 2, 3, 4, 5, 6, 7, 8],
+      'avancado-3d': [1, 2, 3, 4, 5, 6, 7, 8],
     } as const
     expect(resolveCareerCourseLock(all, 'avancado-3d', null)).toEqual({ locked: false })
   })

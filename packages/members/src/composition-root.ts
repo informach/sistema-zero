@@ -328,6 +328,7 @@ export async function createApplication(env: Env): Promise<Application> {
     gamificationRepo,
     avatarRepo,
     roomRepo,
+    hub,
     clock,
   )
   const getChallenge = new GetChallengeService(gamificationRepo, challengeConfigRepo, clock)

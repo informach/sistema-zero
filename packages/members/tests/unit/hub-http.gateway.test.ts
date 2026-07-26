@@ -69,4 +69,45 @@ describe('createHubHttpGateway', () => {
     await hub.notifyAccessChanged('user-1', 'grant')
     expect(true).toBe(true)
   })
+
+  test('listShowcaseByAuthor mapeia o nome de WIRE coverImageUrl para coverUrl', async () => {
+    // O hub chama o campo de `coverImageUrl`; o contrato do members (PublicGameItem)
+    // chama de `coverUrl`. Este teste PINA o nome do wire: se o hub renomear o campo,
+    // a falha aparece AQUI (e não como capa null silenciosa no perfil público).
+    const hub = createHubHttpGateway({
+      baseUrl: 'http://hub.internal:3010',
+      hmacSecret: SECRET,
+      fetchImpl: async () =>
+        new Response(
+          JSON.stringify({
+            items: [
+              {
+                title: 'Meu jogo',
+                playId: 'play-1',
+                coverImageUrl: 'https://cdn.example/capa.png',
+                createdAt: '2026-07-01T00:00:00.000Z',
+              },
+              // Sem capa: o campo ausente degrada para null (nunca undefined).
+              { title: 'Sem capa', playId: 'play-2', createdAt: '2026-07-02T00:00:00.000Z' },
+            ],
+          }),
+          { status: 200 },
+        ),
+    })
+    const games = await hub.listShowcaseByAuthor('profile-1', 24)
+    expect(games).toEqual([
+      {
+        title: 'Meu jogo',
+        playId: 'play-1',
+        coverUrl: 'https://cdn.example/capa.png',
+        publishedAt: '2026-07-01T00:00:00.000Z',
+      },
+      {
+        title: 'Sem capa',
+        playId: 'play-2',
+        coverUrl: null,
+        publishedAt: '2026-07-02T00:00:00.000Z',
+      },
+    ])
+  })
 })

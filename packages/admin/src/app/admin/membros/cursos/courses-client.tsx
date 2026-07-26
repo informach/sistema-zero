@@ -309,8 +309,9 @@ function CareerReadiness({
   canWrite: boolean
   onPickSlot: (level: string, track: string, slot: number, course: CourseView | undefined) => void
 }) {
-  const tiers = COURSE_TIER_OPTIONS.map((tier, index) => {
-    const required = index === 0 ? 6 : 5
+  const tiers = COURSE_TIER_OPTIONS.map((tier) => {
+    // 8 posições por degrau (reforma 07/2026; era 6 no Iniciante 2D e 5 nas demais).
+    const required = 8
     const slots = Array.from({ length: required }, (_, slotIndex) => {
       const slot = slotIndex + 1
       const course = courses.find(

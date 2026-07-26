@@ -19,14 +19,14 @@ A carreira possui seis etapas:
 
 | Etapa | Posições obrigatórias |
 |---|---:|
-| Iniciante 2D | 1 a 6 |
-| Iniciante 3D | 1 a 5 |
-| Intermediário 2D | 1 a 5 |
-| Intermediário 3D | 1 a 5 |
-| Avançado 2D | 1 a 5 |
-| Avançado 3D | 1 a 5 |
+| Iniciante 2D | 1 a 8 |
+| Iniciante 3D | 1 a 8 |
+| Intermediário 2D | 1 a 8 |
+| Intermediário 3D | 1 a 8 |
+| Avançado 2D | 1 a 8 |
+| Avançado 3D | 1 a 8 |
 
-São 31 posições obrigatórias. `careerSlot = null` identifica um curso bônus, que não conta para subir de nível.
+São 48 posições obrigatórias (**8 por degrau** — reforma de 07/2026; antes eram 6 no Iniciante 2D e 5 nas demais, totalizando 31). `careerSlot = null` identifica um curso bônus, que não conta para subir de nível.
 
 A posição 1 é o curso base de cada etapa. Ao entrar em uma etapa, a criança abre primeiro esse curso. Os demais cursos da mesma etapa só abrem depois que o curso base for concluído e publicado. Cursos de etapas futuras mostram uma mensagem de continuação da carreira e não criam um link para um curso que ainda está bloqueado.
 
@@ -56,12 +56,19 @@ No Community Kids, a página **/cursos** é o **Mapa da Carreira**: uma fita cur
 |---|---|---|---|
 | Faísca (`noob`) | Nenhum | Iniciante 2D | Usa o Estúdio apenas dentro das aulas |
 | Construtor(a) (`coder`) | Posição 1 do Iniciante 2D | Iniciante 2D | Estúdio livre, blocos e Jogo 2D Essencial |
-| Inventor(a) (`hacker`) | 6 posições do Iniciante 2D | Iniciante 3D | Jogo 2D Iniciante completo |
-| Explorador(a) de Mundos (`explorer`) | mais 5 posições do Iniciante 3D | Intermediário 2D | Jogo 3D Iniciante |
-| Mestre dos Jogos (`elite`) | mais 5 posições do Intermediário 2D | Intermediário 3D | Jogo 2D Intermediário e modo Ponte |
-| Arquiteto(a) de Mundos (`architect`) | mais 5 posições do Intermediário 3D | Avançado 2D | Mundo 3D Intermediário e modo Ponte |
-| Gênio da Criação (`champion`) | mais 5 posições do Avançado 2D | Avançado 3D | Jogo 2D Avançado e modo Ponte |
-| Lenda (`god`) | mais 5 posições do Avançado 3D | Carreira concluída | Jogo 3D Avançado, modo Ponte e modo Pro |
+| Inventor(a) (`hacker`) | 8 posições do Iniciante 2D | Iniciante 3D | Jogo 2D Iniciante completo |
+| Explorador(a) de Mundos (`explorer`) | mais 8 posições do Iniciante 3D | Intermediário 2D | Jogo 3D Iniciante |
+| Mestre dos Jogos (`elite`) | mais 8 posições do Intermediário 2D | Intermediário 3D | Jogo 2D Intermediário e modo Ponte |
+| Arquiteto(a) de Mundos (`architect`) | mais 8 posições do Intermediário 3D | Avançado 2D | Mundo 3D Intermediário e modo Ponte |
+| Gênio da Criação (`champion`) | mais 8 posições do Avançado 2D | Avançado 3D | Jogo 2D Avançado e modo Ponte |
+| Lenda (`god`) | mais 8 posições do Avançado 3D | Carreira concluída | Jogo 3D Avançado, modo Ponte e modo Pro |
+
+O perfil **Jogo 2D Essencial** do Construtor (fonte:
+`packages/studio/src/career/blockProfiles.ts`) traz os blocos da referência do Desafio
+do Primeiro Jogo mais o **🚀 Kit espaço completo** — inclusive "soltar um asteroide de
+uma borda" e "atirar do sprite para a frente", que não aparecem no jogo-base (decisão
+de 26/07/2026): com o kit inteiro a criança cria variações do jogo de nave ensinado no
+Faísca, não só a réplica.
 
 As extensões acumuladas por nível são:
 
@@ -100,7 +107,7 @@ No painel **Cursos** (`/admin/membros/cursos`), o formulário de curso (tanto ao
 * **1 — Curso-base da etapa:** o curso que destrava as demais posições.
 * **2 em diante:** os demais cursos da etapa, liberados após o curso base.
 
-O select mostra qual curso já ocupa cada posição da etapa selecionada e desabilita posições ocupadas por outro curso (o banco recusa duplicata na mesma etapa). Iniciante 2D aceita posições 1 a 6; as demais etapas, 1 a 5.
+O select mostra qual curso já ocupa cada posição da etapa selecionada e desabilita posições ocupadas por outro curso (o banco recusa duplicata na mesma etapa). Toda etapa aceita posições 1 a 8.
 
 O painel **Carreira do Criador** no topo da página é clicável: uma posição vazia abre o cadastro já mirando a etapa e a posição corretas; uma posição ocupada abre a edição daquele curso. Use-o para preencher a etapa Iniciante 2D primeiro, começando pela posição 1. A posição 1 publicada sem aula publicada com bloco de Estúdio de vitrine aparece como ⚠️ **"Sem vitrine"** (ver a Armadilha do Mural) — resolva antes do lançamento da etapa.
 
@@ -119,16 +126,15 @@ O token nunca é enviado ao navegador. Os BFFs validam sessão, tamanho real do 
 
 ## Operação e prontidão
 
-O painel de cursos carrega todas as páginas de cursos Kids antes de calcular a prontidão. A carreira está completa para lançamento quando as 31 posições existem e os cursos necessários estão publicados e autorados.
+O painel de cursos carrega todas as páginas de cursos Kids antes de calcular a prontidão. A carreira está completa para lançamento quando as 48 posições existem e os cursos necessários estão publicados e autorados.
 
 O banco aplica a mesma regra do domínio:
 
 * somente cursos Kids podem ter `career_slot`;
-* Iniciante 2D aceita posições 1 a 6;
-* as demais etapas aceitam posições 1 a 5;
+* toda etapa aceita posições 1 a 8;
 * uma posição não pode se repetir na mesma etapa.
 
-As migrações `0048_normalize_creator_career_slots` e `0049_needy_iron_man` precisam ser aplicadas nessa ordem. A primeira remove posições legadas inválidas colocando `career_slot = null`. A segunda reforça a restrição. Antes do deploy, confira o backup e a quantidade de linhas que a normalização atingirá. Em caso de necessidade, prefira uma nova migração de correção em vez de editar o histórico aplicado.
+As migrações `0048_normalize_creator_career_slots` e `0049_needy_iron_man` precisam ser aplicadas nessa ordem. A primeira remove posições legadas inválidas colocando `career_slot = null`. A segunda reforça a restrição (versão 6/5). A migração `0053_career_slot_max_8` alarga a restrição para 1 a 8 em toda etapa (reforma de 07/2026, 8 por degrau) — como só amplia a faixa, não conflita com dados existentes. Antes do deploy, confira o backup e a quantidade de linhas que a normalização atingirá. Em caso de necessidade, prefira uma nova migração de correção em vez de editar o histórico aplicado.
 
 ## Pontos principais no código
 

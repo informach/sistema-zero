@@ -258,6 +258,34 @@ export class DrizzleThreadRepository implements ThreadRepository {
     return rows
   }
 
+  async listShowcaseByAuthor(
+    authorId: string,
+    limit: number,
+  ): Promise<
+    Array<{ title: string; playId: string | null; coverImageUrl: string | null; createdAt: Date }>
+  > {
+    // Usa o threads_author_status_idx (autor+status). SEM janela — o perfil público
+    // mostra a vitrine INTEIRA do autor, com a CAPA (a variante do report dos pais a omite).
+    const rows = await this.db
+      .select({
+        title: threads.title,
+        playId: threads.playId,
+        coverImageUrl: threads.coverImageUrl,
+        createdAt: threads.createdAt,
+      })
+      .from(threads)
+      .where(
+        and(
+          eq(threads.authorId, authorId),
+          eq(threads.isShowcase, true),
+          eq(threads.status, 'visible'),
+        ),
+      )
+      .orderBy(desc(threads.createdAt))
+      .limit(limit)
+    return rows
+  }
+
   async showcaseStatsByAuthor(authorId: string): Promise<{ published: number; plays: number }> {
     // Agregado NO banco (usa o threads_author_status_idx): "seus jogos já foram
     // jogados N vezes" do card de carreira — nunca lista threads p/ somar no app.

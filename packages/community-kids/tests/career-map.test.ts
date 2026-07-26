@@ -63,7 +63,7 @@ describe('coursesForLevel (divisão do degrau por careerSlot)', () => {
     expect(coursesForLevel('noob', ini2d).map((c) => c.courseSlug)).toEqual(['base'])
   })
 
-  test('Construtor (coder) mostra o resto (2–6) + o bônus, sem o curso-base', () => {
+  test('Construtor (coder) mostra o resto (2–8) + o bônus, sem o curso-base', () => {
     expect(
       coursesForLevel('coder', ini2d)
         .map((c) => c.courseSlug)

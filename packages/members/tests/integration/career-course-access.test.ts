@@ -226,7 +226,9 @@ describe('Carreira do Criador — acesso pedagógico aos cursos', () => {
 
   test('bônus é RECOMPENSA da etapa: trava até completar todos os obrigatórios', async () => {
     const { app, courses, entitlements, gamification } = buildApp()
-    const slots = Array.from({ length: 6 }, (_, index) =>
+    // 8 posições obrigatórias por degrau (reforma 07/2026): a etapa só COMPLETA
+    // (e libera o bônus-recompensa) com as 8 qualificadas.
+    const slots = Array.from({ length: 8 }, (_, index) =>
       seedSampleCourse(
         courses,
         `slot-${index + 1}`,

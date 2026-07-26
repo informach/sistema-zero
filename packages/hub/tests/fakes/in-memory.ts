@@ -376,6 +376,24 @@ export class InMemoryThreadRepository implements ThreadRepository {
       }))
   }
 
+  async listShowcaseByAuthor(
+    authorId: string,
+    limit: number,
+  ): Promise<
+    Array<{ title: string; playId: string | null; coverImageUrl: string | null; createdAt: Date }>
+  > {
+    return this.threads
+      .filter((t) => t.authorId === authorId && t.isShowcase && t.status === 'visible')
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, limit)
+      .map((t) => ({
+        title: t.title,
+        playId: t.playId,
+        coverImageUrl: t.coverImageUrl,
+        createdAt: t.createdAt,
+      }))
+  }
+
   async findThreadById(id: string): Promise<Thread | null> {
     return this.threads.find((t) => t.id === id) ?? null
   }

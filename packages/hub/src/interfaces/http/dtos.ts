@@ -241,6 +241,12 @@ export const ShowcaseByAuthorsBody = t.Object({
   to: t.String({ maxLength: 40 }),
 })
 
+// Perfil público kids: vitrine INTEIRA de UM autor (sem janela), com capa.
+export const ShowcaseByAuthorBody = t.Object({
+  authorId: UUID,
+  limit: t.Optional(t.Integer({ minimum: 1, maximum: 50 })),
+})
+
 /**
  * `POST /hub/internal/play-check` (members→hub S2S, HMAC — validação do REMIX):
  * o playId existe/está visível no Mural? Devolve também o `authorId` (perfil) p/ o

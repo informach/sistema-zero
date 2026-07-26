@@ -128,6 +128,23 @@ export interface ThreadRepository {
     from: Date,
     to: Date,
   ): Promise<Array<{ authorId: string; title: string; playId: string | null; createdAt: Date }>>
+  /**
+   * TODOS os posts de vitrine VISÍVEIS de UM autor (perfil), mais recentes primeiro,
+   * até `limit`. Alimenta a seção "Jogos publicados" do perfil público kids — inclui
+   * a CAPA (`coverImageUrl`, que a `listShowcaseByAuthors` do report dos pais omite) e
+   * NÃO tem janela (o perfil mostra a vitrine inteira, não só a semana).
+   */
+  listShowcaseByAuthor(
+    authorId: string,
+    limit: number,
+  ): Promise<
+    Array<{
+      title: string
+      playId: string | null
+      coverImageUrl: string | null
+      createdAt: Date
+    }>
+  >
   findThreadById(id: string): Promise<Thread | null>
   /**
    * Tópicos VISÍVEIS do autor (mais recentes por `lastActivityAt`) — alimenta o sino

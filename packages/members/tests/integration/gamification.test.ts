@@ -1133,10 +1133,10 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
       audience: 'adult',
     })
 
-    // Qualificado como INICIANTE 2D → Coder; faltam 5 iniciante-2d p/ Hacker (piso 6).
+    // Qualificado como INICIANTE 2D → Coder; faltam 7 iniciante-2d p/ Hacker (piso 8).
     const before = await readJson(await getMe(app))
     expect(before.level.slug).toBe('coder')
-    expect(before.level.remaining['iniciante-2d']).toBe(5)
+    expect(before.level.remaining['iniciante-2d']).toBe(7)
 
     // O admin re-nivela o curso p/ avançado DEPOIS da qualificação.
     const row = courses.courses.find((c) => c.id === course.courseId)
@@ -1146,10 +1146,10 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
     }
 
     // O rank usa os SNAPSHOTS congelados no marco: continua no nível e slot originais.
-    // Se seguisse o `courses.level` AO VIVO, remaining['iniciante-2d'] viraria 6 (0 qualificados).
+    // Se seguisse o `courses.level` AO VIVO, remaining['iniciante-2d'] viraria 8 (0 qualificados).
     const after = await readJson(await getMe(app))
     expect(after.level.slug).toBe('coder')
-    expect(after.level.remaining['iniciante-2d']).toBe(5)
+    expect(after.level.remaining['iniciante-2d']).toBe(7)
   })
 
   test('re-taggear o TRACK depois de qualificado também não move o balde (snapshot)', async () => {
@@ -1166,12 +1166,12 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
 
     // O admin re-tagueia o curso p/ 3D DEPOIS da qualificação: o marco tem
     // snapshot de track ('2d'), então o balde NÃO muda — o curso segue contando
-    // como iniciante-2d (faltam 5 p/ o piso 6 do Hacker).
+    // como iniciante-2d (faltam 7 p/ o piso 8 do Hacker).
     const row = courses.courses.find((c) => c.id === course.courseId)
     if (row) row.track = '3d'
     const after = await readJson(await getMe(app))
     expect(after.level.slug).toBe('coder')
-    expect(after.level.remaining['iniciante-2d']).toBe(5)
+    expect(after.level.remaining['iniciante-2d']).toBe(7)
   })
 
   test('marco LEGADO sem snapshot de track segue o courses.track VIVO (re-tag corrige)', async () => {
@@ -1192,7 +1192,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
     }
     // Sem snapshot, o coalesce cai no curso ao vivo: re-taggear p/ 3D MOVE o balde
     // (é exatamente o mecanismo de correção retroativa da reforma). O curso sai do
-    // balde 2d (remaining volta ao piso cheio 6). Como a carreira agora exige o
+    // balde 2d (remaining volta ao piso cheio 8). Como a carreira agora exige o
     // curso-base exatamente no Iniciante 2D, o marco legado acompanha o 3D e o
     // perfil volta a Faísca neste cenário histórico sem snapshot.
     const row = courses.courses.find((c) => c.id === course.courseId)

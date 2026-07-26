@@ -547,10 +547,10 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   `/cursos/trilha/[level]`** (por SLUG DO NÍVEL, não mais por degrau — resolve a colisão noob/coder;
   o segmento estático `trilha` NÃO colide com `/cursos/[slug]`). **A trilha DIVIDE o degrau por
   `careerSlot` (`coursesForLevel`):** Faísca (noob) mostra SÓ o curso-base (slot 1), Construtor
-  (coder) o resto (2–6) + o bônus, e os níveis de degrau único (hacker→champion) o degrau inteiro.
+  (coder) o resto (2–8) + o bônus, e os níveis de degrau único (hacker→champion) o degrau inteiro.
   **Fail-open de rollout:** etapa sem curso-base marcado (nenhum `careerSlot === 1`) → NÃO divide,
   mostra o degrau inteiro (espelha `foundationAvailable` do core → Faísca nunca fica vazia até
-  etiquetar base=1/resto=2–6 no admin). O `LEVEL_STUDY` do kids é ESPELHO da escada do core
+  etiquetar base=1/resto=2–8 no admin). O `LEVEL_STUDY` do kids é ESPELHO da escada do core
   (`CREATOR_CAREER_LEVELS`), travado por `tests/career-conformance.test.ts`. Deep-link em trilha
   bloqueada → recado gentil (`trilhaLocked` por nível, escape p/ EQUIPE: algum curso liberado →
   nunca mura). Gamificação fora → grade clássica.
@@ -704,7 +704,12 @@ A `<Canvas>` precisa de
   **Área dos pais** (`/perfis`, sessão da conta → `ParentPasswordChange`). A página também HOSPEDA o
   `badge-showcase`, a `streak-protection` (férias/protetores) e o `league-board` (liga da semana).
 - **Perfil PÚBLICO — `public-profile-view.tsx`** (rota `/crianca/[profileId]`): vitrine pública de
-  uma criança (avatar + apelido + badges + projetos do Mural), SEM dados sensíveis. Os **nomes do
+  uma criança (avatar + apelido + badges + quarto + **Jogos publicados no Mural**), SEM dados
+  sensíveis. **Seção "Jogos publicados no Mural" (07/2026):** grid de cards com capa + título (via
+  `PublicProfileDTO.games`, que vem do members → `hub.listShowcaseByAuthor`, best-effort; ausente/
+  vazio → seção some), cada um linkando `/jogar/<playId>` em nova aba (jogo legado sem playId =
+  card não-clicável). Os jogos já são públicos no `/jogar` e a seção só renderiza dentro de um
+  perfil que passou pelo gate `publicProfileEnabled` — sem vazamento novo. Os **nomes do
   autor no Mural viraram clicáveis** (`kids-space-view-client.tsx`: "por {authorDisplayName}" → link
   p/ `/crianca/<profileId>`), respeitando a redação de `authorId` de terceiros (o link usa o
   identificador público do perfil, não o id interno).

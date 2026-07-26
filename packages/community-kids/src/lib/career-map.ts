@@ -33,18 +33,18 @@ export interface LevelStudy {
  * cursos bônus. Espelha a escada do core (`CREATOR_CAREER_LEVELS`): os slots são
  * `próximoNível.requiredSlots[tier] \ esteNível.requiredSlots[tier]` e o bônus entra
  * no ÚLTIMO nível que estuda o tier. Só o Iniciante 2D é DIVIDIDO — Faísca vê só o
- * curso-base (slot 1) e Construtor vê o resto (2–6) + o bônus; os demais degraus têm
- * um único nível e mostram tudo. A conformidade com o core é travada em
- * `tests/career-conformance.test.ts`.
+ * curso-base (slot 1) e Construtor vê o resto (2–8) + o bônus; os demais degraus têm
+ * um único nível e mostram tudo. **8 posições por degrau** (reforma 07/2026). A
+ * conformidade com o core é travada em `tests/career-conformance.test.ts`.
  */
 export const LEVEL_STUDY: Record<StudentLevelSlug, LevelStudy | null> = {
   noob: { slots: [1], includeBonus: false },
-  coder: { slots: [2, 3, 4, 5, 6], includeBonus: true },
-  hacker: { slots: [1, 2, 3, 4, 5], includeBonus: true },
-  explorer: { slots: [1, 2, 3, 4, 5], includeBonus: true },
-  elite: { slots: [1, 2, 3, 4, 5], includeBonus: true },
-  architect: { slots: [1, 2, 3, 4, 5], includeBonus: true },
-  champion: { slots: [1, 2, 3, 4, 5], includeBonus: true },
+  coder: { slots: [2, 3, 4, 5, 6, 7, 8], includeBonus: true },
+  hacker: { slots: [1, 2, 3, 4, 5, 6, 7, 8], includeBonus: true },
+  explorer: { slots: [1, 2, 3, 4, 5, 6, 7, 8], includeBonus: true },
+  elite: { slots: [1, 2, 3, 4, 5, 6, 7, 8], includeBonus: true },
+  architect: { slots: [1, 2, 3, 4, 5, 6, 7, 8], includeBonus: true },
+  champion: { slots: [1, 2, 3, 4, 5, 6, 7, 8], includeBonus: true },
   god: null,
 }
 

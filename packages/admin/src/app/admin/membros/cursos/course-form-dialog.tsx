@@ -67,11 +67,12 @@ const EMPTY: FormState = {
 }
 
 /**
- * Nº de posições da etapa: só Iniciante 2D tem 6; as demais têm 5 (espelha o CHECK
- * 0049). Exportada SÓ p/ a trava de conformance admin×core (`career-tier-conformance`).
+ * Nº de posições da etapa: 8 por degrau (reforma 07/2026; era 6 no ini-2d e 5 nas
+ * demais). Espelha o CHECK da migration `0053` e o catálogo do core. Exportada SÓ p/
+ * a trava de conformance admin×core (`career-tier-conformance`).
  */
-export function slotsForTier(level: string, track: string): number {
-  return level === 'iniciante' && track === '2d' ? 6 : 5
+export function slotsForTier(_level: string, _track: string): number {
+  return 8
 }
 
 function formFromCourse(c: CourseView): FormState {

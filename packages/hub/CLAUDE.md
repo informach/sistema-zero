@@ -181,6 +181,13 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
      pais. ⚠️ **NUNCA expor no gateway**: a rota devolve playIds de QUALQUER autor — na borda
      vazaria jogos entre famílias; o portão de família é do members (só manda os profileIds da
      conta autenticada).
+   - **Perfil público kids (07/2026):** rota IRMÃ **`POST /hub/internal/showcase-by-author`**
+     (mesmo hook HMAC, NUNCA no gateway): body `{authorId, limit?≤50 (default 24)}` → TODOS os
+     posts de vitrine VISÍVEIS de UM autor, mais recentes primeiro, **com a CAPA**
+     (`{title, playId, coverImageUrl, createdAt}`; `listShowcaseByAuthor` no repo — a variante do
+     report OMITE a capa e tem janela ≤45 dias, esta NÃO tem janela). Alimenta a seção "Jogos
+     publicados no Mural" do perfil público (`/crianca/[id]`). O members só monta a seção num
+     perfil PÚBLICO (opt-in dos pais); os jogos já são públicos no `/jogar`.
 13. **Snapshot de autor + nomes clicáveis (06/2026):** todo tópico/comentário guarda no CREATE um
    snapshot do **primeiro nome** (`author_display_name`) e da **flag pública** (`author_public`) do
    autor — alimenta os **nomes clicáveis** do Mural e do fórum kids (clube). A fonte é SEMPRE

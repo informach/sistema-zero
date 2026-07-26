@@ -320,8 +320,9 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    Mundos→Gênio da Criação→Lenda) **DERIVADA na leitura** (sem coluna/backfill, como o
    ranking/missões): catálogo central em `@sistemazero/core/career`, espelhado por
    `domain/gamification/levels.ts`. A régua usa POSIÇÕES ESPECÍFICAS: slot 1 de Iniciante 2D →
-   slots 1..6 ini-2d → + slots 1..5 ini-3d → +1..5 int-2d → +1..5 int-3d → +1..5 av-2d →
-   +1..5 av-3d. Não é contagem genérica: um slot repetido ou fora da carreira não substitui outro.
+   slots 1..8 ini-2d → + slots 1..8 ini-3d → +1..8 int-2d → +1..8 int-3d → +1..8 av-2d →
+   +1..8 av-3d (**8 por degrau, reforma 07/2026** — era 6 no ini-2d e 5 nas demais; 48 obrigatórios).
+   Não é contagem genérica: um slot repetido ou fora da carreira não substitui outro.
    Um curso "qualificado" = tem AMBOS os
    marcos no ledger `xp_events` — `course_complete` ∩ `course_showcased` (gravado pelo webhook
    abaixo) — agrupado pelo DEGRAU e pela posição (`listQualifyingCareerSlots`, INTERSEÇÃO via
@@ -364,7 +365,7 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    no gate em profundidade (`CheckAccessService`, que lança `CourseCareerLockedError` → **423
    `COURSE_CAREER_LOCKED`**). LISTA e gate usam a MESMA política (mesmo `qualified` do PERFIL). Flag
    liga só p/ `audience==='kids' && !privileged` (equipe ignora). Autoria admin valida o slot em
-   `assertCareerSlot` (kids-only, máx 6 iniciante-2d senão 5, conflito → 409 `CAREER_SLOT_CONFLICT`).
+   `assertCareerSlot` (kids-only, máx 8 por degrau — migration `0053`; conflito → 409 `CAREER_SLOT_CONFLICT`).
    ⚠️ **Armadilha:** curso-base sem bloco de Estúdio com vitrine (`showcase.enabled`) conclui mas
    nunca publica → slot 1 nunca qualifica → demais da etapa presos. **Aviso automático (24/07):** a
    listagem admin (`CourseAdminService.list`) anexa `hasShowcaseBlock` aos cursos-base kids
@@ -798,7 +799,10 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
   3D) é a imagem do avatar em todo o app: o BFF sobe o PNG p/ o R2 e grava a URL via
   **`PUT /members/avatar/photo`** (`SetAvatarPhotoService`, valida http(s)); `AvatarStateView`
   traz `equipped`/`parts`/`palettes`/`hideGroups`/`removable`/`photoUrl`/`balance` e
-  `PublicProfileView` traz `avatarPhotoUrl`. Members é a fonte da verdade de existência/preço/
+  `PublicProfileView` traz `avatarPhotoUrl` **+ `games` (07/2026: jogos publicados no Mural — o
+  `GetPublicProfileService` chama `hub.listShowcaseByAuthor(profileId, 24)` best-effort no
+  `Promise.all`; `null`/hub fora → `games: []`; cada item `{title, playId, coverUrl, publishedAt}`
+  → cards "Jogos publicados" no perfil público kids, link `/jogar/<playId>`)**. Members é a fonte da verdade de existência/preço/
   posse/paleta; a APRESENTAÇÃO (rótulo PT) vive no community-kids (`lib/avatar3d-catalog.ts`),
   travada por `tests/unit/catalog-conformance.test.ts`. Cosmético puro; kids-only (v1). O
   render 3D (GLB real — Quaternius CC0 via pack do WawaSensei — R3F) vive no community-kids; os

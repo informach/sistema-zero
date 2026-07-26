@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@sistemazero/ui/card'
-import { Sparkles, Trophy } from 'lucide-react'
+import { Gamepad2, Play, Sparkles, Trophy } from 'lucide-react'
 import type { PublicProfileDTO } from '@/lib/types'
 import { AvatarWithAura } from './avatar-with-aura'
 import { badgeInfo } from './badges'
@@ -12,6 +12,7 @@ import { LazyRoomCanvas } from './room/lazy-room-canvas'
  * sensível (sem e-mail/telefone). Quarto virtual entra na Fase 3.
  */
 export function PublicProfileView({ profile }: { profile: PublicProfileDTO }) {
+  const games = profile.games ?? []
   const badges = profile.badges
     .map((b) => ({ slug: b.slug, info: badgeInfo(b.slug) }))
     .filter((b): b is { slug: string; info: NonNullable<ReturnType<typeof badgeInfo>> } =>
@@ -59,6 +60,63 @@ export function PublicProfileView({ profile }: { profile: PublicProfileDTO }) {
         <section>
           <h2 className="sz-display mb-3 text-lg">O quarto</h2>
           <LazyRoomCanvas state={profile.room} avatarPhotoUrl={profile.avatarPhotoUrl ?? null} />
+        </section>
+      ) : null}
+
+      {games.length > 0 ? (
+        <section>
+          <h2 className="sz-display mb-3 flex items-center gap-2 text-lg">
+            <Gamepad2 className="size-5 text-primary" />
+            Jogos publicados no Mural
+          </h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {games.map((game) => {
+              const inner = (
+                <>
+                  <div className="relative aspect-video w-full overflow-hidden bg-(--kids-cyan-tint)">
+                    {game.coverUrl ? (
+                      <img
+                        src={game.coverUrl}
+                        alt=""
+                        className="size-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="grid size-full place-items-center">
+                        <Gamepad2 className="size-8 text-primary/60" />
+                      </div>
+                    )}
+                    {game.playId ? (
+                      <span className="absolute right-2 bottom-2 inline-flex items-center gap-1 rounded-full bg-primary px-2 py-0.5 font-semibold text-primary-foreground text-xs">
+                        <Play className="size-3" /> Jogar
+                      </span>
+                    ) : null}
+                  </div>
+                  <span className="block truncate p-2 text-center font-semibold text-sm">
+                    {game.title}
+                  </span>
+                </>
+              )
+              const className = 'overflow-hidden rounded-2xl border-2 border-border bg-card'
+              return game.playId ? (
+                <a
+                  key={`${game.playId}:${game.publishedAt}`}
+                  href={`/jogar/${game.playId}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={`${className} transition-transform hover:-translate-y-0.5`}
+                >
+                  {inner}
+                </a>
+              ) : (
+                // Snapshot legado sem play: mostra a criação (capa + título) sem o
+                // selo "Jogar" e SEM animação de hover — nada sugere clique.
+                <div key={game.publishedAt} className={className}>
+                  {inner}
+                </div>
+              )
+            })}
+          </div>
         </section>
       ) : null}
 

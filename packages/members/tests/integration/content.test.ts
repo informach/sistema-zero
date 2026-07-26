@@ -202,7 +202,7 @@ describe('Members HTTP — autoria: cursos', () => {
     expect(bySlug.get('base-2d')?.hasShowcaseBlock).toBe(true)
   })
 
-  test('careerSlot: só Kids, respeita o teto da etapa, preserva e pode ser removido', async () => {
+  test('careerSlot: só Kids, aceita até a posição 8, preserva e pode ser removido', async () => {
     const { app } = buildApp()
 
     const adult = await send(app, '/members/admin/courses', 'POST', {
@@ -229,15 +229,17 @@ describe('Members HTTP — autoria: cursos', () => {
     })
     expect((await readJson(preserved)).careerSlot).toBe(1)
 
-    const invalidSix = await patchCourse(app, created.id, {
+    // Teto UNIFORME 8 (reforma 07/2026): a posição 8 vale em qualquer etapa —
+    // antes só o Iniciante 2D ia até 6 e as demais até 5.
+    const acceptsEight = await patchCourse(app, created.id, {
       ...COURSE,
       slug: 'base-kids',
       audience: 'kids',
       level: 'intermediario',
       track: '2d',
-      careerSlot: 6,
+      careerSlot: 8,
     })
-    expect(invalidSix.status).toBe(400)
+    expect((await readJson(acceptsEight)).careerSlot).toBe(8)
 
     const removed = await patchCourse(app, created.id, {
       ...COURSE,

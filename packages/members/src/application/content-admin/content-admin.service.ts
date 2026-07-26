@@ -1,3 +1,4 @@
+import { CAREER_SLOT_MAX } from '@sistemazero/core/career'
 import { isStudioProTemplateId } from '@sistemazero/core/studio'
 import {
   ContentNotFoundError,
@@ -195,7 +196,10 @@ function assertCareerSlot(course: {
   if (course.audience !== 'kids') {
     throw new InvalidContentCommandError('Somente cursos Kids podem ocupar a carreira')
   }
-  const maximum = course.level === 'iniciante' && course.track === '2d' ? 6 : 5
+  // 8 posições por degrau (reforma 07/2026; era 6 no iniciante-2d e 5 nas demais).
+  // O teto vem do catálogo CANÔNICO do core — o CHECK da migration 0053 e o
+  // admin (via conformance) espelham o mesmo valor.
+  const maximum = CAREER_SLOT_MAX
   if (
     !Number.isInteger(course.careerSlot) ||
     course.careerSlot < 1 ||

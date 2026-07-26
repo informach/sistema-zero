@@ -191,6 +191,12 @@ export function buildApp(
   // Play-check do REMIX, semeável por teste: playId → {visible, authorId}. Ausente
   // do mapa → null (hub indisponível — o service NÃO grava o marco, fail-closed).
   const hubPlays = new Map<string, { visible: boolean; authorId: string | null }>()
+  // Jogos publicados por PERFIL (perfil público kids), semeável por teste. Ausente do
+  // mapa → null (hub indisponível → o service degrada p/ `games: []`).
+  const hubGamesByAuthor = new Map<
+    string,
+    { title: string; playId: string | null; coverUrl: string | null; publishedAt: string }[]
+  >()
   const hub: HubGateway = {
     async notifyAccessChanged(userId, event) {
       hubCalls.push({ userId, event })
@@ -198,6 +204,10 @@ export function buildApp(
     async listShowcaseByAuthors(authorIds) {
       if (!hubShowcaseByAuthors.items) return null
       return hubShowcaseByAuthors.items.filter((i) => authorIds.includes(i.authorId))
+    },
+    async listShowcaseByAuthor(profileId, limit) {
+      const items = hubGamesByAuthor.get(profileId)
+      return items ? items.slice(0, limit) : null
     },
     async checkPlay(playId) {
       return hubPlays.get(playId) ?? null
@@ -355,7 +365,7 @@ export function buildApp(
       equipAvatar: new EquipAvatarService(avatar, clock),
       setAvatarPhoto: new SetAvatarPhotoService(avatar, clock),
       getAvatarsByProfiles: new GetAvatarsByProfilesService(avatar, gamification),
-      getPublicProfile: new GetPublicProfileService(gamification, avatar, room, clock),
+      getPublicProfile: new GetPublicProfileService(gamification, avatar, room, hub, clock),
       getRoom: new GetRoomService(room, gamification),
       saveRoom: new SaveRoomService(room, clock),
       buyRoomItem: new BuyRoomItemService(room, gamification, awardGamification, clock),
@@ -475,6 +485,7 @@ export function buildApp(
     clockRef,
     hubCalls,
     hubShowcaseByAuthors,
+    hubGamesByAuthor,
     hubPlays,
     authProfiles,
     aiUsage,

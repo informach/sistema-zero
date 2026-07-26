@@ -237,6 +237,12 @@ export interface PublicProfileView {
   avatarPhotoUrl: string | null
   /** Quarto virtual (modo visualização) — `null` se a criança nunca montou. */
   room: RoomState | null
+  /**
+   * Jogos publicados no Mural (mais recentes primeiro) — vitrine do perfil público.
+   * `[]` quando não há jogos OU o hub está indisponível (best-effort). Os jogos já
+   * são públicos na página `/jogar`.
+   */
+  games: { title: string; playId: string | null; coverUrl: string | null; publishedAt: string }[]
 }
 
 /** Uma missão do aluno (`GET /members/gamification/missions/me`). */

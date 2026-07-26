@@ -846,6 +846,22 @@ export interface PublicProfileGameView {
   avatarPhotoUrl?: string | null
   /** Quarto virtual (modo visualização) — `null` se a criança nunca montou. */
   room: RoomStateView | null
+  /**
+   * Jogos publicados no Mural (mais recentes primeiro) — vitrine do perfil público.
+   * `[]`/ausente quando não há jogos OU o hub está indisponível (best-effort). Os
+   * jogos já são públicos na página `/jogar`. Opcional p/ tolerar members antigo.
+   */
+  games?: PublicProfileGameItem[]
+}
+
+/** Um jogo publicado no Mural, exibido no perfil público kids. */
+export interface PublicProfileGameItem {
+  title: string
+  /** Link público de jogar (`/jogar/<playId>`); `null` em snapshot legado sem play. */
+  playId: string | null
+  /** Capa pública do jogo; `null` se não houver. */
+  coverUrl: string | null
+  publishedAt: string
 }
 
 /** Perfil público COMPLETO (BFF junta nome do auth + dado de jogo do members). */

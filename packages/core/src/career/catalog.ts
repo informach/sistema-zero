@@ -73,15 +73,24 @@ export interface CreatorCareerLevelDefinition {
 }
 
 const SLOTS_1 = [1] as const
-const SLOTS_1_TO_5 = [1, 2, 3, 4, 5] as const
-const SLOTS_1_TO_6 = [1, 2, 3, 4, 5, 6] as const
+// 8 posições OBRIGATÓRIAS por degrau (decisão da usuária 07/2026: 5/6 era pouco p/
+// fixar a habilidade; assinatura mensal quer jornada mais longa, conteúdo pré-carregado
+// no lançamento). O Iniciante 2D é dividido pelo curso-base (Faísca=entrada → Construtor
+// pega o slot 1 → Inventor completa 1–8); os demais degraus são um nível cada.
+/**
+ * Teto CANÔNICO de posições por degrau da carreira. É a fonte única do "8":
+ * o CHECK da migration `0053` do members, a validação do content-admin e o
+ * `slotsForTier` do admin (via conformance) espelham este valor.
+ */
+export const CAREER_SLOT_MAX = 8
+const SLOTS_1_TO_8 = [1, 2, 3, 4, 5, 6, 7, 8] as const
 
-const ini2d = { 'iniciante-2d': SLOTS_1_TO_6 } as const
-const ini3d = { ...ini2d, 'iniciante-3d': SLOTS_1_TO_5 } as const
-const inter2d = { ...ini3d, 'intermediario-2d': SLOTS_1_TO_5 } as const
-const inter3d = { ...inter2d, 'intermediario-3d': SLOTS_1_TO_5 } as const
-const advanced2d = { ...inter3d, 'avancado-2d': SLOTS_1_TO_5 } as const
-const advanced3d = { ...advanced2d, 'avancado-3d': SLOTS_1_TO_5 } as const
+const ini2d = { 'iniciante-2d': SLOTS_1_TO_8 } as const
+const ini3d = { ...ini2d, 'iniciante-3d': SLOTS_1_TO_8 } as const
+const inter2d = { ...ini3d, 'intermediario-2d': SLOTS_1_TO_8 } as const
+const inter3d = { ...inter2d, 'intermediario-3d': SLOTS_1_TO_8 } as const
+const advanced2d = { ...inter3d, 'avancado-2d': SLOTS_1_TO_8 } as const
+const advanced3d = { ...advanced2d, 'avancado-3d': SLOTS_1_TO_8 } as const
 
 export const CREATOR_CAREER_LEVELS: readonly CreatorCareerLevelDefinition[] = [
   {

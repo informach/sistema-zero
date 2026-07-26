@@ -301,6 +301,21 @@ export class ShowcaseService {
   }
 
   /**
+   * Perfil público kids: TODOS os jogos de vitrine visíveis de UM perfil, com CAPA.
+   * S2S members→hub (rota HMAC, NUNCA exposta no gateway) — o members resolve o
+   * profileId e só monta a seção num perfil PÚBLICO (opt-in dos pais). Os jogos já
+   * são públicos (a página `/jogar` é aberta), então não há dado sensível aqui.
+   */
+  async listShowcaseByAuthor(
+    authorId: string,
+    limit: number,
+  ): Promise<
+    Array<{ title: string; playId: string | null; coverImageUrl: string | null; createdAt: Date }>
+  > {
+    return this.threads.listShowcaseByAuthor(authorId, limit)
+  }
+
+  /**
    * Publicação KID-DRIVEN a partir do botão "Compartilhar" do Estúdio: a criança
    * escreve a DESCRIÇÃO (rascunho da IA, editado) e o projeto ganha um LINK PÚBLICO
    * de jogar (`playId`). Reusa TODAS as guardas de `create` (elegibilidade S2S

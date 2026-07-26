@@ -730,7 +730,8 @@ const CourseBodyProperties = {
   // Eixo 2D/3D. AUSENTE: create → `2d`; update → PRESERVA o atual (mesma régua).
   track: t.Optional(t.Union([COURSE_TRACK, t.Null()])),
   // Slot da Carreira do Criador: 1 = curso-base; null = bônus/fora da carreira.
-  careerSlot: t.Optional(t.Union([t.Integer({ minimum: 1, maximum: 6 }), t.Null()])),
+  // Máx 8 por degrau (reforma 07/2026); a faixa fina por etapa é validada no domínio.
+  careerSlot: t.Optional(t.Union([t.Integer({ minimum: 1, maximum: 8 }), t.Null()])),
 }
 export const CourseBody = t.Object(CourseBodyProperties)
 /** PATCH exige a versão lida para impedir que uma aba antiga sobrescreva outra edição. */
