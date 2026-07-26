@@ -3415,6 +3415,14 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const spriteVar = identifierName(args[0])
       return spriteVar ? { type: 'g2d:drawHitbox', spriteVar } : null
     }
+    case 'setHitboxScale': {
+      // generator: SZGame2D.setHitboxScale(sprite, 80)
+      const spriteVar = identifierName(args[0])
+      const percent = toExpr(args[1], ctx)
+      return spriteVar && isSimpleValue(percent)
+        ? { type: 'g2d:setHitboxScale', spriteVar, percent }
+        : null
+    }
     case 'showFps': {
       const x = toExpr(args[0], ctx)
       const y = toExpr(args[1], ctx)
@@ -3832,6 +3840,12 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const ctxVar = identifierName(args[0])
       const groupVar = identifierName(args[1])
       return ctxVar && groupVar ? { type: 'g2d:drawGroup', groupVar, ctxVar } : null
+    }
+    case 'drawGroupByY': {
+      // generator: SZGame2D.drawGroupByY(ctx, g)
+      const ctxVar = identifierName(args[0])
+      const groupVar = identifierName(args[1])
+      return ctxVar && groupVar ? { type: 'g2d:drawGroupByY', groupVar, ctxVar } : null
     }
     case 'forEachInGroup': {
       // generator: SZGame2D.forEachInGroup(g, function (item) {…})
@@ -11410,6 +11424,11 @@ function tryMatchEvery(node: Babel.IfStatement, source: string, ctx: ParseCtx): 
     const seconds = toExpr(call.args[1], ctx)
     if (!isSimpleValue(seconds)) return null
     return { type: 'g2d:everySeconds', seconds, body: bodyOfBlock(node.consequent, source, ctx) }
+  }
+  if (call.method === 'afterSeconds') {
+    const seconds = toExpr(call.args[1], ctx)
+    if (!isSimpleValue(seconds)) return null
+    return { type: 'g2d:afterSeconds', seconds, body: bodyOfBlock(node.consequent, source, ctx) }
   }
   return null
 }

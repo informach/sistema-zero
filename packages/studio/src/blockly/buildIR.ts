@@ -1133,6 +1133,17 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
         args: getArgs(block),
       }
     }
+    case 'sz_t3d_object_count':
+      // `cena.children.length` — quantos filhos diretos o objeto tem.
+      return {
+        type: 'memberGet',
+        object: {
+          type: 'memberGet',
+          object: { type: 'var', name: f(block, 'TARGET') },
+          name: 'children',
+        },
+        name: 'length',
+      }
     case 'sz_val_object_op':
       return {
         type: 'objectOp',
@@ -2250,6 +2261,56 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           object: { type: 'var', name: f(block, 'TARGET') },
           method: 'add',
           args: [exprInput(block, 'OBJ', { type: 'var', name: 'objeto' })],
+        },
+      }
+    case 'sz_t3d_debug_grid':
+      // `alvo.add(new THREE.GridHelper(tam, div))` — chão quadriculado de referência.
+      return {
+        kind: 'js',
+        value: {
+          type: 'memberCall',
+          object: { type: 'var', name: f(block, 'TARGET') },
+          method: 'add',
+          args: [
+            {
+              type: 'newExpr',
+              className: 'GridHelper',
+              namespace: 'THREE',
+              args: [
+                exprInput(block, 'SIZE', { type: 'num', value: 10 }),
+                exprInput(block, 'DIV', { type: 'num', value: 10 }),
+              ],
+            },
+          ],
+        },
+      }
+    case 'sz_t3d_debug_axes':
+      // `alvo.add(new THREE.AxesHelper(tam))` — setas dos eixos X/Y/Z.
+      return {
+        kind: 'js',
+        value: {
+          type: 'memberCall',
+          object: { type: 'var', name: f(block, 'TARGET') },
+          method: 'add',
+          args: [
+            {
+              type: 'newExpr',
+              className: 'AxesHelper',
+              namespace: 'THREE',
+              args: [exprInput(block, 'SIZE', { type: 'num', value: 5 })],
+            },
+          ],
+        },
+      }
+    case 'sz_t3d_set_wireframe':
+      // `material.wireframe = true/false`
+      return {
+        kind: 'js',
+        value: {
+          type: 'memberSet',
+          object: { type: 'var', name: f(block, 'OBJ') },
+          name: 'wireframe',
+          value: { type: 'bool', value: f(block, 'VAL') === 'true' },
         },
       }
     case 'sz_t3d_set_color':
@@ -3922,6 +3983,12 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
         kind: 'js',
         value: { type: 'g2d:drawGroup', groupVar: f(block, 'GROUP'), ctxVar: 'ctx' },
       }
+    case 'sz_g2d_draw_group_by_y':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: { type: 'g2d:drawGroupByY', groupVar: f(block, 'GROUP'), ctxVar: 'ctx' },
+      }
     case 'sz_g2d_for_each_in_group':
       seen.add('game-2d')
       return {
@@ -3989,6 +4056,26 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           type: 'g2d:everySeconds',
           seconds: exprInput(block, 'SECS', { type: 'num', value: 2 }),
           body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_g2d_after_seconds':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:afterSeconds',
+          seconds: exprInput(block, 'SECS', { type: 'num', value: 3 }),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_g2d_set_hitbox_scale':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:setHitboxScale',
+          spriteVar: f(block, 'SPRITE'),
+          percent: exprInput(block, 'PERCENT', { type: 'num', value: 80 }),
         },
       }
 

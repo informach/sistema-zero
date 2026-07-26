@@ -271,7 +271,7 @@ export const gameThreeDBlocks = [
       { type: 'field_name_picker', name: 'B', text: 'chao', kind: 'object3d' },
     ],
     output: 'JSValue',
-    tooltip: 'Verdadeiro enquanto os dois objetos 3D estão se tocando. Use dentro de um "se".',
+    tooltip: 'Verdadeiro enquanto os dois objetos 3D estão se encostando. Use dentro de um "se".',
   },
   {
     type: 'sz_g3d_hit_any',
@@ -281,7 +281,7 @@ export const gameThreeDBlocks = [
       { type: 'field_name_picker', name: 'GROUP', text: 'inimigos', kind: 'group3d' },
     ],
     output: 'JSValue',
-    tooltip: 'Verdadeiro se o objeto bateu em qualquer um do grupo (ótimo para o fim de jogo).',
+    tooltip: 'Verdadeiro se o objeto encostou em qualquer um do grupo (ótimo para o fim de jogo).',
   },
 
   // ---- 📦 Grupos (genéricos) + ⏱️ Tempo + Kit "Desvie" (soltar 1 inimigo) ----
@@ -508,14 +508,14 @@ export const gameThreeDBlocks = [
   },
   {
     type: 'sz_g3d_touches_box',
-    message0: 'o objeto %1 encosta em algum de %2 ?',
+    message0: 'o objeto %1 está encostando em algum de %2 ?',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
       { type: 'field_name_picker', name: 'GROUP', text: 'carros', kind: 'group3d' },
     ],
     output: 'JSValue',
     tooltip:
-      'Verdadeiro se o objeto bate em algum do grupo (caixa real, funciona com modelos como carros). Use num "se".',
+      'Verdadeiro enquanto o objeto está encostando em algum do grupo (caixa real, funciona com modelos como carros). Use num "se".',
   },
 
   // ---- Kit Travessia (atravessar a rua / Crossy Road) ----

@@ -780,6 +780,21 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
     for (var i = 0; i < group.items.length; i++) drawSprite(ctx, group.items[i]);
   }
   /**
+   * Desenha o grupo ordenado pela BASE (y+h): quem está mais para baixo na tela
+   * é desenhado por último (fica na frente). É a profundidade dos jogos top-down.
+   * Ordena uma CÓPIA — a ordem lógica do grupo (trazer para frente/fundo) fica intacta.
+   */
+  function drawGroupByY(ctx, group) {
+    if (!ctx || !group || !group.items) return;
+    var snapshot = group.items.slice();
+    snapshot.sort(function (a, b) {
+      var aBase = (a ? _finiteNumber(a.y, 0) + _finiteNumber(a.h, 0) : 0);
+      var bBase = (b ? _finiteNumber(b.y, 0) + _finiteNumber(b.h, 0) : 0);
+      return aBase - bBase;
+    });
+    for (var i = 0; i < snapshot.length; i++) drawSprite(ctx, snapshot[i]);
+  }
+  /**
    * Roda fn(sprite, i) para cada sprite. Itera em ordem REVERSA para que o
    * corpo possa remover o item atual (com "tirar do grupo") sem pular nenhum.
    */
@@ -942,6 +957,18 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
     if (t - last >= period) { secondTimers[key] = t; return true; }
     return false;
   }
+  // One-shot: "depois de N segundos, fazer" — dispara UMA vez por partida.
+  // O reset do domínio zera o mapa, então reiniciar o jogo re-arma o timer.
+  var onceTimers = Object.create(null);
+  function afterSeconds(key, secs) {
+    var delay = _positiveFiniteNumber(secs, 1) * 1000;
+    var state = onceTimers[key];
+    if (state === 'done') return false;
+    var t = now();
+    if (state === undefined) { onceTimers[key] = t; return false; }
+    if (t - state >= delay) { onceTimers[key] = 'done'; return true; }
+    return false;
+  }
 
   _registerRuntimeDomain('world', {
     reset: function () {
@@ -952,6 +979,7 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
       pressedKeys = Object.create(null);
       frameCounters = Object.create(null);
       secondTimers = Object.create(null);
+      onceTimers = Object.create(null);
       _tileMapCreates = 0;
       _releaseAllInputs();
     }

@@ -416,6 +416,19 @@ function generateBehaviorJSWithMap(
   for (const section of sections) {
     pieces.push(`${markerIndent}${section.marker}`)
     currentLine += 1
+    // Comentário didático do passo fixo: emitido DETERMINISTICAMENTE em função da
+    // IR (há raiz de loop do Jogo 2D?), como peça própria (não desloca o source
+    // map dos corpos). O parser descarta comentários, então gerar→parsear→gerar
+    // continua fixpoint: o comentário some no parse e volta aqui na regeração.
+    if (
+      section.marker === BEHAVIOR_SECTION_MARKERS.loops &&
+      section.statements.some((statement) => GAME2D_LOOP_ROOT_TYPES.has(statement.type))
+    ) {
+      pieces.push(
+        `${markerIndent}// O jogo roda 60 passos por segundo: cada volta desenha um "quadro" do filme.`,
+      )
+      currentLine += 1
+    }
     for (const statement of section.statements) {
       const context = { map, startLine: currentLine }
       const piece =
@@ -436,6 +449,14 @@ function generateBehaviorJSWithMap(
   return { code: headerText + (body ? `${body}\n` : ''), map }
 }
 
+/** Raízes de loop do Jogo 2D que ganham o comentário didático do passo fixo. */
+const GAME2D_LOOP_ROOT_TYPES = new Set([
+  'g2d:updateEachFrame',
+  'g2d:everyFrames',
+  'g2d:everySeconds',
+  'g2d:afterSeconds',
+])
+
 /**
  * “A cada N” é uma raiz de loop independente no projeto. O nó interno continua
  * representando somente a cadência; este adaptador o liga ao tick do motor sem
@@ -449,7 +470,11 @@ function compileBehaviorLoopRoot(
 ): string {
   const pad = '  '.repeat(indent)
   const childContext = childMapContext(mapContext, mapContext.startLine + 1)
-  if (statement.type === 'g2d:everyFrames' || statement.type === 'g2d:everySeconds') {
+  if (
+    statement.type === 'g2d:everyFrames' ||
+    statement.type === 'g2d:everySeconds' ||
+    statement.type === 'g2d:afterSeconds'
+  ) {
     const body = compileStatement(statement, indent + 1, identifiers, childContext)
     return `${pad}SZGame2D.gameLoop(function __szPeriodicLoop() {\n${body}\n${pad}});`
   }
@@ -1278,6 +1303,8 @@ function compileStatementCode(
       return `${pad}SZGame2D.updateGroupNoGravity(${identifiers.get(stmt.groupVar)});`
     case 'g2d:drawGroup':
       return `${pad}SZGame2D.drawGroup(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.groupVar)});`
+    case 'g2d:drawGroupByY':
+      return `${pad}SZGame2D.drawGroupByY(${identifiers.get(stmt.ctxVar)}, ${identifiers.get(stmt.groupVar)});`
     case 'g2d:forEachInGroup': {
       const body = compileStatements(
         stmt.body,
@@ -1337,6 +1364,22 @@ function compileStatementCode(
         `${pad}}`,
       ].join('\n')
     }
+    case 'g2d:afterSeconds': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const key = identifiers.reserveInternal('depois')
+      return [
+        `${pad}if (SZGame2D.afterSeconds(${JSON.stringify(key)}, ${compileExpr(valueToExpr(stmt.seconds), 0, identifiers, recAt(base))})) {`,
+        body,
+        `${pad}}`,
+      ].join('\n')
+    }
+    case 'g2d:setHitboxScale':
+      return `${pad}SZGame2D.setHitboxScale(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.percent), 0, identifiers, recAt(base))});`
     case 'g2d:drawScore':
       return `${pad}SZGame2D.drawScore(${identifiers.get(stmt.ctxVar)}, ${JSON.stringify(stmt.label)}, ${compileExpr(stmt.value, 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))});`
     case 'g2d:drawLabel':
@@ -4316,6 +4359,7 @@ function reserveClassNames(statements: JSStatement[], scope: IdentifierScope): v
       case 'g2d:defineShape':
       case 'g2d:everyFrames':
       case 'g2d:everySeconds':
+      case 'g2d:afterSeconds':
       case 'g3d:animate':
       case 'g3d:forEachInSwarm':
       case 'g3d:forEachInGroup':
@@ -4378,6 +4422,7 @@ function reserveCanvasElements(statements: JSStatement[], scope: IdentifierScope
       case 'g2d:defineShape':
       case 'g2d:everyFrames':
       case 'g2d:everySeconds':
+      case 'g2d:afterSeconds':
       case 'g3d:animate':
       case 'g3d:forEachInSwarm':
       case 'g3d:forEachInGroup':
@@ -4876,6 +4921,10 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       names.add(stmt.groupVar)
       names.add(stmt.ctxVar)
       return
+    case 'g2d:drawGroupByY':
+      names.add(stmt.groupVar)
+      names.add(stmt.ctxVar)
+      return
     case 'g2d:forEachInGroup':
       names.add(stmt.groupVar)
       names.add(stmt.itemName)
@@ -4905,6 +4954,14 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g2d:everySeconds':
       collectExprIdentifiers(valueToExpr(stmt.seconds), names)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g2d:afterSeconds':
+      collectExprIdentifiers(valueToExpr(stmt.seconds), names)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g2d:setHitboxScale':
+      names.add(stmt.spriteVar)
+      collectExprIdentifiers(valueToExpr(stmt.percent), names)
       return
     case 'g2d:spawnBullet':
       names.add(stmt.groupVar)

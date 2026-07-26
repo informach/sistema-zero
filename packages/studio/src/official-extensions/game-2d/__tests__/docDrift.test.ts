@@ -158,7 +158,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   it('a contagem de blocos está travada (remoção acidental salta aqui)', () => {
-    expect(gameTwoDBlocks.length).toBe(206)
+    expect(gameTwoDBlocks.length).toBe(209)
   })
 
   it('mantém o inventário da auditoria sincronizado com blocos e API reais', () => {
@@ -208,6 +208,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
       'sz_g2d_touches',
       'sz_g2d_collides',
       'sz_g2d_circle_collides',
+      'sz_g2d_set_hitbox_scale',
       'sz_g2d_collide_group',
       'sz_g2d_collide_sprite',
       'sz_g2d_on_group_overlap',
@@ -217,6 +218,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
       'sz_g2d_update_each_frame',
       'sz_g2d_every_frames',
       'sz_g2d_every_seconds',
+      'sz_g2d_after_seconds',
       'sz_g2d_cooldown_ready',
       'sz_g2d_prune_old',
     ])

@@ -486,7 +486,7 @@ export const gameKitBlockDefinitions01: BlockDefinition[] = [
     ],
     output: 'JSValue',
     colour: C,
-    tooltip: 'Verdadeiro enquanto os dois personagens estão se tocando. Use dentro de um "se".',
+    tooltip: 'Verdadeiro enquanto os dois personagens estão se encostando. Use dentro de um "se".',
   },
 
   {

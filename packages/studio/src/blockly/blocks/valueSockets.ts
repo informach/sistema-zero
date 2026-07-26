@@ -103,6 +103,8 @@ export const VALUE_SOCKETS: Record<string, Record<string, number>> = {
   sz_t3d_lerp_position: { ALPHA: 0.1, DT: 1 / 60 },
   sz_t3d_set_intensity: { N: 1 },
   sz_t3d_set_fog: { NEAR: 10, FAR: 100 },
+  sz_t3d_debug_grid: { SIZE: 10, DIV: 10 },
+  sz_t3d_debug_axes: { SIZE: 5 },
   sz_t3d_set_matrix_at: { I: 0 },
   sz_t3d_renderer_size: { W: 800, H: 600 },
   sz_t3d_camera_create: { FOV: 60, NEAR: 0.1, FAR: 1000 },

@@ -135,7 +135,8 @@ function unwrapGeneratedPeriodicLoops(statements: JSStatement[]): JSStatement[] 
       statement.type === 'g2d:updateEachFrame' &&
       statement.body.length === 1 &&
       (statement.body[0]?.type === 'g2d:everyFrames' ||
-        statement.body[0]?.type === 'g2d:everySeconds')
+        statement.body[0]?.type === 'g2d:everySeconds' ||
+        statement.body[0]?.type === 'g2d:afterSeconds')
     ) {
       return [statement.body[0]]
     }

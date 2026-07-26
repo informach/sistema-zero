@@ -479,11 +479,38 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   }
 
   /**
-   * Colisão retangular simples (AABB).
+   * Dial da "colisão perdoadora": percentual do tamanho usado nas PERGUNTAS de
+   * encostar (menor = mais justo para dano; maior = mais fácil de pegar).
+   * A física de empurrar (collideGroup/collideSprite/collideTileMap) ignora o
+   * fator de propósito — hitbox menor afundaria o sprite em chão e paredes.
+   */
+  function setHitboxScale(s, percent) {
+    if (!s) return;
+    var p = _finiteNumber(percent, 100);
+    s._hitboxScale = Math.min(3, Math.max(0.1, p / 100));
+  }
+  /** Caixa EFETIVA de colisão do sprite: o retângulo escalado pelo fator, centrado. */
+  function _hitboxOf(s) {
+    var scale = _positiveFiniteNumber(s._hitboxScale, 1);
+    if (scale === 1) return s;
+    var w = _finiteNumber(s.w, 0) * scale;
+    var h = _finiteNumber(s.h, 0) * scale;
+    return {
+      x: _finiteNumber(s.x, 0) + (_finiteNumber(s.w, 0) - w) / 2,
+      y: _finiteNumber(s.y, 0) + (_finiteNumber(s.h, 0) - h) / 2,
+      w: w,
+      h: h,
+    };
+  }
+  /**
+   * Colisão retangular simples (AABB) sobre a caixa EFETIVA (respeita o dial
+   * de "usar área de colisão de N%").
    */
   function isColliding(a, b) {
     if (!a || !b) return false;
-    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+    var ea = _hitboxOf(a);
+    var eb = _hitboxOf(b);
+    return ea.x < eb.x + eb.w && ea.x + ea.w > eb.x && ea.y < eb.y + eb.h && ea.y + ea.h > eb.y;
   }
 
   _registerRuntimeDomain('sprites', {

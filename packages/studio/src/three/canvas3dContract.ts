@@ -71,6 +71,10 @@ export const CANVAS3D_BLOCK_TYPES = [
   'sz_t3d_physics_raycast',
   'sz_t3d_physics_body_state',
   'sz_t3d_physics_stats',
+  'sz_t3d_debug_grid',
+  'sz_t3d_debug_axes',
+  'sz_t3d_set_wireframe',
+  'sz_t3d_object_count',
 ] as const
 
 export type Canvas3DBlockType = (typeof CANVAS3D_BLOCK_TYPES)[number]
@@ -479,6 +483,10 @@ export const CANVAS3D_INTERMEDIATE_BLOCK_TYPES: readonly Canvas3DBlockType[] = [
   'sz_t3d_physics_raycast',
   'sz_t3d_physics_body_state',
   'sz_t3d_physics_stats',
+  'sz_t3d_debug_grid',
+  'sz_t3d_debug_axes',
+  'sz_t3d_set_wireframe',
+  'sz_t3d_object_count',
 ]
 
 export const CANVAS3D_START_ONLY_BLOCK_TYPES: readonly Canvas3DBlockType[] = [

@@ -417,6 +417,29 @@ function recognizeT3dCall(
     ])
     if (vs) return block('sz_t3d_look_at', { OBJ: objVar.name }, {}, stmt.__id, vs)
   }
+  // cena.add(new THREE.GridHelper(tam, div)) / cena.add(new THREE.AxesHelper(tam))
+  // ANTES do add genérico, senão o sz_t3d_add_to captura primeiro.
+  if (
+    method === 'add' &&
+    args.length === 1 &&
+    objVar &&
+    hasCanvas3DSymbol(objVar.name, 'object3d')
+  ) {
+    const helper = args[0] as JSExpr
+    if (helper.type === 'newExpr' && helper.namespace === 'THREE') {
+      if (helper.className === 'GridHelper' && helper.args.length === 2) {
+        const vs = valueSocketsOf([
+          ['SIZE', helper.args[0] as JSExpr],
+          ['DIV', helper.args[1] as JSExpr],
+        ])
+        if (vs) return block('sz_t3d_debug_grid', { TARGET: objVar.name }, {}, stmt.__id, vs)
+      }
+      if (helper.className === 'AxesHelper' && helper.args.length === 1) {
+        const vs = valueSocketsOf([['SIZE', helper.args[0] as JSExpr]])
+        if (vs) return block('sz_t3d_debug_axes', { TARGET: objVar.name }, {}, stmt.__id, vs)
+      }
+    }
+  }
   // cena.add(objeto)
   if (
     method === 'add' &&
@@ -541,6 +564,20 @@ function recognizeT3dSet(
         return block('sz_t3d_rotate_axis', { OBJ: rotOwner.name, AXIS: name }, {}, stmt.__id, vs)
       }
     }
+  }
+  // material.wireframe = true/false
+  if (
+    name === 'wireframe' &&
+    objVar &&
+    hasCanvas3DSymbol(objVar.name, 'color-target3d') &&
+    value.type === 'bool'
+  ) {
+    return block(
+      'sz_t3d_set_wireframe',
+      { OBJ: objVar.name, VAL: value.value ? 'true' : 'false' },
+      {},
+      stmt.__id,
+    )
   }
   // obj.visible = true/false
   if (
@@ -1728,6 +1765,8 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
       return block('sz_g2d_update_group_no_gravity', { GROUP: stmt.groupVar }, {}, stmt.__id)
     case 'g2d:drawGroup':
       return block('sz_g2d_draw_group', { GROUP: stmt.groupVar }, {}, stmt.__id)
+    case 'g2d:drawGroupByY':
+      return block('sz_g2d_draw_group_by_y', { GROUP: stmt.groupVar }, {}, stmt.__id)
     case 'g2d:forEachInGroup':
       return block(
         'sz_g2d_for_each_in_group',
@@ -1771,6 +1810,22 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
         ? rawJSBlock(stmt)
         : block('sz_g2d_every_seconds', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
             SECS: secs,
+          })
+    }
+    case 'g2d:afterSeconds': {
+      const secs = exprToValueBlock(valueToExpr(stmt.seconds))
+      return secs === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_after_seconds', {}, { BODY: statementsToBlocks(stmt.body) }, stmt.__id, {
+            SECS: secs,
+          })
+    }
+    case 'g2d:setHitboxScale': {
+      const percent = exprToValueBlock(valueToExpr(stmt.percent))
+      return percent === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_set_hitbox_scale', { SPRITE: stmt.spriteVar }, {}, stmt.__id, {
+            PERCENT: percent,
           })
     }
     case 'g2d:drawScore': {
@@ -7646,6 +7701,15 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
       return b
     }
     case 'memberGet': {
+      // `cena.children.length` num projeto three → "quantos objetos tem em cena".
+      // ANTES do genérico, senão a leitura vira dois memberGet encadeados.
+      if (expr.name === 'length' && !expr.optional) {
+        const childrenProp = asMemberGet(expr.object, 'children')
+        const owner = childrenProp && asVar(childrenProp.object)
+        if (owner && hasCanvas3DSymbol(owner.name, 'object3d')) {
+          return block('sz_t3d_object_count', { TARGET: owner.name }, {}, expr.__id)
+        }
+      }
       const obj = exprToValueBlock(expr.object)
       if (!obj) return null
       const type = expr.optional ? 'sz_val_member_get_optional' : 'sz_val_member_get'

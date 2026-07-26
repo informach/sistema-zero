@@ -892,7 +892,7 @@ export const gameKit3DBlocks = [
   },
   {
     type: 'sz_g3k_touches',
-    message0: '%1 encostou em %2 (a menos de %3) ?',
+    message0: '%1 está encostando em %2 (a menos de %3) ?',
     args0: [
       { type: 'field_name_picker', name: 'A', text: 'ela', kind: 'entity3d' },
       { type: 'field_name_picker', name: 'B', text: 'heroi', kind: 'entity3d' },
@@ -902,7 +902,7 @@ export const gameKit3DBlocks = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Verdadeiro quando as duas entidades estão a menos dessa distância uma da outra. É a colisão dos jogos 3D. Use dentro de um "se".',
+      'Verdadeiro enquanto as duas entidades estão a menos dessa distância uma da outra. É a colisão dos jogos 3D. Use dentro de um "se".',
   },
 
   // ---- ❤️ Combate ----

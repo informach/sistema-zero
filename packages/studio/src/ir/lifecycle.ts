@@ -24,6 +24,7 @@ export const PERIODIC_STATEMENT_TYPES = new Set([
   'setIntervalSeconds',
   'g2d:everyFrames',
   'g2d:everySeconds',
+  'g2d:afterSeconds',
   'gk:everySeconds',
 ])
 

@@ -2412,6 +2412,8 @@ export type JSStatement =
   // Move o grupo sem gravidade (tiros do jogador num jogo com gravidade).
   | (JSStatementCommon & { type: 'g2d:updateGroupNoGravity'; groupVar: string })
   | (JSStatementCommon & { type: 'g2d:drawGroup'; groupVar: string; ctxVar: string })
+  // Desenho com profundidade top-down: ordena a CÓPIA do grupo pela base (y+h).
+  | (JSStatementCommon & { type: 'g2d:drawGroupByY'; groupVar: string; ctxVar: string })
   | (JSStatementCommon & {
       type: 'g2d:forEachInGroup'
       groupVar: string
@@ -2441,6 +2443,18 @@ export type JSStatement =
       type: 'g2d:everySeconds'
       seconds: number | JSExpr
       body: JSStatement[]
+    })
+  // Temporizador one-shot: "depois de N segundos, fazer" — roda UMA vez por partida.
+  | (JSStatementCommon & {
+      type: 'g2d:afterSeconds'
+      seconds: number | JSExpr
+      body: JSStatement[]
+    })
+  // Colisão perdoadora: fator da hitbox (percentual do tamanho, centrado).
+  | (JSStatementCommon & {
+      type: 'g2d:setHitboxScale'
+      spriteVar: string
+      percent: number | JSExpr
     })
   // HUD no canvas (v0.6.0): placar, texto, vidas (corações) e barra.
   | (JSStatementCommon & {
@@ -6307,6 +6321,12 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     z.object({
+      type: z.literal('g2d:drawGroupByY'),
+      groupVar: irText(),
+      ctxVar: irText(),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('g2d:forEachInGroup'),
       groupVar: irText(),
       itemName: irText(),
@@ -6347,6 +6367,18 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       type: z.literal('g2d:everySeconds'),
       seconds: z.union([JSExprSchema, z.number()]),
       body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:afterSeconds'),
+      seconds: z.union([JSExprSchema, z.number()]),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:setHitboxScale'),
+      spriteVar: irText(),
+      percent: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
     z.object({
@@ -11122,6 +11154,7 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:updateGroup',
   'g2d:updateGroupNoGravity',
   'g2d:drawGroup',
+  'g2d:drawGroupByY',
   'g2d:forEachInGroup',
   'g2d:clearGroup',
   'g2d:pruneOffscreen',
@@ -11129,6 +11162,8 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:removeFromGroup',
   'g2d:everyFrames',
   'g2d:everySeconds',
+  'g2d:afterSeconds',
+  'g2d:setHitboxScale',
   'g2d:drawScore',
   'g2d:drawLabel',
   'g2d:drawHearts',

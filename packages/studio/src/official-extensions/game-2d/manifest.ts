@@ -21,7 +21,7 @@ import { withGameTwoDLifecycleGuidance } from './pedagogy'
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.42.0',
+  version: '0.43.0',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, vidas automáticas em corações ou barra, colisões, mapas, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
@@ -76,6 +76,11 @@ existe apenas para migrar projetos salvos e não aparece na paleta.
   pulo no chão e inimigos terrestres respeitam o mesmo valor.
 - **Ricochetear nas bordas**. Quica o sprite nas bordas do canvas.
 - **Colisão por círculo**. Colisão mais justa para objetos redondos.
+- **Usar área de colisão de N% do tamanho**. O dial da colisão PERDOADORA: menor que
+  100% = mais justo para DANO (os cantos vazios do desenho não punem); maior = mais
+  fácil de PEGAR (moedas). Vale para todas as perguntas de encostar (retângulo e
+  círculo); \`Impedir de atravessar\` continua usando o tamanho cheio (senão o sprite
+  afundaria em chão e paredes). Veja a área real com **Mostrar a caixa de colisão**.
 - **Tocar som**. Bip sintetizado via Web Audio (sem arquivos). Permissão \`audio\`.
 - **Quando clicar/tocar**. Roda um bloco com a posição do ponteiro. Permissão \`mouse\`.
 
@@ -139,12 +144,16 @@ Para jogos com MUITOS sprites (tiros, inimigos, estrelas) e telas de início/vit
   aleatório), \`Atualizar/Desenhar o grupo\`, \`Para cada sprite do grupo\`, \`quantos
   sprites tem no grupo\`, \`Esvaziar/Tirar do grupo\`, \`Tirar do grupo quem sair da tela\`.
   Há também \`Mover o grupo sem gravidade\`. Para os TIROS do jogador num jogo COM
-  gravidade (senão os tiros arqueiam para baixo em vez de ir reto).
+  gravidade (senão os tiros arqueiam para baixo em vez de ir reto). Para jogos vistos de
+  cima (estilo aventura), \`Desenhar o grupo … ordenado pela base\` desenha quem está mais
+  para baixo na frente: o herói passa ATRÁS da árvore.
 - **Colisões com grupos**. \`Quando um sprite do grupo A encostar num do grupo B\` roda o
   "fazer" com os dois sprites; \`Para cada sprite do grupo que encostar no sprite\`
   compara um sprite com qualquer grupo. Os dois ficam em **💥 Colisões** e são usados dentro
   do "a cada quadro".
-- **Temporizadores**. \`A cada N quadros/segundos fazer\` (ótimo para criar inimigos). Essas raízes rodam em todas as telas; coloque \`se a tela atual é jogando?\` dentro delas quando o comando só deve acontecer durante a partida.
+- **Temporizadores**. \`A cada N quadros/segundos fazer\` (ótimo para criar inimigos) e
+  \`Depois de N segundos fazer\` (roda UMA vez por partida: mensagem de abertura, chegada
+  do chefe; reiniciar o jogo re-arma). Essas raízes rodam em todas as telas; coloque \`se a tela atual é jogando?\` dentro delas quando o comando só deve acontecer durante a partida.
 - **HUD no canvas**. \`Mostrar placar\`, \`Escrever\` e \`Barra de … / …\`. Esses textos também são anunciados por leitores de tela, e a troca de cena limpa os valores da tela anterior. Para vidas, prefira **Desenhar as vidas do sprite** em **❤️ Vida**: escolha corações ou barra e o bloco lê o sprite sozinho.
 - **Telas/cenas**. \`Ir para a tela\` e \`a tela atual é … ?\` aceitam tanto os
   nomes prontos quanto nomes inventados (como \`ganhou1\`); \`Mostrar tela (título/subtítulo/dica)\`,

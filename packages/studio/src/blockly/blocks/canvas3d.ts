@@ -1472,6 +1472,75 @@ export const CANVAS3D_BLOCKS: BlockDefinition[] = [
     colour: C,
     tooltip: 'Obtém contagens e limites do mundo para diagnóstico de desempenho.',
   },
+
+  // ───────────────────────── 🔍 Depurar ───────────────────────────────
+  {
+    // `alvo.add(new THREE.GridHelper(tam, div))` — chão de referência.
+    type: 'sz_t3d_debug_grid',
+    placement: 'command',
+    message0: 'adicionar chão quadriculado (tamanho %1, divisões %2) em %3',
+    args0: [
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
+      { type: 'input_value', name: 'DIV', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'cena', kind: 'object3d' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Um chão quadriculado de referência (GridHelper) para você se localizar no espaço enquanto monta a cena. Tire quando o cenário de verdade chegar.',
+  },
+  {
+    // `alvo.add(new THREE.AxesHelper(tam))` — setas dos três eixos.
+    type: 'sz_t3d_debug_axes',
+    placement: 'command',
+    message0: 'adicionar setas dos eixos (tamanho %1) em %2',
+    args0: [
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
+      { type: 'field_name_picker', name: 'TARGET', text: 'cena', kind: 'object3d' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Três setas coloridas (AxesHelper) mostrando os eixos: X vermelho (largura), Y verde (altura), Z azul (profundidade).',
+  },
+  {
+    // `material.wireframe = true/false` — o raio-X da malha.
+    type: 'sz_t3d_set_wireframe',
+    placement: 'command',
+    message0: 'mostrar %1 só as linhas: %2',
+    args0: [
+      { type: 'field_name_picker', name: 'OBJ', text: 'material', kind: 'color-target3d' },
+      {
+        type: 'field_dropdown',
+        name: 'VAL',
+        options: [
+          ['ligado', 'true'],
+          ['desligado', 'false'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Liga o modo esqueleto do material (wireframe): você vê os pontos e as linhas que formam a malha. É o raio-X da forma 3D.',
+  },
+  {
+    // Valor: `cena.children.length` — contagem dos filhos diretos.
+    type: 'sz_t3d_object_count',
+    message0: 'quantos objetos tem em %1',
+    args0: [{ type: 'field_name_picker', name: 'TARGET', text: 'cena', kind: 'object3d' }],
+    inputsInline: true,
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Conta o que foi adicionado direto na cena (ou em um grupo): os filhos. Se esse número só cresce, o jogo está criando sem remover.',
+  },
 ]
 
 export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[] = [
@@ -1582,6 +1651,16 @@ export const CANVAS3D_GROUPS: { name: string; colour: string; types: string[] }[
       'sz_t3d_physics_raycast',
       'sz_t3d_physics_body_state',
       'sz_t3d_physics_stats',
+    ],
+  },
+  {
+    name: '🔍 Depurar',
+    colour: C,
+    types: [
+      'sz_t3d_debug_grid',
+      'sz_t3d_debug_axes',
+      'sz_t3d_set_wireframe',
+      'sz_t3d_object_count',
     ],
   },
 ]

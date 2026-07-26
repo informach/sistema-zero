@@ -78,6 +78,8 @@ export interface GameTwoDSprite {
   onGround?: boolean
   blinkFrames?: number
   _cooldowns?: Record<string, number>
+  /** Dial da colisão perdoadora: fator da hitbox (1 = tamanho cheio). */
+  _hitboxScale?: number
 }
 
 export interface GameTwoDGroup<TSprite extends GameTwoDSprite = GameTwoDSprite> {
@@ -183,6 +185,7 @@ export interface GameTwoDSpriteApi {
   createSprite(options?: GameTwoDSpriteOptions): GameTwoDSprite
   drawSprite(ctx: GameTwoDContext, sprite: GameTwoDSprite): void
   isColliding(a: GameTwoDSprite, b: GameTwoDSprite): boolean
+  setHitboxScale(sprite: GameTwoDSprite, percent: number): void
   loadImage(source: string): GameTwoDImageHandle | null
   loadSpriteSheet(name: string, frameWidth: number, frameHeight: number): GameTwoDSpriteSheet
   setImage(sprite: GameTwoDSprite, name: string | null): void
@@ -388,6 +391,7 @@ export interface GameTwoDWorldApi {
   updateGroup(group: GameTwoDGroup): void
   updateGroupNoGravity(group: GameTwoDGroup): void
   drawGroup(ctx: GameTwoDContext, group: GameTwoDGroup): void
+  drawGroupByY(ctx: GameTwoDContext, group: GameTwoDGroup): void
   forEachInGroup(group: GameTwoDGroup, fn: (sprite: GameTwoDSprite, index: number) => void): void
   countGroup(group: GameTwoDGroup): number
   clearGroup(group: GameTwoDGroup): void
@@ -405,6 +409,7 @@ export interface GameTwoDWorldApi {
   ): void
   everyFrames(key: string, frames: number): boolean
   everySeconds(key: string, seconds: number): boolean
+  afterSeconds(key: string, seconds: number): boolean
 }
 
 export interface GameTwoDHudAndSceneApi {
@@ -594,6 +599,7 @@ export const GAME_TWO_D_API_KEYS = [
   'arrowsX',
   'blink',
   'isColliding',
+  'setHitboxScale',
   'onStart',
   'gameLoop',
   'keys',
@@ -699,6 +705,7 @@ export const GAME_TWO_D_API_KEYS = [
   'updateGroup',
   'updateGroupNoGravity',
   'drawGroup',
+  'drawGroupByY',
   'forEachInGroup',
   'countGroup',
   'clearGroup',
@@ -707,6 +714,7 @@ export const GAME_TWO_D_API_KEYS = [
   'overlapGroups',
   'everyFrames',
   'everySeconds',
+  'afterSeconds',
   'drawScore',
   'drawLabel',
   'drawHearts',
@@ -804,6 +812,7 @@ const GAME_TWO_D_API_EXPRESSION_OVERRIDES: Partial<Record<GameTwoDApiKey, string
   drawParticles: '_camWrap(drawParticles)',
   drawTileMap: '_camWrap(drawTileMap)',
   drawGroup: '_camWrap(drawGroup)',
+  drawGroupByY: '_camWrap(drawGroupByY)',
   drawEnemyType: '_camWrap(drawEnemyType)',
 }
 

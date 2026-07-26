@@ -87,6 +87,7 @@ const CALLBACK_BODY_EXECUTION: ReadonlyMap<string, CallbackBodyExecution> = new 
     'g2d:defineShape',
     'g2d:everyFrames',
     'g2d:everySeconds',
+    'g2d:afterSeconds',
 
     // Jogo 2D avançado.
     'gk:addButton',

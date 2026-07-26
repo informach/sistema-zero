@@ -311,7 +311,9 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
     c.save();
     c.strokeStyle = '#ff2d95';
     c.lineWidth = 2;
-    c.strokeRect(s.x, s.y, s.w || 0, s.h || 0);
+    // Desenha a caixa EFETIVA (com o dial de N%) — o raio-X da colisão perdoadora.
+    var box = _hitboxOf(s);
+    c.strokeRect(box.x, box.y, box.w || 0, box.h || 0);
     c.restore();
     if (camOn) c.restore();
   }

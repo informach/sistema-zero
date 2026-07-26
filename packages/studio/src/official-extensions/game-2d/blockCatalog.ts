@@ -189,6 +189,21 @@ export const gameTwoDBlocks = [
     colour: C,
     tooltip: 'Colisão por círculo (mais justa para objetos redondos que a caixa retangular).',
   },
+  {
+    type: 'sz_g2d_set_hitbox_scale',
+    placement: 'command',
+    message0: 'Usar área de colisão de %1 % do tamanho para o sprite %2',
+    args0: [
+      { type: 'input_value', name: 'PERCENT', check: 'JSValue' },
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'jogador' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Muda o tamanho da área de colisão do sprite: menor que 100% = colisão mais justa para DANO; maior = mais fácil de PEGAR (moedas). Vale para as perguntas de encostar; "impedir de atravessar" continua usando o tamanho cheio. Veja a área real com "Mostrar a caixa de colisão".',
+  },
 
   // ---- Áudio ----
   {
@@ -1001,7 +1016,7 @@ export const gameTwoDBlocks = [
     ],
     output: 'JSValue',
     colour: EVENT_C,
-    tooltip: 'Verdadeiro enquanto os dois sprites estão se tocando. Use dentro de um "se".',
+    tooltip: 'Verdadeiro enquanto os dois sprites estão se encostando. Use dentro de um "se".',
   },
 
   // ---- Imagens / spritesheet / animação (v0.3.0) ----
@@ -1632,6 +1647,17 @@ export const gameTwoDBlocks = [
     tooltip: 'Desenha todos os sprites do grupo. Use a cada quadro, depois de mover.',
   },
   {
+    type: 'sz_g2d_draw_group_by_y',
+    placement: 'command',
+    message0: 'Desenhar o grupo %1 ordenado pela base',
+    args0: [{ type: 'field_name_picker', name: 'GROUP', text: 'cenario', kind: 'group' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha o grupo do fundo para a frente: quem tem a BASE (o pé) mais para baixo na tela aparece na frente. É a profundidade dos jogos vistos de cima (o herói passa ATRÁS da árvore).',
+  },
+  {
     type: 'sz_g2d_for_each_in_group',
     placement: 'command',
     bodyExecution: 'sync-callback',
@@ -1751,6 +1777,20 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: EVENT_C,
     tooltip: GAME_TWO_D_PERIODIC_TOOLTIPS.seconds,
+  },
+  {
+    type: 'sz_g2d_after_seconds',
+    placement: 'loop-periodic',
+    migration: 'lift-periodic-loop',
+    message0: 'Depois de %1 segundos',
+    args0: [{ type: 'input_value', name: 'SECS', check: 'JSValue' }],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: EVENT_C,
+    tooltip: GAME_TWO_D_PERIODIC_TOOLTIPS.after,
   },
 
   // ---- HUD no canvas: placar, texto, vidas e barra (v0.6.0) ----

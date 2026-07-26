@@ -15,6 +15,7 @@ export const GAME_TWO_D_AREAS = {
 export const GAME_TWO_D_PERIODIC_TOOLTIPS = {
   frames: `Roda o “fazer” de tempos em tempos, a cada N quadros. É uma raiz de “${GAME_TWO_D_AREAS.loop}”; não encaixe dentro de “A cada quadro”. A raiz roda em todas as telas: para criar algo só durante a partida, coloque “se a tela atual é jogando?” dentro do “fazer”.`,
   seconds: `Roda o “fazer” a cada N segundos. É uma raiz de “${GAME_TWO_D_AREAS.loop}”; não encaixe dentro de “A cada quadro”. A raiz roda em todas as telas: para criar algo só durante a partida, coloque “se a tela atual é jogando?” dentro do “fazer”.`,
+  after: `Espera N segundos depois que o jogo começa (ou reinicia) e roda o “fazer” UMA vez só. É uma raiz de “${GAME_TWO_D_AREAS.loop}”; não encaixe dentro de “A cada quadro”. Para repetir sempre, use “A cada N segundos”.`,
 } as const
 
 export const GAME_TWO_D_LIFECYCLE_GUIDANCE = {

@@ -38,10 +38,14 @@ const SCENE = [
   'cube.castShadow = true;',
   'cube.receiveShadow = false;',
   'cube.visible = true;',
+  'mat.wireframe = false;',
   'scene.add(cube);',
   'const light = new THREE.DirectionalLight();',
   'light.intensity = 2;',
   'scene.add(light);',
+  'scene.add(new THREE.GridHelper(10, 10));',
+  'scene.add(new THREE.AxesHelper(5));',
+  'const total = scene.children.length;',
   'function animate() {',
   '  cube.rotation.y += 0.01;',
   '  renderer.render(scene, camera);',
@@ -66,10 +70,14 @@ const ALL_FACILITATORS = [
   'sz_t3d_set_intensity',
   'sz_t3d_rotate_axis',
   'sz_t3d_render',
+  'sz_t3d_set_wireframe',
+  'sz_t3d_debug_grid',
+  'sz_t3d_debug_axes',
+  'sz_t3d_object_count',
 ]
 
 describe('Canvas 3D — facilitadores (round-trip completo)', () => {
-  it('a cena inteira: 0 raw, usa os 14 blocos amigáveis e regenera o MESMO código', () => {
+  it('a cena inteira: 0 raw, usa todos os blocos amigáveis e regenera o MESMO código', () => {
     ensureBlocklyInitialized()
     const code = generateJS({ statements: parseJS(SCENE) }) // forma canônica
     // fixpoint textual do parser/gerador (independe do SCENE já ser canônico)

@@ -12,7 +12,7 @@ import {
 export const gameKit3DManifest: ExtensionManifest = {
   id: 'game-3d-advanced',
   name: 'Jogo 3D Avançado',
-  version: '0.9.0',
+  version: '0.10.0',
   description:
     'A base de um jogo 3D profissional, portada de um curso de engine. Um SANDBOX 3D completo. Entidades com máquina de estados que ANIMA o boneco .glb sozinha; física por TIPO (bola quica, personagem não, gelo escorrega) com pulo, rampas e plataformas; peças, modelos, luz e névoa; câmera que segue/orbita/1ª pessoa com zoom, tremor e WASD relativo a ela; partículas; enxames com pool; vizinhança por grade; combate com chefões, fala, cronômetro, sorteio semeado, HUD e música.',
   category: 'games',
@@ -78,7 +78,7 @@ O que o motor já faz por você:
 A torre profissional funciona assim, e você monta igual, em blocos:
 
 - No estado **parado**: guardar em \`alvo\` quem do molde invasor está mais
-  perto; se o alvo existe e encostou (a menos de 14) → mudar para **mirar**.
+  perto; se o alvo existe e está encostando (a menos de 14) → mudar para **mirar**.
 - No estado **mirar**: fazer mirar em \`alvo\` (suave); se "já está mirando?"
   → mudar para **atirar**.
 - Ao entrar em **atirar**: nascer 1 tiro "no lugar dela (virado igual)",

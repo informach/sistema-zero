@@ -80,7 +80,10 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
   /** Colisão por círculo: distância dos centros < soma dos raios (≈ metade do lado). */
   function circleCollides(a, b) {
     if (!a || !b) return false;
-    var ar = Math.min(a.w, a.h) / 2, br = Math.min(b.w, b.h) / 2;
+    // O raio respeita o dial "usar área de colisão de N%"; os centros não mudam.
+    var aScale = _positiveFiniteNumber(a._hitboxScale, 1);
+    var bScale = _positiveFiniteNumber(b._hitboxScale, 1);
+    var ar = (Math.min(a.w, a.h) / 2) * aScale, br = (Math.min(b.w, b.h) / 2) * bScale;
     var dx = (a.x + a.w / 2) - (b.x + b.w / 2);
     var dy = (a.y + a.h / 2) - (b.y + b.h / 2);
     return Math.sqrt(dx * dx + dy * dy) < ar + br;

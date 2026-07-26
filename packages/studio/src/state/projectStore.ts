@@ -1696,6 +1696,7 @@ function countJSStatement(statement: JSStatement): number {
     case 'g2d:defineShape':
     case 'g2d:everyFrames':
     case 'g2d:everySeconds':
+    case 'g2d:afterSeconds':
     case 'g3d:animate':
       return 1 + statement.body.reduce((total, child) => total + countJSStatement(child), 0)
     case 'g2d:spawnInGroup':

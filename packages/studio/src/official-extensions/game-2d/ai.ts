@@ -34,6 +34,11 @@ API global injetada como window.SZGame2D:
   jumpOnGround e inimigos terrestres respeitam o mesmo valor.
 - bounceOnEdges(sprite, ctx): quica nas bordas do canvas.
 - circleCollides(a, b): colisão por círculo.
+- setHitboxScale(sprite, percent): dial da colisão PERDOADORA — a área usada nas perguntas de
+  encostar vira percent% do tamanho, centrada (menor = mais justo p/ DANO; maior = mais fácil
+  de PEGAR). Vale p/ touches/onOverlap/overlapGroups/circleCollides; a física de EMPURRAR
+  (collideGroup/collideSprite/collideTileMap) usa o tamanho cheio de propósito. drawHitbox
+  mostra a área efetiva. Bloco "Usar área de colisão de N% do tamanho".
 - playSound(freq, ms): bip sintetizado (Web Audio).
 - playFx("coin"|"jump"|"laser"|"explosion"|"hit"|"hurt"|"powerup"|"levelup"|"win"|"gameover"|"click"|"confirm"|"error"|"coin"|...): efeito sonoro PRONTO por nome (sintetizado, sem arquivo). Veja a lista completa no bloco "Tocar efeito".
 - playNote("C"|"D"|"E"|"F"|"G"|"A"|"B"|"C5", ms): toca uma nota musical (dó ré mi…); junte várias para uma melodia.
@@ -155,6 +160,10 @@ criar um por um. Um grupo é uma lista gerenciada de sprites:
 - createGroup() -> { items: [] }: cria um grupo vazio (guarde numa variável).
 - spawn(grupo, { x, y, w, h, color | image, vx, vy }): cria um sprite e coloca no grupo (devolve o sprite). Use x/y com número aleatório para nascer em lugares diferentes. Teto de 400 por grupo.
 - updateGroup(grupo): move cada sprite pela velocidade (vx/vy); drawGroup(ctx, grupo): desenha todos.
+- drawGroupByY(ctx, grupo): desenha o grupo ordenado pela BASE (y+h) — quem está mais para baixo
+  na tela fica na FRENTE (profundidade de jogo top-down: o herói passa atrás da árvore). Ordena
+  uma cópia; a ordem lógica do grupo (trazer p/ frente/fundo) não muda. Bloco "Desenhar o grupo
+  ordenado pela base".
 - updateGroupNoGravity(grupo): move cada sprite pela velocidade SEM somar gravidade — para os TIROS do
   jogador num jogo COM gravidade (senão os tiros arqueiam). Bloco "Mover o grupo sem gravidade".
 - forEachInGroup(grupo, function (sprite) {…}): roda o corpo para cada sprite (ordem reversa, pode remover no corpo).
@@ -163,6 +172,7 @@ criar um por um. Um grupo é uma lista gerenciada de sprites:
 - overlapGroups(a, b, function (sa, sb) {…}): para cada par (um de cada grupo) que se encosta, roda o corpo com os dois sprites (use DENTRO do gameLoop). NÃO confundir com onOverlap (que é 1 sprite × 1 sprite).
 - overlapSpriteGroup(() => sprite, grupo, (item) => {…}): genérico — para cada item do grupo que encosta no sprite, roda o corpo (ex.: coletar moeda ou tirar vida). Fica em “💥 Colisões” e deve ser usado no gameLoop.
 - everyFrames("chave", N) / everySeconds("chave", S): mecanismos internos usados pelas raízes “A cada N quadros/segundos”. No projeto da criança, essas raízes ficam diretamente em “🔁 Enquanto estiver rodando”, nunca dentro de outro gameLoop. Elas continuam rodando nas telas de início, vitória e derrota; para criar objetos apenas durante a partida, coloque um “se a tela atual é jogando?” dentro da raiz periódica.
+- afterSeconds("chave", S): mecanismo interno da raiz “Depois de N segundos fazer” — one-shot: roda o corpo UMA vez por partida, S segundos depois do início (reiniciar o jogo re-arma). Para repetição use everySeconds. Mesma regra de raiz: fica direto em “🔁 Enquanto estiver rodando”.
 
 Para um jogo de tiro (nave × asteroides): crie 2 grupos (tiros, asteroides); numa raiz “A cada N quadros”, teste se a tela atual é “jogando” e só então crie um asteroide com x aleatório e vy positivo. No “A cada quadro” da partida, use updateGroup + drawGroup nos dois; overlapGroups(tiros, asteroides, …) para somar ponto e remover os dois; pruneOffscreen no grupo de asteroides para perder vida quando um escapa.
 
