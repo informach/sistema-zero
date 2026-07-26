@@ -961,7 +961,9 @@ export const gameTwoDWorldRuntime = `  // ---- Tiles / tilemaps (v0.5.0) ----
   // O reset do domínio zera o mapa, então reiniciar o jogo re-arma o timer.
   var onceTimers = Object.create(null);
   function afterSeconds(key, secs) {
-    var delay = _positiveFiniteNumber(secs, 1) * 1000;
+    // Aceita 0 (dispara no 1º quadro após começar); só cai no default 1s para
+    // valor inválido (NaN/negativo). "Depois de 0 segundos" = quase imediato.
+    var delay = (_isFiniteNumber(secs) && secs >= 0 ? secs : 1) * 1000;
     var state = onceTimers[key];
     if (state === 'done') return false;
     var t = now();

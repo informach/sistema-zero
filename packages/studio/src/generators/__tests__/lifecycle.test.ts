@@ -113,4 +113,47 @@ describe('fábrica e boot do ciclo de vida', () => {
       parseProjectFiles(advancedFiles).behavior.loops.map((statement) => statement.type),
     ).toEqual(['gk:everySeconds'])
   })
+
+  const FIXED_STEP_COMMENT = 'O jogo roda 60 passos por segundo'
+
+  it('comenta o passo fixo uma vez só quando há raiz de loop do Jogo 2D, e some no roundtrip', () => {
+    const game2d: SZIRV2 = {
+      version: 2,
+      html: [],
+      css: [],
+      behavior: {
+        start: [],
+        events: [],
+        loops: [
+          { type: 'g2d:updateEachFrame', body: [] },
+          { type: 'g2d:everySeconds', seconds: { type: 'num', value: 2 }, body: [] },
+        ],
+      },
+      extensions: [{ extensionId: 'game-2d' }],
+    }
+    const files = generateProjectFiles({ ir: game2d, projectName: 'Passo fixo' })
+    // O comentário didático aparece EXATAMENTE uma vez (peça própria antes das raízes),
+    // não uma por raiz de loop.
+    expect(files['script.js'].match(new RegExp(FIXED_STEP_COMMENT, 'g'))).toHaveLength(1)
+    // Fixpoint: o parser descarta o comentário e a regeração o recoloca — byte-estável.
+    const regenerated = generateProjectFiles({
+      ir: { ...game2d, behavior: parseProjectFiles(files).behavior },
+      projectName: 'Passo fixo',
+    })
+    expect(regenerated['script.js']).toBe(files['script.js'])
+  })
+
+  it('não comenta o passo fixo em projeto sem raiz de loop do Jogo 2D', () => {
+    // Núcleo (animationLoop) e demais extensões não recebem o comentário do g2d.
+    const core: SZIRV2 = {
+      version: 2,
+      html: [],
+      css: [],
+      behavior: { start: [], events: [], loops: [{ type: 'animationLoop', body: [] }] },
+      extensions: [],
+    }
+    expect(generateProjectFiles({ ir: core, projectName: 'Sem g2d' })['script.js']).not.toContain(
+      FIXED_STEP_COMMENT,
+    )
+  })
 })

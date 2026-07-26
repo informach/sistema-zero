@@ -1,5 +1,4 @@
 import * as RealTHREE from 'three'
-import { buildProjectRunContextRuntime } from '#extensions'
 import { gameKit3DRuntime } from '../runtime'
 
 /**
@@ -232,17 +231,9 @@ export async function loadStartedKit(beforeStart?: (api: KitApi) => void): Promi
 }> {
   const { THREE, renderers } = makeFakeThree()
   const win = globalThis.window as unknown as Record<string, unknown>
-  // O preview instala este contexto antes do JS gerado. A extensão agora marca
-  // suas execuções como gerenciadas, portanto a bancada precisa reproduzir a
-  // mesma fronteira de ciclo de vida em vez de deixar o exemplo falhar em um
-  // ambiente incompleto.
-  new Function(
-    'window',
-    'requestAnimationFrame',
-    'cancelAnimationFrame',
-    'AbortController',
-    buildProjectRunContextRuntime(),
-  )(win, requestAnimationFrame, cancelAnimationFrame, AbortController)
+  // O runtime do g3k já injeta o contexto de ciclo de vida gerenciado
+  // (window.__SZProjectLifecycle) logo após o import, então rodar runtimeBody
+  // reproduz a mesma fronteira do preview — sem injeção separada.
   new Function('THREE', 'window', runtimeBody)(THREE, win)
   const api = win.SZGameKit3D as KitApi
   api.setup({ width: 640, height: 360, world: 100 })
@@ -287,13 +278,7 @@ export async function loadExampleKit(exampleJs: string): Promise<{
 }> {
   const { THREE, renderers } = makeFakeThree()
   const win = globalThis.window as unknown as Record<string, unknown>
-  new Function(
-    'window',
-    'requestAnimationFrame',
-    'cancelAnimationFrame',
-    'AbortController',
-    buildProjectRunContextRuntime(),
-  )(win, requestAnimationFrame, cancelAnimationFrame, AbortController)
+  // runtimeBody já injeta window.__SZProjectLifecycle (ver loadStartedKit).
   new Function('THREE', 'window', runtimeBody)(THREE, win)
   const api = win.SZGameKit3D as KitApi
   // O exemplo referencia o identificador SZGameKit3D "solto" — entra como

@@ -77,6 +77,9 @@ SZGame3D.everySecondsLoop(1, () => {
   if (rodando) {
     tempo = tempo + 1;
     velocidade = velocidade + 0.005;
+    if (velocidade > 0.56) {
+      velocidade = 0.56;
+    }
   }
 });
 SZGame3D.everySecondsLoop(0.9, () => {

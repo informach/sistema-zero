@@ -96,6 +96,9 @@ SZGameKit3D.onEntityStateUpdate("heroi", "parado", function (ela, dt) {
 });
 SZGameKit3D.onUpdate(function (dt) {
   velocidade = velocidade + dt * 0.35;
+  if (velocidade > 34) {
+    velocidade = 34;
+  }
   tempoDeJogo = tempoDeJogo + dt;
   proximaBarreira = proximaBarreira - dt;
   if (proximaBarreira <= 0) {

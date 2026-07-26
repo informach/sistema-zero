@@ -7271,6 +7271,31 @@ export const corridaInfinitaProfissionalExample: ExtensionExample = {
               },
             },
             {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '>',
+                left: {
+                  type: 'var',
+                  name: 'velocidade',
+                },
+                right: {
+                  type: 'num',
+                  value: 34,
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'velocidade',
+                  value: {
+                    type: 'num',
+                    value: 34,
+                  },
+                },
+              ],
+            },
+            {
               type: 'assign',
               name: 'tempoDeJogo',
               value: {

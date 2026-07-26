@@ -440,6 +440,10 @@ export const CANVAS3D_CONTINUOUS_BLOCK_TYPES = [
 /** Blocos que mantêm recursos e, portanto, não podem ser recriados por quadro. */
 export const CANVAS3D_RESOURCE_CREATOR_BLOCK_TYPES: readonly Canvas3DBlockType[] = [
   'sz_t3d_new_var',
+  // Helpers de depuração criam um objeto persistente na cena (uma vez) — como os
+  // demais criadores, só cabem em "Ao iniciar" (num loop vazariam 1 helper/quadro).
+  'sz_t3d_debug_grid',
+  'sz_t3d_debug_axes',
   'sz_t3d_scene_create',
   'sz_t3d_renderer_create',
   'sz_t3d_camera_create',

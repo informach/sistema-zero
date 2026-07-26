@@ -9,7 +9,7 @@ import { beginnerGameExample } from './shared'
  * (setHitboxScale), o dial de dificuldade do estudo Clear Code. Os cactos nascem
  * na borda direita numa raiz "A cada 1,4 segundos" com posição e velocidade
  * levemente sorteadas, e uma raiz "A cada 5 segundos" acelera o jogo aos poucos.
- * Telas de início e fim com reinício por Enter. 100% procedural (Kit dino).
+ * Telas de início e fim com reinício por Enter ou espaço. 100% procedural (Kit dino).
  * A behavior abaixo foi GERADA pelo parser real a partir do fonte em
  * __gen_dinoCorredor.ts (drift test: dinoCorredorExample.test.ts).
  */
@@ -17,7 +17,7 @@ export const dinoCorredorExample: ExtensionExample = beginnerGameExample({
   name: 'Dino Corredor',
   experience: 'game',
   description:
-    'Corra com o dino e pule os cactos apertando espaço. Cada segundo de corrida vale 1 ponto e os cactos vão ficando mais rápidos. Enter ou espaço começa; Enter reinicia.',
+    'Corra com o dino e pule os cactos apertando espaço. Cada segundo de corrida vale 1 ponto e os cactos vão ficando mais rápidos. Enter ou espaço começa e reinicia.',
   ir: {
     html: [{ type: 'canvas', id: 'tela', width: 480, height: 270 }],
     css: [

@@ -565,11 +565,13 @@ function recognizeT3dSet(
       }
     }
   }
-  // material.wireframe = true/false
+  // material.wireframe = true/false — só para MATERIAL (não luz: wireframe em luz
+  // não existe no three, então `luz.wireframe = …` fica como memberSet genérico).
   if (
     name === 'wireframe' &&
     objVar &&
     hasCanvas3DSymbol(objVar.name, 'color-target3d') &&
+    !hasCanvas3DSymbol(objVar.name, 'light3d') &&
     value.type === 'bool'
   ) {
     return block(

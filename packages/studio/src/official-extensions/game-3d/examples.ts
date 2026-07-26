@@ -1799,6 +1799,31 @@ export const corridaInfinitaExample: ExtensionExample = {
                     },
                   },
                 },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'var',
+                      name: 'velocidade',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0.56,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'velocidade',
+                      value: {
+                        type: 'num',
+                        value: 0.56,
+                      },
+                    },
+                  ],
+                },
               ],
             },
           ],
