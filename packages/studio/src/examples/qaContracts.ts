@@ -115,6 +115,14 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['start', 'arrows', 'space'],
   },
   {
+    key: 'game-2d:Dino Corredor',
+    name: 'Dino Corredor',
+    experience: 'game',
+    promise: 'Pular cactos com colisão perdoadora enquanto o placar sobe e o jogo acelera.',
+    scenario: 'Enter ou espaço começa; pular cactos, pontuar por segundo, bater e reiniciar.',
+    interactions: ['start', 'space'],
+  },
+  {
     key: 'game-2d:Guerra de Gorilas',
     name: 'Guerra de Gorilas',
     experience: 'game',
@@ -205,6 +213,14 @@ export const EXAMPLE_QA_CONTRACTS = [
     promise: 'Usar pulo tolerante, plataformas especiais e pisão.',
     scenario: 'Atravessar a fase, derrotar bichos, pegar cinco frutas e reiniciar.',
     interactions: ['wasd', 'space'],
+  },
+  {
+    key: 'game-2d-advanced:Dino Corredor Profissional',
+    name: 'Dino Corredor Profissional',
+    experience: 'game',
+    promise: 'Pular cactos com molde, pool, parallax e recorde salvo de verdade.',
+    scenario: 'Correr, saltar obstáculos cada vez mais rápidos, bater e ver o recorde guardado.',
+    interactions: ['space', 'arrows', 'click'],
   },
   {
     key: 'game-2d-advanced:Bichinhos do Quintal',
@@ -367,6 +383,14 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['wasd', 'space'],
   },
   {
+    key: 'game-3d:Corrida Infinita 3D',
+    name: 'Corrida Infinita 3D',
+    experience: 'game',
+    promise: 'Trocar de pista, pular e sobreviver a caixas que aceleram.',
+    scenario: 'Trocar de pista, pular caixa, marcar tempo, bater e recomeçar.',
+    interactions: ['arrows', 'space'],
+  },
+  {
     key: 'game-3d:Cubo girando',
     name: 'Cubo girando',
     experience: 'demo',
@@ -429,6 +453,16 @@ export const EXAMPLE_QA_CONTRACTS = [
     promise: 'Clicar em alvos móveis e fazer doze pontos em 25 segundos.',
     scenario: 'Fechar dica, acertar alvos comuns/dourado, vencer/perder e reiniciar.',
     interactions: ['click'],
+  },
+  {
+    key: 'game-3d-advanced:Corrida Infinita Profissional',
+    name: 'Corrida Infinita Profissional',
+    experience: 'game',
+    promise:
+      'Correr sem fim em três faixas, pulando barreiras e pegando moedas num jogo que acelera.',
+    scenario:
+      'Começar, trocar de faixa com A/D ou setas, pular com espaço, pegar moeda, bater e reiniciar.',
+    interactions: ['wasd', 'space'],
   },
   {
     key: 'world-3d:Meu Mundo',
@@ -589,5 +623,21 @@ export const EXAMPLE_QA_CONTRACTS = [
     promise: 'Construir terreno, estrada, prédios e física usando somente blocos nativos.',
     scenario: 'Mover o personagem, pular e colidir no cenário Three.js sem extensão ou asset.',
     interactions: ['wasd', 'space'],
+  },
+  {
+    key: 'core:Dino Corredor (na mão)',
+    name: 'Dino Corredor (na mão)',
+    experience: 'game',
+    promise: 'Ver o motor do Dino runner por dentro: classes, deltaTime e timer de spawn.',
+    scenario: 'Correr, pular cactos, ver o placar subir, colidir e recomeçar com Enter.',
+    interactions: ['space', 'arrows', 'start'],
+  },
+  {
+    key: 'core:Corrida Infinita (na mão)',
+    name: 'Corrida Infinita (na mão)',
+    experience: 'game',
+    promise: 'Correr sem fim em three.js puro com esteira, pool e colisão na mão.',
+    scenario: 'Trocar de pista, pular obstáculos, ver a velocidade crescer, bater e reiniciar.',
+    interactions: ['arrows', 'space', 'click'],
   },
 ] as const satisfies readonly ExampleQAContract[]

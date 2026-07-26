@@ -6075,3 +6075,1734 @@ export const chefaoDasSombrasExample: ExtensionExample = {
     },
   },
 }
+
+/**
+ * Exemplo "Corrida Infinita Profissional" — o RUNNER infinito do motor
+ * avançado (nível 2 da família "Corrida Infinita"). O herói fica PRESO na
+ * pista: só troca de faixa (A/D ou setas, via place + posOf) e pula com a
+ * física do kit (personagem + jump/onGround). Barreiras, moedas e árvores
+ * nascem LONGE à frente em cadência própria (relógios por dt no onUpdate,
+ * encurtando com a velocidade) e vêm até ele por setVelocity; cullFar recicla
+ * o que passou. Moeda = zona com filtro isMold (burst + som + ponto + acelera);
+ * barreira = zona que treme a câmera e encerra o jogo. A dificuldade sobe com
+ * o tempo E com cada moeda; o sorteio das faixas é 100% do kit
+ * (randomBetween/randomChance) sob setSeed. Tudo procedural, sem .glb.
+ *
+ * A IR abaixo foi GERADA pelo parser real (ver __gen_corridaProfissional.ts);
+ * o drift test em __tests__/corridaProfissionalExample.test.ts guarda o
+ * resultado.
+ */
+export const corridaInfinitaProfissionalExample: ExtensionExample = {
+  name: 'Corrida Infinita Profissional',
+  experience: 'game',
+  description:
+    'Corra sem fim numa pista de três faixas: troque de faixa, pule as barreiras e pegue moedas. O jogo acelera com o tempo e cada batida treme a câmera. Tudo de peças, no motor avançado.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 100,
+          },
+          sky: '#0f172a',
+          ground: '#1e293b',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1.2,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Corrida Infinita Profissional',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Troque de faixa com A e D (ou as setas) e pule com espaço. Desvie das barreiras, pegue moedas e aguente firme: a corrida acelera sem parar!',
+          },
+          button: {
+            type: 'str',
+            value: 'Correr',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'Bateu!',
+          },
+          text: {
+            type: 'str',
+            value: 'A pista venceu desta vez. Desvie das barreiras e pegue mais moedas na próxima!',
+          },
+          button: {
+            type: 'str',
+            value: 'Correr de novo',
+          },
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'heroi',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#fb923c',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.9,
+              },
+              h: {
+                type: 'num',
+                value: 1.1,
+              },
+              d: {
+                type: 'num',
+                value: 0.9,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.55,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'normal',
+              color: '#ffedd5',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.7,
+              },
+              h: {
+                type: 'num',
+                value: 0.7,
+              },
+              d: {
+                type: 'num',
+                value: 0.7,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1.3,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'cone',
+              material: 'brilho',
+              color: '#22d3ee',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.3,
+              },
+              h: {
+                type: 'num',
+                value: 0.5,
+              },
+              d: {
+                type: 'num',
+                value: 0.3,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.9,
+              },
+              z: {
+                type: 'num',
+                value: 0.5,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'obstaculo',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#7f1d1d',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 2.4,
+              },
+              h: {
+                type: 'num',
+                value: 1.2,
+              },
+              d: {
+                type: 'num',
+                value: 0.8,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.6,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'cone',
+              material: 'brilho',
+              color: '#f97316',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.5,
+              },
+              h: {
+                type: 'num',
+                value: 0.6,
+              },
+              d: {
+                type: 'num',
+                value: 0.5,
+              },
+              x: {
+                type: 'num',
+                value: -0.8,
+              },
+              y: {
+                type: 'num',
+                value: 1.5,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'cone',
+              material: 'brilho',
+              color: '#f97316',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.5,
+              },
+              h: {
+                type: 'num',
+                value: 0.6,
+              },
+              d: {
+                type: 'num',
+                value: 0.5,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1.5,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'cone',
+              material: 'brilho',
+              color: '#f97316',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.5,
+              },
+              h: {
+                type: 'num',
+                value: 0.6,
+              },
+              d: {
+                type: 'num',
+                value: 0.5,
+              },
+              x: {
+                type: 'num',
+                value: 0.8,
+              },
+              y: {
+                type: 'num',
+                value: 1.5,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'moeda',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'torus',
+              material: 'brilho',
+              color: '#fde047',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.9,
+              },
+              h: {
+                type: 'num',
+                value: 0.9,
+              },
+              d: {
+                type: 'num',
+                value: 0.35,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'arvore',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'cylinder',
+              material: 'normal',
+              color: '#78350f',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.5,
+              },
+              h: {
+                type: 'num',
+                value: 1.6,
+              },
+              d: {
+                type: 'num',
+                value: 0.5,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'cone',
+              material: 'normal',
+              color: '#166534',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 1.8,
+              },
+              h: {
+                type: 'num',
+                value: 2.6,
+              },
+              d: {
+                type: 'num',
+                value: 1.8,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 2.6,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'pista',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#334155',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 10,
+              },
+              h: {
+                type: 'num',
+                value: 0.1,
+              },
+              d: {
+                type: 'num',
+                value: 96,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.05,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#facc15',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.2,
+              },
+              h: {
+                type: 'num',
+                value: 0.12,
+              },
+              d: {
+                type: 'num',
+                value: 96,
+              },
+              x: {
+                type: 'num',
+                value: -1.5,
+              },
+              y: {
+                type: 'num',
+                value: 0.06,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#facc15',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.2,
+              },
+              h: {
+                type: 'num',
+                value: 0.12,
+              },
+              d: {
+                type: 'num',
+                value: 96,
+              },
+              x: {
+                type: 'num',
+                value: 1.5,
+              },
+              y: {
+                type: 'num',
+                value: 0.06,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:setPhysics',
+          mold: 'heroi',
+          kind: 'personagem',
+        },
+        {
+          type: 'g3k:makeTrigger',
+          mold: 'obstaculo',
+        },
+        {
+          type: 'g3k:makeTrigger',
+          mold: 'moeda',
+        },
+        {
+          type: 'g3k:defineEffect',
+          name: 'brilho',
+          count: {
+            type: 'num',
+            value: 20,
+          },
+          colorFrom: '#fde047',
+          colorTo: '#0f172a',
+          spread: {
+            type: 'num',
+            value: 5,
+          },
+          sizeFrom: {
+            type: 'num',
+            value: 0.4,
+          },
+          sizeTo: {
+            type: 'num',
+            value: 0,
+          },
+          life: {
+            type: 'num',
+            value: 0.5,
+          },
+          gravity: {
+            type: 'num',
+            value: 2,
+          },
+        },
+        {
+          type: 'g3k:defineEffect',
+          name: 'poeira',
+          count: {
+            type: 'num',
+            value: 28,
+          },
+          colorFrom: '#f97316',
+          colorTo: '#0f172a',
+          spread: {
+            type: 'num',
+            value: 7,
+          },
+          sizeFrom: {
+            type: 'num',
+            value: 0.6,
+          },
+          sizeTo: {
+            type: 'num',
+            value: 0,
+          },
+          life: {
+            type: 'num',
+            value: 0.7,
+          },
+          gravity: {
+            type: 'num',
+            value: 3,
+          },
+        },
+        {
+          type: 'var',
+          name: 'pontos',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'tempoDeJogo',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'velocidade',
+          value: {
+            type: 'num',
+            value: 12,
+          },
+        },
+        {
+          type: 'var',
+          name: 'faixa',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'proximaBarreira',
+          value: {
+            type: 'num',
+            value: 1.2,
+          },
+        },
+        {
+          type: 'var',
+          name: 'proximaMoeda',
+          value: {
+            type: 'num',
+            value: 2,
+          },
+        },
+        {
+          type: 'var',
+          name: 'proximaArvore',
+          value: {
+            type: 'num',
+            value: 0.5,
+          },
+        },
+      ],
+      events: [
+        {
+          type: 'g3k:onEnterState',
+          name: 'jogando',
+          body: [
+            {
+              type: 'assign',
+              name: 'pontos',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'tempoDeJogo',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'velocidade',
+              value: {
+                type: 'num',
+                value: 12,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'faixa',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'proximaBarreira',
+              value: {
+                type: 'num',
+                value: 1.2,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'proximaMoeda',
+              value: {
+                type: 'num',
+                value: 2,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'proximaArvore',
+              value: {
+                type: 'num',
+                value: 0.5,
+              },
+            },
+            {
+              type: 'g3k:setSeed',
+              seed: {
+                type: 'num',
+                value: 21,
+              },
+            },
+            {
+              type: 'g3k:setAmbient',
+              intensity: {
+                type: 'num',
+                value: 0.55,
+              },
+            },
+            {
+              type: 'g3k:setFog',
+              color: '#0f172a',
+              near: {
+                type: 'num',
+                value: 30,
+              },
+              far: {
+                type: 'num',
+                value: 85,
+              },
+            },
+            {
+              type: 'g3k:addLight',
+              color: '#38bdf8',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 14,
+              },
+              z: {
+                type: 'num',
+                value: -6,
+              },
+              intensity: {
+                type: 'num',
+                value: 1.3,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'pista',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:spawnNamed',
+              varName: 'heroi',
+              mold: 'heroi',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:cameraFollow',
+              charVar: 'heroi',
+              dist: {
+                type: 'num',
+                value: 11,
+              },
+              height: {
+                type: 'num',
+                value: 5,
+              },
+            },
+            {
+              type: 'g3k:cameraSmooth',
+              lambda: {
+                type: 'num',
+                value: 6,
+              },
+            },
+            {
+              type: 'g3k:say',
+              charVar: 'heroi',
+              text: {
+                type: 'str',
+                value: 'Corre!',
+              },
+              seconds: {
+                type: 'num',
+                value: 2,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onOverlap',
+          mold: 'moeda',
+          zoneName: 'zona',
+          whoName: 'quem',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:isMold',
+                charVar: 'quem',
+                mold: 'heroi',
+              },
+              then: [
+                {
+                  type: 'g3k:burstOn',
+                  effect: 'brilho',
+                  charVar: 'zona',
+                },
+                {
+                  type: 'g3k:playEffect',
+                  fx: 'coin',
+                },
+                {
+                  type: 'g3k:recycle',
+                  charVar: 'zona',
+                },
+                {
+                  type: 'assign',
+                  name: 'pontos',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'var',
+                      name: 'pontos',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
+                  },
+                },
+                {
+                  type: 'assign',
+                  name: 'velocidade',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'var',
+                      name: 'velocidade',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0.2,
+                    },
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onOverlap',
+          mold: 'obstaculo',
+          zoneName: 'zona',
+          whoName: 'quem',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:isMold',
+                charVar: 'quem',
+                mold: 'heroi',
+              },
+              then: [
+                {
+                  type: 'g3k:burstOn',
+                  effect: 'poeira',
+                  charVar: 'zona',
+                },
+                {
+                  type: 'g3k:playEffect',
+                  fx: 'gameover',
+                },
+                {
+                  type: 'g3k:cameraShake',
+                  strength: {
+                    type: 'num',
+                    value: 0.6,
+                  },
+                  seconds: {
+                    type: 'num',
+                    value: 0.5,
+                  },
+                },
+                {
+                  type: 'g3k:endGame',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'heroi',
+          state: 'parado',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '||',
+                left: {
+                  type: 'g3k:keyPressed',
+                  key: 'a',
+                },
+                right: {
+                  type: 'g3k:keyPressed',
+                  key: 'esquerda',
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'faixa',
+                  value: {
+                    type: 'binop',
+                    op: '-',
+                    left: {
+                      type: 'var',
+                      name: 'faixa',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '||',
+                left: {
+                  type: 'g3k:keyPressed',
+                  key: 'd',
+                },
+                right: {
+                  type: 'g3k:keyPressed',
+                  key: 'direita',
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'faixa',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'var',
+                      name: 'faixa',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '<',
+                left: {
+                  type: 'var',
+                  name: 'faixa',
+                },
+                right: {
+                  type: 'num',
+                  value: -1,
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'faixa',
+                  value: {
+                    type: 'num',
+                    value: -1,
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '>',
+                left: {
+                  type: 'var',
+                  name: 'faixa',
+                },
+                right: {
+                  type: 'num',
+                  value: 1,
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'faixa',
+                  value: {
+                    type: 'num',
+                    value: 1,
+                  },
+                },
+              ],
+            },
+            {
+              type: 'g3k:place',
+              charVar: 'ela',
+              x: {
+                type: 'binop',
+                op: '*',
+                left: {
+                  type: 'var',
+                  name: 'faixa',
+                },
+                right: {
+                  type: 'num',
+                  value: 3,
+                },
+              },
+              y: {
+                type: 'g3k:posOf',
+                axis: 'y',
+                charVar: 'ela',
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: {
+                  type: 'g3k:keyPressed',
+                  key: 'espaco',
+                },
+                right: {
+                  type: 'g3k:onGround',
+                  charVar: 'ela',
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:jump',
+                  charVar: 'ela',
+                  force: {
+                    type: 'num',
+                    value: 10,
+                  },
+                },
+                {
+                  type: 'g3k:playEffect',
+                  fx: 'jump',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'assign',
+              name: 'velocidade',
+              value: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'var',
+                  name: 'velocidade',
+                },
+                right: {
+                  type: 'binop',
+                  op: '*',
+                  left: {
+                    type: 'var',
+                    name: 'dt',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 0.35,
+                  },
+                },
+              },
+            },
+            {
+              type: 'assign',
+              name: 'tempoDeJogo',
+              value: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'var',
+                  name: 'tempoDeJogo',
+                },
+                right: {
+                  type: 'var',
+                  name: 'dt',
+                },
+              },
+            },
+            {
+              type: 'assign',
+              name: 'proximaBarreira',
+              value: {
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'var',
+                  name: 'proximaBarreira',
+                },
+                right: {
+                  type: 'var',
+                  name: 'dt',
+                },
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '<=',
+                left: {
+                  type: 'var',
+                  name: 'proximaBarreira',
+                },
+                right: {
+                  type: 'num',
+                  value: 0,
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'proximaBarreira',
+                  value: {
+                    type: 'binop',
+                    op: '/',
+                    left: {
+                      type: 'num',
+                      value: 30,
+                    },
+                    right: {
+                      type: 'var',
+                      name: 'velocidade',
+                    },
+                  },
+                },
+                {
+                  type: 'var',
+                  name: 'lugarBarreira',
+                  value: {
+                    type: 'num',
+                    value: 0,
+                  },
+                },
+                {
+                  type: 'var',
+                  name: 'sorteioBarreira',
+                  value: {
+                    type: 'g3k:randomBetween',
+                    from: {
+                      type: 'num',
+                      value: 0,
+                    },
+                    to: {
+                      type: 'num',
+                      value: 3,
+                    },
+                  },
+                  kind: 'const',
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<',
+                    left: {
+                      type: 'var',
+                      name: 'sorteioBarreira',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'lugarBarreira',
+                      value: {
+                        type: 'num',
+                        value: -3,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'var',
+                      name: 'sorteioBarreira',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 2,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'lugarBarreira',
+                      value: {
+                        type: 'num',
+                        value: 3,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'g3k:spawnNamed',
+                  varName: 'barreira',
+                  mold: 'obstaculo',
+                  x: {
+                    type: 'var',
+                    name: 'lugarBarreira',
+                  },
+                  y: {
+                    type: 'num',
+                    value: 0,
+                  },
+                  z: {
+                    type: 'num',
+                    value: 45,
+                  },
+                },
+                {
+                  type: 'g3k:setVelocity',
+                  charVar: 'barreira',
+                  x: {
+                    type: 'num',
+                    value: 0,
+                  },
+                  y: {
+                    type: 'num',
+                    value: 0,
+                  },
+                  z: {
+                    type: 'binop',
+                    op: '-',
+                    left: {
+                      type: 'num',
+                      value: 0,
+                    },
+                    right: {
+                      type: 'var',
+                      name: 'velocidade',
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'assign',
+              name: 'proximaMoeda',
+              value: {
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'var',
+                  name: 'proximaMoeda',
+                },
+                right: {
+                  type: 'var',
+                  name: 'dt',
+                },
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '<=',
+                left: {
+                  type: 'var',
+                  name: 'proximaMoeda',
+                },
+                right: {
+                  type: 'num',
+                  value: 0,
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'proximaMoeda',
+                  value: {
+                    type: 'binop',
+                    op: '/',
+                    left: {
+                      type: 'num',
+                      value: 20,
+                    },
+                    right: {
+                      type: 'var',
+                      name: 'velocidade',
+                    },
+                  },
+                },
+                {
+                  type: 'var',
+                  name: 'lugarMoeda',
+                  value: {
+                    type: 'num',
+                    value: 0,
+                  },
+                },
+                {
+                  type: 'var',
+                  name: 'sorteioMoeda',
+                  value: {
+                    type: 'g3k:randomBetween',
+                    from: {
+                      type: 'num',
+                      value: 0,
+                    },
+                    to: {
+                      type: 'num',
+                      value: 3,
+                    },
+                  },
+                  kind: 'const',
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<',
+                    left: {
+                      type: 'var',
+                      name: 'sorteioMoeda',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'lugarMoeda',
+                      value: {
+                        type: 'num',
+                        value: -3,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'var',
+                      name: 'sorteioMoeda',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 2,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'lugarMoeda',
+                      value: {
+                        type: 'num',
+                        value: 3,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'g3k:spawnNamed',
+                  varName: 'moeda',
+                  mold: 'moeda',
+                  x: {
+                    type: 'var',
+                    name: 'lugarMoeda',
+                  },
+                  y: {
+                    type: 'num',
+                    value: 1.1,
+                  },
+                  z: {
+                    type: 'num',
+                    value: 45,
+                  },
+                },
+                {
+                  type: 'g3k:setVelocity',
+                  charVar: 'moeda',
+                  x: {
+                    type: 'num',
+                    value: 0,
+                  },
+                  y: {
+                    type: 'num',
+                    value: 0,
+                  },
+                  z: {
+                    type: 'binop',
+                    op: '-',
+                    left: {
+                      type: 'num',
+                      value: 0,
+                    },
+                    right: {
+                      type: 'var',
+                      name: 'velocidade',
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'assign',
+              name: 'proximaArvore',
+              value: {
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'var',
+                  name: 'proximaArvore',
+                },
+                right: {
+                  type: 'var',
+                  name: 'dt',
+                },
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '<=',
+                left: {
+                  type: 'var',
+                  name: 'proximaArvore',
+                },
+                right: {
+                  type: 'num',
+                  value: 0,
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'proximaArvore',
+                  value: {
+                    type: 'binop',
+                    op: '/',
+                    left: {
+                      type: 'num',
+                      value: 16,
+                    },
+                    right: {
+                      type: 'var',
+                      name: 'velocidade',
+                    },
+                  },
+                },
+                {
+                  type: 'var',
+                  name: 'ladoArvore',
+                  value: {
+                    type: 'num',
+                    value: 8,
+                  },
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'g3k:randomChance',
+                    percent: {
+                      type: 'num',
+                      value: 50,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'ladoArvore',
+                      value: {
+                        type: 'num',
+                        value: -8,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'g3k:spawnNamed',
+                  varName: 'arvore',
+                  mold: 'arvore',
+                  x: {
+                    type: 'var',
+                    name: 'ladoArvore',
+                  },
+                  y: {
+                    type: 'num',
+                    value: 0,
+                  },
+                  z: {
+                    type: 'num',
+                    value: 45,
+                  },
+                },
+                {
+                  type: 'g3k:setVelocity',
+                  charVar: 'arvore',
+                  x: {
+                    type: 'num',
+                    value: 0,
+                  },
+                  y: {
+                    type: 'num',
+                    value: 0,
+                  },
+                  z: {
+                    type: 'binop',
+                    op: '-',
+                    left: {
+                      type: 'num',
+                      value: 0,
+                    },
+                    right: {
+                      type: 'var',
+                      name: 'velocidade',
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'g3k:cullFar',
+              mold: 'obstaculo',
+              dist: {
+                type: 'num',
+                value: 60,
+              },
+            },
+            {
+              type: 'g3k:cullFar',
+              mold: 'moeda',
+              dist: {
+                type: 'num',
+                value: 60,
+              },
+            },
+            {
+              type: 'g3k:cullFar',
+              mold: 'arvore',
+              dist: {
+                type: 'num',
+                value: 60,
+              },
+            },
+            {
+              type: 'g3k:hudText',
+              slot: 'top-left',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'str',
+                  value: 'Moedas: ',
+                },
+                right: {
+                  type: 'var',
+                  name: 'pontos',
+                },
+              },
+            },
+            {
+              type: 'g3k:hudText',
+              slot: 'top-right',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '+',
+                  left: {
+                    type: 'str',
+                    value: 'Tempo: ',
+                  },
+                  right: {
+                    type: 'mathUnary',
+                    fn: 'floor',
+                    arg: {
+                      type: 'var',
+                      name: 'tempoDeJogo',
+                    },
+                  },
+                },
+                right: {
+                  type: 'str',
+                  value: 's',
+                },
+              },
+            },
+          ],
+        },
+      ],
+    },
+  },
+}

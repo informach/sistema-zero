@@ -4,7 +4,9 @@ import { behaviorStatements, SZIRV2Schema } from '#ir'
 import { buildWorkspaceStateFromIR } from '../blockly/workspaceState'
 import {
   CORE_EXAMPLES,
+  corridaInfinitaNaMaoExample,
   defesaDaTorreNaMaoExample,
+  dinoNaMaoExample,
   dueloNaMaoExample,
   folioCanvasProceduralExample,
   gorilasNaMaoExample,
@@ -264,6 +266,112 @@ describe('CORE_EXAMPLES — defesaDaTorreNaMaoExample (tower defense na unha)', 
     const code = compileStatements(behaviorStatements(defesaDaTorreNaMaoExample.ir), 0)
     expect(code).toContain('Math.hypot(ax - bx, ay - by)')
     expect(code).toContain('Math.atan2(target.y - this.y, target.x - this.x)')
+  })
+})
+
+describe('CORE_EXAMPLES — dinoNaMaoExample (Dino runner Clear Code na unha)', () => {
+  it('está em CORE_EXAMPLES, sem extensões e com IR válido', () => {
+    expect(CORE_EXAMPLES).toContain(dinoNaMaoExample)
+    expect(dinoNaMaoExample.ir.extensions).toEqual([])
+    expect(SZIRV2Schema.safeParse(dinoNaMaoExample.ir).success).toBe(true)
+  })
+
+  it('NÃO usa código avançado nem blocos de extensão', () => {
+    const types = collectTypes(dinoNaMaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('rawCSS')).toBe(false)
+    expect(types.has('rawHTML')).toBe(false)
+    expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
+  })
+
+  it('usa o motor do curso na mão (tempo real + timer + círculo), sem asset', () => {
+    const types = collectTypes(dinoNaMaoExample.ir)
+    for (const expected of [
+      'classDecl', // Player/Obstacle/Cloud/Game
+      'newExpr', // new Obstacle(this) / new Cloud(this)
+      'arrayFilter', // culling manual dos que saíram da tela
+      'setThisProp', // o estado vive nos objetos
+      'funcDecl', // animate(timeStamp) — o laço com TEMPO na mão
+      'requestFrame', // pedir o próximo quadro chamando animate
+      'canvasSetup',
+      'canvasFillRect', // dino/cacto/chão desenhados por código
+      'canvasArc', // as nuvens do parallax
+      'canvasFillText', // placar + telas de fim de jogo
+      'mathBinary', // Math.hypot — colisão por círculo perdoadora
+      'randomFloat', // intervalo de spawn sorteado
+      'event', // keydown no construtor (pulo + Enter)
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
+    // é 100% desenhado: não precisa de nenhum asset embutido
+    expect(dinoNaMaoExample.assets ?? []).toEqual([])
+    const code = compileStatements(behaviorStatements(dinoNaMaoExample.ir), 0)
+    // delta time REAL: velocidades por milissegundo × dt.
+    expect(code).toContain('const deltaTime = timeStamp - lastTime;')
+    expect(code).toContain('this.y = this.y + this.vy * deltaTime;')
+    // timer de spawn por ACUMULAÇÃO com intervalo sorteado.
+    expect(code).toContain('this.obstacleTimer = this.obstacleTimer + deltaTime;')
+    // círculo perdoador: raio reduzido (metade da altura × 0.6).
+    expect(code).toContain('this.radius = this.height * 0.5 * 0.6;')
+    expect(code).toContain('Math.hypot(dx, dy)')
+  })
+})
+
+describe('CORE_EXAMPLES — corridaInfinitaNaMaoExample (Corrida Infinita 3D Clear Code na unha)', () => {
+  it('está em CORE_EXAMPLES, sem extensões e com IR válido', () => {
+    expect(CORE_EXAMPLES).toContain(corridaInfinitaNaMaoExample)
+    expect(corridaInfinitaNaMaoExample.ir.extensions).toEqual([])
+    expect(SZIRV2Schema.safeParse(corridaInfinitaNaMaoExample.ir).success).toBe(true)
+  })
+
+  it('NÃO usa código avançado nem blocos de extensão', () => {
+    const types = collectTypes(corridaInfinitaNaMaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('rawCSS')).toBe(false)
+    expect(types.has('rawHTML')).toBe(false)
+    expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
+  })
+
+  it('gera Three.js CRU com o motor do curso na mão (esteira + pool + caixa×esfera), sem asset', () => {
+    const types = collectTypes(corridaInfinitaNaMaoExample.ir)
+    for (const expected of [
+      'importStar', // import * as THREE from 'three' — o motor à mostra
+      'newInstance', // new THREE.X(...) na unha (renderer/cena/câmera/meshes)
+      'animationLoop', // o laço de quadro com THREE.Clock (dt)
+      'forRange', // posicionar o pool escalonado (índice i preservado)
+      'forEach', // varrer o pool a cada quadro
+      'funcDecl', // bateu (colisão) + reiniciar
+      'call', // if (bateu(obstaculo)) — chamada como VALOR
+      'mathBinary', // Math.max/Math.min — o clamp caixa×esfera do curso
+      'randomFloat', // sortear a pista na reciclagem
+      'event', // keydown (pistas/pulo/Enter) + pointerdown (reiniciar)
+      'setProperty', // HUD em DOM (tempo + contagem de objetos)
+      'setStyle', // mostrar/esconder o aviso de fim de jogo
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
+    // é 100% procedural (BoxGeometry + cores): nenhum asset embutido, sem GLB
+    expect(corridaInfinitaNaMaoExample.assets ?? []).toEqual([])
+    const code = compileStatements(behaviorStatements(corridaInfinitaNaMaoExample.ir), 0)
+    expect(code).toContain("import * as THREE from 'three'")
+    // névoa que esconde o nascimento dos objetos ao longe
+    expect(code).toContain('new THREE.Fog')
+    // chão infinito ENCADEADO: 2 segmentos em esteira
+    expect(code).toContain('chao1.position.z = chao1.position.z - 120;')
+    expect(code).toContain('chao2.position.z = chao2.position.z - 120;')
+    // pool manual: reciclar reposicionando (nunca criar/destruir em loop)
+    expect(code).toContain('obstaculo.position.z = obstaculo.position.z - 84;')
+    // colisão caixa×esfera literal do curso (clamp + raio reduzido perdoador)
+    expect(code).toContain(
+      'Math.max(obstaculo.position.x - 0.8, Math.min(px, obstaculo.position.x + 0.8))',
+    )
+    expect(code).toContain('dx * dx + dy * dy + dz * dz < raioHeroi * raioHeroi')
+    // velocidade cresce com o tempo + placar de sobrevivência no HUD em DOM
+    expect(code).toContain('velocidade = 12 + tempo * 0.5;')
+    expect(code).toContain('document.getElementById("tempo").textContent = Math.floor(tempo);')
+    // toque didático: contar os objetos da cena (vira sz_t3d_object_count na Ponte)
+    expect(code).toContain('cena.children.length')
+    expect(code).toContain('renderer.render(cena, camera);')
   })
 })
 

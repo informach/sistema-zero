@@ -1035,3 +1035,850 @@ export const stackExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-3d' }],
   },
 }
+
+/**
+ * Exemplo bundlado: "Corrida Infinita 3D" (nível 1 da família Corrida Infinita,
+ * recriação do runner 3D do curso Clear Code): o herói fica PARADO no eixo Z e o
+ * mundo vem até ele. Diferente do "Desvie dos blocos" (andar livre + WASD), aqui
+ * há 3 PISTAS fixas (setas trocam, com deslize suave), pulo com espaço/seta para
+ * cima, obstáculos que nascem longe numa pista sorteada via enxame, placar por
+ * TEMPO de sobrevivência no HUD e velocidade que cresce a cada segundo.
+ */
+export const corridaInfinitaExample: ExtensionExample = {
+  name: 'Corrida Infinita 3D',
+  experience: 'game',
+  description:
+    'Você corre parado: o mundo vem até você! Troque de pista com as setas, pule com espaço e desvie das caixas, que ficam cada vez mais rápidas. O placar conta seus segundos de sobrevivência.',
+  ir: {
+    html: [
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'score',
+        text: '0',
+      },
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'hint',
+        text: 'Setas: trocar de pista. Espaço ou seta para cima: pular.',
+      },
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'results',
+        children: [
+          {
+            type: 'element',
+            tag: 'div',
+            id: 'results-box',
+            children: [
+              {
+                type: 'element',
+                tag: 'h1',
+                text: 'Bateu!',
+              },
+              {
+                type: 'element',
+                tag: 'p',
+                children: [
+                  {
+                    type: 'text',
+                    text: 'Você sobreviveu ',
+                  },
+                  {
+                    type: 'element',
+                    tag: 'span',
+                    id: 'final-score',
+                  },
+                  {
+                    type: 'text',
+                    text: ' segundos',
+                  },
+                ],
+              },
+              {
+                type: 'element',
+                tag: 'button',
+                id: 'retry',
+                text: 'Recomeçar',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    css: [
+      {
+        type: 'googleFont',
+        family: 'Press Start 2P',
+      },
+      {
+        selector: 'body',
+        declarations: {
+          margin: '0',
+          overflow: 'hidden',
+          'font-family': '"Press Start 2P", cursive',
+        },
+      },
+      {
+        selector: '#score',
+        declarations: {
+          position: 'absolute',
+          top: '20px',
+          left: '20px',
+          'font-size': '2em',
+          color: 'white',
+          'z-index': '1',
+        },
+      },
+      {
+        selector: '#hint',
+        declarations: {
+          position: 'absolute',
+          bottom: '20px',
+          left: '0',
+          'min-width': '100%',
+          'text-align': 'center',
+          'font-size': '0.7em',
+          color: 'white',
+          'z-index': '1',
+        },
+      },
+      {
+        selector: '#results',
+        declarations: {
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          'min-width': '100%',
+          'min-height': '100%',
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          visibility: 'hidden',
+          'z-index': '1',
+        },
+      },
+      {
+        selector: '#results.visivel',
+        declarations: {
+          visibility: 'visible',
+        },
+      },
+      {
+        selector: '#results-box',
+        declarations: {
+          display: 'flex',
+          'flex-direction': 'column',
+          'align-items': 'center',
+          'background-color': 'white',
+          padding: '20px',
+        },
+      },
+      {
+        selector: '#results-box button',
+        declarations: {
+          'background-color': '#f43f5e',
+          color: 'white',
+          padding: '16px 32px',
+          'font-family': 'inherit',
+          cursor: 'pointer',
+          border: 'none',
+        },
+      },
+    ],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'g3d:createFullscreenScene',
+          varName: 'cena',
+          bg: '#38bdf8',
+        },
+        {
+          type: 'g3d:setSky',
+          worldVar: 'cena',
+          top: '#0ea5e9',
+          bottom: '#fde68a',
+        },
+        {
+          type: 'g3d:setFog',
+          worldVar: 'cena',
+          color: '#7dd3fc',
+          near: {
+            type: 'num',
+            value: 24,
+          },
+          far: {
+            type: 'num',
+            value: 70,
+          },
+        },
+        {
+          type: 'g3d:setCameraPosition',
+          worldVar: 'cena',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 3.4,
+          },
+          z: {
+            type: 'num',
+            value: 7,
+          },
+        },
+        {
+          type: 'g3d:createBlock',
+          varName: 'chao',
+          worldVar: 'cena',
+          width: {
+            type: 'num',
+            value: 9,
+          },
+          height: {
+            type: 'num',
+            value: 1,
+          },
+          depth: {
+            type: 'num',
+            value: 90,
+          },
+          color: '#334155',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'chao',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: -1,
+          },
+          z: {
+            type: 'num',
+            value: -30,
+          },
+        },
+        {
+          type: 'g3d:createBlock',
+          varName: 'faixaEsquerda',
+          worldVar: 'cena',
+          width: {
+            type: 'num',
+            value: 0.12,
+          },
+          height: {
+            type: 'num',
+            value: 0.04,
+          },
+          depth: {
+            type: 'num',
+            value: 90,
+          },
+          color: '#f8fafc',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'faixaEsquerda',
+          x: {
+            type: 'num',
+            value: -1.1,
+          },
+          y: {
+            type: 'num',
+            value: -0.47,
+          },
+          z: {
+            type: 'num',
+            value: -30,
+          },
+        },
+        {
+          type: 'g3d:createBlock',
+          varName: 'faixaDireita',
+          worldVar: 'cena',
+          width: {
+            type: 'num',
+            value: 0.12,
+          },
+          height: {
+            type: 'num',
+            value: 0.04,
+          },
+          depth: {
+            type: 'num',
+            value: 90,
+          },
+          color: '#f8fafc',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'faixaDireita',
+          x: {
+            type: 'num',
+            value: 1.1,
+          },
+          y: {
+            type: 'num',
+            value: -0.47,
+          },
+          z: {
+            type: 'num',
+            value: -30,
+          },
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'heroi',
+          worldVar: 'cena',
+          size: {
+            type: 'num',
+            value: 1,
+          },
+          color: '#34d399',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'heroi',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 2,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'molde',
+          worldVar: 'cena',
+          size: {
+            type: 'num',
+            value: 1.1,
+          },
+          color: '#f43f5e',
+        },
+        {
+          type: 'g3d:setVisible',
+          objVar: 'molde',
+          mode: 'hide',
+        },
+        {
+          type: 'g3d:createSwarm',
+          varName: 'obstaculos',
+          worldVar: 'cena',
+        },
+        {
+          type: 'var',
+          name: 'pista',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'sorteio',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'velocidade',
+          value: {
+            type: 'num',
+            value: 0.14,
+          },
+        },
+        {
+          type: 'var',
+          name: 'tempo',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'rodando',
+          value: {
+            type: 'bool',
+            value: true,
+          },
+        },
+      ],
+      events: [
+        {
+          type: 'event',
+          target: 'document',
+          targetKind: 'document',
+          event: 'keydown',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '===',
+                left: {
+                  type: 'eventProp',
+                  prop: 'key',
+                },
+                right: {
+                  type: 'str',
+                  value: 'ArrowLeft',
+                },
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'var',
+                      name: 'pista',
+                    },
+                    right: {
+                      type: 'num',
+                      value: -1,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'pista',
+                      value: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'var',
+                          name: 'pista',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 1,
+                        },
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '===',
+                left: {
+                  type: 'eventProp',
+                  prop: 'key',
+                },
+                right: {
+                  type: 'str',
+                  value: 'ArrowRight',
+                },
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<',
+                    left: {
+                      type: 'var',
+                      name: 'pista',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'pista',
+                      value: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'var',
+                          name: 'pista',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 1,
+                        },
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'event',
+          target: 'retry',
+          event: 'click',
+          body: [
+            {
+              type: 'g3d:forEachInSwarm',
+              swarmVar: 'obstaculos',
+              itemName: 'item',
+              body: [
+                {
+                  type: 'g3d:removeFromSwarm',
+                  swarmVar: 'obstaculos',
+                  itemVar: 'item',
+                },
+              ],
+            },
+            {
+              type: 'assign',
+              name: 'pista',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'velocidade',
+              value: {
+                type: 'num',
+                value: 0.14,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'tempo',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'setProperty',
+              targetId: 'score',
+              property: 'textContent',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'classOp',
+              targetId: 'results',
+              op: 'remove',
+              className: 'visivel',
+            },
+            {
+              type: 'assign',
+              name: 'rodando',
+              value: {
+                type: 'bool',
+                value: true,
+              },
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3d:animate',
+          worldVar: 'cena',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'var',
+                name: 'rodando',
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logical',
+                    op: '||',
+                    left: {
+                      type: 'g3d:keyDown',
+                      key: 'Space',
+                    },
+                    right: {
+                      type: 'g3d:keyDown',
+                      key: 'ArrowUp',
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3d:jump',
+                      objVar: 'heroi',
+                      force: {
+                        type: 'num',
+                        value: 0.09,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'g3d:applyGravity',
+                  objVar: 'heroi',
+                  groundVar: 'chao',
+                },
+                {
+                  type: 'g3d:moveTowards',
+                  objVar: 'heroi',
+                  x: {
+                    type: 'binop',
+                    op: '*',
+                    left: {
+                      type: 'var',
+                      name: 'pista',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 2.2,
+                    },
+                  },
+                  y: {
+                    type: 'g3d:getPos',
+                    objVar: 'heroi',
+                    axis: 'y',
+                  },
+                  z: {
+                    type: 'num',
+                    value: 0,
+                  },
+                  factor: {
+                    type: 'num',
+                    value: 0.25,
+                  },
+                },
+                {
+                  type: 'g3d:forEachInSwarm',
+                  swarmVar: 'obstaculos',
+                  itemName: 'item',
+                  body: [
+                    {
+                      type: 'g3d:moveBy',
+                      objVar: 'item',
+                      x: {
+                        type: 'num',
+                        value: 0,
+                      },
+                      y: {
+                        type: 'num',
+                        value: 0,
+                      },
+                      z: {
+                        type: 'var',
+                        name: 'velocidade',
+                      },
+                    },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'g3d:collides',
+                        aVar: 'heroi',
+                        bVar: 'item',
+                      },
+                      then: [
+                        {
+                          type: 'assign',
+                          name: 'rodando',
+                          value: {
+                            type: 'bool',
+                            value: false,
+                          },
+                        },
+                        {
+                          type: 'g3d:playEffect',
+                          kind: 'hit',
+                        },
+                        {
+                          type: 'setProperty',
+                          targetId: 'final-score',
+                          property: 'textContent',
+                          value: {
+                            type: 'var',
+                            name: 'tempo',
+                          },
+                        },
+                        {
+                          type: 'classOp',
+                          targetId: 'results',
+                          op: 'add',
+                          className: 'visivel',
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: 'g3d:pruneSwarm',
+                  swarmVar: 'obstaculos',
+                  axis: 'z',
+                  min: {
+                    type: 'num',
+                    value: -80,
+                  },
+                  max: {
+                    type: 'num',
+                    value: 6,
+                  },
+                },
+                {
+                  type: 'setProperty',
+                  targetId: 'score',
+                  property: 'textContent',
+                  value: {
+                    type: 'var',
+                    name: 'tempo',
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3d:everySeconds',
+          secs: {
+            type: 'num',
+            value: 1,
+          },
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'var',
+                name: 'rodando',
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'tempo',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'var',
+                      name: 'tempo',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
+                  },
+                },
+                {
+                  type: 'assign',
+                  name: 'velocidade',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'var',
+                      name: 'velocidade',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0.005,
+                    },
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3d:everySeconds',
+          secs: {
+            type: 'num',
+            value: 0.9,
+          },
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'var',
+                name: 'rodando',
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'sorteio',
+                  value: {
+                    type: 'binop',
+                    op: '-',
+                    left: {
+                      type: 'mathUnary',
+                      fn: 'floor',
+                      arg: {
+                        type: 'binop',
+                        op: '*',
+                        left: {
+                          type: 'randomFloat',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 3,
+                        },
+                      },
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
+                  },
+                },
+                {
+                  type: 'g3d:spawnInSwarm',
+                  swarmVar: 'obstaculos',
+                  originalVar: 'molde',
+                  x: {
+                    type: 'binop',
+                    op: '*',
+                    left: {
+                      type: 'var',
+                      name: 'sorteio',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 2.2,
+                    },
+                  },
+                  y: {
+                    type: 'num',
+                    value: 0.05,
+                  },
+                  z: {
+                    type: 'num',
+                    value: -60,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    extensions: [
+      {
+        extensionId: 'game-3d',
+      },
+    ],
+  },
+}

@@ -17,6 +17,7 @@ import {
   cobrinhaExample,
   corridaTabuleiroExample,
   defesaDoReinoExample,
+  dinoProfissionalExample,
   dueloDeCartasExample,
   dueloDosBonecosExample,
   florestaNinjaExample,
@@ -39,6 +40,7 @@ const EXAMPLES = [
   vilaDoDragaoExample,
   florestaNinjaExample,
   saltoNaFlorestaExample,
+  dinoProfissionalExample,
   bichinhosDoQuintalExample,
   invasaoDosOvnisExample,
   dueloDosBonecosExample,
@@ -111,6 +113,26 @@ const REQUIRED_TYPES = {
     'gk:drawHearts',
     'gk:drawShadow',
     'gk:onDrawHud',
+  ],
+  'Dino Corredor Profissional': [
+    'gk:defineMold',
+    'gk:defineLook',
+    'gk:everySeconds',
+    'gk:spawnFromMold',
+    'gk:forEachActive',
+    'gk:cullOffscreen',
+    'gk:recycle',
+    'gk:applyGravity',
+    'gk:jump',
+    'gk:collideGroup',
+    'gk:setHitbox',
+    'gk:setEntityState',
+    'gk:stateLook',
+    'gk:autoAnimate',
+    'gk:saveValue',
+    'gk:savedValue',
+    'gk:onEvent',
+    'gk:emit',
   ],
   'Salto na Floresta': [
     'gk:platformerHero',
@@ -263,7 +285,7 @@ beforeAll(() => {
 })
 
 describe('game-2d-advanced — catálogo dos exemplos', () => {
-  it('manifest mantém os 19 exemplos canônicos na ordem da vitrine', () => {
+  it('manifest mantém os 20 exemplos canônicos na ordem da vitrine', () => {
     expect(gameKitExtension.manifest.examples.map((example) => example.name)).toEqual(
       EXAMPLES.map((example) => example.name),
     )

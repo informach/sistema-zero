@@ -1,0 +1,1003 @@
+import type { ExtensionExample } from '#extensions'
+import { withIndependentPeriodicLoops } from './withIndependentPeriodicLoops'
+
+/**
+ * Exemplo bundlado: "Dino Corredor Profissional" — o nível 2 da família Dino
+ * (o runner do Clear Code recriado com o motor avançado), SEM assets: tudo é
+ * `defineLook` em blocos de Canvas. Mostra a arquitetura P24 num corredor
+ * infinito: moldes com nascedouro contínuo (`everySeconds` + `spawnFromMold` —
+ * o `startSpawner` nasce numa borda sorteada e não serve ao runner), reciclagem
+ * explícita + limpeza fora da tela, física do motor (gravidade/pulo/chão
+ * sólido por `collideGroup`), animação por ESTADO (`setEntityState` +
+ * `stateLook` + `autoAnimate`), hitbox perdoadora menor que o desenho
+ * (`setHitbox`), fundo em camadas com velocidades diferentes (nuvens lentas e
+ * riscos do chão rápidos), dificuldade progressiva, aviso `dino:bateu` no
+ * event bus e RECORDE persistente (`saveValue`/`savedValue`).
+ *
+ * ⚠️ A IR foi GERADA pelo parser real a partir do script achatado (o fonte
+ * vive em `__gen_dinoProfissional.ts` — se o parser mudar a saída, o drift
+ * test `dinoProfissionalExample.test.ts` manda re-embutir aqui).
+ */
+export const dinoProfissionalExample: ExtensionExample = withIndependentPeriodicLoops({
+  name: 'Dino Corredor Profissional',
+  experience: 'game',
+  description:
+    'O dinossauro corre sozinho e você pula! Molde com nascedouro e reciclagem, animação por estado, fundo em camadas, hitbox justa, velocidade que cresce e recorde guardado de verdade.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [{ extensionId: 'game-2d-advanced' }],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'gk:setup',
+          w: { type: 'num', value: 960 },
+          h: { type: 'num', value: 540 },
+          bg: '#dff6ff',
+          accent: '#2f9e44',
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'menu',
+          title: { type: 'str', value: 'Dino Corredor Profissional' },
+          text: {
+            type: 'str',
+            value:
+              'Espaço, seta para cima ou clique: pular. Salte os cactos e não bata nos pássaros!',
+          },
+          button: { type: 'str', value: 'Correr' },
+        },
+        {
+          type: 'gk:setScreenText',
+          screen: 'fim',
+          title: { type: 'str', value: 'Bateu!' },
+          text: { type: 'str', value: 'O recorde fica guardado. Tente de novo!' },
+          button: { type: 'str', value: 'Correr de novo' },
+        },
+        {
+          type: 'gk:defineLook',
+          name: 'sol',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: { type: 'color', value: '#ffd43b' },
+            },
+            {
+              type: 'canvasArc',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 40 },
+              y: { type: 'num', value: 40 },
+              r: { type: 'num', value: 32 },
+            },
+          ],
+          baseW: { type: 'num', value: 80 },
+          baseH: { type: 'num', value: 80 },
+        },
+        {
+          type: 'gk:defineLook',
+          name: 'nuvem',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: { type: 'color', value: '#ffffff' },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 10 },
+              y: { type: 'num', value: 20 },
+              w: { type: 'num', value: 100 },
+              h: { type: 'num', value: 18 },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 26 },
+              y: { type: 'num', value: 8 },
+              w: { type: 'num', value: 40 },
+              h: { type: 'num', value: 20 },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 64 },
+              y: { type: 'num', value: 12 },
+              w: { type: 'num', value: 32 },
+              h: { type: 'num', value: 16 },
+            },
+          ],
+          baseW: { type: 'num', value: 120 },
+          baseH: { type: 'num', value: 44 },
+        },
+        {
+          type: 'gk:defineLook',
+          name: 'risco',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: { type: 'color', value: '#b08d57' },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 0 },
+              y: { type: 'num', value: 0 },
+              w: { type: 'num', value: 36 },
+              h: { type: 'num', value: 6 },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 46 },
+              y: { type: 'num', value: 0 },
+              w: { type: 'num', value: 10 },
+              h: { type: 'num', value: 6 },
+            },
+          ],
+          baseW: { type: 'num', value: 60 },
+          baseH: { type: 'num', value: 6 },
+        },
+        {
+          type: 'gk:defineLook',
+          name: 'dino correndo',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: { type: 'color', value: '#495057' },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 0 },
+              y: { type: 'num', value: 24 },
+              w: { type: 'num', value: 12 },
+              h: { type: 'num', value: 8 },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 8 },
+              y: { type: 'num', value: 18 },
+              w: { type: 'num', value: 32 },
+              h: { type: 'num', value: 26 },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 28 },
+              y: { type: 'num', value: 0 },
+              w: { type: 'num', value: 26 },
+              h: { type: 'num', value: 20 },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 36 },
+              y: { type: 'num', value: 24 },
+              w: { type: 'num', value: 10 },
+              h: { type: 'num', value: 6 },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 12 },
+              y: { type: 'num', value: 44 },
+              w: { type: 'num', value: 10 },
+              h: { type: 'num', value: 20 },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 30 },
+              y: { type: 'num', value: 44 },
+              w: { type: 'num', value: 10 },
+              h: { type: 'num', value: 12 },
+            },
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: { type: 'color', value: '#ffffff' },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 44 },
+              y: { type: 'num', value: 4 },
+              w: { type: 'num', value: 6 },
+              h: { type: 'num', value: 6 },
+            },
+          ],
+          baseW: { type: 'num', value: 60 },
+          baseH: { type: 'num', value: 64 },
+        },
+        {
+          type: 'gk:defineLook',
+          name: 'dino pulando',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: { type: 'color', value: '#495057' },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 0 },
+              y: { type: 'num', value: 20 },
+              w: { type: 'num', value: 12 },
+              h: { type: 'num', value: 8 },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 8 },
+              y: { type: 'num', value: 16 },
+              w: { type: 'num', value: 32 },
+              h: { type: 'num', value: 26 },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 28 },
+              y: { type: 'num', value: 0 },
+              w: { type: 'num', value: 26 },
+              h: { type: 'num', value: 20 },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 36 },
+              y: { type: 'num', value: 22 },
+              w: { type: 'num', value: 10 },
+              h: { type: 'num', value: 6 },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 14 },
+              y: { type: 'num', value: 42 },
+              w: { type: 'num', value: 10 },
+              h: { type: 'num', value: 12 },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 30 },
+              y: { type: 'num', value: 42 },
+              w: { type: 'num', value: 10 },
+              h: { type: 'num', value: 12 },
+            },
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: { type: 'color', value: '#ffffff' },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 44 },
+              y: { type: 'num', value: 4 },
+              w: { type: 'num', value: 6 },
+              h: { type: 'num', value: 6 },
+            },
+          ],
+          baseW: { type: 'num', value: 60 },
+          baseH: { type: 'num', value: 64 },
+        },
+        {
+          type: 'gk:defineLook',
+          name: 'cacto',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: { type: 'color', value: '#2f9e44' },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 13 },
+              y: { type: 'num', value: 0 },
+              w: { type: 'num', value: 8 },
+              h: { type: 'num', value: 52 },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 3 },
+              y: { type: 'num', value: 10 },
+              w: { type: 'num', value: 6 },
+              h: { type: 'num', value: 20 },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 3 },
+              y: { type: 'num', value: 24 },
+              w: { type: 'num', value: 12 },
+              h: { type: 'num', value: 6 },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 25 },
+              y: { type: 'num', value: 16 },
+              w: { type: 'num', value: 6 },
+              h: { type: 'num', value: 18 },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 21 },
+              y: { type: 'num', value: 28 },
+              w: { type: 'num', value: 10 },
+              h: { type: 'num', value: 6 },
+            },
+          ],
+          baseW: { type: 'num', value: 34 },
+          baseH: { type: 'num', value: 52 },
+        },
+        {
+          type: 'gk:defineLook',
+          name: 'passaro',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: { type: 'color', value: '#7048e8' },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 10 },
+              y: { type: 'num', value: 12 },
+              w: { type: 'num', value: 26 },
+              h: { type: 'num', value: 12 },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 18 },
+              y: { type: 'num', value: 2 },
+              w: { type: 'num', value: 14 },
+              h: { type: 'num', value: 12 },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 34 },
+              y: { type: 'num', value: 10 },
+              w: { type: 'num', value: 10 },
+              h: { type: 'num', value: 6 },
+            },
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: { type: 'color', value: '#ffd43b' },
+            },
+            {
+              type: 'canvasFillRect',
+              ctxVar: 'ctx',
+              x: { type: 'num', value: 2 },
+              y: { type: 'num', value: 14 },
+              w: { type: 'num', value: 8 },
+              h: { type: 'num', value: 6 },
+            },
+          ],
+          baseW: { type: 'num', value: 44 },
+          baseH: { type: 'num', value: 30 },
+        },
+        {
+          type: 'gk:defineMold',
+          name: 'chao',
+          w: { type: 'num', value: 960 },
+          h: { type: 'num', value: 80 },
+          health: { type: 'num', value: 1 },
+          speed: { type: 'num', value: 0 },
+          damage: { type: 'num', value: 0 },
+          color: '#e6c98c',
+          image: '',
+          look: '',
+        },
+        {
+          type: 'gk:defineMold',
+          name: 'cacto',
+          w: { type: 'num', value: 34 },
+          h: { type: 'num', value: 52 },
+          health: { type: 'num', value: 1 },
+          speed: { type: 'num', value: 0 },
+          damage: { type: 'num', value: 0 },
+          color: '#2f9e44',
+          image: '',
+          look: 'cacto',
+        },
+        {
+          type: 'gk:defineMold',
+          name: 'passaro',
+          w: { type: 'num', value: 44 },
+          h: { type: 'num', value: 30 },
+          health: { type: 'num', value: 1 },
+          speed: { type: 'num', value: 0 },
+          damage: { type: 'num', value: 0 },
+          color: '#7048e8',
+          image: '',
+          look: 'passaro',
+        },
+        {
+          type: 'gk:spawnFromMold',
+          mold: 'chao',
+          x: { type: 'num', value: 0 },
+          y: { type: 'num', value: 460 },
+        },
+        {
+          type: 'gk:createCharacter',
+          varName: 'dino',
+          image: '',
+          w: { type: 'num', value: 60 },
+          h: { type: 'num', value: 64 },
+          speed: { type: 'num', value: 0 },
+          color: '#495057',
+        },
+        {
+          type: 'gk:placeCharacter',
+          charVar: 'dino',
+          x: { type: 'num', value: 120 },
+          y: { type: 'num', value: 396 },
+        },
+        {
+          type: 'gk:setHitbox',
+          charVar: 'dino',
+          ox: { type: 'num', value: 12 },
+          oy: { type: 'num', value: 10 },
+          w: { type: 'num', value: 36 },
+          h: { type: 'num', value: 50 },
+        },
+        { type: 'gk:stateLook', charVar: 'dino', state: 'parado', look: 'dino correndo' },
+        { type: 'gk:stateLook', charVar: 'dino', state: 'andando', look: 'dino correndo' },
+        { type: 'gk:stateLook', charVar: 'dino', state: 'pulando', look: 'dino pulando' },
+        { type: 'var', name: 'pontos', value: { type: 'num', value: 0 } },
+        { type: 'var', name: 'velocidade', value: { type: 'num', value: 320 } },
+        { type: 'var', name: 'recorde', value: { type: 'gk:savedValue', name: 'recorde' } },
+        { type: 'var', name: 'nuvemX', value: { type: 'num', value: 0 } },
+        { type: 'var', name: 'riscoX', value: { type: 'num', value: 0 } },
+      ],
+      events: [
+        {
+          type: 'gk:onEvent',
+          event: 'dino:bateu',
+          body: [
+            { type: 'gk:playEffect', fx: 'hit' },
+            {
+              type: 'gk:cameraShake',
+              intensity: { type: 'num', value: 8 },
+              seconds: { type: 'num', value: 0.35 },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '>',
+                left: { type: 'var', name: 'pontos' },
+                right: { type: 'var', name: 'recorde' },
+              },
+              then: [
+                { type: 'assign', name: 'recorde', value: { type: 'var', name: 'pontos' } },
+                {
+                  type: 'gk:saveValue',
+                  name: 'recorde',
+                  value: { type: 'var', name: 'recorde' },
+                },
+              ],
+            },
+            {
+              type: 'gk:setScreenText',
+              screen: 'fim',
+              title: { type: 'str', value: 'Bateu!' },
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '+',
+                  left: {
+                    type: 'binop',
+                    op: '+',
+                    left: { type: 'str', value: 'Pontos: ' },
+                    right: { type: 'var', name: 'pontos' },
+                  },
+                  right: { type: 'str', value: ' / Recorde: ' },
+                },
+                right: { type: 'var', name: 'recorde' },
+              },
+              button: { type: 'str', value: 'Correr de novo' },
+            },
+            { type: 'gk:endGame' },
+          ],
+        },
+        {
+          type: 'gk:onGameClick',
+          xName: 'px',
+          yName: 'py',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: { type: 'gk:stateIs', name: 'jogando' },
+                right: { type: 'gk:isOnGround', charVar: 'dino' },
+              },
+              then: [
+                { type: 'gk:playEffect', fx: 'jump' },
+                { type: 'gk:jump', charVar: 'dino', force: { type: 'num', value: 860 } },
+              ],
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'gk:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '||',
+                left: { type: 'gk:keyPressed', key: ' ' },
+                right: { type: 'gk:keyPressed', key: 'arrowup' },
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: { type: 'gk:isOnGround', charVar: 'dino' },
+                  then: [
+                    { type: 'gk:playEffect', fx: 'jump' },
+                    { type: 'gk:jump', charVar: 'dino', force: { type: 'num', value: 860 } },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'gk:applyGravity',
+              charVar: 'dino',
+              g: { type: 'num', value: 2160 },
+              dtVar: 'dt',
+            },
+            { type: 'gk:moveByVelocity', charVar: 'dino', dtVar: 'dt' },
+            { type: 'gk:collideGroup', charVar: 'dino', mold: 'chao' },
+            {
+              type: 'if',
+              cond: { type: 'gk:isOnGround', charVar: 'dino' },
+              then: [
+                {
+                  type: 'gk:setEntityState',
+                  charVar: 'dino',
+                  state: 'andando',
+                  seconds: { type: 'num', value: 0.05 },
+                },
+              ],
+            },
+            { type: 'gk:autoAnimate', charVar: 'dino' },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '<',
+                left: { type: 'var', name: 'velocidade' },
+                right: { type: 'num', value: 720 },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'velocidade',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: { type: 'var', name: 'velocidade' },
+                    right: {
+                      type: 'binop',
+                      op: '*',
+                      left: { type: 'num', value: 8 },
+                      right: { type: 'var', name: 'dt' },
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'gk:everySeconds',
+              seconds: { type: 'num', value: 0.1 },
+              body: [
+                {
+                  type: 'assign',
+                  name: 'pontos',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: { type: 'var', name: 'pontos' },
+                    right: { type: 'num', value: 1 },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'assign',
+              name: 'nuvemX',
+              value: {
+                type: 'binop',
+                op: '-',
+                left: { type: 'var', name: 'nuvemX' },
+                right: {
+                  type: 'binop',
+                  op: '*',
+                  left: {
+                    type: 'binop',
+                    op: '*',
+                    left: { type: 'var', name: 'velocidade' },
+                    right: { type: 'num', value: 0.2 },
+                  },
+                  right: { type: 'var', name: 'dt' },
+                },
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '<',
+                left: { type: 'var', name: 'nuvemX' },
+                right: {
+                  type: 'binop',
+                  op: '-',
+                  left: { type: 'num', value: 0 },
+                  right: { type: 'num', value: 320 },
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'nuvemX',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: { type: 'var', name: 'nuvemX' },
+                    right: { type: 'num', value: 320 },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'assign',
+              name: 'riscoX',
+              value: {
+                type: 'binop',
+                op: '-',
+                left: { type: 'var', name: 'riscoX' },
+                right: {
+                  type: 'binop',
+                  op: '*',
+                  left: { type: 'var', name: 'velocidade' },
+                  right: { type: 'var', name: 'dt' },
+                },
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '<',
+                left: { type: 'var', name: 'riscoX' },
+                right: {
+                  type: 'binop',
+                  op: '-',
+                  left: { type: 'num', value: 0 },
+                  right: { type: 'num', value: 240 },
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'riscoX',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: { type: 'var', name: 'riscoX' },
+                    right: { type: 'num', value: 240 },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'gk:everySeconds',
+              seconds: { type: 'num', value: 1.4 },
+              body: [
+                {
+                  type: 'gk:spawnFromMold',
+                  mold: 'cacto',
+                  x: {
+                    type: 'binop',
+                    op: '+',
+                    left: { type: 'gk:gameWidth' },
+                    right: { type: 'num', value: 80 },
+                  },
+                  y: { type: 'num', value: 408 },
+                },
+              ],
+            },
+            {
+              type: 'gk:everySeconds',
+              seconds: { type: 'num', value: 4.7 },
+              body: [
+                {
+                  type: 'gk:spawnFromMold',
+                  mold: 'passaro',
+                  x: {
+                    type: 'binop',
+                    op: '+',
+                    left: { type: 'gk:gameWidth' },
+                    right: { type: 'num', value: 80 },
+                  },
+                  y: { type: 'num', value: 330 },
+                },
+              ],
+            },
+            {
+              type: 'gk:forEachActive',
+              mold: 'cacto',
+              itemName: 'item',
+              body: [
+                {
+                  type: 'gk:setVelocity',
+                  charVar: 'item',
+                  vx: {
+                    type: 'binop',
+                    op: '-',
+                    left: { type: 'num', value: 0 },
+                    right: { type: 'var', name: 'velocidade' },
+                  },
+                  vy: { type: 'num', value: 0 },
+                },
+                { type: 'gk:moveByVelocity', charVar: 'item', dtVar: 'dt' },
+                {
+                  type: 'if',
+                  cond: { type: 'gk:charactersTouch', aVar: 'dino', bVar: 'item' },
+                  then: [{ type: 'gk:emit', event: 'dino:bateu' }],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<',
+                    left: { type: 'gk:charX', charVar: 'item' },
+                    right: {
+                      type: 'binop',
+                      op: '-',
+                      left: { type: 'num', value: 0 },
+                      right: { type: 'num', value: 80 },
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'pontos',
+                      value: {
+                        type: 'binop',
+                        op: '+',
+                        left: { type: 'var', name: 'pontos' },
+                        right: { type: 'num', value: 5 },
+                      },
+                    },
+                    { type: 'gk:playEffect', fx: 'coin' },
+                    { type: 'gk:recycle', charVar: 'item' },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'gk:forEachActive',
+              mold: 'passaro',
+              itemName: 'item',
+              body: [
+                {
+                  type: 'gk:setVelocity',
+                  charVar: 'item',
+                  vx: {
+                    type: 'binop',
+                    op: '-',
+                    left: { type: 'num', value: 0 },
+                    right: { type: 'var', name: 'velocidade' },
+                  },
+                  vy: { type: 'num', value: 0 },
+                },
+                { type: 'gk:moveByVelocity', charVar: 'item', dtVar: 'dt' },
+                {
+                  type: 'if',
+                  cond: { type: 'gk:charactersTouch', aVar: 'dino', bVar: 'item' },
+                  then: [{ type: 'gk:emit', event: 'dino:bateu' }],
+                },
+              ],
+            },
+            { type: 'gk:cullOffscreen', mold: 'cacto', margin: { type: 'num', value: 200 } },
+            { type: 'gk:cullOffscreen', mold: 'passaro', margin: { type: 'num', value: 200 } },
+          ],
+        },
+        {
+          type: 'gk:onDraw',
+          ctxName: 'ctx',
+          body: [
+            { type: 'gk:drawBackground', color: '#dff6ff', grid: false },
+            {
+              type: 'gk:drawLook',
+              look: 'sol',
+              x: { type: 'num', value: 800 },
+              y: { type: 'num', value: 48 },
+              w: { type: 'num', value: 80 },
+              h: { type: 'num', value: 80 },
+            },
+            {
+              type: 'gk:drawLook',
+              look: 'nuvem',
+              x: { type: 'var', name: 'nuvemX' },
+              y: { type: 'num', value: 84 },
+              w: { type: 'num', value: 120 },
+              h: { type: 'num', value: 44 },
+            },
+            {
+              type: 'gk:drawLook',
+              look: 'nuvem',
+              x: {
+                type: 'binop',
+                op: '+',
+                left: { type: 'var', name: 'nuvemX' },
+                right: { type: 'num', value: 320 },
+              },
+              y: { type: 'num', value: 138 },
+              w: { type: 'num', value: 120 },
+              h: { type: 'num', value: 44 },
+            },
+            {
+              type: 'gk:drawLook',
+              look: 'nuvem',
+              x: {
+                type: 'binop',
+                op: '+',
+                left: { type: 'var', name: 'nuvemX' },
+                right: { type: 'num', value: 640 },
+              },
+              y: { type: 'num', value: 66 },
+              w: { type: 'num', value: 120 },
+              h: { type: 'num', value: 44 },
+            },
+            {
+              type: 'gk:drawLook',
+              look: 'nuvem',
+              x: {
+                type: 'binop',
+                op: '+',
+                left: { type: 'var', name: 'nuvemX' },
+                right: { type: 'num', value: 960 },
+              },
+              y: { type: 'num', value: 116 },
+              w: { type: 'num', value: 120 },
+              h: { type: 'num', value: 44 },
+            },
+            { type: 'gk:drawActive', mold: 'chao' },
+            {
+              type: 'gk:drawLook',
+              look: 'risco',
+              x: { type: 'var', name: 'riscoX' },
+              y: { type: 'num', value: 502 },
+              w: { type: 'num', value: 60 },
+              h: { type: 'num', value: 6 },
+            },
+            {
+              type: 'gk:drawLook',
+              look: 'risco',
+              x: {
+                type: 'binop',
+                op: '+',
+                left: { type: 'var', name: 'riscoX' },
+                right: { type: 'num', value: 240 },
+              },
+              y: { type: 'num', value: 502 },
+              w: { type: 'num', value: 60 },
+              h: { type: 'num', value: 6 },
+            },
+            {
+              type: 'gk:drawLook',
+              look: 'risco',
+              x: {
+                type: 'binop',
+                op: '+',
+                left: { type: 'var', name: 'riscoX' },
+                right: { type: 'num', value: 480 },
+              },
+              y: { type: 'num', value: 502 },
+              w: { type: 'num', value: 60 },
+              h: { type: 'num', value: 6 },
+            },
+            {
+              type: 'gk:drawLook',
+              look: 'risco',
+              x: {
+                type: 'binop',
+                op: '+',
+                left: { type: 'var', name: 'riscoX' },
+                right: { type: 'num', value: 720 },
+              },
+              y: { type: 'num', value: 502 },
+              w: { type: 'num', value: 60 },
+              h: { type: 'num', value: 6 },
+            },
+            {
+              type: 'gk:drawLook',
+              look: 'risco',
+              x: {
+                type: 'binop',
+                op: '+',
+                left: { type: 'var', name: 'riscoX' },
+                right: { type: 'num', value: 960 },
+              },
+              y: { type: 'num', value: 502 },
+              w: { type: 'num', value: 60 },
+              h: { type: 'num', value: 6 },
+            },
+            { type: 'gk:drawActive', mold: 'cacto' },
+            { type: 'gk:drawActive', mold: 'passaro' },
+            { type: 'gk:drawCharacter', charVar: 'dino' },
+          ],
+        },
+        {
+          type: 'gk:onDrawHud',
+          ctxName: 'ctx',
+          body: [
+            {
+              type: 'canvasFillStyle',
+              ctxVar: 'ctx',
+              color: { type: 'color', value: '#343a40' },
+            },
+            { type: 'canvasFont', ctxVar: 'ctx', size: 26, family: 'sans-serif' },
+            {
+              type: 'canvasFillText',
+              ctxVar: 'ctx',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: { type: 'str', value: 'Pontos: ' },
+                right: { type: 'var', name: 'pontos' },
+              },
+              x: { type: 'num', value: 20 },
+              y: { type: 'num', value: 40 },
+            },
+            {
+              type: 'canvasFillText',
+              ctxVar: 'ctx',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: { type: 'str', value: 'Recorde: ' },
+                right: { type: 'var', name: 'recorde' },
+              },
+              x: { type: 'num', value: 20 },
+              y: { type: 'num', value: 72 },
+            },
+          ],
+        },
+      ],
+    },
+  },
+})

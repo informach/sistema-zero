@@ -1,3 +1,4 @@
+import { buildProjectRunContextRuntime } from '#extensions'
 import { withGameUIFontRuntime } from '../gameUiFont'
 import { withThreePostProcessingRuntime } from '../threePostProcessingRuntime'
 import { gameKit3DCameraRuntimeSource } from './runtimeCamera'
@@ -35,6 +36,7 @@ import { gameKit3DProjectRuntimeSource } from './runtimeProject'
  *   no fechamento (o navegador limita ~16 contextos WebGL).
  */
 const gameKit3DRuntimeBeforeModelSource = `import * as THREE from 'three';
+${buildProjectRunContextRuntime()}
 (function () {
   // ---- Config (do bloco "Preparar o jogo 3D") ----
   var config = {

@@ -1,5 +1,6 @@
 import type { ExtensionManifest } from '#extensions'
 import {
+  corridaInfinitaExample,
   crossingExample,
   dodgeExample,
   nightExample,
@@ -152,6 +153,7 @@ em um evento ou em um construtor.
     nightExample,
     swarmExample,
     dodgeExample,
+    corridaInfinitaExample,
     crossingExample,
     raceExample,
     stackExample,
