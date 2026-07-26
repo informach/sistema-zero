@@ -2608,6 +2608,38 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g2d:createBalloon'; varName: string; ctxVar: string })
   | (JSStatementCommon & { type: 'g2d:updateBalloon'; gameVar: string })
   | (JSStatementCommon & { type: 'g2d:restartBalloon'; gameVar: string })
+  // Kits DECOMPOSTOS (v0.40.0): cada aspecto do equilibrista/balão em um nó.
+  | (JSStatementCommon & {
+      type: 'g2d:stickHeroCreate'
+      varName: string
+      ctxVar: string
+      heroColor: string
+      stickColor: string
+      platformColor: string
+    })
+  | (JSStatementCommon & { type: 'g2d:stickHeroScenery'; gameVar: string })
+  | (JSStatementCommon & { type: 'g2d:stickHeroHold'; gameVar: string; speed: number | JSExpr })
+  | (JSStatementCommon & { type: 'g2d:stickHeroStep'; gameVar: string; speed: number | JSExpr })
+  | (JSStatementCommon & { type: 'g2d:stickHeroDraw'; gameVar: string })
+  | (JSStatementCommon & { type: 'g2d:onStickHeroCross'; gameVar: string; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'g2d:onStickHeroPerfect'; gameVar: string; body: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'g2d:balloonCreate'
+      varName: string
+      ctxVar: string
+      color: string
+      basketColor: string
+    })
+  | (JSStatementCommon & { type: 'g2d:balloonScenery'; gameVar: string })
+  | (JSStatementCommon & { type: 'g2d:balloonLift'; gameVar: string; force: number | JSExpr })
+  | (JSStatementCommon & { type: 'g2d:balloonScroll'; gameVar: string; speed: number | JSExpr })
+  | (JSStatementCommon & { type: 'g2d:balloonDraw'; gameVar: string })
+  | (JSStatementCommon & { type: 'g2d:onBalloonTreeHit'; gameVar: string; body: JSStatement[] })
+  // Visual customizado dos kits (v0.41.0): figura nomeada ou imagem do projeto.
+  | (JSStatementCommon & { type: 'g2d:stickHeroSetShape'; gameVar: string; shape: string })
+  | (JSStatementCommon & { type: 'g2d:stickHeroSetImage'; gameVar: string; image: string })
+  | (JSStatementCommon & { type: 'g2d:balloonSetShape'; gameVar: string; shape: string })
+  | (JSStatementCommon & { type: 'g2d:balloonSetImage'; gameVar: string; image: string })
   | (JSStatementCommon & {
       type: 'g2d:controlDino'
       spriteVar: string
@@ -6513,6 +6545,93 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({ type: z.literal('g2d:updateBalloon'), gameVar: irText(), ...idField }),
     z.object({ type: z.literal('g2d:restartBalloon'), gameVar: irText(), ...idField }),
     z.object({
+      type: z.literal('g2d:stickHeroCreate'),
+      varName: irText(),
+      ctxVar: irText(),
+      heroColor: irText(),
+      stickColor: irText(),
+      platformColor: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:stickHeroScenery'), gameVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:stickHeroHold'),
+      gameVar: irText(),
+      speed: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:stickHeroStep'),
+      gameVar: irText(),
+      speed: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:stickHeroDraw'), gameVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:onStickHeroCross'),
+      gameVar: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:onStickHeroPerfect'),
+      gameVar: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:balloonCreate'),
+      varName: irText(),
+      ctxVar: irText(),
+      color: irText(),
+      basketColor: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:balloonScenery'), gameVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:balloonLift'),
+      gameVar: irText(),
+      force: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:balloonScroll'),
+      gameVar: irText(),
+      speed: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:balloonDraw'), gameVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:onBalloonTreeHit'),
+      gameVar: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:stickHeroSetShape'),
+      gameVar: irText(),
+      shape: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:stickHeroSetImage'),
+      gameVar: irText(),
+      image: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:balloonSetShape'),
+      gameVar: irText(),
+      shape: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:balloonSetImage'),
+      gameVar: irText(),
+      image: irText(),
+      ...idField,
+    }),
+    z.object({
       type: z.literal('g2d:controlDino'),
       spriteVar: irText(),
       ctxVar: irText(),
@@ -10321,6 +10440,8 @@ const G2D_DECLARATION_FIELDS: Readonly<Record<string, string>> = {
   'g2d:placeThrower': 'varName',
   'g2d:createStickHero': 'varName',
   'g2d:createBalloon': 'varName',
+  'g2d:stickHeroCreate': 'varName',
+  'g2d:balloonCreate': 'varName',
 }
 
 const G2D_REFERENCE_FIELDS = new Set([
@@ -11013,6 +11134,23 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:createBalloon',
   'g2d:updateBalloon',
   'g2d:restartBalloon',
+  'g2d:stickHeroCreate',
+  'g2d:stickHeroScenery',
+  'g2d:stickHeroHold',
+  'g2d:stickHeroStep',
+  'g2d:stickHeroDraw',
+  'g2d:onStickHeroCross',
+  'g2d:onStickHeroPerfect',
+  'g2d:balloonCreate',
+  'g2d:balloonScenery',
+  'g2d:balloonLift',
+  'g2d:balloonScroll',
+  'g2d:balloonDraw',
+  'g2d:onBalloonTreeHit',
+  'g2d:stickHeroSetShape',
+  'g2d:stickHeroSetImage',
+  'g2d:balloonSetShape',
+  'g2d:balloonSetImage',
 ])
 
 export const G3D_STATEMENT_TYPES = new Set([

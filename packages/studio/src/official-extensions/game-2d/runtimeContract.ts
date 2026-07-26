@@ -536,12 +536,44 @@ export interface GameTwoDArcadeApi {
   stickHeroScore(game: GameTwoDStickHeroGame): number
   stickHeroOver(game: GameTwoDStickHeroGame): boolean
   restartStickHero(game: GameTwoDStickHeroGame): void
+  // Kit equilibrista DECOMPOSTO (v0.40.0): cada aspecto em um helper.
+  stickHeroCreate(
+    ctx: GameTwoDContext,
+    heroColor?: string,
+    stickColor?: string,
+    platformColor?: string,
+  ): GameTwoDStickHeroGame | null
+  stickHeroScenery(game: GameTwoDStickHeroGame): void
+  stickHeroHold(game: GameTwoDStickHeroGame, speed?: number): void
+  stickHeroStep(game: GameTwoDStickHeroGame, speed?: number): void
+  stickHeroDraw(game: GameTwoDStickHeroGame): void
+  stickHeroOnCross(game: GameTwoDStickHeroGame, fn: () => void, id?: string): void
+  stickHeroOnPerfect(game: GameTwoDStickHeroGame, fn: () => void, id?: string): void
+  // Visual customizado do herói (v0.41.0): figura do "Desenhar a figura" ou
+  // imagem do projeto; nome vazio volta ao desenho pronto.
+  stickHeroSetShape(game: GameTwoDStickHeroGame, name?: string): void
+  stickHeroSetImage(game: GameTwoDStickHeroGame, name?: string): void
   createBalloon(ctx: GameTwoDContext): GameTwoDBalloonGame | null
   updateBalloon(game: GameTwoDBalloonGame): void
   balloonScore(game: GameTwoDBalloonGame): number
   balloonFuel(game: GameTwoDBalloonGame): number
   balloonOver(game: GameTwoDBalloonGame): boolean
   restartBalloon(game: GameTwoDBalloonGame): void
+  // Kit balão DECOMPOSTO (v0.40.0).
+  balloonCreate(
+    ctx: GameTwoDContext,
+    color?: string,
+    basketColor?: string,
+  ): GameTwoDBalloonGame | null
+  balloonScenery(game: GameTwoDBalloonGame): void
+  balloonLift(game: GameTwoDBalloonGame, force?: number): void
+  balloonScroll(game: GameTwoDBalloonGame, speed?: number): void
+  balloonDraw(game: GameTwoDBalloonGame): void
+  balloonOnTreeHit(game: GameTwoDBalloonGame, fn: () => void, id?: string): void
+  // Visual customizado do balão (v0.41.0): figura ou imagem do projeto; nome
+  // vazio volta ao desenho pronto.
+  balloonSetShape(game: GameTwoDBalloonGame, name?: string): void
+  balloonSetImage(game: GameTwoDBalloonGame, name?: string): void
 }
 
 export interface GameTwoDRuntimeApi
@@ -747,12 +779,29 @@ export const GAME_TWO_D_API_KEYS = [
   'stickHeroScore',
   'stickHeroOver',
   'restartStickHero',
+  'stickHeroCreate',
+  'stickHeroScenery',
+  'stickHeroHold',
+  'stickHeroStep',
+  'stickHeroDraw',
+  'stickHeroOnCross',
+  'stickHeroOnPerfect',
+  'stickHeroSetShape',
+  'stickHeroSetImage',
   'createBalloon',
   'updateBalloon',
   'balloonScore',
   'balloonFuel',
   'balloonOver',
   'restartBalloon',
+  'balloonCreate',
+  'balloonScenery',
+  'balloonLift',
+  'balloonScroll',
+  'balloonDraw',
+  'balloonOnTreeHit',
+  'balloonSetShape',
+  'balloonSetImage',
 ] as const satisfies readonly (keyof GameTwoDRuntimeApi)[]
 
 export type GameTwoDApiKey = (typeof GAME_TWO_D_API_KEYS)[number]

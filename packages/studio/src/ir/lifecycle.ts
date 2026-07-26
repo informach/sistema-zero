@@ -68,6 +68,8 @@ export const START_ONLY_STATEMENT_TYPES = new Set([
   'g2d:placeThrower',
   'g2d:createStickHero',
   'g2d:createBalloon',
+  'g2d:stickHeroCreate',
+  'g2d:balloonCreate',
   'g2d:createGroup',
   'g2d:score',
   'g2d:setHealth',

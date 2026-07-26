@@ -4174,6 +4174,88 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const gameVar = identifierName(args[0])
       return gameVar ? { type: 'g2d:restartBalloon', gameVar } : null
     }
+    case 'stickHeroScenery': {
+      const gameVar = identifierName(args[0])
+      return gameVar ? { type: 'g2d:stickHeroScenery', gameVar } : null
+    }
+    case 'stickHeroHold': {
+      // generator: SZGame2D.stickHeroHold(jogo, rapidez)
+      const gameVar = identifierName(args[0])
+      const speed = toExpr(args[1], ctx)
+      return gameVar && isSimpleValue(speed) ? { type: 'g2d:stickHeroHold', gameVar, speed } : null
+    }
+    case 'stickHeroStep': {
+      // generator: SZGame2D.stickHeroStep(jogo, rapidez)
+      const gameVar = identifierName(args[0])
+      const speed = toExpr(args[1], ctx)
+      return gameVar && isSimpleValue(speed) ? { type: 'g2d:stickHeroStep', gameVar, speed } : null
+    }
+    case 'stickHeroDraw': {
+      const gameVar = identifierName(args[0])
+      return gameVar ? { type: 'g2d:stickHeroDraw', gameVar } : null
+    }
+    case 'stickHeroOnCross': {
+      // generator: SZGame2D.stickHeroOnCross(jogo, () => {…}, "id")
+      const gameVar = identifierName(args[0])
+      if (!gameVar || !isFn(args[1])) return null
+      return { type: 'g2d:onStickHeroCross', gameVar, body: bodyOfFn(args[1], source, ctx) }
+    }
+    case 'stickHeroOnPerfect': {
+      // generator: SZGame2D.stickHeroOnPerfect(jogo, () => {…}, "id")
+      const gameVar = identifierName(args[0])
+      if (!gameVar || !isFn(args[1])) return null
+      return { type: 'g2d:onStickHeroPerfect', gameVar, body: bodyOfFn(args[1], source, ctx) }
+    }
+    case 'balloonScenery': {
+      const gameVar = identifierName(args[0])
+      return gameVar ? { type: 'g2d:balloonScenery', gameVar } : null
+    }
+    case 'balloonLift': {
+      // generator: SZGame2D.balloonLift(jogo, força)
+      const gameVar = identifierName(args[0])
+      const force = toExpr(args[1], ctx)
+      return gameVar && isSimpleValue(force) ? { type: 'g2d:balloonLift', gameVar, force } : null
+    }
+    case 'balloonScroll': {
+      // generator: SZGame2D.balloonScroll(jogo, velocidade)
+      const gameVar = identifierName(args[0])
+      const speed = toExpr(args[1], ctx)
+      return gameVar && isSimpleValue(speed) ? { type: 'g2d:balloonScroll', gameVar, speed } : null
+    }
+    case 'balloonDraw': {
+      const gameVar = identifierName(args[0])
+      return gameVar ? { type: 'g2d:balloonDraw', gameVar } : null
+    }
+    case 'balloonOnTreeHit': {
+      // generator: SZGame2D.balloonOnTreeHit(jogo, () => {…}, "id")
+      const gameVar = identifierName(args[0])
+      if (!gameVar || !isFn(args[1])) return null
+      return { type: 'g2d:onBalloonTreeHit', gameVar, body: bodyOfFn(args[1], source, ctx) }
+    }
+    case 'stickHeroSetShape': {
+      // generator: SZGame2D.stickHeroSetShape(jogo, "figura")
+      const gameVar = identifierName(args[0])
+      if (!gameVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:stickHeroSetShape', gameVar, shape: args[1].value as string }
+    }
+    case 'stickHeroSetImage': {
+      // generator: SZGame2D.stickHeroSetImage(jogo, "imagem")
+      const gameVar = identifierName(args[0])
+      if (!gameVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:stickHeroSetImage', gameVar, image: args[1].value as string }
+    }
+    case 'balloonSetShape': {
+      // generator: SZGame2D.balloonSetShape(jogo, "figura")
+      const gameVar = identifierName(args[0])
+      if (!gameVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:balloonSetShape', gameVar, shape: args[1].value as string }
+    }
+    case 'balloonSetImage': {
+      // generator: SZGame2D.balloonSetImage(jogo, "imagem")
+      const gameVar = identifierName(args[0])
+      if (!gameVar || args[1]?.type !== 'StringLiteral') return null
+      return { type: 'g2d:balloonSetImage', gameVar, image: args[1].value as string }
+    }
     case 'overlapSpriteGroup': {
       // generator: SZGame2D.overlapSpriteGroup(() => sprite, grupo, function (item) {…})
       const spriteVar = arrowReturnIdentifier(args[0])
@@ -4297,6 +4379,36 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
     // generator: const jogo = SZGame2D.createBalloon(ctx)
     const ctxVar = identifierName(args[0]) ?? 'ctx'
     return { type: 'g2d:createBalloon', varName: name, ctxVar }
+  }
+  if (method === 'stickHeroCreate') {
+    // generator: const jogo = SZGame2D.stickHeroCreate(ctx, "herói", "bastão", "plataformas")
+    const ctxVar = identifierName(args[0]) ?? 'ctx'
+    if (
+      args[1]?.type !== 'StringLiteral' ||
+      args[2]?.type !== 'StringLiteral' ||
+      args[3]?.type !== 'StringLiteral'
+    )
+      return null
+    return {
+      type: 'g2d:stickHeroCreate',
+      varName: name,
+      ctxVar,
+      heroColor: args[1].value as string,
+      stickColor: args[2].value as string,
+      platformColor: args[3].value as string,
+    }
+  }
+  if (method === 'balloonCreate') {
+    // generator: const jogo = SZGame2D.balloonCreate(ctx, "balão", "cesto")
+    const ctxVar = identifierName(args[0]) ?? 'ctx'
+    if (args[1]?.type !== 'StringLiteral' || args[2]?.type !== 'StringLiteral') return null
+    return {
+      type: 'g2d:balloonCreate',
+      varName: name,
+      ctxVar,
+      color: args[1].value as string,
+      basketColor: args[2].value as string,
+    }
   }
   if (method === 'createCity') {
     // generator: const cidade = SZGame2D.createCity()

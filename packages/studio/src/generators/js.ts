@@ -1410,6 +1410,64 @@ function compileStatementCode(
       return `${pad}SZGame2D.updateBalloon(${identifiers.get(stmt.gameVar)});`
     case 'g2d:restartBalloon':
       return `${pad}SZGame2D.restartBalloon(${identifiers.get(stmt.gameVar)});`
+    case 'g2d:stickHeroCreate':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.stickHeroCreate(${identifiers.get(stmt.ctxVar)}, ${JSON.stringify(stmt.heroColor)}, ${JSON.stringify(stmt.stickColor)}, ${JSON.stringify(stmt.platformColor)});`
+    case 'g2d:stickHeroScenery':
+      return `${pad}SZGame2D.stickHeroScenery(${identifiers.get(stmt.gameVar)});`
+    case 'g2d:stickHeroHold':
+      return `${pad}SZGame2D.stickHeroHold(${identifiers.get(stmt.gameVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
+    case 'g2d:stickHeroStep':
+      return `${pad}SZGame2D.stickHeroStep(${identifiers.get(stmt.gameVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
+    case 'g2d:stickHeroDraw':
+      return `${pad}SZGame2D.stickHeroDraw(${identifiers.get(stmt.gameVar)});`
+    case 'g2d:onStickHeroCross': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const id = stmt.__id ?? identifiers.reserveInternal('eventoDeAtravessar')
+      return `${pad}SZGame2D.stickHeroOnCross(${identifiers.get(stmt.gameVar)}, () => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
+    }
+    case 'g2d:onStickHeroPerfect': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const id = stmt.__id ?? identifiers.reserveInternal('eventoDeAcertoPerfeito')
+      return `${pad}SZGame2D.stickHeroOnPerfect(${identifiers.get(stmt.gameVar)}, () => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
+    }
+    case 'g2d:balloonCreate':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.balloonCreate(${identifiers.get(stmt.ctxVar)}, ${JSON.stringify(stmt.color)}, ${JSON.stringify(stmt.basketColor)});`
+    case 'g2d:balloonScenery':
+      return `${pad}SZGame2D.balloonScenery(${identifiers.get(stmt.gameVar)});`
+    case 'g2d:balloonLift':
+      return `${pad}SZGame2D.balloonLift(${identifiers.get(stmt.gameVar)}, ${compileExpr(valueToExpr(stmt.force), 0, identifiers, recAt(base))});`
+    case 'g2d:balloonScroll':
+      return `${pad}SZGame2D.balloonScroll(${identifiers.get(stmt.gameVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
+    case 'g2d:balloonDraw':
+      return `${pad}SZGame2D.balloonDraw(${identifiers.get(stmt.gameVar)});`
+    case 'g2d:onBalloonTreeHit': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      const id = stmt.__id ?? identifiers.reserveInternal('eventoDeBaterNaArvore')
+      return `${pad}SZGame2D.balloonOnTreeHit(${identifiers.get(stmt.gameVar)}, () => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
+    }
+    case 'g2d:stickHeroSetShape':
+      return `${pad}SZGame2D.stickHeroSetShape(${identifiers.get(stmt.gameVar)}, ${JSON.stringify(stmt.shape)});`
+    case 'g2d:stickHeroSetImage':
+      return `${pad}SZGame2D.stickHeroSetImage(${identifiers.get(stmt.gameVar)}, ${JSON.stringify(stmt.image)});`
+    case 'g2d:balloonSetShape':
+      return `${pad}SZGame2D.balloonSetShape(${identifiers.get(stmt.gameVar)}, ${JSON.stringify(stmt.shape)});`
+    case 'g2d:balloonSetImage':
+      return `${pad}SZGame2D.balloonSetImage(${identifiers.get(stmt.gameVar)}, ${JSON.stringify(stmt.image)});`
     case 'g2d:controlDino':
       return `${pad}SZGame2D.controlDino(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.ctxVar)}, ${compileExpr(valueToExpr(stmt.jump), 0, identifiers, recAt(base))});`
     case 'g2d:spawnObstacle':
@@ -4943,6 +5001,37 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g2d:updateBalloon':
     case 'g2d:restartBalloon':
       names.add(stmt.gameVar)
+      return
+    case 'g2d:stickHeroCreate':
+    case 'g2d:balloonCreate':
+      names.add(stmt.varName)
+      names.add(stmt.ctxVar)
+      return
+    case 'g2d:stickHeroScenery':
+    case 'g2d:stickHeroDraw':
+    case 'g2d:balloonScenery':
+    case 'g2d:balloonDraw':
+    case 'g2d:stickHeroSetShape':
+    case 'g2d:stickHeroSetImage':
+    case 'g2d:balloonSetShape':
+    case 'g2d:balloonSetImage':
+      names.add(stmt.gameVar)
+      return
+    case 'g2d:stickHeroHold':
+    case 'g2d:stickHeroStep':
+    case 'g2d:balloonScroll':
+      names.add(stmt.gameVar)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      return
+    case 'g2d:balloonLift':
+      names.add(stmt.gameVar)
+      collectExprIdentifiers(valueToExpr(stmt.force), names)
+      return
+    case 'g2d:onStickHeroCross':
+    case 'g2d:onStickHeroPerfect':
+    case 'g2d:onBalloonTreeHit':
+      names.add(stmt.gameVar)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
     case 'g2d:spawnObstacle':
       names.add(stmt.groupVar)

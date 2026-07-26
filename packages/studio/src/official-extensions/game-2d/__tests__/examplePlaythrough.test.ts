@@ -51,6 +51,7 @@ interface CapturedStickGame {
   h: number
   sticks: Array<{ x: number; length: number }>
   platforms: Array<{ x: number; w: number }>
+  colors?: { hero: string; stick: string; platform: string }
 }
 
 interface CapturedBalloonGame {
@@ -60,6 +61,8 @@ interface CapturedBalloonGame {
   by: number
   groundY: number
   vVel: number
+  hitTree?: boolean
+  colors?: { balloon: string; basket: string }
 }
 
 interface CapturedCity {
@@ -283,6 +286,18 @@ function exampleHarness(example: ExtensionExample, random: () => number = Math.r
     var originalCreateBalloon = window.SZGame2D.createBalloon;
     window.SZGame2D.createBalloon = function () {
       var game = originalCreateBalloon.apply(window.SZGame2D, arguments);
+      window.__capturedBalloonGames.push(game);
+      return game;
+    };
+    var originalStickHeroCreate = window.SZGame2D.stickHeroCreate;
+    window.SZGame2D.stickHeroCreate = function () {
+      var game = originalStickHeroCreate.apply(window.SZGame2D, arguments);
+      window.__capturedStickGames.push(game);
+      return game;
+    };
+    var originalBalloonCreate = window.SZGame2D.balloonCreate;
+    window.SZGame2D.balloonCreate = function () {
+      var game = originalBalloonCreate.apply(window.SZGame2D, arguments);
       window.__capturedBalloonGames.push(game);
       return game;
     };
@@ -778,6 +793,12 @@ describe('playthrough dos exemplos exatos do Jogo 2D', () => {
     const stickGame = game.stickGames[0]
     expect(stickGame).toBeDefined()
     if (!stickGame) return
+    // O exemplo decomposto cria o jogo com as cores da criança.
+    expect(stickGame.colors).toEqual({
+      hero: '#d6455d',
+      stick: '#1b2330',
+      platform: '#0ea5a0',
+    })
     const target = stickGame.platforms[1]
     const stick = stickGame.sticks[0]
     expect(target).toBeDefined()
@@ -809,6 +830,8 @@ describe('playthrough dos exemplos exatos do Jogo 2D', () => {
     const balloon = game.balloonGames[0]
     expect(balloon).toBeDefined()
     if (!balloon) return
+    // O exemplo decomposto cria o jogo com as cores da criança.
+    expect(balloon.colors).toEqual({ balloon: '#7c3aed', basket: '#8a5a2b' })
     game.firePointer('pointerdown', 100, 100)
     for (let frame = 0; frame < 35; frame += 1) game.nextFrame()
     game.firePointer('pointerup', 100, 100)

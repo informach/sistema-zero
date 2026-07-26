@@ -318,6 +318,8 @@ const VARIABLE_DECL_BLOCKS: NameFieldRegistry = {
   // cidade dos gorilas) — os consumidores (GAME/CITY) redigitavam o nome.
   sz_g2d_create_stickhero: ['NAME'],
   sz_g2d_create_balloon: ['NAME'],
+  sz_g2d_stickhero_create: ['NAME'],
+  sz_g2d_balloon_create: ['NAME'],
   sz_g2d_create_city: ['NAME'],
   // OOP: `criar pessoa = novo Pessoa` guarda a instância numa variável — os campos
   // OBJ que a referenciam (chamar método, definir/ler propriedade) ganham o seletor.

@@ -6,23 +6,28 @@ Os **15 achados** desta auditoria foram corrigidos: um P0, quatro P1, oito P2 e
 dois P3. Cinco correções eram de experiência pedagógica e visual; as outras dez
 tratavam comportamento do runtime, arquitetura, tipagem e documentação.
 
-A paleta permanece extensa por decisão de produto: são 196 definições de bloco
-(194 visíveis e 2 legadas ocultas). A seleção do conteúdo apresentado continua
+A paleta permanece extensa por decisão de produto: são 213 definições de bloco
+(207 visíveis e 6 legadas ocultas). A seleção do conteúdo apresentado continua
 sendo responsabilidade do perfil de aprendizagem e de cada aula.
 
 A correção técnica desta auditoria foi publicada como **Jogo 2D 0.34.0**. O
-manifesto vigente está em **0.39.0** após os fechamentos subsequentes: grupos
+manifesto vigente está em **0.41.0** após os fechamentos subsequentes: grupos
 seguros também no modo Código, ciclo de vida gerenciado e HUD acessível em todos
-os caminhos públicos e legados, e o full review de 23/07 (inimigo "patrulha" que
+os caminhos públicos e legados, o full review de 23/07 (inimigo "patrulha" que
 respeita jogos sem gravidade, cartão de porta de entrada "Pegue a moeda" e redes
-de teste para blocos antes sem execução).
+de teste para blocos antes sem execução), a decomposição dos kits Equilibrista
+e Balão em blocos passo a passo (25/07: criação com cores, cenário, física,
+desenho e eventos separados; os quatro blocos monolíticos de criar/atualizar
+viraram legados ocultos) e o visual customizado dos kits (0.41.0: herói e balão
+aceitam figura do grupo Desenho ou imagem do projeto, reusando o maquinário de
+skins dos sprites).
 Não há achados abertos no escopo desta revisão.
 
 ## Escopo revisado
 
 - 43 arquivos próprios da extensão;
-- 196 definições de blocos e 24 subcategorias;
-- 195 métodos e valores públicos em `window.SZGame2D`;
+- 213 definições de blocos e 24 subcategorias;
+- 212 métodos e valores públicos em `window.SZGame2D`;
 - dez fragmentos que compõem o runtime injetado;
 - definição → Blockly → IR → JavaScript → parser → workspace state;
 - manifesto, permissões, documentação do aluno e contexto da IA;

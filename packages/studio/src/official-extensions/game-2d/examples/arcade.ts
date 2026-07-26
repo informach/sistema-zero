@@ -1349,15 +1349,16 @@ export const asteroidsClassicExample: ExtensionExample = beginnerGameExample({
 })
 
 /**
- * Exemplo bundlado: "Equilibrista" (estilo Stick Hero). Crie o jogo uma vez e
- * atualize-o a cada quadro — segure o mouse/dedo para esticar o bastão e solte
- * para atravessar a próxima plataforma.
+ * Exemplo bundlado: "Equilibrista" (estilo Stick Hero), montado com os blocos
+ * DECOMPOSTOS do kit (v0.40.0): a criança vê e customiza cada passo do loop —
+ * cenário, esticar o bastão, andar/cair e desenhar — além das cores na criação
+ * e dos eventos de atravessar/acerto perfeito.
  */
 export const stickHeroExample: ExtensionExample = beginnerGameExample({
   name: 'Equilibrista',
   experience: 'game',
   description:
-    'Estica o bastão segurando o mouse/dedo e atravessa as plataformas (estilo Stick Hero).',
+    'Estica o bastão segurando o mouse/dedo e atravessa as plataformas (estilo Stick Hero). O loop do jogo é montado passo a passo: cenário, esticar, andar e desenhar.',
   ir: {
     html: [{ type: 'canvas', id: 'tela', width: 360, height: 480 }],
     css: [
@@ -1380,8 +1381,33 @@ export const stickHeroExample: ExtensionExample = beginnerGameExample({
     ],
     version: 2,
     behavior: {
-      start: [{ type: 'g2d:createStickHero', varName: 'jogo', ctxVar: 'ctx' }],
+      start: [
+        {
+          type: 'g2d:stickHeroCreate',
+          varName: 'jogo',
+          ctxVar: 'ctx',
+          heroColor: '#d6455d',
+          stickColor: '#1b2330',
+          platformColor: '#0ea5a0',
+        },
+      ],
       events: [
+        // --- Atravessou: um som curto comemora o passo ---
+        {
+          type: 'g2d:onStickHeroCross',
+          gameVar: 'jogo',
+          body: [{ type: 'g2d:playJump' }],
+        },
+        // --- Acertou bem no meio: som de moeda + brilho na tela ---
+        {
+          type: 'g2d:onStickHeroPerfect',
+          gameVar: 'jogo',
+          body: [
+            { type: 'g2d:playCollect' },
+            { type: 'g2d:flash', ctxVar: 'ctx', color: '#ffe066' },
+          ],
+        },
+        // --- Enter: recomeçar depois de cair ---
         {
           type: 'g2d:onKey',
           key: 'Enter',
@@ -1395,9 +1421,40 @@ export const stickHeroExample: ExtensionExample = beginnerGameExample({
         },
       ],
       loops: [
+        // --- O loop montado na mão: cenário → esticar → andar → desenhar → HUD ---
         {
           type: 'g2d:updateEachFrame',
-          body: [{ type: 'g2d:updateStickHero', gameVar: 'jogo' }],
+          body: [
+            { type: 'g2d:clear' },
+            { type: 'g2d:stickHeroScenery', gameVar: 'jogo' },
+            { type: 'g2d:stickHeroHold', gameVar: 'jogo', speed: 1 },
+            { type: 'g2d:stickHeroStep', gameVar: 'jogo', speed: 1 },
+            { type: 'g2d:stickHeroDraw', gameVar: 'jogo' },
+            {
+              type: 'g2d:drawScore',
+              ctxVar: 'ctx',
+              label: 'Pontos:',
+              value: { type: 'g2d:stickHeroScore', gameVar: 'jogo' },
+              x: 12,
+              y: 26,
+              color: '#1b2330',
+              size: 22,
+            },
+            {
+              type: 'if',
+              cond: { type: 'g2d:stickHeroOver', gameVar: 'jogo' },
+              then: [
+                {
+                  type: 'g2d:showScreen',
+                  ctxVar: 'ctx',
+                  title: 'Caiu!',
+                  subtitle: 'O bastão não alcançou a plataforma.',
+                  hint: 'Aperte Enter para jogar de novo',
+                  bg: '#1b2330',
+                },
+              ],
+            },
+          ],
         },
       ],
     },
@@ -1406,13 +1463,15 @@ export const stickHeroExample: ExtensionExample = beginnerGameExample({
 })
 
 /**
- * Exemplo bundlado: "Balão" (estilo Hot-Air-Balloon). Segure o mouse/dedo para
- * subir (gasta combustível); voe baixo para economizar e desvie das árvores.
+ * Exemplo bundlado: "Balão" (estilo Hot-Air-Balloon), montado com os blocos
+ * DECOMPOSTOS do kit (v0.40.0): cenário, subir/cair, avançar o caminho e
+ * desenhar são blocos separados; a batida na árvore vira evento com explosão.
  */
 export const balloonExample: ExtensionExample = beginnerGameExample({
   name: 'Balão',
   experience: 'game',
-  description: 'Suba segurando o mouse/dedo, economize combustível e desvie das árvores.',
+  description:
+    'Suba segurando o mouse/dedo, economize combustível e desvie das árvores. O loop do jogo é montado passo a passo: cenário, subir, avançar e desenhar.',
   ir: {
     html: [{ type: 'canvas', id: 'tela', width: 560, height: 360 }],
     css: [
@@ -1435,8 +1494,27 @@ export const balloonExample: ExtensionExample = beginnerGameExample({
     ],
     version: 2,
     behavior: {
-      start: [{ type: 'g2d:createBalloon', varName: 'jogo', ctxVar: 'ctx' }],
+      start: [
+        {
+          type: 'g2d:balloonCreate',
+          varName: 'jogo',
+          ctxVar: 'ctx',
+          color: '#7c3aed',
+          basketColor: '#8a5a2b',
+        },
+      ],
       events: [
+        // --- Bateu numa árvore: explosão, tremida e som de "bum" ---
+        {
+          type: 'g2d:onBalloonTreeHit',
+          gameVar: 'jogo',
+          body: [
+            { type: 'g2d:emitParticles', x: 130, y: 170, count: 18, color: '#ff8c42' },
+            { type: 'g2d:shake', ctxVar: 'ctx', intensity: 8 },
+            { type: 'g2d:playBoom' },
+          ],
+        },
+        // --- Enter: recomeçar depois de bater ou pousar sem combustível ---
         {
           type: 'g2d:onKey',
           key: 'Enter',
@@ -1450,9 +1528,61 @@ export const balloonExample: ExtensionExample = beginnerGameExample({
         },
       ],
       loops: [
+        // --- O loop montado na mão: cenário → subir → avançar → desenhar → HUD ---
         {
           type: 'g2d:updateEachFrame',
-          body: [{ type: 'g2d:updateBalloon', gameVar: 'jogo' }],
+          body: [
+            { type: 'g2d:clear' },
+            { type: 'g2d:balloonScenery', gameVar: 'jogo' },
+            { type: 'g2d:balloonLift', gameVar: 'jogo', force: 1 },
+            { type: 'g2d:balloonScroll', gameVar: 'jogo', speed: 1 },
+            { type: 'g2d:balloonDraw', gameVar: 'jogo' },
+            {
+              type: 'g2d:drawScore',
+              ctxVar: 'ctx',
+              label: 'Metros:',
+              value: { type: 'g2d:balloonScore', gameVar: 'jogo' },
+              x: 12,
+              y: 26,
+              color: '#1b2330',
+              size: 22,
+            },
+            {
+              type: 'g2d:drawLabel',
+              ctxVar: 'ctx',
+              text: 'Combustível',
+              x: 12,
+              y: 46,
+              color: '#1b2330',
+              size: 13,
+              align: 'left',
+            },
+            {
+              type: 'g2d:drawBar',
+              ctxVar: 'ctx',
+              value: { type: 'g2d:balloonFuel', gameVar: 'jogo' },
+              max: { type: 'num', value: 100 },
+              x: 12,
+              y: 52,
+              w: 160,
+              h: 12,
+              color: '#ff8c42',
+            },
+            {
+              type: 'if',
+              cond: { type: 'g2d:balloonOver', gameVar: 'jogo' },
+              then: [
+                {
+                  type: 'g2d:showScreen',
+                  ctxVar: 'ctx',
+                  title: 'Fim do voo!',
+                  subtitle: 'O balão bateu ou ficou sem combustível.',
+                  hint: 'Aperte Enter para voar de novo',
+                  bg: '#1b2330',
+                },
+              ],
+            },
+          ],
         },
       ],
     },

@@ -30,6 +30,15 @@ interface Game2DApi {
   restartBalloon: (g: unknown) => void
   drawWind: (ctx: unknown, city: { W: number; H: number; wind: number }) => void
   drawAimReadout: (ctx: unknown) => void
+  defineShape: (name: string, fn: (ctx: unknown) => void) => void
+  shapeW: () => number
+  shapeH: () => number
+  stickHeroSetShape: (g: unknown, name?: string) => void
+  stickHeroSetImage: (g: unknown, name?: string) => void
+  stickHeroDraw: (g: unknown) => void
+  balloonSetShape: (g: unknown, name?: string) => void
+  balloonSetImage: (g: unknown, name?: string) => void
+  balloonDraw: (g: unknown) => void
 }
 
 function loadRuntime(devicePixelRatio = 1): Game2DApi {
@@ -305,6 +314,91 @@ describe('Kit equilibrista / Kit balão — fumaça do runtime', () => {
     expect(jogo.dist).toBeCloseTo(336)
     expect(jogo.meters).toBe(10)
     expect(jogo.by / jogo.groundY).toBeCloseTo(0.5)
+  })
+
+  it('Trocar o herói pela figura desenha a figura da criança numa caixa quadrada', () => {
+    const api = loadRuntime()
+    const jogo = api.createStickHero(mockCtx(360, 480))
+    const chamadas: unknown[] = []
+    api.defineShape('estrela', (ctx) => {
+      chamadas.push(ctx)
+    })
+
+    api.stickHeroSetShape(jogo, 'estrela')
+    api.stickHeroDraw(jogo)
+    expect(chamadas).toHaveLength(1)
+    // A caixa do visual customizado é QUADRADA (a nativa do boneco é estreita
+    // e distorceria o desenho da criança).
+    expect(api.shapeW()).toBeGreaterThan(0)
+    expect(api.shapeW()).toBe(api.shapeH())
+
+    // Nome vazio volta ao boneco pronto: a figura não roda mais.
+    api.stickHeroSetShape(jogo, '')
+    api.stickHeroDraw(jogo)
+    expect(chamadas).toHaveLength(1)
+  })
+
+  it('Trocar o balão pela figura desenha a figura na caixa do balão (mais alta que larga)', () => {
+    const api = loadRuntime()
+    const jogo = api.createBalloon(mockCtx(560, 360))
+    const chamadas: unknown[] = []
+    api.defineShape('foguete', (ctx) => {
+      chamadas.push(ctx)
+    })
+
+    api.balloonSetShape(jogo, 'foguete')
+    api.balloonDraw(jogo)
+    expect(chamadas).toHaveLength(1)
+    expect(api.shapeH()).toBeGreaterThan(api.shapeW())
+
+    api.balloonSetShape(jogo, '')
+    api.balloonDraw(jogo)
+    expect(chamadas).toHaveLength(1)
+  })
+
+  it('Trocar o herói pela imagem pula o boneco pronto; nome vazio volta', () => {
+    const api = loadRuntime()
+    const ctx = mockCtx(360, 480) as Record<string, unknown>
+    let arcs = 0
+    ctx.arc = () => {
+      arcs += 1
+    }
+    const jogo = api.createStickHero(ctx)
+
+    api.stickHeroDraw(jogo)
+    const arcsDoBoneco = arcs
+    expect(arcsDoBoneco).toBeGreaterThan(0)
+
+    // Imagem ainda carregando: nada do boneco pronto é desenhado por cima.
+    api.stickHeroSetImage(jogo, 'data:image/png;base64,AAAA')
+    api.stickHeroDraw(jogo)
+    expect(arcs).toBe(arcsDoBoneco)
+
+    api.stickHeroSetImage(jogo, '')
+    api.stickHeroDraw(jogo)
+    expect(arcs).toBe(arcsDoBoneco * 2)
+  })
+
+  it('Trocar o balão pela imagem pula o balão pronto; nome vazio volta', () => {
+    const api = loadRuntime()
+    const ctx = mockCtx(560, 360) as Record<string, unknown>
+    let arcs = 0
+    ctx.arc = () => {
+      arcs += 1
+    }
+    const jogo = api.createBalloon(ctx)
+
+    api.balloonDraw(jogo)
+    const arcsDoBalao = arcs
+    expect(arcsDoBalao).toBeGreaterThan(0)
+
+    api.balloonSetImage(jogo, 'data:image/png;base64,AAAA')
+    api.balloonDraw(jogo)
+    expect(arcs).toBe(arcsDoBalao)
+
+    api.balloonSetImage(jogo, '')
+    api.balloonDraw(jogo)
+    expect(arcs).toBe(arcsDoBalao * 2)
   })
 
   it.each([2, 3])('usa dimensões lógicas no DPR %i', (devicePixelRatio) => {

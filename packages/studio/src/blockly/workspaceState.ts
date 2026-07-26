@@ -2045,6 +2045,107 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
       return block('sz_g2d_update_balloon', { GAME: stmt.gameVar }, {}, stmt.__id)
     case 'g2d:restartBalloon':
       return block('sz_g2d_restart_balloon', { GAME: stmt.gameVar }, {}, stmt.__id)
+    case 'g2d:stickHeroCreate':
+      // Como no kit legado, o ctx é o PADRÃO do palco (a IR mantém ctxVar).
+      return block(
+        'sz_g2d_stickhero_create',
+        {
+          NAME: stmt.varName,
+          HERO_COLOR: stmt.heroColor,
+          STICK_COLOR: stmt.stickColor,
+          PLATFORM_COLOR: stmt.platformColor,
+        },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:stickHeroScenery':
+      return block('sz_g2d_stickhero_scenery', { GAME: stmt.gameVar }, {}, stmt.__id)
+    case 'g2d:stickHeroHold': {
+      const speed = exprToValueBlock(valueToExpr(stmt.speed))
+      return speed === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_stickhero_hold', { GAME: stmt.gameVar }, {}, stmt.__id, { SPEED: speed })
+    }
+    case 'g2d:stickHeroStep': {
+      const speed = exprToValueBlock(valueToExpr(stmt.speed))
+      return speed === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_stickhero_step', { GAME: stmt.gameVar }, {}, stmt.__id, { SPEED: speed })
+    }
+    case 'g2d:stickHeroDraw':
+      return block('sz_g2d_stickhero_draw', { GAME: stmt.gameVar }, {}, stmt.__id)
+    case 'g2d:onStickHeroCross':
+      return block(
+        'sz_g2d_stickhero_on_cross',
+        { GAME: stmt.gameVar },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g2d:onStickHeroPerfect':
+      return block(
+        'sz_g2d_stickhero_on_perfect',
+        { GAME: stmt.gameVar },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g2d:balloonCreate':
+      return block(
+        'sz_g2d_balloon_create',
+        { NAME: stmt.varName, COLOR: stmt.color, BASKET_COLOR: stmt.basketColor },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:balloonScenery':
+      return block('sz_g2d_balloon_scenery', { GAME: stmt.gameVar }, {}, stmt.__id)
+    case 'g2d:balloonLift': {
+      const force = exprToValueBlock(valueToExpr(stmt.force))
+      return force === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_balloon_lift', { GAME: stmt.gameVar }, {}, stmt.__id, { FORCE: force })
+    }
+    case 'g2d:balloonScroll': {
+      const speed = exprToValueBlock(valueToExpr(stmt.speed))
+      return speed === null
+        ? rawJSBlock(stmt)
+        : block('sz_g2d_balloon_scroll', { GAME: stmt.gameVar }, {}, stmt.__id, { SPEED: speed })
+    }
+    case 'g2d:balloonDraw':
+      return block('sz_g2d_balloon_draw', { GAME: stmt.gameVar }, {}, stmt.__id)
+    case 'g2d:onBalloonTreeHit':
+      return block(
+        'sz_g2d_balloon_on_hit',
+        { GAME: stmt.gameVar },
+        { BODY: statementsToBlocks(stmt.body) },
+        stmt.__id,
+      )
+    case 'g2d:stickHeroSetShape':
+      return block(
+        'sz_g2d_stickhero_set_shape',
+        { GAME: stmt.gameVar, SHAPE: stmt.shape },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:stickHeroSetImage':
+      return block(
+        'sz_g2d_stickhero_set_image',
+        { GAME: stmt.gameVar, IMAGE: stmt.image },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:balloonSetShape':
+      return block(
+        'sz_g2d_balloon_set_shape',
+        { GAME: stmt.gameVar, SHAPE: stmt.shape },
+        {},
+        stmt.__id,
+      )
+    case 'g2d:balloonSetImage':
+      return block(
+        'sz_g2d_balloon_set_image',
+        { GAME: stmt.gameVar, IMAGE: stmt.image },
+        {},
+        stmt.__id,
+      )
     case 'g2d:controlDino': {
       const jump = exprToValueBlock(valueToExpr(stmt.jump))
       return jump === null

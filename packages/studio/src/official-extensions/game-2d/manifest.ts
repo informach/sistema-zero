@@ -21,7 +21,7 @@ import { withGameTwoDLifecycleGuidance } from './pedagogy'
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.39.0',
+  version: '0.41.0',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, vidas automáticas em corações ou barra, colisões, mapas, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
@@ -234,39 +234,59 @@ Veja o exemplo clássico **"Cidade & Moinho (na mão)"** (no painel de Extensõe
 
 ### Monte um jogo de equilibrista
 
-Categoria **🤸 Kit equilibrista**. Atalhos PRONTOS para um jogo estilo "Stick Hero":
-estique o bastão do tamanho certo e atravesse para a próxima plataforma. O jogo
-inteiro (herói, plataformas, bastões, fase) mora no runtime; você só guarda o jogo
-numa variável. O controle é pelo ponteiro: **segurar** estica o bastão, **soltar**
-derruba. Não precisa registrar teclas. Melhor num canvas **em pé** (ex.: 360×480).
+Categoria **🤸 Kit equilibrista**. Um jogo estilo "Stick Hero" que VOCÊ monta passo a
+passo: estique o bastão do tamanho certo e atravesse para a próxima plataforma. O
+controle é pelo ponteiro: **segurar** estica o bastão, **soltar** derruba. Não precisa
+registrar teclas. Melhor num canvas **em pé** (ex.: 360×480).
 
-- **Criar equilibrista**. Monta o jogo lendo o tamanho da tela. Guarde numa variável
-  (ex.: \`jogo\`). Faça UMA vez, FORA do "a cada quadro do jogo".
-- **Atualizar o equilibrista**. Um passo do jogo + desenha tudo (placar e dicas).
-  Use DENTRO do "a cada quadro do jogo". Acertar o meio (faixa vermelha) vale 2 pontos;
-  ele recomeça sozinho quando você toca depois de cair. Placar, instruções e fim de
-  jogo também são anunciados por leitores de tela.
-- **pontos do equilibrista** / **o equilibrista caiu?**. Para o placar e o fim de jogo.
-- **Recomeçar o equilibrista**. Zera o jogo (bom para um botão "de novo").
+- **Criar equilibrista com cores**. Monta o jogo lendo o tamanho da tela, com as SUAS
+  cores para o herói, o bastão e as plataformas. Guarde numa variável (ex.: \`jogo\`).
+  Faça UMA vez, FORA do "a cada quadro do jogo".
+- Monte o loop você mesmo, DENTRO do "a cada quadro do jogo", nesta ordem:
+  **Desenhar céu, colinas e árvores** (o fundo), **Esticar o bastão enquanto segurar**
+  (a rapidez muda o desafio), **Fazer o equilibrista andar, atravessar e cair** (a
+  física) e **Desenhar plataformas, bastão e herói**. Cada passo é um bloco separado:
+  dá para trocar a ordem, mudar a rapidez ou substituir o fundo por um desenho seu.
+- **Quando atravessar uma plataforma** / **Quando acertar bem no meio** (a faixa do
+  meio vale 2 pontos). Eventos para som, brilho e o que você inventar. Registre UMA
+  vez, fora do "a cada quadro do jogo".
+- **Trocar o herói pela figura** / **Trocar o herói pela imagem**. O herói pode ser
+  um desenho SEU: uma figura feita com "Desenhar a figura" (grupo Desenho) ou uma
+  imagem do projeto (painel Imagens, ex.: desenho do Pinta). A figura desenha numa
+  caixa quadrada: use "largura da figura" e "altura da figura" para preencher. Nome
+  vazio volta ao boneco pronto.
+- **pontos do equilibrista** / **o equilibrista caiu?**. Para o placar (use com
+  "Mostrar placar") e o fim de jogo (use com "Mostrar tela").
+- **Recomeçar o equilibrista**. Zera o jogo (bom com "Quando apertar Enter").
 
-Veja o exemplo pronto **"Equilibrista"** na vitrine.
+Veja o exemplo pronto **"Equilibrista"** na vitrine: ele já vem com o loop montado
+bloco a bloco, os dois eventos e a tela de fim de jogo.
 
 ### Monte um jogo de balão
 
-Categoria **🎈 Kit balão**. Atalhos PRONTOS para um jogo estilo balão de ar quente:
-suba segurando o ponteiro (gasta combustível), voe baixo para economizar e desvie das
-árvores. O jogo mora no runtime; você guarda tudo numa variável. Melhor num canvas
-**deitado** (ex.: 560×360).
+Categoria **🎈 Kit balão**. Um jogo estilo balão de ar quente que VOCÊ monta passo a
+passo: suba segurando o ponteiro (gasta combustível), voe baixo para economizar e
+desvie das árvores. Melhor num canvas **deitado** (ex.: 560×360).
 
-- **Criar balão**. Monta o jogo (céu, colinas, árvores, combustível) lendo o tamanho
-  da tela. Guarde numa variável. Faça UMA vez.
-- **Atualizar o balão**. Um passo do jogo + desenha tudo (medidor de combustível,
-  metros e dicas). Use DENTRO do "a cada quadro do jogo". Recomeça ao tocar depois do fim.
-  Distância, combustível, instruções e fim de jogo também são anunciados por leitores de tela.
-- **metros do balão** / **combustível do balão** (0 a 100) / **o balão bateu/acabou?**. Para o placar, a barra de combustível e o fim de jogo.
-- **Recomeçar o balão**. Zera o jogo.
+- **Criar balão com cores**. Monta o jogo lendo o tamanho da tela, com as SUAS cores
+  para o balão e o cesto. Guarde numa variável. Faça UMA vez.
+- Monte o loop você mesmo, DENTRO do "a cada quadro do jogo", nesta ordem:
+  **Desenhar céu, colinas, chão e árvores** (o fundo), **Fazer o balão subir enquanto
+  segurar** (a força do fogo; sem combustível o balão pousa), **Avançar o caminho**
+  (conta os metros e confere as árvores) e **Desenhar o balão**. Cada passo é um bloco
+  separado: mude a força, a velocidade ou desenhe o seu próprio fundo.
+- **Quando o balão bater numa árvore**. Evento para explosão, tremida e som. Registre
+  UMA vez, fora do "a cada quadro do jogo".
+- **Trocar o balão pela figura** / **Trocar o balão pela imagem**. O balão pode ser
+  um desenho SEU: uma figura do grupo Desenho ou uma imagem do projeto (ex.: desenho
+  do Pinta). A caixa é mais alta que larga, como o balão de sempre. Nome vazio volta
+  ao balão pronto.
+- **metros do balão** / **combustível do balão** (0 a 100) / **o balão bateu/acabou?**.
+  Para o placar, a barra de combustível (use com "Mostrar barra") e o fim de jogo.
+- **Recomeçar o balão**. Zera o jogo (bom com "Quando apertar Enter").
 
-Veja o exemplo pronto **"Balão"** na vitrine.
+Veja o exemplo pronto **"Balão"** na vitrine: ele já vem com o loop montado bloco a
+bloco, o evento da árvore, a barra de combustível e a tela de fim de jogo.
 
 ### Adicione efeitos, notas e música
 

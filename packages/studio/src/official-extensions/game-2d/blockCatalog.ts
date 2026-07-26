@@ -2716,9 +2716,10 @@ export const gameTwoDBlocks = [
       'Mostra no canto o ângulo (graus) e a força do último arremesso/mira, bom para acompanhar o que o robô escolheu.',
   },
 
-  // ---- Kit equilibrista (Stick Hero) (v0.13.0) ----
+  // ---- Kit equilibrista (Stick Hero) (v0.13.0; decomposto na v0.40.0) ----
   {
     type: 'sz_g2d_create_stickhero',
+    hidden: true,
     placement: 'start-only-command',
     message0: 'Criar equilibrista %1',
     args0: [{ type: 'field_input', name: 'NAME', text: 'jogo' }],
@@ -2726,10 +2727,11 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Monta o jogo do equilibrista (herói, plataformas, colinas e árvores) e guarda numa variável. Faça uma vez, no começo. Depois use "atualizar o equilibrista" dentro do "a cada quadro".',
+      'Bloco antigo mantido apenas para abrir projetos salvos. Em projetos novos, use "Criar equilibrista com cores" e monte o passo a passo com os blocos novos do kit.',
   },
   {
     type: 'sz_g2d_update_stickhero',
+    hidden: true,
     placement: 'command',
     message0: 'Atualizar o equilibrista %1',
     args0: [{ type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' }],
@@ -2737,7 +2739,134 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Faz um passo do jogo e desenha tudo. Segure o mouse/dedo para esticar o bastão, solte para derrubar e atravessar. Use dentro do "a cada quadro".',
+      'Bloco antigo mantido apenas para abrir projetos salvos. Em projetos novos, monte o passo a passo: desenhar o cenário, esticar o bastão, andar e desenhar o jogo.',
+  },
+  {
+    type: 'sz_g2d_stickhero_create',
+    placement: 'start-only-command',
+    message0: 'Criar equilibrista %1 com herói cor %2, bastão cor %3, plataformas cor %4',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'jogo' },
+      { type: 'field_colour_sz', name: 'HERO_COLOR', colour: '#1b2330' },
+      { type: 'field_colour_sz', name: 'STICK_COLOR', colour: '#1b2330' },
+      { type: 'field_colour_sz', name: 'PLATFORM_COLOR', colour: '#1b2330' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Monta o jogo do equilibrista (estilo Stick Hero) com as suas cores e guarda numa variável. Faça uma vez, no começo. Depois monte o passo a passo dentro do "a cada quadro": cenário, esticar, andar e desenhar.',
+  },
+  {
+    type: 'sz_g2d_stickhero_scenery',
+    placement: 'command',
+    message0: 'Desenhar céu, colinas e árvores do equilibrista %1',
+    args0: [{ type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha o fundo do jogo: o céu, as colinas e as árvores que passam. Use no começo do "a cada quadro", antes das plataformas e do herói.',
+  },
+  {
+    type: 'sz_g2d_stickhero_hold',
+    placement: 'command',
+    message0: 'Esticar o bastão do equilibrista %1 enquanto segurar (rapidez %2)',
+    args0: [
+      { type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Enquanto o mouse/dedo estiver segurando, o bastão cresce; ao soltar, ele tomba sobre o buraco. Rapidez maior estica mais depressa. Use dentro do "a cada quadro".',
+  },
+  {
+    type: 'sz_g2d_stickhero_step',
+    placement: 'command',
+    message0: 'Fazer o equilibrista %1 andar, atravessar e cair (rapidez %2)',
+    args0: [
+      { type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'A física do herói: anda pelo bastão, atravessa quando o bastão alcança a próxima plataforma e cai no buraco quando não alcança. Use dentro do "a cada quadro", depois de esticar o bastão.',
+  },
+  {
+    type: 'sz_g2d_stickhero_draw',
+    placement: 'command',
+    message0: 'Desenhar plataformas, bastão e herói do equilibrista %1',
+    args0: [{ type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha o jogo com as cores escolhidas na criação: as plataformas, o bastão e o herói. Use no fim do "a cada quadro", depois do cenário e da física.',
+  },
+  {
+    type: 'sz_g2d_stickhero_on_cross',
+    placement: 'event',
+    message0: 'Quando o equilibrista %1 atravessar uma plataforma',
+    args0: [{ type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' }],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: EVENT_C,
+    tooltip:
+      'Registre UMA vez, fora do "a cada quadro". Toda vez que o herói atravessar para a próxima plataforma, o "fazer" roda (ex.: tocar um som).',
+  },
+  {
+    type: 'sz_g2d_stickhero_on_perfect',
+    placement: 'event',
+    message0: 'Quando o equilibrista %1 acertar bem no meio da plataforma',
+    args0: [{ type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' }],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: EVENT_C,
+    tooltip:
+      'Registre UMA vez, fora do "a cada quadro". Quando o bastão cair bem no marquinho do meio da plataforma (vale 2 pontos), o "fazer" roda (ex.: um brilho na tela).',
+  },
+  {
+    type: 'sz_g2d_stickhero_set_shape',
+    placement: 'command',
+    message0: 'Trocar o herói do equilibrista %1 pela figura %2',
+    args0: [
+      { type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' },
+      { type: 'field_name_picker', name: 'SHAPE', text: 'heroi', kind: 'shape' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O herói vira uma figura sua, feita com "Desenhar a figura" (grupo Desenho). A figura desenha numa caixa quadrada: use "largura da figura" e "altura da figura" para preencher. Nome vazio volta ao boneco pronto.',
+  },
+  {
+    type: 'sz_g2d_stickhero_set_image',
+    placement: 'command',
+    message0: 'Trocar o herói do equilibrista %1 pela imagem %2',
+    args0: [
+      { type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' },
+      { type: 'field_asset_picker', name: 'IMAGE', text: 'heroi' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O herói vira uma imagem do projeto (painel Imagens, ex.: um desenho feito no Pinta). Nome vazio volta ao boneco pronto.',
   },
   {
     type: 'sz_g2d_stickhero_score',
@@ -2767,9 +2896,10 @@ export const gameTwoDBlocks = [
       'Zera o jogo do equilibrista (pontos, plataformas e herói). Bom para um botão "recomeçar".',
   },
 
-  // ---- Kit balão (Hot-Air-Balloon) (v0.13.0) ----
+  // ---- Kit balão (Hot-Air-Balloon) (v0.13.0; decomposto na v0.40.0) ----
   {
     type: 'sz_g2d_create_balloon',
+    hidden: true,
     placement: 'start-only-command',
     message0: 'Criar balão %1',
     args0: [{ type: 'field_input', name: 'NAME', text: 'jogo' }],
@@ -2777,10 +2907,11 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Monta o jogo do balão (céu, colinas, árvores e combustível) e guarda numa variável. Faça uma vez. Depois use "atualizar o balão" dentro do "a cada quadro".',
+      'Bloco antigo mantido apenas para abrir projetos salvos. Em projetos novos, use "Criar balão com cores" e monte o passo a passo com os blocos novos do kit.',
   },
   {
     type: 'sz_g2d_update_balloon',
+    hidden: true,
     placement: 'command',
     message0: 'Atualizar o balão %1',
     args0: [{ type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' }],
@@ -2788,7 +2919,120 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Faz um passo do jogo e desenha tudo. Segure o mouse/dedo para subir (gasta combustível); voe baixo para economizar e desvie das árvores. Use dentro do "a cada quadro".',
+      'Bloco antigo mantido apenas para abrir projetos salvos. Em projetos novos, monte o passo a passo: desenhar o cenário, subir, avançar o caminho e desenhar o balão.',
+  },
+  {
+    type: 'sz_g2d_balloon_create',
+    placement: 'start-only-command',
+    message0: 'Criar balão %1 com balão cor %2 e cesto cor %3',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'jogo' },
+      { type: 'field_colour_sz', name: 'COLOR', colour: '#D62828' },
+      { type: 'field_colour_sz', name: 'BASKET_COLOR', colour: '#8a5a2b' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Monta o jogo do balão (estilo Hot-Air-Balloon) com as suas cores e guarda numa variável. Faça uma vez, no começo. Depois monte o passo a passo dentro do "a cada quadro": cenário, subir, avançar e desenhar.',
+  },
+  {
+    type: 'sz_g2d_balloon_scenery',
+    placement: 'command',
+    message0: 'Desenhar céu, colinas, chão e árvores do balão %1',
+    args0: [{ type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha o fundo do jogo: o céu, as colinas, o chão e as árvores do caminho. Use no começo do "a cada quadro", antes do balão.',
+  },
+  {
+    type: 'sz_g2d_balloon_lift',
+    placement: 'command',
+    message0: 'Fazer o balão %1 subir enquanto segurar e cair ao soltar (força %2)',
+    args0: [
+      { type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' },
+      { type: 'input_value', name: 'FORCE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Enquanto o mouse/dedo estiver segurando, o fogo empurra o balão para cima e gasta combustível; ao soltar, ele desce devagar. Sem combustível, o balão pousa e o jogo acaba. Use dentro do "a cada quadro".',
+  },
+  {
+    type: 'sz_g2d_balloon_scroll',
+    placement: 'command',
+    message0:
+      'Avançar o caminho do balão %1, contar os metros e conferir as árvores (velocidade %2)',
+    args0: [
+      { type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O mundo anda para trás (o balão parece voar para frente), os metros aumentam e o jogo confere se o balão bateu em alguma árvore. Use dentro do "a cada quadro", depois de subir.',
+  },
+  {
+    type: 'sz_g2d_balloon_draw',
+    placement: 'command',
+    message0: 'Desenhar o balão %1',
+    args0: [{ type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Desenha o balão com o cesto, as cordas e a chama, nas cores escolhidas na criação. Use no fim do "a cada quadro", depois do cenário e do caminho.',
+  },
+  {
+    type: 'sz_g2d_balloon_on_hit',
+    placement: 'event',
+    message0: 'Quando o balão %1 bater numa árvore',
+    args0: [{ type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' }],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: EVENT_C,
+    tooltip:
+      'Registre UMA vez, fora do "a cada quadro". Quando o balão bater numa árvore (fim de jogo), o "fazer" roda (ex.: explosão e tremida na tela).',
+  },
+  {
+    type: 'sz_g2d_balloon_set_shape',
+    placement: 'command',
+    message0: 'Trocar o balão %1 pela figura %2',
+    args0: [
+      { type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' },
+      { type: 'field_name_picker', name: 'SHAPE', text: 'balao', kind: 'shape' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O balão vira uma figura sua, feita com "Desenhar a figura" (grupo Desenho). A caixa é mais alta que larga, como o balão de sempre: use "largura da figura" e "altura da figura" para preencher. Nome vazio volta ao balão pronto.',
+  },
+  {
+    type: 'sz_g2d_balloon_set_image',
+    placement: 'command',
+    message0: 'Trocar o balão %1 pela imagem %2',
+    args0: [
+      { type: 'field_name_picker', name: 'GAME', text: 'jogo', kind: 'variable' },
+      { type: 'field_asset_picker', name: 'IMAGE', text: 'balao' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O balão vira uma imagem do projeto (painel Imagens, ex.: um desenho feito no Pinta). Nome vazio volta ao balão pronto.',
   },
   {
     type: 'sz_g2d_balloon_score',
