@@ -125,12 +125,12 @@ interface PlayApi {
   ): THREE.Object3D
   createGroup(): THREE.Object3D[]
   setPosition(object: THREE.Object3D, x: number, y: number, z: number): void
-  runEnemies(
+  spawnEnemy(world: RaceWorld, group: THREE.Object3D[], speed: number): THREE.Object3D | null
+  updateGroup(group: THREE.Object3D[], ground: THREE.Object3D): void
+  pruneOffscreen(
     world: RaceWorld,
     group: THREE.Object3D[],
-    ground: THREE.Object3D,
-    every: number,
-    speed: number,
+    fn: (item: THREE.Object3D) => void,
   ): void
   hitAny(object: THREE.Object3D, group: THREE.Object3D[]): boolean
   animate(world: RaceWorld, callback: (delta: number) => void): void
@@ -266,6 +266,46 @@ describe('gameThreeDRuntime — playthrough dos kits (Three.js real)', () => {
     expect(car.position.x).not.toBeCloseTo(startX, 3) // o carro saiu do lugar
   })
 
+  it('Corrida: rivais correm no MESMO sentido, em faixas laterais — sem batida inevitável', () => {
+    const { api } = loadRuntime()
+    const world = api.createRaceScene('tela')
+    api.createRaceTrack(world)
+    const car = api.createRaceCar(world)
+    // Nasce a frota de rivais e corre por bastante tempo, jogador em ritmo normal.
+    let hit = false
+    for (let f = 0; f < 1500; f++) {
+      world._dt = 1 / 60
+      api.runRivals(world)
+      api.raceStep(car, world)
+      if (api.raceHit(car, world)) {
+        hit = true
+        break
+      }
+    }
+    const rs = world._race
+    if (!rs) throw new Error('sem estado de corrida')
+    expect(rs.rivals.length).toBeGreaterThan(0) // realmente nasceram rivais
+    expect(hit).toBe(false) // e nenhum causou batida inevitável
+  })
+
+  it('Grupos: pruneOffscreen (THREE real) tira do grupo quem está fora da tela', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const enemies = api.createGroup()
+    const a = api.spawnEnemy(world, enemies, 0.1)
+    const b = api.spawnEnemy(world, enemies, 0.1)
+    if (!a || !b) throw new Error('esperava inimigos')
+    // Longe demais em qualquer eixo = fora do tronco de visão da câmera.
+    a.position.set(0, 0, 1e6)
+    b.position.set(1e6, 0, 0)
+    let escaped = 0
+    api.pruneOffscreen(world, enemies, () => {
+      escaped++
+    })
+    expect(escaped).toBe(2)
+    expect(enemies.length).toBe(0)
+  })
+
   it('Desvie: um inimigo alcançar o jogador aciona a batida (hitAny) e o "fim de jogo" para o loop', () => {
     const { api } = loadRuntime()
     const world = api.createScene('tela')
@@ -275,9 +315,10 @@ describe('gameThreeDRuntime — playthrough dos kits (Three.js real)', () => {
     api.setPosition(ground, 0, -1, 0)
     const enemies = api.createGroup()
 
-    // Deixa o motor soltar inimigos por alguns quadros.
-    for (let f = 0; f < 30; f++) api.runEnemies(world, enemies, ground, 20, 0.2)
-    expect(enemies.length).toBeGreaterThan(0)
+    // Solta alguns inimigos (a criança montaria isto com "A cada N quadros").
+    for (let f = 0; f < 5; f++) api.spawnEnemy(world, enemies, 0.2)
+    expect(enemies.length).toBe(5)
+    api.updateGroup(enemies, ground) // move o grupo (velocidade + gravidade)
 
     // Empurra um inimigo para cima do jogador: a batida tem de ser detectada.
     const enemy = enemies[0]

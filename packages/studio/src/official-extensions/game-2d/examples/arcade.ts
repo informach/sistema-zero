@@ -1349,16 +1349,16 @@ export const asteroidsClassicExample: ExtensionExample = beginnerGameExample({
 })
 
 /**
- * Exemplo bundlado: "Equilibrista" (estilo Stick Hero), montado com os blocos
- * DECOMPOSTOS do kit (v0.40.0): a criança vê e customiza cada passo do loop —
- * cenário, esticar o bastão, andar/cair e desenhar — além das cores na criação
- * e dos eventos de atravessar/acerto perfeito.
+ * Exemplo bundlado: "Equilibrista" (estilo Stick Hero), no molde do Dino Run:
+ * o EQUILIBRISTA é um sprite (tamanho e cor da criança), as regras moram no
+ * CAMINHO, a regra do mouse é um se/senão visível (segurado? crescer o bastão :
+ * derrubar) e o placar é uma variável somada nos eventos.
  */
 export const stickHeroExample: ExtensionExample = beginnerGameExample({
   name: 'Equilibrista',
   experience: 'game',
   description:
-    'Estica o bastão segurando o mouse/dedo e atravessa as plataformas (estilo Stick Hero). O loop do jogo é montado passo a passo: cenário, esticar, andar e desenhar.',
+    'Estica o bastão segurando o mouse/dedo e atravessa as plataformas (estilo Stick Hero). A regra do mouse é um se/senão: segurado cresce o bastão, solto derruba. Enter começa e recomeça.',
   ir: {
     html: [{ type: 'canvas', id: 'tela', width: 360, height: 480 }],
     css: [
@@ -1382,67 +1382,135 @@ export const stickHeroExample: ExtensionExample = beginnerGameExample({
     version: 2,
     behavior: {
       start: [
+        // --- Setup: o herói (sprite) + o caminho (regras) + o placar ---
+        { type: 'g2d:fitScreen', percent: 100 },
+        { type: 'g2d:createStickHero', varName: 'equilibrista', w: 18, h: 36, color: '#d6455d' },
         {
-          type: 'g2d:stickHeroCreate',
-          varName: 'jogo',
+          type: 'g2d:createStickPath',
+          varName: 'caminho',
           ctxVar: 'ctx',
-          heroColor: '#d6455d',
-          stickColor: '#1b2330',
           platformColor: '#0ea5a0',
+          stickColor: '#1b2330',
         },
+        { type: 'var', name: 'pontos', value: { type: 'num', value: 0 } },
+        { type: 'g2d:setScene', name: 'inicio' },
       ],
       events: [
-        // --- Atravessou: um som curto comemora o passo ---
-        {
-          type: 'g2d:onStickHeroCross',
-          gameVar: 'jogo',
-          body: [{ type: 'g2d:playJump' }],
-        },
-        // --- Acertou bem no meio: som de moeda + brilho na tela ---
-        {
-          type: 'g2d:onStickHeroPerfect',
-          gameVar: 'jogo',
-          body: [
-            { type: 'g2d:playCollect' },
-            { type: 'g2d:flash', ctxVar: 'ctx', color: '#ffe066' },
-          ],
-        },
-        // --- Enter: recomeçar depois de cair ---
+        // --- Enter: começar / recomeçar (o recomeçar genérico recria tudo) ---
         {
           type: 'g2d:onKey',
           key: 'Enter',
           body: [
             {
               type: 'if',
-              cond: { type: 'g2d:stickHeroOver', gameVar: 'jogo' },
-              then: [{ type: 'g2d:restartStickHero', gameVar: 'jogo' }],
+              cond: { type: 'g2d:sceneIs', name: 'inicio' },
+              then: [{ type: 'g2d:setScene', name: 'jogando' }],
+            },
+            {
+              type: 'if',
+              cond: { type: 'g2d:sceneIs', name: 'perdeu' },
+              then: [{ type: 'g2d:restart' }],
+            },
+          ],
+        },
+        // --- Atravessou: som + 1 ponto (o placar é da criança) ---
+        {
+          type: 'g2d:onStickPathCross',
+          pathVar: 'caminho',
+          body: [
+            { type: 'g2d:playJump' },
+            {
+              type: 'assign',
+              name: 'pontos',
+              value: {
+                type: 'binop',
+                op: '+',
+                left: { type: 'var', name: 'pontos' },
+                right: { type: 'num', value: 1 },
+              },
+            },
+          ],
+        },
+        // --- Acertou bem no meio: som de moeda + brilho + 2 pontos extras ---
+        {
+          type: 'g2d:onStickPathPerfect',
+          pathVar: 'caminho',
+          body: [
+            { type: 'g2d:playCollect' },
+            { type: 'g2d:flash', ctxVar: 'ctx', color: '#ffe066' },
+            {
+              type: 'assign',
+              name: 'pontos',
+              value: {
+                type: 'binop',
+                op: '+',
+                left: { type: 'var', name: 'pontos' },
+                right: { type: 'num', value: 2 },
+              },
             },
           ],
         },
       ],
       loops: [
-        // --- O loop montado na mão: cenário → esticar → andar → desenhar → HUD ---
+        // --- Enquanto estiver rodando: cenário e despacho por cena ---
         {
           type: 'g2d:updateEachFrame',
           body: [
             { type: 'g2d:clear' },
-            { type: 'g2d:stickHeroScenery', gameVar: 'jogo' },
-            { type: 'g2d:stickHeroHold', gameVar: 'jogo', speed: 1 },
-            { type: 'g2d:stickHeroStep', gameVar: 'jogo', speed: 1 },
-            { type: 'g2d:stickHeroDraw', gameVar: 'jogo' },
+            { type: 'g2d:stickPathScenery', pathVar: 'caminho' },
             {
-              type: 'g2d:drawScore',
-              ctxVar: 'ctx',
-              label: 'Pontos:',
-              value: { type: 'g2d:stickHeroScore', gameVar: 'jogo' },
-              x: 12,
-              y: 26,
-              color: '#1b2330',
-              size: 22,
+              type: 'if',
+              cond: { type: 'g2d:sceneIs', name: 'inicio' },
+              then: [
+                {
+                  type: 'g2d:showScreen',
+                  ctxVar: 'ctx',
+                  title: 'Equilibrista',
+                  subtitle: 'Segure para esticar o bastão e solte para atravessar!',
+                  hint: 'Aperte Enter para começar',
+                  bg: '#1b2330',
+                },
+              ],
             },
             {
               type: 'if',
-              cond: { type: 'g2d:stickHeroOver', gameVar: 'jogo' },
+              cond: { type: 'g2d:sceneIs', name: 'jogando' },
+              then: [
+                // A regra do mouse, VISÍVEL: segurado cresce; solto derruba.
+                {
+                  type: 'if',
+                  cond: { type: 'g2d:pointerDown' },
+                  then: [{ type: 'g2d:stickPathGrow', pathVar: 'caminho', speed: 1 }],
+                  else: [{ type: 'g2d:stickPathDrop', pathVar: 'caminho' }],
+                },
+                {
+                  type: 'g2d:stickPathWalk',
+                  spriteVar: 'equilibrista',
+                  pathVar: 'caminho',
+                  speed: 1,
+                },
+                { type: 'g2d:stickPathDraw', pathVar: 'caminho' },
+                { type: 'g2d:drawSprite', spriteVar: 'equilibrista', ctxVar: 'ctx' },
+                {
+                  type: 'g2d:drawScore',
+                  ctxVar: 'ctx',
+                  label: 'Pontos:',
+                  value: { type: 'var', name: 'pontos' },
+                  x: 12,
+                  y: 26,
+                  color: '#1b2330',
+                  size: 22,
+                },
+                {
+                  type: 'if',
+                  cond: { type: 'g2d:stickPathFell', pathVar: 'caminho' },
+                  then: [{ type: 'g2d:setScene', name: 'perdeu' }],
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: { type: 'g2d:sceneIs', name: 'perdeu' },
               then: [
                 {
                   type: 'g2d:showScreen',
@@ -1463,15 +1531,16 @@ export const stickHeroExample: ExtensionExample = beginnerGameExample({
 })
 
 /**
- * Exemplo bundlado: "Balão" (estilo Hot-Air-Balloon), montado com os blocos
- * DECOMPOSTOS do kit (v0.40.0): cenário, subir/cair, avançar o caminho e
- * desenhar são blocos separados; a batida na árvore vira evento com explosão.
+ * Exemplo bundlado: "Balão" (estilo Hot-Air-Balloon), no molde do Dino Run: o
+ * BALÃO é um sprite (posição, tamanho e cores da criança) com combustível
+ * próprio, as árvores moram no CAMINHO, a regra do mouse é um "se" visível
+ * (segurado? acender o fogo) e a batida na árvore é um evento.
  */
 export const balloonExample: ExtensionExample = beginnerGameExample({
   name: 'Balão',
   experience: 'game',
   description:
-    'Suba segurando o mouse/dedo, economize combustível e desvie das árvores. O loop do jogo é montado passo a passo: cenário, subir, avançar e desenhar.',
+    'Suba segurando o mouse/dedo, economize combustível e desvie das árvores. A regra do mouse é um se: segurado acende o fogo. Enter começa e recomeça.',
   ir: {
     html: [{ type: 'canvas', id: 'tela', width: 560, height: 360 }],
     css: [
@@ -1495,82 +1564,131 @@ export const balloonExample: ExtensionExample = beginnerGameExample({
     version: 2,
     behavior: {
       start: [
+        // --- Setup: o balão (sprite) + o caminho de árvores (regras) ---
+        { type: 'g2d:fitScreen', percent: 100 },
         {
-          type: 'g2d:balloonCreate',
-          varName: 'jogo',
-          ctxVar: 'ctx',
+          type: 'g2d:createBalloon',
+          varName: 'balao',
+          x: 110,
+          y: 195,
+          w: 70,
+          h: 100,
           color: '#7c3aed',
           basketColor: '#8a5a2b',
         },
+        { type: 'g2d:createBalloonPath', varName: 'caminho', ctxVar: 'ctx' },
+        { type: 'g2d:setScene', name: 'inicio' },
       ],
       events: [
-        // --- Bateu numa árvore: explosão, tremida e som de "bum" ---
-        {
-          type: 'g2d:onBalloonTreeHit',
-          gameVar: 'jogo',
-          body: [
-            { type: 'g2d:emitParticles', x: 130, y: 170, count: 18, color: '#ff8c42' },
-            { type: 'g2d:shake', ctxVar: 'ctx', intensity: 8 },
-            { type: 'g2d:playBoom' },
-          ],
-        },
-        // --- Enter: recomeçar depois de bater ou pousar sem combustível ---
+        // --- Enter: começar / recomeçar (o recomeçar genérico recria tudo) ---
         {
           type: 'g2d:onKey',
           key: 'Enter',
           body: [
             {
               type: 'if',
-              cond: { type: 'g2d:balloonOver', gameVar: 'jogo' },
-              then: [{ type: 'g2d:restartBalloon', gameVar: 'jogo' }],
+              cond: { type: 'g2d:sceneIs', name: 'inicio' },
+              then: [{ type: 'g2d:setScene', name: 'jogando' }],
             },
+            {
+              type: 'if',
+              cond: { type: 'g2d:sceneIs', name: 'perdeu' },
+              then: [{ type: 'g2d:restart' }],
+            },
+          ],
+        },
+        // --- Bateu numa árvore: explosão no balão, tremida, som e fim ---
+        {
+          type: 'g2d:onBalloonPathTreeHit',
+          pathVar: 'caminho',
+          body: [
+            { type: 'g2d:explode', spriteVar: 'balao', color: '#ff8c42' },
+            { type: 'g2d:shake', ctxVar: 'ctx', intensity: 8 },
+            { type: 'g2d:playBoom' },
+            { type: 'g2d:setScene', name: 'perdeu' },
           ],
         },
       ],
       loops: [
-        // --- O loop montado na mão: cenário → subir → avançar → desenhar → HUD ---
+        // --- Enquanto estiver rodando: cenário e despacho por cena ---
         {
           type: 'g2d:updateEachFrame',
           body: [
             { type: 'g2d:clear' },
-            { type: 'g2d:balloonScenery', gameVar: 'jogo' },
-            { type: 'g2d:balloonLift', gameVar: 'jogo', force: 1 },
-            { type: 'g2d:balloonScroll', gameVar: 'jogo', speed: 1 },
-            { type: 'g2d:balloonDraw', gameVar: 'jogo' },
+            { type: 'g2d:balloonPathScenery', pathVar: 'caminho' },
             {
-              type: 'g2d:drawScore',
-              ctxVar: 'ctx',
-              label: 'Metros:',
-              value: { type: 'g2d:balloonScore', gameVar: 'jogo' },
-              x: 12,
-              y: 26,
-              color: '#1b2330',
-              size: 22,
-            },
-            {
-              type: 'g2d:drawLabel',
-              ctxVar: 'ctx',
-              text: 'Combustível',
-              x: 12,
-              y: 46,
-              color: '#1b2330',
-              size: 13,
-              align: 'left',
-            },
-            {
-              type: 'g2d:drawBar',
-              ctxVar: 'ctx',
-              value: { type: 'g2d:balloonFuel', gameVar: 'jogo' },
-              max: { type: 'num', value: 100 },
-              x: 12,
-              y: 52,
-              w: 160,
-              h: 12,
-              color: '#ff8c42',
+              type: 'if',
+              cond: { type: 'g2d:sceneIs', name: 'inicio' },
+              then: [
+                {
+                  type: 'g2d:showScreen',
+                  ctxVar: 'ctx',
+                  title: 'Balão',
+                  subtitle: 'Segure para subir e desvie das árvores!',
+                  hint: 'Aperte Enter para começar',
+                  bg: '#1b2330',
+                },
+              ],
             },
             {
               type: 'if',
-              cond: { type: 'g2d:balloonOver', gameVar: 'jogo' },
+              cond: { type: 'g2d:sceneIs', name: 'jogando' },
+              then: [
+                // A regra do mouse, VISÍVEL: segurado acende o fogo.
+                {
+                  type: 'if',
+                  cond: { type: 'g2d:pointerDown' },
+                  then: [{ type: 'g2d:balloonFire', spriteVar: 'balao', force: 1 }],
+                },
+                { type: 'g2d:balloonFly', spriteVar: 'balao' },
+                {
+                  type: 'g2d:balloonPathScroll',
+                  pathVar: 'caminho',
+                  spriteVar: 'balao',
+                  speed: 1,
+                },
+                { type: 'g2d:drawSprite', spriteVar: 'balao', ctxVar: 'ctx' },
+                {
+                  type: 'g2d:drawScore',
+                  ctxVar: 'ctx',
+                  label: 'Metros:',
+                  value: { type: 'g2d:balloonPathMeters', pathVar: 'caminho' },
+                  x: 12,
+                  y: 26,
+                  color: '#1b2330',
+                  size: 22,
+                },
+                {
+                  type: 'g2d:drawLabel',
+                  ctxVar: 'ctx',
+                  text: 'Combustível',
+                  x: 12,
+                  y: 46,
+                  color: '#1b2330',
+                  size: 13,
+                  align: 'left',
+                },
+                {
+                  type: 'g2d:drawBar',
+                  ctxVar: 'ctx',
+                  value: { type: 'g2d:balloonFuel', spriteVar: 'balao' },
+                  max: { type: 'num', value: 100 },
+                  x: 12,
+                  y: 52,
+                  w: 160,
+                  h: 12,
+                  color: '#ff8c42',
+                },
+                {
+                  type: 'if',
+                  cond: { type: 'g2d:balloonLandedOut', spriteVar: 'balao' },
+                  then: [{ type: 'g2d:setScene', name: 'perdeu' }],
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: { type: 'g2d:sceneIs', name: 'perdeu' },
               then: [
                 {
                   type: 'g2d:showScreen',

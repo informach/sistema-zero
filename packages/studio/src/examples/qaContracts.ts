@@ -134,16 +134,20 @@ export const EXAMPLE_QA_CONTRACTS = [
     key: 'game-2d:Equilibrista',
     name: 'Equilibrista',
     experience: 'game',
-    promise: 'Esticar um bastão e atravessar plataformas.',
-    scenario: 'Segurar, soltar, atravessar, falhar e recomeçar limpo.',
+    promise:
+      'Montar a regra do mouse (segurado cresce o bastão, solto derruba) e atravessar somando pontos numa variável.',
+    scenario:
+      'Enter começa; segurar, soltar, atravessar, pontuar nos eventos, cair e recomeçar limpo.',
     interactions: ['start', 'drag'],
   },
   {
     key: 'game-2d:Balão',
     name: 'Balão',
     experience: 'game',
-    promise: 'Subir com combustível limitado e desviar de árvores.',
-    scenario: 'Sustentar o balão, gastar combustível, colidir e reiniciar.',
+    promise:
+      'Acender o fogo com o mouse segurado, voar com combustível limitado e desviar das árvores do caminho.',
+    scenario:
+      'Enter começa; sustentar o balão, gastar combustível, bater ou pousar seco e reiniciar.',
     interactions: ['start', 'click'],
   },
   {

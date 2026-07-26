@@ -179,11 +179,11 @@ export type JSExpr =
   // Game 2D — a cena/tela atual é "name"? (valor booleano).
   | (JSExprCommon & { type: 'g2d:sceneIs'; name: string })
   // Game 2D — Kit equilibrista / balão: leituras do estado do jogo (valores).
-  | (JSExprCommon & { type: 'g2d:stickHeroScore'; gameVar: string })
-  | (JSExprCommon & { type: 'g2d:stickHeroOver'; gameVar: string })
-  | (JSExprCommon & { type: 'g2d:balloonScore'; gameVar: string })
-  | (JSExprCommon & { type: 'g2d:balloonFuel'; gameVar: string })
-  | (JSExprCommon & { type: 'g2d:balloonOver'; gameVar: string })
+  | (JSExprCommon & { type: 'g2d:stickPathFell'; pathVar: string })
+  | (JSExprCommon & { type: 'g2d:balloonPathMeters'; pathVar: string })
+  | (JSExprCommon & { type: 'g2d:balloonFuel'; spriteVar: string })
+  | (JSExprCommon & { type: 'g2d:balloonLandedOut'; spriteVar: string })
+  | (JSExprCommon & { type: 'g2d:pointerDown' })
   // Game 2D — Kit gorilas: perguntas (booleanos) da batalha de bananas.
   | (JSExprCommon & { type: 'g2d:aimReleased'; throwerVar: string })
   | (JSExprCommon & { type: 'g2d:bananaHitThrower'; cityVar: string; throwerVar: string })
@@ -201,6 +201,7 @@ export type JSExpr =
   // Game 3D — Corrida/genérico: distância, proximidade, bateu num rival?, voltas.
   | (JSExprCommon & { type: 'g3d:distanceTo'; aVar: string; bVar: string })
   | (JSExprCommon & { type: 'g3d:countSwarm'; swarmVar: string })
+  | (JSExprCommon & { type: 'g3d:countGroup'; groupVar: string })
   | (JSExprCommon & { type: 'g3d:isNear'; aVar: string; bVar: string; dist: number | JSExpr })
   | (JSExprCommon & { type: 'g3d:raceHit'; objVar: string; worldVar: string })
   | (JSExprCommon & { type: 'g3d:raceLaps'; objVar: string })
@@ -669,11 +670,11 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
       ...idField,
     }),
     z.object({ type: z.literal('g2d:sceneIs'), name: irText(), ...idField }),
-    z.object({ type: z.literal('g2d:stickHeroScore'), gameVar: irText(), ...idField }),
-    z.object({ type: z.literal('g2d:stickHeroOver'), gameVar: irText(), ...idField }),
-    z.object({ type: z.literal('g2d:balloonScore'), gameVar: irText(), ...idField }),
-    z.object({ type: z.literal('g2d:balloonFuel'), gameVar: irText(), ...idField }),
-    z.object({ type: z.literal('g2d:balloonOver'), gameVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:stickPathFell'), pathVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:balloonPathMeters'), pathVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:balloonFuel'), spriteVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:balloonLandedOut'), spriteVar: irText(), ...idField }),
+    z.object({ type: z.literal('g2d:pointerDown'), ...idField }),
     z.object({ type: z.literal('g2d:aimReleased'), throwerVar: irText(), ...idField }),
     z.object({
       type: z.literal('g2d:bananaHitThrower'),
@@ -700,6 +701,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     }),
     z.object({ type: z.literal('g3d:distanceTo'), aVar: irText(), bVar: irText(), ...idField }),
     z.object({ type: z.literal('g3d:countSwarm'), swarmVar: irText(), ...idField }),
+    z.object({ type: z.literal('g3d:countGroup'), groupVar: irText(), ...idField }),
     z.object({
       type: z.literal('g3d:isNear'),
       aVar: irText(),
@@ -2601,45 +2603,59 @@ export type JSStatement =
       size: number | JSExpr
       color: string
     })
-  // Game 2D — Kit equilibrista (Stick Hero) / Kit balão (v0.13.0).
-  | (JSStatementCommon & { type: 'g2d:createStickHero'; varName: string; ctxVar: string })
-  | (JSStatementCommon & { type: 'g2d:updateStickHero'; gameVar: string })
-  | (JSStatementCommon & { type: 'g2d:restartStickHero'; gameVar: string })
-  | (JSStatementCommon & { type: 'g2d:createBalloon'; varName: string; ctxVar: string })
-  | (JSStatementCommon & { type: 'g2d:updateBalloon'; gameVar: string })
-  | (JSStatementCommon & { type: 'g2d:restartBalloon'; gameVar: string })
-  // Kits DECOMPOSTOS (v0.40.0): cada aspecto do equilibrista/balão em um nó.
+  // Game 2D — Kits Equilibrista/Balão v2 (v0.42.0): o personagem é um SPRITE
+  // e as regras moram no "caminho" (a criança monta o loop e o placar).
   | (JSStatementCommon & {
-      type: 'g2d:stickHeroCreate'
+      type: 'g2d:createStickHero'
       varName: string
-      ctxVar: string
-      heroColor: string
-      stickColor: string
-      platformColor: string
+      w: number | JSExpr
+      h: number | JSExpr
+      color: string
     })
-  | (JSStatementCommon & { type: 'g2d:stickHeroScenery'; gameVar: string })
-  | (JSStatementCommon & { type: 'g2d:stickHeroHold'; gameVar: string; speed: number | JSExpr })
-  | (JSStatementCommon & { type: 'g2d:stickHeroStep'; gameVar: string; speed: number | JSExpr })
-  | (JSStatementCommon & { type: 'g2d:stickHeroDraw'; gameVar: string })
-  | (JSStatementCommon & { type: 'g2d:onStickHeroCross'; gameVar: string; body: JSStatement[] })
-  | (JSStatementCommon & { type: 'g2d:onStickHeroPerfect'; gameVar: string; body: JSStatement[] })
   | (JSStatementCommon & {
-      type: 'g2d:balloonCreate'
+      type: 'g2d:createStickPath'
       varName: string
       ctxVar: string
+      platformColor: string
+      stickColor: string
+    })
+  | (JSStatementCommon & { type: 'g2d:stickPathScenery'; pathVar: string })
+  | (JSStatementCommon & { type: 'g2d:stickPathGrow'; pathVar: string; speed: number | JSExpr })
+  | (JSStatementCommon & { type: 'g2d:stickPathDrop'; pathVar: string })
+  | (JSStatementCommon & {
+      type: 'g2d:stickPathWalk'
+      spriteVar: string
+      pathVar: string
+      speed: number | JSExpr
+    })
+  | (JSStatementCommon & { type: 'g2d:stickPathDraw'; pathVar: string })
+  | (JSStatementCommon & { type: 'g2d:onStickPathCross'; pathVar: string; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'g2d:onStickPathPerfect'; pathVar: string; body: JSStatement[] })
+  | (JSStatementCommon & {
+      type: 'g2d:createBalloon'
+      varName: string
+      x: number | JSExpr
+      y: number | JSExpr
+      w: number | JSExpr
+      h: number | JSExpr
       color: string
       basketColor: string
     })
-  | (JSStatementCommon & { type: 'g2d:balloonScenery'; gameVar: string })
-  | (JSStatementCommon & { type: 'g2d:balloonLift'; gameVar: string; force: number | JSExpr })
-  | (JSStatementCommon & { type: 'g2d:balloonScroll'; gameVar: string; speed: number | JSExpr })
-  | (JSStatementCommon & { type: 'g2d:balloonDraw'; gameVar: string })
-  | (JSStatementCommon & { type: 'g2d:onBalloonTreeHit'; gameVar: string; body: JSStatement[] })
-  // Visual customizado dos kits (v0.41.0): figura nomeada ou imagem do projeto.
-  | (JSStatementCommon & { type: 'g2d:stickHeroSetShape'; gameVar: string; shape: string })
-  | (JSStatementCommon & { type: 'g2d:stickHeroSetImage'; gameVar: string; image: string })
-  | (JSStatementCommon & { type: 'g2d:balloonSetShape'; gameVar: string; shape: string })
-  | (JSStatementCommon & { type: 'g2d:balloonSetImage'; gameVar: string; image: string })
+  | (JSStatementCommon & { type: 'g2d:createBalloonPath'; varName: string; ctxVar: string })
+  | (JSStatementCommon & { type: 'g2d:balloonPathScenery'; pathVar: string })
+  | (JSStatementCommon & { type: 'g2d:balloonFire'; spriteVar: string; force: number | JSExpr })
+  | (JSStatementCommon & { type: 'g2d:balloonFly'; spriteVar: string })
+  | (JSStatementCommon & {
+      type: 'g2d:balloonPathScroll'
+      pathVar: string
+      spriteVar: string
+      speed: number | JSExpr
+    })
+  | (JSStatementCommon & {
+      type: 'g2d:onBalloonPathTreeHit'
+      pathVar: string
+      body: JSStatement[]
+    })
   | (JSStatementCommon & {
       type: 'g2d:controlDino'
       spriteVar: string
@@ -2755,14 +2771,33 @@ export type JSStatement =
   | (JSStatementCommon & { type: 'g3d:setScale'; objVar: string; factor: JSExpr })
   // Game 3D — câmera segue um objeto (mantém o enquadramento atual).
   | (JSStatementCommon & { type: 'g3d:cameraFollow'; worldVar: string; objVar: string })
-  // Game 3D — Kit "Desvie": grupo de inimigos, spawner que avança, fim de jogo.
+  // Game 3D — ⏱️ Tempo e repetição (genéricos): rodam DENTRO do "A cada quadro 3D".
+  | (JSStatementCommon & { type: 'g3d:everyFrames'; n: number | JSExpr; body: JSStatement[] })
+  | (JSStatementCommon & { type: 'g3d:everySeconds'; secs: number | JSExpr; body: JSStatement[] })
+  // Game 3D — 📦 Grupos (genéricos): mexer com uma LISTA de objetos.
   | (JSStatementCommon & { type: 'g3d:createGroup'; varName: string })
+  | (JSStatementCommon & { type: 'g3d:updateGroup'; groupVar: string; groundVar: string })
+  | (JSStatementCommon & { type: 'g3d:updateGroupNoGravity'; groupVar: string })
   | (JSStatementCommon & {
-      type: 'g3d:runEnemies'
+      type: 'g3d:pruneOffscreen'
       worldVar: string
       groupVar: string
-      groundVar: string
-      every: number | JSExpr
+      itemName: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & {
+      type: 'g3d:forEachInGroup'
+      groupVar: string
+      itemName: string
+      body: JSStatement[]
+    })
+  | (JSStatementCommon & { type: 'g3d:removeFromGroup'; groupVar: string; objVar: string })
+  | (JSStatementCommon & { type: 'g3d:clearGroup'; groupVar: string })
+  // Game 3D — Kit "Desvie": soltar 1 inimigo + fim de jogo (parar a cena).
+  | (JSStatementCommon & {
+      type: 'g3d:spawnEnemy'
+      worldVar: string
+      groupVar: string
       speed: number | JSExpr
     })
   | (JSStatementCommon & { type: 'g3d:stop'; worldVar: string })
@@ -6531,104 +6566,83 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
     z.object({
       type: z.literal('g2d:createStickHero'),
       varName: irText(),
-      ctxVar: irText(),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
+      color: irText(),
       ...idField,
     }),
-    z.object({ type: z.literal('g2d:updateStickHero'), gameVar: irText(), ...idField }),
-    z.object({ type: z.literal('g2d:restartStickHero'), gameVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:createStickPath'),
+      varName: irText(),
+      ctxVar: irText(),
+      platformColor: irText(),
+      stickColor: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:stickPathScenery'), pathVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:stickPathGrow'),
+      pathVar: irText(),
+      speed: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:stickPathDrop'), pathVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:stickPathWalk'),
+      spriteVar: irText(),
+      pathVar: irText(),
+      speed: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:stickPathDraw'), pathVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:onStickPathCross'),
+      pathVar: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g2d:onStickPathPerfect'),
+      pathVar: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
     z.object({
       type: z.literal('g2d:createBalloon'),
       varName: irText(),
-      ctxVar: irText(),
-      ...idField,
-    }),
-    z.object({ type: z.literal('g2d:updateBalloon'), gameVar: irText(), ...idField }),
-    z.object({ type: z.literal('g2d:restartBalloon'), gameVar: irText(), ...idField }),
-    z.object({
-      type: z.literal('g2d:stickHeroCreate'),
-      varName: irText(),
-      ctxVar: irText(),
-      heroColor: irText(),
-      stickColor: irText(),
-      platformColor: irText(),
-      ...idField,
-    }),
-    z.object({ type: z.literal('g2d:stickHeroScenery'), gameVar: irText(), ...idField }),
-    z.object({
-      type: z.literal('g2d:stickHeroHold'),
-      gameVar: irText(),
-      speed: z.union([JSExprSchema, z.number()]),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g2d:stickHeroStep'),
-      gameVar: irText(),
-      speed: z.union([JSExprSchema, z.number()]),
-      ...idField,
-    }),
-    z.object({ type: z.literal('g2d:stickHeroDraw'), gameVar: irText(), ...idField }),
-    z.object({
-      type: z.literal('g2d:onStickHeroCross'),
-      gameVar: irText(),
-      body: z.array(JSStatementSchema),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g2d:onStickHeroPerfect'),
-      gameVar: irText(),
-      body: z.array(JSStatementSchema),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g2d:balloonCreate'),
-      varName: irText(),
-      ctxVar: irText(),
+      x: z.union([JSExprSchema, z.number()]),
+      y: z.union([JSExprSchema, z.number()]),
+      w: z.union([JSExprSchema, z.number()]),
+      h: z.union([JSExprSchema, z.number()]),
       color: irText(),
       basketColor: irText(),
       ...idField,
     }),
-    z.object({ type: z.literal('g2d:balloonScenery'), gameVar: irText(), ...idField }),
     z.object({
-      type: z.literal('g2d:balloonLift'),
-      gameVar: irText(),
+      type: z.literal('g2d:createBalloonPath'),
+      varName: irText(),
+      ctxVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g2d:balloonPathScenery'), pathVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g2d:balloonFire'),
+      spriteVar: irText(),
       force: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
+    z.object({ type: z.literal('g2d:balloonFly'), spriteVar: irText(), ...idField }),
     z.object({
-      type: z.literal('g2d:balloonScroll'),
-      gameVar: irText(),
+      type: z.literal('g2d:balloonPathScroll'),
+      pathVar: irText(),
+      spriteVar: irText(),
       speed: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
-    z.object({ type: z.literal('g2d:balloonDraw'), gameVar: irText(), ...idField }),
     z.object({
-      type: z.literal('g2d:onBalloonTreeHit'),
-      gameVar: irText(),
+      type: z.literal('g2d:onBalloonPathTreeHit'),
+      pathVar: irText(),
       body: z.array(JSStatementSchema),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g2d:stickHeroSetShape'),
-      gameVar: irText(),
-      shape: irText(),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g2d:stickHeroSetImage'),
-      gameVar: irText(),
-      image: irText(),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g2d:balloonSetShape'),
-      gameVar: irText(),
-      shape: irText(),
-      ...idField,
-    }),
-    z.object({
-      type: z.literal('g2d:balloonSetImage'),
-      gameVar: irText(),
-      image: irText(),
       ...idField,
     }),
     z.object({
@@ -6813,13 +6827,52 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       objVar: irText(),
       ...idField,
     }),
+    z.object({
+      type: z.literal('g3d:everyFrames'),
+      n: z.union([JSExprSchema, z.number()]),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:everySeconds'),
+      secs: z.union([JSExprSchema, z.number()]),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
     z.object({ type: z.literal('g3d:createGroup'), varName: irText(), ...idField }),
     z.object({
-      type: z.literal('g3d:runEnemies'),
-      worldVar: irText(),
+      type: z.literal('g3d:updateGroup'),
       groupVar: irText(),
       groundVar: irText(),
-      every: z.union([JSExprSchema, z.number()]),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:updateGroupNoGravity'), groupVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:pruneOffscreen'),
+      worldVar: irText(),
+      groupVar: irText(),
+      itemName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:forEachInGroup'),
+      groupVar: irText(),
+      itemName: irText(),
+      body: z.array(JSStatementSchema),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('g3d:removeFromGroup'),
+      groupVar: irText(),
+      objVar: irText(),
+      ...idField,
+    }),
+    z.object({ type: z.literal('g3d:clearGroup'), groupVar: irText(), ...idField }),
+    z.object({
+      type: z.literal('g3d:spawnEnemy'),
+      worldVar: irText(),
+      groupVar: irText(),
       speed: z.union([JSExprSchema, z.number()]),
       ...idField,
     }),
@@ -10439,9 +10492,9 @@ const G2D_DECLARATION_FIELDS: Readonly<Record<string, string>> = {
   'g2d:createCity': 'varName',
   'g2d:placeThrower': 'varName',
   'g2d:createStickHero': 'varName',
+  'g2d:createStickPath': 'varName',
   'g2d:createBalloon': 'varName',
-  'g2d:stickHeroCreate': 'varName',
-  'g2d:balloonCreate': 'varName',
+  'g2d:createBalloonPath': 'varName',
 }
 
 const G2D_REFERENCE_FIELDS = new Set([
@@ -11129,28 +11182,21 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:computerTurn',
   'g2d:drawAimReadout',
   'g2d:createStickHero',
-  'g2d:updateStickHero',
-  'g2d:restartStickHero',
+  'g2d:createStickPath',
+  'g2d:stickPathScenery',
+  'g2d:stickPathGrow',
+  'g2d:stickPathDrop',
+  'g2d:stickPathWalk',
+  'g2d:stickPathDraw',
+  'g2d:onStickPathCross',
+  'g2d:onStickPathPerfect',
   'g2d:createBalloon',
-  'g2d:updateBalloon',
-  'g2d:restartBalloon',
-  'g2d:stickHeroCreate',
-  'g2d:stickHeroScenery',
-  'g2d:stickHeroHold',
-  'g2d:stickHeroStep',
-  'g2d:stickHeroDraw',
-  'g2d:onStickHeroCross',
-  'g2d:onStickHeroPerfect',
-  'g2d:balloonCreate',
-  'g2d:balloonScenery',
-  'g2d:balloonLift',
-  'g2d:balloonScroll',
-  'g2d:balloonDraw',
-  'g2d:onBalloonTreeHit',
-  'g2d:stickHeroSetShape',
-  'g2d:stickHeroSetImage',
-  'g2d:balloonSetShape',
-  'g2d:balloonSetImage',
+  'g2d:createBalloonPath',
+  'g2d:balloonPathScenery',
+  'g2d:balloonFire',
+  'g2d:balloonFly',
+  'g2d:balloonPathScroll',
+  'g2d:onBalloonPathTreeHit',
 ])
 
 export const G3D_STATEMENT_TYPES = new Set([
@@ -11170,8 +11216,16 @@ export const G3D_STATEMENT_TYPES = new Set([
   'g3d:controlWithKeys',
   'g3d:setScale',
   'g3d:cameraFollow',
+  'g3d:everyFrames',
+  'g3d:everySeconds',
   'g3d:createGroup',
-  'g3d:runEnemies',
+  'g3d:updateGroup',
+  'g3d:updateGroupNoGravity',
+  'g3d:pruneOffscreen',
+  'g3d:forEachInGroup',
+  'g3d:removeFromGroup',
+  'g3d:clearGroup',
+  'g3d:spawnEnemy',
   'g3d:stop',
   'g3d:createCrossingScene',
   'g3d:createCrosser',

@@ -507,16 +507,16 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g2d:tileAtSprite', mapVar: f(block, 'MAP'), spriteVar: f(block, 'SPRITE') }
     case 'sz_g2d_scene_is':
       return { type: 'g2d:sceneIs', name: f(block, 'SCENE') || 'inicio' }
-    case 'sz_g2d_stickhero_score':
-      return { type: 'g2d:stickHeroScore', gameVar: f(block, 'GAME') }
-    case 'sz_g2d_stickhero_over':
-      return { type: 'g2d:stickHeroOver', gameVar: f(block, 'GAME') }
-    case 'sz_g2d_balloon_score':
-      return { type: 'g2d:balloonScore', gameVar: f(block, 'GAME') }
-    case 'sz_g2d_balloon_fuel':
-      return { type: 'g2d:balloonFuel', gameVar: f(block, 'GAME') }
-    case 'sz_g2d_balloon_over':
-      return { type: 'g2d:balloonOver', gameVar: f(block, 'GAME') }
+    case 'sz_g2d_stickpath_fell':
+      return { type: 'g2d:stickPathFell', pathVar: f(block, 'PATH') }
+    case 'sz_g2d_balloonpath_meters':
+      return { type: 'g2d:balloonPathMeters', pathVar: f(block, 'PATH') }
+    case 'sz_g2d_balloon_fuel_left':
+      return { type: 'g2d:balloonFuel', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_balloon_landed_out':
+      return { type: 'g2d:balloonLandedOut', spriteVar: f(block, 'SPRITE') }
+    case 'sz_g2d_pointer_down':
+      return { type: 'g2d:pointerDown' }
     case 'sz_g2d_aim_released':
       return { type: 'g2d:aimReleased', throwerVar: f(block, 'THROWER') }
     case 'sz_g2d_banana_hit_thrower':
@@ -543,6 +543,8 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
       return { type: 'g3d:distanceTo', aVar: f(block, 'A'), bVar: f(block, 'B') }
     case 'sz_g3d_count_swarm':
       return { type: 'g3d:countSwarm', swarmVar: f(block, 'SWARM') }
+    case 'sz_g3d_count_group':
+      return { type: 'g3d:countGroup', groupVar: f(block, 'GROUP') }
     case 'sz_g3d_is_near':
       return {
         type: 'g3d:isNear',
@@ -4317,175 +4319,136 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
           jump: exprInput(block, 'JUMP', { type: 'num', value: 14 }),
         },
       }
-    case 'sz_g2d_create_stickhero':
-      seen.add('game-2d')
-      return {
-        kind: 'js',
-        value: { type: 'g2d:createStickHero', varName: f(block, 'NAME'), ctxVar: 'ctx' },
-      }
-    case 'sz_g2d_update_stickhero':
-      seen.add('game-2d')
-      return { kind: 'js', value: { type: 'g2d:updateStickHero', gameVar: f(block, 'GAME') } }
-    case 'sz_g2d_restart_stickhero':
-      seen.add('game-2d')
-      return { kind: 'js', value: { type: 'g2d:restartStickHero', gameVar: f(block, 'GAME') } }
-    case 'sz_g2d_create_balloon':
-      seen.add('game-2d')
-      return {
-        kind: 'js',
-        value: { type: 'g2d:createBalloon', varName: f(block, 'NAME'), ctxVar: 'ctx' },
-      }
-    case 'sz_g2d_update_balloon':
-      seen.add('game-2d')
-      return { kind: 'js', value: { type: 'g2d:updateBalloon', gameVar: f(block, 'GAME') } }
-    case 'sz_g2d_restart_balloon':
-      seen.add('game-2d')
-      return { kind: 'js', value: { type: 'g2d:restartBalloon', gameVar: f(block, 'GAME') } }
-    case 'sz_g2d_stickhero_create':
+    case 'sz_g2d_stickhero_sprite':
       seen.add('game-2d')
       return {
         kind: 'js',
         value: {
-          type: 'g2d:stickHeroCreate',
+          type: 'g2d:createStickHero',
           varName: f(block, 'NAME'),
-          ctxVar: 'ctx',
-          heroColor: f(block, 'HERO_COLOR'),
-          stickColor: f(block, 'STICK_COLOR'),
-          platformColor: f(block, 'PLATFORM_COLOR'),
-        },
-      }
-    case 'sz_g2d_stickhero_scenery':
-      seen.add('game-2d')
-      return { kind: 'js', value: { type: 'g2d:stickHeroScenery', gameVar: f(block, 'GAME') } }
-    case 'sz_g2d_stickhero_hold':
-      seen.add('game-2d')
-      return {
-        kind: 'js',
-        value: {
-          type: 'g2d:stickHeroHold',
-          gameVar: f(block, 'GAME'),
-          speed: exprInput(block, 'SPEED', { type: 'num', value: 1 }),
-        },
-      }
-    case 'sz_g2d_stickhero_step':
-      seen.add('game-2d')
-      return {
-        kind: 'js',
-        value: {
-          type: 'g2d:stickHeroStep',
-          gameVar: f(block, 'GAME'),
-          speed: exprInput(block, 'SPEED', { type: 'num', value: 1 }),
-        },
-      }
-    case 'sz_g2d_stickhero_draw':
-      seen.add('game-2d')
-      return { kind: 'js', value: { type: 'g2d:stickHeroDraw', gameVar: f(block, 'GAME') } }
-    case 'sz_g2d_stickhero_on_cross':
-      seen.add('game-2d')
-      return {
-        kind: 'js',
-        value: {
-          type: 'g2d:onStickHeroCross',
-          gameVar: f(block, 'GAME'),
-          body: getStatementChildren(block, 'BODY', seen),
-        },
-      }
-    case 'sz_g2d_stickhero_on_perfect':
-      seen.add('game-2d')
-      return {
-        kind: 'js',
-        value: {
-          type: 'g2d:onStickHeroPerfect',
-          gameVar: f(block, 'GAME'),
-          body: getStatementChildren(block, 'BODY', seen),
-        },
-      }
-    case 'sz_g2d_balloon_create':
-      seen.add('game-2d')
-      return {
-        kind: 'js',
-        value: {
-          type: 'g2d:balloonCreate',
-          varName: f(block, 'NAME'),
-          ctxVar: 'ctx',
+          w: exprInput(block, 'W', { type: 'num', value: 18 }),
+          h: exprInput(block, 'H', { type: 'num', value: 36 }),
           color: f(block, 'COLOR'),
-          basketColor: f(block, 'BASKET_COLOR'),
         },
       }
-    case 'sz_g2d_balloon_scenery':
-      seen.add('game-2d')
-      return { kind: 'js', value: { type: 'g2d:balloonScenery', gameVar: f(block, 'GAME') } }
-    case 'sz_g2d_balloon_lift':
+    case 'sz_g2d_stickpath_create':
       seen.add('game-2d')
       return {
         kind: 'js',
         value: {
-          type: 'g2d:balloonLift',
-          gameVar: f(block, 'GAME'),
+          type: 'g2d:createStickPath',
+          varName: f(block, 'NAME'),
+          ctxVar: 'ctx',
+          platformColor: f(block, 'PLATFORM_COLOR'),
+          stickColor: f(block, 'STICK_COLOR'),
+        },
+      }
+    case 'sz_g2d_stickpath_scenery':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:stickPathScenery', pathVar: f(block, 'PATH') } }
+    case 'sz_g2d_stickpath_grow':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:stickPathGrow',
+          pathVar: f(block, 'PATH'),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_g2d_stickpath_drop':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:stickPathDrop', pathVar: f(block, 'PATH') } }
+    case 'sz_g2d_stickpath_walk':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:stickPathWalk',
+          spriteVar: f(block, 'SPRITE'),
+          pathVar: f(block, 'PATH'),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 1 }),
+        },
+      }
+    case 'sz_g2d_stickpath_draw':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:stickPathDraw', pathVar: f(block, 'PATH') } }
+    case 'sz_g2d_stickpath_on_cross':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:onStickPathCross',
+          pathVar: f(block, 'PATH'),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_g2d_stickpath_on_perfect':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:onStickPathPerfect',
+          pathVar: f(block, 'PATH'),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_g2d_balloon_sprite':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:createBalloon',
+          varName: f(block, 'NAME'),
+          x: exprInput(block, 'X', { type: 'num', value: 110 }),
+          y: exprInput(block, 'Y', { type: 'num', value: 195 }),
+          w: exprInput(block, 'W', { type: 'num', value: 70 }),
+          h: exprInput(block, 'H', { type: 'num', value: 100 }),
+          color: f(block, 'BODY'),
+          basketColor: f(block, 'BASKET'),
+        },
+      }
+    case 'sz_g2d_balloonpath_create':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: { type: 'g2d:createBalloonPath', varName: f(block, 'NAME'), ctxVar: 'ctx' },
+      }
+    case 'sz_g2d_balloonpath_scenery':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:balloonPathScenery', pathVar: f(block, 'PATH') } }
+    case 'sz_g2d_balloon_fire':
+      seen.add('game-2d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g2d:balloonFire',
+          spriteVar: f(block, 'SPRITE'),
           force: exprInput(block, 'FORCE', { type: 'num', value: 1 }),
         },
       }
-    case 'sz_g2d_balloon_scroll':
+    case 'sz_g2d_balloon_fly':
+      seen.add('game-2d')
+      return { kind: 'js', value: { type: 'g2d:balloonFly', spriteVar: f(block, 'SPRITE') } }
+    case 'sz_g2d_balloonpath_scroll':
       seen.add('game-2d')
       return {
         kind: 'js',
         value: {
-          type: 'g2d:balloonScroll',
-          gameVar: f(block, 'GAME'),
+          type: 'g2d:balloonPathScroll',
+          pathVar: f(block, 'PATH'),
+          spriteVar: f(block, 'SPRITE'),
           speed: exprInput(block, 'SPEED', { type: 'num', value: 1 }),
         },
       }
-    case 'sz_g2d_balloon_draw':
-      seen.add('game-2d')
-      return { kind: 'js', value: { type: 'g2d:balloonDraw', gameVar: f(block, 'GAME') } }
-    case 'sz_g2d_balloon_on_hit':
+    case 'sz_g2d_balloonpath_on_tree':
       seen.add('game-2d')
       return {
         kind: 'js',
         value: {
-          type: 'g2d:onBalloonTreeHit',
-          gameVar: f(block, 'GAME'),
+          type: 'g2d:onBalloonPathTreeHit',
+          pathVar: f(block, 'PATH'),
           body: getStatementChildren(block, 'BODY', seen),
-        },
-      }
-    case 'sz_g2d_stickhero_set_shape':
-      seen.add('game-2d')
-      return {
-        kind: 'js',
-        value: {
-          type: 'g2d:stickHeroSetShape',
-          gameVar: f(block, 'GAME'),
-          shape: f(block, 'SHAPE'),
-        },
-      }
-    case 'sz_g2d_stickhero_set_image':
-      seen.add('game-2d')
-      return {
-        kind: 'js',
-        value: {
-          type: 'g2d:stickHeroSetImage',
-          gameVar: f(block, 'GAME'),
-          image: f(block, 'IMAGE'),
-        },
-      }
-    case 'sz_g2d_balloon_set_shape':
-      seen.add('game-2d')
-      return {
-        kind: 'js',
-        value: {
-          type: 'g2d:balloonSetShape',
-          gameVar: f(block, 'GAME'),
-          shape: f(block, 'SHAPE'),
-        },
-      }
-    case 'sz_g2d_balloon_set_image':
-      seen.add('game-2d')
-      return {
-        kind: 'js',
-        value: {
-          type: 'g2d:balloonSetImage',
-          gameVar: f(block, 'GAME'),
-          image: f(block, 'IMAGE'),
         },
       }
     case 'sz_g2d_create_dino':
@@ -4795,17 +4758,87 @@ function blockToIR(block: Blockly.Block, seen: Set<string>): RoutedNode | null {
     case 'sz_g3d_create_group':
       seen.add('game-3d')
       return { kind: 'js', value: { type: 'g3d:createGroup', varName: f(block, 'NAME') } }
-    case 'sz_g3d_run_enemies':
+    case 'sz_g3d_spawn_enemy':
       seen.add('game-3d')
       return {
         kind: 'js',
         value: {
-          type: 'g3d:runEnemies',
+          type: 'g3d:spawnEnemy',
           worldVar: f(block, 'WORLD'),
           groupVar: f(block, 'GROUP'),
+          speed: exprInput(block, 'SPEED', { type: 'num', value: 0.1 }),
+        },
+      }
+    case 'sz_g3d_update_group':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:updateGroup',
+          groupVar: f(block, 'GROUP'),
           groundVar: f(block, 'GROUND'),
-          every: exprInput(block, 'EVERY', { type: 'num', value: 200 }),
-          speed: exprInput(block, 'SPEED', { type: 'num', value: 0.02 }),
+        },
+      }
+    case 'sz_g3d_update_group_no_gravity':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: { type: 'g3d:updateGroupNoGravity', groupVar: f(block, 'GROUP') },
+      }
+    case 'sz_g3d_prune_offscreen':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:pruneOffscreen',
+          worldVar: f(block, 'WORLD'),
+          groupVar: f(block, 'GROUP'),
+          itemName: f(block, 'ITEM'),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_g3d_for_each_in_group':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:forEachInGroup',
+          groupVar: f(block, 'GROUP'),
+          itemName: f(block, 'ITEM'),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_g3d_remove_from_group':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:removeFromGroup',
+          groupVar: f(block, 'GROUP'),
+          objVar: f(block, 'OBJ'),
+        },
+      }
+    case 'sz_g3d_clear_group':
+      seen.add('game-3d')
+      return { kind: 'js', value: { type: 'g3d:clearGroup', groupVar: f(block, 'GROUP') } }
+    case 'sz_g3d_every_frames':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:everyFrames',
+          n: exprInput(block, 'N', { type: 'num', value: 30 }),
+          body: getStatementChildren(block, 'BODY', seen),
+        },
+      }
+    case 'sz_g3d_every_seconds':
+      seen.add('game-3d')
+      return {
+        kind: 'js',
+        value: {
+          type: 'g3d:everySeconds',
+          secs: exprInput(block, 'SECS', { type: 'num', value: 2 }),
+          body: getStatementChildren(block, 'BODY', seen),
         },
       }
     case 'sz_g3d_stop':

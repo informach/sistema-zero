@@ -11,7 +11,6 @@ export const CONTINUOUS_EXTENSION_COMMANDS = [
   { blockType: 'sz_g3d_control_keys', statementType: 'g3d:controlWithKeys' },
   { blockType: 'sz_g3d_apply_gravity', statementType: 'g3d:applyGravity' },
   { blockType: 'sz_g3d_camera_follow', statementType: 'g3d:cameraFollow' },
-  { blockType: 'sz_g3d_run_enemies', statementType: 'g3d:runEnemies' },
   { blockType: 'sz_g3d_grid_step', statementType: 'g3d:gridStep' },
   { blockType: 'sz_g3d_move_across', statementType: 'g3d:moveAcross' },
   { blockType: 'sz_g3d_crosser_step', statementType: 'g3d:crosserStep' },

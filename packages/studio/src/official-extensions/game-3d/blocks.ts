@@ -149,7 +149,7 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    tooltip: 'Gira o objeto. Anime dentro de "A cada frame 3D" usando uma variável que aumenta.',
+    tooltip: 'Gira o objeto. Anime dentro de "A cada quadro 3D" usando uma variável que aumenta.',
   },
   {
     type: 'sz_g3d_set_scale',
@@ -167,15 +167,14 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_animate',
     placement: 'loop-update',
-    message0: 'A cada frame 3D da cena %1',
+    message0: 'A cada quadro 3D da cena %1',
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' }],
     message1: 'fazer %1',
     args1: [{ type: 'input_statement', name: 'BODY' }],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    tooltip:
-      'Loop de animação 3D (setAnimationLoop): roda o "fazer" e redesenha a cena a cada quadro.',
+    tooltip: 'Laço de animação 3D: roda o "fazer" e redesenha a cena a cada quadro.',
   },
 
   // ---- Física & controles ----
@@ -191,7 +190,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Anda no plano (frente/trás/lados) com W A S D ou as setas. Use dentro de "A cada frame 3D".',
+      'Anda no plano (frente/trás/lados) com W A S D ou as setas. Use dentro de "A cada quadro 3D".',
   },
   {
     type: 'sz_g3d_set_velocity',
@@ -233,7 +232,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Puxa o objeto para baixo e o faz parar/quicar no chão, andando pela velocidade. Use dentro de "A cada frame 3D".',
+      'Puxa o objeto para baixo e o faz parar/quicar no chão, andando pela velocidade. Use dentro de "A cada quadro 3D".',
   },
   {
     type: 'sz_g3d_camera_follow',
@@ -246,7 +245,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'A câmera acompanha o objeto mantendo o mesmo enquadramento. Use dentro de "A cada frame 3D".',
+      'A câmera acompanha o objeto mantendo o mesmo enquadramento. Use dentro de "A cada quadro 3D".',
   },
 
   // ---- Perguntas (booleanos) — caem dentro de um "se" ----
@@ -262,7 +261,7 @@ export const gameThreeDBlocks = [
     ],
     output: 'JSValue',
     tooltip:
-      'Verdadeiro enquanto a tecla está sendo segurada. Use dentro de um "se", no "A cada frame 3D".',
+      'Verdadeiro enquanto a tecla está sendo segurada. Use dentro de um "se", no "A cada quadro 3D".',
   },
   {
     type: 'sz_g3d_collides',
@@ -285,7 +284,9 @@ export const gameThreeDBlocks = [
     tooltip: 'Verdadeiro se o objeto bateu em qualquer um do grupo (ótimo para o fim de jogo).',
   },
 
-  // ---- Kit "Desvie": grupo de inimigos, spawner que avança e fim de jogo ----
+  // ---- 📦 Grupos (genéricos) + ⏱️ Tempo + Kit "Desvie" (soltar 1 inimigo) ----
+  // A criança MONTA a lógica (soltar → mover → tirar da tela → colidir → fim);
+  // o kit só facilita a mecânica difícil (soltar 1 inimigo 3D).
   {
     type: 'sz_g3d_create_group',
     placement: 'start-only-command',
@@ -296,21 +297,132 @@ export const gameThreeDBlocks = [
     tooltip: 'Cria uma lista vazia para guardar vários objetos (ex.: os inimigos).',
   },
   {
-    type: 'sz_g3d_run_enemies',
-    placement: 'loop-command',
-    message0: 'Na cena %1, soltar inimigos no grupo %2 (chão %3) a cada %4 quadros, velocidade %5',
+    type: 'sz_g3d_update_group',
+    placement: 'command',
+    message0: 'Atualizar (mover) o grupo %1 com gravidade (chão %2)',
+    args0: [
+      { type: 'field_name_picker', name: 'GROUP', text: 'inimigos', kind: 'group3d' },
+      { type: 'field_name_picker', name: 'GROUND', text: 'chao', kind: 'g3d-object' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Move cada objeto do grupo pela velocidade e o faz cair/parar no chão. Use dentro de "A cada quadro 3D".',
+  },
+  {
+    type: 'sz_g3d_update_group_no_gravity',
+    placement: 'command',
+    message0: 'Mover o grupo %1 sem gravidade',
+    args0: [{ type: 'field_name_picker', name: 'GROUP', text: 'inimigos', kind: 'group3d' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Move cada objeto do grupo pela velocidade, sem cair (para coisas que voam). Use dentro de "A cada quadro 3D".',
+  },
+  {
+    type: 'sz_g3d_prune_offscreen',
+    placement: 'command',
+    bodyExecution: 'sync-callback',
+    message0: 'Tirar do grupo %1 quem saiu da tela (cena %2), para cada um (chamado %3)',
+    args0: [
+      { type: 'field_name_picker', name: 'GROUP', text: 'inimigos', kind: 'group3d' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
+      { type: 'field_input', name: 'ITEM', text: 'inimigo' },
+    ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Some com os objetos que saíram da tela e roda o "fazer" para cada um que saiu (ex.: contar quem escapou). Use dentro de "A cada quadro 3D".',
+  },
+  {
+    type: 'sz_g3d_for_each_in_group',
+    placement: 'command',
+    bodyExecution: 'sync-callback',
+    message0: 'Para cada objeto %1 do grupo %2',
+    args0: [
+      { type: 'field_input', name: 'ITEM', text: 'inimigo' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'inimigos', kind: 'group3d' },
+    ],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Roda o "fazer" para cada objeto do grupo (o objeto da vez fica no nome que você escolher).',
+  },
+  {
+    type: 'sz_g3d_count_group',
+    message0: 'quantos objetos tem no grupo %1',
+    args0: [{ type: 'field_name_picker', name: 'GROUP', text: 'inimigos', kind: 'group3d' }],
+    output: 'JSValue',
+    tooltip: 'Quantidade de objetos no grupo agora. Use dentro de um "se" ou numa conta.',
+  },
+  {
+    type: 'sz_g3d_remove_from_group',
+    placement: 'command',
+    message0: 'Tirar o objeto %1 do grupo %2',
+    args0: [
+      { type: 'field_name_picker', name: 'OBJ', text: 'inimigo', kind: 'object3d' },
+      { type: 'field_name_picker', name: 'GROUP', text: 'inimigos', kind: 'group3d' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip: 'Tira um objeto do grupo e some com ele da cena (ex.: o inimigo que foi atingido).',
+  },
+  {
+    type: 'sz_g3d_clear_group',
+    placement: 'command',
+    message0: 'Esvaziar o grupo %1',
+    args0: [{ type: 'field_name_picker', name: 'GROUP', text: 'inimigos', kind: 'group3d' }],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Tira todos os objetos do grupo de uma vez e some com eles da cena (ex.: ao recomeçar).',
+  },
+  {
+    type: 'sz_g3d_every_frames',
+    placement: 'loop-update',
+    message0: 'A cada %1 quadros',
+    args0: [{ type: 'input_value', name: 'N', check: 'JSValue' }],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Roda o "fazer" de tempos em tempos, a cada N quadros. Ótimo para soltar 1 inimigo sem encher a tela. Use dentro de "A cada quadro 3D".',
+  },
+  {
+    type: 'sz_g3d_every_seconds',
+    placement: 'loop-update',
+    message0: 'A cada %1 segundos',
+    args0: [{ type: 'input_value', name: 'SECS', check: 'JSValue' }],
+    message1: 'fazer %1',
+    args1: [{ type: 'input_statement', name: 'BODY' }],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip: 'Roda o "fazer" a cada N segundos. Use dentro de "A cada quadro 3D".',
+  },
+  {
+    type: 'sz_g3d_spawn_enemy',
+    placement: 'command',
+    message0: 'Na cena %1, soltar 1 inimigo no grupo %2, velocidade %3',
     args0: [
       { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
       { type: 'field_name_picker', name: 'GROUP', text: 'inimigos', kind: 'group3d' },
-      { type: 'field_name_picker', name: 'GROUND', text: 'chao', kind: 'g3d-object' },
-      { type: 'input_value', name: 'EVERY', check: 'JSValue' },
       { type: 'input_value', name: 'SPEED', check: 'JSValue' },
     ],
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Cria inimigos que vêm de longe acelerando e os move sozinho (limpa os que passam). Use dentro de "A cada frame 3D".',
+      'Cria 1 inimigo (cubo vermelho) que vem de longe na velocidade escolhida. Use dentro de "A cada N quadros" para soltar de tempos em tempos.',
   },
   {
     type: 'sz_g3d_stop',
@@ -319,7 +431,7 @@ export const gameThreeDBlocks = [
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    tooltip: 'Para o loop de animação (game over). Use dentro de um "se" de colisão.',
+    tooltip: 'Para o laço de animação (fim de jogo). Use dentro de um "se" de colisão.',
   },
 
   // ---- GENÉRICOS de grade/isométrico (fora do kit, p/ outros jogos) ----
@@ -355,17 +467,17 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_grid_step',
     placement: 'loop-command',
-    message0: 'Mover %1 em grade com as setas (a cada frame)',
+    message0: 'Mover %1 em grade com as setas (a cada quadro)',
     args0: [{ type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Anda uma casa por vez (com um pulinho) ao apertar as setas. Use dentro de "A cada frame 3D".',
+      'Anda uma casa por vez (com um pulinho) ao apertar as setas. Use dentro de "A cada quadro 3D".',
   },
   {
     type: 'sz_g3d_grid_move',
     placement: 'command',
-    message0: 'Dar um passo de %1 para %2',
+    message0: 'Fazer %1 dar um passo para %2',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'object3d' },
       {
@@ -392,7 +504,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Move todos os objetos do grupo numa faixa, dando a volta nas bordas. Velocidade negativa = sentido contrário. Use dentro de "A cada frame 3D".',
+      'Move todos os objetos do grupo numa faixa, dando a volta nas bordas. Velocidade negativa = sentido contrário. Use dentro de "A cada quadro 3D".',
   },
   {
     type: 'sz_g3d_touches_box',
@@ -453,7 +565,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_crosser_step',
     placement: 'loop-command',
-    message0: 'Atualizar o personagem %1 no mundo %2 (a cada frame)',
+    message0: 'Atualizar o personagem %1 no mundo %2 (a cada quadro)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'jogador', kind: 'g3d-object' },
       { type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'g3d-world' },
@@ -461,7 +573,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Move o personagem com as setas (em grade), gera mais ruas, segue com a câmera e conta a pontuação. Use dentro de "A cada frame 3D".',
+      'Move o personagem com as setas (em grade), gera mais ruas, segue com a câmera e conta a pontuação. Use dentro de "A cada quadro 3D".',
   },
   {
     type: 'sz_g3d_crosser_reset',
@@ -517,11 +629,11 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_move_traffic',
     placement: 'loop-command',
-    message0: 'Mover os veículos do mundo %1 (a cada frame)',
+    message0: 'Mover os veículos do mundo %1 (a cada quadro)',
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'g3d-world' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    tooltip: 'Faz os carros e caminhões andarem e darem a volta. Use dentro de "A cada frame 3D".',
+    tooltip: 'Faz os carros e caminhões andarem e darem a volta. Use dentro de "A cada quadro 3D".',
   },
   {
     type: 'sz_g3d_crosser_hit',
@@ -570,7 +682,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Faz o objeto girar numa circunferência (centro no meio da cena), virado para a direção do movimento. Use dentro de "A cada frame 3D".',
+      'Faz o objeto girar numa circunferência (centro no meio da cena), virado para a direção do movimento. Use dentro de "A cada quadro 3D".',
   },
   {
     type: 'sz_g3d_distance_to',
@@ -634,7 +746,7 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_race_step',
     placement: 'loop-command',
-    message0: 'Dirigir o carro %1 no mundo %2 (a cada frame)',
+    message0: 'Dirigir o carro %1 no mundo %2 (a cada quadro)',
     args0: [
       { type: 'field_name_picker', name: 'OBJ', text: 'carro', kind: 'g3d-object' },
       { type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'g3d-world' },
@@ -642,7 +754,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Dá voltas na pista: ↑ acelera, ↓ freia. Conta as voltas. Use dentro de "A cada frame 3D".',
+      'Dá voltas na pista: ↑ acelera, ↓ freia. Conta as voltas. Use dentro de "A cada quadro 3D".',
   },
   {
     type: 'sz_g3d_race_control',
@@ -667,7 +779,7 @@ export const gameThreeDBlocks = [
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'mundo', kind: 'g3d-world' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    tooltip: 'Cria e move carros/caminhões rivais pela pista. Use dentro de "A cada frame 3D".',
+    tooltip: 'Cria e move carros/caminhões rivais pela pista. Use dentro de "A cada quadro 3D".',
   },
   {
     type: 'sz_g3d_race_reset',
@@ -710,7 +822,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Solta o objeto em queda livre, girando, até sumir da tela (gravidade). Use dentro de "A cada frame 3D".',
+      'Solta o objeto em queda livre, girando, até sumir da tela (gravidade). Use dentro de "A cada quadro 3D".',
   },
   {
     type: 'sz_g3d_slide_between',
@@ -731,7 +843,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Faz o objeto ir e voltar entre dois limites num eixo (ótimo para plataformas). Use dentro de "A cada frame 3D".',
+      'Faz o objeto ir e voltar entre dois limites num eixo (ótimo para plataformas). Use dentro de "A cada quadro 3D".',
   },
   {
     type: 'sz_g3d_spin',
@@ -750,7 +862,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Gira o objeto continuamente num eixo (moedas, hélices, planetas). Use dentro de "A cada frame 3D".',
+      'Gira o objeto continuamente num eixo (moedas, hélices, planetas). Use dentro de "A cada quadro 3D".',
   },
 
   // ---- Kit Empilhar (torre de blocos) ----
@@ -789,12 +901,12 @@ export const gameThreeDBlocks = [
   {
     type: 'sz_g3d_stack_step',
     placement: 'loop-command',
-    message0: 'Atualizar a torre %1 (a cada frame)',
+    message0: 'Atualizar a torre %1 (a cada quadro)',
     args0: [{ type: 'field_name_picker', name: 'WORLD', text: 'torre', kind: 'g3d-world' }],
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Desliza o bloco do topo, sobe a câmera e faz as sobras caírem. Use dentro de "A cada frame 3D".',
+      'Desliza o bloco do topo, sobe a câmera e faz as sobras caírem. Use dentro de "A cada quadro 3D".',
   },
   {
     type: 'sz_g3d_stack_reset',
@@ -869,7 +981,7 @@ export const gameThreeDBlocks = [
     ],
     output: 'JSValue',
     tooltip:
-      'Lê a velocidade do objeto num eixo (a mesma que "Mudar a velocidade" grava). Use numa conta ou num "se".',
+      'Lê a velocidade do objeto num eixo (a mesma que "Definir velocidade" grava). Use numa conta ou num "se".',
   },
   {
     type: 'sz_g3d_get_speed',
@@ -909,7 +1021,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Soma à posição atual (move em relação a onde já está). Use dentro de "A cada frame 3D".',
+      'Soma à posição atual (move em relação a onde já está). Use dentro de "A cada quadro 3D".',
   },
   {
     type: 'sz_g3d_rotate_by',
@@ -927,7 +1039,7 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
-    tooltip: 'Soma ao giro atual num eixo (radianos). Use dentro de "A cada frame 3D".',
+    tooltip: 'Soma ao giro atual num eixo (radianos). Use dentro de "A cada quadro 3D".',
   },
   {
     type: 'sz_g3d_move_towards',
@@ -987,7 +1099,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Move o objeto para frente, na direção para onde ele está virado. Use dentro de "A cada frame 3D".',
+      'Move o objeto para frente, na direção para onde ele está virado. Use dentro de "A cada quadro 3D".',
   },
   {
     type: 'sz_g3d_face_velocity',
@@ -1088,7 +1200,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Aplica a gravidade e empurra para fora dos objetos sólidos. Use dentro de "A cada frame 3D".',
+      'Aplica a gravidade e empurra para fora dos objetos sólidos. Use dentro de "A cada quadro 3D".',
   },
   {
     type: 'sz_g3d_set_solid',
@@ -1113,7 +1225,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Anda com WASD/setas + pula no espaço, com gravidade e colisão. Use dentro de "A cada frame 3D".',
+      'Anda com WASD/setas + pula no espaço, com gravidade e colisão. Use dentro de "A cada quadro 3D".',
   },
   {
     type: 'sz_g3d_fps_controls',
@@ -1128,7 +1240,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Anda com WASD na direção que o jogador olha (combine com a câmera de primeira pessoa). Use dentro de "A cada frame 3D".',
+      'Anda com WASD na direção que o jogador olha (combine com a câmera de primeira pessoa). Use dentro de "A cada quadro 3D".',
   },
   {
     type: 'sz_g3d_resolve_collision',
@@ -1183,7 +1295,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'A câmera segue atrás e acima do objeto (estilo aventura). Use no início ou a cada frame.',
+      'A câmera segue atrás e acima do objeto (estilo aventura). Use no início ou a cada quadro.',
   },
   {
     type: 'sz_g3d_camera_look_at',
@@ -1743,8 +1855,25 @@ const SUBCAT_DEFINITIONS: { name: string; types: string[] }[] = [
     ],
   },
   {
+    name: '⏱️ Tempo e repetição',
+    types: ['sz_g3d_every_frames', 'sz_g3d_every_seconds'],
+  },
+  {
+    name: '📦 Grupos',
+    types: [
+      'sz_g3d_create_group',
+      'sz_g3d_update_group',
+      'sz_g3d_update_group_no_gravity',
+      'sz_g3d_prune_offscreen',
+      'sz_g3d_for_each_in_group',
+      'sz_g3d_count_group',
+      'sz_g3d_remove_from_group',
+      'sz_g3d_clear_group',
+    ],
+  },
+  {
     name: '👾 Kit Desvie',
-    types: ['sz_g3d_create_group', 'sz_g3d_run_enemies', 'sz_g3d_stop'],
+    types: ['sz_g3d_spawn_enemy', 'sz_g3d_stop'],
   },
   {
     name: '🐔 Kit Travessia',
@@ -1801,7 +1930,6 @@ const COLOUR_BY_TYPE = new Map<string, string>(
 )
 const STACKED_INPUT_TYPES = new Set([
   'sz_g3d_create_block',
-  'sz_g3d_run_enemies',
   'sz_g3d_add_row',
   'sz_g3d_slide_between',
   'sz_g3d_move_towards',
@@ -1872,7 +2000,9 @@ const G3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
     Z: numShadow(0),
   },
   sz_g3d_set_fog: { NEAR: numShadow(1), FAR: numShadow(30) },
-  sz_g3d_run_enemies: { EVERY: numShadow(200), SPEED: numShadow(0.02) },
+  sz_g3d_spawn_enemy: { SPEED: numShadow(0.1) },
+  sz_g3d_every_frames: { N: numShadow(45) },
+  sz_g3d_every_seconds: { SECS: numShadow(2) },
   sz_g3d_add_row: { ROW: numShadow(1), SPEED: numShadow(150) },
   sz_g3d_generate_rows: { COUNT: numShadow(20) },
   sz_g3d_move_across: { SPEED: numShadow(0.1), MIN: numShadow(-10), MAX: numShadow(10) },

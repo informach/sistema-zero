@@ -2565,26 +2565,23 @@ function matchGame2DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (method === 'sceneIs' && args[0]?.type === 'StringLiteral') {
     return { type: 'g2d:sceneIs', name: args[0].value as string }
   }
-  if (method === 'stickHeroScore') {
-    const gameVar = identifierName(args[0])
-    if (gameVar) return { type: 'g2d:stickHeroScore', gameVar }
+  if (method === 'stickPathFell') {
+    const pathVar = identifierName(args[0])
+    if (pathVar) return { type: 'g2d:stickPathFell', pathVar }
   }
-  if (method === 'stickHeroOver') {
-    const gameVar = identifierName(args[0])
-    if (gameVar) return { type: 'g2d:stickHeroOver', gameVar }
-  }
-  if (method === 'balloonScore') {
-    const gameVar = identifierName(args[0])
-    if (gameVar) return { type: 'g2d:balloonScore', gameVar }
+  if (method === 'balloonPathMeters') {
+    const pathVar = identifierName(args[0])
+    if (pathVar) return { type: 'g2d:balloonPathMeters', pathVar }
   }
   if (method === 'balloonFuel') {
-    const gameVar = identifierName(args[0])
-    if (gameVar) return { type: 'g2d:balloonFuel', gameVar }
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:balloonFuel', spriteVar }
   }
-  if (method === 'balloonOver') {
-    const gameVar = identifierName(args[0])
-    if (gameVar) return { type: 'g2d:balloonOver', gameVar }
+  if (method === 'balloonLandedOut') {
+    const spriteVar = identifierName(args[0])
+    if (spriteVar) return { type: 'g2d:balloonLandedOut', spriteVar }
   }
+  if (method === 'pointerDown') return { type: 'g2d:pointerDown' }
   if (method === 'aimReleased') {
     const throwerVar = identifierName(args[0])
     if (throwerVar) return { type: 'g2d:aimReleased', throwerVar }
@@ -3014,6 +3011,102 @@ function readDinoOptions(
     } else if (key === 'color') {
       if (prop.value?.type !== 'StringLiteral') return null
       out.color = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return out
+}
+
+/** Lê `{ w, h, color }` de `SZGame2D.createStickHero({...})`. */
+function readStickHeroOptions(
+  obj: Babel.ObjectExpression,
+  ctx: ParseCtx,
+): { w: JSExpr; h: JSExpr; color: string } | null {
+  const out: { w: JSExpr; h: JSExpr; color: string } = {
+    w: { type: 'num', value: 18 },
+    h: { type: 'num', value: 36 },
+    color: '#d6455d',
+  }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'w' || key === 'h') {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      out[key] = v
+    } else if (key === 'color') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      out.color = prop.value.value as string
+    } else {
+      return null
+    }
+  }
+  return out
+}
+
+/** Lê `{ platform, stick }` de `SZGame2D.createStickPath(ctx, {...})`. */
+function readStickPathOptions(
+  obj: Babel.ObjectExpression,
+): { platformColor: string; stickColor: string } | null {
+  const out = { platformColor: '#0ea5a0', stickColor: '#1b2330' }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key !== 'platform' && key !== 'stick') return null
+    if (prop.value?.type !== 'StringLiteral') return null
+    if (key === 'platform') out.platformColor = prop.value.value as string
+    else out.stickColor = prop.value.value as string
+  }
+  return out
+}
+
+/** Lê `{ x, y, w, h, body, basket }` de `SZGame2D.createBalloon({...})`. */
+function readBalloonOptions(
+  obj: Babel.ObjectExpression,
+  ctx: ParseCtx,
+): { x: JSExpr; y: JSExpr; w: JSExpr; h: JSExpr; color: string; basketColor: string } | null {
+  const out: {
+    x: JSExpr
+    y: JSExpr
+    w: JSExpr
+    h: JSExpr
+    color: string
+    basketColor: string
+  } = {
+    x: { type: 'num', value: 110 },
+    y: { type: 'num', value: 360 },
+    w: { type: 'num', value: 70 },
+    h: { type: 'num', value: 100 },
+    color: '#D62828',
+    basketColor: '#8a5a2b',
+  }
+  for (const prop of obj.properties ?? []) {
+    if (prop?.type !== 'ObjectProperty' || prop.computed) return null
+    const key =
+      prop.key?.type === 'Identifier'
+        ? (prop.key.name as string)
+        : prop.key?.type === 'StringLiteral'
+          ? (prop.key.value as string)
+          : null
+    if (key === 'x' || key === 'y' || key === 'w' || key === 'h') {
+      const v = toExpr(prop.value, ctx)
+      if (!isSimpleValue(v)) return null
+      out[key] = v
+    } else if (key === 'body' || key === 'basket') {
+      if (prop.value?.type !== 'StringLiteral') return null
+      if (key === 'body') out.color = prop.value.value as string
+      else out.basketColor = prop.value.value as string
     } else {
       return null
     }
@@ -4158,103 +4251,75 @@ function tryMatchGame2DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       const ctxVar = identifierName(args[0])
       return ctxVar ? { type: 'g2d:drawAimReadout', ctxVar } : null
     }
-    case 'updateStickHero': {
-      const gameVar = identifierName(args[0])
-      return gameVar ? { type: 'g2d:updateStickHero', gameVar } : null
+    case 'stickPathScenery': {
+      const pathVar = identifierName(args[0])
+      return pathVar ? { type: 'g2d:stickPathScenery', pathVar } : null
     }
-    case 'restartStickHero': {
-      const gameVar = identifierName(args[0])
-      return gameVar ? { type: 'g2d:restartStickHero', gameVar } : null
-    }
-    case 'updateBalloon': {
-      const gameVar = identifierName(args[0])
-      return gameVar ? { type: 'g2d:updateBalloon', gameVar } : null
-    }
-    case 'restartBalloon': {
-      const gameVar = identifierName(args[0])
-      return gameVar ? { type: 'g2d:restartBalloon', gameVar } : null
-    }
-    case 'stickHeroScenery': {
-      const gameVar = identifierName(args[0])
-      return gameVar ? { type: 'g2d:stickHeroScenery', gameVar } : null
-    }
-    case 'stickHeroHold': {
-      // generator: SZGame2D.stickHeroHold(jogo, rapidez)
-      const gameVar = identifierName(args[0])
+    case 'stickPathGrow': {
+      // generator: SZGame2D.stickPathGrow(caminho, rapidez)
+      const pathVar = identifierName(args[0])
       const speed = toExpr(args[1], ctx)
-      return gameVar && isSimpleValue(speed) ? { type: 'g2d:stickHeroHold', gameVar, speed } : null
+      return pathVar && isSimpleValue(speed) ? { type: 'g2d:stickPathGrow', pathVar, speed } : null
     }
-    case 'stickHeroStep': {
-      // generator: SZGame2D.stickHeroStep(jogo, rapidez)
-      const gameVar = identifierName(args[0])
-      const speed = toExpr(args[1], ctx)
-      return gameVar && isSimpleValue(speed) ? { type: 'g2d:stickHeroStep', gameVar, speed } : null
+    case 'stickPathDrop': {
+      const pathVar = identifierName(args[0])
+      return pathVar ? { type: 'g2d:stickPathDrop', pathVar } : null
     }
-    case 'stickHeroDraw': {
-      const gameVar = identifierName(args[0])
-      return gameVar ? { type: 'g2d:stickHeroDraw', gameVar } : null
+    case 'stickPathWalk': {
+      // generator: SZGame2D.stickPathWalk(caminho, equilibrista, rapidez)
+      const pathVar = identifierName(args[0])
+      const spriteVar = identifierName(args[1])
+      const speed = toExpr(args[2], ctx)
+      return pathVar && spriteVar && isSimpleValue(speed)
+        ? { type: 'g2d:stickPathWalk', spriteVar, pathVar, speed }
+        : null
     }
-    case 'stickHeroOnCross': {
-      // generator: SZGame2D.stickHeroOnCross(jogo, () => {…}, "id")
-      const gameVar = identifierName(args[0])
-      if (!gameVar || !isFn(args[1])) return null
-      return { type: 'g2d:onStickHeroCross', gameVar, body: bodyOfFn(args[1], source, ctx) }
+    case 'stickPathDraw': {
+      const pathVar = identifierName(args[0])
+      return pathVar ? { type: 'g2d:stickPathDraw', pathVar } : null
     }
-    case 'stickHeroOnPerfect': {
-      // generator: SZGame2D.stickHeroOnPerfect(jogo, () => {…}, "id")
-      const gameVar = identifierName(args[0])
-      if (!gameVar || !isFn(args[1])) return null
-      return { type: 'g2d:onStickHeroPerfect', gameVar, body: bodyOfFn(args[1], source, ctx) }
+    case 'stickPathOnCross': {
+      // generator: SZGame2D.stickPathOnCross(caminho, () => {…}, "id")
+      const pathVar = identifierName(args[0])
+      if (!pathVar || !isFn(args[1])) return null
+      return { type: 'g2d:onStickPathCross', pathVar, body: bodyOfFn(args[1], source, ctx) }
     }
-    case 'balloonScenery': {
-      const gameVar = identifierName(args[0])
-      return gameVar ? { type: 'g2d:balloonScenery', gameVar } : null
+    case 'stickPathOnPerfect': {
+      // generator: SZGame2D.stickPathOnPerfect(caminho, () => {…}, "id")
+      const pathVar = identifierName(args[0])
+      if (!pathVar || !isFn(args[1])) return null
+      return { type: 'g2d:onStickPathPerfect', pathVar, body: bodyOfFn(args[1], source, ctx) }
     }
-    case 'balloonLift': {
-      // generator: SZGame2D.balloonLift(jogo, força)
-      const gameVar = identifierName(args[0])
+    case 'balloonPathScenery': {
+      const pathVar = identifierName(args[0])
+      return pathVar ? { type: 'g2d:balloonPathScenery', pathVar } : null
+    }
+    case 'balloonFire': {
+      // generator: SZGame2D.balloonFire(balao, força)
+      const spriteVar = identifierName(args[0])
       const force = toExpr(args[1], ctx)
-      return gameVar && isSimpleValue(force) ? { type: 'g2d:balloonLift', gameVar, force } : null
+      return spriteVar && isSimpleValue(force)
+        ? { type: 'g2d:balloonFire', spriteVar, force }
+        : null
     }
-    case 'balloonScroll': {
-      // generator: SZGame2D.balloonScroll(jogo, velocidade)
-      const gameVar = identifierName(args[0])
-      const speed = toExpr(args[1], ctx)
-      return gameVar && isSimpleValue(speed) ? { type: 'g2d:balloonScroll', gameVar, speed } : null
+    case 'balloonFly': {
+      const spriteVar = identifierName(args[0])
+      return spriteVar ? { type: 'g2d:balloonFly', spriteVar } : null
     }
-    case 'balloonDraw': {
-      const gameVar = identifierName(args[0])
-      return gameVar ? { type: 'g2d:balloonDraw', gameVar } : null
+    case 'balloonPathScroll': {
+      // generator: SZGame2D.balloonPathScroll(caminho, balao, velocidade)
+      const pathVar = identifierName(args[0])
+      const spriteVar = identifierName(args[1])
+      const speed = toExpr(args[2], ctx)
+      return pathVar && spriteVar && isSimpleValue(speed)
+        ? { type: 'g2d:balloonPathScroll', pathVar, spriteVar, speed }
+        : null
     }
-    case 'balloonOnTreeHit': {
-      // generator: SZGame2D.balloonOnTreeHit(jogo, () => {…}, "id")
-      const gameVar = identifierName(args[0])
-      if (!gameVar || !isFn(args[1])) return null
-      return { type: 'g2d:onBalloonTreeHit', gameVar, body: bodyOfFn(args[1], source, ctx) }
-    }
-    case 'stickHeroSetShape': {
-      // generator: SZGame2D.stickHeroSetShape(jogo, "figura")
-      const gameVar = identifierName(args[0])
-      if (!gameVar || args[1]?.type !== 'StringLiteral') return null
-      return { type: 'g2d:stickHeroSetShape', gameVar, shape: args[1].value as string }
-    }
-    case 'stickHeroSetImage': {
-      // generator: SZGame2D.stickHeroSetImage(jogo, "imagem")
-      const gameVar = identifierName(args[0])
-      if (!gameVar || args[1]?.type !== 'StringLiteral') return null
-      return { type: 'g2d:stickHeroSetImage', gameVar, image: args[1].value as string }
-    }
-    case 'balloonSetShape': {
-      // generator: SZGame2D.balloonSetShape(jogo, "figura")
-      const gameVar = identifierName(args[0])
-      if (!gameVar || args[1]?.type !== 'StringLiteral') return null
-      return { type: 'g2d:balloonSetShape', gameVar, shape: args[1].value as string }
-    }
-    case 'balloonSetImage': {
-      // generator: SZGame2D.balloonSetImage(jogo, "imagem")
-      const gameVar = identifierName(args[0])
-      if (!gameVar || args[1]?.type !== 'StringLiteral') return null
-      return { type: 'g2d:balloonSetImage', gameVar, image: args[1].value as string }
+    case 'balloonPathOnTreeHit': {
+      // generator: SZGame2D.balloonPathOnTreeHit(caminho, () => {…}, "id")
+      const pathVar = identifierName(args[0])
+      if (!pathVar || !isFn(args[1])) return null
+      return { type: 'g2d:onBalloonPathTreeHit', pathVar, body: bodyOfFn(args[1], source, ctx) }
     }
     case 'overlapSpriteGroup': {
       // generator: SZGame2D.overlapSpriteGroup(() => sprite, grupo, function (item) {…})
@@ -4371,44 +4436,48 @@ function tryMatchGame2DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
     return { type: 'g2d:createDino', varName: name, x: o.x, y: o.y, size: o.size, color: o.color }
   }
   if (method === 'createStickHero') {
-    // generator: const jogo = SZGame2D.createStickHero(ctx)
+    // generator: const equilibrista = SZGame2D.createStickHero({ w, h, color })
+    if (args[0]?.type !== 'ObjectExpression') return null
+    const o = readStickHeroOptions(args[0], ctx)
+    if (!o) return null
+    ctx.spriteVars.add(name)
+    return { type: 'g2d:createStickHero', varName: name, w: o.w, h: o.h, color: o.color }
+  }
+  if (method === 'createStickPath') {
+    // generator: const caminho = SZGame2D.createStickPath(ctx, { platform, stick })
     const ctxVar = identifierName(args[0]) ?? 'ctx'
-    return { type: 'g2d:createStickHero', varName: name, ctxVar }
+    if (args[1]?.type !== 'ObjectExpression') return null
+    const o = readStickPathOptions(args[1])
+    if (!o) return null
+    return {
+      type: 'g2d:createStickPath',
+      varName: name,
+      ctxVar,
+      platformColor: o.platformColor,
+      stickColor: o.stickColor,
+    }
   }
   if (method === 'createBalloon') {
-    // generator: const jogo = SZGame2D.createBalloon(ctx)
-    const ctxVar = identifierName(args[0]) ?? 'ctx'
-    return { type: 'g2d:createBalloon', varName: name, ctxVar }
-  }
-  if (method === 'stickHeroCreate') {
-    // generator: const jogo = SZGame2D.stickHeroCreate(ctx, "herói", "bastão", "plataformas")
-    const ctxVar = identifierName(args[0]) ?? 'ctx'
-    if (
-      args[1]?.type !== 'StringLiteral' ||
-      args[2]?.type !== 'StringLiteral' ||
-      args[3]?.type !== 'StringLiteral'
-    )
-      return null
+    // generator: const balao = SZGame2D.createBalloon({ x, y, w, h, body, basket })
+    if (args[0]?.type !== 'ObjectExpression') return null
+    const o = readBalloonOptions(args[0], ctx)
+    if (!o) return null
+    ctx.spriteVars.add(name)
     return {
-      type: 'g2d:stickHeroCreate',
+      type: 'g2d:createBalloon',
       varName: name,
-      ctxVar,
-      heroColor: args[1].value as string,
-      stickColor: args[2].value as string,
-      platformColor: args[3].value as string,
+      x: o.x,
+      y: o.y,
+      w: o.w,
+      h: o.h,
+      color: o.color,
+      basketColor: o.basketColor,
     }
   }
-  if (method === 'balloonCreate') {
-    // generator: const jogo = SZGame2D.balloonCreate(ctx, "balão", "cesto")
+  if (method === 'createBalloonPath') {
+    // generator: const caminho = SZGame2D.createBalloonPath(ctx)
     const ctxVar = identifierName(args[0]) ?? 'ctx'
-    if (args[1]?.type !== 'StringLiteral' || args[2]?.type !== 'StringLiteral') return null
-    return {
-      type: 'g2d:balloonCreate',
-      varName: name,
-      ctxVar,
-      color: args[1].value as string,
-      basketColor: args[2].value as string,
-    }
+    return { type: 'g2d:createBalloonPath', varName: name, ctxVar }
   }
   if (method === 'createCity') {
     // generator: const cidade = SZGame2D.createCity()
@@ -9385,7 +9454,8 @@ function tryMatchGameKit3DVarInit(name: string, init: Node, ctx: ParseCtx): JSSt
 
 /**
  * SZGame3D.* como statement: setBackground/setCameraPosition/setPosition/setRotation/animate
- * e a física/kit (setVelocity/jump/applyGravity/controlWithKeys/setScale/cameraFollow/runEnemies/stop).
+ * e a física/kit (setVelocity/jump/applyGravity/controlWithKeys/setScale/cameraFollow/spawnEnemy/
+ * updateGroup/pruneOffscreen/forEachInGroup/removeFromGroup/clearGroup/everyFrames/everySeconds/stop).
  * ANTES do método genérico — senão viram memberCall. As coordenadas (x/y/z/força/escala)
  * precisam ser valores representáveis; senão a linha cai em código avançado.
  */
@@ -9479,16 +9549,39 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       if (!worldVar || !objVar) return null
       return { type: 'g3d:cameraFollow', worldVar, objVar }
     }
-    case 'runEnemies': {
-      // generator: SZGame3D.runEnemies(world, group, ground, every, speed)
+    case 'spawnEnemy': {
+      // generator: SZGame3D.spawnEnemy(world, group, speed)
       const worldVar = identifierName(args[0])
       const groupVar = identifierName(args[1])
-      const groundVar = identifierName(args[2])
-      const every = toExpr(args[3], ctx)
-      const speed = toExpr(args[4], ctx)
-      if (!worldVar || !groupVar || !groundVar || !isSimpleValue(every) || !isSimpleValue(speed))
-        return null
-      return { type: 'g3d:runEnemies', worldVar, groupVar, groundVar, every, speed }
+      const speed = toExpr(args[2], ctx)
+      if (!worldVar || !groupVar || !isSimpleValue(speed)) return null
+      return { type: 'g3d:spawnEnemy', worldVar, groupVar, speed }
+    }
+    case 'updateGroup': {
+      // generator: SZGame3D.updateGroup(group, ground)
+      const groupVar = identifierName(args[0])
+      const groundVar = identifierName(args[1])
+      if (!groupVar || !groundVar) return null
+      return { type: 'g3d:updateGroup', groupVar, groundVar }
+    }
+    case 'updateGroupNoGravity': {
+      // generator: SZGame3D.updateGroupNoGravity(group)
+      const groupVar = identifierName(args[0])
+      if (!groupVar) return null
+      return { type: 'g3d:updateGroupNoGravity', groupVar }
+    }
+    case 'removeFromGroup': {
+      // generator: SZGame3D.removeFromGroup(group, obj)
+      const groupVar = identifierName(args[0])
+      const objVar = identifierName(args[1])
+      if (!groupVar || !objVar) return null
+      return { type: 'g3d:removeFromGroup', groupVar, objVar }
+    }
+    case 'clearGroup': {
+      // generator: SZGame3D.clearGroup(group)
+      const groupVar = identifierName(args[0])
+      if (!groupVar) return null
+      return { type: 'g3d:clearGroup', groupVar }
     }
     case 'stop': {
       // generator: SZGame3D.stop(world)
@@ -9926,6 +10019,50 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
         body: bodyOfFn(cb, source, ctx),
       }
     }
+    case 'forEachInGroup': {
+      // generator: SZGame3D.forEachInGroup(group, (item) => {…})
+      const groupVar = identifierName(args[0])
+      const cb = args[1]
+      if (!groupVar || !isFn(cb)) return null
+      const params = cb.params ?? []
+      if (params.length !== 1 || params[0]?.type !== 'Identifier') return null
+      return {
+        type: 'g3d:forEachInGroup',
+        groupVar,
+        itemName: params[0].name as string,
+        body: bodyOfFn(cb, source, ctx),
+      }
+    }
+    case 'pruneOffscreen': {
+      // generator: SZGame3D.pruneOffscreen(world, group, (item) => {…})
+      const worldVar = identifierName(args[0])
+      const groupVar = identifierName(args[1])
+      const cb = args[2]
+      if (!worldVar || !groupVar || !isFn(cb)) return null
+      const params = cb.params ?? []
+      if (params.length !== 1 || params[0]?.type !== 'Identifier') return null
+      return {
+        type: 'g3d:pruneOffscreen',
+        worldVar,
+        groupVar,
+        itemName: params[0].name as string,
+        body: bodyOfFn(cb, source, ctx),
+      }
+    }
+    case 'everyFramesLoop': {
+      // generator: SZGame3D.everyFramesLoop(n, () => {…}) — irmão do "A cada quadro 3D"
+      const n = toExpr(args[0], ctx)
+      const cb = args[1]
+      if (!isSimpleValue(n) || !isFn(cb) || (cb.params ?? []).length !== 0) return null
+      return { type: 'g3d:everyFrames', n, body: bodyOfFn(cb, source, ctx) }
+    }
+    case 'everySecondsLoop': {
+      // generator: SZGame3D.everySecondsLoop(secs, () => {…})
+      const secs = toExpr(args[0], ctx)
+      const cb = args[1]
+      if (!isSimpleValue(secs) || !isFn(cb) || (cb.params ?? []).length !== 0) return null
+      return { type: 'g3d:everySeconds', secs, body: bodyOfFn(cb, source, ctx) }
+    }
     case 'removeFromSwarm': {
       const swarmVar = identifierName(args[0])
       const itemVar = identifierName(args[1])
@@ -10152,6 +10289,10 @@ function matchGame3DExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   if (method === 'countSwarm') {
     const swarmVar = identifierName(args[0])
     if (swarmVar) return { type: 'g3d:countSwarm', swarmVar }
+  }
+  if (method === 'countGroup') {
+    const groupVar = identifierName(args[0])
+    if (groupVar) return { type: 'g3d:countGroup', groupVar }
   }
   if (method === 'isNear') {
     const aVar = identifierName(args[0])
@@ -12391,11 +12532,11 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g2d:randomY':
     case 'g2d:tileAtSprite':
     case 'g2d:sceneIs':
-    case 'g2d:stickHeroScore':
-    case 'g2d:stickHeroOver':
-    case 'g2d:balloonScore':
+    case 'g2d:stickPathFell':
+    case 'g2d:balloonPathMeters':
     case 'g2d:balloonFuel':
-    case 'g2d:balloonOver':
+    case 'g2d:balloonLandedOut':
+    case 'g2d:pointerDown':
     case 'g2d:aimReleased':
     case 'g2d:bananaHitThrower':
     case 'g2d:bananaHitCity':
@@ -12407,6 +12548,7 @@ function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
     case 'g3d:crosserRow':
     case 'g3d:distanceTo':
     case 'g3d:countSwarm':
+    case 'g3d:countGroup':
     case 'g3d:isNear':
     case 'g3d:raceHit':
     case 'g3d:raceLaps':

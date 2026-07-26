@@ -25,6 +25,8 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
   }
   window.addEventListener('pointerup', _releasePointer);
   window.addEventListener('pointercancel', _releasePointer);
+  /** Verdadeiro enquanto o botão do mouse ou o dedo está pressionado no jogo. */
+  function pointerDown() { return !!pointer.down; }
   /**
    * @param {EventTarget | null} target
    * @returns {HTMLCanvasElement | null}

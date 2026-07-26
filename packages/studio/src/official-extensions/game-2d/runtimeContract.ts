@@ -141,21 +141,23 @@ export interface GameTwoDCity {
   H: number
 }
 
-export interface GameTwoDStickHeroGame {
+export interface GameTwoDStickPath {
   ctx: GameTwoDContext
   w: number
   h: number
   phase: string
-  score: number
+  sceneOffset: number
+  platforms: Array<{ x: number; w: number }>
+  sticks: Array<{ x: number; length: number; rotation: number }>
 }
 
-export interface GameTwoDBalloonGame {
+export interface GameTwoDBalloonPath {
   ctx: GameTwoDContext
   w: number
   h: number
-  fuel: number
+  dist: number
   meters: number
-  over: boolean
+  trees: Array<{ x: number; th: number; color: string }>
 }
 
 /** Ciclo de vida compartilhado pelo gerador, runtime e testes. */
@@ -317,6 +319,7 @@ export interface GameTwoDMathAndStateApi {
 export interface GameTwoDInputAndMotionApi {
   keys: GameTwoDKeys
   keyDown(key: string): boolean
+  pointerDown(): boolean
   touches(a: GameTwoDSprite, b: GameTwoDSprite): boolean
   platformer(sprite: GameTwoDSprite, ctx: GameTwoDContext, speed: number, jump: number): void
   topDown(sprite: GameTwoDSprite, speed: number): void
@@ -531,49 +534,40 @@ export interface GameTwoDArcadeApi {
   bananaHitCity(city: GameTwoDCity): boolean
   computerTurn(thrower: GameTwoDSprite, city: GameTwoDCity, enemy: GameTwoDSprite): void
   drawAimReadout(ctx: GameTwoDContext): void
-  createStickHero(ctx: GameTwoDContext): GameTwoDStickHeroGame | null
-  updateStickHero(game: GameTwoDStickHeroGame): void
-  stickHeroScore(game: GameTwoDStickHeroGame): number
-  stickHeroOver(game: GameTwoDStickHeroGame): boolean
-  restartStickHero(game: GameTwoDStickHeroGame): void
-  // Kit equilibrista DECOMPOSTO (v0.40.0): cada aspecto em um helper.
-  stickHeroCreate(
+  // Kit equilibrista v2 (v0.42.0): o herói é um SPRITE; as regras moram no
+  // caminho. A criança monta o loop (crescer/derrubar/andar) e o placar.
+  createStickHero(opts?: { w?: number; h?: number; color?: string }): GameTwoDSprite
+  createStickPath(
     ctx: GameTwoDContext,
-    heroColor?: string,
-    stickColor?: string,
-    platformColor?: string,
-  ): GameTwoDStickHeroGame | null
-  stickHeroScenery(game: GameTwoDStickHeroGame): void
-  stickHeroHold(game: GameTwoDStickHeroGame, speed?: number): void
-  stickHeroStep(game: GameTwoDStickHeroGame, speed?: number): void
-  stickHeroDraw(game: GameTwoDStickHeroGame): void
-  stickHeroOnCross(game: GameTwoDStickHeroGame, fn: () => void, id?: string): void
-  stickHeroOnPerfect(game: GameTwoDStickHeroGame, fn: () => void, id?: string): void
-  // Visual customizado do herói (v0.41.0): figura do "Desenhar a figura" ou
-  // imagem do projeto; nome vazio volta ao desenho pronto.
-  stickHeroSetShape(game: GameTwoDStickHeroGame, name?: string): void
-  stickHeroSetImage(game: GameTwoDStickHeroGame, name?: string): void
-  createBalloon(ctx: GameTwoDContext): GameTwoDBalloonGame | null
-  updateBalloon(game: GameTwoDBalloonGame): void
-  balloonScore(game: GameTwoDBalloonGame): number
-  balloonFuel(game: GameTwoDBalloonGame): number
-  balloonOver(game: GameTwoDBalloonGame): boolean
-  restartBalloon(game: GameTwoDBalloonGame): void
-  // Kit balão DECOMPOSTO (v0.40.0).
-  balloonCreate(
-    ctx: GameTwoDContext,
-    color?: string,
-    basketColor?: string,
-  ): GameTwoDBalloonGame | null
-  balloonScenery(game: GameTwoDBalloonGame): void
-  balloonLift(game: GameTwoDBalloonGame, force?: number): void
-  balloonScroll(game: GameTwoDBalloonGame, speed?: number): void
-  balloonDraw(game: GameTwoDBalloonGame): void
-  balloonOnTreeHit(game: GameTwoDBalloonGame, fn: () => void, id?: string): void
-  // Visual customizado do balão (v0.41.0): figura ou imagem do projeto; nome
-  // vazio volta ao desenho pronto.
-  balloonSetShape(game: GameTwoDBalloonGame, name?: string): void
-  balloonSetImage(game: GameTwoDBalloonGame, name?: string): void
+    opts?: { platform?: string; stick?: string },
+  ): GameTwoDStickPath | null
+  stickPathScenery(path: GameTwoDStickPath): void
+  stickPathGrow(path: GameTwoDStickPath, speed?: number): void
+  stickPathDrop(path: GameTwoDStickPath): void
+  stickPathWalk(path: GameTwoDStickPath, hero: GameTwoDSprite, speed?: number): void
+  stickPathDraw(path: GameTwoDStickPath): void
+  stickPathOnCross(path: GameTwoDStickPath, fn: () => void, id?: string): void
+  stickPathOnPerfect(path: GameTwoDStickPath, fn: () => void, id?: string): void
+  stickPathFell(path: GameTwoDStickPath): boolean
+  // Kit balão v2 (v0.42.0): o balão é um SPRITE (com combustível próprio); as
+  // árvores moram no caminho.
+  createBalloon(opts?: {
+    x?: number
+    y?: number
+    w?: number
+    h?: number
+    body?: string
+    basket?: string
+  }): GameTwoDSprite
+  createBalloonPath(ctx: GameTwoDContext): GameTwoDBalloonPath | null
+  balloonPathScenery(path: GameTwoDBalloonPath): void
+  balloonFire(balloon: GameTwoDSprite, force?: number): void
+  balloonFly(balloon: GameTwoDSprite): void
+  balloonPathScroll(path: GameTwoDBalloonPath, balloon: GameTwoDSprite, speed?: number): void
+  balloonPathOnTreeHit(path: GameTwoDBalloonPath, fn: () => void, id?: string): void
+  balloonPathMeters(path: GameTwoDBalloonPath): number
+  balloonFuel(balloon: GameTwoDSprite): number
+  balloonLandedOut(balloon: GameTwoDSprite): boolean
 }
 
 export interface GameTwoDRuntimeApi
@@ -665,6 +659,7 @@ export const GAME_TWO_D_API_KEYS = [
   'onKey',
   'onOverlap',
   'keyDown',
+  'pointerDown',
   'touches',
   'pointer',
   'loadImage',
@@ -775,33 +770,25 @@ export const GAME_TWO_D_API_KEYS = [
   'computerTurn',
   'drawAimReadout',
   'createStickHero',
-  'updateStickHero',
-  'stickHeroScore',
-  'stickHeroOver',
-  'restartStickHero',
-  'stickHeroCreate',
-  'stickHeroScenery',
-  'stickHeroHold',
-  'stickHeroStep',
-  'stickHeroDraw',
-  'stickHeroOnCross',
-  'stickHeroOnPerfect',
-  'stickHeroSetShape',
-  'stickHeroSetImage',
+  'createStickPath',
+  'stickPathScenery',
+  'stickPathGrow',
+  'stickPathDrop',
+  'stickPathWalk',
+  'stickPathDraw',
+  'stickPathOnCross',
+  'stickPathOnPerfect',
+  'stickPathFell',
   'createBalloon',
-  'updateBalloon',
-  'balloonScore',
+  'createBalloonPath',
+  'balloonPathScenery',
+  'balloonFire',
+  'balloonFly',
+  'balloonPathScroll',
+  'balloonPathOnTreeHit',
+  'balloonPathMeters',
   'balloonFuel',
-  'balloonOver',
-  'restartBalloon',
-  'balloonCreate',
-  'balloonScenery',
-  'balloonLift',
-  'balloonScroll',
-  'balloonDraw',
-  'balloonOnTreeHit',
-  'balloonSetShape',
-  'balloonSetImage',
+  'balloonLandedOut',
 ] as const satisfies readonly (keyof GameTwoDRuntimeApi)[]
 
 export type GameTwoDApiKey = (typeof GAME_TWO_D_API_KEYS)[number]

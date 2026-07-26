@@ -1,37 +1,71 @@
 export const gameTwoDCasualKitsRuntime = `  // ============================================================
-  // Kit equilibrista (Stick Hero) — v0.13.0; decomposto em blocos v0.40.0
-  // Estica o bastão segurando o mouse/dedo, solta para derrubar e atravessar.
-  // Lê o estado do ponteiro global (pointer.down) — sem listeners próprios.
-  // Os helpers NOVOS (stickHero*/balloon*) fatiam o jogo por aspecto (cenário,
-  // segurar, andar, desenhar, eventos); os antigos (create/update*) seguem como
-  // COMPOSIÇÃO deles p/ projetos salvos (comportamento byte-equivalente).
+  // Kits Equilibrista (Stick Hero) e Balão (Hot-Air-Balloon) — v0.42.0
+  // Semântica sprite + caminho: o PERSONAGEM é um sprite NORMAL (participa dos
+  // blocos genéricos de sprite: desenhar, trocar figura/imagem, tamanho); as
+  // REGRAS do jogo moram num objeto "caminho" nomeado. A criança monta o loop
+  // e a leitura do mouse (pointerDown) com blocos genéricos, como no Kit nave
+  // e no Kit dino. Coordenadas SEMPRE de tela: o caminho guarda x de mundo e
+  // aplica o deslocamento internamente (câmera não combina com estes kits).
   // ============================================================
   var _casualKitSequence = 0;
   // Registro/disparo de eventos dos kits — o MESMO idioma do onEnemyDefeated
   // (mapa por id estável + ordem + desativa só o handler quebrado).
-  function _kitRegisterHandler(game, mapKey, orderKey, prefix, fn, explicitId) {
-    if (!game || typeof fn !== 'function') return;
-    if (!game[mapKey]) game[mapKey] = Object.create(null);
-    if (!game[orderKey]) game[orderKey] = [];
+  function _kitRegisterHandler(target, mapKey, orderKey, prefix, fn, explicitId) {
+    if (!target || typeof fn !== 'function') return;
+    if (!target[mapKey]) target[mapKey] = Object.create(null);
+    if (!target[orderKey]) target[orderKey] = [];
     var id = _stableHandlerId(prefix, explicitId, fn);
-    if (!game[mapKey][id]) game[orderKey].push(id);
-    game[mapKey][id] = fn;
+    if (!target[mapKey][id]) target[orderKey].push(id);
+    target[mapKey][id] = fn;
   }
-  function _kitFireHandlers(game, mapKey, orderKey, label) {
-    if (!game || !game[orderKey]) return;
+  function _kitFireHandlers(target, mapKey, orderKey, label) {
+    if (!target || !target[orderKey]) return;
     var generation = _driverGeneration;
-    var order = game[orderKey].slice();
+    var order = target[orderKey].slice();
     for (var i = 0; i < order.length; i++) {
       var id = order[i];
-      var handler = game[mapKey] ? game[mapKey][id] : null;
+      var handler = target[mapKey] ? target[mapKey][id] : null;
       if (typeof handler !== 'function') continue;
       try { _invokeProjectCallback(handler, undefined, []); }
       catch (error) {
         _reportHandlerError(label, id, error);
-        _removeOrderedIfCurrent(game[mapKey], game[orderKey], id, handler);
+        _removeOrderedIfCurrent(target[mapKey], target[orderKey], id, handler);
       }
       if (_runGenerationChanged(generation)) return;
     }
+  }
+  function _kitColor(value, fallback) {
+    return (typeof value === 'string' && value) ? value : fallback;
+  }
+  function _kitSpeedMultiplier(speed) {
+    var mult = _finiteNumber(speed, 1);
+    return mult > 0 ? mult : 0;
+  }
+  // Relógio próprio por objeto+chave: cada comando do kit mede o SEU dt (clamp
+  // de 50ms), então a ordem dos blocos no loop não muda a física.
+  function _kitDt(target, key) {
+    var t = now();
+    var dt = target[key] ? (t - target[key]) / 1000 : 0;
+    target[key] = t;
+    if (dt > 0.05) dt = 0.05;
+    if (dt < 0) dt = 0;
+    return dt;
+  }
+  // Tamanho LÓGICO vigente do palco (o mesmo que o "Preparar a tela" definiu).
+  // Sem tamanho lógico congelado, cai no canvas do palco (largura/altura crua).
+  function _kitStageW() {
+    var c = ensureStage();
+    var w = stageW(c);
+    if (w) return w;
+    if (_stageCanvas && _stageCanvas.width) return _stageCanvas.width;
+    return 300;
+  }
+  function _kitStageH() {
+    var c = ensureStage();
+    var h = stageH(c);
+    if (h) return h;
+    if (_stageCanvas && _stageCanvas.height) return _stageCanvas.height;
+    return 150;
   }
   function shRoundRect(ctx, x, y, w, h, r) {
     ctx.beginPath();
@@ -42,46 +76,33 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
     ctx.arcTo(x, y, x + w, y, r);
     ctx.closePath();
   }
-  function shGeneratePlatform(game) {
-    var w = game.w;
-    var minGap = Math.round(w * 0.10), maxGap = Math.round(w * 0.42);
-    var minW = Math.round(w * 0.06), maxW = Math.round(w * 0.24);
-    var last = game.platforms[game.platforms.length - 1];
-    var furthest = last.x + last.w;
-    var x = furthest + minGap + Math.floor(Math.random() * (maxGap - minGap));
-    var pw = minW + Math.floor(Math.random() * (maxW - minW));
-    game.platforms.push({ x: x, w: pw });
+
+  // ============================================================
+  // 🤸 Equilibrista — o HERÓI é um sprite; as regras moram no CAMINHO.
+  // ============================================================
+  function createStickHero(opts) {
+    opts = opts || {};
+    var w = _positiveFiniteNumber(opts.w, 18);
+    var h = _positiveFiniteNumber(opts.h, 36);
+    var s = createSprite({ x: 0, y: 0, w: w, h: h, color: opts.color || '#d6455d' });
+    s.skin = { kind: 'stickhero', color: opts.color || '#d6455d' };
+    return s;
   }
-  function shGenerateTree(game) {
-    var last = game.trees[game.trees.length - 1];
-    var furthest = last ? last.x : 0;
-    var x = furthest + Math.round(game.w * 0.08) + Math.floor(Math.random() * Math.round(game.w * 0.30));
-    var colors = ['#6D8821', '#8FAC34', '#98B333'];
-    game.trees.push({ x: x, color: colors[Math.floor(Math.random() * 3)] });
+  // Boneco do equilibrista desenhado na caixa do sprite (dispatch em sprites).
+  function drawStickHeroSprite(ctx, sprite) {
+    var sk = sprite.skin || {};
+    var col = sk.color || sprite.color || '#d6455d';
+    var x = sprite.x, y = sprite.y, w = sprite.w, h = sprite.h;
+    ctx.fillStyle = col;
+    shRoundRect(ctx, x, y, w, h, Math.max(2, w * 0.25));
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(x + w * 0.72, y + h * 0.28, Math.max(1.5, w * 0.13), 0, Math.PI * 2);
+    ctx.fill();
   }
-  function shReset(game) {
-    game.phase = 'waiting';
-    game.last = 0;
-    game._lastHold = 0;
-    game._lastStep = 0;
-    game.sceneOffset = 0;
-    game.score = 0;
-    game.perfectFlash = 0;
-    game.wasDown = false;
-    var startW = Math.round(game.w * 0.13);
-    game.platforms = [{ x: Math.round(game.w * 0.12), w: startW }];
-    shGeneratePlatform(game); shGeneratePlatform(game);
-    shGeneratePlatform(game); shGeneratePlatform(game);
-    game.sticks = [{ x: game.platforms[0].x + game.platforms[0].w, length: 0, rotation: 0 }];
-    game.trees = [];
-    for (var i = 0; i < 12; i++) shGenerateTree(game);
-    game.heroX = game.platforms[0].x + game.platforms[0].w - game.cfg.heroEdge;
-    game.heroY = 0;
-  }
-  function shConfig(w, h) {
+  function _stickPathConfig(w, h) {
     return {
-      heroW: Math.max(10, Math.round(w * 0.045)),
-      heroH: Math.max(16, Math.round(h * 0.085)),
       platformH: Math.round(h * 0.30),
       heroEdge: Math.max(3, Math.round(w * 0.015)),
       perfect: Math.max(6, Math.round(w * 0.022)),
@@ -92,75 +113,92 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
       fall: h * 1.4
     };
   }
-  function createStickHero(ctx) {
+  function shGeneratePlatform(path) {
+    var w = path.w;
+    var minGap = Math.round(w * 0.10), maxGap = Math.round(w * 0.42);
+    var minW = Math.round(w * 0.06), maxW = Math.round(w * 0.24);
+    var last = path.platforms[path.platforms.length - 1];
+    var furthest = last.x + last.w;
+    var x = furthest + minGap + Math.floor(Math.random() * (maxGap - minGap));
+    var pw = minW + Math.floor(Math.random() * (maxW - minW));
+    path.platforms.push({ x: x, w: pw });
+  }
+  function shGenerateTree(path) {
+    var last = path.trees[path.trees.length - 1];
+    var furthest = last ? last.x : 0;
+    var x = furthest + Math.round(path.w * 0.08) + Math.floor(Math.random() * Math.round(path.w * 0.30));
+    var colors = ['#6D8821', '#8FAC34', '#98B333'];
+    path.trees.push({ x: x, color: colors[Math.floor(Math.random() * 3)] });
+  }
+  function _stickPathReset(path) {
+    path.phase = 'waiting';
+    path._lastGrow = 0;
+    path._lastWalk = 0;
+    path.sceneOffset = 0;
+    var startW = Math.round(path.w * 0.13);
+    path.platforms = [{ x: Math.round(path.w * 0.12), w: startW }];
+    shGeneratePlatform(path); shGeneratePlatform(path);
+    shGeneratePlatform(path); shGeneratePlatform(path);
+    path.sticks = [{ x: path.platforms[0].x + path.platforms[0].w, length: 0, rotation: 0 }];
+    path.trees = [];
+    for (var i = 0; i < 12; i++) shGenerateTree(path);
+    path.heroX = path.platforms[0].x + path.platforms[0].w - path.cfg.heroEdge;
+    path.heroY = 0;
+  }
+  function createStickPath(ctx, opts) {
     if (!ctx || !ctx.canvas) return null;
+    opts = opts || {};
     var w = stageW(ctx), h = stageH(ctx);
-    var game = {
+    var path = {
       ctx: ctx,
       w: w,
       h: h,
-      cfg: shConfig(w, h),
+      cfg: _stickPathConfig(w, h),
       paddingX: Math.round(w * 0.27),
+      colors: {
+        platform: _kitColor(opts.platform, '#0ea5a0'),
+        stick: _kitColor(opts.stick, '#1b2330')
+      },
       _hudKey: 'kit:equilibrista:' + (++_casualKitSequence)
     };
-    shReset(game);
-    return game;
+    _stickPathReset(path);
+    return path;
   }
-  function _kitColor(value, fallback) {
-    return (typeof value === 'string' && value) ? value : fallback;
-  }
-  // VISUAL customizado do kit (v0.41.0): o herói/balão ganham um "sprite de
-  // visual" interno e reusam setShape/setImage dos sprites — mesmas regras
-  // (figura/imagem "uma coisa por vez", aviso de nome errado, fallback seguro,
-  // redraw quando a imagem termina de carregar). Nome VAZIO volta ao desenho
-  // pronto do kit. O sprite é persistente (os hooks de imagem cancelam certo).
-  function _kitLook(game, key) {
-    if (!game[key]) {
-      game[key] = { x: 0, y: 0, w: 1, h: 1, color: '#1b2330', vx: 0, vy: 0, image: null, skin: null, anim: null };
-    }
-    return game[key];
-  }
-  function _kitSetLook(game, key, kind, name) {
-    if (!game) return;
-    var s = _kitLook(game, key);
-    if (!name || typeof name !== 'string') {
-      _disposeSprite(s);
-      s.skin = null; s.image = null; s.anim = null;
+  // Re-sincroniza a geometria quando o tamanho LÓGICO do palco muda (inclusive
+  // quando o caminho foi criado ANTES do "Preparar a tela" — tudo rescala).
+  function _stickPathSync(path) {
+    var nextW = stageW(path.ctx), nextH = stageH(path.ctx);
+    if (!nextW || !nextH || (nextW === path.w && nextH === path.h)) return;
+    if (!path.w || !path.h) {
+      path.w = nextW; path.h = nextH;
+      path.cfg = _stickPathConfig(nextW, nextH);
+      _stickPathReset(path);
       return;
     }
-    if (kind === 'shape') setShape(s, name);
-    else setImage(s, name);
-  }
-  function _kitDrawLook(game, key, x, y, w, h, color) {
-    var s = game[key];
-    if (!s || (!s.skin && !s.image)) return false;
-    s.x = x; s.y = y; s.w = w; s.h = h;
-    s.color = color;
-    _drawSpriteBody(game.ctx, s);
-    return true;
-  }
-  function stickHeroSetShape(game, name) { _kitSetLook(game, '_heroLook', 'shape', name); }
-  function stickHeroSetImage(game, name) { _kitSetLook(game, '_heroLook', 'image', name); }
-  function balloonSetShape(game, name) { _kitSetLook(game, '_balloonLook', 'shape', name); }
-  function balloonSetImage(game, name) { _kitSetLook(game, '_balloonLook', 'image', name); }
-  // Criação DECOMPOSTA: o mesmo jogo do createStickHero + as cores da criança.
-  function stickHeroCreate(ctx, heroColor, stickColor, platformColor) {
-    var game = createStickHero(ctx);
-    if (game) {
-      game.colors = {
-        hero: _kitColor(heroColor, '#1b2330'),
-        stick: _kitColor(stickColor, '#1b2330'),
-        platform: _kitColor(platformColor, '#1b2330')
-      };
+    var scaleX = nextW / path.w, scaleY = nextH / path.h;
+    for (var i = 0; i < path.platforms.length; i++) {
+      path.platforms[i].x *= scaleX;
+      path.platforms[i].w *= scaleX;
     }
-    return game;
+    for (var j = 0; j < path.sticks.length; j++) {
+      path.sticks[j].x *= scaleX;
+      path.sticks[j].length *= scaleX;
+    }
+    for (var k = 0; k < path.trees.length; k++) path.trees[k].x *= scaleX;
+    path.heroX *= scaleX;
+    path.heroY *= scaleY;
+    path.sceneOffset *= scaleX;
+    path.paddingX *= scaleX;
+    path.w = nextW;
+    path.h = nextH;
+    path.cfg = _stickPathConfig(nextW, nextH);
   }
-  function shHitPlatform(game) {
-    var st = game.sticks[game.sticks.length - 1];
+  function shHitPlatform(path) {
+    var st = path.sticks[path.sticks.length - 1];
     var far = st.x + st.length;
-    var p = game.cfg.perfect;
-    for (var i = 0; i < game.platforms.length; i++) {
-      var pl = game.platforms[i];
+    var p = path.cfg.perfect;
+    for (var i = 0; i < path.platforms.length; i++) {
+      var pl = path.platforms[i];
       if (pl.x < far && far < pl.x + pl.w) {
         var mid = pl.x + pl.w / 2;
         var perfect = (mid - p / 2 < far) && (far < mid + p / 2);
@@ -169,139 +207,85 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
     }
     return { platform: null, perfect: false };
   }
-  function shSyncStageSize(game) {
-    var nextW = stageW(game.ctx), nextH = stageH(game.ctx);
-    if (!nextW || !nextH || (nextW === game.w && nextH === game.h)) return;
-    var scaleX = nextW / game.w, scaleY = nextH / game.h;
-    for (var i = 0; i < game.platforms.length; i++) {
-      game.platforms[i].x *= scaleX;
-      game.platforms[i].w *= scaleX;
-    }
-    for (var j = 0; j < game.sticks.length; j++) {
-      game.sticks[j].x *= scaleX;
-      game.sticks[j].length *= scaleX;
-    }
-    for (var k = 0; k < game.trees.length; k++) game.trees[k].x *= scaleX;
-    game.heroX *= scaleX;
-    game.heroY *= scaleY;
-    game.sceneOffset *= scaleX;
-    game.paddingX *= scaleX;
-    game.w = nextW;
-    game.h = nextH;
-    game.cfg = shConfig(nextW, nextH);
+  // CRESCER: chamado enquanto a criança quiser esticar (ex.: se o mouse estiver
+  // segurado). Em "waiting" começa a esticar na hora; fora disso é inofensivo.
+  function stickPathGrow(path, speed) {
+    if (!path) return;
+    _stickPathSync(path);
+    var dt = _kitDt(path, '_lastGrow') * _kitSpeedMultiplier(speed);
+    if (path.phase === 'waiting') path.phase = 'stretching';
+    if (path.phase !== 'stretching') return;
+    var st = path.sticks[path.sticks.length - 1];
+    st.length += path.cfg.stretch * dt;
   }
-  function _kitSpeedMultiplier(speed) {
-    var mult = _finiteNumber(speed, 1);
-    return mult > 0 ? mult : 0;
+  // DERRUBAR: solta o bastão (só faz efeito se estava esticando).
+  function stickPathDrop(path) {
+    if (!path) return;
+    _stickPathSync(path);
+    if (path.phase === 'stretching') path.phase = 'turning';
   }
-  // SEGURAR/SOLTAR: fases waiting→stretching→turning + resolução do acerto
-  // (placar, PERFEITO, plataforma/árvores novas e os eventos do kit). Relógio
-  // próprio (_lastHold) — independe da ordem dos blocos no loop.
-  function stickHeroHold(game, speed) {
-    if (!game) return;
-    shSyncStageSize(game);
-    var mult = _kitSpeedMultiplier(speed);
-    var down = pointer.down;
-    var pressed = down && !game.wasDown;
-    var released = !down && game.wasDown;
-    game.wasDown = down;
-    var t = now();
-    if (pressed && game.phase === 'waiting') { game.phase = 'stretching'; game._lastHold = t; }
-    if (released && game.phase === 'stretching') game.phase = 'turning';
-    var dt = game._lastHold ? (t - game._lastHold) / 1000 : 0;
-    game._lastHold = t;
-    if (dt > 0.05) dt = 0.05;
-    if (dt < 0) dt = 0;
-    dt *= mult;
-    var cfg = game.cfg;
-    var st = game.sticks[game.sticks.length - 1];
-    if (game.phase === 'stretching') {
-      st.length += cfg.stretch * dt;
-    } else if (game.phase === 'turning') {
+  // ANDAR: o bastão derrubado gira até deitar, o acerto é resolvido (eventos de
+  // atravessar/perfeito, SEM somar pontos — o placar é da criança), e o herói
+  // anda, atravessa (o mundo desliza) ou cai. Posiciona o SPRITE em coords de
+  // tela — o "Desenhar o sprite" genérico desenha o herói no lugar certo.
+  function stickPathWalk(path, hero, speed) {
+    if (!path) return;
+    _stickPathSync(path);
+    var dt = _kitDt(path, '_lastWalk') * _kitSpeedMultiplier(speed);
+    var cfg = path.cfg;
+    var st = path.sticks[path.sticks.length - 1];
+    var heroW = (hero && hero.w) || 12;
+    var heroH = (hero && hero.h) || 24;
+    if (path.phase === 'turning') {
       st.rotation += cfg.turn * dt;
       if (st.rotation >= 90) {
         st.rotation = 90;
-        var hit = shHitPlatform(game);
+        var hit = shHitPlatform(path);
         if (hit.platform) {
-          game.score += hit.perfect ? 2 : 1;
-          if (hit.perfect) game.perfectFlash = 1;
-          shGeneratePlatform(game); shGenerateTree(game); shGenerateTree(game);
-          _kitFireHandlers(game, '_onCross', '_onCrossOrder', '"Quando o equilibrista atravessar uma plataforma"');
+          shGeneratePlatform(path); shGenerateTree(path); shGenerateTree(path);
+          _kitFireHandlers(path, '_onCross', '_onCrossOrder', '"Quando o equilibrista atravessar uma plataforma"');
           if (hit.perfect) {
-            _kitFireHandlers(game, '_onPerfect', '_onPerfectOrder', '"Quando o equilibrista acertar bem no meio"');
+            _kitFireHandlers(path, '_onPerfect', '_onPerfectOrder', '"Quando o equilibrista acertar bem no meio"');
           }
         }
-        game.phase = 'walking';
+        path.phase = 'walking';
       }
-    }
-  }
-  // ANDAR/ATRAVESSAR/CAIR: fases walking→transitioning→falling→over + o
-  // decaimento do flash de PERFEITO. Relógio próprio (_lastStep).
-  function stickHeroStep(game, speed) {
-    if (!game) return;
-    shSyncStageSize(game);
-    var mult = _kitSpeedMultiplier(speed);
-    var t = now();
-    var dt = game._lastStep ? (t - game._lastStep) / 1000 : 0;
-    game._lastStep = t;
-    if (dt > 0.05) dt = 0.05;
-    if (dt < 0) dt = 0;
-    dt *= mult;
-    var cfg = game.cfg;
-    var st = game.sticks[game.sticks.length - 1];
-    if (game.phase === 'walking') {
-      game.heroX += cfg.walk * dt;
-      var hw = shHitPlatform(game);
+    } else if (path.phase === 'walking') {
+      path.heroX += cfg.walk * dt;
+      var hw = shHitPlatform(path);
       if (hw.platform) {
         var maxX = hw.platform.x + hw.platform.w - cfg.heroEdge;
-        if (game.heroX > maxX) { game.heroX = maxX; game.phase = 'transitioning'; }
+        if (path.heroX > maxX) { path.heroX = maxX; path.phase = 'transitioning'; }
       } else {
-        var maxX2 = st.x + st.length + cfg.heroW;
-        if (game.heroX > maxX2) { game.heroX = maxX2; game.phase = 'falling'; }
+        var maxX2 = st.x + st.length + heroW;
+        if (path.heroX > maxX2) { path.heroX = maxX2; path.phase = 'falling'; }
       }
-    } else if (game.phase === 'transitioning') {
-      game.sceneOffset += cfg.trans * dt;
-      var ht = shHitPlatform(game);
+    } else if (path.phase === 'transitioning') {
+      path.sceneOffset += cfg.trans * dt;
+      var ht = shHitPlatform(path);
       if (ht.platform) {
-        var goal = ht.platform.x + ht.platform.w - game.paddingX;
-        if (game.sceneOffset > goal) {
-          game.sceneOffset = goal;
-          game.sticks.push({ x: ht.platform.x + ht.platform.w, length: 0, rotation: 0 });
-          game.phase = 'waiting';
+        var goal = ht.platform.x + ht.platform.w - path.paddingX;
+        if (path.sceneOffset > goal) {
+          path.sceneOffset = goal;
+          path.sticks.push({ x: ht.platform.x + ht.platform.w, length: 0, rotation: 0 });
+          path.phase = 'waiting';
         }
-      } else { game.phase = 'waiting'; }
-    } else if (game.phase === 'falling') {
+      } else { path.phase = 'waiting'; }
+    } else if (path.phase === 'falling') {
       if (st.rotation < 180) st.rotation += cfg.turn * dt;
-      game.heroY += cfg.fall * dt;
-      if (game.heroY > game.h) game.phase = 'over';
+      path.heroY += cfg.fall * dt;
+      if (path.heroY > path.h) path.phase = 'over';
     }
-    if (game.perfectFlash > 0) { game.perfectFlash -= dt * 0.6; if (game.perfectFlash < 0) game.perfectFlash = 0; }
-  }
-  // LEGADO: o "Atualizar o equilibrista" antigo = composição dos helpers novos.
-  // O toque-para-recomeçar automático vive SÓ aqui (no caminho decomposto a
-  // criança pluga o reinício num evento/tecla).
-  function updateStickHero(game) {
-    if (!game) return;
-    shSyncStageSize(game);
-    if (game.phase === 'over') {
-      var downOver = pointer.down;
-      if (downOver && !game.wasDown) { shReset(game); game.wasDown = true; }
-      else { game.wasDown = downOver; }
+    if (hero) {
+      var top = path.h - cfg.platformH;
+      hero.x = path.heroX - path.sceneOffset - heroW / 2;
+      hero.y = top - heroH + path.heroY;
     }
-    stickHeroHold(game, 1);
-    stickHeroStep(game, 1);
-    shDraw(game);
   }
-  function stickHeroOnCross(game, fn, explicitId) {
-    _kitRegisterHandler(game, '_onCross', '_onCrossOrder', 'equilibrista-atravessou', fn, explicitId);
-  }
-  function stickHeroOnPerfect(game, fn, explicitId) {
-    _kitRegisterHandler(game, '_onPerfect', '_onPerfectOrder', 'equilibrista-perfeito', fn, explicitId);
-  }
-  function shDrawHill(game, fromBottom, amp, color) {
-    var ctx = game.ctx, w = game.w, h = game.h;
+  function shDrawHill(path, fromBottom, amp, color) {
+    var ctx = path.ctx, w = path.w, h = path.h;
     var baseY = h - fromBottom;
-    var off = game.sceneOffset * 0.2;
+    var off = path.sceneOffset * 0.2;
     ctx.fillStyle = color;
     ctx.beginPath();
     ctx.moveTo(0, h);
@@ -311,19 +295,24 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
     ctx.closePath();
     ctx.fill();
   }
-  function shDrawBackground(game) {
-    var ctx = game.ctx, w = game.w, h = game.h;
+  // CENÁRIO: céu + colinas + árvores no tamanho LÓGICO vigente do palco (o
+  // gradiente cobre a tela inteira; funciona com ou sem o "Limpar a tela").
+  function stickPathScenery(path) {
+    if (!path) return;
+    _stickPathSync(path);
+    var ctx = path.ctx, w = path.w, h = path.h;
+    ctx.save();
     var sky = ctx.createLinearGradient(0, 0, 0, h);
     sky.addColorStop(0, '#BBD691');
     sky.addColorStop(1, '#FEF1E1');
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, w, h);
-    shDrawHill(game, h * 0.30, h * 0.05, '#95C629');
-    shDrawHill(game, h * 0.22, h * 0.08, '#659F1C');
-    var baseY = h - game.cfg.platformH - 2;
-    for (var i = 0; i < game.trees.length; i++) {
-      var tr = game.trees[i];
-      var x = tr.x - game.sceneOffset * 0.2;
+    shDrawHill(path, h * 0.30, h * 0.05, '#95C629');
+    shDrawHill(path, h * 0.22, h * 0.08, '#659F1C');
+    var baseY = h - path.cfg.platformH - 2;
+    for (var i = 0; i < path.trees.length; i++) {
+      var tr = path.trees[i];
+      var x = tr.x - path.sceneOffset * 0.2;
       if (x < -20 || x > w + 20) continue;
       ctx.fillStyle = '#7D833C';
       ctx.fillRect(x - 1, baseY - h * 0.04, 2, h * 0.04);
@@ -335,63 +324,32 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
       ctx.closePath();
       ctx.fill();
     }
-  }
-  // CENÁRIO decomposto: céu + colinas + árvores (o gradiente cobre a tela
-  // inteira, então funciona com ou sem o "Limpar a tela" antes).
-  function stickHeroScenery(game) {
-    if (!game) return;
-    shSyncStageSize(game);
-    var ctx = game.ctx;
-    ctx.save();
-    shDrawBackground(game);
     ctx.restore();
   }
-  // Plataformas + herói + bastões (coordenadas do mundo), com as cores da criança.
-  function _shDrawWorld(game) {
-    var ctx = game.ctx, cfg = game.cfg, w = game.w, h = game.h;
+  // DESENHO das regras: plataformas (com a marca do acerto perfeito) e bastões,
+  // nas cores do caminho. O herói é desenhado pelo "Desenhar o sprite" genérico.
+  function stickPathDraw(path) {
+    if (!path) return;
+    _stickPathSync(path);
+    var ctx = path.ctx, cfg = path.cfg, w = path.w, h = path.h;
     var top = h - cfg.platformH;
-    var heroColor = (game.colors && game.colors.hero) || '#1b2330';
-    var stickColor = (game.colors && game.colors.stick) || '#1b2330';
-    var platformColor = (game.colors && game.colors.platform) || '#1b2330';
     ctx.save();
-    ctx.translate(-game.sceneOffset, 0);
-    // platforms
-    for (var i = 0; i < game.platforms.length; i++) {
-      var pl = game.platforms[i];
-      ctx.fillStyle = platformColor;
+    ctx.translate(-path.sceneOffset, 0);
+    for (var i = 0; i < path.platforms.length; i++) {
+      var pl = path.platforms[i];
+      ctx.fillStyle = path.colors.platform;
       ctx.fillRect(pl.x, top, pl.w, cfg.platformH);
-      if (game.sticks[game.sticks.length - 1].x < pl.x) {
+      if (path.sticks[path.sticks.length - 1].x < pl.x) {
         ctx.fillStyle = '#e23b3b';
         ctx.fillRect(pl.x + pl.w / 2 - cfg.perfect / 2, top, cfg.perfect, cfg.perfect);
       }
     }
-    // hero — visual customizado (figura/imagem) numa caixa QUADRADA de lado
-    // heroH ancorada no pé do herói (a caixa nativa é estreita e distorceria o
-    // desenho da criança); sem visual, o boneco desenhado de sempre.
-    var heroSide = cfg.heroH;
-    var heroDrawn = _kitDrawLook(
-      game, '_heroLook',
-      game.heroX - heroSide / 2, top - heroSide + game.heroY, heroSide, heroSide,
-      heroColor
-    );
-    if (!heroDrawn) {
-      var hx = game.heroX - cfg.heroW / 2;
-      var hy = top - cfg.heroH + game.heroY;
-      ctx.fillStyle = heroColor;
-      shRoundRect(ctx, hx, hy, cfg.heroW, cfg.heroH, Math.max(2, cfg.heroW * 0.25));
-      ctx.fill();
-      ctx.fillStyle = '#fff';
-      ctx.beginPath();
-      ctx.arc(hx + cfg.heroW * 0.72, hy + cfg.heroH * 0.28, Math.max(1.5, cfg.heroW * 0.13), 0, Math.PI * 2);
-      ctx.fill();
-    }
-    // sticks
-    for (var k = 0; k < game.sticks.length; k++) {
-      var s = game.sticks[k];
+    for (var k = 0; k < path.sticks.length; k++) {
+      var s = path.sticks[k];
       ctx.save();
       ctx.translate(s.x, top);
       ctx.rotate((Math.PI / 180) * s.rotation);
-      ctx.strokeStyle = stickColor;
+      ctx.strokeStyle = path.colors.stick;
       ctx.lineWidth = Math.max(2, w * 0.008);
       ctx.beginPath();
       ctx.moveTo(0, 0);
@@ -400,218 +358,164 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
       ctx.restore();
     }
     ctx.restore();
+    var hudParts = [];
+    if (path.phase === 'waiting') hudParts.push('Segure para esticar o bastão');
+    else if (path.phase === 'over') hudParts.push('Caiu!');
+    _updateAccessibleHud(path._hudKey, hudParts.join('. '));
   }
-  // DESENHO decomposto: mundo + HUD acessível (sem placar/overlay no canvas —
-  // esses a criança monta com "Mostrar placar"/telas).
-  function stickHeroDraw(game) {
-    if (!game) return;
-    shSyncStageSize(game);
-    _shDrawWorld(game);
-    var hudParts = ['Pontos: ' + game.score];
-    if (game.perfectFlash > 0) hudParts.push('Perfeito! Mais 2 pontos');
-    if (game.phase === 'waiting') hudParts.push('Segure para esticar o bastão');
-    else if (game.phase === 'over') hudParts.push('Caiu!');
-    _updateAccessibleHud(game._hudKey, hudParts.join('. '));
+  function stickPathOnCross(path, fn, explicitId) {
+    _kitRegisterHandler(path, '_onCross', '_onCrossOrder', 'equilibrista-atravessou', fn, explicitId);
   }
-  function shDraw(game) {
-    var ctx = game.ctx, w = game.w, h = game.h;
-    ctx.save();
-    ctx.clearRect(0, 0, w, h);
-    shDrawBackground(game);
-    _shDrawWorld(game);
-    // HUD
-    ctx.fillStyle = '#1b2330';
-    ctx.font = 'bold ' + Math.round(h * 0.10) + 'px ' + _szGameUIFont;
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'top';
-    ctx.fillText(String(game.score), w - w * 0.04, h * 0.04);
-    if (game.perfectFlash > 0) {
-      ctx.save();
-      ctx.globalAlpha = Math.min(1, game.perfectFlash);
-      ctx.fillStyle = '#e23b3b';
-      ctx.textAlign = 'center';
-      ctx.font = 'bold ' + Math.round(h * 0.06) + 'px ' + _szGameUIFont;
-      ctx.fillText('PERFEITO! +2', w / 2, h * 0.16);
-      ctx.restore();
-    }
-    if (game.phase === 'waiting') {
-      ctx.fillStyle = 'rgba(20,20,30,0.6)';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.font = Math.round(h * 0.045) + 'px ' + _szGameUIFont;
-      ctx.fillText('Segure para esticar o bastão', w / 2, h * 0.45);
-    } else if (game.phase === 'over') {
-      ctx.fillStyle = 'rgba(20,20,30,0.7)';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.font = 'bold ' + Math.round(h * 0.06) + 'px ' + _szGameUIFont;
-      ctx.fillText('Caiu! Toque para recomeçar', w / 2, h * 0.45);
-    }
-    ctx.restore();
-    var hudParts = ['Pontos: ' + game.score];
-    if (game.perfectFlash > 0) hudParts.push('Perfeito! Mais 2 pontos');
-    if (game.phase === 'waiting') hudParts.push('Segure para esticar o bastão');
-    else if (game.phase === 'over') hudParts.push('Caiu! Toque para recomeçar');
-    _updateAccessibleHud(game._hudKey, hudParts.join('. '));
+  function stickPathOnPerfect(path, fn, explicitId) {
+    _kitRegisterHandler(path, '_onPerfect', '_onPerfectOrder', 'equilibrista-perfeito', fn, explicitId);
   }
-  function stickHeroScore(game) { return game ? game.score : 0; }
-  function stickHeroOver(game) { return game ? game.phase === 'over' : false; }
-  function restartStickHero(game) { if (game) shReset(game); }
+  function stickPathFell(path) { return path ? path.phase === 'over' : false; }
 
   // ============================================================
-  // Kit balão (Hot-Air-Balloon) — v0.13.0; decomposto em blocos v0.40.0
-  // Suba segurando o mouse/dedo, economize combustível e desvie das árvores.
+  // 🎈 Balão — o BALÃO é um sprite (com combustível); as árvores moram no CAMINHO.
   // ============================================================
-  function blMakeTree(game, fromX) {
-    var w = game.w;
+  function createBalloon(opts) {
+    opts = opts || {};
+    var s = createSprite({
+      x: opts.x, y: opts.y,
+      w: _positiveFiniteNumber(opts.w, 70),
+      h: _positiveFiniteNumber(opts.h, 100),
+      color: opts.body || '#D62828'
+    });
+    s.skin = {
+      kind: 'balloon',
+      body: _kitColor(opts.body, '#D62828'),
+      basket: _kitColor(opts.basket, '#8a5a2b')
+    };
+    s._fuel = 100;
+    s._fire = 0;
+    return s;
+  }
+  // Balão desenhado na caixa do sprite (dispatch em sprites): envelope, cordas,
+  // cesto e a chama quando o fogo está aceso.
+  function drawBalloonSprite(ctx, sprite) {
+    var sk = sprite.skin || {};
+    var body = sk.body || sprite.color || '#D62828';
+    var basket = sk.basket || '#8a5a2b';
+    var w = sprite.w, h = sprite.h;
+    var x = sprite.x + w / 2;
+    var by = sprite.y + h;
+    var R = Math.min(w / 2, h / 3);
+    ctx.save();
+    if (sprite._fire > 0) {
+      ctx.fillStyle = '#ff9d2e';
+      ctx.beginPath();
+      ctx.arc(x, by - R * 0.6, R * 0.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffd54a';
+      ctx.beginPath();
+      ctx.arc(x, by - R * 0.55, R * 0.11, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    var cy = by - R * 2.0;
+    ctx.fillStyle = body;
+    ctx.beginPath();
+    ctx.moveTo(x - R * 0.4, by - R * 0.95);
+    ctx.quadraticCurveTo(x - R, cy + R * 0.7, x - R, cy);
+    ctx.arc(x, cy, R, Math.PI, 0, false);
+    ctx.quadraticCurveTo(x + R, cy + R * 0.7, x + R * 0.4, by - R * 0.95);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+    ctx.lineWidth = Math.max(1, R * 0.04);
+    ctx.beginPath();
+    ctx.moveTo(x - R * 0.3, by - R * 0.95); ctx.lineTo(x - R * 0.22, by - R * 0.3);
+    ctx.moveTo(x + R * 0.3, by - R * 0.95); ctx.lineTo(x + R * 0.22, by - R * 0.3);
+    ctx.stroke();
+    ctx.fillStyle = basket;
+    ctx.fillRect(x - R * 0.28, by - R * 0.3, R * 0.56, R * 0.3);
+    ctx.restore();
+  }
+  function _kitGroundY(h) { return h * 0.82; }
+  // FOGO: empurra o balão para cima e queima combustível (mais alto, mais
+  // gasto). Chame enquanto a criança quiser subir (ex.: se o mouse estiver
+  // segurado). Sem combustível, o fogo não acende.
+  function balloonFire(balloon, force) {
+    if (!balloon) return;
+    if (balloon._fuel == null) { balloon._fuel = 100; balloon._fire = 0; }
+    var h = _kitStageH();
+    var dt = _kitDt(balloon, '_lastFire');
+    var step = dt * 60 * _kitSpeedMultiplier(force);
+    if (balloon._fuel <= 0) return;
+    var maxRise = h * 0.013;
+    if (balloon.vy > -maxRise) balloon.vy -= h * 0.0011 * step;
+    var groundY = _kitGroundY(h);
+    var altitude = (groundY - (balloon.y + balloon.h)) / groundY;
+    if (altitude < 0) altitude = 0;
+    balloon._fuel -= (0.06 + altitude * 0.10) * step;
+    if (balloon._fuel < 0) balloon._fuel = 0;
+    balloon._fire = 3;
+  }
+  // VOAR: a gravidade suave puxa o balão para baixo quando o fogo não está
+  // aceso, e ele pousa no chão (nunca afunda).
+  function balloonFly(balloon) {
+    if (!balloon) return;
+    var h = _kitStageH();
+    var dt = _kitDt(balloon, '_lastFly');
+    var step = dt * 60;
+    var maxFall = h * 0.009;
+    if (balloon._fire > 0) {
+      balloon._fire -= 1;
+    } else if (balloon.vy < maxFall) {
+      balloon.vy += h * 0.0006 * step;
+    }
+    balloon.y += balloon.vy * step;
+    var groundY = _kitGroundY(h);
+    if (balloon.y + balloon.h > groundY) {
+      balloon.y = groundY - balloon.h;
+      balloon.vy = 0;
+    }
+  }
+  function blMakeTree(path, fromX) {
+    var w = path.w;
     var gap = w * 0.45 + Math.random() * w * 1.1;
-    var th = game.h * (0.16 + Math.random() * 0.22);
+    var th = path.h * (0.16 + Math.random() * 0.22);
     var colors = ['#6D8821', '#8FAC34', '#98B333'];
     return { x: fromX + gap, th: th, color: colors[Math.floor(Math.random() * 3)] };
   }
-  function blReset(game) {
-    var w = game.w, h = game.h;
-    game.over = false;
-    game.vVel = 0;
-    game.hVel = Math.max(2, w * 0.006);
-    game.groundY = h * 0.82;
-    game.by = game.groundY;
-    game.dist = 0;
-    game.meters = 0;
-    game.fuel = 100;
-    game.wasDown = false;
-    game.last = 0;
-    game._lastLift = 0;
-    game._lastScroll = 0;
-    game.trees = [];
-    var fromX = w;
-    for (var i = 0; i < 6; i++) { var t = blMakeTree(game, fromX); game.trees.push(t); fromX = t.x; }
-  }
-  function createBalloon(ctx) {
+  function createBalloonPath(ctx) {
     if (!ctx || !ctx.canvas) return null;
     var w = stageW(ctx), h = stageH(ctx);
-    var game = {
+    var path = {
       ctx: ctx,
       w: w,
       h: h,
+      dist: 0,
+      meters: 0,
+      hVel: Math.max(2, w * 0.006),
+      trees: [],
+      _lastScroll: 0,
+      _hitLatch: false,
       _hudKey: 'kit:balao:' + (++_casualKitSequence)
     };
-    blReset(game);
-    return game;
+    var fromX = w;
+    for (var i = 0; i < 6; i++) { var t = blMakeTree(path, fromX); path.trees.push(t); fromX = t.x; }
+    return path;
   }
-  // Criação DECOMPOSTA: o mesmo jogo do createBalloon + as cores da criança.
-  function balloonCreate(ctx, color, basketColor) {
-    var game = createBalloon(ctx);
-    if (game) {
-      game.colors = {
-        balloon: _kitColor(color, '#D62828'),
-        basket: _kitColor(basketColor, '#8a5a2b')
-      };
+  function _balloonPathSync(path) {
+    var nextW = stageW(path.ctx), nextH = stageH(path.ctx);
+    if (!nextW || !nextH || (nextW === path.w && nextH === path.h)) return;
+    if (!path.w || !path.h) { path.w = nextW; path.h = nextH; return; }
+    var scaleX = nextW / path.w, scaleY = nextH / path.h;
+    for (var i = 0; i < path.trees.length; i++) {
+      path.trees[i].x *= scaleX;
+      path.trees[i].th *= scaleY;
     }
-    return game;
+    path.dist *= scaleX;
+    path.hVel *= scaleX;
+    path.w = nextW;
+    path.h = nextH;
   }
   function blCircle(ctx, x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); }
-  function blSyncStageSize(game) {
-    var nextW = stageW(game.ctx), nextH = stageH(game.ctx);
-    if (!nextW || !nextH || (nextW === game.w && nextH === game.h)) return;
-    var scaleX = nextW / game.w, scaleY = nextH / game.h;
-    for (var i = 0; i < game.trees.length; i++) {
-      game.trees[i].x *= scaleX;
-      game.trees[i].th *= scaleY;
-    }
-    game.dist *= scaleX;
-    game.hVel *= scaleX;
-    game.by *= scaleY;
-    game.groundY *= scaleY;
-    game.vVel *= scaleY;
-    game.w = nextW;
-    game.h = nextH;
-  }
-  // SUBIR/CAIR: física vertical + queima de combustível + pouso; combustível
-  // zerado com o balão no chão marca o fim. Relógio próprio (_lastLift).
-  function balloonLift(game, force) {
-    if (!game) return;
-    blSyncStageSize(game);
-    if (game.over) return;
-    var mult = _kitSpeedMultiplier(force);
-    var h = game.h;
-    var t = now();
-    var dt = game._lastLift ? (t - game._lastLift) / 1000 : 0;
-    game._lastLift = t;
-    if (dt > 0.05) dt = 0.05;
-    if (dt < 0) dt = 0;
-    var step = dt * 60 * mult;
-    var heating = pointer.down && game.fuel > 0;
-    var maxRise = h * 0.013, maxFall = h * 0.009;
-    if (heating) {
-      if (game.vVel > -maxRise) game.vVel -= h * 0.0011 * step;
-      var altitude = (game.groundY - game.by) / game.groundY;
-      game.fuel -= (0.06 + altitude * 0.10) * step;
-      if (game.fuel < 0) game.fuel = 0;
-    } else if (game.vVel < maxFall) {
-      game.vVel += h * 0.0006 * step;
-    }
-    game.by += game.vVel * step;
-    if (game.by > game.groundY) { game.by = game.groundY; game.vVel = 0; }
-    if (game.fuel <= 0 && game.by >= game.groundY - 1) game.over = true;
-  }
-  // AVANÇAR: distância/metros (só no ar), reciclagem das árvores e a batida
-  // (dispara o evento do kit). Relógio próprio (_lastScroll).
-  function balloonScroll(game, speed) {
-    if (!game) return;
-    blSyncStageSize(game);
-    if (game.over) return;
-    var mult = _kitSpeedMultiplier(speed);
-    var w = game.w;
-    var t = now();
-    var dt = game._lastScroll ? (t - game._lastScroll) / 1000 : 0;
-    game._lastScroll = t;
-    if (dt > 0.05) dt = 0.05;
-    if (dt < 0) dt = 0;
-    var step = dt * 60 * mult;
-    var airborne = game.by < game.groundY - 1;
-    if (airborne) game.dist += game.hVel * step;
-    game.meters = Math.floor(game.dist / (w * 0.03));
-    // recicla árvores que saíram pela esquerda
-    if (game.trees.length && (game.trees[0].x - game.dist) < -80) {
-      game.trees.shift();
-      var lastT = game.trees[game.trees.length - 1];
-      game.trees.push(blMakeTree(game, lastT ? lastT.x : game.dist + w));
-    }
-    // colisão: passando por uma árvore e baixo demais
-    var screenX = w * 0.3;
-    var hitTree = false;
-    for (var i = 0; i < game.trees.length; i++) {
-      var tx = game.trees[i].x - game.dist;
-      if (Math.abs(tx - screenX) < w * 0.06 && game.by > game.groundY - game.trees[i].th) {
-        hitTree = true;
-      }
-    }
-    if (hitTree && !game.over) {
-      game.over = true;
-      _kitFireHandlers(game, '_onTreeHit', '_onTreeHitOrder', '"Quando o balão bater numa árvore"');
-    }
-  }
-  // LEGADO: o "Atualizar o balão" antigo = composição dos helpers novos. O
-  // toque-para-recomeçar automático vive SÓ aqui.
-  function updateBalloon(game) {
-    if (!game) return;
-    blSyncStageSize(game);
-    var down = pointer.down;
-    var pressed = down && !game.wasDown;
-    game.wasDown = down;
-    if (game.over) { if (pressed) blReset(game); blDraw(game); return; }
-    balloonLift(game, 1);
-    balloonScroll(game, 1);
-    blDraw(game);
-  }
-  function balloonOnTreeHit(game, fn, explicitId) {
-    _kitRegisterHandler(game, '_onTreeHit', '_onTreeHitOrder', 'balao-bateu', fn, explicitId);
-  }
-  function blHill(game, fromBottom, amp, color, par) {
-    var ctx = game.ctx, w = game.w, h = game.h;
+  function blHill(path, fromBottom, amp, color, par) {
+    var ctx = path.ctx, w = path.w, h = path.h;
     var baseY = h - fromBottom;
-    var off = game.dist * par;
+    var off = path.dist * par;
     ctx.fillStyle = color;
     ctx.beginPath();
     ctx.moveTo(0, h);
@@ -621,54 +525,26 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
     ctx.closePath();
     ctx.fill();
   }
-  function blDrawBalloon(game, x, by) {
-    var ctx = game.ctx, h = game.h;
-    var R = h * 0.11;
-    // Visual customizado (figura/imagem): a caixa é o retângulo que o balão
-    // desenhado ocupa (envelope + cordas + cesto), 2R de largura por 3R de altura.
-    if (_kitDrawLook(game, '_balloonLook', x - R, by - R * 3, R * 2, R * 3,
-      (game.colors && game.colors.balloon) || '#D62828')) {
-      return;
-    }
-    var cy = by - R * 2.0;
-    var custom = game.colors && game.colors.balloon;
-    var body = custom || '#D62828';
-    var rope = custom ? 'rgba(0,0,0,0.35)' : '#a51f1f';
-    var basket = (game.colors && game.colors.basket) || '#8a5a2b';
+  // CENÁRIO: céu + colinas + chão + árvores no tamanho LÓGICO vigente do palco.
+  function balloonPathScenery(path) {
+    if (!path) return;
+    _balloonPathSync(path);
+    var ctx = path.ctx, w = path.w, h = path.h;
     ctx.save();
-    ctx.fillStyle = body;
-    ctx.beginPath();
-    ctx.moveTo(x - R * 0.4, by - R * 0.95);
-    ctx.quadraticCurveTo(x - R, cy + R * 0.7, x - R, cy);
-    ctx.arc(x, cy, R, Math.PI, 0, false);
-    ctx.quadraticCurveTo(x + R, cy + R * 0.7, x + R * 0.4, by - R * 0.95);
-    ctx.closePath();
-    ctx.fill();
-    ctx.strokeStyle = rope;
-    ctx.lineWidth = Math.max(1, h * 0.004);
-    ctx.beginPath();
-    ctx.moveTo(x - R * 0.3, by - R * 0.95); ctx.lineTo(x - R * 0.22, by - R * 0.3);
-    ctx.moveTo(x + R * 0.3, by - R * 0.95); ctx.lineTo(x + R * 0.22, by - R * 0.3);
-    ctx.stroke();
-    ctx.fillStyle = basket;
-    ctx.fillRect(x - R * 0.28, by - R * 0.3, R * 0.56, R * 0.3);
-    ctx.restore();
-  }
-  function _blDrawScenery(game) {
-    var ctx = game.ctx, w = game.w, h = game.h;
     var sky = ctx.createLinearGradient(0, 0, 0, h);
     sky.addColorStop(0, '#AADBEA');
     sky.addColorStop(1, '#FEF1E1');
     ctx.fillStyle = sky;
     ctx.fillRect(0, 0, w, h);
-    blHill(game, h * 0.30, h * 0.05, '#AAD155', 0.2);
-    blHill(game, h * 0.20, h * 0.07, '#84B249', 0.4);
+    blHill(path, h * 0.30, h * 0.05, '#AAD155', 0.2);
+    blHill(path, h * 0.20, h * 0.07, '#84B249', 0.4);
+    var groundY = _kitGroundY(h);
     ctx.fillStyle = '#5fa24a';
-    ctx.fillRect(0, game.groundY + h * 0.02, w, h);
-    var baseY = game.groundY + h * 0.02;
-    for (var i = 0; i < game.trees.length; i++) {
-      var tr = game.trees[i];
-      var x = tr.x - game.dist;
+    ctx.fillRect(0, groundY + h * 0.02, w, h);
+    var baseY = groundY + h * 0.02;
+    for (var i = 0; i < path.trees.length; i++) {
+      var tr = path.trees[i];
+      var x = tr.x - path.dist;
       if (x < -60 || x > w + 60) continue;
       var topY = baseY - tr.th;
       ctx.fillStyle = '#885F37';
@@ -679,82 +555,68 @@ export const gameTwoDCasualKitsRuntime = `  // =================================
       blCircle(ctx, x - r * 0.75, topY + r * 1.7, r * 0.9);
       blCircle(ctx, x + r * 0.75, topY + r * 1.7, r * 0.9);
     }
-  }
-  // CENÁRIO decomposto: céu + colinas + chão + árvores (o gradiente cobre a
-  // tela inteira; funciona com ou sem o "Limpar a tela" antes).
-  function balloonScenery(game) {
-    if (!game) return;
-    blSyncStageSize(game);
-    var ctx = game.ctx;
-    ctx.save();
-    _blDrawScenery(game);
     ctx.restore();
   }
-  // DESENHO decomposto: só o balão + HUD acessível (barra/metros/overlay a
-  // criança monta com "Mostrar barra"/"Mostrar placar"/telas).
-  function balloonDraw(game) {
-    if (!game) return;
-    blSyncStageSize(game);
-    var ctx = game.ctx;
-    ctx.save();
-    blDrawBalloon(game, game.w * 0.3, game.by);
-    ctx.restore();
-    var hudParts = [
-      'Distância: ' + game.meters + ' metros',
-      'Combustível: ' + Math.round(game.fuel) + ' de 100'
-    ];
-    if (game.over) hudParts.push('Fim!');
-    else if (game.by >= game.groundY - 1 && game.dist === 0) {
-      hudParts.push('Segure para subir; voe baixo para poupar combustível');
+  // AVANÇAR: o mundo anda para trás enquanto o balão está no ar, os metros
+  // contam, as árvores reciclam e a batida é conferida com o RETÂNGULO do
+  // sprite (dispara o evento a cada novo toque; a criança decide o que fazer).
+  function balloonPathScroll(path, balloon, speed) {
+    if (!path) return;
+    _balloonPathSync(path);
+    var w = path.w, h = path.h;
+    var dt = _kitDt(path, '_lastScroll');
+    var step = dt * 60 * _kitSpeedMultiplier(speed);
+    var groundY = _kitGroundY(h);
+    var airborne = balloon ? (balloon.y + balloon.h) < groundY - 1 : false;
+    if (airborne) path.dist += path.hVel * step;
+    path.meters = Math.floor(path.dist / (w * 0.03));
+    if (path.trees.length && (path.trees[0].x - path.dist) < -80) {
+      path.trees.shift();
+      var lastT = path.trees[path.trees.length - 1];
+      path.trees.push(blMakeTree(path, lastT ? lastT.x : path.dist + w));
     }
-    _updateAccessibleHud(game._hudKey, hudParts.join('. '));
+    var hit = false;
+    if (balloon) {
+      var baseY = groundY + h * 0.02;
+      for (var i = 0; i < path.trees.length; i++) {
+        var tr = path.trees[i];
+        var tx = tr.x - path.dist;
+        var half = Math.max(w * 0.02, tr.th * 0.35);
+        var topY = baseY - tr.th;
+        if (balloon.x < tx + half && balloon.x + balloon.w > tx - half && balloon.y + balloon.h > topY) {
+          hit = true;
+          break;
+        }
+      }
+    }
+    if (hit && !path._hitLatch) {
+      _kitFireHandlers(path, '_onTreeHit', '_onTreeHitOrder', '"Quando o balão bater numa árvore"');
+    }
+    path._hitLatch = hit;
+    if (balloon) {
+      var hudParts = [
+        'Distância: ' + path.meters + ' metros',
+        'Combustível: ' + Math.round(balloon._fuel == null ? 100 : balloon._fuel) + ' de 100'
+      ];
+      if (!airborne && path.dist === 0) {
+        hudParts.push('Segure para subir; voe baixo para poupar combustível');
+      }
+      _updateAccessibleHud(path._hudKey, hudParts.join('. '));
+    }
   }
-  function blDraw(game) {
-    var ctx = game.ctx, w = game.w, h = game.h;
-    ctx.save();
-    ctx.clearRect(0, 0, w, h);
-    _blDrawScenery(game);
-    blDrawBalloon(game, w * 0.3, game.by);
-    // HUD: combustível + metros
-    var fw = w * 0.4, fh = h * 0.05, fx = w * 0.06, fy = h * 0.06;
-    ctx.strokeStyle = game.fuel <= 30 ? '#e23b3b' : '#ffffff';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(fx, fy, fw, fh);
-    ctx.fillStyle = game.fuel <= 30 ? 'rgba(230,40,40,0.55)' : 'rgba(150,150,200,0.55)';
-    ctx.fillRect(fx, fy, fw * game.fuel / 100, fh);
-    ctx.fillStyle = '#1b2330';
-    ctx.font = 'bold ' + Math.round(h * 0.07) + 'px ' + _szGameUIFont;
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'top';
-    ctx.fillText(game.meters + ' m', w - w * 0.06, fy);
-    if (game.over) {
-      ctx.fillStyle = 'rgba(20,20,30,0.7)';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.font = 'bold ' + Math.round(h * 0.06) + 'px ' + _szGameUIFont;
-      ctx.fillText('Fim! Toque para recomeçar', w / 2, h * 0.45);
-    } else if (game.by >= game.groundY - 1 && game.dist === 0) {
-      ctx.fillStyle = 'rgba(20,20,30,0.55)';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.font = Math.round(h * 0.045) + 'px ' + _szGameUIFont;
-      ctx.fillText('Segure para subir · voe baixo p/ poupar combustível', w / 2, h * 0.45);
-    }
-    ctx.restore();
-    var hudParts = [
-      'Distância: ' + game.meters + ' metros',
-      'Combustível: ' + Math.round(game.fuel) + ' de 100'
-    ];
-    if (game.over) hudParts.push('Fim! Toque para recomeçar');
-    else if (game.by >= game.groundY - 1 && game.dist === 0) {
-      hudParts.push('Segure para subir; voe baixo para poupar combustível');
-    }
-    _updateAccessibleHud(game._hudKey, hudParts.join('. '));
+  function balloonPathOnTreeHit(path, fn, explicitId) {
+    _kitRegisterHandler(path, '_onTreeHit', '_onTreeHitOrder', 'balao-bateu', fn, explicitId);
   }
-  function balloonScore(game) { return game ? game.meters : 0; }
-  function balloonFuel(game) { return game ? Math.round(game.fuel) : 0; }
-  function balloonOver(game) { return game ? !!game.over : false; }
-  function restartBalloon(game) { if (game) blReset(game); }
+  function balloonPathMeters(path) { return path ? path.meters : 0; }
+  function balloonFuel(balloon) {
+    if (!balloon) return 0;
+    return Math.round(balloon._fuel == null ? 100 : balloon._fuel);
+  }
+  function balloonLandedOut(balloon) {
+    if (!balloon) return false;
+    var groundY = _kitGroundY(_kitStageH());
+    return (balloon._fuel != null && balloon._fuel <= 0) && (balloon.y + balloon.h) >= groundY - 1;
+  }
 
   _registerRuntimeDomain('casual-kits', {
     reset: function () { _casualKitSequence = 0; }

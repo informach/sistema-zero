@@ -467,16 +467,11 @@ describe('contrato central de posicionamento', () => {
     ]
     const derivedStatementTypes = new Set<string>()
 
-    // Legados ocultos que CONTINUAM start-only: os creates dos kits (decompostos
-    // na v0.40.0) saíram da paleta, mas a IR importada de projetos salvos segue
-    // exclusiva de Ao iniciar — o contrato físico e a lista central valem p/ eles.
-    const HIDDEN_START_ONLY_LEGACY = new Set(['sz_g2d_create_stickhero', 'sz_g2d_create_balloon'])
-
     for (const definition of all) {
       const contract = inferBlockContract(definition)
       const placement = contract.placement
       if (
-        (definition.hidden && !HIDDEN_START_ONLY_LEGACY.has(definition.type)) ||
+        definition.hidden ||
         contract.domain !== 'behavior' ||
         !placement ||
         placement.root.length !== 1 ||

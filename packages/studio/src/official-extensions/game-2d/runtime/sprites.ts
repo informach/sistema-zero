@@ -411,6 +411,8 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
       if (sprite.skin.kind === 'obstacle') { drawObstacleSprite(ctx, sprite); return; }
       if (sprite.skin.kind === 'egg') { drawEggSprite(ctx, sprite); return; }
       if (sprite.skin.kind === 'gorilla') { drawGorilla(ctx, sprite); return; }
+      if (sprite.skin.kind === 'stickhero') { drawStickHeroSprite(ctx, sprite); return; }
+      if (sprite.skin.kind === 'balloon') { drawBalloonSprite(ctx, sprite); return; }
       if (sprite.skin.kind === 'custom') { drawCustomShape(ctx, sprite); return; }
     }
     var a = sprite.anim;

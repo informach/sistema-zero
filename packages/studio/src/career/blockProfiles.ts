@@ -1,6 +1,9 @@
 /**
  * Perfil conquistado pelo Construtor após o curso-base do Iniciante 2D.
- * A lista espelha a referência oficial do Desafio do Primeiro Jogo.
+ * A lista espelha a referência oficial do Desafio do Primeiro Jogo e soma o
+ * RESTO do 🚀 Kit espaço (asteroide da borda + atirar para a frente) — decisão
+ * da usuária 26/07: com o kit completo a criança faz VARIAÇÕES do jogo de nave
+ * ensinado no nível Faísca, não só a réplica.
  *
  * As três áreas `sz_frame_*` são sempre ofertadas pelo editor, mas permanecem
  * declaradas aqui para que o contrato pedagógico tenha uma fonte completa.
@@ -15,6 +18,8 @@ export const ESSENTIAL_2D_BLOCK_TYPES = [
   'sz_g2d_create_ship',
   'sz_g2d_starfield',
   'sz_g2d_spawn_asteroid',
+  'sz_g2d_spawn_asteroid_edge',
+  'sz_g2d_shoot_from',
   'sz_g2d_explode',
   'sz_g2d_play_shoot',
   'sz_g2d_play_explosion',

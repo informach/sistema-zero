@@ -44,25 +44,24 @@ interface CapturedGroup {
   items: CapturedSprite[]
 }
 
-interface CapturedStickGame {
+interface CapturedStickPath {
   phase: string
-  score: number
+  sceneOffset: number
+  heroX: number
   heroY: number
+  w: number
   h: number
-  sticks: Array<{ x: number; length: number }>
+  sticks: Array<{ x: number; length: number; rotation: number }>
   platforms: Array<{ x: number; w: number }>
-  colors?: { hero: string; stick: string; platform: string }
+  colors: { platform: string; stick: string }
 }
 
-interface CapturedBalloonGame {
-  over: boolean
-  fuel: number
+interface CapturedBalloonPath {
+  dist: number
   meters: number
-  by: number
-  groundY: number
-  vVel: number
-  hitTree?: boolean
-  colors?: { balloon: string; basket: string }
+  w: number
+  h: number
+  trees: Array<{ x: number; th: number; color: string }>
 }
 
 interface CapturedCity {
@@ -80,8 +79,8 @@ function exampleHarness(example: ExtensionExample, random: () => number = Math.r
   const sprites: CapturedSprite[] = []
   const enemyTypes: CapturedEnemyType[] = []
   const groups: CapturedGroup[] = []
-  const stickGames: CapturedStickGame[] = []
-  const balloonGames: CapturedBalloonGame[] = []
+  const stickGames: CapturedStickPath[] = []
+  const balloonGames: CapturedBalloonPath[] = []
   const cities: CapturedCity[] = []
   const throwers: CapturedSprite[] = []
   const scores: Record<string, number> = {}
@@ -257,7 +256,7 @@ function exampleHarness(example: ExtensionExample, random: () => number = Math.r
       window.__capturedSprites.push(sprite);
       return sprite;
     };
-    ['createShip', 'createDino', 'createShapeSprite'].forEach(function (name) {
+    ['createShip', 'createDino', 'createShapeSprite', 'createStickHero', 'createBalloon'].forEach(function (name) {
       var original = window.SZGame2D[name];
       window.SZGame2D[name] = function () {
         var sprite = original.apply(window.SZGame2D, arguments);
@@ -277,29 +276,17 @@ function exampleHarness(example: ExtensionExample, random: () => number = Math.r
       window.__capturedEnemyTypes.push(type);
       return type;
     };
-    var originalCreateStickHero = window.SZGame2D.createStickHero;
-    window.SZGame2D.createStickHero = function () {
-      var game = originalCreateStickHero.apply(window.SZGame2D, arguments);
-      window.__capturedStickGames.push(game);
-      return game;
+    var originalCreateStickPath = window.SZGame2D.createStickPath;
+    window.SZGame2D.createStickPath = function () {
+      var path = originalCreateStickPath.apply(window.SZGame2D, arguments);
+      window.__capturedStickGames.push(path);
+      return path;
     };
-    var originalCreateBalloon = window.SZGame2D.createBalloon;
-    window.SZGame2D.createBalloon = function () {
-      var game = originalCreateBalloon.apply(window.SZGame2D, arguments);
-      window.__capturedBalloonGames.push(game);
-      return game;
-    };
-    var originalStickHeroCreate = window.SZGame2D.stickHeroCreate;
-    window.SZGame2D.stickHeroCreate = function () {
-      var game = originalStickHeroCreate.apply(window.SZGame2D, arguments);
-      window.__capturedStickGames.push(game);
-      return game;
-    };
-    var originalBalloonCreate = window.SZGame2D.balloonCreate;
-    window.SZGame2D.balloonCreate = function () {
-      var game = originalBalloonCreate.apply(window.SZGame2D, arguments);
-      window.__capturedBalloonGames.push(game);
-      return game;
+    var originalCreateBalloonPath = window.SZGame2D.createBalloonPath;
+    window.SZGame2D.createBalloonPath = function () {
+      var path = originalCreateBalloonPath.apply(window.SZGame2D, arguments);
+      window.__capturedBalloonGames.push(path);
+      return path;
     };
     var originalCreateCity = window.SZGame2D.createCity;
     window.SZGame2D.createCity = function () {
@@ -353,11 +340,11 @@ function exampleHarness(example: ExtensionExample, random: () => number = Math.r
     ...(windowObject as unknown as { __capturedGroups: CapturedGroup[] }).__capturedGroups,
   )
   stickGames.push(
-    ...(windowObject as unknown as { __capturedStickGames: CapturedStickGame[] })
+    ...(windowObject as unknown as { __capturedStickGames: CapturedStickPath[] })
       .__capturedStickGames,
   )
   balloonGames.push(
-    ...(windowObject as unknown as { __capturedBalloonGames: CapturedBalloonGame[] })
+    ...(windowObject as unknown as { __capturedBalloonGames: CapturedBalloonPath[] })
       .__capturedBalloonGames,
   )
   cities.push(...(windowObject as unknown as { __capturedCities: CapturedCity[] }).__capturedCities)
@@ -405,11 +392,19 @@ function exampleHarness(example: ExtensionExample, random: () => number = Math.r
         .__capturedCities
       const latestThrowers = (windowObject as unknown as { __capturedThrowers: CapturedSprite[] })
         .__capturedThrowers
+      const latestStickPaths = (
+        windowObject as unknown as { __capturedStickGames: CapturedStickPath[] }
+      ).__capturedStickGames
+      const latestBalloonPaths = (
+        windowObject as unknown as { __capturedBalloonGames: CapturedBalloonPath[] }
+      ).__capturedBalloonGames
       sprites.splice(0, sprites.length, ...latestSprites)
       enemyTypes.splice(0, enemyTypes.length, ...latestTypes)
       groups.splice(0, groups.length, ...latestGroups)
       cities.splice(0, cities.length, ...latestCities)
       throwers.splice(0, throwers.length, ...latestThrowers)
+      stickGames.splice(0, stickGames.length, ...latestStickPaths)
+      balloonGames.splice(0, balloonGames.length, ...latestBalloonPaths)
       Object.assign(
         scores,
         (windowObject as unknown as { __capturedScores: Record<string, number> }).__capturedScores,
@@ -788,19 +783,24 @@ describe('playthrough dos exemplos exatos do Jogo 2D', () => {
     expect(game.errors).toEqual([])
   })
 
-  it('Equilibrista atravessa uma plataforma, cai e reinicia o kit por completo', () => {
+  it('Equilibrista atravessa via mouse (se/senão), soma pontos, cai e reinicia', () => {
     const game = exampleHarness(stickHeroExample)
-    const stickGame = game.stickGames[0]
-    expect(stickGame).toBeDefined()
-    if (!stickGame) return
-    // O exemplo decomposto cria o jogo com as cores da criança.
-    expect(stickGame.colors).toEqual({
-      hero: '#d6455d',
-      stick: '#1b2330',
-      platform: '#0ea5a0',
-    })
-    const target = stickGame.platforms[1]
-    const stick = stickGame.sticks[0]
+    const path = game.stickGames[0]
+    const hero = game.sprites[0]
+    expect(path).toBeDefined()
+    expect(hero).toBeDefined()
+    if (!path || !hero) return
+    // O caminho nasce com as cores da criança; o herói é um sprite comum.
+    expect(path.colors).toEqual({ platform: '#0ea5a0', stick: '#1b2330' })
+    expect([hero.w, hero.h]).toEqual([18, 36])
+
+    game.fireKey('Enter')
+    game.nextFrame()
+
+    // Mira o comprimento até o MEIO da próxima plataforma; o exemplo lê o
+    // ponteiro no se/senão (segurado cresce, solto derruba).
+    const target = path.platforms[1]
+    const stick = path.sticks[0]
     expect(target).toBeDefined()
     expect(stick).toBeDefined()
     const targetLength = target && stick ? target.x + target.w / 2 - stick.x : 0
@@ -810,43 +810,65 @@ describe('playthrough dos exemplos exatos do Jogo 2D', () => {
       game.nextFrame()
     }
     game.firePointer('pointerup', 100, 100)
-    for (let frame = 0; frame < 240 && stickGame.phase !== 'waiting'; frame += 1) {
+    for (let frame = 0; frame < 240 && path.phase !== 'waiting'; frame += 1) {
       game.nextFrame()
     }
-    expect(stickGame.score).toBeGreaterThan(0)
+    // O placar é a VARIÁVEL da criança, somada no evento e mostrada no HUD.
+    expect(game.scores['Pontos:']).toBeGreaterThan(0)
+    // O sprite do herói foi posicionado pelo "andar" (coords de tela).
+    expect(hero.y).toBeLessThan(path.h)
 
-    stickGame.phase = 'falling'
-    stickGame.heroY = stickGame.h + 1
+    // Cai: a cena vira "perdeu" e o Enter recomeça o jogo inteiro (restart).
+    path.phase = 'falling'
+    path.heroY = path.h + 1
     game.nextFrame()
-    expect(stickGame.phase).toBe('over')
+    game.nextFrame()
+    expect(game.api.sceneIs('perdeu')).toBe(true)
     game.fireKey('Enter')
-    expect(stickGame.phase).toBe('waiting')
-    expect(stickGame.score).toBe(0)
+    game.nextFrame()
+    expect(game.api.sceneIs('inicio')).toBe(true)
+    // O restart recriou o caminho (a captura ACUMULA; o novo é o último).
+    expect(game.stickGames.length).toBeGreaterThan(1)
+    const recreated = game.stickGames[game.stickGames.length - 1]
+    expect(recreated?.phase).toBe('waiting')
     expect(game.errors).toEqual([])
   })
 
-  it('Balão sobe, consome combustível, avança, termina e reinicia', () => {
+  it('Balão sobe com o fogo, conta metros, pousa sem combustível e reinicia', () => {
     const game = exampleHarness(balloonExample)
-    const balloon = game.balloonGames[0]
+    const path = game.balloonGames[0]
+    const balloon = game.sprites[0] as CapturedSprite & { _fuel?: number }
+    expect(path).toBeDefined()
     expect(balloon).toBeDefined()
-    if (!balloon) return
-    // O exemplo decomposto cria o jogo com as cores da criança.
-    expect(balloon.colors).toEqual({ balloon: '#7c3aed', basket: '#8a5a2b' })
-    game.firePointer('pointerdown', 100, 100)
-    for (let frame = 0; frame < 35; frame += 1) game.nextFrame()
-    game.firePointer('pointerup', 100, 100)
-    expect(balloon.by).toBeLessThan(balloon.groundY)
-    expect(balloon.fuel).toBeLessThan(100)
-    expect(balloon.meters).toBeGreaterThan(0)
+    if (!path || !balloon) return
+    expect([balloon.w, balloon.h]).toEqual([70, 100])
 
-    balloon.fuel = 0
-    balloon.by = balloon.groundY
-    balloon.vVel = 0
-    game.nextFrame()
-    expect(balloon.over).toBe(true)
     game.fireKey('Enter')
-    expect(balloon.over).toBe(false)
-    expect(balloon.fuel).toBe(100)
+    game.nextFrame()
+
+    // Segurar o ponteiro acende o fogo (se do exemplo): sobe e queima.
+    const yStart = balloon.y
+    game.firePointer('pointerdown', 100, 100)
+    for (let frame = 0; frame < 45; frame += 1) game.nextFrame()
+    game.firePointer('pointerup', 100, 100)
+    expect(balloon.y).toBeLessThan(yStart)
+    expect(balloon._fuel ?? 100).toBeLessThan(100)
+    expect(path.meters).toBeGreaterThan(0)
+    expect(game.scores['Metros:']).toBeGreaterThan(0)
+
+    // Sem combustível e pousado: a cena vira "perdeu"; Enter recomeça tudo.
+    balloon._fuel = 0
+    balloon.y = path.h
+    balloon.vy = 0
+    game.nextFrame()
+    game.nextFrame()
+    expect(game.api.sceneIs('perdeu')).toBe(true)
+    game.fireKey('Enter')
+    game.nextFrame()
+    expect(game.api.sceneIs('inicio')).toBe(true)
+    // O restart recriou o balão (a captura ACUMULA; o novo é o último).
+    const recreated = game.sprites[game.sprites.length - 1] as CapturedSprite & { _fuel?: number }
+    expect(recreated?._fuel).toBe(100)
     expect(game.errors).toEqual([])
   })
 

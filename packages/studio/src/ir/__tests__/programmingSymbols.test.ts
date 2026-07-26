@@ -704,11 +704,9 @@ describe('símbolos léxicos da Programação', () => {
           amount: { type: 'num', value: 0.1 },
         },
         {
-          type: 'g3d:runEnemies',
+          type: 'g3d:spawnEnemy',
           worldVar: 'mundo',
           groupVar: 'inimigos',
-          groundVar: 'heroi',
-          every: 1,
           speed: 2,
         },
         {

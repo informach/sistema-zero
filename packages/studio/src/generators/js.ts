@@ -566,6 +566,10 @@ function stripNestedAnimationLoops(stmt: JSStatement, hoisted: JSStatement[]): J
       if (stmt.event === 'load') return stmt
       return { ...stmt, body: extractAnimationLoops(stmt.body, hoisted) }
     case 'g3d:forEachInSwarm':
+    case 'g3d:forEachInGroup':
+    case 'g3d:pruneOffscreen':
+    case 'g3d:everyFrames':
+    case 'g3d:everySeconds':
     case 'forEach':
     case 'imageOnLoad':
     case 'setTimeout':
@@ -1399,28 +1403,20 @@ function compileStatementCode(
     case 'g2d:createDino':
       return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createDino({ x: ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, y: ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, size: ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))}, color: ${JSON.stringify(stmt.color)} });`
     case 'g2d:createStickHero':
-      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createStickHero(${identifiers.get(stmt.ctxVar)});`
-    case 'g2d:updateStickHero':
-      return `${pad}SZGame2D.updateStickHero(${identifiers.get(stmt.gameVar)});`
-    case 'g2d:restartStickHero':
-      return `${pad}SZGame2D.restartStickHero(${identifiers.get(stmt.gameVar)});`
-    case 'g2d:createBalloon':
-      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createBalloon(${identifiers.get(stmt.ctxVar)});`
-    case 'g2d:updateBalloon':
-      return `${pad}SZGame2D.updateBalloon(${identifiers.get(stmt.gameVar)});`
-    case 'g2d:restartBalloon':
-      return `${pad}SZGame2D.restartBalloon(${identifiers.get(stmt.gameVar)});`
-    case 'g2d:stickHeroCreate':
-      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.stickHeroCreate(${identifiers.get(stmt.ctxVar)}, ${JSON.stringify(stmt.heroColor)}, ${JSON.stringify(stmt.stickColor)}, ${JSON.stringify(stmt.platformColor)});`
-    case 'g2d:stickHeroScenery':
-      return `${pad}SZGame2D.stickHeroScenery(${identifiers.get(stmt.gameVar)});`
-    case 'g2d:stickHeroHold':
-      return `${pad}SZGame2D.stickHeroHold(${identifiers.get(stmt.gameVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
-    case 'g2d:stickHeroStep':
-      return `${pad}SZGame2D.stickHeroStep(${identifiers.get(stmt.gameVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
-    case 'g2d:stickHeroDraw':
-      return `${pad}SZGame2D.stickHeroDraw(${identifiers.get(stmt.gameVar)});`
-    case 'g2d:onStickHeroCross': {
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createStickHero({ w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, color: ${JSON.stringify(stmt.color)} });`
+    case 'g2d:createStickPath':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createStickPath(${identifiers.get(stmt.ctxVar)}, { platform: ${JSON.stringify(stmt.platformColor)}, stick: ${JSON.stringify(stmt.stickColor)} });`
+    case 'g2d:stickPathScenery':
+      return `${pad}SZGame2D.stickPathScenery(${identifiers.get(stmt.pathVar)});`
+    case 'g2d:stickPathGrow':
+      return `${pad}SZGame2D.stickPathGrow(${identifiers.get(stmt.pathVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
+    case 'g2d:stickPathDrop':
+      return `${pad}SZGame2D.stickPathDrop(${identifiers.get(stmt.pathVar)});`
+    case 'g2d:stickPathWalk':
+      return `${pad}SZGame2D.stickPathWalk(${identifiers.get(stmt.pathVar)}, ${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
+    case 'g2d:stickPathDraw':
+      return `${pad}SZGame2D.stickPathDraw(${identifiers.get(stmt.pathVar)});`
+    case 'g2d:onStickPathCross': {
       const body = compileStatements(
         stmt.body,
         indent + 1,
@@ -1428,9 +1424,9 @@ function compileStatementCode(
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
       const id = stmt.__id ?? identifiers.reserveInternal('eventoDeAtravessar')
-      return `${pad}SZGame2D.stickHeroOnCross(${identifiers.get(stmt.gameVar)}, () => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
+      return `${pad}SZGame2D.stickPathOnCross(${identifiers.get(stmt.pathVar)}, () => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
     }
-    case 'g2d:onStickHeroPerfect': {
+    case 'g2d:onStickPathPerfect': {
       const body = compileStatements(
         stmt.body,
         indent + 1,
@@ -1438,19 +1434,21 @@ function compileStatementCode(
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
       const id = stmt.__id ?? identifiers.reserveInternal('eventoDeAcertoPerfeito')
-      return `${pad}SZGame2D.stickHeroOnPerfect(${identifiers.get(stmt.gameVar)}, () => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
+      return `${pad}SZGame2D.stickPathOnPerfect(${identifiers.get(stmt.pathVar)}, () => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
     }
-    case 'g2d:balloonCreate':
-      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.balloonCreate(${identifiers.get(stmt.ctxVar)}, ${JSON.stringify(stmt.color)}, ${JSON.stringify(stmt.basketColor)});`
-    case 'g2d:balloonScenery':
-      return `${pad}SZGame2D.balloonScenery(${identifiers.get(stmt.gameVar)});`
-    case 'g2d:balloonLift':
-      return `${pad}SZGame2D.balloonLift(${identifiers.get(stmt.gameVar)}, ${compileExpr(valueToExpr(stmt.force), 0, identifiers, recAt(base))});`
-    case 'g2d:balloonScroll':
-      return `${pad}SZGame2D.balloonScroll(${identifiers.get(stmt.gameVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
-    case 'g2d:balloonDraw':
-      return `${pad}SZGame2D.balloonDraw(${identifiers.get(stmt.gameVar)});`
-    case 'g2d:onBalloonTreeHit': {
+    case 'g2d:createBalloon':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createBalloon({ x: ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, y: ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, w: ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, h: ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, body: ${JSON.stringify(stmt.color)}, basket: ${JSON.stringify(stmt.basketColor)} });`
+    case 'g2d:createBalloonPath':
+      return `${pad}const ${identifiers.get(stmt.varName)} = SZGame2D.createBalloonPath(${identifiers.get(stmt.ctxVar)});`
+    case 'g2d:balloonPathScenery':
+      return `${pad}SZGame2D.balloonPathScenery(${identifiers.get(stmt.pathVar)});`
+    case 'g2d:balloonFire':
+      return `${pad}SZGame2D.balloonFire(${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.force), 0, identifiers, recAt(base))});`
+    case 'g2d:balloonFly':
+      return `${pad}SZGame2D.balloonFly(${identifiers.get(stmt.spriteVar)});`
+    case 'g2d:balloonPathScroll':
+      return `${pad}SZGame2D.balloonPathScroll(${identifiers.get(stmt.pathVar)}, ${identifiers.get(stmt.spriteVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
+    case 'g2d:onBalloonPathTreeHit': {
       const body = compileStatements(
         stmt.body,
         indent + 1,
@@ -1458,16 +1456,8 @@ function compileStatementCode(
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
       const id = stmt.__id ?? identifiers.reserveInternal('eventoDeBaterNaArvore')
-      return `${pad}SZGame2D.balloonOnTreeHit(${identifiers.get(stmt.gameVar)}, () => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
+      return `${pad}SZGame2D.balloonPathOnTreeHit(${identifiers.get(stmt.pathVar)}, () => {\n${body}\n${pad}}, ${JSON.stringify(id)});`
     }
-    case 'g2d:stickHeroSetShape':
-      return `${pad}SZGame2D.stickHeroSetShape(${identifiers.get(stmt.gameVar)}, ${JSON.stringify(stmt.shape)});`
-    case 'g2d:stickHeroSetImage':
-      return `${pad}SZGame2D.stickHeroSetImage(${identifiers.get(stmt.gameVar)}, ${JSON.stringify(stmt.image)});`
-    case 'g2d:balloonSetShape':
-      return `${pad}SZGame2D.balloonSetShape(${identifiers.get(stmt.gameVar)}, ${JSON.stringify(stmt.shape)});`
-    case 'g2d:balloonSetImage':
-      return `${pad}SZGame2D.balloonSetImage(${identifiers.get(stmt.gameVar)}, ${JSON.stringify(stmt.image)});`
     case 'g2d:controlDino':
       return `${pad}SZGame2D.controlDino(${identifiers.get(stmt.spriteVar)}, ${identifiers.get(stmt.ctxVar)}, ${compileExpr(valueToExpr(stmt.jump), 0, identifiers, recAt(base))});`
     case 'g2d:spawnObstacle':
@@ -1564,8 +1554,16 @@ function compileStatementCode(
       return `${pad}SZGame3D.cameraFollow(${identifiers.get(stmt.worldVar)}, ${identifiers.get(stmt.objVar)});`
     case 'g3d:createGroup':
       return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createGroup();`
-    case 'g3d:runEnemies':
-      return `${pad}SZGame3D.runEnemies(${identifiers.get(stmt.worldVar)}, ${identifiers.get(stmt.groupVar)}, ${identifiers.get(stmt.groundVar)}, ${compileExpr(valueToExpr(stmt.every), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
+    case 'g3d:spawnEnemy':
+      return `${pad}SZGame3D.spawnEnemy(${identifiers.get(stmt.worldVar)}, ${identifiers.get(stmt.groupVar)}, ${compileExpr(valueToExpr(stmt.speed), 0, identifiers, recAt(base))});`
+    case 'g3d:updateGroup':
+      return `${pad}SZGame3D.updateGroup(${identifiers.get(stmt.groupVar)}, ${identifiers.get(stmt.groundVar)});`
+    case 'g3d:updateGroupNoGravity':
+      return `${pad}SZGame3D.updateGroupNoGravity(${identifiers.get(stmt.groupVar)});`
+    case 'g3d:removeFromGroup':
+      return `${pad}SZGame3D.removeFromGroup(${identifiers.get(stmt.groupVar)}, ${identifiers.get(stmt.objVar)});`
+    case 'g3d:clearGroup':
+      return `${pad}SZGame3D.clearGroup(${identifiers.get(stmt.groupVar)});`
     case 'g3d:stop':
       return `${pad}SZGame3D.stop(${identifiers.get(stmt.worldVar)});`
     case 'g3d:createCrossingScene':
@@ -1712,6 +1710,42 @@ function compileStatementCode(
         childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
       )
       return `${pad}SZGame3D.forEachInSwarm(${identifiers.get(stmt.swarmVar)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
+    }
+    case 'g3d:forEachInGroup': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGame3D.forEachInGroup(${identifiers.get(stmt.groupVar)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
+    }
+    case 'g3d:pruneOffscreen': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGame3D.pruneOffscreen(${identifiers.get(stmt.worldVar)}, ${identifiers.get(stmt.groupVar)}, (${identifiers.get(stmt.itemName)}) => {\n${body}\n${pad}});`
+    }
+    case 'g3d:everyFrames': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGame3D.everyFramesLoop(${compileExpr(valueToExpr(stmt.n), 0, identifiers, recAt(base))}, () => {\n${body}\n${pad}});`
+    }
+    case 'g3d:everySeconds': {
+      const body = compileStatements(
+        stmt.body,
+        indent + 1,
+        identifiers,
+        childMapContext(mapContext, (mapContext?.startLine ?? 1) + 1),
+      )
+      return `${pad}SZGame3D.everySecondsLoop(${compileExpr(valueToExpr(stmt.secs), 0, identifiers, recAt(base))}, () => {\n${body}\n${pad}});`
     }
     case 'g3d:removeFromSwarm':
       return `${pad}SZGame3D.removeFromSwarm(${identifiers.get(stmt.swarmVar)}, ${identifiers.get(stmt.itemVar)});`
@@ -4284,6 +4318,10 @@ function reserveClassNames(statements: JSStatement[], scope: IdentifierScope): v
       case 'g2d:everySeconds':
       case 'g3d:animate':
       case 'g3d:forEachInSwarm':
+      case 'g3d:forEachInGroup':
+      case 'g3d:pruneOffscreen':
+      case 'g3d:everyFrames':
+      case 'g3d:everySeconds':
         reserveClassNames(stmt.body, scope)
         break
       case 'classDecl':
@@ -4342,6 +4380,10 @@ function reserveCanvasElements(statements: JSStatement[], scope: IdentifierScope
       case 'g2d:everySeconds':
       case 'g3d:animate':
       case 'g3d:forEachInSwarm':
+      case 'g3d:forEachInGroup':
+      case 'g3d:pruneOffscreen':
+      case 'g3d:everyFrames':
+      case 'g3d:everySeconds':
         reserveCanvasElements(stmt.body, scope)
         break
       case 'classDecl':
@@ -4992,45 +5034,49 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       collectExprIdentifiers(valueToExpr(stmt.size), names)
       return
     case 'g2d:createStickHero':
+      names.add(stmt.varName)
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      collectExprIdentifiers(valueToExpr(stmt.h), names)
+      return
+    case 'g2d:createStickPath':
+    case 'g2d:createBalloonPath':
+      names.add(stmt.varName)
+      names.add(stmt.ctxVar)
+      return
     case 'g2d:createBalloon':
       names.add(stmt.varName)
-      names.add(stmt.ctxVar)
+      collectExprIdentifiers(valueToExpr(stmt.x), names)
+      collectExprIdentifiers(valueToExpr(stmt.y), names)
+      collectExprIdentifiers(valueToExpr(stmt.w), names)
+      collectExprIdentifiers(valueToExpr(stmt.h), names)
       return
-    case 'g2d:updateStickHero':
-    case 'g2d:restartStickHero':
-    case 'g2d:updateBalloon':
-    case 'g2d:restartBalloon':
-      names.add(stmt.gameVar)
+    case 'g2d:stickPathScenery':
+    case 'g2d:stickPathDrop':
+    case 'g2d:stickPathDraw':
+    case 'g2d:balloonPathScenery':
+      names.add(stmt.pathVar)
       return
-    case 'g2d:stickHeroCreate':
-    case 'g2d:balloonCreate':
-      names.add(stmt.varName)
-      names.add(stmt.ctxVar)
-      return
-    case 'g2d:stickHeroScenery':
-    case 'g2d:stickHeroDraw':
-    case 'g2d:balloonScenery':
-    case 'g2d:balloonDraw':
-    case 'g2d:stickHeroSetShape':
-    case 'g2d:stickHeroSetImage':
-    case 'g2d:balloonSetShape':
-    case 'g2d:balloonSetImage':
-      names.add(stmt.gameVar)
-      return
-    case 'g2d:stickHeroHold':
-    case 'g2d:stickHeroStep':
-    case 'g2d:balloonScroll':
-      names.add(stmt.gameVar)
+    case 'g2d:stickPathGrow':
+      names.add(stmt.pathVar)
       collectExprIdentifiers(valueToExpr(stmt.speed), names)
       return
-    case 'g2d:balloonLift':
-      names.add(stmt.gameVar)
+    case 'g2d:stickPathWalk':
+    case 'g2d:balloonPathScroll':
+      names.add(stmt.pathVar)
+      names.add(stmt.spriteVar)
+      collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      return
+    case 'g2d:balloonFire':
+      names.add(stmt.spriteVar)
       collectExprIdentifiers(valueToExpr(stmt.force), names)
       return
-    case 'g2d:onStickHeroCross':
-    case 'g2d:onStickHeroPerfect':
-    case 'g2d:onBalloonTreeHit':
-      names.add(stmt.gameVar)
+    case 'g2d:balloonFly':
+      names.add(stmt.spriteVar)
+      return
+    case 'g2d:onStickPathCross':
+    case 'g2d:onStickPathPerfect':
+    case 'g2d:onBalloonPathTreeHit':
+      names.add(stmt.pathVar)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
     case 'g2d:spawnObstacle':
@@ -5363,12 +5409,32 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
     case 'g3d:createGroup':
       names.add(stmt.varName)
       return
-    case 'g3d:runEnemies':
+    case 'g3d:spawnEnemy':
       names.add(stmt.worldVar)
       names.add(stmt.groupVar)
-      names.add(stmt.groundVar)
-      collectExprIdentifiers(valueToExpr(stmt.every), names)
       collectExprIdentifiers(valueToExpr(stmt.speed), names)
+      return
+    case 'g3d:updateGroup':
+      names.add(stmt.groupVar)
+      names.add(stmt.groundVar)
+      return
+    case 'g3d:updateGroupNoGravity':
+      names.add(stmt.groupVar)
+      return
+    case 'g3d:removeFromGroup':
+      names.add(stmt.groupVar)
+      names.add(stmt.objVar)
+      return
+    case 'g3d:clearGroup':
+      names.add(stmt.groupVar)
+      return
+    case 'g3d:everyFrames':
+      collectExprIdentifiers(valueToExpr(stmt.n), names)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g3d:everySeconds':
+      collectExprIdentifiers(valueToExpr(stmt.secs), names)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
     case 'g3d:stop':
       names.add(stmt.worldVar)
@@ -5616,6 +5682,17 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
       return
     case 'g3d:forEachInSwarm':
       names.add(stmt.swarmVar)
+      names.add(stmt.itemName)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g3d:forEachInGroup':
+      names.add(stmt.groupVar)
+      names.add(stmt.itemName)
+      for (const child of stmt.body) collectStatementIdentifiers(child, names)
+      return
+    case 'g3d:pruneOffscreen':
+      names.add(stmt.worldVar)
+      names.add(stmt.groupVar)
       names.add(stmt.itemName)
       for (const child of stmt.body) collectStatementIdentifiers(child, names)
       return
@@ -7777,12 +7854,13 @@ function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
       names.add(expr.mapVar)
       names.add(expr.spriteVar)
       return
-    case 'g2d:stickHeroScore':
-    case 'g2d:stickHeroOver':
-    case 'g2d:balloonScore':
+    case 'g2d:stickPathFell':
+    case 'g2d:balloonPathMeters':
+      names.add(expr.pathVar)
+      return
     case 'g2d:balloonFuel':
-    case 'g2d:balloonOver':
-      names.add(expr.gameVar)
+    case 'g2d:balloonLandedOut':
+      names.add(expr.spriteVar)
       return
     case 'g2d:aimReleased':
       names.add(expr.throwerVar)

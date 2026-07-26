@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { compileStatements, generateCSS, generateHTML } from '#generators'
 import { G3D_STATEMENT_TYPES, type JSStatement, SZIRV2Schema } from '#ir'
+import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import {
   crossingExample,
   dodgeExample,
@@ -114,15 +115,14 @@ describe('game-3d — gerador', () => {
       'const inimigos = SZGame3D.createGroup();',
     )
     expect(
-      gen({
-        type: 'g3d:runEnemies',
-        worldVar: 'cena',
-        groupVar: 'inimigos',
-        groundVar: 'chao',
-        every: 200,
-        speed: 0.02,
-      }),
-    ).toBe('SZGame3D.runEnemies(cena, inimigos, chao, 200, 0.02);')
+      gen({ type: 'g3d:spawnEnemy', worldVar: 'cena', groupVar: 'inimigos', speed: 0.1 }),
+    ).toBe('SZGame3D.spawnEnemy(cena, inimigos, 0.1);')
+    expect(gen({ type: 'g3d:updateGroup', groupVar: 'inimigos', groundVar: 'chao' })).toBe(
+      'SZGame3D.updateGroup(inimigos, chao);',
+    )
+    expect(gen({ type: 'g3d:clearGroup', groupVar: 'inimigos' })).toBe(
+      'SZGame3D.clearGroup(inimigos);',
+    )
     expect(gen({ type: 'g3d:stop', worldVar: 'cena' })).toBe('SZGame3D.stop(cena);')
     // Pergunta (booleano) dentro de um "se": gera SZGame3D.keyDown(...).
     expect(gen({ type: 'if', cond: { type: 'g3d:keyDown', key: 'Space' }, then: [] })).toContain(
@@ -502,7 +502,15 @@ describe('game-3d — schema e exemplo', () => {
       'g3d:setScale',
       'g3d:cameraFollow',
       'g3d:createGroup',
-      'g3d:runEnemies',
+      'g3d:everyFrames',
+      'g3d:everySeconds',
+      'g3d:spawnEnemy',
+      'g3d:updateGroup',
+      'g3d:updateGroupNoGravity',
+      'g3d:pruneOffscreen',
+      'g3d:forEachInGroup',
+      'g3d:removeFromGroup',
+      'g3d:clearGroup',
       'g3d:stop',
       'g3d:createCrossingScene',
       'g3d:createCrosser',
@@ -588,6 +596,58 @@ describe('game-3d — schema e exemplo', () => {
 
   it('o exemplo "Desvie dos blocos" tem IR válido', () => {
     expect(SZIRV2Schema.safeParse(dodgeExample.ir).success).toBe(true)
+  })
+
+  it('o "Desvie" vira BLOCOS (caminho KitGallery) com "A cada N quadros" IRMÃO do "A cada quadro 3D"', () => {
+    // buildWorkspaceStateFromIR é o que a vitrine de kits usa para popular o
+    // workspace — provamos aqui (independente do browser) que os blocos nascem.
+    const state = buildWorkspaceStateFromIR(dodgeExample.ir)
+    const json = JSON.stringify(state)
+    for (const type of [
+      'sz_g3d_animate',
+      'sz_g3d_every_frames',
+      'sz_g3d_spawn_enemy',
+      'sz_g3d_update_group',
+      'sz_g3d_prune_offscreen',
+    ]) {
+      expect(json).toContain(type)
+    }
+    const findBlock = (node: unknown, type: string): Record<string, unknown> | null => {
+      if (!node || typeof node !== 'object') return null
+      const record = node as Record<string, unknown>
+      if (record.type === type) return record
+      for (const [key, value] of Object.entries(record)) {
+        if (key === 'type') continue
+        const found = Array.isArray(value)
+          ? value.map((child) => findBlock(child, type)).find(Boolean)
+          : findBlock(value, type)
+        if (found) return found
+      }
+      return null
+    }
+    // ⚠️ O `next` do PRÓPRIO nó é o IRMÃO empilhado abaixo (a pilha do frame
+    // encadeia os filhos top-level por `next`), não um descendente — descer por
+    // ele faria o irmão legítimo parecer "dentro" do animate. A busca por
+    // DESCENDENTES pula só o `next` do nó raiz; abaixo dele a varredura é plena
+    // (irmãos DENTRO do corpo também encadeiam por `next` e são descendentes).
+    const findInside = (block: Record<string, unknown>, type: string) => {
+      for (const [key, value] of Object.entries(block)) {
+        if (key === 'type' || key === 'next') continue
+        const found = Array.isArray(value)
+          ? value.map((child) => findBlock(child, type)).find(Boolean)
+          : findBlock(value, type)
+        if (found) return found
+      }
+      return null
+    }
+    const animate = findBlock(state, 'sz_g3d_animate')
+    expect(animate).toBeTruthy()
+    // IRMÃO, não FILHO: o "A cada N quadros" NÃO está DENTRO do bloco animate...
+    expect(animate && findInside(animate, 'sz_g3d_every_frames')).toBeNull()
+    // ...mas existe no estado (num nó irmão) com o "soltar 1 inimigo" dentro dele.
+    const everyFrames = findBlock(state, 'sz_g3d_every_frames')
+    expect(everyFrames).toBeTruthy()
+    expect(findBlock(everyFrames, 'sz_g3d_spawn_enemy')).toBeTruthy()
   })
 
   it('o exemplo "Atravesse a rua" tem IR válido', () => {

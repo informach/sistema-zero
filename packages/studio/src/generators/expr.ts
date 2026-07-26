@@ -350,16 +350,16 @@ export function compileExpr(
       return `SZGame2D.tileAtSprite(${identifiers.get(expr.mapVar)}, ${identifiers.get(expr.spriteVar)})`
     case 'g2d:sceneIs':
       return `SZGame2D.sceneIs(${JSON.stringify(expr.name)})`
-    case 'g2d:stickHeroScore':
-      return `SZGame2D.stickHeroScore(${identifiers.get(expr.gameVar)})`
-    case 'g2d:stickHeroOver':
-      return `SZGame2D.stickHeroOver(${identifiers.get(expr.gameVar)})`
-    case 'g2d:balloonScore':
-      return `SZGame2D.balloonScore(${identifiers.get(expr.gameVar)})`
+    case 'g2d:stickPathFell':
+      return `SZGame2D.stickPathFell(${identifiers.get(expr.pathVar)})`
+    case 'g2d:balloonPathMeters':
+      return `SZGame2D.balloonPathMeters(${identifiers.get(expr.pathVar)})`
     case 'g2d:balloonFuel':
-      return `SZGame2D.balloonFuel(${identifiers.get(expr.gameVar)})`
-    case 'g2d:balloonOver':
-      return `SZGame2D.balloonOver(${identifiers.get(expr.gameVar)})`
+      return `SZGame2D.balloonFuel(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:balloonLandedOut':
+      return `SZGame2D.balloonLandedOut(${identifiers.get(expr.spriteVar)})`
+    case 'g2d:pointerDown':
+      return 'SZGame2D.pointerDown()'
     case 'g2d:aimReleased':
       return `SZGame2D.aimReleased(${identifiers.get(expr.throwerVar)})`
     case 'g2d:bananaHitThrower':
@@ -382,6 +382,8 @@ export function compileExpr(
       return `SZGame3D.distanceTo(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
     case 'g3d:countSwarm':
       return `SZGame3D.countSwarm(${identifiers.get(expr.swarmVar)})`
+    case 'g3d:countGroup':
+      return `SZGame3D.countGroup(${identifiers.get(expr.groupVar)})`
     case 'g3d:isNear':
       return `SZGame3D.isNear(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)}, ${compileExpr(valueToExpr(expr.dist), 0, identifiers, rec)})`
     case 'g3d:raceHit':

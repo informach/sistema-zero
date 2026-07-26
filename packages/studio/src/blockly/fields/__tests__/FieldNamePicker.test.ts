@@ -88,12 +88,12 @@ describe('FieldNamePicker', () => {
       expect(collectVariables(ws)).toEqual(['pontos', 'bateu'])
     })
 
-    it('reconhece objetos nomeados dos kits (jogo do equilibrista/balão, cidade)', () => {
+    it('reconhece objetos nomeados dos kits (caminho do equilibrista/balão, cidade)', () => {
       const ws = new Blockly.Workspace()
-      ws.newBlock('sz_g2d_create_stickhero').setFieldValue('jogo', 'NAME')
+      ws.newBlock('sz_g2d_stickpath_create').setFieldValue('caminho', 'NAME')
       ws.newBlock('sz_g2d_create_city').setFieldValue('cidade', 'NAME')
 
-      expect(collectVariables(ws)).toEqual(['jogo', 'cidade'])
+      expect(collectVariables(ws)).toEqual(['caminho', 'cidade'])
     })
 
     it('reconhece instâncias de objeto (criar pessoa = novo Pessoa → VARNAME)', () => {
@@ -1209,7 +1209,7 @@ describe('FieldNamePicker', () => {
       const ws = new Blockly.Workspace()
       expect(kindOf(ws.newBlock('sz_g3d_set_position'), 'OBJ')).toBe('object3d')
       expect(kindOf(ws.newBlock('sz_g3d_fps_camera'), 'OBJ')).toBe('g3d-object')
-      expect(kindOf(ws.newBlock('sz_g3d_run_enemies'), 'GROUP')).toBe('group3d')
+      expect(kindOf(ws.newBlock('sz_g3d_spawn_enemy'), 'GROUP')).toBe('group3d')
       expect(kindOf(ws.newBlock('sz_g3d_spawn_in_swarm'), 'SWARM')).toBe('swarm3d')
       expect(kindOf(ws.newBlock('sz_g3d_count_swarm'), 'SWARM')).toBe('swarm3d')
       expect(kindOf(ws.newBlock('sz_g3d_for_each_swarm'), 'SWARM')).toBe('swarm3d')
@@ -1225,7 +1225,7 @@ describe('FieldNamePicker', () => {
       const ws = new Blockly.Workspace()
       const fields: Readonly<Record<string, readonly string[]>> = {
         sz_g3d_camera_follow: ['OBJ'],
-        sz_g3d_run_enemies: ['GROUND'],
+        sz_g3d_update_group: ['GROUND'],
         sz_g3d_isometric_camera: ['FOLLOW'],
         sz_g3d_crosser_step: ['OBJ'],
         sz_g3d_crosser_reset: ['OBJ'],

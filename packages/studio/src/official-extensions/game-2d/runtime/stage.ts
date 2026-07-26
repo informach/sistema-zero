@@ -349,8 +349,10 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
       _fillMode = false;
       c.width = Math.round(w);
       c.height = Math.round(h);
-      // Recongela o tamanho lógico no novo tamanho quando o fitScreen rodar.
-      _logicalW = 0; _logicalH = 0;
+      // Congela o tamanho lógico JÁ AQUI (não espera o fitScreen): qualquer
+      // leitura de stageW/stageH entre este ponto e o resize do backing veria o
+      // valor FÍSICO do canvas (DPR vezes o lógico) e desenharia fora do palco.
+      _logicalW = Math.round(w); _logicalH = Math.round(h);
     }
     // Cor de fundo escolhida no bloco: vai no canvas E no fundo da janela (a sobra
     // ao redor do canvas centralizado), para a tela inteira combinar com o jogo.

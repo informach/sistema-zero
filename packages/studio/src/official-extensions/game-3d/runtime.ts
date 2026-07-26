@@ -6,8 +6,9 @@
  *
  * Expõe `window.SZGame3D` — wrapper fino e legível sobre Three.js. Higiene de
  * GPU: pixelRatio ≤ 2; ao recriar/parar o loop, dispose de geometrias/materiais
- * e `setAnimationLoop(null)`. O spawner de inimigos (runEnemies) DESCARTA os que
- * saem de cena — sem isso o teto de objetos estouraria e a cena ficaria preta.
+ * e `setAnimationLoop(null)`. O vocabulário de grupos (spawnEnemy/updateGroup/
+ * pruneOffscreen…) deixa a criança montar spawn+mover+limpar; pruneOffscreen
+ * DESCARTA quem sai de cena — sem isso o teto de objetos estouraria.
  *
  * É uma STRING template: sem regex, sem ${...}, sem barra-n literal.
  */
@@ -341,7 +342,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     if (!obj.userData) obj.userData = {};
     if (!obj.userData.sz) {
       obj.userData.sz = { hw: 0.5, hh: 0.5, hd: 0.5, vx: 0, vy: 0, vz: 0,
-        grounded: false, zAccel: false, gravity: -0.002 };
+        grounded: false, gravity: -0.002 };
     }
     return obj.userData.sz;
   }
@@ -508,7 +509,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     var d = dims || { hw: 0.5, hh: 0.5, hd: 0.5 };
     mesh.userData = mesh.userData || {};
     mesh.userData.sz = { hw: d.hw, hh: d.hh, hd: d.hd, vx: 0, vy: 0, vz: 0,
-      grounded: false, zAccel: false, gravity: -0.002 };
+      grounded: false, gravity: -0.002 };
     world.scene.add(mesh);
     world._objects.push(mesh);
     return attachWorld(mesh, world);
@@ -768,7 +769,6 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   }
 
   function createGroup() { return []; }
-  var _enemyGroupState = new WeakMap();
 
   /** Remove um objeto da cena, do registro de GPU e descarta geometria/material. */
   function removeObject(world, mesh) {
@@ -788,6 +788,160 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       disposeOwnedMaterials(mesh);
     }
     else disposeGroup(mesh, false);
+  }
+
+  // ====================================================================
+  // ⏱️ Tempo e repetição: "A cada N quadros / segundos" (genéricos).
+  // São IRMÃOS do "A cada quadro 3D" (mesma lógica do Jogo 2D, para a criança
+  // reaproveitar): everyFramesLoop registra na cena ATUAL um laço que roda o
+  // corpo a cada N quadros/segundos. Blocos SEM cena (como no 2D) — a maioria
+  // dos jogos tem uma cena só. Contadores por chave; renovam a cada iframe.
+  // ====================================================================
+  var _frameCounters = Object.create(null);
+  function everyFrames(key, n) {
+    var step = Math.max(1, Math.floor(finite(n, 1)));
+    var c = (_frameCounters[key] || 0) + 1;
+    _frameCounters[key] = c;
+    return c % step === 0;
+  }
+  var _secondTimers = Object.create(null);
+  function _clockNow() {
+    if (typeof performance !== 'undefined' && performance && performance.now) return performance.now();
+    return Date.now();
+  }
+  function everySeconds(key, secs) {
+    var period = Math.max(0.001, finite(secs, 1)) * 1000;
+    var t = _clockNow();
+    var last = _secondTimers[key];
+    if (last === undefined) { _secondTimers[key] = t; return false; }
+    if (t - last >= period) { _secondTimers[key] = t; return true; }
+    return false;
+  }
+  // A cena ATUAL (a última criada) — os laços "A cada N quadros/segundos" são SEM
+  // cena (iguais ao 2D) e se penduram no laço de animação dela.
+  function _currentWorld() {
+    for (var i = worlds.length - 1; i >= 0; i--) {
+      if (worlds[i] && worlds[i].renderer) return worlds[i];
+    }
+    return null;
+  }
+  var _everyLoopN = 0;
+  function everyFramesLoop(n, fn) {
+    if (typeof fn !== 'function') return;
+    var world = _currentWorld();
+    if (!world) { warnOnce('every-frames-scene', 'Crie a cena 3D antes de usar "A cada N quadros".'); return; }
+    var key = 'ef' + (_everyLoopN++);
+    animate(world, function () { if (everyFrames(key, n)) fn(); });
+  }
+  function everySecondsLoop(secs, fn) {
+    if (typeof fn !== 'function') return;
+    var world = _currentWorld();
+    if (!world) { warnOnce('every-seconds-scene', 'Crie a cena 3D antes de usar "A cada N segundos".'); return; }
+    var key = 'es' + (_everyLoopN++);
+    animate(world, function () { if (everySeconds(key, secs)) fn(); });
+  }
+
+  // ====================================================================
+  // 📦 Grupos: mexer com uma LISTA de objetos (o vocabulário de "muitos").
+  // A criança MONTA a lógica; o kit só facilita a mecânica difícil (spawn).
+  // ====================================================================
+  /** Kit Desvie: solta UM inimigo (cubo vermelho) vindo de longe (z=-20). */
+  function spawnEnemy(world, group, speed) {
+    if (!world || !Array.isArray(group)) {
+      warnOnce('enemy-group-kind', 'Escolha um grupo de objetos no bloco que solta inimigos.');
+      return null;
+    }
+    var groupWorld = worldOf(group);
+    if (groupWorld && groupWorld !== world) {
+      warnOnce('enemy-group-world', 'O grupo de inimigos só pode ser usado na cena em que começou.');
+      return null;
+    }
+    if (!groupWorld) attachWorld(group, world);
+    var enemy = createBlock(world, { width: 1, height: 1, depth: 1, color: '#ff4444' });
+    if (enemy) {
+      enemy.position.set((Math.random() - 0.5) * 10, 0, -20);
+      szData(enemy).vz = finite(speed, 0.1);
+      group.push(enemy);
+    }
+    return enemy;
+  }
+  /** Move cada objeto do grupo pela velocidade + gravidade (quica no chão). */
+  function updateGroup(group, ground) {
+    if (!Array.isArray(group)) return;
+    for (var i = 0; i < group.length; i++) {
+      if (group[i]) applyGravity(group[i], ground);
+    }
+  }
+  /** Move cada objeto do grupo só pela velocidade (sem gravidade). */
+  function updateGroupNoGravity(group) {
+    if (!Array.isArray(group)) return;
+    for (var i = 0; i < group.length; i++) {
+      var o = group[i];
+      if (!o || !o.position) continue;
+      var s = szData(o);
+      var scale = frameScale(o);
+      o.position.x += (s.vx || 0) * scale;
+      o.position.y += (s.vy || 0) * scale;
+      o.position.z += (s.vz || 0) * scale;
+    }
+  }
+  /** Roda fn(item) p/ cada objeto do grupo (do fim p/ o começo: pode remover). */
+  function forEachInGroup(group, fn) {
+    if (!Array.isArray(group) || typeof fn !== 'function') return;
+    for (var i = group.length - 1; i >= 0; i--) {
+      if (group[i]) { try { fn(group[i]); } catch (e) {} }
+    }
+  }
+  /** Quantos objetos há no grupo agora. */
+  function countGroup(group) {
+    return Array.isArray(group) ? group.length : 0;
+  }
+  /** Tira um objeto do grupo E o remove da cena. */
+  function removeFromGroup(group, obj) {
+    if (!Array.isArray(group) || !obj) return;
+    if (!removeFromArray(group, obj)) return;
+    removeObject(worldOf(group) || worldOf(obj), obj);
+  }
+  /** Esvazia o grupo, removendo todos os objetos da cena. */
+  function clearGroup(group) {
+    if (!Array.isArray(group)) return;
+    var world = worldOf(group);
+    for (var i = group.length - 1; i >= 0; i--) {
+      if (group[i]) removeObject(world || worldOf(group[i]), group[i]);
+    }
+    group.length = 0;
+  }
+  // "Saiu da tela" = fora do tronco de visão da câmera (frustum). Lazy contra
+  // o fake de THREE dos testes (igual ao _ensureRay do raycast).
+  var _frustum = null;
+  var _frustumMat = null;
+  var _frustumVec = null;
+  function _ensureFrustum() {
+    if (_frustum) return true;
+    if (!THREE.Frustum || !THREE.Matrix4 || !THREE.Vector3) return false;
+    _frustum = new THREE.Frustum();
+    _frustumMat = new THREE.Matrix4();
+    _frustumVec = new THREE.Vector3();
+    return true;
+  }
+  /** Tira do grupo quem saiu da tela e roda fn(item) em cada um que saiu. */
+  function pruneOffscreen(world, group, fn) {
+    if (!world || !world.camera || !Array.isArray(group)) return;
+    if (!_ensureFrustum()) return;
+    _syncMatrices(world);
+    _frustumMat.multiplyMatrices(world.camera.projectionMatrix, world.camera.matrixWorldInverse);
+    _frustum.setFromProjectionMatrix(_frustumMat);
+    for (var i = group.length - 1; i >= 0; i--) {
+      var e = group[i];
+      if (!e) { group.splice(i, 1); continue; }
+      if (!e.getWorldPosition) continue;
+      e.getWorldPosition(_frustumVec);
+      if (!_frustum.containsPoint(_frustumVec)) {
+        group.splice(i, 1);
+        removeObject(world, e);
+        if (typeof fn === 'function') { try { fn(e); } catch (err) {} }
+      }
+    }
   }
 
   // ====================================================================
@@ -911,7 +1065,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       var d = original.userData.sz;
       copy.userData = copy.userData || {};
       copy.userData.sz = { hw: d.hw, hh: d.hh, hd: d.hd, vx: 0, vy: 0, vz: 0,
-        grounded: false, zAccel: false, gravity: d.gravity };
+        grounded: false, gravity: d.gravity };
     }
     if (swarm.world && swarm.world.scene) swarm.world.scene.add(copy);
     attachWorld(copy, swarm.world);
@@ -1060,58 +1214,6 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
       }
     } catch (e) {
       warnOnce('audio-close', 'não foi possível encerrar o áudio desta execução.');
-    }
-  }
-
-  /**
-   * Kit "Desvie": a cada quadro, move os inimigos do grupo (acelerando em z) e,
-   * de tempos em tempos, solta um novo lá no fundo. Inimigos que passam da câmera
-   * são DESCARTADOS (cena + GPU + grupo) — sem isso o teto de objetos estouraria.
-   * O ritmo (rate) acelera com o tempo, deixando o jogo mais difícil.
-   */
-  function runEnemies(world, group, ground, every, speed) {
-    if (!world || !group) return;
-    if (!Array.isArray(group)) {
-      warnOnce('enemy-group-kind', 'Escolha um grupo de objetos no bloco que solta inimigos.');
-      return;
-    }
-    if (ground && !belongsToWorld(world, ground, 'enemy-ground-world', 'Usar o chão dos inimigos')) return;
-    var groupWorld = worldOf(group);
-    if (groupWorld && groupWorld !== world) {
-      warnOnce('enemy-group-world', 'O grupo de inimigos só pode ser usado na cena em que começou.');
-      return;
-    }
-    for (var existing = 0; existing < group.length; existing++) {
-      if (group[existing] && !belongsToWorld(world, group[existing], 'enemy-item-world', 'Atualizar os inimigos')) return;
-    }
-    if (!groupWorld) attachWorld(group, world);
-    var groupState = _enemyGroupState.get(group);
-    if (!groupState) {
-      groupState = { elapsed: 0, rate: positive(every, 200, 36000) / 60 };
-      _enemyGroupState.set(group, groupState);
-    }
-    var baseSpeed = finite(speed, 0.02);
-    for (var i = group.length - 1; i >= 0; i--) {
-      var e = group[i];
-      if (!e) { group.splice(i, 1); continue; }
-      var es = szData(e);
-      if (es.zAccel) es.vz += 0.0003 * frameScale(world);
-      applyGravity(e, ground);
-      // Passou da câmera (player fica perto de z=0): descarta para não vazar GPU.
-      if (e.position.z > 12) { removeObject(world, e); group.splice(i, 1); }
-    }
-    groupState.elapsed += (world._dt > 0 ? world._dt : 1 / 60);
-    if (groupState.elapsed + 1e-9 >= groupState.rate) {
-      groupState.elapsed -= groupState.rate;
-      if (groupState.rate > 1 / 3) groupState.rate -= 1 / 3;
-      var enemy = createBlock(world, { width: 1, height: 1, depth: 1, color: '#ff4444' });
-      if (enemy) {
-        enemy.position.set((Math.random() - 0.5) * 10, 0, -20);
-        var s = szData(enemy);
-        s.vz = baseSpeed;
-        s.zAccel = true;
-        group.push(enemy);
-      }
     }
   }
 
@@ -1971,6 +2073,7 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     var sp = typeof speed === 'number' ? speed : 0.1;
     var lo = typeof min === 'number' ? min : -10;
     var hi = typeof max === 'number' ? max : 10;
+    if (lo > hi) { var swap = lo; lo = hi; hi = swap; }
     for (var i = 0; i < group.length; i++) {
       var o = group[i];
       if (!o || !o.position) continue;
@@ -2225,7 +2328,9 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
   function generateRows(world, count) {
     if (!world) return;
     var cs = crossingState(world);
-    var kinds = ['car', 'truck', 'forest'];
+    // Inclui 'grass' (fileira segura de descanso) para o mapa não ser só
+    // obstáculo à frente — senão fica mais difícil que o pretendido.
+    var kinds = ['grass', 'car', 'truck', 'forest'];
     var speeds = [125, 156, 188];
     var existing = Object.keys(cs.rowByIndex).length;
     var room = Math.max(0, MAX_ROWS - existing);
@@ -2388,9 +2493,11 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     }
     return world._race;
   }
-  function placeOnTrack(rs, mesh, angle, clockwise) {
-    mesh.position.x = Math.cos(angle) * rs.midRx;
-    mesh.position.y = Math.sin(angle) * rs.midRy;
+  function placeOnTrack(rs, mesh, angle, clockwise, lane) {
+    // "lane" desloca o raio (faixa interna/central/externa). Jogador = 0.
+    var off = typeof lane === 'number' ? lane : 0;
+    mesh.position.x = Math.cos(angle) * (rs.midRx + off * RACE_XS);
+    mesh.position.y = Math.sin(angle) * (rs.midRy + off);
     if (mesh.rotation) mesh.rotation.z = angle + (clockwise ? -Math.PI / 2 : Math.PI / 2);
   }
   function flatRing(inner, outer, color, z) {
@@ -2488,6 +2595,10 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     if (!world) return;
     var rs = raceState(world);
     if (rs.gameOver) return;
+    // Faixas SÓ nos lados (interna/externa), nunca na central (0) do jogador:
+    // separação lateral >= 1.7 > 1.4 (raio de batida), então o rival passa
+    // ao lado sem batida inevitável. O jogador corre livre na faixa central.
+    var lanes = [-1.7, 1.7];
     rs.spawnElapsed = (rs.spawnElapsed || 0) + (world._dt > 0 ? world._dt : 1 / 60);
     var MAX_RIVALS = 6;
     if (rs.rivals.length < MAX_RIVALS && rs.spawnElapsed >= 2.5) {
@@ -2502,13 +2613,16 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
         mesh: mesh,
         angle: Math.random() * Math.PI * 2,
         speed: 0.006 + Math.random() * 0.012,
-        cw: Math.random() < 0.5
+        // Mesmo sentido do jogador (clockwise=false): sem rivais de frente,
+        // não existe mais a batida inevitável.
+        cw: false,
+        lane: lanes[Math.floor(Math.random() * lanes.length)]
       });
     }
     for (var i = 0; i < rs.rivals.length; i++) {
       var rv = rs.rivals[i];
       rv.angle += (rv.cw ? -rv.speed : rv.speed) * frameScale(world);
-      placeOnTrack(rs, rv.mesh, rv.angle, rv.cw);
+      placeOnTrack(rs, rv.mesh, rv.angle, rv.cw, rv.lane);
     }
   }
 
@@ -2840,7 +2954,18 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     collides: collides,
     hitAny: hitAny,
     createGroup: createGroup,
-    runEnemies: runEnemies,
+    spawnEnemy: spawnEnemy,
+    updateGroup: updateGroup,
+    updateGroupNoGravity: updateGroupNoGravity,
+    pruneOffscreen: pruneOffscreen,
+    forEachInGroup: forEachInGroup,
+    countGroup: countGroup,
+    removeFromGroup: removeFromGroup,
+    clearGroup: clearGroup,
+    everyFrames: everyFrames,
+    everySeconds: everySeconds,
+    everyFramesLoop: everyFramesLoop,
+    everySecondsLoop: everySecondsLoop,
     stop: stop,
     isometricCamera: isometricCamera,
     gridPosition: gridPosition,

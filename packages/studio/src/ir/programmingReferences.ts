@@ -81,7 +81,9 @@ const VARIABLE_DECLARATION_FIELDS: Readonly<Record<string, string>> = {
   'g2d:createCity': 'varName',
   'g2d:placeThrower': 'varName',
   'g2d:createStickHero': 'varName',
+  'g2d:createStickPath': 'varName',
   'g2d:createBalloon': 'varName',
+  'g2d:createBalloonPath': 'varName',
   ...Object.fromEntries(
     Object.entries(GAME3D_SEMANTIC_DECLARATION_FIELDS).map(([type, declaration]) => [
       type,

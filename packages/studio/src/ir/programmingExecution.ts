@@ -81,9 +81,9 @@ const CALLBACK_BODY_EXECUTION: ReadonlyMap<string, CallbackBodyExecution> = new 
     'g2d:onKey',
     'g2d:onOverlap',
     'g2d:onEnemyDefeated',
-    'g2d:onStickHeroCross',
-    'g2d:onStickHeroPerfect',
-    'g2d:onBalloonTreeHit',
+    'g2d:onStickPathCross',
+    'g2d:onStickPathPerfect',
+    'g2d:onBalloonPathTreeHit',
     'g2d:defineShape',
     'g2d:everyFrames',
     'g2d:everySeconds',
@@ -115,6 +115,8 @@ const CALLBACK_BODY_EXECUTION: ReadonlyMap<string, CallbackBodyExecution> = new 
 
     // Jogo 3D e Jogo 3D avançado.
     'g3d:animate',
+    'g3d:everyFrames',
+    'g3d:everySeconds',
     'g3k:onUpdate',
     'g3k:onTimerEnd',
     'g3k:onOverlap',
@@ -155,6 +157,8 @@ const CALLBACK_BODY_EXECUTION: ReadonlyMap<string, CallbackBodyExecution> = new 
     'g2d:onSpriteGroupOverlap',
     'g2d:onEnemyShotHit',
     'g3d:forEachInSwarm',
+    'g3d:forEachInGroup',
+    'g3d:pruneOffscreen',
     'gk:forEachActive',
     'gk:overlapGroups',
     'gk:rpgCutscene',
@@ -291,6 +295,8 @@ function localVariablesForChild(
     case 'g2d:onEnemyShotHit':
       return first === 'body' ? [statement.itemName] : []
     case 'g3d:forEachInSwarm':
+    case 'g3d:forEachInGroup':
+    case 'g3d:pruneOffscreen':
       return first === 'body' ? [statement.itemName] : []
     case 'gk:onUpdate':
     case 'g3k:onUpdate':

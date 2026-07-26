@@ -13,7 +13,7 @@ import {
 export const gameThreeDManifest: ExtensionManifest = {
   id: 'game-3d',
   name: 'Jogo 3D',
-  version: '0.16.0',
+  version: '0.17.0',
   description:
     'Blocos e comandos para criar jogos 3D com Three.js: cena/câmera/luz (e cena em tela cheia responsiva), cubos/esferas/caixas, posição/rotação/escala, física (velocidade, gravidade, pulo, colisão), teclado, câmera que segue, genéricos de grade isométrica e de movimento (círculo, distância, cair girando, deslizar, girar) e Kits prontos: "Desvie", "Travessia", "Corrida" e "Empilhar". Three.js carrega de um CDN fixado.',
   category: 'games',
@@ -32,7 +32,7 @@ cenas e **jogos** 3D sobre WebGL. O Three.js é carregado de um CDN **fixado**
 
 - Em **⚙️ Ao iniciar**, crie a cena, objetos, modelos, luzes e enxames uma vez.
 - Em **⚡ Quando acontecer**, coloque chapéus de tecla e clique.
-- Em **🔁 Enquanto estiver rodando**, coloque **A cada frame 3D** e
+- Em **🔁 Enquanto estiver rodando**, coloque **A cada quadro 3D** e
   atualizações periódicas. Dentro do quadro, mova, anime, aplique física, teste
   colisões e crie somente itens temporários que tenham poda ou remoção definida.
 - Notas e efeitos sonoros podem responder diretamente a clique/tecla ou a
@@ -49,7 +49,7 @@ em um evento ou em um construtor.
 - **Cor de fundo** / **Posicionar câmera**.
 - **Criar cubo** / **Criar esfera** / **Criar caixa** (largura/altura/profundidade. Ótima p/ o chão).
 - **Posição** / **Rotação** (radianos) / **Tamanho (escala)** do objeto.
-- **A cada frame 3D**. Loop de animação que redesenha a cena. Se o projeto usar
+- **A cada quadro 3D**. Laço de animação que redesenha a cena. Se o projeto usar
   mais de um bloco de quadro na mesma cena, os corpos rodam juntos na ordem em
   que foram registrados e a cena é desenhada uma vez. Se um corpo falhar, apenas
   ele é pausado; os outros continuam e a cena permanece responsiva.
@@ -62,7 +62,7 @@ em um evento ou em um construtor.
 - Remover um modelo desregistra também suas peças. Objetos que terminam uma queda deixam de ocupar o limite da cena e chamadas posteriores não descartam os mesmos recursos de novo.
 - Luz ambiente, sol, luz pontual, neblina, céu em degradê e sombras montam a atmosfera.
 
-### Física & controles (dentro de "A cada frame 3D")
+### Física & controles (dentro de "A cada quadro 3D")
 
 - **Mover com o teclado (WASD/setas)**. Anda no plano.
 - **Definir velocidade** / **Fazer pular** (só no chão) / **Mover com gravidade (chão)**.
@@ -76,15 +76,26 @@ em um evento ou em um construtor.
 - **o objeto … está encostando em … ?** (colisão AABB).
 - **o objeto … encostou em algum de … ?** (contra um grupo).
 
-### Kit "Desvie"
+### ⏱️ Tempo e repetição (genéricos. Dentro de "A cada quadro 3D")
 
-- **Criar grupo de objetos**. Lista p/ guardar os inimigos.
-- **Soltar inimigos**. Cria/movimenta inimigos que vêm de longe acelerando (limpa os que passam).
+- **A cada N quadros** / **A cada N segundos**. Rodam o "fazer" de tempos em tempos. É o jeito de soltar inimigos sem encher a tela (sem avalanche).
+
+### 📦 Grupos (genéricos. Uma lista de objetos; a criança monta a lógica)
+
+- **Criar grupo de objetos**. Lista vazia p/ guardar vários objetos (ex.: os inimigos).
+- **Atualizar (mover) o grupo com gravidade** / **Mover o grupo sem gravidade**. Movem cada objeto do grupo pela sua velocidade.
+- **Tirar do grupo quem saiu da tela**. Some com quem saiu e roda um "fazer" p/ cada um (higiene de GPU).
+- **Para cada objeto do grupo** / **quantos objetos tem no grupo**.
+- **Tirar o objeto do grupo** / **Esvaziar o grupo**. Tiram da lista e somem da cena.
+
+### Kit "Desvie" (a mecânica difícil pronta)
+
+- **Soltar 1 inimigo**. Cria 1 inimigo (cubo vermelho) que vem de longe na velocidade escolhida. Ponha dentro de **A cada N quadros** p/ soltar de tempos em tempos; mova com **Atualizar o grupo** e limpe com **Tirar quem saiu da tela**.
 - **Fim de jogo: parar a cena**. Use durante um quadro, evento ou função que roda durante a partida. O bloco não pode ficar solto em **Ao iniciar**.
 
 ### Enxames & som
 
-- **Grupo de objetos** e **enxame** são recursos diferentes e aparecem em seletores separados. O grupo guarda inimigos do Kit Desvie; o enxame administra cópias ligadas a uma cena.
+- **Grupo de objetos** e **enxame** são recursos diferentes e aparecem em seletores separados. O grupo (📦 Grupos) guarda vários objetos que você mesmo cria; o enxame administra cópias de um molde ligadas a uma cena.
 - O enxame compartilha a geometria do molde com segurança. Remover o molde não invalida cópias que ainda estão na cena; o recurso é liberado depois da última cópia.
 - Cópias visíveis do enxame participam de **objeto sob o mouse**, **mouse sobre o objeto** e das consultas de mira.
 - Toque notas e efeitos curtos depois da primeira interação do jogador. O runtime limita a 32 sons simultâneos e descarta as conexões no reinício.
@@ -116,7 +127,7 @@ em um evento ou em um construtor.
 
 - **fazer … cair girando** / **Mover … de um lado a outro** / **Girar …**. Genéricos de queda, plataforma e rotação (física na mão, SEM lib).
 - **Criar mundo de empilhar** + **montar a base da torre**. Câmera isométrica que sobe com a torre.
-- **Soltar o bloco**. Use dentro de um evento de clique/tecla ou de uma função. Ele não fica solto em **Ao iniciar** nem dentro do loop da torre. / **Atualizar a torre** (a cada frame).
+- **Soltar o bloco**. Use dentro de um evento de clique/tecla ou de uma função. Ele não fica solto em **Ao iniciar** nem dentro do loop da torre. / **Atualizar a torre** (a cada quadro).
 - **pontuação (andares)** / **a torre caiu (fim de jogo)?** / **Recomeçar**.
 
 ### Observações
@@ -124,7 +135,7 @@ em um evento ou em um construtor.
 - Para começar rápido, use **Criar cena 3D em tela cheia** (cria o canvas sozinho). Para mais controle (HUD próprio, layout), crie o \`<canvas>\` no HTML primeiro e use **Criar cena 3D no canvas** (mesmo padrão do Jogo 2D).
 - O runtime torna o canvas focalizável e adiciona nome, instruções para tecnologias assistivas e contorno de foco.
 - Crie cena, objetos, modelos, luzes e enxames UMA vez em **⚙️ Ao iniciar**; dentro
-  de **A cada frame 3D** ou de uma função/método chamado pelo loop, mova,
+  de **A cada quadro 3D** ou de uma função/método chamado pelo loop, mova,
   anime, aplique física e teste colisões. Cópias temporárias de enxame podem ser
   criadas ali quando também forem removidas ou podadas. O
   projeto é validado antes de executar para impedir construções persistentes no loop.

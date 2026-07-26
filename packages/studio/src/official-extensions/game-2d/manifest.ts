@@ -21,7 +21,7 @@ import { withGameTwoDLifecycleGuidance } from './pedagogy'
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.41.0',
+  version: '0.42.0',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, vidas automáticas em corações ou barra, colisões, mapas, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
@@ -234,59 +234,60 @@ Veja o exemplo clássico **"Cidade & Moinho (na mão)"** (no painel de Extensõe
 
 ### Monte um jogo de equilibrista
 
-Categoria **🤸 Kit equilibrista**. Um jogo estilo "Stick Hero" que VOCÊ monta passo a
-passo: estique o bastão do tamanho certo e atravesse para a próxima plataforma. O
-controle é pelo ponteiro: **segurar** estica o bastão, **soltar** derruba. Não precisa
-registrar teclas. Melhor num canvas **em pé** (ex.: 360×480).
+Categoria **🤸 Kit equilibrista**. Um jogo estilo "Stick Hero" que VOCÊ monta: estique
+o bastão do tamanho certo e atravesse para a próxima plataforma. O EQUILIBRISTA é um
+**sprite comum** (os blocos de sprite funcionam nele) e as regras moram no **caminho**.
+Melhor num canvas **em pé** (ex.: 360×480). Estes kits não combinam com a 🎥 Câmera
+(o mundo já desliza sozinho).
 
-- **Criar equilibrista com cores**. Monta o jogo lendo o tamanho da tela, com as SUAS
-  cores para o herói, o bastão e as plataformas. Guarde numa variável (ex.: \`jogo\`).
-  Faça UMA vez, FORA do "a cada quadro do jogo".
-- Monte o loop você mesmo, DENTRO do "a cada quadro do jogo", nesta ordem:
-  **Desenhar céu, colinas e árvores** (o fundo), **Esticar o bastão enquanto segurar**
-  (a rapidez muda o desafio), **Fazer o equilibrista andar, atravessar e cair** (a
-  física) e **Desenhar plataformas, bastão e herói**. Cada passo é um bloco separado:
-  dá para trocar a ordem, mudar a rapidez ou substituir o fundo por um desenho seu.
-- **Quando atravessar uma plataforma** / **Quando acertar bem no meio** (a faixa do
-  meio vale 2 pontos). Eventos para som, brilho e o que você inventar. Registre UMA
-  vez, fora do "a cada quadro do jogo".
-- **Trocar o herói pela figura** / **Trocar o herói pela imagem**. O herói pode ser
-  um desenho SEU: uma figura feita com "Desenhar a figura" (grupo Desenho) ou uma
-  imagem do projeto (painel Imagens, ex.: desenho do Pinta). A figura desenha numa
-  caixa quadrada: use "largura da figura" e "altura da figura" para preencher. Nome
-  vazio volta ao boneco pronto.
-- **pontos do equilibrista** / **o equilibrista caiu?**. Para o placar (use com
-  "Mostrar placar") e o fim de jogo (use com "Mostrar tela").
-- **Recomeçar o equilibrista**. Zera o jogo (bom com "Quando apertar Enter").
+- **Criar equilibrista** (largura, altura e cor). É um sprite: dá para trocar a figura
+  ou a imagem dele com os blocos de 🎮 Sprites (ex.: um desenho seu do Pinta) e
+  desenhá-lo com "Desenhar o sprite". Faça UMA vez, no começo.
+- **Criar o caminho de plataformas** (cores das plataformas e do bastão). Guarda as
+  plataformas, o bastão e as árvores do fundo. Faça UMA vez, no começo.
+- Monte a REGRA DO MOUSE você mesmo, dentro do "a cada quadro do jogo", com um
+  se/senão: se **o mouse ou dedo está segurado?** (em 🎛️ Controles) então **Crescer o
+  bastão do caminho**, senão **Derrubar o bastão do caminho**.
+- **Fazer o equilibrista andar pelo caminho**. A física: o bastão derrubado gira, o
+  herói anda, atravessa ou cai; também posiciona o sprite. Como o andar reposiciona o
+  equilibrista a cada quadro, os blocos genéricos de movimento (mover com as setas,
+  por exemplo) não mexem nele enquanto o jogo roda.
+- **Desenhar o cenário do caminho** (fundo) e **Desenhar as plataformas e o bastão**;
+  o herói você desenha com "Desenhar o sprite".
+- **Quando atravessar uma plataforma** / **Quando acertar bem no meio**. Nos eventos,
+  o PLACAR é seu: crie a variável \`pontos\` e some 1 na travessia e 2 extras no acerto
+  perfeito (mais som e brilho). Registre UMA vez, fora do "a cada quadro do jogo".
+- **o equilibrista caiu no caminho?** Para o fim de jogo: troque de tela num "se" e
+  recomece com o "Recomeçar o jogo" genérico.
 
-Veja o exemplo pronto **"Equilibrista"** na vitrine: ele já vem com o loop montado
-bloco a bloco, os dois eventos e a tela de fim de jogo.
+Veja o exemplo pronto **"Equilibrista"** na vitrine: ele mostra o se/senão do mouse,
+os pontos por variável e as telas de início e fim.
 
 ### Monte um jogo de balão
 
-Categoria **🎈 Kit balão**. Um jogo estilo balão de ar quente que VOCÊ monta passo a
-passo: suba segurando o ponteiro (gasta combustível), voe baixo para economizar e
-desvie das árvores. Melhor num canvas **deitado** (ex.: 560×360).
+Categoria **🎈 Kit balão**. Um jogo estilo balão de ar quente que VOCÊ monta: suba
+segurando o ponteiro (gasta combustível), voe baixo para economizar e desvie das
+árvores. O BALÃO é um **sprite comum** com combustível próprio (começa com 100); as
+árvores moram no **caminho**. Melhor num canvas **deitado** (ex.: 560×360).
 
-- **Criar balão com cores**. Monta o jogo lendo o tamanho da tela, com as SUAS cores
-  para o balão e o cesto. Guarde numa variável. Faça UMA vez.
-- Monte o loop você mesmo, DENTRO do "a cada quadro do jogo", nesta ordem:
-  **Desenhar céu, colinas, chão e árvores** (o fundo), **Fazer o balão subir enquanto
-  segurar** (a força do fogo; sem combustível o balão pousa), **Avançar o caminho**
-  (conta os metros e confere as árvores) e **Desenhar o balão**. Cada passo é um bloco
-  separado: mude a força, a velocidade ou desenhe o seu próprio fundo.
-- **Quando o balão bater numa árvore**. Evento para explosão, tremida e som. Registre
-  UMA vez, fora do "a cada quadro do jogo".
-- **Trocar o balão pela figura** / **Trocar o balão pela imagem**. O balão pode ser
-  um desenho SEU: uma figura do grupo Desenho ou uma imagem do projeto (ex.: desenho
-  do Pinta). A caixa é mais alta que larga, como o balão de sempre. Nome vazio volta
-  ao balão pronto.
-- **metros do balão** / **combustível do balão** (0 a 100) / **o balão bateu/acabou?**.
-  Para o placar, a barra de combustível (use com "Mostrar barra") e o fim de jogo.
-- **Recomeçar o balão**. Zera o jogo (bom com "Quando apertar Enter").
+- **Criar balão** (posição, tamanho e cores do balão e do cesto). É um sprite: dá para
+  trocar a figura ou a imagem dele e desenhá-lo com "Desenhar o sprite". Faça UMA vez.
+- **Criar o caminho de árvores**. As árvores que vêm pela frente e os metros. Faça UMA
+  vez.
+- Monte a REGRA DO MOUSE: se **o mouse ou dedo está segurado?** então **Acender o fogo
+  do balão** (a força muda o empurrão; o fogo gasta combustível e não acende sem ele).
+- **Fazer o balão voar e cair devagar**. A física: sem fogo, desce e pousa no chão. É o
+  bloco que MOVE o balão de verdade: sem ele no loop, nem o fogo tira o balão do lugar.
+- **Avançar o caminho com o balão**. O mundo anda enquanto o balão voa, os metros
+  contam e a batida nas árvores é conferida com o retângulo do sprite.
+- **Quando o balão bater numa árvore**. Evento para explosão, tremida, som e a SUA
+  regra de fim (trocar de tela). Registre UMA vez, fora do "a cada quadro do jogo".
+- **os metros voados no caminho** / **o combustível do balão** (0 a 100, use com
+  "Mostrar barra") / **o balão pousou sem combustível?** Para o placar, a barra e o
+  fim de jogo; recomece com o "Recomeçar o jogo" genérico.
 
-Veja o exemplo pronto **"Balão"** na vitrine: ele já vem com o loop montado bloco a
-bloco, o evento da árvore, a barra de combustível e a tela de fim de jogo.
+Veja o exemplo pronto **"Balão"** na vitrine: ele mostra o "se" do mouse, a barra de
+combustível, o evento da árvore e as telas de início e fim.
 
 ### Adicione efeitos, notas e música
 

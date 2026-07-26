@@ -21,10 +21,24 @@ Perguntas (booleanos p/ usar em "se"):
 - collides(a, b): os dois objetos estão se encostando (AABB).
 - hitAny(obj, group): obj encostou em algum do grupo.
 
-Kit "Desvie":
-- createGroup() -> []: lista p/ guardar os inimigos.
-- runEnemies(world, group, ground, every, speed): a cada quadro, solta/move inimigos que vêm de
-  longe acelerando e descarta os que passam. Chamar dentro do animate.
+Tempo & repetição (genéricos, IRMÃOS do "A cada quadro 3D" como no Jogo 2D):
+- everyFramesLoop(N) e everySecondsLoop(S): são os blocos "A cada N quadros / segundos", raízes IRMÃS
+  do "A cada quadro 3D" (ficam LADO A LADO em "Enquanto estiver rodando", NÃO dentro dele). Rodam o
+  corpo a cada N quadros / S segundos na cena atual. É o jeito de soltar inimigos sem encher a tela.
+
+Grupos (lista de objetos; a criança MONTA a lógica soltar -> mover -> tirar da tela -> colidir):
+- createGroup() -> []: lista p/ guardar vários objetos (ex.: inimigos).
+- updateGroup(group, ground): move cada objeto pela velocidade + gravidade (quica no chão).
+  updateGroupNoGravity(group): só velocidade (p/ coisas voando). Chamar no animate.
+- pruneOffscreen(world, group, (item) => {...}): tira do grupo quem saiu da tela e roda o corpo p/
+  cada um que saiu (higiene de GPU). Chamar no animate.
+- forEachInGroup(group, (item) => {...}): repete o corpo p/ cada objeto (o da vez é "item"); itera ao
+  contrário, pode remover dentro. countGroup(group): quantos objetos tem.
+- removeFromGroup(group, obj): tira 1 objeto do grupo e some da cena. clearGroup(group): esvazia o grupo.
+
+Kit "Desvie" (a mecânica difícil pronta):
+- spawnEnemy(world, group, speed): solta 1 inimigo (cubo vermelho) vindo de longe (z=-20) na
+  velocidade escolhida. Ponha dentro de everyFrames p/ soltar de tempos em tempos (sem avalanche).
 - stop(world): para o loop (fim de jogo). Use durante animate, evento ou função da partida, nunca solto em Ao iniciar.
 
 Genéricos de grade/isométrico (chão X-Z, y = altura, 1 tile = 1 unidade):
@@ -88,7 +102,7 @@ Física genérica (SEM lib; gravidade + colisão AABB de empurrar-para-fora):
 Câmeras vivas (manuais, sem addon):
 - fpsCamera(world, obj): câmera em perspectiva nos olhos do objeto + olhar com o mouse (pointer-lock; clique trava), mesmo se a cena estava usando câmera ortográfica. Combine c/ fpsControls.
 - orbitCamera(world, target): gira ao redor do alvo arrastando o mouse (roda = zoom).
-- thirdPersonCamera(world, obj, dist, height): câmera atrás/acima do objeto (atualizada a cada frame pelo animate).
+- thirdPersonCamera(world, obj, dist, height): câmera atrás/acima do objeto (atualizada a cada quadro pelo animate).
 - cameraLookAt(world, obj): aponta a câmera p/ um objeto. setFOV(world, graus): "zoom" (menos graus = mais zoom).
 - Só existe um modo de câmera ativo por cena. O último escolhido substitui o anterior, solta a câmera do vínculo do modo FPS quando necessário, e repetir fpsCamera não zera a rotação.
 - Recursos passados juntos precisam pertencer à mesma cena. O runtime ignora combinações incompatíveis e avisa no console.
@@ -116,11 +130,11 @@ Enxames & som (Fase 8 — grupos genéricos de cópias + áudio):
 - removeFromSwarm(enxame, item): tira uma cópia. pruneSwarm(enxame, "x"|"y"|"z", min, max): limpa as cópias que saíram dos limites (higiene de GPU).
 - playNote(freqHz, ms): um bip (mais Hz = mais agudo). playEffect("coin"|"jump"|"explosion"|"hit"): efeito pronto. Use diretamente em clique/tecla ou numa condição do quadro, nunca diretamente em Ao iniciar. O runtime aceita no máximo 32 vozes ao mesmo tempo.
 - Áreas: crie cena e recursos em **⚙️ Ao iniciar**; use os chapéus de tecla/clique
-  do núcleo em **⚡ Quando acontecer**; coloque “A cada frame 3D” e “A
-  cada N segundos” em **🔁 Enquanto estiver rodando**. Para colisão, use
-  "se collides(a, b)" dentro do "A cada frame" — a extensão 3D não tem chapéus
+  do núcleo em **⚡ Quando acontecer**; coloque “A cada quadro 3D”, “A cada N
+  quadros” e “A cada N segundos” em **🔁 Enquanto estiver rodando**. Para colisão, use
+  "se collides(a, b)" dentro do "A cada quadro 3D" — a extensão 3D não tem chapéus
   de evento próprios.
-- Comandos contínuos podem ficar no corpo do frame ou em funções/métodos chamados
+- Comandos contínuos podem ficar no corpo do quadro ou em funções/métodos chamados
   pelo loop; nunca os coloque diretamente em Ao iniciar, eventos ou construtores.
 
 Kit "Empilhar" (torre de blocos / Stack — mundo y-up):
@@ -136,7 +150,8 @@ Quando ajudar o aluno com 3D:
 - Eixos: x = direita, y = cima, z = em direção à câmera. Rotação em radianos.
 - Todos os blocos Jogo 3D são iniciante-3d; a aula filtra quais aparecem com allowBlocks.
 - Para um jogo de desviar: jogador = cubo; chão = caixa larga em y baixo; no animate use
-  controlWithKeys + se keyDown("Space") -> jump + applyGravity + runEnemies + se hitAny -> stop.
+  controlWithKeys + se keyDown("Space") -> jump + applyGravity; monte os inimigos com "A cada N
+  quadros" -> spawnEnemy, depois updateGroup + pruneOffscreen + se hitAny -> stop (nada de avalanche).
 - Para um jogo de atravessar a rua (Travessia): createCrossingScene + createCrosser +
   generateRows(20); no animate: crosserStep + moveTraffic + se crosserHit -> mostrar o "Game Over".
   O HUD (pontuação, fim de jogo, setas) é feito com blocos de HTML/CSS e lido por crosserRow/crosserHit.

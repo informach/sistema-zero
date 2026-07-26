@@ -314,12 +314,11 @@ const VARIABLE_DECL_BLOCKS: NameFieldRegistry = {
   sz_g2d_score: ['NAME'],
   sz_g2d_collides: ['NAME'],
   sz_g2d_circle_collides: ['NAME'],
-  // Kits que guardam um "objeto" nomeado numa variável (jogo do equilibrista/balão,
-  // cidade dos gorilas) — os consumidores (GAME/CITY) redigitavam o nome.
-  sz_g2d_create_stickhero: ['NAME'],
-  sz_g2d_create_balloon: ['NAME'],
-  sz_g2d_stickhero_create: ['NAME'],
-  sz_g2d_balloon_create: ['NAME'],
+  // Kits que guardam um "objeto" nomeado numa variável (o caminho do
+  // equilibrista/balão, a cidade dos gorilas) — os consumidores (PATH/CITY)
+  // redigitavam o nome.
+  sz_g2d_stickpath_create: ['NAME'],
+  sz_g2d_balloonpath_create: ['NAME'],
   sz_g2d_create_city: ['NAME'],
   // OOP: `criar pessoa = novo Pessoa` guarda a instância numa variável — os campos
   // OBJ que a referenciam (chamar método, definir/ler propriedade) ganham o seletor.
@@ -890,6 +889,8 @@ const GAME3D_OBJECT_DECL_BLOCKS: NameFieldRegistry = {
 /** O "item" do "para cada no enxame" e a "parte" do traverse são nomes LOCAIS de objeto 3D. */
 const OBJECT3D_LOOP_BINDERS: ScopedBinderRegistry = {
   sz_g3d_for_each_swarm: ['ITEM'],
+  sz_g3d_for_each_in_group: ['ITEM'],
+  sz_g3d_prune_offscreen: ['ITEM'],
   ...CANVAS3D_OBJECT_BRANCH_BINDERS,
 }
 /** Grupos simples do kit Desvie (fonte do seletor GROUP). */

@@ -357,15 +357,16 @@ export const swarmExample: ExtensionExample = {
 
 /**
  * Exemplo bundlado: "Desvie dos blocos". Um cubo jogador anda no plano (WASD),
- * pula com gravidade sobre o chão, e blocos inimigos vêm de longe acelerando —
- * encostar em qualquer um encerra o jogo. Reproduz o clássico jogo 3D de desviar
- * usando só os blocos da extensão (física + Kit Desvie + câmera que segue).
+ * pula com gravidade sobre o chão, e a cada 45 quadros nasce 1 bloco inimigo que
+ * vem de longe numa velocidade estável — encostar em qualquer um encerra o jogo.
+ * A LÓGICA é montada pela criança: "A cada N quadros" solta 1 inimigo, "Atualizar
+ * o grupo" move, "Tirar quem saiu da tela" limpa, e "encostou em algum?" encerra.
  */
 export const dodgeExample: ExtensionExample = {
   name: 'Desvie dos blocos',
   experience: 'game',
   description:
-    'Cubo que anda (WASD), pula e desvia de blocos que avançam acelerando. Encostar em um = fim de jogo.',
+    'Cubo que anda (WASD), pula e desvia de blocos que aparecem de tempos em tempos. Encostar em um = fim de jogo.',
   ir: {
     html: [{ type: 'canvas', id: 'tela', width: 480, height: 360 }],
     css: centeredCanvasLayout('#0c4a6e'),
@@ -414,13 +415,14 @@ export const dodgeExample: ExtensionExample = {
             },
             { type: 'g3d:applyGravity', objVar: 'jogador', groundVar: 'chao' },
             { type: 'g3d:cameraFollow', worldVar: 'cena', objVar: 'jogador' },
+            // Mover o grupo (velocidade + gravidade) e limpar quem saiu da tela.
+            { type: 'g3d:updateGroup', groupVar: 'inimigos', groundVar: 'chao' },
             {
-              type: 'g3d:runEnemies',
+              type: 'g3d:pruneOffscreen',
               worldVar: 'cena',
               groupVar: 'inimigos',
-              groundVar: 'chao',
-              every: 200,
-              speed: 0.02,
+              itemName: 'inimigo',
+              body: [],
             },
             {
               type: 'if',
@@ -428,6 +430,12 @@ export const dodgeExample: ExtensionExample = {
               then: [{ type: 'g3d:stop', worldVar: 'cena' }],
             },
           ],
+        },
+        // IRMÃO do "A cada quadro 3D" (igual ao Jogo 2D): a cada 45 quadros, 1 inimigo.
+        {
+          type: 'g3d:everyFrames',
+          n: 45,
+          body: [{ type: 'g3d:spawnEnemy', worldVar: 'cena', groupVar: 'inimigos', speed: 0.1 }],
         },
       ],
     },

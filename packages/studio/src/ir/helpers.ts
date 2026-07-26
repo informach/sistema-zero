@@ -118,6 +118,10 @@ function childStatementBodies(stmt: JSStatement): JSStatement[][] {
     case 'g2d:everyFrames':
     case 'g2d:everySeconds':
     case 'g3d:animate':
+    case 'g3d:everyFrames':
+    case 'g3d:everySeconds':
+    case 'g3d:forEachInGroup':
+    case 'g3d:pruneOffscreen':
     case 'gk:addButton':
     case 'gk:onEnterState':
     case 'gk:onUpdate':

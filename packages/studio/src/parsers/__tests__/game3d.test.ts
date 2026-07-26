@@ -234,14 +234,27 @@ describe('parseJS — física, Kit Desvie e câmera (game-3d)', () => {
     expect(parseJS('SZGame3D.cameraFollow(cena, jogador);')).toEqual([
       { type: 'g3d:cameraFollow', worldVar: 'cena', objVar: 'jogador' },
     ])
-    expect(parseJS('SZGame3D.runEnemies(cena, inimigos, chao, 200, 0.02);')).toEqual([
+    expect(parseJS('SZGame3D.spawnEnemy(cena, inimigos, 0.1);')).toEqual([
       {
-        type: 'g3d:runEnemies',
+        type: 'g3d:spawnEnemy',
         worldVar: 'cena',
         groupVar: 'inimigos',
-        groundVar: 'chao',
-        every: { type: 'num', value: 200 },
-        speed: { type: 'num', value: 0.02 },
+        speed: { type: 'num', value: 0.1 },
+      },
+    ])
+    expect(parseJS('SZGame3D.updateGroup(inimigos, chao);')).toEqual([
+      { type: 'g3d:updateGroup', groupVar: 'inimigos', groundVar: 'chao' },
+    ])
+    expect(parseJS('SZGame3D.clearGroup(inimigos);')).toEqual([
+      { type: 'g3d:clearGroup', groupVar: 'inimigos' },
+    ])
+    expect(
+      parseJS('SZGame3D.everyFramesLoop(45, () => { SZGame3D.spawnEnemy(cena, inimigos, 0.1); });'),
+    ).toMatchObject([
+      {
+        type: 'g3d:everyFrames',
+        n: { type: 'num', value: 45 },
+        body: [{ type: 'g3d:spawnEnemy' }],
       },
     ])
     expect(parseJS('SZGame3D.stop(cena);')).toEqual([{ type: 'g3d:stop', worldVar: 'cena' }])
@@ -281,7 +294,10 @@ describe('roundtrip do dodgeExample (gerar → parsear)', () => {
       'g3d:jump',
       'g3d:applyGravity',
       'g3d:cameraFollow',
-      'g3d:runEnemies',
+      'g3d:everyFrames',
+      'g3d:spawnEnemy',
+      'g3d:updateGroup',
+      'g3d:pruneOffscreen',
       'g3d:keyDown',
       'g3d:hitAny',
       'g3d:stop',

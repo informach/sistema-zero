@@ -69,7 +69,14 @@ interface API {
   keyDown(code: string): boolean
   collides(a: Obj3D, b: Obj3D): boolean
   hitAny(o: Obj3D, g: Group): boolean
-  runEnemies(w: World, g: Group, ground: Obj3D, every: number, speed: number): void
+  spawnEnemy(w: World, g: Group, speed: number): Obj3D | null
+  updateGroup(g: Group, ground: Obj3D): void
+  updateGroupNoGravity(g: Group): void
+  countGroup(g: Group): number
+  removeFromGroup(g: Group, o: Obj3D): void
+  clearGroup(g: Group): void
+  everyFrames(key: string, n: number): boolean
+  everySeconds(key: string, secs: number): boolean
   stop(w: World): void
   gridPosition(o: Obj3D, row: number, col: number): void
   gridMove(o: Obj3D, dir: string): void
@@ -447,25 +454,46 @@ describe('gameThreeDRuntime — controle por teclado', () => {
   })
 })
 
-describe('gameThreeDRuntime — Kit Desvie (spawner + colisão de grupo)', () => {
-  it('runEnemies solta inimigos no ritmo e DESCARTA os que passam (higiene de GPU)', () => {
+describe('gameThreeDRuntime — 📦 Grupos + ⏱️ Tempo + Kit Desvie', () => {
+  it('spawnEnemy solta 1 inimigo com velocidade CONSTANTE (sem auto-aceleração)', () => {
+    const { api } = loadRuntime()
+    const world = api.createScene('tela')
+    const inimigos = api.createGroup()
+    const enemy = api.spawnEnemy(world, inimigos, 0.1)
+    expect(api.countGroup(inimigos)).toBe(1)
+    if (!enemy) throw new Error('esperava um inimigo gerado')
+    expect(enemy.userData.sz.vz).toBe(0.1)
+    // sem zAccel: a velocidade NÃO cresce sozinha (nada de avalanche).
+    expect(enemy.userData.sz.zAccel).toBeUndefined()
+  })
+
+  it('everyFrames dispara a cada N chamadas (chaves independentes); everySeconds é boolean', () => {
+    const { api } = loadRuntime()
+    let count = 0
+    for (let i = 0; i < 15; i++) if (api.everyFrames('k', 5)) count++
+    expect(count).toBe(3) // 5ª, 10ª e 15ª chamadas
+    expect(api.everyFrames('outra', 1)).toBe(true) // contador próprio
+    expect(typeof api.everySeconds('t', 1)).toBe('boolean')
+  })
+
+  it('updateGroup move o grupo; removeFromGroup/clearGroup somem com os objetos', () => {
     const { api } = loadRuntime()
     const world = api.createScene('tela')
     const ground = api.createBlock(world, { width: 10, height: 1, depth: 10 })
     api.setPosition(ground, 0, -2, 0)
     const inimigos = api.createGroup()
-    // every=5: no 5º quadro nasce 1 inimigo.
-    for (let i = 0; i < 5; i++) api.runEnemies(world, inimigos, ground, 5, 0.02)
-    expect(inimigos.length).toBe(1)
-    const enemy = inimigos[0]
-    if (!enemy) throw new Error('esperava um inimigo gerado')
-    expect(enemy.userData.sz.zAccel).toBe(true)
-    // empurra o inimigo para a frente da câmera → próxima volta deve removê-lo.
-    enemy.position.z = 50
-    const before = world._objects.length
-    api.runEnemies(world, inimigos, ground, 5, 0.02)
-    expect(inimigos.length).toBe(0)
-    expect(world._objects.length).toBeLessThan(before)
+    const a = api.spawnEnemy(world, inimigos, 0.1)
+    api.spawnEnemy(world, inimigos, 0.1)
+    if (!a) throw new Error('esperava inimigos')
+    const zBefore = a.position.z
+    api.updateGroup(inimigos, ground)
+    expect(a.position.z).toBeGreaterThan(zBefore) // andou pela velocidade (+z)
+    const objsBefore = world._objects.length
+    api.removeFromGroup(inimigos, a)
+    expect(api.countGroup(inimigos)).toBe(1)
+    expect(world._objects.length).toBeLessThan(objsBefore)
+    api.clearGroup(inimigos)
+    expect(api.countGroup(inimigos)).toBe(0)
   })
 
   it('hitAny é verdadeiro quando o jogador encosta em algum do grupo', () => {
