@@ -462,7 +462,7 @@ export const EXAMPLE_QA_CONTRACTS = [
       'Correr sem fim em três faixas, pulando barreiras e pegando moedas num jogo que acelera.',
     scenario:
       'Começar, trocar de faixa com A/D ou setas, pular com espaço, pegar moeda, bater e reiniciar.',
-    interactions: ['wasd', 'space'],
+    interactions: ['wasd', 'arrows', 'space'],
   },
   {
     key: 'world-3d:Meu Mundo',

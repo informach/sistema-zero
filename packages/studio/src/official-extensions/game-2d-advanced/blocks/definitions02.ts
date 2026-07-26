@@ -226,7 +226,7 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     output: 'JSValue',
     colour: C,
     tooltip:
-      'Verdadeiro quando os dois se tocam medindo por CÍRCULO (mais justo que caixa para bichos redondos). Use dentro de um "se".',
+      'Verdadeiro quando os dois se encostam medindo por CÍRCULO (mais justo que caixa para bichos redondos). Use dentro de um "se".',
   },
 
   {

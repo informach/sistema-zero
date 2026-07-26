@@ -972,7 +972,7 @@ export const gameTwoDBlocks = [
     nextStatement: 'JSStmt',
     colour: EVENT_C,
     tooltip:
-      'Roda o que está dentro quando os dois sprites se tocam (ex.: pegar moeda, levar dano). Dispara uma vez a cada vez que começam a encostar.',
+      'Roda o que está dentro quando os dois sprites se encostam (ex.: pegar moeda, levar dano). Dispara uma vez a cada vez que começam a encostar.',
   },
 
   // ---- Perguntas (booleanos) — caem dentro de um "se" ----

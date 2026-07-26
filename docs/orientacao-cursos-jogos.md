@@ -299,7 +299,7 @@ termos; divergência é bug de conformidade.
 
 | Conceito | Termo canônico | Onde já vale |
 |---|---|---|
-| Colisão (pergunta contínua) | **"está encostando"** | `sz_g2d_touches`, `sz_g3d_collides`, `sz_g3d_touches_box`, `sz_g3k_touches` |
+| Colisão (pergunta contínua) | **"está encostando" / "se encostam"** | `sz_g2d_touches`, `sz_gk_characters_touch`, `sz_gk_touching_circle`, `sz_g3d_collides`, `sz_g3d_touches_box`, `sz_g3k_touches` |
 | Colisão (evento de borda) | **"começar a encostar"** / "Quando … encostar" | `sz_g2d_on_overlap`, `sz_g3k_on_overlap` |
 | Colisão contra grupo | **"encostou em algum de"** | `sz_g2d_on_group_overlap`, `sz_g3d_hit_any` |
 | Trombada de veículo (crash) | **"bater forte"** — exceção proposital | kits de corrida g3d, world-3d |
