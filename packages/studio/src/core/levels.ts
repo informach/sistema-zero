@@ -165,14 +165,17 @@ export function isCategoryAllowed(
 // bloco visível). A `pruneEmptyCategories` remove o que ficou sem bloco no tier.
 // Categorias core são 2D por natureza, exceto 'Canvas 3D' (three.js cru).
 export const CORE_CATEGORY_LEVELS: Record<string, BlockLevel> = {
+  // HTML/CSS ficam no iniciante (o ESSENCIAL fica lá; o profundo por-bloco é av-2d).
   HTML: 'iniciante-2d',
-  SVG: 'iniciante-2d',
+  // SVG inteiro subiu p/ intermediário; Canvas (2D) e Canvas 3D descem p/ avançado
+  // ("na unha por último", 26/07).
+  SVG: 'intermediario-2d',
   CSS: 'iniciante-2d',
   DOM: 'iniciante-2d',
   JavaScript: 'iniciante-2d',
   Matemática: 'intermediario-2d',
-  Canvas: 'iniciante-2d',
-  'Canvas 3D': 'intermediario-3d',
+  Canvas: 'avancado-2d',
+  'Canvas 3D': 'avancado-3d',
   Valores: 'iniciante-2d',
   Funções: 'intermediario-2d',
   Classes: 'avancado-2d',

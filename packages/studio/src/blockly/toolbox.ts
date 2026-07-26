@@ -429,8 +429,8 @@ export function buildCoreToolbox(
 
   // Canvas: categoria PRÓPRIA (fora da Programação) — desenho, será incrementada.
   pushGrouped('Canvas', CATEGORY_COLORS.canvas, CANVAS_BLOCKS, CANVAS_GROUPS)
-  // Canvas 3D: facilitadores visuais no intermediário 3D e peças técnicas no
-  // avançado 3D. A categoria aparece assim que houver uma peça visível no nível.
+  // Canvas 3D inteiro é avançado-3d ("na unha por último", 26/07). A categoria
+  // aparece somente no topo, quando todos os blocos técnicos e visuais cabem.
   pushGrouped('Canvas 3D', CATEGORY_COLORS.canvas3d, CANVAS3D_BLOCKS, CANVAS3D_GROUPS)
   // Extensões: em modo restritivo (lista de blocos), filtra cada categoria p/ só os blocos
   // LISTADOS; senão filtra por NÍVEL por-bloco (o caller já gateou a categoria por `minLevel`,

@@ -37,8 +37,11 @@ const EXTENSIONS_BY_PROFILE: Record<CareerStudioBlockProfileId, readonly string[
   'iniciante-2d': ['game-2d'],
   'iniciante-3d': ['game-2d', 'game-3d'],
   'intermediario-2d': ['game-2d', 'game-3d', 'game-2d-advanced'],
-  'intermediario-3d': ['game-2d', 'game-3d', 'game-2d-advanced', 'world-3d'],
-  'avancado-2d': ['game-2d', 'game-3d', 'game-2d-advanced', 'world-3d'],
+  // Arquiteto (intermediario-3d): Mundo 3D + Jogo 3D Avançado (decisão 26/07 — o kit
+  // `game-3d-advanced` foi reclassificado p/ intermediario-3d no studio). `avancado-2d`
+  // (Gênio) o mantém por monotonicidade; `avancado-3d` (Lenda) já tinha.
+  'intermediario-3d': ['game-2d', 'game-3d', 'game-2d-advanced', 'world-3d', 'game-3d-advanced'],
+  'avancado-2d': ['game-2d', 'game-3d', 'game-2d-advanced', 'world-3d', 'game-3d-advanced'],
   'avancado-3d': ['game-2d', 'game-3d', 'game-2d-advanced', 'world-3d', 'game-3d-advanced'],
 }
 

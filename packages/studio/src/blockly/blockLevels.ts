@@ -1,26 +1,34 @@
 import type { BlockLevel } from '#core'
 import { HTML_ADVANCED_BLOCK_TYPES, HTML_INTERMEDIATE_BLOCK_TYPES } from '../html/catalog'
-import { CANVAS3D_INTERMEDIATE_BLOCK_TYPES } from '../three/canvas3dContract'
 import { resolveProgrammingBlockLevel } from './programmingContract'
 
 /**
  * Nível de dificuldade POR BLOCO (curadoria da paleta do Estúdio) — a fonte da
  * verdade da progressão. Reforma 2D/3D (07/2026): a escada virou 6 degraus
  * (dificuldade × eixo, na ordem ini-2d < ini-3d < int-2d < int-3d < av-2d <
- * av-3d — a MESMA da carreira do aluno). Filosofia (decisão da usuária):
- * - **Iniciante 2D** = TODOS os blocos do Jogo 2D (`sz_g2d_*`) + facilitadores
- *   e um kit essencial de lógica. As aulas filtram o subconjunto de Jogo 2D que
- *   aparece; o nível não esconde peças da extensão.
+ * av-3d — a MESMA da carreira do aluno). **Filosofia "kit primeiro, na unha por
+ * último" (decisão da usuária 26/07):** iniciante/intermediário criam com os KITS
+ * (extensões facilitadoras) + um mínimo de web; o AVANÇADO faz tudo na unha, sem
+ * kit (Canvas/HTML/CSS crus).
+ * - **Iniciante 2D** = TODOS os blocos do Jogo 2D (`sz_g2d_*`) + facilitadores e um
+ *   kit essencial de lógica + um **HTML/CSS ESSENCIAL** (título/parágrafo/imagem/
+ *   botão/link/lista/caixa + cor de fundo/texto, tamanho de fonte, padding/margem/
+ *   borda — o mínimo pra montar uma telinha). As aulas filtram o subconjunto de
+ *   Jogo 2D que aparece; o nível não esconde peças da extensão.
  * - **Iniciante 3D** = a PORTA DE ENTRADA do 3D: todos os blocos do Jogo 3D
  *   (`sz_g3d_*`) — a aula continua escolhendo quais deles revelar.
  * - **Intermediário 2D** = programação "real" guiada (variáveis avulsas, laços,
- *   funções, getters/setters, desenho manual, matemática básica) + caminho feliz
- *   e kits de gênero do Jogo 2D Avançado.
- * - **Intermediário 3D** = Mundo 3D (mundo aberto dirigível, blocos "mágicos").
- * - **Avançado 2D** = baixo nível / expert em 2D (classes/OOP, objetos, código
- *   cru, física manual, trigonometria, vetores, dados e peças internas de motor).
- * - **Avançado 3D** = Jogo 3D Avançado (`sz_g3k_*`) e as peças técnicas do
- *   Canvas 3D; seus facilitadores visuais entram no Intermediário 3D.
+ *   funções, getters/setters, matemática básica) + caminho feliz e kits de gênero
+ *   do Jogo 2D Avançado + **SVG** (desenhar formas declarando — o primitivo gentil).
+ * - **Intermediário 3D** = Mundo 3D (mundo aberto dirigível, blocos "mágicos") e
+ *   o Jogo 3D Avançado (`sz_g3k_*`, reclassificado 26/07 — abre no Arquiteto).
+ * - **Avançado 2D** = tudo NA UNHA em 2D: **Canvas 2D cru** (`sz_canvas_*` — desenho
+ *   imperativo, traçado, transform), **HTML/CSS profundos** (tags semânticas, forms,
+ *   flex/grid, animações, transforms, tipografia, media queries, código cru), classes/
+ *   OOP, física manual, trigonometria, vetores, e as peças internas de motor.
+ * - **Avançado 3D** = a categoria **Canvas 3D INTEIRA** (`sz_t3d_*`, three.js cru — do
+ *   primitivo às receitas "mágicas"; reclassificado 26/07 — antes os facilitadores
+ *   ficavam no Intermediário 3D).
  *
  * É CUMULATIVO na escada (cada degrau inclui os anteriores — o gate usa
  * `isLevelWithin`; note que os degraus "2D" a partir do int-2d INCLUEM o
@@ -31,42 +39,50 @@ import { resolveProgrammingBlockLevel } from './programmingContract'
  * ⚠️ Os frames (🗂️ Áreas do projeto) NÃO entram aqui — são sempre visíveis.
  * ⚠️ Adicionou um bloco? Todo `sz_g2d_*` fica no iniciante-2d. Para o core,
  * decida se entra nos conjuntos intermediário/avançado; senão os defaults por
- * prefixo decidem (g3d→ini-3d, gk→int-2d, w3d→int-3d,
- * g3k/t3d→av-3d, resto→ini-2d) — o teste de conformidade cobra.
+ * prefixo decidem (canvas→av-2d, g3d→ini-3d, gk→int-2d, w3d→int-3d,
+ * g3k→int-3d, t3d→av-3d, resto→ini-2d) — o teste de conformidade cobra.
  */
 
 const INTERMEDIARIO_2D: ReadonlySet<string> = new Set<string>([
   // ── CORE ──────────────────────────────────────────────────────────────────
-  // HTML — containers estruturais (só "aparecem" com CSS) + fragmento solto.
-  // Lista/formulário ficam inteiros no iniciante; o catálogo é a fonte única.
+  // SVG — os ELEMENTOS (círculo/retângulo/caminho/…) vêm do catálogo (level
+  // `intermediario-2d`). O SVG é o único primitivo "cru" gentil: desenhar formas
+  // declarando é o degrau intermediário, antes do Canvas imperativo no avançado.
   ...HTML_INTERMEDIATE_BLOCK_TYPES,
-  // SVG — a 🎨 Aparência (setters por seletor); os elementos vêm do catálogo.
+  // SVG — a 🎨 Aparência (setters por seletor que acompanham o desenho vetorial).
   'sz_css_fill',
   'sz_css_stroke',
   'sz_css_stroke_width',
   'sz_css_stroke_dasharray',
   'sz_css_stroke_linecap',
   'sz_css_text_anchor',
-  // CSS — setters por seletor (o dia a dia do estilo)
+  // CSS puro NÃO tem degrau intermediário (26/07): ou é ESSENCIAL (iniciante-2d,
+  // default) ou é PROFUNDO (avancado-2d). Canvas 2D é 100% avançado (prefixo).
+  // A progressão de Programação vive integralmente em programmingContract.ts.
+])
+
+const AVANCADO_2D: ReadonlySet<string> = new Set<string>([
+  // ── CORE ──────────────────────────────────────────────────────────────────
+  ...HTML_ADVANCED_BLOCK_TYPES,
+  // CSS PROFUNDO — todo o CSS que NÃO é essencial (26/07, "na unha por último").
+  // O essencial (cor de fundo/texto, tamanho de fonte, padding/margem/borda,
+  // largura/altura, centrar) fica no iniciante-2d (default). Aqui vem a mecânica
+  // genérica (regra/declaração), tipografia fina, layout/flex, posicionamento e
+  // os recursos avançados (variável/grid/transição/transform/3D/animação/responsivo).
   'sz_css_rule',
   'sz_css_decl',
   'sz_css_comment',
   'sz_css_gradient',
+  'sz_css_shadow',
+  'sz_css_max_width',
+  'sz_css_width_percent',
   'sz_css_font_weight',
   'sz_css_text_align',
   'sz_css_text_transform',
   'sz_css_text_decoration',
   'sz_css_letter_spacing',
-  'sz_css_max_width',
-  'sz_css_width_percent',
-  'sz_css_shadow',
-  'sz_css_display_flex',
-  'sz_css_gap',
-  'sz_css_justify',
-  'sz_css_align',
   'sz_css_google_font',
   'sz_css_use_font',
-  // CSS para jogos/posicionamento — útil, mas vem depois de cor, letra e caixa.
   'sz_css_position',
   'sz_css_offset',
   'sz_css_display',
@@ -77,32 +93,10 @@ const INTERMEDIARIO_2D: ReadonlySet<string> = new Set<string>([
   'sz_css_opacity',
   'sz_css_z_index',
   'sz_css_background_image',
-  // Canvas — ajustes/texto/entrada + laço de animação (desenho guiado).
-  // Preparar a tela e escolher a cor ficam no iniciante: sem os dois, as formas
-  // prontas daquele degrau não formavam um primeiro projeto executável.
-  'sz_canvas_set_size',
-  'sz_canvas_clear',
-  'sz_canvas_clear_rect',
-  'sz_canvas_stroke_style',
-  'sz_canvas_line_width',
-  'sz_canvas_global_alpha',
-  'sz_canvas_font',
-  'sz_canvas_text_align',
-  'sz_canvas_text_baseline',
-  'sz_canvas_measure_text',
-  'sz_canvas_anim_loop',
-  'sz_canvas_cancel_anim',
-  'sz_canvas_arc_slice',
-  'sz_input_key_pressed',
-  'sz_input_pointer_x',
-  'sz_input_pointer_y',
-  // A progressão de Programação vive integralmente em programmingContract.ts.
-])
-
-const AVANCADO_2D: ReadonlySet<string> = new Set<string>([
-  // ── CORE ──────────────────────────────────────────────────────────────────
-  ...HTML_ADVANCED_BLOCK_TYPES,
-  // CSS — recursos avançados (variável, grid, transição, transform, 3D, animação, responsivo)
+  'sz_css_display_flex',
+  'sz_css_gap',
+  'sz_css_justify',
+  'sz_css_align',
   'sz_css_var',
   'sz_css_grid',
   'sz_css_grid_template',
@@ -117,32 +111,18 @@ const AVANCADO_2D: ReadonlySet<string> = new Set<string>([
   'sz_css_apply_animation',
   'sz_css_media_query',
   'sz_css_reduce_motion',
-  // Canvas — traçado "na mão", transformações, imagem crua, gradiente/sombra/tracejado
-  'sz_canvas_gradient',
-  'sz_canvas_shadow',
-  'sz_canvas_line_dash',
-  'sz_canvas_begin_path',
-  'sz_canvas_move_to',
-  'sz_canvas_line_to',
-  'sz_canvas_quadratic_curve',
-  'sz_canvas_bezier_curve',
-  'sz_canvas_arc_to',
-  'sz_canvas_rect',
-  'sz_canvas_close_path',
-  'sz_canvas_stroke',
-  'sz_canvas_fill',
-  'sz_canvas_clip',
-  'sz_canvas_point_in_path',
-  'sz_canvas_point_in_stroke',
-  'sz_canvas_save',
-  'sz_canvas_restore',
-  'sz_canvas_translate',
-  'sz_canvas_rotate',
-  'sz_canvas_scale',
-  // Versões manuais do ciclo de animação. O bloco guiado "A cada quadro" já
-  // cobre o caminho infantil; estas peças expõem a mecânica de baixo nível.
-  'sz_canvas_request_frame',
-  'sz_canvas_request_frame_do',
+  // Canvas 2D — TODA a categoria é avançado-2d (prefixo `sz_canvas_` na
+  // resolveBlockLevel). Aqui só os blocos da categoria Canvas SEM esse prefixo:
+  // criar a tela, imagem crua (new Image()/onload) e entrada bruta (teclado/mouse)
+  // — o fluxo de desenhar/jogar na unha (os kits de jogo trazem os seus próprios).
+  'sz_html_canvas',
+  'sz_val_image',
+  'sz_js_new_image',
+  'sz_js_image_onload',
+  'sz_js_image_onerror',
+  'sz_input_key_pressed',
+  'sz_input_pointer_x',
+  'sz_input_pointer_y',
   // A progressão de Programação vive integralmente em programmingContract.ts.
   // Avançado — código cru
   'sz_adv_raw_html',
@@ -236,9 +216,10 @@ const AVANCADO_2D: ReadonlySet<string> = new Set<string>([
 // de nível só por expor ajustes finos ou física.
 const AVANCADO_3D: ReadonlySet<string> = new Set<string>()
 
-// Canvas 3D de alto nível: receitas completas e verbos visuais podem aparecer
-// junto do Mundo 3D. Construtores/imports/matrizes continuam no avançado-3d.
-const INTERMEDIARIO_3D: ReadonlySet<string> = new Set(CANVAS3D_INTERMEDIATE_BLOCK_TYPES)
+// Canvas 3D (three.js cru) é INTEIRAMENTE avançado-3d (reclassificado 26/07 —
+// "na unha por último"): TODO `sz_t3d_*` cai no fallback de prefixo abaixo. Este
+// conjunto ficou vazio de propósito (nenhum bloco 3D sobe só até o intermediário).
+const INTERMEDIARIO_3D: ReadonlySet<string> = new Set<string>()
 
 // Posição dos kits 3D dirigíveis na escada (decisão da usuária 17/07) — parâmetros
 // de 1 linha p/ ajuste fino futuro.
@@ -256,6 +237,10 @@ export function resolveBlockLevel(type: string): BlockLevel {
   if (type.startsWith('sz_g3d_')) return G3D_FLOOR
   const programmingLevel = resolveProgrammingBlockLevel(type)
   if (programmingLevel) return programmingLevel
+  // Canvas 2D "na mão": TODA a categoria (`sz_canvas_*` — desenho imperativo,
+  // traçado, transform, ajustes) é avançado-2d (26/07). Os blocos da categoria
+  // Canvas sem esse prefixo (criar tela/imagem/entrada) estão no AVANCADO_2D.
+  if (type.startsWith('sz_canvas_')) return 'avancado-2d'
   if (AVANCADO_3D.has(type)) return 'avancado-3d'
   if (AVANCADO_2D.has(type)) return 'avancado-2d'
   if (INTERMEDIARIO_3D.has(type)) return 'intermediario-3d'
@@ -265,11 +250,12 @@ export function resolveBlockLevel(type: string): BlockLevel {
   // Jogo 2D Avançado: o caminho feliz e os kits são intermediário-2d; as peças
   // internas de motor já foram separadas no AVANCADO_2D acima.
   if (type.startsWith('sz_gk_')) return 'intermediario-2d'
-  // Jogo 3D Avançado: TODOS avançado-3d (decisão de produto — é a base de
-  // engine profissional: FSM por entidade, pooling, grade espacial).
-  if (type.startsWith('sz_g3k_')) return 'avancado-3d'
-  // Canvas 3D (three.js cru, núcleo): o fallback guarda as peças técnicas no
-  // avançado; os facilitadores visuais foram listados no intermediário 3D.
+  // Jogo 3D Avançado: TODOS intermediário-3d (reclassificado 26/07 — abre no
+  // Arquiteto de Mundos, junto do Mundo 3D; a carreira é o gate real). Espelha o
+  // `minLevel` da extensão em official-extensions/game-3d-advanced/index.ts.
+  if (type.startsWith('sz_g3k_')) return 'intermediario-3d'
+  // Canvas 3D (three.js cru, núcleo): a categoria INTEIRA é avançado-3d — do
+  // primitivo às receitas "mágicas" (reclassificado 26/07, "na unha por último").
   if (type.startsWith('sz_t3d_')) return 'avancado-3d'
   // Mundo 3D: TODOS intermediário-3d (decisão de produto — blocos "mágicos" de
   // alto nível, 1 bloco = 1 resultado; um degrau acima da entrada do 3D).

@@ -38,10 +38,11 @@ const SKELETON_UTILS_CDN = `${THREE_CDN}/examples/jsm/utils/SkeletonUtils.js?ext
 export const gameKit3DExtension: ExtensionDefinition = {
   manifest: gameKit3DManifest,
   conflictsWith: fullscreenConflictsFor('game-3d-advanced'),
-  // Decisão de produto (14/07/2026): TODOS os blocos são nível AVANÇADO — é a
-  // base de engine profissional (FSM por entidade, pooling, grade espacial).
-  // O piso por prefixo sz_g3k_ vive em blockLevels.ts.
-  minLevel: 'avancado-3d',
+  // Reclassificado p/ INTERMEDIÁRIO 3D (26/07/2026): o kit passa a abrir no Arquiteto
+  // de Mundos (junto do Mundo 3D), não só na Lenda. Continua sendo base de engine
+  // (FSM/pooling/grade), mas gated pela carreira (só chega ao Arquiteto quem subiu 6
+  // níveis). O piso por prefixo sz_g3k_ (em blockLevels.ts) acompanha este minLevel.
+  minLevel: 'intermediario-3d',
   blockly: {
     blocks: gameKit3DBlocks,
     toolboxCategory: gameKit3DToolboxCategory,

@@ -54,9 +54,9 @@ describe('resolveBlockLevel — amostras representativas', () => {
     for (const t of [
       'sz_g2d_create_sprite', // facilitador do Kit 2D
       'sz_g2d_top_down', // mover em 4 direções
-      'sz_html_h1', // criar título
-      'sz_svg_circle', // forma pronta
-      'sz_canvas_arc', // desenhar círculo
+      'sz_html_h1', // criar título (HTML essencial)
+      'sz_html_p', // parágrafo (HTML essencial)
+      'sz_css_text_color', // pintar o texto (CSS essencial)
       'sz_js_if_else', // Se
       'sz_js_repeat', // repetir N vezes
       'sz_js_var_create', // criar variável
@@ -90,7 +90,7 @@ describe('resolveBlockLevel — amostras representativas', () => {
     for (const type of game2dTypes) expect(resolveBlockLevel(type)).toBe('iniciante-2d')
   })
 
-  it('programação real guiada + kits prontos do Jogo 2D Avançado = intermediario-2d', () => {
+  it('programação real guiada + SVG + kits prontos do Jogo 2D Avançado = intermediario-2d', () => {
     for (const t of [
       'sz_js_while',
       'sz_js_for_range',
@@ -109,7 +109,8 @@ describe('resolveBlockLevel — amostras representativas', () => {
       'sz_js_storage_set',
       'sz_val_storage_get',
       'sz_js_on_submit',
-      'sz_css_display_flex',
+      'sz_svg_circle', // SVG = primitivo VISUAL gentil (26/07)
+      'sz_svg_path',
       'sz_gk_setup',
       'sz_gk_restart_game',
       'sz_gk_rpg_create_map',
@@ -142,7 +143,7 @@ describe('resolveBlockLevel — amostras representativas', () => {
     expect(resolveBlockLevel('sz_w3d_qualquer')).toBe('intermediario-3d')
   })
 
-  it('macros intuitivos do Canvas 3D = intermediario-3d', () => {
+  it('Canvas 3D INTEIRO = avancado-3d (macros + técnicos; reclassificado 26/07)', () => {
     for (const type of [
       'sz_t3d_primitive',
       'sz_t3d_terrain',
@@ -150,11 +151,11 @@ describe('resolveBlockLevel — amostras representativas', () => {
       'sz_t3d_renderer_responsive',
       'sz_t3d_physics_body',
     ]) {
-      expect(resolveBlockLevel(type)).toBe('intermediario-3d')
+      expect(resolveBlockLevel(type)).toBe('avancado-3d')
     }
   })
 
-  it('baixo nível / expert 2D = avancado-2d', () => {
+  it('na unha em 2D (Canvas/HTML/CSS crus + expert) = avancado-2d', () => {
     for (const t of [
       'sz_js_class',
       'sz_val_object',
@@ -166,16 +167,23 @@ describe('resolveBlockLevel — amostras representativas', () => {
       'sz_gk_pile_move_top', // manipulação de pilhas/listas
       'sz_gk_tween_property', // interpolação de propriedade arbitrária
       'sz_css_keyframes',
-      'sz_svg_path',
+      'sz_canvas_arc', // Canvas 2D cru (26/07)
+      'sz_canvas_begin_path',
+      'sz_html_canvas', // criar a tela de desenho
+      'sz_html_header', // tag semântica de layout
+      'sz_html_form', // formulário
+      'sz_css_display_flex', // flexbox cru
       'sz_math_trig',
     ]) {
       expect(resolveBlockLevel(t)).toBe('avancado-2d')
     }
   })
 
-  it('engine 3D avançada fora de Jogo 3D (g3k + three.js cru) = avancado-3d', () => {
-    for (const t of ['sz_g3k_fsm_state', 'sz_t3d_new_scene']) {
-      expect(resolveBlockLevel(t)).toBe('avancado-3d')
-    }
+  it('Jogo 3D Avançado (g3k) = intermediario-3d (reclassificado 26/07 — abre no Arquiteto)', () => {
+    expect(resolveBlockLevel('sz_g3k_fsm_state')).toBe('intermediario-3d')
+  })
+
+  it('Canvas 3D cru (three.js técnico, sz_t3d_) = avancado-3d', () => {
+    expect(resolveBlockLevel('sz_t3d_new_scene')).toBe('avancado-3d')
   })
 })

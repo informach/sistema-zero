@@ -155,7 +155,9 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     contentModel: 'flow',
     categories: FLOW,
     modeledAttributes: [],
-    level: 'intermediario-2d',
+    // Tags semânticas de layout são avancado-2d (26/07): estrutura de página "na
+    // unha". O essencial (título/parágrafo/imagem/caixa) fica no iniciante.
+    level: 'avancado-2d',
   },
   {
     tag: 'nav',
@@ -164,7 +166,7 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     contentModel: 'flow',
     categories: FLOW,
     modeledAttributes: [],
-    level: 'intermediario-2d',
+    level: 'avancado-2d',
   },
   {
     tag: 'section',
@@ -173,7 +175,7 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     contentModel: 'flow',
     categories: FLOW,
     modeledAttributes: [],
-    level: 'intermediario-2d',
+    level: 'avancado-2d',
   },
   {
     tag: 'footer',
@@ -182,7 +184,7 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     contentModel: 'flow',
     categories: FLOW,
     modeledAttributes: [],
-    level: 'intermediario-2d',
+    level: 'avancado-2d',
   },
   {
     tag: 'main',
@@ -191,7 +193,7 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     contentModel: 'flow',
     categories: FLOW,
     modeledAttributes: [],
-    level: 'intermediario-2d',
+    level: 'avancado-2d',
   },
   {
     tag: 'ul',
@@ -236,7 +238,8 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     contentModel: 'flow',
     categories: FLOW,
     modeledAttributes: [],
-    level: 'iniciante-2d',
+    // Formulários/campos são avancado-2d (26/07): interatividade de página "na unha".
+    level: 'avancado-2d',
   },
   {
     tag: 'input',
@@ -245,7 +248,7 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     contentModel: 'none',
     categories: PHRASING,
     modeledAttributes: ['type', 'placeholder', 'name', 'value', 'checked', 'autocomplete'],
-    level: 'iniciante-2d',
+    level: 'avancado-2d',
   },
   {
     tag: 'textarea',
@@ -254,7 +257,7 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     contentModel: 'none',
     categories: PHRASING,
     modeledAttributes: ['placeholder', 'name', 'autocomplete'],
-    level: 'iniciante-2d',
+    level: 'avancado-2d',
   },
   {
     tag: 'label',
@@ -263,7 +266,7 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     contentModel: 'phrasing',
     categories: PHRASING,
     modeledAttributes: ['for'],
-    level: 'iniciante-2d',
+    level: 'avancado-2d',
   },
   {
     tag: 'svg',
@@ -272,7 +275,9 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     contentModel: 'svg',
     categories: SVG_ROOT,
     modeledAttributes: ['width', 'height', 'viewBox'],
-    level: 'iniciante-2d',
+    // SVG inteiro é intermediario-2d (26/07): o primitivo VISUAL gentil — desenhar
+    // formas declarando, um degrau antes do Canvas imperativo no avançado.
+    level: 'intermediario-2d',
   },
   {
     tag: 'title',
@@ -281,7 +286,7 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     contentModel: 'none',
     categories: SVG_CHILD,
     modeledAttributes: [],
-    level: 'iniciante-2d',
+    level: 'intermediario-2d',
   },
   {
     tag: 'desc',
@@ -290,7 +295,7 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     contentModel: 'none',
     categories: SVG_CHILD,
     modeledAttributes: [],
-    level: 'iniciante-2d',
+    level: 'intermediario-2d',
   },
   {
     tag: 'defs',
@@ -326,7 +331,7 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     contentModel: 'none',
     categories: SVG_CHILD,
     modeledAttributes: ['d', 'fill', 'stroke', 'transform'],
-    level: 'avancado-2d',
+    level: 'intermediario-2d',
   },
   {
     tag: 'circle',
@@ -335,7 +340,7 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     contentModel: 'none',
     categories: SVG_CHILD,
     modeledAttributes: ['cx', 'cy', 'r', 'fill'],
-    level: 'iniciante-2d',
+    level: 'intermediario-2d',
   },
   {
     tag: 'ellipse',
@@ -344,7 +349,7 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     contentModel: 'none',
     categories: SVG_CHILD,
     modeledAttributes: ['cx', 'cy', 'rx', 'ry', 'fill'],
-    level: 'iniciante-2d',
+    level: 'intermediario-2d',
   },
   {
     tag: 'line',
@@ -353,7 +358,7 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     contentModel: 'none',
     categories: SVG_CHILD,
     modeledAttributes: ['x1', 'y1', 'x2', 'y2', 'stroke'],
-    level: 'iniciante-2d',
+    level: 'intermediario-2d',
   },
   {
     tag: 'rect',
@@ -362,7 +367,7 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     contentModel: 'none',
     categories: SVG_CHILD,
     modeledAttributes: ['x', 'y', 'width', 'height', 'fill'],
-    level: 'iniciante-2d',
+    level: 'intermediario-2d',
   },
   {
     tag: 'polyline',
@@ -371,7 +376,7 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     contentModel: 'none',
     categories: SVG_CHILD,
     modeledAttributes: ['points', 'fill', 'stroke'],
-    level: 'iniciante-2d',
+    level: 'intermediario-2d',
   },
   {
     tag: 'polygon',
@@ -380,7 +385,7 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     contentModel: 'none',
     categories: SVG_CHILD,
     modeledAttributes: ['points', 'fill', 'stroke'],
-    level: 'iniciante-2d',
+    level: 'intermediario-2d',
   },
   {
     tag: 'text',
@@ -389,7 +394,7 @@ export const HTML_ELEMENT_CATALOG: readonly HTMLElementDescriptor[] = [
     contentModel: 'none',
     categories: SVG_CHILD,
     modeledAttributes: ['x', 'y', 'fill'],
-    level: 'iniciante-2d',
+    level: 'intermediario-2d',
   },
   {
     tag: 'use',
@@ -598,13 +603,13 @@ export function normalizeHTMLButtonType(value: string): string | undefined {
   return HTML_BUTTON_TYPES.has(normalized) ? normalized : undefined
 }
 
-export const HTML_INTERMEDIATE_BLOCK_TYPES: ReadonlySet<string> = new Set([
-  ...HTML_ELEMENT_CATALOG.filter((entry) => entry.level === 'intermediario-2d').map(
+export const HTML_INTERMEDIATE_BLOCK_TYPES: ReadonlySet<string> = new Set(
+  // Hoje = os elementos SVG (reclassificados p/ intermediario-2d em 26/07). O texto
+  // solto e o comentário voltaram ao ESSENCIAL (iniciante-2d, default) — saíram daqui.
+  HTML_ELEMENT_CATALOG.filter((entry) => entry.level === 'intermediario-2d').map(
     (entry) => entry.blockType,
   ),
-  'sz_html_text',
-  'sz_html_comment',
-])
+)
 
 export const HTML_ADVANCED_BLOCK_TYPES: ReadonlySet<string> = new Set(
   HTML_ELEMENT_CATALOG.filter((entry) => entry.level === 'avancado-2d').map(

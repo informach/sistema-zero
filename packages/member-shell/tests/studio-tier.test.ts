@@ -35,9 +35,13 @@ describe('resolveStudioTier — ferramentas conquistadas', () => {
     expect(resolveStudioTier(slug, undefined).level).toBe(level)
   })
 
-  test('Ponte abre no Mestre e PRO somente na Lenda', () => {
-    expect(resolveStudioTier('explorer', undefined).bridge).toBe(false)
-    expect(resolveStudioTier('elite', undefined).allowedModes).toEqual(['blocks', 'bridge'])
+  test('Ponte abre no Gênio e PRO somente na Lenda', () => {
+    // Mestre e Arquiteto ficam só-Blocos (decisão 26/07: a Ponte subiu p/ o Gênio).
+    expect(resolveStudioTier('elite', undefined).bridge).toBe(false)
+    expect(resolveStudioTier('elite', undefined).allowedModes).toEqual(['blocks'])
+    expect(resolveStudioTier('architect', undefined).bridge).toBe(false)
+    expect(resolveStudioTier('champion', undefined).bridge).toBe(true)
+    expect(resolveStudioTier('champion', undefined).allowedModes).toEqual(['blocks', 'bridge'])
     expect(resolveStudioTier('champion', undefined).pro).toBe(false)
     const legend = resolveStudioTier('god', undefined)
     expect(legend.pro).toBe(true)
@@ -96,7 +100,10 @@ describe('remix do Mural — cobertura de ferramentas por nível', () => {
     // 3D abre no Explorador de Mundos (perfil iniciante-3d).
     expect(minCareerLevelForRemix({ pro: false, extensions: ['game-3d'] })).toBe('explorer')
     expect(minCareerLevelForRemix({ pro: false, extensions: ['world-3d'] })).toBe('architect')
-    expect(minCareerLevelForRemix({ pro: false, extensions: ['game-3d-advanced'] })).toBe('god')
+    // Jogo 3D Avançado agora abre no Arquiteto (reclassificado; decisão 26/07).
+    expect(minCareerLevelForRemix({ pro: false, extensions: ['game-3d-advanced'] })).toBe(
+      'architect',
+    )
     // Pro é só da Lenda.
     expect(minCareerLevelForRemix({ pro: true, extensions: [] })).toBe('god')
   })

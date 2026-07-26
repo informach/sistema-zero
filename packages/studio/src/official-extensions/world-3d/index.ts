@@ -25,11 +25,10 @@ const HDR_LOADER_CDN = `${THREE_CDN}/examples/jsm/loaders/HDRLoader.js?external=
 export const worldThreeDExtension: ExtensionDefinition = {
   manifest: world3DManifest,
   conflictsWith: fullscreenConflictsFor('world-3d'),
-  // Decisão de produto: diferente do Jogo 3D Avançado (base de engine, tudo
-  // 'avancado-3d'), o Mundo 3D é a extensão dos blocos "mágicos" de alto nível —
-  // 1 bloco = 1 resultado, um degrau acima da entrada do 3D (decisão da usuária
-  // 17/07: Jogo 3D=iniciante-3d, Mundo 3D=intermediario-3d). Piso por prefixo
-  // sz_w3d_ em blockLevels.ts.
+  // O Mundo 3D e o Jogo 3D Avançado abrem no intermediário 3D (26/07), um degrau
+  // acima da entrada do 3D: o Mundo oferece blocos "mágicos" de alto nível (1 bloco
+  // = 1 resultado), enquanto o kit avançado oferece uma base de engine. O piso por
+  // prefixo sz_w3d_ em blockLevels.ts acompanha este minLevel.
   minLevel: 'intermediario-3d',
   blockly: {
     blocks: world3DBlocks,

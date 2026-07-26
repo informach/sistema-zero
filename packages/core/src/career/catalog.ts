@@ -158,8 +158,10 @@ export const CREATOR_CAREER_LEVELS: readonly CreatorCareerLevelDefinition[] = [
       freeStudio: true,
       blockProfileId: 'intermediario-2d',
       blockLevel: 'intermediario-2d',
-      modes: ['blocks', 'bridge'],
-      bridge: true,
+      // Ponte (código lado a lado) só abre no Gênio (decisão 26/07): Mestre e
+      // Arquiteto ficam só-Blocos; o salto pro código concentra-se no topo da escada.
+      modes: ['blocks'],
+      bridge: false,
       pro: false,
     },
   },
@@ -172,8 +174,9 @@ export const CREATOR_CAREER_LEVELS: readonly CreatorCareerLevelDefinition[] = [
       freeStudio: true,
       blockProfileId: 'intermediario-3d',
       blockLevel: 'intermediario-3d',
-      modes: ['blocks', 'bridge'],
-      bridge: true,
+      // Ainda só-Blocos: a Ponte abre no Gênio (o degrau seguinte).
+      modes: ['blocks'],
+      bridge: false,
       pro: false,
     },
   },

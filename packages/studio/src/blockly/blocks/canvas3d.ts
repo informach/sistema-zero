@@ -27,8 +27,8 @@ import type { BlockDefinition } from './types'
  *     Three.js real mostrado na Ponte.
  *
  * Presença de qualquer bloco `sz_t3d_*` dispara o import automático do three.js no
- * preview (ver `preview/coreImports.ts`). Os facilitadores ficam no intermediário 3D;
- * somente as peças técnicas permanecem no avançado 3D.
+ * preview (ver `preview/coreImports.ts`). Canvas 3D inteiro fica no avançado 3D
+ * ("na unha por último", 26/07), inclusive os facilitadores visuais.
  * Os sockets numéricos/de-cor têm sombra-default em `valueSockets.ts` e round-trip
  * de sombra via `migrateValueFields.ts` (LEGACY_VALUE_FIELDS).
  */

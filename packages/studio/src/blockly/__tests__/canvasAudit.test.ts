@@ -123,26 +123,32 @@ describe('Auditoria Canvas — inventário e experiência infantil', () => {
 })
 
 describe('Auditoria Canvas — progressão', () => {
-  it('iniciante recebe o caminho mínimo completo para desenhar', () => {
-    expect(resolveBlockLevel('sz_canvas_setup')).toBe('iniciante-2d')
-    expect(resolveBlockLevel('sz_canvas_fill_style')).toBe('iniciante-2d')
-    const beginner = canvasToolboxTypes('iniciante-2d')
+  it('Canvas 2D INTEIRO é avancado-2d — nada no iniciante (26/07, "na unha por último")', () => {
     for (const type of [
       'sz_html_canvas',
       'sz_canvas_setup',
       'sz_canvas_fill_style',
       'sz_canvas_fill_rect',
       'sz_canvas_arc',
+      'sz_canvas_arc_slice',
+      'sz_canvas_request_frame',
+      'sz_canvas_request_frame_do',
     ]) {
-      expect(beginner.has(type), type).toBe(true)
+      expect(resolveBlockLevel(type), type).toBe('avancado-2d')
     }
-    expect(beginner.has('sz_canvas_arc_slice')).toBe(false)
-  })
-
-  it('ângulos em radianos ficam no intermediário e animação manual no avançado', () => {
-    expect(resolveBlockLevel('sz_canvas_arc_slice')).toBe('intermediario-2d')
-    expect(resolveBlockLevel('sz_canvas_request_frame')).toBe('avancado-2d')
-    expect(resolveBlockLevel('sz_canvas_request_frame_do')).toBe('avancado-2d')
+    // No iniciante a categoria Canvas não tem bloco (todos avançado); no avançado,
+    // o caminho completo de desenhar na unha aparece.
+    const beginner = canvasToolboxTypes('iniciante-2d')
+    const advanced = canvasToolboxTypes('avancado-2d')
+    for (const type of [
+      'sz_html_canvas',
+      'sz_canvas_setup',
+      'sz_canvas_fill_rect',
+      'sz_canvas_arc',
+    ]) {
+      expect(beginner.has(type), `iniciante ${type}`).toBe(false)
+      expect(advanced.has(type), `avancado ${type}`).toBe(true)
+    }
   })
 
   it('mantém o teclado legado registrado, mas fora de toda paleta', () => {

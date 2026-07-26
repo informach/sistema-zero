@@ -138,7 +138,7 @@ describe('CSS para crianças — contrato pedagógico e funcional', () => {
     expect(argOf('sz_css_background_image', 'URL').type).toBe('field_asset_picker')
   })
 
-  it('começa por estilo visual e deixa controles técnicos de jogo para depois', () => {
+  it('CSS essencial no iniciante; CSS profundo "na unha" no avançado (26/07)', () => {
     const beginner = [
       'sz_css_body_background',
       'sz_css_body_text_color',
@@ -155,15 +155,22 @@ describe('CSS para crianças — contrato pedagógico e funcional', () => {
     ]
     for (const type of beginner) expect(resolveBlockLevel(type), type).toBe('iniciante-2d')
 
-    const gameControls = [
+    // Layout/posicionamento/tipografia fina + a mecânica genérica (regra/decl) e os
+    // recursos avançados são "na unha" — todos avancado-2d (não há CSS intermediário).
+    const deep = [
       'sz_css_position',
       'sz_css_offset',
       'sz_css_overflow',
       'sz_css_object_fit',
       'sz_css_opacity',
       'sz_css_z_index',
+      'sz_css_rule',
+      'sz_css_decl',
+      'sz_css_display_flex',
+      'sz_css_font_weight',
+      'sz_css_keyframes',
     ]
-    for (const type of gameControls) expect(resolveBlockLevel(type), type).toBe('intermediario-2d')
+    for (const type of deep) expect(resolveBlockLevel(type), type).toBe('avancado-2d')
   })
 
   it('mantém contraste AA com o texto branco em todos os grupos', () => {

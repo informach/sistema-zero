@@ -90,10 +90,12 @@ describe('Auditoria Canvas 3D — inventário e progressão', () => {
     expect(catalogTypes).toEqual(CANVAS3D_BLOCKS.map((block) => block.type).sort())
   })
 
-  it('mostra os facilitadores no intermediário 3D e guarda as peças técnicas para o avançado', () => {
-    expect(CORE_CATEGORY_LEVELS['Canvas 3D']).toBe('intermediario-3d')
-    const intermediate = paletteAt('intermediario-3d')
-    expect(intermediate.names.has('Canvas 3D')).toBe(true)
+  it('Canvas 3D INTEIRO é avancado-3d — facilitadores + técnicos juntos (26/07, "na unha")', () => {
+    expect(CORE_CATEGORY_LEVELS['Canvas 3D']).toBe('avancado-3d')
+    // No intermediário 3D a categoria Canvas 3D NÃO aparece mais (subiu inteira).
+    expect(paletteAt('intermediario-3d').names.has('Canvas 3D')).toBe(false)
+    const advanced = paletteAt('avancado-3d')
+    expect(advanced.names.has('Canvas 3D')).toBe(true)
     for (const type of [
       'sz_t3d_scene_create',
       'sz_t3d_renderer_create',
@@ -104,20 +106,20 @@ describe('Auditoria Canvas 3D — inventário e progressão', () => {
       'sz_t3d_city',
       'sz_t3d_renderer_responsive',
       'sz_t3d_physics_body',
+      // As peças técnicas (import/carregar/montar) também ficam aqui, junto.
+      'sz_t3d_import',
+      'sz_t3d_new_var',
+      'sz_t3d_load_model',
+      'sz_t3d_load_sound',
+      'sz_t3d_mount_renderer',
     ]) {
-      expect(resolveBlockLevel(type), type).toBe('intermediario-3d')
-      expect(intermediate.types.has(type), type).toBe(true)
+      expect(resolveBlockLevel(type), type).toBe('avancado-3d')
+      expect(advanced.types.has(type), type).toBe(true)
     }
-    expect(intermediate.types.has('sz_t3d_import')).toBe(false)
-    expect(intermediate.types.has('sz_t3d_new_var')).toBe(false)
-    expect(intermediate.types.has('sz_t3d_load_model')).toBe(false)
-    expect(intermediate.types.has('sz_t3d_load_sound')).toBe(false)
-    expect(intermediate.types.has('sz_t3d_mount_renderer')).toBe(false)
-    expect(paletteAt('avancado-2d').names.has('Canvas 3D')).toBe(true)
   })
 
-  it('oferece o caminho manual Canvas → cena → renderizador → câmera → luz', () => {
-    const intermediate = paletteAt('intermediario-3d')
+  it('oferece o caminho manual Canvas → cena → renderizador → câmera → luz (no avançado)', () => {
+    const intermediate = paletteAt('avancado-3d')
     expect(intermediate.types.has('sz_html_canvas')).toBe(true)
 
     const expected = [

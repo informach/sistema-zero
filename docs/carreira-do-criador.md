@@ -58,10 +58,10 @@ No Community Kids, a página **/cursos** é o **Mapa da Carreira**: uma fita cur
 | Construtor(a) (`coder`) | Posição 1 do Iniciante 2D | Iniciante 2D | Estúdio livre, blocos e Jogo 2D Essencial |
 | Inventor(a) (`hacker`) | 8 posições do Iniciante 2D | Iniciante 3D | Jogo 2D Iniciante completo |
 | Explorador(a) de Mundos (`explorer`) | mais 8 posições do Iniciante 3D | Intermediário 2D | Jogo 3D Iniciante |
-| Mestre dos Jogos (`elite`) | mais 8 posições do Intermediário 2D | Intermediário 3D | Jogo 2D Intermediário e modo Ponte |
-| Arquiteto(a) de Mundos (`architect`) | mais 8 posições do Intermediário 3D | Avançado 2D | Mundo 3D Intermediário e modo Ponte |
-| Gênio da Criação (`champion`) | mais 8 posições do Avançado 2D | Avançado 3D | Jogo 2D Avançado e modo Ponte |
-| Lenda (`god`) | mais 8 posições do Avançado 3D | Carreira concluída | Jogo 3D Avançado, modo Ponte e modo Pro |
+| Mestre dos Jogos (`elite`) | mais 8 posições do Intermediário 2D | Intermediário 3D | Jogo 2D Intermediário (só Blocos) |
+| Arquiteto(a) de Mundos (`architect`) | mais 8 posições do Intermediário 3D | Avançado 2D | Mundo 3D Intermediário **e Jogo 3D Avançado** (só Blocos) |
+| Gênio da Criação (`champion`) | mais 8 posições do Avançado 2D | Avançado 3D | Jogo 2D Avançado e **modo Ponte** |
+| Lenda (`god`) | mais 8 posições do Avançado 3D | Carreira concluída | Jogo 3D Avançado, modo Ponte e **modo Pro** |
 
 O perfil **Jogo 2D Essencial** do Construtor (fonte:
 `packages/studio/src/career/blockProfiles.ts`) traz os blocos da referência do Desafio
@@ -78,8 +78,10 @@ As extensões acumuladas por nível são:
 | Construtor(a) e Inventor(a) | `game-2d` |
 | Explorador(a) | `game-2d`, `game-3d` |
 | Mestre dos Jogos | anteriores e `game-2d-advanced` |
-| Arquiteto(a) de Mundos e Gênio da Criação | anteriores e `world-3d` |
-| Lenda | anteriores e `game-3d-advanced` |
+| Arquiteto(a) de Mundos, Gênio da Criação e Lenda | anteriores, `world-3d` **e `game-3d-advanced`** |
+
+Os modos do editor liberam separado das extensões: **Blocos** desde o Construtor, a **Ponte**
+(código lado a lado) a partir do **Gênio da Criação**, e o **modo Pro** (Código puro) só na **Lenda**.
 
 Projetos importados ou antigos não furam essa regra. Quando um projeto usa uma extensão ainda não conquistada, ele permanece salvo sem alterações e o Estúdio explica que será aberto depois da conquista.
 
