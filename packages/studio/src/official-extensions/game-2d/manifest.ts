@@ -8,6 +8,7 @@ import {
   batalhaMonstrinhosExample,
   cameraAdventureExample,
   catchCoinExample,
+  chuvaDeMeteorosExample,
   codeDrawnExample,
   dinoCorredorExample,
   dinoRunExample,
@@ -24,7 +25,7 @@ import { withGameTwoDLifecycleGuidance } from './pedagogy'
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.44.0',
+  version: '0.45.0',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, vidas automáticas em corações ou barra, colisões, mapas, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
@@ -453,6 +454,7 @@ Na categoria **🎨 Desenho**, faça o visual do sprite com formas, sem imagem n
     dinoCorredorExample,
     batalhaMonstrinhosExample,
     aventuraHeroiExample,
+    chuvaDeMeteorosExample,
     gorilasExample,
     gorilasVsRobotExample,
     stickHeroExample,

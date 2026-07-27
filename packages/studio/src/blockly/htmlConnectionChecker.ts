@@ -299,6 +299,13 @@ function derivedConstructorsFit(
   destinationOwner: Blockly.Block,
   movedRoot: Blockly.Block,
 ): boolean {
+  // O Blockly conecta cada bloco ao pai ANTES de carregar os próprios inputs.
+  // Durante a desserialização, o construtor de uma classe derivada chega aqui
+  // com o corpo ainda VAZIO — o `super()` só entra no loadInputBlocks seguinte
+  // — e a exigência de "primeiro comando" reprovaria estados salvos válidos
+  // (mesma acomodação do caso 'parameter'). Com os eventos reativados, encaixes
+  // manuais voltam a exigir o super() imediato.
+  if (!Blockly.Events.isEnabled()) return true
   const prospectiveArea = ancestorTypes(destinationOwner).some(isProjectAreaType)
   if (!prospectiveArea) return true
 

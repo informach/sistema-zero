@@ -6,6 +6,7 @@ import {
   aventuraNaMaoExample,
   batalhaNaMaoExample,
   CORE_EXAMPLES,
+  chuvaDeMeteorosNaMaoExample,
   corridaInfinitaNaMaoExample,
   defesaDaTorreNaMaoExample,
   dinoNaMaoExample,
@@ -16,6 +17,7 @@ import {
   labirintoDosRobosNaMaoExample,
   mundoDeBlocosNaMaoExample,
   passeio3dNaMaoExample,
+  patrulhaEspacialNaMaoExample,
   plataformaVerticalNaMaoExample,
   portasDoCasteloNaMaoExample,
 } from './core'
@@ -672,6 +674,144 @@ describe('CORE_EXAMPLES — mundoDeBlocosNaMaoExample (Minecraft 3D Clear Code n
     expect(code).toContain('this.colocar("grama", x, 0, z);')
     expect(code).toContain('this.plantarArvore(4, 4);')
     // toque didático: contar os blocos da cena no HUD
+    expect(code).toContain('cena.children.length')
+  })
+})
+
+describe('CORE_EXAMPLES — chuvaDeMeteorosNaMaoExample (Space Shooter 2D Clear Code na unha)', () => {
+  it('está em CORE_EXAMPLES, sem extensões e com IR válido', () => {
+    expect(CORE_EXAMPLES).toContain(chuvaDeMeteorosNaMaoExample)
+    expect(chuvaDeMeteorosNaMaoExample.ir.extensions).toEqual([])
+    expect(SZIRV2Schema.safeParse(chuvaDeMeteorosNaMaoExample.ir).success).toBe(true)
+  })
+
+  it('NÃO usa código avançado nem blocos de extensão', () => {
+    const types = collectTypes(chuvaDeMeteorosNaMaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('rawCSS')).toBe(false)
+    expect(types.has('rawHTML')).toBe(false)
+    expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
+  })
+
+  it('usa a família de sprites + rotação por translate/rotate + colisões do curso, sem asset', () => {
+    const types = collectTypes(chuvaDeMeteorosNaMaoExample.ir)
+    for (const expected of [
+      'classDecl', // Sprite/Player/Laser/Meteor/ExplosionAnimation/Game
+      'superCall', // super(game, …) — a herança de verdade da família
+      'superMethodCall', // super.update(deltaTime) no Meteor
+      'newExpr', // new Meteor(this) / new Laser(this, x, y)
+      'arrayFilter', // culling manual dos que saíram da tela
+      'setThisProp', // o estado vive nos objetos
+      'canvasSave', // a receita da rotação 2D…
+      'canvasTranslate', // …translada até o centro do meteoro…
+      'canvasRotate', // …gira o pincel…
+      'canvasRestore', // …e devolve o pincel como estava
+      'angleConvert', // graus→radianos na mão (Math.PI/180)
+      'canvasGlobalAlpha', // a explosão esmaece por código
+      'canvasArc', // estrelas, meteoro e explosão desenhados por código
+      'canvasFillRect', // nave e laser são retângulos (asset-free)
+      'canvasFillText', // placar + telas de início/fim
+      'funcDecl', // animate(timeStamp) — o laço com TEMPO na mão
+      'requestFrame', // pedir o próximo quadro chamando animate
+      'canvasSetup',
+      'mathBinary', // Math.hypot — normalização da diagonal + círculo×círculo
+      'randomFloat', // estrelas, meteoro e direção diagonal sorteados
+      'objectLiteral', // as 30 estrelas são objetos-dados {x, y, size}
+      'repeat', // o boot sorteia as estrelas num laço
+      'forEach', // varre lasers/meteoros/explosões
+      'event', // keydown/keyup/blur no construtor
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
+    // é 100% desenhado: não precisa de nenhum asset embutido
+    expect(chuvaDeMeteorosNaMaoExample.assets ?? []).toEqual([])
+    const code = compileStatements(behaviorStatements(chuvaDeMeteorosNaMaoExample.ir), 0)
+    // A lição da DIAGONAL: as 4 direções normalizadas pela hipotenusa.
+    expect(code).toContain('const comprimento = Math.hypot(this.dirX, this.dirY);')
+    expect(code).toContain('this.dirX = this.dirX / comprimento;')
+    // A ROTAÇÃO contínua do meteoro: save + translate + rotate + restore.
+    expect(code).toContain('ctx.rotate((this.rotation * Math.PI / 180));')
+    expect(code).toContain('this.rotation = this.rotation + 0.05 * deltaTime;')
+    // Colisão LITERAL do curso: círculo×retângulo via clamp…
+    expect(code).toContain('Math.max(laser.x, Math.min(meteor.x, laser.x + laser.width))')
+    // …e círculo×círculo com raios reduzidos (perdoador).
+    expect(code).toContain('distancia < this.player.collisionRadius + meteor.collisionRadius')
+    // A animação por ÍNDICE sem assets (index += 0.02*dt).
+    expect(code).toContain('this.index = this.index + 0.02 * deltaTime;')
+    // Laço com TEMPO real CLAMPADO em 50ms.
+    expect(code).toContain('let deltaTime = timeStamp - lastTime;')
+    expect(code).toContain('deltaTime = 50;')
+    // Blur da janela zera as teclas (seta não fica presa).
+    expect(code).toContain('window.addEventListener("blur"')
+  })
+})
+
+describe('CORE_EXAMPLES — patrulhaEspacialNaMaoExample (Space Shooter 3D Clear Code na unha)', () => {
+  it('está em CORE_EXAMPLES, sem extensões e com IR válido', () => {
+    expect(CORE_EXAMPLES).toContain(patrulhaEspacialNaMaoExample)
+    expect(patrulhaEspacialNaMaoExample.ir.extensions).toEqual([])
+    expect(SZIRV2Schema.safeParse(patrulhaEspacialNaMaoExample.ir).success).toBe(true)
+  })
+
+  it('NÃO usa código avançado nem blocos de extensão', () => {
+    const types = collectTypes(patrulhaEspacialNaMaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('rawCSS')).toBe(false)
+    expect(types.has('rawHTML')).toBe(false)
+    expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
+  })
+
+  it('gera Three.js CRU com inclinação + bobbing + flash sem shader + sombras fake, sem asset', () => {
+    const types = collectTypes(patrulhaEspacialNaMaoExample.ir)
+    for (const expected of [
+      'importStar', // import * as THREE from 'three' — o motor à mostra
+      'newInstance', // new THREE.X(...) na unha (renderer/cena/câmera/nave)
+      'newExpr', // new THREE.Mesh(...) DENTRO das classes + new Meteoro()
+      'classDecl', // Laser e Meteoro embrulham mesh + estado próprio
+      'animationLoop', // o laço de quadro com THREE.Clock (dt)
+      'funcDecl', // atirar/criarMeteoro (spawn por função) + colisões
+      'call', // if (acertou(laser, meteoro)) — chamada como VALOR
+      'arrayPush', // lasers.push(new Laser(…)) — o pool cresce por função
+      'arrayFilter', // culling dos que saíram do alcance
+      'mathBinary', // Math.max/Math.min — o clamp AABB×esfera por eixo
+      'mathUnary', // Math.sin do bobbing + Math.floor do placar
+      'randomFloat', // raio/cor/posição/giro sorteados do meteoro
+      'index', // CORES_DO_METEORO[…] — cores variadas por sorteio
+      'event', // keydown/keyup (setas/espaço/Enter) + pointerdown + blur
+      'setProperty', // HUD em DOM (pontos + contagem de objetos)
+      'setStyle', // mostrar/esconder o aviso de início/fim
+      'memberCall', // position.set/add/remove na unha
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
+    // é 100% procedural (geometrias + cores): nenhum asset embutido, sem GLB
+    expect(patrulhaEspacialNaMaoExample.assets ?? []).toEqual([])
+    const code = compileStatements(behaviorStatements(patrulhaEspacialNaMaoExample.ir), 0)
+    expect(code).toContain("import * as THREE from 'three'")
+    // a nave é um GRUPO de caixas que INCLINA ao virar (clamp ±0.26 rad)
+    expect(code).toContain('const nave = new THREE.Group();')
+    expect(code).toContain(
+      'nave.rotation.z = nave.rotation.z + (0 - direcao * 0.26 - nave.rotation.z) * 8 * dt;',
+    )
+    // BOBBING senoidal com o tempo total acumulado por dt
+    expect(code).toContain('tempoTotal = tempoTotal + dt;')
+    expect(code).toContain('nave.position.y = Math.sin(tempoTotal * 5) * 0.15;')
+    // FLASH sem shader: material POR meteoro + emissive branco + morte dramática
+    expect(code).toContain('const material = new THREE.MeshStandardMaterial({ color: cor });')
+    expect(code).toContain('this.material.emissive = new THREE.Color(16777215);')
+    expect(code).toContain('this.morte = 0.25;')
+    // SOMBRA FAKE: cilindro achatado semi-transparente seguindo x/z do dono
+    expect(code).toContain('const sombraGeo = new THREE.CylinderGeometry(1, 1, 0.1, 20);')
+    expect(code).toContain('sombraDaNave.position.set(nave.position.x, -1.45, nave.position.z);')
+    // colisão AABB×esfera via clamp por eixo (a matemática à mão)
+    expect(code).toContain(
+      'Math.max(laser.mesh.position.x - 0.06, Math.min(mx, laser.mesh.position.x + 0.06))',
+    )
+    expect(code).toContain('dx * dx + dy * dy + dz * dz < meteoro.raio * meteoro.raio')
+    // dt REAL com THREE.Clock + placar e contagem de objetos no HUD em DOM
+    expect(code).toContain('const relogio = new THREE.Clock();')
+    expect(code).toContain('const dt = relogio.getDelta();')
+    expect(code).toContain('document.getElementById("pontos").textContent = Math.floor(pontos);')
     expect(code).toContain('cena.children.length')
   })
 })

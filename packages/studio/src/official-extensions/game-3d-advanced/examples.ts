@@ -11432,3 +11432,1613 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
     },
   },
 }
+
+/**
+ * Exemplo bundlado: "Patrulha Espacial Profissional" (nível 2 da família
+ * Patrulha Espacial, o Space Shooter do curso raylib no motor avançado). Nave
+ * de peças vista de trás anda SÓ no X (keyDown + clamp + place) com balanço
+ * senoidal e atira com espaço (keyPressed + spawnFrom + moveForward, cooldown
+ * de 0,4 s). ⭐ Morte dramática: o meteoro atingido vira estado "morrendo"
+ * (clarão, congelado, sem machucar) e SÓ explode/recicla 0,25 s depois. Zona
+ * única no meteoro (laser e nave são visitantes filtrados por isMold +
+ * entityStateIs). 20 destruídos = vitória; 3 vidas com tremor e vinheta.
+ * A IR foi GERADA pelo parser real a partir do SOURCE em
+ * __gen_patrulhaProfissional.ts (drift: patrulhaProfissionalExample.test.ts).
+ */
+export const patrulhaEspacialProfissionalExample: ExtensionExample = {
+  name: 'Patrulha Espacial Profissional',
+  experience: 'game',
+  description:
+    'Pilote a nave vista de trás: ande para os lados, atire lasers e destrua 20 meteoros. O atingido brilha antes de explodir, a chuva acelera e cada batida treme a câmera. Tudo de peças, sem imagem.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 130,
+          },
+          sky: '#020617',
+          ground: '#0b1120',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1.3,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Patrulha Espacial Profissional',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Ande com A e D (ou as setas) e atire com espaço. O meteoro atingido brilha antes de explodir: destrua 20 para cumprir a patrulha!',
+          },
+          button: {
+            type: 'str',
+            value: 'Patrulhar',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Patrulha cumprida!',
+          },
+          text: {
+            type: 'str',
+            value: 'Você destruiu 20 meteoros e o setor está seguro. Que pontaria!',
+          },
+          button: {
+            type: 'str',
+            value: 'Patrulhar de novo',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'A nave caiu...',
+          },
+          text: {
+            type: 'str',
+            value: 'Os meteoros venceram desta vez. Atire de longe e não pare de se mexer!',
+          },
+          button: {
+            type: 'str',
+            value: 'Tentar de novo',
+          },
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'nave',
+          health: {
+            type: 'num',
+            value: 3,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#94a3b8',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.9,
+              },
+              h: {
+                type: 'num',
+                value: 0.4,
+              },
+              d: {
+                type: 'num',
+                value: 1.8,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.5,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#38bdf8',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 2.4,
+              },
+              h: {
+                type: 'num',
+                value: 0.14,
+              },
+              d: {
+                type: 'num',
+                value: 0.8,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.45,
+              },
+              z: {
+                type: 'num',
+                value: -0.3,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'cone',
+              material: 'brilho',
+              color: '#22d3ee',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.4,
+              },
+              h: {
+                type: 'num',
+                value: 0.7,
+              },
+              d: {
+                type: 'num',
+                value: 0.4,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.55,
+              },
+              z: {
+                type: 'num',
+                value: 1,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'cylinder',
+              material: 'brilho',
+              color: '#f97316',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.3,
+              },
+              h: {
+                type: 'num',
+                value: 0.3,
+              },
+              d: {
+                type: 'num',
+                value: 0.3,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.5,
+              },
+              z: {
+                type: 'num',
+                value: -1.05,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'laser',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'brilho',
+              color: '#4ade80',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.18,
+              },
+              h: {
+                type: 'num',
+                value: 0.18,
+              },
+              d: {
+                type: 'num',
+                value: 1.1,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.5,
+              },
+              z: {
+                type: 'num',
+                value: 0.8,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'meteoro',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'normal',
+              color: '#78716c',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 1.7,
+              },
+              h: {
+                type: 'num',
+                value: 1.7,
+              },
+              d: {
+                type: 'num',
+                value: 1.7,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'normal',
+              color: '#57534e',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.6,
+              },
+              h: {
+                type: 'num',
+                value: 0.6,
+              },
+              d: {
+                type: 'num',
+                value: 0.6,
+              },
+              x: {
+                type: 'num',
+                value: 0.6,
+              },
+              y: {
+                type: 'num',
+                value: 0.45,
+              },
+              z: {
+                type: 'num',
+                value: 0.35,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'normal',
+              color: '#44403c',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.5,
+              },
+              h: {
+                type: 'num',
+                value: 0.5,
+              },
+              d: {
+                type: 'num',
+                value: 0.5,
+              },
+              x: {
+                type: 'num',
+                value: -0.55,
+              },
+              y: {
+                type: 'num',
+                value: -0.25,
+              },
+              z: {
+                type: 'num',
+                value: 0.5,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:setPhysics',
+          mold: 'nave',
+          kind: 'flutuante',
+        },
+        {
+          type: 'g3k:makeTrigger',
+          mold: 'meteoro',
+        },
+        {
+          type: 'g3k:defineEffect',
+          name: 'clarao',
+          count: {
+            type: 'num',
+            value: 26,
+          },
+          colorFrom: '#f8fafc',
+          colorTo: '#fde047',
+          spread: {
+            type: 'num',
+            value: 6,
+          },
+          sizeFrom: {
+            type: 'num',
+            value: 0.5,
+          },
+          sizeTo: {
+            type: 'num',
+            value: 0,
+          },
+          life: {
+            type: 'num',
+            value: 0.3,
+          },
+          gravity: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3k:defineEffect',
+          name: 'explosao',
+          count: {
+            type: 'num',
+            value: 34,
+          },
+          colorFrom: '#fb923c',
+          colorTo: '#111827',
+          spread: {
+            type: 'num',
+            value: 9,
+          },
+          sizeFrom: {
+            type: 'num',
+            value: 0.7,
+          },
+          sizeTo: {
+            type: 'num',
+            value: 0,
+          },
+          life: {
+            type: 'num',
+            value: 0.7,
+          },
+          gravity: {
+            type: 'num',
+            value: -4,
+          },
+        },
+        {
+          type: 'g3k:defineEffect',
+          name: 'choque',
+          count: {
+            type: 'num',
+            value: 16,
+          },
+          colorFrom: '#f43f5e',
+          colorTo: '#111827',
+          spread: {
+            type: 'num',
+            value: 5,
+          },
+          sizeFrom: {
+            type: 'num',
+            value: 0.45,
+          },
+          sizeTo: {
+            type: 'num',
+            value: 0,
+          },
+          life: {
+            type: 'num',
+            value: 0.5,
+          },
+          gravity: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3k:defineEmitter',
+          name: 'turbina',
+          colorFrom: '#38bdf8',
+          colorTo: '#0f172a',
+          sizeFrom: {
+            type: 'num',
+            value: 0.3,
+          },
+          sizeTo: {
+            type: 'num',
+            value: 0,
+          },
+          rate: {
+            type: 'num',
+            value: 40,
+          },
+          speed: {
+            type: 'num',
+            value: 5,
+          },
+          cone: {
+            type: 'num',
+            value: 14,
+          },
+          gravity: {
+            type: 'num',
+            value: 0,
+          },
+          glow: true,
+          curve: 'suave',
+        },
+        {
+          type: 'var',
+          name: 'pontos',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'tempoDeJogo',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'velocidade',
+          value: {
+            type: 'num',
+            value: 12,
+          },
+        },
+        {
+          type: 'var',
+          name: 'naveX',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'balanco',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'proximoTiro',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'proximoMeteoro',
+          value: {
+            type: 'num',
+            value: 1.2,
+          },
+        },
+        {
+          type: 'g3k:stateTimer',
+          mold: 'laser',
+          state: 'parado',
+          sec: {
+            type: 'num',
+            value: 1.6,
+          },
+          next: 'sumir',
+        },
+        {
+          type: 'g3k:stateTimer',
+          mold: 'meteoro',
+          state: 'morrendo',
+          sec: {
+            type: 'num',
+            value: 0.25,
+          },
+          next: 'acabou',
+        },
+      ],
+      events: [
+        {
+          type: 'g3k:onEnterState',
+          name: 'jogando',
+          body: [
+            {
+              type: 'assign',
+              name: 'pontos',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'tempoDeJogo',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'velocidade',
+              value: {
+                type: 'num',
+                value: 12,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'naveX',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'balanco',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'proximoTiro',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'proximoMeteoro',
+              value: {
+                type: 'num',
+                value: 1.2,
+              },
+            },
+            {
+              type: 'g3k:setSeed',
+              seed: {
+                type: 'num',
+                value: 9,
+              },
+            },
+            {
+              type: 'g3k:setAmbient',
+              intensity: {
+                type: 'num',
+                value: 0.35,
+              },
+            },
+            {
+              type: 'g3k:setFog',
+              color: '#020617',
+              near: {
+                type: 'num',
+                value: 45,
+              },
+              far: {
+                type: 'num',
+                value: 120,
+              },
+            },
+            {
+              type: 'g3k:addLight',
+              color: '#38bdf8',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 12,
+              },
+              z: {
+                type: 'num',
+                value: -10,
+              },
+              intensity: {
+                type: 'num',
+                value: 1.3,
+              },
+            },
+            {
+              type: 'g3k:spawnNamed',
+              varName: 'patrulheira',
+              mold: 'nave',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:cameraFollow',
+              charVar: 'patrulheira',
+              dist: {
+                type: 'num',
+                value: 10,
+              },
+              height: {
+                type: 'num',
+                value: 4,
+              },
+            },
+            {
+              type: 'g3k:cameraSmooth',
+              lambda: {
+                type: 'num',
+                value: 6,
+              },
+            },
+            {
+              type: 'g3k:emitterOn',
+              effect: 'turbina',
+              charVar: 'patrulheira',
+            },
+            {
+              type: 'g3k:say',
+              charVar: 'patrulheira',
+              text: {
+                type: 'str',
+                value: 'Patrulha iniciada!',
+              },
+              seconds: {
+                type: 'num',
+                value: 2,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEnterEntityState',
+          mold: 'laser',
+          state: 'sumir',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:recycle',
+              charVar: 'ela',
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEnterEntityState',
+          mold: 'meteoro',
+          state: 'acabou',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:burstOn',
+              effect: 'explosao',
+              charVar: 'ela',
+            },
+            {
+              type: 'g3k:playEffect',
+              fx: 'explosion',
+            },
+            {
+              type: 'g3k:recycle',
+              charVar: 'ela',
+            },
+          ],
+        },
+        {
+          type: 'g3k:onOverlap',
+          mold: 'meteoro',
+          zoneName: 'zona',
+          whoName: 'quem',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: {
+                  type: 'g3k:isMold',
+                  charVar: 'quem',
+                  mold: 'laser',
+                },
+                right: {
+                  type: 'g3k:entityStateIs',
+                  charVar: 'zona',
+                  state: 'parado',
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:recycle',
+                  charVar: 'quem',
+                },
+                {
+                  type: 'g3k:setVelocity',
+                  charVar: 'zona',
+                  x: {
+                    type: 'num',
+                    value: 0,
+                  },
+                  y: {
+                    type: 'num',
+                    value: 0,
+                  },
+                  z: {
+                    type: 'num',
+                    value: 0,
+                  },
+                },
+                {
+                  type: 'g3k:setEntityState',
+                  charVar: 'zona',
+                  state: 'morrendo',
+                },
+                {
+                  type: 'g3k:burstOn',
+                  effect: 'clarao',
+                  charVar: 'zona',
+                },
+                {
+                  type: 'g3k:playEffect',
+                  fx: 'hit',
+                },
+                {
+                  type: 'assign',
+                  name: 'pontos',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'var',
+                      name: 'pontos',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
+                  },
+                },
+                {
+                  type: 'assign',
+                  name: 'velocidade',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'var',
+                      name: 'velocidade',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0.3,
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: {
+                  type: 'g3k:isMold',
+                  charVar: 'quem',
+                  mold: 'nave',
+                },
+                right: {
+                  type: 'g3k:entityStateIs',
+                  charVar: 'zona',
+                  state: 'parado',
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:burstOn',
+                  effect: 'choque',
+                  charVar: 'zona',
+                },
+                {
+                  type: 'g3k:recycle',
+                  charVar: 'zona',
+                },
+                {
+                  type: 'g3k:hurt',
+                  charVar: 'quem',
+                  amount: {
+                    type: 'num',
+                    value: 1,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onHurt',
+          mold: 'nave',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:cameraShake',
+              strength: {
+                type: 'num',
+                value: 0.6,
+              },
+              seconds: {
+                type: 'num',
+                value: 0.45,
+              },
+            },
+            {
+              type: 'g3k:playEffect',
+              fx: 'hurt',
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityDeath',
+          mold: 'nave',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:burstOn',
+              effect: 'explosao',
+              charVar: 'ela',
+            },
+            {
+              type: 'g3k:playEffect',
+              fx: 'gameover',
+            },
+            {
+              type: 'g3k:endGame',
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'nave',
+          state: 'parado',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '||',
+                left: {
+                  type: 'g3k:keyDown',
+                  key: 'a',
+                },
+                right: {
+                  type: 'g3k:keyDown',
+                  key: 'esquerda',
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'naveX',
+                  value: {
+                    type: 'binop',
+                    op: '-',
+                    left: {
+                      type: 'var',
+                      name: 'naveX',
+                    },
+                    right: {
+                      type: 'binop',
+                      op: '*',
+                      left: {
+                        type: 'num',
+                        value: 16,
+                      },
+                      right: {
+                        type: 'var',
+                        name: 'dt',
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '||',
+                left: {
+                  type: 'g3k:keyDown',
+                  key: 'd',
+                },
+                right: {
+                  type: 'g3k:keyDown',
+                  key: 'direita',
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'naveX',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'var',
+                      name: 'naveX',
+                    },
+                    right: {
+                      type: 'binop',
+                      op: '*',
+                      left: {
+                        type: 'num',
+                        value: 16,
+                      },
+                      right: {
+                        type: 'var',
+                        name: 'dt',
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '<',
+                left: {
+                  type: 'var',
+                  name: 'naveX',
+                },
+                right: {
+                  type: 'num',
+                  value: -9,
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'naveX',
+                  value: {
+                    type: 'num',
+                    value: -9,
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '>',
+                left: {
+                  type: 'var',
+                  name: 'naveX',
+                },
+                right: {
+                  type: 'num',
+                  value: 9,
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'naveX',
+                  value: {
+                    type: 'num',
+                    value: 9,
+                  },
+                },
+              ],
+            },
+            {
+              type: 'assign',
+              name: 'balanco',
+              value: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'var',
+                  name: 'balanco',
+                },
+                right: {
+                  type: 'var',
+                  name: 'dt',
+                },
+              },
+            },
+            {
+              type: 'g3k:place',
+              charVar: 'ela',
+              x: {
+                type: 'var',
+                name: 'naveX',
+              },
+              y: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'num',
+                  value: 1,
+                },
+                right: {
+                  type: 'binop',
+                  op: '*',
+                  left: {
+                    type: 'mathUnary',
+                    fn: 'sin',
+                    arg: {
+                      type: 'binop',
+                      op: '*',
+                      left: {
+                        type: 'var',
+                        name: 'balanco',
+                      },
+                      right: {
+                        type: 'num',
+                        value: 5,
+                      },
+                    },
+                  },
+                  right: {
+                    type: 'num',
+                    value: 0.2,
+                  },
+                },
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'proximoTiro',
+              value: {
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'var',
+                  name: 'proximoTiro',
+                },
+                right: {
+                  type: 'var',
+                  name: 'dt',
+                },
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: {
+                  type: 'g3k:keyPressed',
+                  key: 'espaco',
+                },
+                right: {
+                  type: 'binop',
+                  op: '<=',
+                  left: {
+                    type: 'var',
+                    name: 'proximoTiro',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 0,
+                  },
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:spawnFrom',
+                  mold: 'laser',
+                  fromVar: 'ela',
+                },
+                {
+                  type: 'g3k:playEffect',
+                  fx: 'laser',
+                },
+                {
+                  type: 'assign',
+                  name: 'proximoTiro',
+                  value: {
+                    type: 'num',
+                    value: 0.4,
+                  },
+                },
+              ],
+            },
+            {
+              type: 'g3k:hudText',
+              slot: 'top-left',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'str',
+                  value: 'Vida: ',
+                },
+                right: {
+                  type: 'g3k:healthOf',
+                  charVar: 'ela',
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'laser',
+          state: 'parado',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:moveForward',
+              charVar: 'ela',
+              speed: {
+                type: 'num',
+                value: 42,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'meteoro',
+          state: 'parado',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:setEntityValue',
+              charVar: 'ela',
+              key: 'giro',
+              value: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'g3k:entityValue',
+                  key: 'giro',
+                  charVar: 'ela',
+                },
+                right: {
+                  type: 'binop',
+                  op: '*',
+                  left: {
+                    type: 'num',
+                    value: 90,
+                  },
+                  right: {
+                    type: 'var',
+                    name: 'dt',
+                  },
+                },
+              },
+            },
+            {
+              type: 'g3k:setYaw',
+              charVar: 'ela',
+              degrees: {
+                type: 'g3k:entityValue',
+                key: 'giro',
+                charVar: 'ela',
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'assign',
+              name: 'tempoDeJogo',
+              value: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'var',
+                  name: 'tempoDeJogo',
+                },
+                right: {
+                  type: 'var',
+                  name: 'dt',
+                },
+              },
+            },
+            {
+              type: 'assign',
+              name: 'velocidade',
+              value: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'var',
+                  name: 'velocidade',
+                },
+                right: {
+                  type: 'binop',
+                  op: '*',
+                  left: {
+                    type: 'var',
+                    name: 'dt',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 0.3,
+                  },
+                },
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '>',
+                left: {
+                  type: 'var',
+                  name: 'velocidade',
+                },
+                right: {
+                  type: 'num',
+                  value: 30,
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'velocidade',
+                  value: {
+                    type: 'num',
+                    value: 30,
+                  },
+                },
+              ],
+            },
+            {
+              type: 'assign',
+              name: 'proximoMeteoro',
+              value: {
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'var',
+                  name: 'proximoMeteoro',
+                },
+                right: {
+                  type: 'var',
+                  name: 'dt',
+                },
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '<=',
+                left: {
+                  type: 'var',
+                  name: 'proximoMeteoro',
+                },
+                right: {
+                  type: 'num',
+                  value: 0,
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'proximoMeteoro',
+                  value: {
+                    type: 'binop',
+                    op: '/',
+                    left: {
+                      type: 'num',
+                      value: 22,
+                    },
+                    right: {
+                      type: 'var',
+                      name: 'velocidade',
+                    },
+                  },
+                },
+                {
+                  type: 'g3k:spawnNamed',
+                  varName: 'pedra',
+                  mold: 'meteoro',
+                  x: {
+                    type: 'g3k:randomBetween',
+                    from: {
+                      type: 'num',
+                      value: -9,
+                    },
+                    to: {
+                      type: 'num',
+                      value: 9,
+                    },
+                  },
+                  y: {
+                    type: 'num',
+                    value: 1,
+                  },
+                  z: {
+                    type: 'num',
+                    value: 58,
+                  },
+                },
+                {
+                  type: 'g3k:setVelocity',
+                  charVar: 'pedra',
+                  x: {
+                    type: 'num',
+                    value: 0,
+                  },
+                  y: {
+                    type: 'num',
+                    value: 0,
+                  },
+                  z: {
+                    type: 'binop',
+                    op: '-',
+                    left: {
+                      type: 'num',
+                      value: 0,
+                    },
+                    right: {
+                      type: 'binop',
+                      op: '+',
+                      left: {
+                        type: 'var',
+                        name: 'velocidade',
+                      },
+                      right: {
+                        type: 'g3k:randomBetween',
+                        from: {
+                          type: 'num',
+                          value: 0,
+                        },
+                        to: {
+                          type: 'num',
+                          value: 6,
+                        },
+                      },
+                    },
+                  },
+                },
+                {
+                  type: 'g3k:setEntityValue',
+                  charVar: 'pedra',
+                  key: 'giro',
+                  value: {
+                    type: 'g3k:randomBetween',
+                    from: {
+                      type: 'num',
+                      value: 0,
+                    },
+                    to: {
+                      type: 'num',
+                      value: 360,
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'g3k:cullFar',
+              mold: 'meteoro',
+              dist: {
+                type: 'num',
+                value: 90,
+              },
+            },
+            {
+              type: 'g3k:cullFar',
+              mold: 'laser',
+              dist: {
+                type: 'num',
+                value: 80,
+              },
+            },
+            {
+              type: 'g3k:hudText',
+              slot: 'top-right',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '+',
+                  left: {
+                    type: 'str',
+                    value: 'Meteoros: ',
+                  },
+                  right: {
+                    type: 'var',
+                    name: 'pontos',
+                  },
+                },
+                right: {
+                  type: 'str',
+                  value: ' de 20',
+                },
+              },
+            },
+            {
+              type: 'g3k:hudText',
+              slot: 'bottom-right',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '+',
+                  left: {
+                    type: 'str',
+                    value: 'Tempo: ',
+                  },
+                  right: {
+                    type: 'mathUnary',
+                    fn: 'floor',
+                    arg: {
+                      type: 'var',
+                      name: 'tempoDeJogo',
+                    },
+                  },
+                },
+                right: {
+                  type: 'str',
+                  value: 's',
+                },
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '>=',
+                left: {
+                  type: 'var',
+                  name: 'pontos',
+                },
+                right: {
+                  type: 'num',
+                  value: 20,
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:playEffect',
+                  fx: 'win',
+                },
+                {
+                  type: 'g3k:setState',
+                  name: 'vitoria',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+}

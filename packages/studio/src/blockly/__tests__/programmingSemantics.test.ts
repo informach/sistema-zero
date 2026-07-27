@@ -548,6 +548,30 @@ describe('contextos semânticos de Programação', () => {
     duplicate.dispose()
   })
 
+  it('desserializa classe derivada ancorada: o construtor conecta antes do corpo carregar', () => {
+    // Repro do card "Chuva de Meteoros (na mão)": o load do Blockly conecta o
+    // construtor ao MEMBERS ANTES de carregar o próprio BODY (o super() ainda
+    // não existe nesse instante) — a exigência de "primeiro comando" precisa da
+    // acomodação de desserialização, senão o estado salvo válido é rejeitado.
+    const source = workspace()
+    const derived = classWithMember(source, 'sz_js_constructor', { extends: 'Base' })
+    expect(connectStatement(derived.member, 'BODY', source.newBlock('sz_js_super_ctor'))).toBe(true)
+    expect(
+      connectStatement(source.newBlock('sz_frame_start'), 'CHILDREN', derived.classBlock),
+    ).toBe(true)
+    const state = Blockly.serialization.workspaces.save(source)
+    source.dispose()
+
+    const reloaded = workspace()
+    Blockly.serialization.workspaces.load(state, reloaded)
+    const classBlock = reloaded.getBlocksByType('sz_js_class', false)[0]
+    expect(classBlock).toBeDefined()
+    const member = classBlock?.getInputTargetBlock('MEMBERS')
+    expect(member?.type).toBe('sz_js_constructor')
+    expect(member?.getInputTargetBlock('BODY')?.type).toBe('sz_js_super_ctor')
+    reloaded.dispose()
+  })
+
   it('preserva as regras de super ao editar uma classe derivada já ancorada', () => {
     const addingConstructor = workspace()
     const startWithDefault = addingConstructor.newBlock('sz_frame_start')

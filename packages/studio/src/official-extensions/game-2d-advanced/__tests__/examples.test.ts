@@ -16,6 +16,7 @@ import {
   batalhaProfissionalExample,
   bichinhosDoQuintalExample,
   cacaMoedasExample,
+  chuvaProfissionalExample,
   cobrinhaExample,
   corridaTabuleiroExample,
   defesaDoReinoExample,
@@ -45,6 +46,7 @@ const EXAMPLES = [
   aventuraProfissionalExample,
   saltoNaFlorestaExample,
   dinoProfissionalExample,
+  chuvaProfissionalExample,
   bichinhosDoQuintalExample,
   invasaoDosOvnisExample,
   dueloDosBonecosExample,
@@ -171,6 +173,33 @@ const REQUIRED_TYPES = {
     'gk:setEntityState',
     'gk:stateLook',
     'gk:autoAnimate',
+    'gk:saveValue',
+    'gk:savedValue',
+    'gk:onEvent',
+    'gk:emit',
+  ],
+  'Chuva de Meteoros Profissional': [
+    'gk:defineMold',
+    'gk:defineLook',
+    'gk:defineEffect',
+    'gk:burst',
+    'gk:everySeconds',
+    'gk:spawnNamed',
+    'gk:forEachActive',
+    'gk:cullOffscreen',
+    'gk:recycle',
+    'gk:overlapGroups',
+    'gk:moveWithKeys',
+    'gk:keepOnScreen',
+    'gk:leanOnMove',
+    'gk:setAngle',
+    'gk:angleOf',
+    'gk:keyPressed',
+    'gk:cooldownReady',
+    'gk:setVelocity',
+    'gk:moveByVelocity',
+    'gk:setHitbox',
+    'gk:naveStarfield',
     'gk:saveValue',
     'gk:savedValue',
     'gk:onEvent',
@@ -327,7 +356,7 @@ beforeAll(() => {
 })
 
 describe('game-2d-advanced — catálogo dos exemplos', () => {
-  it('manifest mantém os 22 exemplos canônicos na ordem da vitrine', () => {
+  it('manifest mantém os 23 exemplos canônicos na ordem da vitrine', () => {
     expect(gameKitExtension.manifest.examples.map((example) => example.name)).toEqual(
       EXAMPLES.map((example) => example.name),
     )

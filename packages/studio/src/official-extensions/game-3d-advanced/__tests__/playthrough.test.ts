@@ -9,6 +9,7 @@ import {
   labirintoDosRobosProfissionalExample,
   mundoDeBlocosProfissionalExample,
   parkourDoVulcaoExample,
+  patrulhaEspacialProfissionalExample,
   quadraMalucaExample,
   saltoNasNuvensExample,
   tiroAoAlvoExample,
@@ -582,5 +583,118 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
     expect(quadros).toBeGreaterThan(0)
     expect(api.state()).toBe('vitoria')
     expect(tituloDaTela(stage, 'vitoria')).toBe('Chegou ao topo!')
+  })
+
+  it('⭐ Patrulha Espacial Profissional: o cooldown segura o gatilho, a morte é DRAMÁTICA (morrendo não machuca nem conta duplo), 3 batidas perdem e 20 abates vencem', async () => {
+    const { api, step, stage } = await loadExampleKit(
+      jsDoExemplo(patrulhaEspacialProfissionalExample),
+    )
+    expect(api.state()).toBe('menu')
+    apertarBotaoDe(stage, 'menu') // "Patrulhar"
+    expect(api.state()).toBe('jogando')
+
+    // (a) keyDown REAL move a nave no eixo X (clamp na gaveta + place).
+    let nave = primeiroVivo(api, 'nave')
+    expect(nave).not.toBeNull()
+    step(2)
+    tecla('keydown', 'a')
+    step(6)
+    tecla('keyup', 'a')
+    expect(api.posOf(nave, 'x')).toBeLessThan(-0.5)
+
+    // (b) ⭐ COOLDOWN de 0,4 s: três apertos de espaço em 3 quadros = UM laser
+    // só (a lição do Lote C: sem a trava, cliques afobados gastam tiros à toa).
+    const atirar = (): void => {
+      tecla('keydown', ' ')
+      step(1)
+      tecla('keyup', ' ')
+    }
+    atirar()
+    expect(api.countAlive('laser')).toBe(1)
+    atirar()
+    atirar()
+    expect(api.countAlive('laser')).toBe(1)
+    // Sem acertar nada, o laser se recolhe sozinho (stateTimer 1,6 s → recycle).
+    const sumiu = stepUntil(step, () => api.countAlive('laser') === 0, 90)
+    expect(sumiu).toBeGreaterThan(0)
+
+    // Estacionar meteoros VIVOS num canto alto (x 20 nunca alcança a nave, que
+    // é clampada em ±9) deixa cada probe determinístico.
+    const estacionar = (menos: unknown): void => {
+      api.forEachAlive('meteoro', (m) => {
+        if (m !== menos && api.stateOf(m) === 'parado') api.place(m, 20, 8, 58)
+      })
+    }
+    const alvoParado = (): unknown => {
+      let found: unknown = null
+      api.forEachAlive('meteoro', (m) => {
+        if (!found && api.stateOf(m) === 'parado') found = m
+      })
+      return found
+    }
+
+    // (c) ⭐ MORTE DRAMÁTICA: pina um meteoro na frente da nave e acerta o
+    // laser. O meteoro NÃO some: entra no estado "morrendo".
+    let alvo: unknown = null
+    for (let i = 0; i < 300 && !alvo; i++) {
+      step(1)
+      alvo = alvoParado()
+    }
+    expect(alvo).not.toBeNull()
+    for (let i = 0; i < 120 && api.stateOf(alvo) !== 'morrendo'; i++) {
+      estacionar(alvo)
+      if (api.stateOf(alvo) === 'parado') {
+        api.place(alvo, api.posOf(nave, 'x'), api.posOf(nave, 'y'), api.posOf(nave, 'z') + 6)
+      }
+      if (i % 15 === 0) atirar()
+      else step(1)
+    }
+    expect(api.stateOf(alvo)).toBe('morrendo')
+    expect(stage.querySelector('.szg3k-hud-top-right')?.textContent).toBe('Meteoros: 1 de 20')
+
+    // (d) ⭐ o meteoro morrendo NÃO machuca: jogado em cima da nave, a vida não
+    // mexe (o gancho da zona filtra por entityStateIs "parado").
+    const vidaAntes = api.healthOf(nave)
+    api.place(alvo, api.posOf(nave, 'x'), api.posOf(nave, 'y'), api.posOf(nave, 'z'))
+    step(1)
+    expect(api.stateOf(alvo)).toBe('morrendo') // ainda dentro da janela de 0,25 s
+    expect(api.healthOf(nave)).toBe(vidaAntes)
+    expect(api.state()).toBe('jogando')
+
+    // (e) ⭐ e não conta ponto duplo: a janela fecha, o meteoro explode e some,
+    // e o placar continua valendo UM abate só.
+    step(12)
+    expect(api.exists(alvo)).toBe(false)
+    expect(stage.querySelector('.szg3k-hud-top-right')?.textContent).toBe('Meteoros: 1 de 20')
+    expect(api.healthOf(nave)).toBe(vidaAntes)
+
+    // (f) derrota JOGÁVEL: meteoros VIVOS na cara da nave. Cada batida tira 1
+    // das 3 vidas (i-frames de 0,5 s entre elas) até a tela de fim.
+    for (let i = 0; i < 900 && api.state() === 'jogando'; i++) {
+      const vivo = alvoParado()
+      if (vivo) {
+        api.place(vivo, api.posOf(nave, 'x'), api.posOf(nave, 'y'), api.posOf(nave, 'z'))
+      }
+      step(1)
+    }
+    expect(api.state()).toBe('fim')
+    expect(tituloDaTela(stage, 'fim')).toBe('A nave caiu...')
+
+    // (g) partida nova: caça pinada (alvo na frente, resto estacionado, tiro a
+    // cada 15 quadros > cooldown) até os 20 abates fecharem em vitória.
+    apertarBotaoDe(stage, 'fim') // "Tentar de novo"
+    expect(api.state()).toBe('jogando')
+    nave = primeiroVivo(api, 'nave')
+    for (let i = 0; i < 3200 && api.state() === 'jogando'; i++) {
+      const caca = alvoParado()
+      if (caca) {
+        estacionar(caca)
+        api.place(caca, api.posOf(nave, 'x'), api.posOf(nave, 'y'), api.posOf(nave, 'z') + 6)
+      }
+      if (i % 15 === 0) atirar()
+      else step(1)
+    }
+    expect(api.state()).toBe('vitoria')
+    expect(tituloDaTela(stage, 'vitoria')).toBe('Patrulha cumprida!')
   })
 })

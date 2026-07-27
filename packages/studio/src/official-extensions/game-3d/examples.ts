@@ -4631,3 +4631,1711 @@ export const mundoBlocosExample: ExtensionExample = {
     extensions: [{ extensionId: 'game-3d' }],
   },
 }
+
+/**
+ * Exemplo bundlado: "Patrulha Espacial" (nível 1 da família Patrulha Espacial,
+ * recriação do Space Shooter 3D do curso raylib). Nave em modelo composto vista
+ * de trás andando SÓ no eixo X (clamp) com inclinação ao virar e balanço
+ * senoidal; espaço atira laser (cooldown por quadros); meteoros-esfera de dois
+ * tamanhos vêm de longe girando, cada vez mais rápidos. Laser×meteoro remove os
+ * dois e pontua; nave×meteoro encerra com tela de resultado. HUD DOM com tempo
+ * e pontos. A IR foi GERADA pelo parser real a partir do SOURCE em
+ * __gen_patrulhaEspacial.ts (drift test: patrulhaEspacialExample.test.ts).
+ */
+export const patrulhaEspacialExample: ExtensionExample = {
+  name: 'Patrulha Espacial',
+  experience: 'game',
+  description:
+    'Sua nave patrulha o espaço andando só de um lado para o outro. Incline nas curvas, atire lasers com espaço e desvie dos meteoros, que chegam cada vez mais rápidos. O placar conta tempo e pontos.',
+  ir: {
+    html: [
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'tempo',
+        text: '0',
+      },
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'pontos',
+        text: '0',
+      },
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'hint',
+        text: 'Setas ou A e D: mover. Espaço: atirar laser.',
+      },
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'results',
+        children: [
+          {
+            type: 'element',
+            tag: 'div',
+            id: 'results-box',
+            children: [
+              {
+                type: 'element',
+                tag: 'h1',
+                text: 'A nave bateu!',
+              },
+              {
+                type: 'element',
+                tag: 'p',
+                children: [
+                  {
+                    type: 'text',
+                    text: 'Você patrulhou por ',
+                  },
+                  {
+                    type: 'element',
+                    tag: 'span',
+                    id: 'final-tempo',
+                  },
+                  {
+                    type: 'text',
+                    text: ' segundos e fez ',
+                  },
+                  {
+                    type: 'element',
+                    tag: 'span',
+                    id: 'final-pontos',
+                  },
+                  {
+                    type: 'text',
+                    text: ' pontos',
+                  },
+                ],
+              },
+              {
+                type: 'element',
+                tag: 'button',
+                id: 'retry',
+                text: 'Patrulhar de novo',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    css: [
+      {
+        type: 'googleFont',
+        family: 'Press Start 2P',
+      },
+      {
+        selector: 'body',
+        declarations: {
+          margin: '0',
+          overflow: 'hidden',
+          'font-family': '"Press Start 2P", cursive',
+        },
+      },
+      {
+        selector: '#tempo',
+        declarations: {
+          position: 'absolute',
+          top: '20px',
+          left: '20px',
+          'font-size': '1.6em',
+          color: 'white',
+          'z-index': '1',
+        },
+      },
+      {
+        selector: '#pontos',
+        declarations: {
+          position: 'absolute',
+          top: '20px',
+          right: '20px',
+          'font-size': '1.6em',
+          color: '#4ade80',
+          'z-index': '1',
+        },
+      },
+      {
+        selector: '#hint',
+        declarations: {
+          position: 'absolute',
+          bottom: '20px',
+          left: '0',
+          'min-width': '100%',
+          'text-align': 'center',
+          'font-size': '0.7em',
+          color: 'white',
+          'z-index': '1',
+        },
+      },
+      {
+        selector: '#results',
+        declarations: {
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          'min-width': '100%',
+          'min-height': '100%',
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          visibility: 'hidden',
+          'z-index': '1',
+        },
+      },
+      {
+        selector: '#results.visivel',
+        declarations: {
+          visibility: 'visible',
+        },
+      },
+      {
+        selector: '#results-box',
+        declarations: {
+          display: 'flex',
+          'flex-direction': 'column',
+          'align-items': 'center',
+          'background-color': '#0f172a',
+          color: 'white',
+          'text-align': 'center',
+          padding: '24px',
+        },
+      },
+      {
+        selector: '#results-box button',
+        declarations: {
+          'background-color': '#4ade80',
+          color: '#022c22',
+          padding: '16px 32px',
+          'font-family': 'inherit',
+          cursor: 'pointer',
+          border: 'none',
+        },
+      },
+    ],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'g3d:createFullscreenScene',
+          varName: 'cena',
+          bg: '#020617',
+        },
+        {
+          type: 'g3d:setSky',
+          worldVar: 'cena',
+          top: '#020617',
+          bottom: '#312e81',
+        },
+        {
+          type: 'g3d:setFog',
+          worldVar: 'cena',
+          color: '#0b1030',
+          near: {
+            type: 'num',
+            value: 30,
+          },
+          far: {
+            type: 'num',
+            value: 75,
+          },
+        },
+        {
+          type: 'g3d:setCameraPosition',
+          worldVar: 'cena',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 4.5,
+          },
+          z: {
+            type: 'num',
+            value: 9,
+          },
+        },
+        {
+          type: 'g3d:createModel',
+          varName: 'nave',
+          worldVar: 'cena',
+        },
+        {
+          type: 'g3d:createBlock',
+          varName: 'corpo',
+          worldVar: 'cena',
+          width: {
+            type: 'num',
+            value: 0.8,
+          },
+          height: {
+            type: 'num',
+            value: 0.35,
+          },
+          depth: {
+            type: 'num',
+            value: 1.6,
+          },
+          color: '#94a3b8',
+        },
+        {
+          type: 'g3d:createBlock',
+          varName: 'asaEsquerda',
+          worldVar: 'cena',
+          width: {
+            type: 'num',
+            value: 1.2,
+          },
+          height: {
+            type: 'num',
+            value: 0.12,
+          },
+          depth: {
+            type: 'num',
+            value: 0.7,
+          },
+          color: '#38bdf8',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'asaEsquerda',
+          x: {
+            type: 'num',
+            value: -0.9,
+          },
+          y: {
+            type: 'num',
+            value: 0,
+          },
+          z: {
+            type: 'num',
+            value: 0.3,
+          },
+        },
+        {
+          type: 'g3d:createBlock',
+          varName: 'asaDireita',
+          worldVar: 'cena',
+          width: {
+            type: 'num',
+            value: 1.2,
+          },
+          height: {
+            type: 'num',
+            value: 0.12,
+          },
+          depth: {
+            type: 'num',
+            value: 0.7,
+          },
+          color: '#38bdf8',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'asaDireita',
+          x: {
+            type: 'num',
+            value: 0.9,
+          },
+          y: {
+            type: 'num',
+            value: 0,
+          },
+          z: {
+            type: 'num',
+            value: 0.3,
+          },
+        },
+        {
+          type: 'g3d:createCone',
+          varName: 'bico',
+          worldVar: 'cena',
+          radius: {
+            type: 'num',
+            value: 0.22,
+          },
+          height: {
+            type: 'num',
+            value: 0.7,
+          },
+          color: '#22d3ee',
+        },
+        {
+          type: 'g3d:setMaterial',
+          objVar: 'bico',
+          kind: 'glow',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'bico',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 0,
+          },
+          z: {
+            type: 'num',
+            value: -1,
+          },
+        },
+        {
+          type: 'g3d:setRotation',
+          objVar: 'bico',
+          x: {
+            type: 'num',
+            value: -1.57,
+          },
+          y: {
+            type: 'num',
+            value: 0,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:addToModel',
+          modelVar: 'nave',
+          partVar: 'corpo',
+        },
+        {
+          type: 'g3d:addToModel',
+          modelVar: 'nave',
+          partVar: 'asaEsquerda',
+        },
+        {
+          type: 'g3d:addToModel',
+          modelVar: 'nave',
+          partVar: 'asaDireita',
+        },
+        {
+          type: 'g3d:addToModel',
+          modelVar: 'nave',
+          partVar: 'bico',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'nave',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 1,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:createSphere',
+          varName: 'moldeMeteoro',
+          worldVar: 'cena',
+          radius: {
+            type: 'num',
+            value: 0.9,
+          },
+          color: '#78716c',
+        },
+        {
+          type: 'g3d:setVisible',
+          objVar: 'moldeMeteoro',
+          mode: 'hide',
+        },
+        {
+          type: 'g3d:createSphere',
+          varName: 'moldeRapido',
+          worldVar: 'cena',
+          radius: {
+            type: 'num',
+            value: 0.55,
+          },
+          color: '#f97316',
+        },
+        {
+          type: 'g3d:setVisible',
+          objVar: 'moldeRapido',
+          mode: 'hide',
+        },
+        {
+          type: 'g3d:createBlock',
+          varName: 'moldeTiro',
+          worldVar: 'cena',
+          width: {
+            type: 'num',
+            value: 0.16,
+          },
+          height: {
+            type: 'num',
+            value: 0.16,
+          },
+          depth: {
+            type: 'num',
+            value: 0.9,
+          },
+          color: '#4ade80',
+        },
+        {
+          type: 'g3d:setMaterial',
+          objVar: 'moldeTiro',
+          kind: 'glow',
+        },
+        {
+          type: 'g3d:setVisible',
+          objVar: 'moldeTiro',
+          mode: 'hide',
+        },
+        {
+          type: 'g3d:createSwarm',
+          varName: 'meteoros',
+          worldVar: 'cena',
+        },
+        {
+          type: 'g3d:createSwarm',
+          varName: 'meteorosRapidos',
+          worldVar: 'cena',
+        },
+        {
+          type: 'g3d:createSwarm',
+          varName: 'tiros',
+          worldVar: 'cena',
+        },
+        {
+          type: 'var',
+          name: 'naveX',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'inclinacao',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'relogio',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'velocidade',
+          value: {
+            type: 'num',
+            value: 0.14,
+          },
+        },
+        {
+          type: 'var',
+          name: 'recarga',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'tempo',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'pontos',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'sorteio',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'lugar',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'encostou',
+          value: {
+            type: 'bool',
+            value: false,
+          },
+        },
+        {
+          type: 'var',
+          name: 'rodando',
+          value: {
+            type: 'bool',
+            value: true,
+          },
+        },
+      ],
+      events: [
+        {
+          type: 'event',
+          target: 'retry',
+          event: 'click',
+          body: [
+            {
+              type: 'g3d:forEachInSwarm',
+              swarmVar: 'meteoros',
+              itemName: 'meteoro',
+              body: [
+                {
+                  type: 'g3d:removeFromSwarm',
+                  swarmVar: 'meteoros',
+                  itemVar: 'meteoro',
+                },
+              ],
+            },
+            {
+              type: 'g3d:forEachInSwarm',
+              swarmVar: 'meteorosRapidos',
+              itemName: 'meteoro',
+              body: [
+                {
+                  type: 'g3d:removeFromSwarm',
+                  swarmVar: 'meteorosRapidos',
+                  itemVar: 'meteoro',
+                },
+              ],
+            },
+            {
+              type: 'g3d:forEachInSwarm',
+              swarmVar: 'tiros',
+              itemName: 'tiro',
+              body: [
+                {
+                  type: 'g3d:removeFromSwarm',
+                  swarmVar: 'tiros',
+                  itemVar: 'tiro',
+                },
+              ],
+            },
+            {
+              type: 'assign',
+              name: 'naveX',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'inclinacao',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'velocidade',
+              value: {
+                type: 'num',
+                value: 0.14,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'recarga',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'tempo',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'pontos',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3d:setPosition',
+              objVar: 'nave',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3d:setRotation',
+              objVar: 'nave',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'setProperty',
+              targetId: 'tempo',
+              property: 'textContent',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'setProperty',
+              targetId: 'pontos',
+              property: 'textContent',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'classOp',
+              targetId: 'results',
+              op: 'remove',
+              className: 'visivel',
+            },
+            {
+              type: 'assign',
+              name: 'rodando',
+              value: {
+                type: 'bool',
+                value: true,
+              },
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3d:animate',
+          worldVar: 'cena',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'var',
+                name: 'rodando',
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'relogio',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'var',
+                      name: 'relogio',
+                    },
+                    right: {
+                      type: 'g3d:dt',
+                      worldVar: 'cena',
+                    },
+                  },
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logical',
+                    op: '||',
+                    left: {
+                      type: 'g3d:keyDown',
+                      key: 'ArrowLeft',
+                    },
+                    right: {
+                      type: 'g3d:keyDown',
+                      key: 'KeyA',
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'naveX',
+                      value: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'var',
+                          name: 'naveX',
+                        },
+                        right: {
+                          type: 'binop',
+                          op: '*',
+                          left: {
+                            type: 'num',
+                            value: 8,
+                          },
+                          right: {
+                            type: 'g3d:dt',
+                            worldVar: 'cena',
+                          },
+                        },
+                      },
+                    },
+                    {
+                      type: 'assign',
+                      name: 'inclinacao',
+                      value: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'var',
+                          name: 'inclinacao',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 0.05,
+                        },
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logical',
+                    op: '||',
+                    left: {
+                      type: 'g3d:keyDown',
+                      key: 'ArrowRight',
+                    },
+                    right: {
+                      type: 'g3d:keyDown',
+                      key: 'KeyD',
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'naveX',
+                      value: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'var',
+                          name: 'naveX',
+                        },
+                        right: {
+                          type: 'binop',
+                          op: '*',
+                          left: {
+                            type: 'num',
+                            value: 8,
+                          },
+                          right: {
+                            type: 'g3d:dt',
+                            worldVar: 'cena',
+                          },
+                        },
+                      },
+                    },
+                    {
+                      type: 'assign',
+                      name: 'inclinacao',
+                      value: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'var',
+                          name: 'inclinacao',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 0.05,
+                        },
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<',
+                    left: {
+                      type: 'var',
+                      name: 'naveX',
+                    },
+                    right: {
+                      type: 'num',
+                      value: -6,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'naveX',
+                      value: {
+                        type: 'num',
+                        value: -6,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'var',
+                      name: 'naveX',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 6,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'naveX',
+                      value: {
+                        type: 'num',
+                        value: 6,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'assign',
+                  name: 'inclinacao',
+                  value: {
+                    type: 'binop',
+                    op: '*',
+                    left: {
+                      type: 'var',
+                      name: 'inclinacao',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0.88,
+                    },
+                  },
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'var',
+                      name: 'inclinacao',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0.26,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'inclinacao',
+                      value: {
+                        type: 'num',
+                        value: 0.26,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<',
+                    left: {
+                      type: 'var',
+                      name: 'inclinacao',
+                    },
+                    right: {
+                      type: 'num',
+                      value: -0.26,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'inclinacao',
+                      value: {
+                        type: 'num',
+                        value: -0.26,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'g3d:setPosition',
+                  objVar: 'nave',
+                  x: {
+                    type: 'var',
+                    name: 'naveX',
+                  },
+                  y: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'num',
+                      value: 1,
+                    },
+                    right: {
+                      type: 'binop',
+                      op: '*',
+                      left: {
+                        type: 'mathUnary',
+                        fn: 'sin',
+                        arg: {
+                          type: 'binop',
+                          op: '*',
+                          left: {
+                            type: 'var',
+                            name: 'relogio',
+                          },
+                          right: {
+                            type: 'num',
+                            value: 5,
+                          },
+                        },
+                      },
+                      right: {
+                        type: 'num',
+                        value: 0.12,
+                      },
+                    },
+                  },
+                  z: {
+                    type: 'num',
+                    value: 0,
+                  },
+                },
+                {
+                  type: 'g3d:setRotation',
+                  objVar: 'nave',
+                  x: {
+                    type: 'num',
+                    value: 0,
+                  },
+                  y: {
+                    type: 'num',
+                    value: 0,
+                  },
+                  z: {
+                    type: 'var',
+                    name: 'inclinacao',
+                  },
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'var',
+                      name: 'recarga',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'recarga',
+                      value: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'var',
+                          name: 'recarga',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 1,
+                        },
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'g3d:keyDown',
+                    key: 'Space',
+                  },
+                  then: [
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'binop',
+                        op: '===',
+                        left: {
+                          type: 'var',
+                          name: 'recarga',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 0,
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'g3d:spawnInSwarm',
+                          swarmVar: 'tiros',
+                          originalVar: 'moldeTiro',
+                          x: {
+                            type: 'var',
+                            name: 'naveX',
+                          },
+                          y: {
+                            type: 'g3d:getPos',
+                            objVar: 'nave',
+                            axis: 'y',
+                          },
+                          z: {
+                            type: 'num',
+                            value: -1,
+                          },
+                        },
+                        {
+                          type: 'g3d:playNote',
+                          freq: {
+                            type: 'num',
+                            value: 880,
+                          },
+                          ms: {
+                            type: 'num',
+                            value: 70,
+                          },
+                        },
+                        {
+                          type: 'assign',
+                          name: 'recarga',
+                          value: {
+                            type: 'num',
+                            value: 15,
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: 'g3d:forEachInSwarm',
+                  swarmVar: 'tiros',
+                  itemName: 'tiro',
+                  body: [
+                    {
+                      type: 'g3d:moveBy',
+                      objVar: 'tiro',
+                      x: {
+                        type: 'num',
+                        value: 0,
+                      },
+                      y: {
+                        type: 'num',
+                        value: 0,
+                      },
+                      z: {
+                        type: 'num',
+                        value: -0.9,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'assign',
+                  name: 'encostou',
+                  value: {
+                    type: 'bool',
+                    value: false,
+                  },
+                },
+                {
+                  type: 'g3d:forEachInSwarm',
+                  swarmVar: 'meteoros',
+                  itemName: 'meteoro',
+                  body: [
+                    {
+                      type: 'g3d:moveBy',
+                      objVar: 'meteoro',
+                      x: {
+                        type: 'num',
+                        value: 0,
+                      },
+                      y: {
+                        type: 'num',
+                        value: 0,
+                      },
+                      z: {
+                        type: 'var',
+                        name: 'velocidade',
+                      },
+                    },
+                    {
+                      type: 'g3d:spin',
+                      objVar: 'meteoro',
+                      axis: 'x',
+                      speed: {
+                        type: 'num',
+                        value: 0.02,
+                      },
+                    },
+                    {
+                      type: 'g3d:spin',
+                      objVar: 'meteoro',
+                      axis: 'y',
+                      speed: {
+                        type: 'num',
+                        value: 0.013,
+                      },
+                    },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'g3d:isNear',
+                        aVar: 'nave',
+                        bVar: 'meteoro',
+                        dist: {
+                          type: 'num',
+                          value: 1.5,
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'assign',
+                          name: 'encostou',
+                          value: {
+                            type: 'bool',
+                            value: true,
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      type: 'g3d:forEachInSwarm',
+                      swarmVar: 'tiros',
+                      itemName: 'tiro',
+                      body: [
+                        {
+                          type: 'if',
+                          cond: {
+                            type: 'g3d:collides',
+                            aVar: 'tiro',
+                            bVar: 'meteoro',
+                          },
+                          then: [
+                            {
+                              type: 'g3d:removeFromSwarm',
+                              swarmVar: 'meteoros',
+                              itemVar: 'meteoro',
+                            },
+                            {
+                              type: 'g3d:removeFromSwarm',
+                              swarmVar: 'tiros',
+                              itemVar: 'tiro',
+                            },
+                            {
+                              type: 'assign',
+                              name: 'pontos',
+                              value: {
+                                type: 'binop',
+                                op: '+',
+                                left: {
+                                  type: 'var',
+                                  name: 'pontos',
+                                },
+                                right: {
+                                  type: 'num',
+                                  value: 1,
+                                },
+                              },
+                            },
+                            {
+                              type: 'g3d:playEffect',
+                              kind: 'hit',
+                            },
+                            {
+                              type: 'setProperty',
+                              targetId: 'pontos',
+                              property: 'textContent',
+                              value: {
+                                type: 'var',
+                                name: 'pontos',
+                              },
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: 'g3d:forEachInSwarm',
+                  swarmVar: 'meteorosRapidos',
+                  itemName: 'meteoro',
+                  body: [
+                    {
+                      type: 'g3d:moveBy',
+                      objVar: 'meteoro',
+                      x: {
+                        type: 'num',
+                        value: 0,
+                      },
+                      y: {
+                        type: 'num',
+                        value: 0,
+                      },
+                      z: {
+                        type: 'binop',
+                        op: '*',
+                        left: {
+                          type: 'var',
+                          name: 'velocidade',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 1.6,
+                        },
+                      },
+                    },
+                    {
+                      type: 'g3d:spin',
+                      objVar: 'meteoro',
+                      axis: 'x',
+                      speed: {
+                        type: 'num',
+                        value: 0.03,
+                      },
+                    },
+                    {
+                      type: 'g3d:spin',
+                      objVar: 'meteoro',
+                      axis: 'y',
+                      speed: {
+                        type: 'num',
+                        value: 0.02,
+                      },
+                    },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'g3d:isNear',
+                        aVar: 'nave',
+                        bVar: 'meteoro',
+                        dist: {
+                          type: 'num',
+                          value: 1.2,
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'assign',
+                          name: 'encostou',
+                          value: {
+                            type: 'bool',
+                            value: true,
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      type: 'g3d:forEachInSwarm',
+                      swarmVar: 'tiros',
+                      itemName: 'tiro',
+                      body: [
+                        {
+                          type: 'if',
+                          cond: {
+                            type: 'g3d:collides',
+                            aVar: 'tiro',
+                            bVar: 'meteoro',
+                          },
+                          then: [
+                            {
+                              type: 'g3d:removeFromSwarm',
+                              swarmVar: 'meteorosRapidos',
+                              itemVar: 'meteoro',
+                            },
+                            {
+                              type: 'g3d:removeFromSwarm',
+                              swarmVar: 'tiros',
+                              itemVar: 'tiro',
+                            },
+                            {
+                              type: 'assign',
+                              name: 'pontos',
+                              value: {
+                                type: 'binop',
+                                op: '+',
+                                left: {
+                                  type: 'var',
+                                  name: 'pontos',
+                                },
+                                right: {
+                                  type: 'num',
+                                  value: 2,
+                                },
+                              },
+                            },
+                            {
+                              type: 'g3d:playEffect',
+                              kind: 'hit',
+                            },
+                            {
+                              type: 'setProperty',
+                              targetId: 'pontos',
+                              property: 'textContent',
+                              value: {
+                                type: 'var',
+                                name: 'pontos',
+                              },
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'var',
+                    name: 'encostou',
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'rodando',
+                      value: {
+                        type: 'bool',
+                        value: false,
+                      },
+                    },
+                    {
+                      type: 'g3d:playEffect',
+                      kind: 'explosion',
+                    },
+                    {
+                      type: 'setProperty',
+                      targetId: 'final-tempo',
+                      property: 'textContent',
+                      value: {
+                        type: 'var',
+                        name: 'tempo',
+                      },
+                    },
+                    {
+                      type: 'setProperty',
+                      targetId: 'final-pontos',
+                      property: 'textContent',
+                      value: {
+                        type: 'var',
+                        name: 'pontos',
+                      },
+                    },
+                    {
+                      type: 'classOp',
+                      targetId: 'results',
+                      op: 'add',
+                      className: 'visivel',
+                    },
+                  ],
+                },
+                {
+                  type: 'g3d:pruneSwarm',
+                  swarmVar: 'tiros',
+                  axis: 'z',
+                  min: {
+                    type: 'num',
+                    value: -60,
+                  },
+                  max: {
+                    type: 'num',
+                    value: 6,
+                  },
+                },
+                {
+                  type: 'g3d:pruneSwarm',
+                  swarmVar: 'meteoros',
+                  axis: 'z',
+                  min: {
+                    type: 'num',
+                    value: -60,
+                  },
+                  max: {
+                    type: 'num',
+                    value: 12,
+                  },
+                },
+                {
+                  type: 'g3d:pruneSwarm',
+                  swarmVar: 'meteorosRapidos',
+                  axis: 'z',
+                  min: {
+                    type: 'num',
+                    value: -60,
+                  },
+                  max: {
+                    type: 'num',
+                    value: 12,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3d:everySeconds',
+          secs: {
+            type: 'num',
+            value: 1,
+          },
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'var',
+                name: 'rodando',
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'tempo',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'var',
+                      name: 'tempo',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
+                  },
+                },
+                {
+                  type: 'assign',
+                  name: 'velocidade',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'var',
+                      name: 'velocidade',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0.008,
+                    },
+                  },
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'var',
+                      name: 'velocidade',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0.5,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'velocidade',
+                      value: {
+                        type: 'num',
+                        value: 0.5,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'setProperty',
+                  targetId: 'tempo',
+                  property: 'textContent',
+                  value: {
+                    type: 'var',
+                    name: 'tempo',
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3d:everySeconds',
+          secs: {
+            type: 'num',
+            value: 0.7,
+          },
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'var',
+                name: 'rodando',
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'sorteio',
+                  value: {
+                    type: 'mathUnary',
+                    fn: 'floor',
+                    arg: {
+                      type: 'binop',
+                      op: '*',
+                      left: {
+                        type: 'randomFloat',
+                      },
+                      right: {
+                        type: 'num',
+                        value: 3,
+                      },
+                    },
+                  },
+                },
+                {
+                  type: 'assign',
+                  name: 'lugar',
+                  value: {
+                    type: 'binop',
+                    op: '-',
+                    left: {
+                      type: 'binop',
+                      op: '*',
+                      left: {
+                        type: 'randomFloat',
+                      },
+                      right: {
+                        type: 'num',
+                        value: 12,
+                      },
+                    },
+                    right: {
+                      type: 'num',
+                      value: 6,
+                    },
+                  },
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '===',
+                    left: {
+                      type: 'var',
+                      name: 'sorteio',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3d:spawnInSwarm',
+                      swarmVar: 'meteorosRapidos',
+                      originalVar: 'moldeRapido',
+                      x: {
+                        type: 'var',
+                        name: 'lugar',
+                      },
+                      y: {
+                        type: 'num',
+                        value: 1,
+                      },
+                      z: {
+                        type: 'num',
+                        value: -50,
+                      },
+                    },
+                  ],
+                  else: [
+                    {
+                      type: 'g3d:spawnInSwarm',
+                      swarmVar: 'meteoros',
+                      originalVar: 'moldeMeteoro',
+                      x: {
+                        type: 'var',
+                        name: 'lugar',
+                      },
+                      y: {
+                        type: 'num',
+                        value: 1,
+                      },
+                      z: {
+                        type: 'num',
+                        value: -50,
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    extensions: [
+      {
+        extensionId: 'game-3d',
+      },
+    ],
+  },
+}

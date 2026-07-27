@@ -10,6 +10,7 @@ import {
   batalhaMonstrinhosExample,
   cameraAdventureExample,
   catchCoinExample,
+  chuvaDeMeteorosExample,
   codeDrawnExample,
   dinoRunExample,
   enemyPlatformerExample,
@@ -1042,6 +1043,105 @@ describe('playthrough dos exemplos exatos do Jogo 2D', () => {
     expect(rival?.hp).toBe(8)
     expect(meu?.hp).toBe(0)
     expect(game.api.sceneIs('derrota')).toBe(true)
+    expect(game.errors).toEqual([])
+    expect(game.warnings).toEqual([])
+  })
+
+  it('Chuva de Meteoros voa nas 4 direções, atira, destrói, é atingida, perde e reinicia', () => {
+    // random fixo 0,99: a chuva de fundo nasce colada na borda direita
+    // (randomX = 475) com vx +1 — nunca alcança a nave, que fica embaixo à
+    // esquerda. As colisões do roteiro são todas INJETADAS (determinísticas).
+    const game = exampleHarness(chuvaDeMeteorosExample, () => 0.99)
+    const nave = game.sprites[0]
+    const tiros = game.groups[0]
+    const meteoros = game.groups[1]
+    expect(nave).toBeDefined()
+    expect(game.api.sceneIs('inicio')).toBe(true)
+
+    // Na tela de início a chuva NÃO cai (o spawner é gated pela cena jogando).
+    for (let frame = 0; frame < 80; frame += 1) game.nextFrame()
+    expect(meteoros?.items).toHaveLength(0)
+
+    game.fireKey('Enter')
+    expect(game.api.sceneIs('jogando')).toBe(true)
+
+    // 4 direções: esquerda + cima movem em diagonal (o input original).
+    const startX = nave?.x ?? 0
+    const startY = nave?.y ?? 0
+    game.fireKey('ArrowLeft')
+    game.fireKey('ArrowUp')
+    for (let frame = 0; frame < 5; frame += 1) game.nextFrame()
+    game.fireKey('ArrowLeft', 'keyup')
+    game.fireKey('ArrowUp', 'keyup')
+    expect(nave?.x).toBeLessThan(startX)
+    expect(nave?.y).toBeLessThan(startY)
+
+    // Clamp: segurar para baixo NÃO leva a nave para fora do palco (480×300).
+    game.fireKey('ArrowDown')
+    for (let frame = 0; frame < 90; frame += 1) game.nextFrame()
+    game.fireKey('ArrowDown', 'keyup')
+    expect((nave?.y ?? 0) + (nave?.h ?? 0)).toBeLessThanOrEqual(300)
+
+    // Espaço atira: o laser nasce no centro da nave e SOBE (vy negativo).
+    game.fireKey('Space')
+    game.fireKey('Space', 'keyup')
+    expect(tiros?.items).toHaveLength(1)
+    const tiro = tiros?.items[0]
+    const tiroY = tiro?.y ?? 0
+    game.nextFrame()
+    expect(tiro?.y ?? 0).toBeLessThan(tiroY)
+
+    // Destruir: meteoro injetado sobre o laser parado = +2 pontos, os dois somem.
+    const antesDoBonus = game.scores['Pontos:'] ?? 0
+    if (tiro && meteoros) {
+      tiro.vx = 0
+      tiro.vy = 0
+      game.api.spawn(meteoros, {
+        x: tiro.x,
+        y: tiro.y,
+        w: 30,
+        h: 30,
+        color: '#b08968',
+        vx: 0,
+        vy: 0,
+      })
+    }
+    game.nextFrame()
+    expect(game.scores['Pontos:'] ?? 0).toBeGreaterThanOrEqual(antesDoBonus + 2)
+    expect(tiros?.items).toHaveLength(0)
+    expect(meteoros?.items.some((item) => item.w === 30)).toBe(false)
+
+    // O placar POR TEMPO cresce sozinho (~1s de sobrevivência = +1).
+    const antesDoTempo = game.scores['Pontos:'] ?? 0
+    for (let frame = 0; frame < 65; frame += 1) game.nextFrame()
+    expect(game.scores['Pontos:'] ?? 0).toBeGreaterThan(antesDoTempo)
+
+    // Ser atingida: meteoro injetado sobre a nave = fim de jogo (sem vidas).
+    if (nave && meteoros) {
+      game.api.spawn(meteoros, {
+        x: nave.x,
+        y: nave.y,
+        w: nave.w,
+        h: nave.h,
+        color: '#b08968',
+        vx: 0,
+        vy: 0,
+      })
+    }
+    game.nextFrame()
+    expect(game.api.sceneIs('perdeu')).toBe(true)
+
+    // Enter reinicia limpo: nave nova, grupos novos e placar zerado.
+    game.fireKey('Enter', 'keyup')
+    game.fireKey('Enter')
+    game.nextFrame()
+    expect(game.api.sceneIs('inicio')).toBe(true)
+    expect(game.sprites.at(-1)).not.toBe(nave)
+    game.fireKey('Enter', 'keyup')
+    game.fireKey('Enter')
+    game.nextFrame()
+    expect(game.api.sceneIs('jogando')).toBe(true)
+    expect(game.scores['Pontos:']).toBe(0)
     expect(game.errors).toEqual([])
     expect(game.warnings).toEqual([])
   })

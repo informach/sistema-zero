@@ -3,6 +3,7 @@ import { generateJS } from '#generators'
 import {
   aventuraProfissionalExample,
   batalhaProfissionalExample,
+  chuvaProfissionalExample,
   vilaDoDragaoExample,
 } from '../examples'
 import { gameKitRuntime } from '../runtime'
@@ -2061,5 +2062,178 @@ describe('gk — playthrough mínimo: Aventura do Herói Profissional (rede pré
     for (let i = 0; i < 7; i++) h.api.missionKill()
     h.nextFrame(50)
     expect(h.api.state()).toBe('vitoria')
+  })
+})
+
+describe('gk — playthrough mínimo: Chuva de Meteoros Profissional (rede pré-e2e)', () => {
+  interface Corpo {
+    x: number
+    y: number
+    vx?: number
+    vy?: number
+    _angle?: number
+  }
+
+  /** Roda o exemplo EXATO (IR embutida → generateJS → runtime real). */
+  async function bootChuva(h: Harness): Promise<void> {
+    const code = generateJS({
+      behavior: chuvaProfissionalExample.ir.behavior,
+      lifecycle: 'game-2d-advanced',
+    })
+    new Function('window', 'SZGameKit', code)(h.window, h.api)
+    await Promise.resolve()
+    await Promise.resolve()
+    h.api.restartGame()
+  }
+
+  function vivos(h: Harness, mold: string): Corpo[] {
+    const out: Corpo[] = []
+    h.api.forEachActive(mold, (e: unknown) => out.push(e as Corpo))
+    return out
+  }
+
+  /** O placar que a criança VÊ ("Pontos: N" do onDrawHud), ou -1. */
+  function pontosNoHud(): number {
+    const linha = texts.find((t) => t.text.startsWith('Pontos: '))
+    return linha ? Number(linha.text.slice('Pontos: '.length)) : -1
+  }
+
+  it('⭐ espaço atira 1 laser por recarga e a nave voa nas 4 direções', async () => {
+    const h = loadRuntime()
+    await bootChuva(h)
+    expect(h.api.state()).toBe('jogando')
+    // Sorte fixa BAIXA: a chuva de fundo nasce colada na borda ESQUERDA e
+    // deriva para fora — nunca alcança a nave (o roteiro fica determinístico).
+    const realRandom = Math.random
+    Math.random = () => 0.05
+    let tick = 0
+    try {
+      h.fire('keydown', { key: ' ' })
+      h.nextFrame(++tick * 50)
+      expect(h.api.countActive('laser')).toBe(1)
+      const [primeiro] = vivos(h, 'laser')
+      expect(primeiro).toBeDefined()
+      if (!primeiro) return
+      const spawnX = primeiro.x
+      const spawnY = primeiro.y
+      // Martelar espaço no quadro seguinte NÃO cria outro (recarga de 0,25s)...
+      h.fire('keydown', { key: ' ' })
+      h.nextFrame(++tick * 50)
+      expect(h.api.countActive('laser')).toBe(1)
+      // ...e o laser SOBE (vy negativo, como o Laser original).
+      expect(primeiro.y).toBeLessThan(spawnY)
+
+      // 4 direções: voa para a ESQUERDA e para CIMA; o próximo laser nasce
+      // deslocado nos DOIS eixos (o tiro sai da nave, que se moveu na diagonal).
+      h.fire('keydown', { key: 'ArrowLeft' })
+      h.fire('keydown', { key: 'ArrowUp' })
+      for (let i = 0; i < 10; i++) h.nextFrame(++tick * 50)
+      h.fire('keyup', { key: 'ArrowLeft' })
+      h.fire('keyup', { key: 'ArrowUp' })
+      h.fire('keydown', { key: ' ' })
+      h.nextFrame(++tick * 50)
+      // O forEachActive itera em ordem REVERSA: acha o laser NOVO pelo x (o
+      // laser voa reto, então só o tiro da nave deslocada tem outro x).
+      expect(h.api.countActive('laser')).toBe(2)
+      const segundo = vivos(h, 'laser').find((laser) => laser.x !== spawnX)
+      expect(segundo).toBeDefined()
+      if (!segundo) return
+      expect(segundo.x).toBeLessThan(spawnX - 60)
+      expect(segundo.y).toBeLessThan(spawnY - 60)
+    } finally {
+      Math.random = realRandom
+    }
+  })
+
+  it('⭐ a chuva nasce sozinha, cai GIRANDO e o laser destrói com bônus de pontos', async () => {
+    const h = loadRuntime()
+    await bootChuva(h)
+    const realRandom = Math.random
+    Math.random = () => 0.05
+    let tick = 0
+    try {
+      // Cadência inicial de 0,9s: em ~1,5s o primeiro meteoro nasce no topo.
+      for (let i = 0; i < 30 && h.api.countActive('meteoro') === 0; i++) {
+        h.nextFrame(++tick * 50)
+      }
+      expect(h.api.countActive('meteoro')).toBe(1)
+      const [pedra] = vivos(h, 'meteoro')
+      expect(pedra).toBeDefined()
+      if (!pedra) return
+      const y0 = pedra.y
+      const angulo0 = pedra._angle ?? 0
+      h.nextFrame(++tick * 50)
+      expect(pedra.y).toBeGreaterThan(y0) // cai do topo
+      expect(pedra._angle ?? 0).toBeGreaterThan(angulo0) // gira (setAngle+angleOf)
+
+      // Atira e TELEPORTA o meteoro para cima do laser parado: overlap →
+      // explosão por efeito + recycle dos DOIS + bônus de 2 pontos no HUD.
+      h.fire('keydown', { key: ' ' })
+      h.nextFrame(++tick * 50)
+      const tiro = vivos(h, 'laser').at(-1)
+      expect(tiro).toBeDefined()
+      if (!tiro) return
+      texts = []
+      h.nextFrame(++tick * 50)
+      const antes = pontosNoHud()
+      expect(antes).toBeGreaterThanOrEqual(0)
+      tiro.vx = 0
+      tiro.vy = 0
+      pedra.vx = 0
+      pedra.vy = 0
+      pedra.x = tiro.x
+      pedra.y = tiro.y
+      texts = []
+      h.nextFrame(++tick * 50)
+      expect(h.api.countActive('meteoro')).toBe(0)
+      expect(h.api.countActive('laser')).toBe(0)
+      expect(pontosNoHud()).toBeGreaterThanOrEqual(antes + 2)
+    } finally {
+      Math.random = realRandom
+    }
+  })
+
+  it('⭐ meteoro na nave encerra o jogo, guarda o RECORDE e o reinício zera a partida', async () => {
+    const h = loadRuntime()
+    await bootChuva(h)
+    const realRandom = Math.random
+    Math.random = () => 0.05
+    let tick = 0
+    try {
+      // ~3,5s de sobrevivência: o placar por tempo já vale pontos.
+      for (let i = 0; i < 70; i++) h.nextFrame(++tick * 50)
+      expect(h.api.state()).toBe('jogando')
+      for (let i = 0; i < 30 && h.api.countActive('meteoro') === 0; i++) {
+        h.nextFrame(++tick * 50)
+      }
+      const [pedra] = vivos(h, 'meteoro')
+      expect(pedra).toBeDefined()
+      if (!pedra) return
+      // Teleporta o meteoro para cima da nave (452, 420): fim na hora.
+      pedra.x = 452
+      pedra.y = 410
+      pedra.vx = 0
+      pedra.vy = 0
+      h.nextFrame(++tick * 50)
+      expect(h.api.state()).toBe('fim')
+      // O recorde foi GUARDADO de verdade (saveValue → localStorage).
+      const bruto = h.storage.get('szgk-val-recorde')
+      expect(bruto).toBeDefined()
+      expect(JSON.parse(bruto ?? '0')).toBeGreaterThanOrEqual(3)
+
+      // Reinício limpo: pools zerados, placar 0 e o recorde persiste no HUD.
+      h.api.restartGame()
+      expect(h.api.state()).toBe('jogando')
+      expect(h.api.countActive('meteoro')).toBe(0)
+      expect(h.api.countActive('laser')).toBe(0)
+      texts = []
+      h.nextFrame(++tick * 50)
+      expect(pontosNoHud()).toBe(0)
+      const recordeNoHud = texts.find((t) => t.text.startsWith('Recorde: '))
+      expect(recordeNoHud).toBeDefined()
+      expect(Number(recordeNoHud?.text.slice('Recorde: '.length))).toBeGreaterThanOrEqual(3)
+    } finally {
+      Math.random = realRandom
+    }
   })
 })

@@ -11,7 +11,7 @@ A paleta permanece extensa por decisão de produto: são 209 definições de blo
 sendo responsabilidade do perfil de aprendizagem e de cada aula.
 
 A correção técnica desta auditoria foi publicada como **Jogo 2D 0.34.0**. O
-manifesto vigente está em **0.44.0** após os fechamentos subsequentes: grupos
+manifesto vigente está em **0.45.0** após os fechamentos subsequentes: grupos
 seguros também no modo Código, ciclo de vida gerenciado e HUD acessível em todos
 os caminhos públicos e legados, o full review de 23/07 (inimigo "patrulha" que
 respeita jogos sem gravidade, cartão de porta de entrada "Pegue a moeda" e redes
@@ -32,6 +32,9 @@ o tamanho cheio, e "Mostrar a caixa de colisão" desenha a área efetiva) e
 O 0.44.0 (27/07) fechou o full review dos exemplos Clear Code B na Batalha de
 Monstrinhos: abertura em duas peças que não trava na tela de título e Poção
 limitada a 3 usos por partida (derrota alcançável), com playthroughs novos.
+O 0.45.0 (27/07) somou o exemplo "Chuva de Meteoros" (recriação do Space
+Shooter do curso raylib_intro: nave nas 4 direções, chuva vertical de meteoros
+girando e placar por tempo), com drift test e playthrough próprios.
 Não há achados abertos no escopo desta revisão.
 
 ## Escopo revisado
@@ -42,7 +45,7 @@ Não há achados abertos no escopo desta revisão.
 - dez fragmentos que compõem o runtime injetado;
 - definição → Blockly → IR → JavaScript → parser → workspace state;
 - manifesto, permissões, documentação do aluno e contexto da IA;
-- 18 exemplos, assets, classificação pedagógica e execução no Chromium;
+- 19 exemplos, assets, classificação pedagógica e execução no Chromium;
 - ciclo de vida, pausa, reinício, câmera, grupos, colisões, áudio, DPR,
   segurança, desempenho e tratamento de erros;
 - testes da extensão e integrações externas de Blockly/parser.

@@ -2315,9 +2315,16 @@ ${gameKitCardsRuntime}
   /** Cooldown POR personagem, em segundos (recarga do tiro, do golpe…). */
   function cooldownReady(who, secs) {
     if (!who || typeof who !== 'object') return false;
-    var cd = num(who._cd, 0) - currentDt;
-    if (cd > 0) { who._cd = cd; return false; }
-    who._cd = Math.max(0.01, num(secs, 0.5));
+    // Prazo ABSOLUTO no relógio do jogo. A versão antiga descontava currentDt
+    // POR CHAMADA: com o tiro edge-trigger da receita canônica ("se
+    // keyPressed(' ') e cooldownReady(nave, 0.25)"), a recarga só era
+    // descontada nos quadros em que a criança APERTAVA — apertar, esperar e
+    // apertar de novo continuava travado (só metralhar o botão destravava).
+    // Com o prazo em playTime a espera REAL conta; a pausa congela junto
+    // (playTime para) e o reinício zera os dois lados (playTime = 0 e os
+    // resets zeram _cd; _cd = 0 significa "pronto").
+    if (num(who._cd, 0) > playTime) return false;
+    who._cd = playTime + Math.max(0.01, num(secs, 0.5));
     return true;
   }
 

@@ -125,6 +125,16 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['start', 'space'],
   },
   {
+    key: 'game-2d:Chuva de Meteoros',
+    name: 'Chuva de Meteoros',
+    experience: 'game',
+    promise:
+      'Voar nas quatro direções sob uma chuva vertical de meteoros e atirar para sobreviver.',
+    scenario:
+      'Enter ou espaço começa; voar com as setas, atirar, destruir meteoros, pontuar por tempo e reiniciar.',
+    interactions: ['start', 'arrows', 'space'],
+  },
+  {
     key: 'game-2d:Batalha de Monstrinhos',
     name: 'Batalha de Monstrinhos',
     experience: 'game',
@@ -241,6 +251,15 @@ export const EXAMPLE_QA_CONTRACTS = [
     promise: 'Pular cactos com molde, pool, parallax e recorde salvo de verdade.',
     scenario: 'Correr, saltar obstáculos cada vez mais rápidos, bater e ver o recorde guardado.',
     interactions: ['space', 'arrows', 'click'],
+  },
+  {
+    key: 'game-2d-advanced:Chuva de Meteoros Profissional',
+    name: 'Chuva de Meteoros Profissional',
+    experience: 'game',
+    promise: 'Sobreviver a uma chuva que acelera, com moldes, efeitos de explosão e recorde salvo.',
+    scenario:
+      'Decolar pelo botão, voar, atirar com recarga, destruir meteoros, bater e ver o recorde guardado.',
+    interactions: ['click', 'arrows', 'space'],
   },
   {
     key: 'game-2d-advanced:Batalha de Monstrinhos Profissional',
@@ -429,6 +448,16 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['arrows', 'space'],
   },
   {
+    key: 'game-3d:Patrulha Espacial',
+    name: 'Patrulha Espacial',
+    experience: 'game',
+    promise:
+      'Pilotar a nave vista de trás, inclinar nas curvas e atirar lasers em meteoros que aceleram.',
+    scenario:
+      'Andar com setas ou A/D, atirar com espaço, destruir meteoro, marcar tempo, bater e recomeçar.',
+    interactions: ['wasd', 'arrows', 'space'],
+  },
+  {
     key: 'game-3d:Labirinto dos Robôs',
     name: 'Labirinto dos Robôs',
     experience: 'game',
@@ -518,6 +547,15 @@ export const EXAMPLE_QA_CONTRACTS = [
       'Correr sem fim em três faixas, pulando barreiras e pegando moedas num jogo que acelera.',
     scenario:
       'Começar, trocar de faixa com A/D ou setas, pular com espaço, pegar moeda, bater e reiniciar.',
+    interactions: ['wasd', 'arrows', 'space'],
+  },
+  {
+    key: 'game-3d-advanced:Patrulha Espacial Profissional',
+    name: 'Patrulha Espacial Profissional',
+    experience: 'game',
+    promise: 'Destruir vinte meteoros que brilham antes de explodir, numa chuva que acelera.',
+    scenario:
+      'Começar, andar com A/D ou setas, atirar com espaço, ver a morte dramática, bater três vezes e vencer.',
     interactions: ['wasd', 'arrows', 'space'],
   },
   {
@@ -749,5 +787,25 @@ export const EXAMPLE_QA_CONTRACTS = [
     scenario:
       'Arrastar para olhar, andar e pular, trocar o tipo com 1/2/3, colocar com C na face mirada e remover com X.',
     interactions: ['drag', 'wasd', 'space', 'digit-1', 'place-c', 'remove-x'],
+  },
+  {
+    key: 'core:Chuva de Meteoros (na mão)',
+    name: 'Chuva de Meteoros (na mão)',
+    experience: 'game',
+    promise:
+      'Ver o Space Shooter por dentro: herança de sprites, diagonal normalizada e giro com rotate.',
+    scenario:
+      'Enter começa; voar na diagonal, atirar num meteoro, ver a explosão animada, colidir e recomeçar.',
+    interactions: ['start', 'arrows', 'space'],
+  },
+  {
+    key: 'core:Patrulha Espacial (na mão)',
+    name: 'Patrulha Espacial (na mão)',
+    experience: 'game',
+    promise:
+      'Patrulhar em three.js puro com nave que inclina e flutua, flash sem shader e sombras fake.',
+    scenario:
+      'Começar com Enter ou clique, mover com as setas, atirar e ver o flash, colidir e reiniciar.',
+    interactions: ['start', 'arrows', 'space', 'click'],
   },
 ] as const satisfies readonly ExampleQAContract[]
