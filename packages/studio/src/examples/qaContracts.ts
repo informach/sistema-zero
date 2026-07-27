@@ -878,4 +878,58 @@ export const EXAMPLE_QA_CONTRACTS = [
       'Andar com A e D, pular com W, encostar na porta e apertar para cima para trocar de fase.',
     interactions: ['wasd'],
   },
+  {
+    key: 'game-2d:Vale Ensolarado',
+    name: 'Vale Ensolarado',
+    experience: 'game',
+    promise: 'Pular pelas plataformas, juntar gemas e desviar do gambá e da águia no vale.',
+    scenario:
+      'Começar, andar e pular com as setas, coletar gemas, encostar em inimigo, vencer e reiniciar.',
+    interactions: ['start', 'arrows'],
+  },
+  {
+    key: 'game-2d:Vila Ninja',
+    name: 'Vila Ninja',
+    experience: 'game',
+    promise: 'Explorar a vila de cima nas quatro direções e golpear os inimigos com a espada.',
+    scenario:
+      'Começar, andar nas quatro direções com a câmera seguindo, golpear com espaço, vencer e reiniciar.',
+    interactions: ['start', 'arrows', 'space'],
+  },
+  {
+    key: 'game-2d-advanced:Vale Ensolarado Profissional',
+    name: 'Vale Ensolarado Profissional',
+    experience: 'game',
+    promise: 'Plataforma de coleta com o kit: pulo gostoso, pisar nos bichos e juntar as gemas.',
+    scenario:
+      'Andar e pular com as setas, coletar gemas, pisar nos inimigos, renascer ao cair e vencer.',
+    interactions: ['arrows'],
+  },
+  {
+    key: 'game-2d-advanced:Vila Ninja Profissional',
+    name: 'Vila Ninja Profissional',
+    experience: 'game',
+    promise: 'Aventura top-down com o kit de RPG: lançar a espada e derrotar os monstros da vila.',
+    scenario:
+      'Andar nas quatro direções com a câmera seguindo, golpear com espaço, derrotar os monstros e vencer.',
+    interactions: ['arrows', 'space'],
+  },
+  {
+    key: 'core:Vale Ensolarado (na mão)',
+    name: 'Vale Ensolarado (na mão)',
+    experience: 'game',
+    promise: 'Plataforma de coleta feita só com o núcleo: gemas, inimigos e câmera que segue.',
+    scenario:
+      'Andar com A e D, pular com W, coletar gemas, pisar nos inimigos, vencer e reiniciar com Enter.',
+    interactions: ['start', 'wasd'],
+  },
+  {
+    key: 'core:Vila Ninja (na mão)',
+    name: 'Vila Ninja (na mão)',
+    experience: 'game',
+    promise: 'Aventura top-down feita só com o núcleo, num mini-mundo com câmera que segue.',
+    scenario:
+      'Andar com A/W/S/D, golpear com espaço, derrotar os inimigos, vencer e reiniciar com Enter.',
+    interactions: ['start', 'wasd', 'space'],
+  },
 ] as const satisfies readonly ExampleQAContract[]

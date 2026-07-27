@@ -36,7 +36,9 @@ import {
   quebraBlocosExample,
   reinoAbertoExample,
   saltoNaFlorestaExample,
+  valeEnsolaradoExample,
   vilaDoDragaoExample,
+  vilaNinjaExample,
 } from '../examples'
 import { gameKitExtension } from '../index'
 
@@ -48,8 +50,10 @@ const EXAMPLES = [
   batalhaProfissionalExample,
   florestaNinjaExample,
   aventuraProfissionalExample,
+  vilaNinjaExample,
   saltoNaFlorestaExample,
   escaladaProfissionalExample,
+  valeEnsolaradoExample,
   dinoProfissionalExample,
   chuvaProfissionalExample,
   muralhaProfissionalExample,
@@ -137,6 +141,28 @@ const REQUIRED_TYPES = {
     'gk:isInvincible',
     'gk:knockback',
     'gk:breakTileAt',
+    'gk:defineEffect',
+    'gk:burst',
+    'gk:drawByDepth',
+    'gk:drawHearts',
+    'gk:setMission',
+    'gk:missionKill',
+  ],
+  'Vila Ninja Profissional': [
+    'gk:createEmptyTilemap',
+    'gk:cameraFollowMap',
+    'gk:attackFacing',
+    'gk:setSwingWindow',
+    'gk:didHit',
+    'gk:setEntityState',
+    'gk:entityState',
+    'gk:distanceBetween',
+    'gk:seek',
+    'gk:patrolAround',
+    'gk:hurt',
+    'gk:isInvincible',
+    'gk:knockback',
+    'gk:collideGroup',
     'gk:defineEffect',
     'gk:burst',
     'gk:drawByDepth',
@@ -238,6 +264,23 @@ const REQUIRED_TYPES = {
     'gk:isInside',
     'gk:saveValue',
     'gk:savedValue',
+  ],
+  'Vale Ensolarado Profissional': [
+    'gk:platformerHero',
+    'gk:setJumpFeel',
+    'gk:oneWayPlatform',
+    'gk:collideGroup',
+    'gk:dropThrough',
+    'gk:cameraFollow',
+    'gk:setCheckpoint',
+    'gk:respawn',
+    'gk:stompKill',
+    'gk:patrolTurnAtWall',
+    'gk:patrolAround',
+    'gk:charactersTouch',
+    'gk:recycle',
+    'gk:drawHearts',
+    'gk:platformerAnim',
   ],
   'Bichinhos do Quintal': [
     'gk:rpgSetStartMap',
@@ -424,7 +467,7 @@ beforeAll(() => {
 })
 
 describe('game-2d-advanced — catálogo dos exemplos', () => {
-  it('manifest mantém os 27 exemplos canônicos na ordem da vitrine', () => {
+  it('manifest mantém os 29 exemplos canônicos na ordem da vitrine', () => {
     expect(gameKitExtension.manifest.examples.map((example) => example.name)).toEqual(
       EXAMPLES.map((example) => example.name),
     )

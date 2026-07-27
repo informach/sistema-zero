@@ -25,7 +25,9 @@ import {
   quebraBlocosExample,
   reinoAbertoExample,
   saltoNaFlorestaExample,
+  valeEnsolaradoExample,
   vilaDoDragaoExample,
+  vilaNinjaExample,
 } from './examples'
 
 export const gameKitExamples = [
@@ -36,8 +38,10 @@ export const gameKitExamples = [
   batalhaProfissionalExample,
   florestaNinjaExample,
   aventuraProfissionalExample,
+  vilaNinjaExample,
   saltoNaFlorestaExample,
   escaladaProfissionalExample,
+  valeEnsolaradoExample,
   dinoProfissionalExample,
   chuvaProfissionalExample,
   muralhaProfissionalExample,

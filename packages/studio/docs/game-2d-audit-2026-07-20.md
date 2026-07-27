@@ -11,7 +11,7 @@ A paleta permanece extensa por decisão de produto: são 209 definições de blo
 sendo responsabilidade do perfil de aprendizagem e de cada aula.
 
 A correção técnica desta auditoria foi publicada como **Jogo 2D 0.34.0**. O
-manifesto vigente está em **0.47.0** após os fechamentos subsequentes: grupos
+manifesto vigente está em **0.48.0** após os fechamentos subsequentes: grupos
 seguros também no modo Código, ciclo de vida gerenciado e HUD acessível em todos
 os caminhos públicos e legados, o full review de 23/07 (inimigo "patrulha" que
 respeita jogos sem gravidade, cartão de porta de entrada "Pegue a moeda" e redes
@@ -48,6 +48,11 @@ playthroughs próprios; junto entraram as teclas a/d/w/s/f nos dropdowns on_key/
 key_down (2 jogadores). Um full review depois corrigiu o alinhamento da faixa de
 tiro da "Muralha do Reino" (as balas voavam numa faixa vazia; agora encostam nos
 invasores).
+O 0.48.0 (27/07) somou mais dois exemplos Chris Courses no básico: "Vale
+Ensolarado" (sunnyland-platformer: pulo entre plataformas, gemas para juntar,
+gambá e águia como inimigos, câmera que segue) e "Vila Ninja" (ninja-adventure:
+aventura top-down num mini-mundo, ataque com espaço e câmera que segue), ambos
+100% procedurais, com drift tests e playthroughs próprios.
 Não há achados abertos no escopo desta revisão.
 
 ## Escopo revisado

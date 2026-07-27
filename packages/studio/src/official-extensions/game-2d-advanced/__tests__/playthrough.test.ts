@@ -8,7 +8,9 @@ import {
   escaladaProfissionalExample,
   muralhaProfissionalExample,
   portasDoCasteloProfissionalExample,
+  valeEnsolaradoExample,
   vilaDoDragaoExample,
+  vilaNinjaExample,
 } from '../examples'
 import { gameKitRuntime } from '../runtime'
 
@@ -211,6 +213,9 @@ interface Api {
   setCheckpoint: Fn
   respawn: Fn
   drawActive: Fn
+  // 🌄 Vale Ensolarado — coleta por toque + efeito
+  touching: (a: unknown, b: unknown) => boolean
+  defineEffect: Fn
 }
 
 interface Harness {
@@ -2662,6 +2667,252 @@ describe('gk — playthrough mínimo: Portas do Castelo Profissional (rede pré-
     rei.vx = 0
     rei.vy = 0
     h.nextFrame(350)
+    expect(h.api.state()).toBe('vitoria')
+  })
+})
+
+describe('gk — playthrough mínimo: Vale Ensolarado Profissional (rede pré-e2e)', () => {
+  interface Corpo {
+    x: number
+    y: number
+  }
+
+  /** Roda o exemplo EXATO (IR embutida → generateJS → runtime real). */
+  async function bootVale(h: Harness): Promise<void> {
+    const code = generateJS({
+      behavior: valeEnsolaradoExample.ir.behavior,
+      lifecycle: 'game-2d-advanced',
+    })
+    new Function('window', 'SZGameKit', code)(h.window, h.api)
+    await Promise.resolve()
+    await Promise.resolve()
+    h.api.restartGame()
+  }
+
+  function vivos(h: Harness, mold: string): Corpo[] {
+    const out: Corpo[] = []
+    h.api.forEachActive(mold, (e: unknown) => out.push(e as Corpo))
+    return out
+  }
+
+  /** O placar que a criança VÊ ("Gemas: N/6" do onDrawHud), ou -1. */
+  function gemasNoHud(): number {
+    const linha = texts.find((t) => t.text.startsWith('Gemas: '))
+    return linha ? Number(linha.text.slice('Gemas: '.length).split('/')[0]) : -1
+  }
+
+  it('⭐ o vale nasce montado: chão de gramado, tábuas, gemas, bichos e HUD', async () => {
+    const h = loadRuntime()
+    await bootVale(h)
+    expect(h.api.state()).toBe('jogando')
+    // O "Ao iniciar" monta o vale inteiro com moldes.
+    expect(h.api.countActive('chao')).toBe(10)
+    expect(h.api.countActive('tabua')).toBe(4)
+    expect(h.api.countActive('gema')).toBe(6)
+    expect(h.api.countActive('gambá')).toBe(2)
+    expect(h.api.countActive('gavião')).toBe(2)
+    texts = []
+    h.nextFrame(50)
+    expect(gemasNoHud()).toBe(0) // começa sem gema
+  })
+
+  it('⭐ o herói assenta no chão de moldes ao cair do checkpoint', async () => {
+    const h = loadRuntime()
+    await bootVale(h)
+    // Cai do checkpoint (80, 380) e assenta no chão de gramado (y=460). Sem
+    // handle do personagem, a prova é a CÂMERA parar de descer ao assentar.
+    for (let i = 1; i <= 20; i++) h.nextFrame(i * 50)
+    const camY0 = h.api.cameraY()
+    for (let i = 21; i <= 32; i++) h.nextFrame(i * 50)
+    // Parado no chão: a câmera vertical fixou (o herói não desce mais).
+    expect(Math.abs(h.api.cameraY() - camY0)).toBeLessThan(2)
+  })
+
+  it('⭐ a câmera acompanha o herói pelo vale mais largo que a tela', async () => {
+    // Na arena (mesmo bloco cameraFollow do exemplo, mundo 1632 > tela 960): com
+    // o handle do herói dá para provar que a câmera destrava do 0 e o segue.
+    const h = loadRuntime()
+    await arena(h)
+    const g = h.api.createCharacter({ w: 36, h: 44, speed: 220, color: '#e8a33d' }) as Heroi
+    h.api.placeCharacter(g, 100, 400)
+    h.api.cameraFollow(g, 1632, 540)
+    h.api.onUpdate((_dt: number) => {})
+    h.nextFrame(50)
+    expect(h.api.cameraX()).toBe(0) // encostado na borda esquerda
+    // Anda para o meio do vale: a câmera acompanha (centra o herói).
+    g.x = 800
+    g.y = 400
+    h.nextFrame(100)
+    expect(h.api.cameraX()).toBeGreaterThan(0)
+  })
+
+  // A coleta e a vitória (que dependem do handle do personagem, que o boot do
+  // exemplo não devolve) rodam numa arena mínima com os MESMOS blocos do exemplo
+  // — o padrão do playthrough da Escalada.
+  interface Heroi {
+    x: number
+    y: number
+    vx: number
+    vy: number
+    onGround: boolean
+  }
+
+  async function arena(h: Harness): Promise<void> {
+    h.api.setup({ width: 960, height: 540 })
+    h.api.defineMold('chao', { w: 200, h: 24, color: '#6b4f2a' })
+    h.api.defineMold('gema', { w: 24, h: 24, color: '#26c6da' })
+    h.api.defineMold('gambá', { w: 40, h: 30, color: '#7e6a99' })
+    h.api.defineEffect('brilho', { count: 8, color: '#b2ebf2', size: 4, life: 0.4, speed: 100 })
+    await startGame(h)
+    h.api.setState('jogando')
+  }
+
+  it('⭐ encostar numa gema conta no placar e a some do vale (touching + recycle)', async () => {
+    const h = loadRuntime()
+    await arena(h)
+    const g = h.api.createCharacter({ w: 36, h: 44, speed: 220, color: '#e8a33d' }) as Heroi
+    h.api.placeCharacter(g, 100, 400)
+    let gemas = 0
+    h.api.spawnFromMold('gema', 116, 400) // exatamente sob o herói
+    h.api.onUpdate((_dt: number) => {
+      h.api.forEachActive('gema', (item: unknown) => {
+        if (h.api.touching(g, item)) {
+          gemas += 1
+          h.api.recycle(item)
+        }
+      })
+    })
+    expect(h.api.countActive('gema')).toBe(1)
+    h.nextFrame(50)
+    expect(gemas).toBe(1) // encostou e contou
+    expect(h.api.countActive('gema')).toBe(0) // sumiu do vale (recycle)
+  })
+
+  it('⭐ pisar no bicho o derruba e juntar 6 gemas liga a vitória', async () => {
+    const h = loadRuntime()
+    await arena(h)
+    const g = h.api.createCharacter({ w: 36, h: 44, speed: 220, color: '#e8a33d' }) as Heroi
+    h.api.placeCharacter(g, 100, 380)
+    h.api.spawnFromMold('gambá', 120, 430)
+    let gemas = 0
+    let usarFisica = true
+    h.api.onUpdate((dt: number) => {
+      if (usarFisica) {
+        h.api.platformerHero(g, 220, 640, dt)
+        h.api.stompKill(g, 'gambá', 420)
+      }
+      h.api.forEachActive('gema', (item: unknown) => {
+        if (h.api.touching(g, item)) {
+          gemas += 1
+          h.api.recycle(item)
+        }
+      })
+      if (gemas >= 6) h.api.setState('vitoria')
+    })
+    // Cai em cima do gambá (stompKill por velocidade descendente): o bicho some.
+    for (let i = 1; i <= 8; i++) h.nextFrame(i * 50)
+    expect(h.api.countActive('gambá')).toBe(0)
+    // Junta 6 gemas: congela o herói e nasce uma gema em cima dele por vez.
+    usarFisica = false
+    g.x = 400
+    g.y = 300
+    g.vx = 0
+    g.vy = 0
+    for (let i = 0; i < 6; i++) {
+      h.api.spawnFromMold('gema', g.x, g.y)
+      h.nextFrame((9 + i) * 50)
+    }
+    expect(gemas).toBeGreaterThanOrEqual(6)
+    expect(h.api.state()).toBe('vitoria')
+  })
+})
+
+describe('gk — playthrough mínimo: Vila Ninja Profissional (rede pré-e2e)', () => {
+  interface Bicho {
+    x: number
+    y: number
+  }
+
+  async function bootNinja(h: Harness): Promise<void> {
+    const code = generateJS({
+      behavior: vilaNinjaExample.ir.behavior,
+      lifecycle: 'game-2d-advanced',
+    })
+    new Function('window', 'SZGameKit', code)(h.window, h.api)
+    await Promise.resolve()
+    await Promise.resolve()
+    h.api.restartGame()
+  }
+
+  function vivos(h: Harness, mold: string): Bicho[] {
+    const out: Bicho[] = []
+    h.api.forEachActive(mold, (e: unknown) => out.push(e as Bicho))
+    return out
+  }
+
+  it('a vila nasce viva: enxames de monstros, casas/árvores e HUD de contagem', async () => {
+    const h = loadRuntime()
+    await bootNinja(h)
+    expect(h.api.state()).toBe('jogando')
+    expect(h.api.countActive('bambu')).toBe(3)
+    expect(h.api.countActive('dragao')).toBe(3)
+    expect(h.api.countActive('casa')).toBe(2)
+    expect(h.api.countActive('arvore')).toBe(4)
+    texts = []
+    h.nextFrame(50)
+    expect(texts.some((item) => item.text === 'Bambus: 3')).toBe(true)
+    expect(texts.some((item) => item.text === 'Dragões: 3')).toBe(true)
+
+    // Parado longe, ninguém atravessa a vila: os monstros VAGUEIAM no posto.
+    for (let i = 2; i <= 30; i++) h.nextFrame(i * 50)
+    for (const bambu of vivos(h, 'bambu')) expect(bambu.x).toBeGreaterThan(600)
+  })
+
+  it('⭐ FSM por distância: chegar perto acorda o bando e o golpe deles derruba o ninja', async () => {
+    const h = loadRuntime()
+    await bootNinja(h)
+    let tick = 0
+    h.fire('keydown', { key: 'ArrowRight' })
+    for (let i = 0; i < 90; i++) h.nextFrame(++tick * 50)
+    h.fire('keyup', { key: 'ArrowRight' })
+    expect(h.api.state()).toBe('jogando')
+    // Parado no meio do bando: perseguir → golpe → toque com i-frames tira vida
+    // (o dano vem do MOLDE via propertyOf) até o fim de jogo.
+    for (let i = 0; i < 800 && h.api.state() === 'jogando'; i++) {
+      h.nextFrame(++tick * 50)
+    }
+    expect(h.api.state()).toBe('fim')
+  })
+
+  it('⭐ a lançada com janela derrota um monstro de verdade (didHit + recycle)', async () => {
+    const h = loadRuntime()
+    await bootNinja(h)
+    let caiu = 0
+    h.api.on('inimigo:caiu', () => {
+      caiu += 1
+    })
+    let tick = 0
+    h.fire('keydown', { key: 'ArrowRight' })
+    for (let i = 0; i < 90; i++) h.nextFrame(++tick * 50)
+    h.fire('keyup', { key: 'ArrowRight' })
+    // Martela o golpe virado para o bando que chega pela direita.
+    for (let i = 0; i < 500 && caiu === 0 && h.api.state() === 'jogando'; i++) {
+      h.fire('keydown', { key: ' ' })
+      h.nextFrame(++tick * 50)
+      h.fire('keyup', { key: ' ' })
+    }
+    expect(caiu).toBeGreaterThan(0)
+    // O bando ENCOLHEU de verdade (didHit → hurt → recycle).
+    expect(h.api.countActive('bambu') + h.api.countActive('dragao')).toBeLessThan(6)
+  })
+
+  it('a missão de derrotar todos liga a tela de vitória pronta', async () => {
+    const h = loadRuntime()
+    await bootNinja(h)
+    // setMission(0, 6): a contagem de derrotados é quem decide (rede do motor —
+    // os playthroughs acima provam que missionKill roda no didHit real).
+    for (let i = 0; i < 6; i++) h.api.missionKill()
+    h.nextFrame(50)
     expect(h.api.state()).toBe('vitoria')
   })
 })

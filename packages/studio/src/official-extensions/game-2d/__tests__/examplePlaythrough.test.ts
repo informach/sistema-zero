@@ -24,6 +24,8 @@ import {
   portasDoCasteloExample,
   stickHeroExample,
   tilemapExample,
+  valeEnsolaradoExample,
+  vilaNinjaExample,
 } from '../examples'
 import { gameTwoDRuntime } from '../runtime'
 import type { GameTwoDLifecycleApi } from '../runtimeContract'
@@ -1541,6 +1543,114 @@ describe('playthrough dos exemplos exatos do Jogo 2D', () => {
     game.nextFrame()
     expect(game.api.sceneIs('jogando')).toBe(true)
     expect(game.scores['Fase:']).toBe(1)
+    expect(game.errors).toEqual([])
+    expect(game.warnings).toEqual([])
+  })
+
+  it('Vale Ensolarado: o herói anda, pula, junta as 6 gemas, vence e reinicia limpo', () => {
+    const game = exampleHarness(valeEnsolaradoExample, () => 0.5)
+    const heroi = game.sprites[0]
+    // Grupos na ordem de criação: chão, gemas, corações.
+    const gemas = game.groups[1]
+    expect(heroi).toBeDefined()
+    expect(gemas?.items).toHaveLength(6)
+    expect(game.api.sceneIs('inicio')).toBe(true)
+
+    game.fireKey('Enter')
+    expect(game.api.sceneIs('jogando')).toBe(true)
+
+    // O chão sólido segura o herói (a gravidade o assenta, não atravessa).
+    for (let frame = 0; frame < 20; frame += 1) game.nextFrame()
+    expect((heroi?.y ?? 0) + (heroi?.h ?? 0)).toBeLessThanOrEqual(270)
+
+    // Andar para a direita: o herói se desloca no eixo x.
+    const startX = heroi?.x ?? 0
+    game.fireKey('ArrowRight')
+    for (let frame = 0; frame < 4; frame += 1) game.nextFrame()
+    game.fireKey('ArrowRight', 'keyup')
+    expect(heroi?.x ?? 0).toBeGreaterThan(startX)
+
+    // Pular do chão: a seta pra cima tira o herói do chão num quadro.
+    for (let frame = 0; frame < 8; frame += 1) game.nextFrame()
+    const antesDoPulo = heroi?.y ?? 0
+    game.fireKey('ArrowUp')
+    game.nextFrame()
+    expect(heroi?.y ?? 0).toBeLessThan(antesDoPulo)
+
+    // Juntar as 6 gemas: teletransporta o herói para cima de cada gema.
+    for (let found = 0; found < 6; found += 1) {
+      const gema = gemas?.items[0]
+      expect(gema).toBeDefined()
+      if (heroi && gema) {
+        heroi.x = gema.x
+        heroi.y = gema.y
+      }
+      game.nextFrame()
+    }
+    expect(gemas?.items).toHaveLength(0)
+    expect(game.scores['Gemas:']).toBe(0)
+    expect(game.scores['Pontos:']).toBe(60)
+    expect(game.api.sceneIs('vitoria')).toBe(true)
+
+    // Enter reinicia limpo: de volta ao início com as 6 gemas.
+    game.fireKey('Enter', 'keyup')
+    game.fireKey('Enter')
+    game.nextFrame()
+    expect(game.api.sceneIs('inicio')).toBe(true)
+    game.fireKey('Enter', 'keyup')
+    game.fireKey('Enter')
+    game.nextFrame()
+    expect(game.api.sceneIs('jogando')).toBe(true)
+    expect(game.scores['Gemas:']).toBe(6)
+    expect(game.errors).toEqual([])
+    expect(game.warnings).toEqual([])
+  })
+
+  it('Vila Ninja: o ninja anda, ataca, derrota os 4 monstros, vence, também pode perder', () => {
+    const game = exampleHarness(vilaNinjaExample, () => 0.5)
+    const heroi = game.sprites[0]
+    const golpes = game.groups[2]
+    const monstros = game.enemyTypes[0]
+    expect(heroi).toBeDefined()
+    expect(monstros?.items).toHaveLength(4)
+    expect(game.api.sceneIs('inicio')).toBe(true)
+
+    game.fireKey('Enter')
+    expect(game.api.sceneIs('jogando')).toBe(true)
+
+    // Andar nas 4 direções (top-down): a seta pra direita desloca no x.
+    const startX = heroi?.x ?? 0
+    game.fireKey('ArrowRight')
+    for (let frame = 0; frame < 4; frame += 1) game.nextFrame()
+    game.fireKey('ArrowRight', 'keyup')
+    expect(heroi?.x ?? 0).toBeGreaterThan(startX)
+
+    // Atacar com espaço: nasce um golpe (hitbox temporária) na direção olhada.
+    game.fireKey('Space')
+    game.fireKey('Space', 'keyup')
+    expect(golpes?.items).toHaveLength(1)
+    // O golpe some sozinho (pruneOld 0,25s).
+    for (let frame = 0; frame < 20; frame += 1) game.nextFrame()
+    expect(golpes?.items).toHaveLength(0)
+
+    // Derrotar os 4 monstros (o ataque leva 3 golpes; aqui zeramos a vida).
+    for (const inimigo of monstros?.items ?? []) inimigo.hp = 0
+    game.nextFrame()
+    expect(game.scores['Pontos:']).toBe(20)
+    expect(game.api.sceneIs('vitoria')).toBe(true)
+
+    // Enter reinicia e ainda dá para perder: vida zerada troca para a derrota.
+    game.fireKey('Enter', 'keyup')
+    game.fireKey('Enter')
+    game.nextFrame()
+    expect(game.api.sceneIs('inicio')).toBe(true)
+    game.fireKey('Enter', 'keyup')
+    game.fireKey('Enter')
+    const restartedHero = game.sprites.at(-1)
+    expect(restartedHero).toBeDefined()
+    if (restartedHero) restartedHero.hp = 0
+    game.nextFrame()
+    expect(game.api.sceneIs('derrota')).toBe(true)
     expect(game.errors).toEqual([])
     expect(game.warnings).toEqual([])
   })

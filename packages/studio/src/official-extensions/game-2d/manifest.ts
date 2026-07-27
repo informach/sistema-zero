@@ -23,13 +23,15 @@ import {
   portasDoCasteloExample,
   stickHeroExample,
   tilemapExample,
+  valeEnsolaradoExample,
+  vilaNinjaExample,
 } from './examples'
 import { withGameTwoDLifecycleGuidance } from './pedagogy'
 
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.47.0',
+  version: '0.48.0',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, vidas automáticas em corações ou barra, colisões, mapas, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',
@@ -463,6 +465,8 @@ Na categoria **🎨 Desenho**, faça o visual do sprite com formas, sem imagem n
     escaladaDoGuerreiroExample,
     dueloDeHeroisExample,
     portasDoCasteloExample,
+    valeEnsolaradoExample,
+    vilaNinjaExample,
     gorilasExample,
     gorilasVsRobotExample,
     stickHeroExample,

@@ -20,6 +20,8 @@ import {
   passeio3dNaMaoExample,
   patrulhaEspacialNaMaoExample,
   portasDoCasteloNaMaoExample,
+  valeEnsolaradoNaMaoExample,
+  vilaNinjaNaMaoExample,
 } from './core'
 
 describe('CORE_EXAMPLES — texto visível sem travessão', () => {
@@ -896,6 +898,157 @@ describe('CORE_EXAMPLES — portasDoCasteloNaMaoExample (platformer com fase Chr
 
   it('IR→blocos não contém bloco raw/avançado', () => {
     expect(JSON.stringify(buildWorkspaceStateFromIR(portasDoCasteloNaMaoExample.ir))).not.toContain(
+      '"sz_adv_raw_js"',
+    )
+  })
+})
+
+describe('CORE_EXAMPLES — valeEnsolaradoNaMaoExample (plataforma de coleta sunnyland na unha)', () => {
+  it('é exportado, sem extensões e com IR válido', () => {
+    expect(CORE_EXAMPLES).toContain(valeEnsolaradoNaMaoExample)
+    expect(valeEnsolaradoNaMaoExample.ir.extensions).toEqual([])
+    expect(SZIRV2Schema.safeParse(valeEnsolaradoNaMaoExample.ir).success).toBe(true)
+  })
+
+  it('nome e descrição em pt-BR com acentos e sem travessão', () => {
+    expect(valeEnsolaradoNaMaoExample.name).toBe('Vale Ensolarado (na mão)')
+    expect(valeEnsolaradoNaMaoExample.name).not.toContain('—')
+    expect(valeEnsolaradoNaMaoExample.description).not.toContain('—')
+    expect(valeEnsolaradoNaMaoExample.description).toContain('núcleo')
+    expect(valeEnsolaradoNaMaoExample.description).toContain('câmera')
+    expect(JSON.stringify(valeEnsolaradoNaMaoExample.ir)).not.toContain('—')
+    // os textos desenhados no canvas mantêm os acentos pt-BR corretos
+    const irText = JSON.stringify(valeEnsolaradoNaMaoExample.ir)
+    expect(irText).toContain('Você pegou todas as gemas!')
+    expect(irText).toContain('Fim de jogo')
+    expect(irText).toContain('Gemas: ')
+    expect(irText).toContain('Vida: ')
+  })
+
+  it('NÃO usa código avançado nem blocos de extensão', () => {
+    const types = collectTypes(valeEnsolaradoNaMaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('rawCSS')).toBe(false)
+    expect(types.has('rawHTML')).toBe(false)
+    expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
+  })
+
+  it('usa gravidade + AABB por eixo + plataforma one-way + inimigos + câmera, sem asset', () => {
+    const types = collectTypes(valeEnsolaradoNaMaoExample.ir)
+    for (const expected of [
+      'classDecl', // Block / Platform / Gem / Player / Gamba / Aguia
+      'funcDecl', // overlap (AABB) / updateCamera / hurt / restart / animate
+      'newInstance', // new Player(...) / new Gamba(...) / new Aguia(...)
+      'newExpr', // gems.push(new Gem(...)) / gambas.push(new Gamba(...))
+      'setThisProp', // o estado do herói e dos inimigos vive nos objetos
+      'canvasFillRect', // herói, blocos, plataformas e gambá são retângulos
+      'canvasBeginPath', // gemas e águia são círculos (beginPath + arc + fill)
+      'canvasSave', // a câmera: save…
+      'canvasScale', // …scale…
+      'canvasTranslate', // …translate (segue o herói)…
+      'canvasRestore', // …e restore
+      'requestFrame', // pedir o próximo quadro chamando animate
+      'canvasSetup',
+      'forRange', // varre blocos, plataformas, gemas, gambás e águias
+      'arrayPush', // montar os grupos por push
+      'mathUnary', // Math.sin do voo da águia + Math.floor/Math.abs
+      'event', // keydown/keyup (A/D andam, W pula, Enter reinicia)
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
+    // é 100% desenhado: não precisa de nenhum asset embutido
+    expect(valeEnsolaradoNaMaoExample.assets ?? []).toEqual([])
+    const code = compileStatements(behaviorStatements(valeEnsolaradoNaMaoExample.ir), 0)
+    // a gravidade e a colisão AABB resolvida por eixo (empurra pelo movimento)
+    expect(code).toContain('this.vy = this.vy + gravity;')
+    // a plataforma de UMA via: só segura o herói vindo CAINDO de cima
+    expect(code).toContain('const prevFeet = feet - this.vy;')
+    // o gambá vira ao andar uma distância (o Oposum do curso, na mão)
+    expect(code).toContain('this.vx = 0 - this.vx;')
+    // a águia voa em vaivém com Math.sin (o Eagle, sem gravidade)
+    expect(code).toContain('this.x = this.startX + Math.sin(this.angle) * this.span;')
+    // a câmera acompanha o herói com a receita de save + scale + translate
+    expect(code).toContain('ctx.scale(scale, scale);')
+    expect(code).toContain('ctx.translate(0 - camera.x, 0 - camera.y);')
+  })
+
+  it('IR→blocos não contém bloco raw/avançado', () => {
+    expect(JSON.stringify(buildWorkspaceStateFromIR(valeEnsolaradoNaMaoExample.ir))).not.toContain(
+      '"sz_adv_raw_js"',
+    )
+  })
+})
+
+describe('CORE_EXAMPLES — vilaNinjaNaMaoExample (aventura top-down ninja na unha)', () => {
+  it('é exportado, sem extensões e com IR válido', () => {
+    expect(CORE_EXAMPLES).toContain(vilaNinjaNaMaoExample)
+    expect(vilaNinjaNaMaoExample.ir.extensions).toEqual([])
+    expect(SZIRV2Schema.safeParse(vilaNinjaNaMaoExample.ir).success).toBe(true)
+  })
+
+  it('nome e descrição em pt-BR com acentos e sem travessão', () => {
+    expect(vilaNinjaNaMaoExample.name).toBe('Vila Ninja (na mão)')
+    expect(vilaNinjaNaMaoExample.name).not.toContain('—')
+    expect(vilaNinjaNaMaoExample.description).not.toContain('—')
+    expect(vilaNinjaNaMaoExample.description).toContain('núcleo')
+    expect(vilaNinjaNaMaoExample.description).toContain('câmera')
+    expect(JSON.stringify(vilaNinjaNaMaoExample.ir)).not.toContain('—')
+    // os textos desenhados no canvas mantêm os acentos pt-BR corretos
+    const irText = JSON.stringify(vilaNinjaNaMaoExample.ir)
+    expect(irText).toContain('A vila está a salvo!')
+    expect(irText).toContain('Fim de jogo')
+    expect(irText).toContain('Vida: ')
+    expect(irText).toContain('Inimigos: ')
+  })
+
+  it('NÃO usa código avançado nem blocos de extensão', () => {
+    const types = collectTypes(vilaNinjaNaMaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('rawCSS')).toBe(false)
+    expect(types.has('rawHTML')).toBe(false)
+    expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
+  })
+
+  it('usa tilemap por texto + câmera com limite + inimigos que patrulham + golpe, sem asset', () => {
+    const types = collectTypes(vilaNinjaNaMaoExample.ir)
+    for (const expected of [
+      'classDecl', // Player / Monstro
+      'funcDecl', // overlap (AABB) / updateCamera / hurt / restart / animate
+      'newInstance', // new Player(...)
+      'newExpr', // monstros.push(new Monstro(...))
+      'setThisProp', // o estado do herói e dos inimigos vive nos objetos
+      'canvasFillRect', // herói, inimigos e tiles são retângulos
+      'canvasSave', // a câmera: save…
+      'canvasScale', // …scale…
+      'canvasTranslate', // …translate (segue o herói)…
+      'canvasRestore', // …e restore
+      'requestFrame', // pedir o próximo quadro chamando animate
+      'canvasSetup',
+      'forRange', // laços aninhados varrem o mapa (linha × coluna) + os grupos
+      'arrayPush', // montar as paredes e os inimigos por push
+      'mathBinary', // Math.max/Math.min do limite da câmera
+      'mathUnary', // Math.floor do sorteio de direção
+      'randomFloat', // o inimigo SORTEIA a direção
+      'event', // keydown/keyup (WASD anda, espaço golpeia, Enter reinicia)
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
+    // é 100% desenhado: não precisa de nenhum asset embutido
+    expect(vilaNinjaNaMaoExample.assets ?? []).toEqual([])
+    const code = compileStatements(behaviorStatements(vilaNinjaNaMaoExample.ir), 0)
+    // o tilemap é DATA-DRIVEN: paredes e chão nascem de um mapa em texto
+    expect(code).toContain('if (row[col] === "#") {')
+    // a câmera segue o herói com LIMITE (clamp com Math.max/Math.min)
+    expect(code).toContain('camera.x = Math.max(0, Math.min(camera.x, worldWidth - viewWidth));')
+    // o inimigo patrulha sorteando a direção (o Monster do curso, na mão)
+    expect(code).toContain('this.dir = Math.floor(Math.random() * 4);')
+    // a câmera acompanha o herói com a receita de save + scale + translate
+    expect(code).toContain('ctx.scale(scale, scale);')
+    expect(code).toContain('ctx.translate(0 - camera.x, 0 - camera.y);')
+  })
+
+  it('IR→blocos não contém bloco raw/avançado', () => {
+    expect(JSON.stringify(buildWorkspaceStateFromIR(vilaNinjaNaMaoExample.ir))).not.toContain(
       '"sz_adv_raw_js"',
     )
   })
