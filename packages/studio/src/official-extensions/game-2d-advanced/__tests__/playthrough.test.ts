@@ -4,8 +4,10 @@ import {
   aventuraProfissionalExample,
   batalhaProfissionalExample,
   chuvaProfissionalExample,
+  dueloDeHeroisProfissionalExample,
   escaladaProfissionalExample,
   muralhaProfissionalExample,
+  portasDoCasteloProfissionalExample,
   vilaDoDragaoExample,
 } from '../examples'
 import { gameKitRuntime } from '../runtime'
@@ -204,6 +206,7 @@ interface Api {
   isDead: (c: unknown) => boolean
   // 🧗 Escalada do Guerreiro — câmera que segue no mundo alto + checkpoint
   cameraFollow: Fn
+  cameraX: () => number
   cameraY: () => number
   setCheckpoint: Fn
   respawn: Fn
@@ -2482,6 +2485,183 @@ describe('gk — playthrough mínimo: Escalada do Guerreiro Profissional (rede p
     g.vy = 0
     h.nextFrame(100)
     expect(venceu).toBe(true)
+    expect(h.api.state()).toBe('vitoria')
+  })
+})
+
+describe('gk — playthrough mínimo: Duelo de Heróis Profissional (rede pré-e2e)', () => {
+  /** Roda o exemplo EXATO (IR embutida → generateJS → runtime real). */
+  async function bootDuelo(h: Harness): Promise<void> {
+    const code = generateJS({
+      behavior: dueloDeHeroisProfissionalExample.ir.behavior,
+      lifecycle: 'game-2d-advanced',
+    })
+    new Function('window', 'SZGameKit', code)(h.window, h.api)
+    await Promise.resolve()
+    await Promise.resolve()
+    h.api.restartGame()
+  }
+
+  it('⭐ a partida nasce montada: 2 heróis no chão e o HUD das barras', async () => {
+    const h = loadRuntime()
+    await bootDuelo(h)
+    expect(h.api.state()).toBe('jogando')
+    // O "Ao iniciar" nasce o chão por molde e coloca os dois lutadores.
+    expect(h.api.countActive('chao')).toBe(1)
+    // A luta foi declarada (round > 0 significa partida em andamento).
+    for (let i = 1; i <= 4; i++) h.nextFrame(i * 50)
+    expect(h.api.lutaRoundNow()).toBeGreaterThan(0)
+    // O HUD do kit desenha algo (as barras/relógio saem por retângulos).
+    rects = []
+    h.nextFrame(5 * 50)
+    expect(rects.length).toBeGreaterThan(0)
+  })
+
+  it('⭐ o jogador 1 avança socando e a luta ANDA até o fim (não congela)', async () => {
+    const h = loadRuntime()
+    await bootDuelo(h)
+    // O jogador 1 anda para a direita (d) até encostar no jogador 2 e socava
+    // (g) todo quadro. A partida inteira (melhor de 3, round de 40 s) tem que
+    // chegar a 'fim' sem travar em nenhuma fase (anúncio, luta ou K.O.).
+    for (let i = 1; i <= 3600 && h.api.state() === 'jogando'; i++) {
+      h.fire('keydown', { key: 'd' })
+      h.fire('keydown', { key: 'g' })
+      h.nextFrame(i * 50)
+    }
+    expect(h.api.state()).toBe('fim')
+    // Alguém venceu a partida (o luta:acabou escreveu o vencedor).
+    expect(h.api.lutaWinner()).not.toBe('')
+  })
+
+  it('⭐ "Revanche" recomeça do zero (não no round 3 já decidido)', async () => {
+    const h = loadRuntime()
+    await bootDuelo(h)
+    for (let i = 1; i <= 3600 && h.api.state() === 'jogando'; i++) {
+      h.fire('keydown', { key: 'd' })
+      h.fire('keydown', { key: 'g' })
+      h.nextFrame(i * 50)
+    }
+    expect(h.api.state()).toBe('fim')
+    // A "Revanche" re-roda o "Ao iniciar" (o lutaMatch nasce lá): partida fresca
+    // no round 1, placar zerado e sem vencedor decidido.
+    h.api.restartGame()
+    expect(h.api.lutaRoundNow()).toBe(1) // round 1 de uma partida nova
+    expect(h.api.lutaWinner()).toBe('') // ninguém venceu ainda
+  })
+})
+
+describe('gk — playthrough mínimo: Portas do Castelo Profissional (rede pré-e2e)', () => {
+  /** Roda o exemplo EXATO (IR embutida → generateJS → runtime real). */
+  async function bootPortas(h: Harness): Promise<void> {
+    const code = generateJS({
+      behavior: portasDoCasteloProfissionalExample.ir.behavior,
+      lifecycle: 'game-2d-advanced',
+    })
+    new Function('window', 'SZGameKit', code)(h.window, h.api)
+    await Promise.resolve()
+    await Promise.resolve()
+    h.api.restartGame()
+  }
+
+  /** O placar que a criança VÊ ("Sala N de 3" do onDrawHud), ou -1. */
+  function salaNoHud(): number {
+    const linha = texts.find((t) => t.text.startsWith('Sala '))
+    if (!linha) return -1
+    const m = linha.text.match(/^Sala (\d+) de 3$/)
+    return m ? Number(m[1]) : -1
+  }
+
+  it('⭐ o castelo nasce montado: chão de pedra, 3 portas e o HUD da sala', async () => {
+    const h = loadRuntime()
+    await bootPortas(h)
+    expect(h.api.state()).toBe('jogando')
+    // O "Ao iniciar" monta o mundo largo com o chão contínuo (24 blocos) + 3
+    // plataformas altas.
+    expect(h.api.countActive('chao')).toBe(27)
+    texts = []
+    h.nextFrame(50)
+    expect(salaNoHud()).toBe(1) // começa na sala 1
+  })
+
+  it('⭐ o rei cai, pousa no chão de moldes e a câmera acompanha andando', async () => {
+    const h = loadRuntime()
+    await bootPortas(h)
+    // O rei começa no checkpoint (80, 360) e cai no chão de pedra (y=460).
+    for (let i = 1; i <= 20; i++) h.nextFrame(i * 50)
+    const camX0 = h.api.cameraX()
+    // Anda para a direita bastante: sai do canto esquerdo e a câmera passa a
+    // acompanhar no mundo largo (2900 de largura contra 960 de tela).
+    for (let i = 21; i <= 140; i++) {
+      h.fire('keydown', { key: 'd' })
+      h.nextFrame(i * 50)
+    }
+    expect(h.api.cameraX()).toBeGreaterThan(camX0)
+  })
+
+  // A troca de fase por porta usa o handle do rei (o boot do exemplo não o
+  // devolve), então a prova roda numa arena mínima com os MESMOS blocos.
+  async function arena(h: Harness): Promise<void> {
+    h.api.setup({ width: 960, height: 540 })
+    h.api.defineMold('chao', { w: 120, h: 40, color: '#4a4258' })
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.setJumpFeel(0.1, 0.1, 0.3, 2200)
+  }
+
+  it('⭐ encostar na porta troca de fase e a 3ª porta é a vitória', async () => {
+    const h = loadRuntime()
+    await arena(h)
+    interface Rei {
+      x: number
+      y: number
+      vx: number
+      vy: number
+    }
+    const rei = h.api.createCharacter({ w: 32, h: 54, speed: 210, color: '#f2d16b' }) as Rei
+    let fase = 1
+    h.api.setCheckpoint(80, 440)
+    h.api.respawn(rei)
+    h.api.defineRegion('porta1', 860, 428, 48, 72)
+    h.api.defineRegion('porta2', 1820, 428, 48, 72)
+    h.api.defineRegion('saida', 2820, 428, 48, 72)
+    h.api.onUpdate((dt: number) => {
+      h.api.platformerHero(rei, 210, 700, dt)
+      if (fase === 1 && h.api.isInside(rei, 'porta1')) {
+        fase = 2
+        h.api.setCheckpoint(1040, 440)
+        h.api.respawn(rei)
+      }
+      if (fase === 2 && h.api.isInside(rei, 'porta2')) {
+        fase = 3
+        h.api.setCheckpoint(2000, 440)
+        h.api.respawn(rei)
+      }
+      if (fase === 3 && h.api.isInside(rei, 'saida')) {
+        h.api.setState('vitoria')
+      }
+    })
+    for (let i = 1; i <= 4; i++) h.nextFrame(i * 50) // assenta
+    // Encosta na porta 1: vira a fase 2 e renasce no começo da sala 2.
+    rei.x = 872
+    rei.y = 446
+    rei.vx = 0
+    rei.vy = 0
+    h.nextFrame(250)
+    expect(fase).toBe(2)
+    expect(rei.x).toBeCloseTo(1040, -1) // reposicionou na sala 2
+    // Encosta na porta 2: vira a fase 3.
+    rei.x = 1832
+    rei.y = 446
+    rei.vx = 0
+    rei.vy = 0
+    h.nextFrame(300)
+    expect(fase).toBe(3)
+    // Encosta na porta de saída: vitória.
+    rei.x = 2832
+    rei.y = 446
+    rei.vx = 0
+    rei.vy = 0
+    h.nextFrame(350)
     expect(h.api.state()).toBe('vitoria')
   })
 })

@@ -22,6 +22,7 @@ import {
   defesaDoReinoExample,
   dinoProfissionalExample,
   dueloDeCartasExample,
+  dueloDeHeroisProfissionalExample,
   dueloDosBonecosExample,
   escaladaProfissionalExample,
   florestaNinjaExample,
@@ -31,6 +32,7 @@ import {
   muralhaProfissionalExample,
   oChefaoExample,
   oChefaoFichaExample,
+  portasDoCasteloProfissionalExample,
   quebraBlocosExample,
   reinoAbertoExample,
   saltoNaFlorestaExample,
@@ -54,6 +56,8 @@ const EXAMPLES = [
   bichinhosDoQuintalExample,
   invasaoDosOvnisExample,
   dueloDosBonecosExample,
+  dueloDeHeroisProfissionalExample,
+  portasDoCasteloProfissionalExample,
   defesaDoReinoExample,
   reinoAbertoExample,
   batalhaEmEquipeExample,
@@ -270,6 +274,37 @@ const REQUIRED_TYPES = {
     'gk:lutaWinner',
     'gk:collideGroup',
   ],
+  'Duelo de Heróis Profissional': [
+    'gk:lutaMatch',
+    'gk:lutaFighter',
+    'gk:lutaMove',
+    'gk:lutaAttack',
+    'gk:lutaDrawHud',
+    'gk:lutaWinner',
+    'gk:createCharacter',
+    'gk:stateLook',
+    'gk:defineMold',
+    'gk:defineLook',
+    'gk:spawnFromMold',
+    'gk:collideGroup',
+    'gk:keyPressed',
+    'gk:onEvent',
+  ],
+  'Portas do Castelo Profissional': [
+    'gk:platformerHero',
+    'gk:setJumpFeel',
+    'gk:collideGroup',
+    'gk:platformerAnim',
+    'gk:defineMold',
+    'gk:defineLook',
+    'gk:spawnFromMold',
+    'gk:defineRegion',
+    'gk:isInside',
+    'gk:setCheckpoint',
+    'gk:respawn',
+    'gk:setState',
+    'gk:cameraFollow',
+  ],
   'Defesa do Reino': [
     'gk:tdSetCoins',
     'gk:tdSlot',
@@ -389,7 +424,7 @@ beforeAll(() => {
 })
 
 describe('game-2d-advanced — catálogo dos exemplos', () => {
-  it('manifest mantém os 25 exemplos canônicos na ordem da vitrine', () => {
+  it('manifest mantém os 27 exemplos canônicos na ordem da vitrine', () => {
     expect(gameKitExtension.manifest.examples.map((example) => example.name)).toEqual(
       EXAMPLES.map((example) => example.name),
     )

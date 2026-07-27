@@ -827,4 +827,55 @@ export const EXAMPLE_QA_CONTRACTS = [
     scenario: 'Andar com A e D, pular com W, atravessar tábuas por baixo e alcançar a bandeira.',
     interactions: ['wasd'],
   },
+  {
+    key: 'game-2d:Duelo de Heróis',
+    name: 'Duelo de Heróis',
+    experience: 'game',
+    promise: 'Dois jogadores no mesmo teclado lutam até zerar a vida do rival ou o tempo acabar.',
+    scenario:
+      'Começar, andar e pular, golpear com a caixa de golpe, vencer por nocaute ou tempo e reiniciar.',
+    interactions: ['start', 'action-fight', 'arrows'],
+  },
+  {
+    key: 'game-2d:Portas do Castelo',
+    name: 'Portas do Castelo',
+    experience: 'game',
+    promise: 'Guiar o rei pelas plataformas e achar a porta de cada fase até vencer o castelo.',
+    scenario: 'Começar, andar e pular com as setas, encostar na porta, trocar de fase e reiniciar.',
+    interactions: ['start', 'arrows'],
+  },
+  {
+    key: 'game-2d-advanced:Duelo de Heróis Profissional',
+    name: 'Duelo de Heróis Profissional',
+    experience: 'game',
+    promise: 'Luta com o kit de combate: soco, chute e especial em melhor de três rounds.',
+    scenario: 'Andar e pular, golpear e defender, encher o especial, vencer o round e a revanche.',
+    interactions: ['action-fight', 'arrows', 'digit-1'],
+  },
+  {
+    key: 'game-2d-advanced:Portas do Castelo Profissional',
+    name: 'Portas do Castelo Profissional',
+    experience: 'game',
+    promise: 'Atravessar salas do castelo com o kit de plataforma e câmera que acompanha.',
+    scenario: 'Andar e pular pelas salas, encostar na porta para trocar de fase e chegar à saída.',
+    interactions: ['arrows'],
+  },
+  {
+    key: 'core:Duelo de Heróis (na mão)',
+    name: 'Duelo de Heróis (na mão)',
+    experience: 'game',
+    promise: 'Luta de dois no mesmo teclado feita só com o núcleo, com barra de vida e cronômetro.',
+    scenario:
+      'Andar e pular, golpear com a caixa que tira vida ao encostar, vencer por nocaute ou tempo e reiniciar.',
+    interactions: ['start', 'action-fight', 'arrows'],
+  },
+  {
+    key: 'core:Portas do Castelo (na mão)',
+    name: 'Portas do Castelo (na mão)',
+    experience: 'game',
+    promise: 'Plataforma de fases feita só com o núcleo, com fade preto na mão entre as fases.',
+    scenario:
+      'Andar com A e D, pular com W, encostar na porta e apertar para cima para trocar de fase.',
+    interactions: ['wasd'],
+  },
 ] as const satisfies readonly ExampleQAContract[]

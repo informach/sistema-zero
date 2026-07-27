@@ -13,6 +13,7 @@ import {
   chuvaDeMeteorosExample,
   codeDrawnExample,
   dinoRunExample,
+  dueloDeHeroisExample,
   enemyPlatformerExample,
   escaladaDoGuerreiroExample,
   gorilasExample,
@@ -20,6 +21,7 @@ import {
   muralhaDoReinoExample,
   platformerExample,
   pongExample,
+  portasDoCasteloExample,
   stickHeroExample,
   tilemapExample,
 } from '../examples'
@@ -1406,6 +1408,149 @@ describe('playthrough dos exemplos exatos do Jogo 2D', () => {
     if (restartedHero) restartedHero.hp = 0
     game.nextFrame()
     expect(game.api.sceneIs('derrota')).toBe(true)
+    expect(game.errors).toEqual([])
+    expect(game.warnings).toEqual([])
+  })
+
+  it('Duelo de Heróis: dois jogadores andam, pulam, o golpe tira vida e há vencedor por nocaute', () => {
+    const game = exampleHarness(dueloDeHeroisExample, () => 0.5)
+    // Ordem de criação: heroi1, heroi2, golpe1, golpe2 (o chão vai no grupo).
+    const [heroi1, heroi2] = game.sprites
+    expect(heroi1?.hp).toBe(100)
+    expect(heroi2?.hp).toBe(100)
+    expect(game.api.sceneIs('inicio')).toBe(true)
+
+    game.fireKey('Enter')
+    expect(game.api.sceneIs('jogando')).toBe(true)
+
+    // Andar (lido a cada quadro): A leva o azul para a esquerda; D para a direita.
+    const azulX = heroi1?.x ?? 0
+    game.fireKey('a')
+    for (let frame = 0; frame < 4; frame += 1) game.nextFrame()
+    game.fireKey('a', 'keyup')
+    expect(heroi1?.x ?? 0).toBeLessThan(azulX)
+
+    // O vermelho anda com as setas.
+    const vermelhoX = heroi2?.x ?? 0
+    game.fireKey('ArrowRight')
+    for (let frame = 0; frame < 4; frame += 1) game.nextFrame()
+    game.fireKey('ArrowRight', 'keyup')
+    expect(heroi2?.x ?? 0).toBeGreaterThan(vermelhoX)
+
+    // Pular do chão: W tira o azul do chão num quadro.
+    for (let frame = 0; frame < 6; frame += 1) game.nextFrame()
+    const azulY = heroi1?.y ?? 0
+    game.fireKey('w')
+    game.nextFrame()
+    expect(heroi1?.y ?? 0).toBeLessThan(azulY)
+
+    // O golpe tira vida: encosta os dois e o azul soca com F (uma vez por golpe).
+    if (heroi1 && heroi2) {
+      heroi1.x = 200
+      heroi1.y = 200
+      heroi1.vy = 0
+      heroi2.x = 224
+      heroi2.y = 200
+      heroi2.vy = 0
+    }
+    game.fireKey('f')
+    game.nextFrame()
+    expect(heroi2?.hp ?? 100).toBeLessThan(100)
+    const vidaVermelho = heroi2?.hp ?? 0
+
+    // Um golpe não drena a vida sozinho: no quadro seguinte a vida não cai mais.
+    game.nextFrame()
+    expect(heroi2?.hp ?? 0).toBe(vidaVermelho)
+
+    // Nocaute: zerar a vida do vermelho leva à tela "ganhou1".
+    if (heroi2) heroi2.hp = 0
+    game.nextFrame()
+    expect(game.api.sceneIs('ganhou1')).toBe(true)
+
+    // Enter reinicia limpo: heróis novos com a vida cheia de volta.
+    game.fireKey('Enter', 'keyup')
+    game.fireKey('Enter')
+    game.nextFrame()
+    expect(game.api.sceneIs('inicio')).toBe(true)
+    game.fireKey('Enter', 'keyup')
+    game.fireKey('Enter')
+    game.nextFrame()
+    expect(game.api.sceneIs('jogando')).toBe(true)
+    const restartedAzul = game.sprites.at(-4)
+    expect(restartedAzul).not.toBe(heroi1)
+    expect(restartedAzul?.hp).toBe(100)
+    expect(game.errors).toEqual([])
+    expect(game.warnings).toEqual([])
+  })
+
+  it('Portas do Castelo: o rei anda, pula, cruza a porta com fade, troca de fase e vence no fim', () => {
+    const game = exampleHarness(portasDoCasteloExample, () => 0.5)
+    const rei = game.sprites[0]
+    const porta = game.sprites[1]
+    const blocos = game.groups[0]
+    expect(rei).toBeDefined()
+    expect(porta).toBeDefined()
+    // Fase 1 começa com o chão + 2 plataformas.
+    expect(blocos?.items).toHaveLength(3)
+    expect(game.api.sceneIs('inicio')).toBe(true)
+
+    game.fireKey('Enter')
+    expect(game.api.sceneIs('jogando')).toBe(true)
+
+    // O chão sólido segura o rei (a gravidade o assenta, não atravessa).
+    for (let frame = 0; frame < 20; frame += 1) game.nextFrame()
+    expect((rei?.y ?? 0) + (rei?.h ?? 0)).toBeLessThanOrEqual(300)
+    expect(rei?.vy ?? 1).toBe(0)
+
+    // Andar para a direita: o rei se desloca no eixo x.
+    const startX = rei?.x ?? 0
+    game.fireKey('ArrowRight')
+    for (let frame = 0; frame < 4; frame += 1) game.nextFrame()
+    game.fireKey('ArrowRight', 'keyup')
+    expect(rei?.x ?? 0).toBeGreaterThan(startX)
+
+    // Pular do chão: a seta pra cima tira o rei do chão num quadro.
+    for (let frame = 0; frame < 6; frame += 1) game.nextFrame()
+    const antesDoPulo = rei?.y ?? 0
+    game.fireKey('ArrowUp')
+    game.nextFrame()
+    expect(rei?.y ?? 0).toBeLessThan(antesDoPulo)
+
+    // Cruzar a porta da fase 1: encostar dispara a transição (o clarão) e, no
+    // meio dela, remonta a fase 2 e reposiciona o rei no começo.
+    if (rei && porta) {
+      rei.x = porta.x
+      rei.y = porta.y
+      rei.vx = 0
+      rei.vy = 0
+    }
+    for (let frame = 0; frame < 45; frame += 1) game.nextFrame()
+    expect(game.scores['Fase:']).toBe(2)
+    expect(rei?.x).toBe(60)
+
+    // Atravessa a porta da fase 2 e depois a da fase 3 para vencer.
+    for (let fase = 2; fase <= 3; fase += 1) {
+      const portaAtual = game.sprites[1]
+      if (rei && portaAtual) {
+        rei.x = portaAtual.x
+        rei.y = portaAtual.y
+        rei.vx = 0
+        rei.vy = 0
+      }
+      for (let frame = 0; frame < 45; frame += 1) game.nextFrame()
+    }
+    expect(game.api.sceneIs('venceu')).toBe(true)
+
+    // Enter reinicia limpo: de volta à fase 1 (o rei recomeça no início).
+    game.fireKey('Enter', 'keyup')
+    game.fireKey('Enter')
+    game.nextFrame()
+    expect(game.api.sceneIs('inicio')).toBe(true)
+    game.fireKey('Enter', 'keyup')
+    game.fireKey('Enter')
+    game.nextFrame()
+    expect(game.api.sceneIs('jogando')).toBe(true)
+    expect(game.scores['Fase:']).toBe(1)
     expect(game.errors).toEqual([])
     expect(game.warnings).toEqual([])
   })

@@ -9,6 +9,7 @@ import {
   chuvaDeMeteorosNaMaoExample,
   corridaInfinitaNaMaoExample,
   dinoNaMaoExample,
+  dueloDeHeroisNaMaoExample,
   escaladaDoGuerreiroNaMaoExample,
   folioCanvasProceduralExample,
   gorilasNaMaoExample,
@@ -18,6 +19,7 @@ import {
   muralhaDoReinoNaMaoExample,
   passeio3dNaMaoExample,
   patrulhaEspacialNaMaoExample,
+  portasDoCasteloNaMaoExample,
 } from './core'
 
 describe('CORE_EXAMPLES — texto visível sem travessão', () => {
@@ -782,5 +784,119 @@ describe('CORE_EXAMPLES — escaladaDoGuerreiroNaMaoExample (plataforma vertical
     expect(
       JSON.stringify(buildWorkspaceStateFromIR(escaladaDoGuerreiroNaMaoExample.ir)),
     ).not.toContain('"sz_adv_raw_js"')
+  })
+})
+
+describe('CORE_EXAMPLES — dueloDeHeroisNaMaoExample (fighting-game Chris Courses na unha)', () => {
+  it('é exportado, sem extensões e com IR válido', () => {
+    expect(dueloDeHeroisNaMaoExample.ir.extensions).toEqual([])
+    expect(SZIRV2Schema.safeParse(dueloDeHeroisNaMaoExample.ir).success).toBe(true)
+  })
+
+  it('nome e descrição em pt-BR com acentos e sem travessão', () => {
+    expect(dueloDeHeroisNaMaoExample.name).toBe('Duelo de Heróis (na mão)')
+    expect(dueloDeHeroisNaMaoExample.name).not.toContain('—')
+    expect(dueloDeHeroisNaMaoExample.description).not.toContain('—')
+    expect(dueloDeHeroisNaMaoExample.description).toContain('núcleo')
+    expect(JSON.stringify(dueloDeHeroisNaMaoExample.ir)).not.toContain('—')
+  })
+
+  it('NÃO usa código avançado nem blocos de extensão', () => {
+    const types = collectTypes(dueloDeHeroisNaMaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('rawCSS')).toBe(false)
+    expect(types.has('rawHTML')).toBe(false)
+    expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
+  })
+
+  it('usa dois lutadores, golpe com janela ativa e barras de vida, sem asset', () => {
+    const types = collectTypes(dueloDeHeroisNaMaoExample.ir)
+    for (const expected of [
+      'classDecl', // Fighter
+      'funcDecl', // overlap / drawHealthBar / finish / animate / reset
+      'newInstance', // new Fighter(...)
+      'setThisProp', // o estado de cada lutador vive no objeto
+      'canvasFillRect', // lutadores, chão, caixa de golpe e barras são retângulos
+      'canvasFillText', // cronômetro + tela de vencedor
+      'requestFrame', // pedir o próximo quadro chamando animate
+      'canvasSetup',
+      'forRange', // (nenhum aqui direto, mas o schema aceita)
+      'event', // keydown/keyup (dois teclados)
+    ].filter((t) => t !== 'forRange')) {
+      expect(types.has(expected)).toBe(true)
+    }
+    // é 100% desenhado: não precisa de nenhum asset embutido
+    expect(dueloDeHeroisNaMaoExample.assets ?? []).toEqual([])
+    const code = compileStatements(behaviorStatements(dueloDeHeroisNaMaoExample.ir), 0)
+    // o golpe trava a direção ao começar (a caixa de golpe não teleporta)
+    expect(code).toContain('this.attackFace = this.faceRight;')
+    // a caixa de golpe à frente tira 15 de vida quando encosta
+    expect(code).toContain('p2.health = p2.health - 15;')
+    // barras de vida desenhadas na mão (nada de gsap no HUD)
+    expect(code).toContain('const w = 200 * health / 100;')
+  })
+
+  it('IR→blocos não contém bloco raw/avançado', () => {
+    expect(JSON.stringify(buildWorkspaceStateFromIR(dueloDeHeroisNaMaoExample.ir))).not.toContain(
+      '"sz_adv_raw_js"',
+    )
+  })
+})
+
+describe('CORE_EXAMPLES — portasDoCasteloNaMaoExample (platformer com fase Chris Courses na unha)', () => {
+  it('é exportado, sem extensões e com IR válido', () => {
+    expect(portasDoCasteloNaMaoExample.ir.extensions).toEqual([])
+    expect(SZIRV2Schema.safeParse(portasDoCasteloNaMaoExample.ir).success).toBe(true)
+  })
+
+  it('nome e descrição em pt-BR com acentos e sem travessão', () => {
+    expect(portasDoCasteloNaMaoExample.name).toBe('Portas do Castelo (na mão)')
+    expect(portasDoCasteloNaMaoExample.name).not.toContain('—')
+    expect(portasDoCasteloNaMaoExample.description).not.toContain('—')
+    expect(portasDoCasteloNaMaoExample.description).toContain('núcleo')
+    expect(JSON.stringify(portasDoCasteloNaMaoExample.ir)).not.toContain('—')
+  })
+
+  it('NÃO usa código avançado nem blocos de extensão', () => {
+    const types = collectTypes(portasDoCasteloNaMaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('rawCSS')).toBe(false)
+    expect(types.has('rawHTML')).toBe(false)
+    expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
+  })
+
+  it('usa física AABB + a passagem de fase com fade na mão (globalAlpha), sem asset', () => {
+    const types = collectTypes(portasDoCasteloNaMaoExample.ir)
+    for (const expected of [
+      'classDecl', // Block / Player
+      'funcDecl', // overlap / loadLevel / atDoor / animate
+      'newInstance', // new Player(...)
+      'newExpr', // new Block(...) dentro do loadLevel
+      'setThisProp', // o estado do herói vive no objeto
+      'canvasFillRect', // herói, blocos, porta e o overlay do fade são retângulos
+      'canvasGlobalAlpha', // o fade preto na mão sobe e desce a opacidade
+      'requestFrame', // pedir o próximo quadro chamando animate
+      'canvasSetup',
+      'forRange', // varre os blocos
+      'if', // a máquina de fade e a decisão de entrar na porta
+      'event', // keydown/keyup (A/D andam, W pula ou entra na porta)
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
+    // é 100% desenhado: não precisa de nenhum asset embutido
+    expect(portasDoCasteloNaMaoExample.assets ?? []).toEqual([])
+    const code = compileStatements(behaviorStatements(portasDoCasteloNaMaoExample.ir), 0)
+    // a colisão AABB é resolvida por eixo (empurra pelo sentido do movimento)
+    expect(code).toContain('this.vy = this.vy + gravity;')
+    // a porta só abre encostando E apertando para cima (fiel ao original)
+    expect(code).toContain('loadLevel(nextLevel);')
+    // o fade preto na mão sobe e desce a opacidade com globalAlpha
+    expect(code).toContain('ctx.globalAlpha = fade;')
+  })
+
+  it('IR→blocos não contém bloco raw/avançado', () => {
+    expect(JSON.stringify(buildWorkspaceStateFromIR(portasDoCasteloNaMaoExample.ir))).not.toContain(
+      '"sz_adv_raw_js"',
+    )
   })
 })
