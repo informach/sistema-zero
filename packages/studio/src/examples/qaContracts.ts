@@ -435,7 +435,7 @@ export const EXAMPLE_QA_CONTRACTS = [
     promise: 'Andar em primeira pessoa pelo labirinto e derrotar robôs com a mira central.',
     scenario:
       'Andar com WASD, pular, clicar para travar a mira e atirar, tomar dano e vencer ou reiniciar.',
-    interactions: ['start', 'wasd', 'space', 'click'],
+    interactions: ['wasd', 'space', 'click'],
   },
   {
     key: 'game-3d:Mundo de Blocos',
@@ -444,7 +444,7 @@ export const EXAMPLE_QA_CONTRACTS = [
     promise: 'Construir com blocos na grade isométrica e empilhar uma torre de cinco.',
     scenario:
       'Mover o cursor com as setas, colocar com espaço, trocar o tipo com 1 e quebrar com o clique.',
-    interactions: ['start', 'arrows', 'space', 'digit-1', 'click'],
+    interactions: ['arrows', 'space', 'digit-1', 'click'],
   },
   {
     key: 'game-3d:Cubo girando',

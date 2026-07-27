@@ -106,18 +106,29 @@ function exampleHarness(example: ExtensionExample, random: () => number = Math.r
     },
   })
 
+  // add/remove SIMÉTRICOS no mesmo mapa: um runtime que desregistra listener
+  // (restart/cleanup) precisa vê-lo sumir de verdade, senão o harness dispara
+  // handler morto e mascara vazamento de registro.
+  const addListener = (name: string, listener: Listener) => {
+    const group = listeners.get(name) ?? []
+    group.push(listener)
+    listeners.set(name, group)
+  }
+  const removeListener = (name: string, listener: Listener) => {
+    const group = listeners.get(name) ?? []
+    const index = group.indexOf(listener)
+    if (index >= 0) group.splice(index, 1)
+    listeners.set(name, group)
+  }
+
   const nodesById = new Map<string, Record<string, unknown>>()
   const documentObject = {
     hidden: false,
     title: example.name,
     // O evento GENÉRICO de teclado do núcleo registra em document (o do g2d
     // registra em window) — os dois caem no MESMO mapa, e fireKey alcança ambos.
-    addEventListener(name: string, listener: Listener) {
-      const group = listeners.get(name) ?? []
-      group.push(listener)
-      listeners.set(name, group)
-    },
-    removeEventListener() {},
+    addEventListener: addListener,
+    removeEventListener: removeListener,
     getElementById(id: string) {
       return nodesById.get(id) ?? null
     },
@@ -229,12 +240,8 @@ function exampleHarness(example: ExtensionExample, random: () => number = Math.r
         errors.push(String(message))
       },
     },
-    addEventListener(name: string, listener: Listener) {
-      const group = listeners.get(name) ?? []
-      group.push(listener)
-      listeners.set(name, group)
-    },
-    removeEventListener() {},
+    addEventListener: addListener,
+    removeEventListener: removeListener,
     SZGame2D: undefined as RuntimeApi | undefined,
   }
 
@@ -913,29 +920,35 @@ describe('playthrough dos exemplos exatos do Jogo 2D', () => {
     game.fireKey('Enter')
     expect(game.api.sceneIs('jogando')).toBe(true)
 
-    // Antes do "Depois de 2 segundos" (one-shot), o menu está TRAVADO.
+    // Antes da abertura (afterSeconds marca aos 2s; a raiz de 0,5s libera),
+    // o menu está TRAVADO.
     game.fireKey('1')
     game.fireKey('1', 'keyup')
     game.nextFrame()
     expect(rival?.hp).toBe(20)
 
-    // ~2,2s depois o afterSeconds libera o turno do jogador.
+    // (a) entrar rápido: ~2,2s depois o timer + a raiz de liberação soltam o
+    // turno do jogador (o que vier POR ÚLTIMO).
     for (let frame = 0; frame < 130; frame += 1) game.nextFrame()
     game.fireKey('1')
     game.fireKey('1', 'keyup')
     game.nextFrame()
     // Faísca: fogo contra planta = forca(4) × 2 = 8 de dano.
     expect(rival?.hp).toBe(12)
+    // O HUD mostra o estoque de poções (ainda cheio).
+    expect(game.scores['3 Poção (cura 5) x']).toBe(3)
 
     // A vez do rival: a raiz "A cada 1,5s" devolve o golpe e o turno.
     for (let frame = 0; frame < 100; frame += 1) game.nextFrame()
     expect(meu?.hp).toBe(17)
 
-    // Poção: cura "até 5" mas o runtime CLAMPA no máximo (17 + 5 → 20).
+    // Poção: cura "até 5" mas o runtime CLAMPA no máximo (17 + 5 → 20), e
+    // gasta 1 do estoque (3 → 2).
     game.fireKey('3')
     game.fireKey('3', 'keyup')
     game.nextFrame()
     expect(meu?.hp).toBe(20)
+    expect(game.scores['3 Poção (cura 5) x']).toBe(2)
 
     // Mais dois golpes de fogo encerram a batalha: 12 → 4 → 0.
     for (let frame = 0; frame < 100; frame += 1) game.nextFrame()
@@ -957,6 +970,78 @@ describe('playthrough dos exemplos exatos do Jogo 2D', () => {
     expect(game.api.sceneIs('inicio')).toBe(true)
     const restartedRival = game.sprites.at(-1)
     expect(restartedRival?.hp).toBe(20)
+    expect(game.errors).toEqual([])
+    expect(game.warnings).toEqual([])
+  })
+
+  it('Batalha de Monstrinhos: ficar na tela de título não consome a abertura (libera em até 0,5s)', () => {
+    const game = exampleHarness(batalhaMonstrinhosExample, () => 0.5)
+    const rival = game.sprites[1]
+    expect(game.api.sceneIs('inicio')).toBe(true)
+
+    // (b) A criança LÊ o título por ~3,2s: o afterSeconds dispara ainda no
+    // título (um one-shot com guarda de cena no corpo seria consumido aqui e
+    // travaria o jogo para sempre). Ele só marca aberturaPronta.
+    for (let frame = 0; frame < 190; frame += 1) game.nextFrame()
+    game.fireKey('1')
+    game.fireKey('1', 'keyup')
+    game.nextFrame()
+    expect(rival?.hp).toBe(20)
+
+    // Entra na batalha: o menu ainda espera a raiz de 0,5s do próximo tique.
+    game.fireKey('Enter')
+    expect(game.api.sceneIs('jogando')).toBe(true)
+
+    // Em até 0,5s (~35 quadros) a raiz de liberação solta os comandos.
+    for (let frame = 0; frame < 35; frame += 1) game.nextFrame()
+    game.fireKey('1')
+    game.fireKey('1', 'keyup')
+    game.nextFrame()
+    expect(rival?.hp).toBe(12)
+    expect(game.errors).toEqual([])
+    expect(game.warnings).toEqual([])
+  })
+
+  it('Batalha de Monstrinhos: a 4ª poção não faz nada e a derrota é alcançável', () => {
+    // random fixo 0,99: randomChance(60) falha → o rival usa a Folha Afiada
+    // com randomBetween(2, 5) = 5 (o golpe mais forte).
+    const game = exampleHarness(batalhaMonstrinhosExample, () => 0.99)
+    const [meu, rival] = game.sprites
+    game.fireKey('Enter')
+    for (let frame = 0; frame < 160; frame += 1) game.nextFrame()
+
+    // Gasta as 3 poções (cada uma passa o turno; o rival responde com -5).
+    for (let potion = 0; potion < 3; potion += 1) {
+      game.fireKey('3')
+      game.fireKey('3', 'keyup')
+      game.nextFrame()
+      expect(meu?.hp).toBe(20) // curou (clampado no máximo)
+      for (let frame = 0; frame < 100; frame += 1) game.nextFrame()
+      expect(meu?.hp).toBe(15) // a resposta do rival já saiu
+    }
+    game.nextFrame()
+    expect(game.scores['3 Poção (cura 5) x']).toBe(0)
+
+    // A 4ª poção NÃO cura e NÃO gasta o turno: 100 quadros depois o rival
+    // continua sem responder (o turno segue com o jogador).
+    game.fireKey('3')
+    game.fireKey('3', 'keyup')
+    game.nextFrame()
+    expect(meu?.hp).toBe(15)
+    for (let frame = 0; frame < 100; frame += 1) game.nextFrame()
+    expect(meu?.hp).toBe(15)
+
+    // Sem cura infinita a derrota é real: 3 Jatos (4 de dano) mantêm o rival
+    // vivo (20 → 8) enquanto os -5 dele zeram o Brasinha (15 → 0).
+    for (let hit = 0; hit < 3; hit += 1) {
+      game.fireKey('2')
+      game.fireKey('2', 'keyup')
+      game.nextFrame()
+      for (let frame = 0; frame < 100; frame += 1) game.nextFrame()
+    }
+    expect(rival?.hp).toBe(8)
+    expect(meu?.hp).toBe(0)
+    expect(game.api.sceneIs('derrota')).toBe(true)
     expect(game.errors).toEqual([])
     expect(game.warnings).toEqual([])
   })

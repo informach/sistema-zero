@@ -1099,7 +1099,7 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip:
-      'Move o objeto para frente, na direção para onde ele está virado. Use dentro de "A cada quadro 3D".',
+      'Move o objeto para frente, na direção para onde ele está virado. Com a câmera em primeira pessoa nesse objeto, anda para onde o jogador olha (no plano do chão). Use dentro de "A cada quadro 3D".',
   },
   {
     type: 'sz_g3d_face_velocity',
@@ -1151,7 +1151,7 @@ export const gameThreeDBlocks = [
     inputsInline: true,
     output: 'JSValue',
     tooltip:
-      'O objeto à frente, na direção que o objeto olha (tiro/mira). Vazio se não houver nada.',
+      'O objeto à frente, na direção que o objeto olha (tiro/mira). Com a câmera em primeira pessoa nesse objeto, mira o que o jogador VÊ (inclui olhar para cima/baixo). Vazio se não houver nada.',
   },
   {
     type: 'sz_g3d_on_ground',

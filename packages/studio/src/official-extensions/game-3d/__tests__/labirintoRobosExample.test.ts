@@ -75,6 +75,7 @@ describe('Exemplo Labirinto dos Robôs — drift contra o parser real', () => {
       'g3d:setFog', // clima de masmorra
       'g3d:setSky', // céu em degradê
       'g3d:playEffect', // tiro/dano/vitória soam
+      'g3d:setRotation', // recomeçar zera o yaw do corpo (não renasce olhando p/ trás)
       'event', // clique atira; R e o botão recomeçam
       'eventProp', // a tecla do evento (event.key)
       'funcDecl', // recomeçar() monta e reinicia a partida
@@ -85,11 +86,14 @@ describe('Exemplo Labirinto dos Robôs — drift contra o parser real', () => {
     ]) {
       expect(types.has(t)).toBe(true)
     }
-    // Vida com i-frames simples (variável de recarga) e placar por variável.
+    // Vida com i-frames simples (variável de recarga), placar por variável e a
+    // trava de tiro pós-restart (o clique no botão "Recomeçar" borbulha até o
+    // listener de tiro do document; sem a trava, atirava na mesma hora).
     const raw = JSON.stringify(statements)
     expect(raw).toContain('"vida"')
     expect(raw).toContain('"recarga"')
     expect(raw).toContain('"pontos"')
+    expect(raw).toContain('"travaTiro"')
   })
 
   it('⭐ veredito do spike: sob pointer lock o mouse interno congela', () => {

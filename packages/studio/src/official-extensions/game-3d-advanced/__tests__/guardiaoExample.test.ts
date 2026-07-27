@@ -73,6 +73,12 @@ describe('Exemplo Guardião do Portal — drift contra o parser real', () => {
     )
   })
 
+  it('nenhum texto visível usa travessão', () => {
+    expect(JSON.stringify(guardiaoDoPortalExample.ir)).not.toContain('—')
+    expect(guardiaoDoPortalExample.name).not.toContain('—')
+    expect(guardiaoDoPortalExample.description ?? '').not.toContain('—')
+  })
+
   it('fixpoint textual: gerar → parsear → gerar é byte-estável', () => {
     const code1 = compileStatements(
       stripIds(behaviorStatements(guardiaoDoPortalExample.ir)) as JSStatement[],

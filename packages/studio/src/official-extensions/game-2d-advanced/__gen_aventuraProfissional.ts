@@ -14,7 +14,9 @@ import { parseJS } from '../../parsers/js'
  *   cameraFollowMap prende a câmera nele (o keepOnScreen passa a valer o mundo);
  * - o mato destrutível vive no TILEMAP (setTileAt/tileAt/breakTileAt) — o mapa
  *   vazio não tem folha de imagem, então o desenho de cada tufo é um drawLook
- *   condicionado ao tileAt (peça cortada some do mapa E do desenho);
+ *   condicionado ao tileAt (peça cortada some do mapa E do desenho). ⚠️ O tile
+ *   checado fica SOB OS PÉS do herói enquanto o golpe é direcional — por isso
+ *   a tela de menu avisa "Fique EM CIMA do mato e golpeie para cortar";
  * - inimigos têm FSM POR ENTIDADE dirigida por distância (entityState/
  *   setEntityState + distanceBetween): parado/patrulha -> perseguir -> golpe.
  *   ⚠️ No estado golpe o bicho INVESTE (seek continua): o playthrough pegou o
@@ -25,7 +27,7 @@ import { parseJS } from '../../parsers/js'
  */
 export const AVENTURA_PROFISSIONAL_SOURCE = `
 SZGameKit.setup({ width: 960, height: 540, background: "#79b365", accent: "#2b8a3e" });
-SZGameKit.setScreenText("menu", "Aventura do Herói Profissional", "Setas: andar. ESPAÇO: golpe de espada. Corte o mato, passe atrás das árvores e derrote os 7 monstros do campo!", "Aventurar");
+SZGameKit.setScreenText("menu", "Aventura do Herói Profissional", "Setas: andar. ESPAÇO: golpe de espada. Fique EM CIMA do mato e golpeie para cortar. Passe atrás das árvores e derrote os 7 monstros do campo!", "Aventurar");
 SZGameKit.setScreenText("vitoria", "Campo em paz!", "Você derrotou todos os monstros. O reino agradece, herói!", "Jogar de novo");
 SZGameKit.setScreenText("fim", "O herói caiu!", "Os monstros venceram desta vez. Tente de novo!", "Tentar de novo");
 SZGameKit.defineLook("heroi parado", function (ctx) {

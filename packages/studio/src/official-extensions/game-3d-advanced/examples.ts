@@ -15,7 +15,7 @@ export const defesaDaTorreExample: ExtensionExample = {
   name: 'Defesa da Torre',
   experience: 'game',
   description:
-    'Torres com cérebro próprio (máquina de estados: parado → mirar → atirar → recarregar) caçam os invasores que avançam contra o cristal. Tudo montado de peças — nenhuma imagem.',
+    'Torres com cérebro próprio (máquina de estados: parado → mirar → atirar → recarregar) caçam os invasores que avançam contra o cristal. Tudo montado de peças: nenhuma imagem.',
   ir: {
     html: [],
     css: [],
@@ -2613,7 +2613,7 @@ export const quadraMalucaExample: ExtensionExample = {
   name: 'Quadra Maluca',
   experience: 'game',
   description:
-    'Arraste o mouse para girar a câmera — o WASD anda sempre para onde você olha. Cinco bolas malucas quicam pelo chão, o rinque de gelo escorrega e os caixotes não saem do lugar: cada coisa com a física dela.',
+    'Arraste o mouse para girar a câmera: o WASD anda sempre para onde você olha. Cinco bolas malucas quicam pelo chão, o rinque de gelo escorrega e os caixotes não saem do lugar: cada coisa com a física dela.',
   ir: {
     html: [],
     css: [],
@@ -2658,7 +2658,7 @@ export const quadraMalucaExample: ExtensionExample = {
           text: {
             type: 'str',
             value:
-              'Arraste o mouse para girar a câmera: o WASD anda SEMPRE para onde você está olhando. Encoste nas 5 bolas quicantes — mas o gelo escorrega!',
+              'Arraste o mouse para girar a câmera: o WASD anda SEMPRE para onde você está olhando. Encoste nas 5 bolas quicantes, mas cuidado: o gelo escorrega!',
           },
           button: {
             type: 'str',
@@ -3419,7 +3419,7 @@ export const guardiaoDoPortalExample: ExtensionExample = {
   name: 'Guardião do Portal',
   experience: 'game',
   description:
-    'Segure os invasores por 30 segundos! O guardião fala, a câmera treme no impacto, as pedras quicam — e a semente faz a partida se repetir igualzinha.',
+    'Segure os invasores por 30 segundos! O guardião fala, a câmera treme no impacto, as pedras quicam. E a semente faz a partida se repetir igualzinha.',
   ir: {
     html: [],
     css: [],
@@ -3464,7 +3464,7 @@ export const guardiaoDoPortalExample: ExtensionExample = {
           text: {
             type: 'str',
             value:
-              'Segure os invasores por 30 segundos! Fale com eles, tremam as pedras — e o acaso é sempre o mesmo, por causa da semente.',
+              'Segure os invasores por 30 segundos! Fale com eles, tremam as pedras. E o acaso é sempre o mesmo, por causa da semente.',
           },
           button: {
             type: 'str',
@@ -4312,7 +4312,7 @@ export const tiroAoAlvoExample: ExtensionExample = {
   name: 'Tiro ao Alvo',
   experience: 'game',
   description:
-    'Point-and-click: alvos aparecem e fogem, e cada CLIQUE certeiro vale pontos (o dourado vale 3). Tela de dica própria, aviso de acerto e lente de mira — feche 12 pontos em 25 segundos.',
+    'Point-and-click: alvos aparecem e fogem, e cada CLIQUE certeiro vale pontos (o dourado vale 3). Tela de dica própria, aviso de acerto e lente de mira: feche 12 pontos em 25 segundos.',
   ir: {
     html: [],
     css: [],
@@ -7841,7 +7841,9 @@ export const corridaInfinitaProfissionalExample: ExtensionExample = {
  * alvoX/alvoZ). ⭐ Veredito do spike: sob pointer lock o mouse interno CONGELA,
  * então NADA de pick/groundPoint/pointerOver — o gatilho é mousePressed() e o
  * projétil alinhado ao olhar é spawnFrom + moveForward (o yaw do FPS gira o
- * mesh do herói). i-frames com onHurt + tremor + vinheta. 100% asset-free.
+ * mesh do herói), com COOLDOWN de 0,5 s por relógio de dt (proximoTiro) — os
+ * i-frames do motor são de 0,5 s, então clique mais rápido que isso gastaria
+ * tiro sem dano. i-frames com onHurt + tremor + vinheta. 100% asset-free.
  *
  * ⚠️ IR GERADA pelo parser real (ver __gen_labirintoProfissional.ts); o drift
  * test em __tests__/labirintoProfissionalExample.test.ts guarda o resultado.
@@ -8590,6 +8592,14 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
           },
         },
         {
+          type: 'var',
+          name: 'proximoTiro',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
           type: 'g3k:stateTimer',
           mold: 'tiro',
           state: 'parado',
@@ -8651,6 +8661,14 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
               value: {
                 type: 'num',
                 value: 5,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'proximoTiro',
+              value: {
+                type: 'num',
+                value: 0,
               },
             },
             {
@@ -9314,9 +9332,41 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
               },
             },
             {
+              type: 'assign',
+              name: 'proximoTiro',
+              value: {
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'var',
+                  name: 'proximoTiro',
+                },
+                right: {
+                  type: 'var',
+                  name: 'dt',
+                },
+              },
+            },
+            {
               type: 'if',
               cond: {
-                type: 'g3k:mousePressed',
+                type: 'logical',
+                op: '&&',
+                left: {
+                  type: 'g3k:mousePressed',
+                },
+                right: {
+                  type: 'binop',
+                  op: '<=',
+                  left: {
+                    type: 'var',
+                    name: 'proximoTiro',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 0,
+                  },
+                },
               },
               then: [
                 {
@@ -9327,6 +9377,14 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
                 {
                   type: 'g3k:playEffect',
                   fx: 'laser',
+                },
+                {
+                  type: 'assign',
+                  name: 'proximoTiro',
+                  value: {
+                    type: 'num',
+                    value: 0.5,
+                  },
                 },
               ],
             },
@@ -9865,10 +9923,13 @@ export const labirintoDosRobosProfissionalExample: ExtensionExample = {
  * 3ª PESSOA de propósito (adaptação do spike: camera_fps congela o mouse
  * interno e mataria a construção). cameraFollow deixa o mouse LIVRE:
  * groundPoint + Math.round do núcleo arredondam o clique para a grade de 2 em
- * 2 e o spawn planta um bloco SÓLIDO (dá para subir); teclas 1/2/3 trocam o
- * molde (grama/pedra/madeira), X liga o modo reciclar (pick + recycle) e o
- * teto de 30 blocos avisa pela fala. Muralha + árvores compostas nascem por
- * setSeed; vitória verificável: pousar acima de y 2.2 (o topo da muralha).
+ * 2 e o spawn planta um bloco SÓLIDO (dá para subir) — mas SÓ com a célula a
+ * até 3 do herói (guarda de alcance: clique no céu devolve groundPoint 0/0,
+ * longe, e nada acontece); teclas 1/2/3 trocam o molde (grama/pedra/madeira),
+ * X liga o modo reciclar (UM pick sem molde + cascata isMold: só o bloco da
+ * frente sai, sem atravessar oclusão) e o teto de 30 blocos avisa pela fala.
+ * Muralha + árvores compostas nascem por setSeed; vitória verificável:
+ * colocar um bloco, subir nele e pousar acima de y 2.2 (o topo da muralha).
  *
  * ⚠️ IR GERADA pelo parser real (ver __gen_mundoProfissional.ts); o drift
  * test em __tests__/mundoProfissionalExample.test.ts guarda o resultado.
@@ -9877,7 +9938,7 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
   name: 'Mundo de Blocos Profissional',
   experience: 'game',
   description:
-    'Construtor 3D em 3ª pessoa: ande com WASD, pule, escolha o bloco com 1, 2 e 3 e clique no chão para plantar blocos sólidos. Suba neles, monte uma escada até o topo da muralha. X liga o reciclar.',
+    'Construtor 3D em 3ª pessoa: ande, pule e clique no chão perto de você para plantar blocos sólidos (1, 2 e 3 trocam o tipo). Coloque um bloco, suba nele e pule até o topo da muralha. X recicla.',
   ir: {
     html: [],
     css: [],
@@ -9926,7 +9987,7 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
           text: {
             type: 'str',
             value:
-              'Ande com WASD e pule com espaço. Escolha o bloco com 1, 2 e 3 e clique no chão para construir. Aperte X para reciclar. Monte uma escada e suba no topo da muralha!',
+              'Ande com WASD e pule com espaço. Escolha o bloco com 1, 2 e 3 e clique no chão perto de você para construir. Aperte X para reciclar. Coloque um bloco junto da muralha, suba nele e pule até o topo!',
           },
           button: {
             type: 'str',
@@ -9942,7 +10003,8 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
           },
           text: {
             type: 'str',
-            value: 'Você construiu a própria escada até a muralha. Jogue de novo e invente outra!',
+            value:
+              'Você colocou um bloco, subiu nele e pulou até o topo da muralha. Jogue de novo e invente outro caminho!',
           },
           button: {
             type: 'str',
@@ -10935,78 +10997,43 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
                   then: [
                     {
                       type: 'g3k:pick',
-                      varName: 'alvoGrama',
-                      mold: 'grama',
+                      varName: 'alvo',
+                      mold: '',
                     },
                     {
                       type: 'if',
                       cond: {
-                        type: 'g3k:exists',
-                        charVar: 'alvoGrama',
+                        type: 'logical',
+                        op: '||',
+                        left: {
+                          type: 'logical',
+                          op: '||',
+                          left: {
+                            type: 'g3k:isMold',
+                            charVar: 'alvo',
+                            mold: 'grama',
+                          },
+                          right: {
+                            type: 'g3k:isMold',
+                            charVar: 'alvo',
+                            mold: 'pedra',
+                          },
+                        },
+                        right: {
+                          type: 'g3k:isMold',
+                          charVar: 'alvo',
+                          mold: 'madeira',
+                        },
                       },
                       then: [
                         {
                           type: 'g3k:burstOn',
                           effect: 'poeira',
-                          charVar: 'alvoGrama',
+                          charVar: 'alvo',
                         },
                         {
                           type: 'g3k:recycle',
-                          charVar: 'alvoGrama',
-                        },
-                        {
-                          type: 'g3k:playEffect',
-                          fx: 'click',
-                        },
-                      ],
-                    },
-                    {
-                      type: 'g3k:pick',
-                      varName: 'alvoPedra',
-                      mold: 'pedra',
-                    },
-                    {
-                      type: 'if',
-                      cond: {
-                        type: 'g3k:exists',
-                        charVar: 'alvoPedra',
-                      },
-                      then: [
-                        {
-                          type: 'g3k:burstOn',
-                          effect: 'poeira',
-                          charVar: 'alvoPedra',
-                        },
-                        {
-                          type: 'g3k:recycle',
-                          charVar: 'alvoPedra',
-                        },
-                        {
-                          type: 'g3k:playEffect',
-                          fx: 'click',
-                        },
-                      ],
-                    },
-                    {
-                      type: 'g3k:pick',
-                      varName: 'alvoMadeira',
-                      mold: 'madeira',
-                    },
-                    {
-                      type: 'if',
-                      cond: {
-                        type: 'g3k:exists',
-                        charVar: 'alvoMadeira',
-                      },
-                      then: [
-                        {
-                          type: 'g3k:burstOn',
-                          effect: 'poeira',
-                          charVar: 'alvoMadeira',
-                        },
-                        {
-                          type: 'g3k:recycle',
-                          charVar: 'alvoMadeira',
+                          charVar: 'alvo',
                         },
                         {
                           type: 'g3k:playEffect',
@@ -11106,121 +11133,180 @@ export const mundoDeBlocosProfissionalExample: ExtensionExample = {
                         {
                           type: 'if',
                           cond: {
-                            type: 'binop',
-                            op: '===',
+                            type: 'logical',
+                            op: '&&',
                             left: {
-                              type: 'var',
-                              name: 'tipoDeBloco',
+                              type: 'binop',
+                              op: '<=',
+                              left: {
+                                type: 'mathUnary',
+                                fn: 'abs',
+                                arg: {
+                                  type: 'binop',
+                                  op: '-',
+                                  left: {
+                                    type: 'var',
+                                    name: 'celulaX',
+                                  },
+                                  right: {
+                                    type: 'g3k:posOf',
+                                    axis: 'x',
+                                    charVar: 'ela',
+                                  },
+                                },
+                              },
+                              right: {
+                                type: 'num',
+                                value: 3,
+                              },
                             },
                             right: {
-                              type: 'str',
-                              value: 'grama',
+                              type: 'binop',
+                              op: '<=',
+                              left: {
+                                type: 'mathUnary',
+                                fn: 'abs',
+                                arg: {
+                                  type: 'binop',
+                                  op: '-',
+                                  left: {
+                                    type: 'var',
+                                    name: 'celulaZ',
+                                  },
+                                  right: {
+                                    type: 'g3k:posOf',
+                                    axis: 'z',
+                                    charVar: 'ela',
+                                  },
+                                },
+                              },
+                              right: {
+                                type: 'num',
+                                value: 3,
+                              },
                             },
                           },
                           then: [
                             {
-                              type: 'g3k:spawn',
-                              mold: 'grama',
+                              type: 'if',
+                              cond: {
+                                type: 'binop',
+                                op: '===',
+                                left: {
+                                  type: 'var',
+                                  name: 'tipoDeBloco',
+                                },
+                                right: {
+                                  type: 'str',
+                                  value: 'grama',
+                                },
+                              },
+                              then: [
+                                {
+                                  type: 'g3k:spawn',
+                                  mold: 'grama',
+                                  x: {
+                                    type: 'var',
+                                    name: 'celulaX',
+                                  },
+                                  y: {
+                                    type: 'num',
+                                    value: 0,
+                                  },
+                                  z: {
+                                    type: 'var',
+                                    name: 'celulaZ',
+                                  },
+                                },
+                              ],
+                            },
+                            {
+                              type: 'if',
+                              cond: {
+                                type: 'binop',
+                                op: '===',
+                                left: {
+                                  type: 'var',
+                                  name: 'tipoDeBloco',
+                                },
+                                right: {
+                                  type: 'str',
+                                  value: 'pedra',
+                                },
+                              },
+                              then: [
+                                {
+                                  type: 'g3k:spawn',
+                                  mold: 'pedra',
+                                  x: {
+                                    type: 'var',
+                                    name: 'celulaX',
+                                  },
+                                  y: {
+                                    type: 'num',
+                                    value: 0,
+                                  },
+                                  z: {
+                                    type: 'var',
+                                    name: 'celulaZ',
+                                  },
+                                },
+                              ],
+                            },
+                            {
+                              type: 'if',
+                              cond: {
+                                type: 'binop',
+                                op: '===',
+                                left: {
+                                  type: 'var',
+                                  name: 'tipoDeBloco',
+                                },
+                                right: {
+                                  type: 'str',
+                                  value: 'madeira',
+                                },
+                              },
+                              then: [
+                                {
+                                  type: 'g3k:spawn',
+                                  mold: 'madeira',
+                                  x: {
+                                    type: 'var',
+                                    name: 'celulaX',
+                                  },
+                                  y: {
+                                    type: 'num',
+                                    value: 0,
+                                  },
+                                  z: {
+                                    type: 'var',
+                                    name: 'celulaZ',
+                                  },
+                                },
+                              ],
+                            },
+                            {
+                              type: 'g3k:burstAt',
+                              effect: 'poeira',
                               x: {
                                 type: 'var',
                                 name: 'celulaX',
                               },
                               y: {
                                 type: 'num',
-                                value: 0,
+                                value: 1,
                               },
                               z: {
                                 type: 'var',
                                 name: 'celulaZ',
                               },
                             },
-                          ],
-                        },
-                        {
-                          type: 'if',
-                          cond: {
-                            type: 'binop',
-                            op: '===',
-                            left: {
-                              type: 'var',
-                              name: 'tipoDeBloco',
-                            },
-                            right: {
-                              type: 'str',
-                              value: 'pedra',
-                            },
-                          },
-                          then: [
                             {
-                              type: 'g3k:spawn',
-                              mold: 'pedra',
-                              x: {
-                                type: 'var',
-                                name: 'celulaX',
-                              },
-                              y: {
-                                type: 'num',
-                                value: 0,
-                              },
-                              z: {
-                                type: 'var',
-                                name: 'celulaZ',
-                              },
+                              type: 'g3k:playEffect',
+                              fx: 'coin',
                             },
                           ],
-                        },
-                        {
-                          type: 'if',
-                          cond: {
-                            type: 'binop',
-                            op: '===',
-                            left: {
-                              type: 'var',
-                              name: 'tipoDeBloco',
-                            },
-                            right: {
-                              type: 'str',
-                              value: 'madeira',
-                            },
-                          },
-                          then: [
-                            {
-                              type: 'g3k:spawn',
-                              mold: 'madeira',
-                              x: {
-                                type: 'var',
-                                name: 'celulaX',
-                              },
-                              y: {
-                                type: 'num',
-                                value: 0,
-                              },
-                              z: {
-                                type: 'var',
-                                name: 'celulaZ',
-                              },
-                            },
-                          ],
-                        },
-                        {
-                          type: 'g3k:burstAt',
-                          effect: 'poeira',
-                          x: {
-                            type: 'var',
-                            name: 'celulaX',
-                          },
-                          y: {
-                            type: 'num',
-                            value: 1,
-                          },
-                          z: {
-                            type: 'var',
-                            name: 'celulaZ',
-                          },
-                        },
-                        {
-                          type: 'g3k:playEffect',
-                          fx: 'coin',
                         },
                       ],
                     },

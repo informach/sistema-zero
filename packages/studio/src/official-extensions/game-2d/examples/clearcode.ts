@@ -524,10 +524,13 @@ export const dinoCorredorExample: ExtensionExample = beginnerGameExample({
  * Battle (Clear Code). Sem movimento: dois monstrinhos desenhados por código
  * frente a frente. Menu por TECLAS (1/2/3) desenhado na tela, tabela de
  * vantagem em ses explícitos (fogo x2 contra planta), cura como dano negativo
- * (o runtime clampa no máximo e o rótulo avisa), turnos com uma raiz 'A cada
- * 1,5 segundos' que só age quando turno == 'inimigo' e o one-shot afterSeconds
- * liberando os comandos 2s depois do início (reiniciar re-arma). A behavior
- * abaixo foi GERADA pelo parser real a partir do fonte em
+ * (o runtime clampa no máximo) LIMITADA a 3 poções por partida (o placar
+ * mostra quantas restam; com 0, a tecla 3 avisa e não gasta o turno), turnos
+ * com uma raiz 'A cada 1,5 segundos' que só age quando turno == 'inimigo' e a
+ * abertura em duas peças: o one-shot afterSeconds marca aberturaPronta aos 2s
+ * e uma raiz 'A cada 0,5 segundos' libera os comandos quando cena jogando +
+ * aberturaPronta + turno espera (ficar no título não consome o beat; reiniciar
+ * re-arma). A behavior abaixo foi GERADA pelo parser real a partir do fonte em
  * __gen_batalhaMonstrinhos.ts (drift test: batalhaMonstrinhosExample.test.ts).
  */
 export const batalhaMonstrinhosExample: ExtensionExample = beginnerGameExample({
@@ -895,6 +898,22 @@ export const batalhaMonstrinhosExample: ExtensionExample = beginnerGameExample({
         },
         {
           type: 'var',
+          name: 'pocoes',
+          value: {
+            type: 'num',
+            value: 3,
+          },
+        },
+        {
+          type: 'var',
+          name: 'aberturaPronta',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
           name: 'mensagem',
           value: {
             type: 'str',
@@ -1180,32 +1199,75 @@ export const batalhaMonstrinhosExample: ExtensionExample = beginnerGameExample({
                       },
                       then: [
                         {
-                          type: 'g2d:changeHealth',
-                          spriteVar: 'meu',
-                          delta: {
-                            type: 'num',
-                            value: 5,
+                          type: 'if',
+                          cond: {
+                            type: 'binop',
+                            op: '>',
+                            left: {
+                              type: 'var',
+                              name: 'pocoes',
+                            },
+                            right: {
+                              type: 'num',
+                              value: 0,
+                            },
                           },
-                        },
-                        {
-                          type: 'g2d:playFx',
-                          fx: 'heal',
-                        },
-                        {
-                          type: 'assign',
-                          name: 'mensagem',
-                          value: {
-                            type: 'str',
-                            value: 'Poção! Brasinha curou até 5 de vida',
-                          },
-                        },
-                        {
-                          type: 'assign',
-                          name: 'turno',
-                          value: {
-                            type: 'str',
-                            value: 'inimigo',
-                          },
+                          then: [
+                            {
+                              type: 'assign',
+                              name: 'pocoes',
+                              value: {
+                                type: 'binop',
+                                op: '-',
+                                left: {
+                                  type: 'var',
+                                  name: 'pocoes',
+                                },
+                                right: {
+                                  type: 'num',
+                                  value: 1,
+                                },
+                              },
+                            },
+                            {
+                              type: 'g2d:changeHealth',
+                              spriteVar: 'meu',
+                              delta: {
+                                type: 'num',
+                                value: 5,
+                              },
+                            },
+                            {
+                              type: 'g2d:playFx',
+                              fx: 'heal',
+                            },
+                            {
+                              type: 'assign',
+                              name: 'mensagem',
+                              value: {
+                                type: 'str',
+                                value: 'Poção! Brasinha curou até 5 de vida',
+                              },
+                            },
+                            {
+                              type: 'assign',
+                              name: 'turno',
+                              value: {
+                                type: 'str',
+                                value: 'inimigo',
+                              },
+                            },
+                          ],
+                          else: [
+                            {
+                              type: 'assign',
+                              name: 'mensagem',
+                              value: {
+                                type: 'str',
+                                value: 'As poções acabaram! Use a Faísca ou o Jato',
+                              },
+                            },
+                          ],
                         },
                       ],
                     },
@@ -1515,7 +1577,7 @@ export const batalhaMonstrinhosExample: ExtensionExample = beginnerGameExample({
                 {
                   type: 'g2d:drawLabel',
                   ctxVar: 'ctx',
-                  text: '2 Jato (água, dano x1)   3 Poção (cura 5, até o máximo)',
+                  text: '2 Jato (água, dano x1)',
                   x: {
                     type: 'num',
                     value: 20,
@@ -1530,6 +1592,28 @@ export const batalhaMonstrinhosExample: ExtensionExample = beginnerGameExample({
                     value: 13,
                   },
                   align: 'left',
+                },
+                {
+                  type: 'g2d:drawScore',
+                  ctxVar: 'ctx',
+                  label: '3 Poção (cura 5) x',
+                  value: {
+                    type: 'var',
+                    name: 'pocoes',
+                  },
+                  x: {
+                    type: 'num',
+                    value: 200,
+                  },
+                  y: {
+                    type: 'num',
+                    value: 290,
+                  },
+                  color: '#8fd0ff',
+                  size: {
+                    type: 'num',
+                    value: 13,
+                  },
                 },
                 {
                   type: 'if',
@@ -1630,19 +1714,79 @@ export const batalhaMonstrinhosExample: ExtensionExample = beginnerGameExample({
           body: [
             {
               type: 'assign',
-              name: 'turno',
+              name: 'aberturaPronta',
               value: {
-                type: 'str',
-                value: 'jogador',
+                type: 'num',
+                value: 1,
               },
             },
+          ],
+        },
+        {
+          type: 'g2d:everySeconds',
+          seconds: {
+            type: 'num',
+            value: 0.5,
+          },
+          body: [
             {
-              type: 'assign',
-              name: 'mensagem',
-              value: {
-                type: 'str',
-                value: 'Sua vez! Aperte 1, 2 ou 3',
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'jogando',
               },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '==',
+                    left: {
+                      type: 'var',
+                      name: 'aberturaPronta',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'binop',
+                        op: '==',
+                        left: {
+                          type: 'var',
+                          name: 'turno',
+                        },
+                        right: {
+                          type: 'str',
+                          value: 'espera',
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'assign',
+                          name: 'turno',
+                          value: {
+                            type: 'str',
+                            value: 'jogador',
+                          },
+                        },
+                        {
+                          type: 'assign',
+                          name: 'mensagem',
+                          value: {
+                            type: 'str',
+                            value: 'Sua vez! Aperte 1, 2 ou 3',
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
             },
           ],
         },

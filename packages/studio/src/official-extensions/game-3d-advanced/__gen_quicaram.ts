@@ -9,7 +9,7 @@ import { collectTypes, stripIds } from './exampleSourceUtils'
 export const QUICARAM_SOURCE = `
 SZGameKit3D.setup({ width: 1280, height: 720, world: 50, sky: "#1e1b4b", ground: "#4c1d95" });
 SZGameKit3D.setEffects({ shadows: true, bloom: true, strength: 1.2, vignette: true });
-SZGameKit3D.setScreenText("menu", "Quadra Maluca", "Arraste o mouse para girar a câmera: o WASD anda SEMPRE para onde você está olhando. Encoste nas 5 bolas quicantes — mas o gelo escorrega!", "Jogar");
+SZGameKit3D.setScreenText("menu", "Quadra Maluca", "Arraste o mouse para girar a câmera: o WASD anda SEMPRE para onde você está olhando. Encoste nas 5 bolas quicantes, mas cuidado: o gelo escorrega!", "Jogar");
 SZGameKit3D.setScreenText("vitoria", "Pegou todas!", "Você domou as bolas malucas.", "Jogar de novo");
 SZGameKit3D.defineMold("heroi", { health: 1, speed: 0 }, function () {
   SZGameKit3D.part({ shape: "box", color: "#22d3ee", w: 0.9, h: 1.1, d: 0.9, x: 0, y: 0.55, z: 0 });

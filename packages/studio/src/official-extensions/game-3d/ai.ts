@@ -82,13 +82,15 @@ Genéricos de movimento/física (SEM lib de física — feita na mão; p/ queda/
 - moveTowards(obj, x, y, z, força): aproxima aos poucos (lerp; força 0 a 1). dt(world): segundos do quadro —
   use dt apenas na matemática manual; os blocos de movimento e física já compensam FPS automaticamente.
 - lookAtObject(a, b) / lookAtPoint(obj, x, y, z): virar A para olhar B / um ponto (mira robusta).
-- moveForward(obj, dist): andar p/ frente (na direção que olha). faceVelocity(obj): virar p/ a direção do movimento.
+- moveForward(obj, dist): andar p/ frente (na direção que olha; sob fpsCamera no MESMO obj, anda p/ onde o
+  jogador olha, no plano do chão — olhar p/ cima não faz voar). faceVelocity(obj): virar p/ a direção do movimento.
 - angleTo(a, b): ângulo (radianos) de A para B no plano do chão (X-Z) — p/ mirar/girar.
 
 Mira & clique (raycast — valores p/ "se"/variável; combine com o evento CORE "clicar em qualquer lugar"):
 - pickAtMouse(world): o objeto 3D sob o ponteiro (ou null) — guarde numa variável p/ usar pelo nome; essa variável passa a aparecer nos seletores de objeto do jogo. Cópias visíveis de enxame também podem ser selecionadas.
 - pointerOver(world, obj): o mouse está sobre aquele objeto? (bool). aimAhead(world, obj, dist): o objeto à
-  frente, na direção que "obj" olha (tiro/mira; null se nada).
+  frente, na direção que "obj" olha (tiro/mira; null se nada). Sob fpsCamera no MESMO obj, o raio sai do olho
+  na direção da câmera (com o pitch — mira o que o jogador VÊ); nos demais, +Z do objeto.
 - onGround(world, obj): tem chão logo abaixo? (bool — sensor de plataforma). groundHeight(world, obj): a
   altura (y) do topo do que está abaixo. Mira e chão ignoram as próprias peças de um modelo composto.
 

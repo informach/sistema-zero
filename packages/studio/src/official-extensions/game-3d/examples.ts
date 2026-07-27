@@ -91,7 +91,7 @@ export const shapesExample: ExtensionExample = {
   name: 'Boneco de formas',
   experience: 'demo',
   description:
-    'Um boneco montado com esferas, cone e cilindro (um modelo) sobre o chão, girando — mostra formas, materiais e montar modelo.',
+    'Um boneco montado com esferas, cone e cilindro (um modelo) sobre o chão, girando: mostra formas, materiais e montar modelo.',
   ir: {
     html: [{ type: 'canvas', id: 'tela', width: 480, height: 360 }],
     css: centeredCanvasLayout('#1e293b'),
@@ -223,7 +223,7 @@ export const nightExample: ExtensionExample = {
   name: 'Noite enevoada',
   experience: 'demo',
   description:
-    'Cena à noite: céu degradê, neblina, sombras e uma luz pontual (tocha) sobre um cubo girando — mostra luz & céu.',
+    'Cena à noite com céu degradê, neblina, sombras e uma luz pontual (tocha) sobre um cubo girando: mostra luz & céu.',
   ir: {
     html: [{ type: 'canvas', id: 'tela', width: 480, height: 360 }],
     css: centeredCanvasLayout('#05070f'),
@@ -296,7 +296,7 @@ export const swarmExample: ExtensionExample = {
   name: 'Enxame que gira',
   experience: 'demo',
   description:
-    'Um molde escondido vira 5 cópias num enxame, e o "para cada" gira todas juntas — mostra criar enxame, soltar cópias e repetir para cada uma.',
+    'Um molde escondido vira 5 cópias num enxame, e o "para cada" gira todas juntas: mostra criar enxame, soltar cópias e repetir para cada uma.',
   ir: {
     html: [{ type: 'canvas', id: 'tela', width: 480, height: 360 }],
     css: centeredCanvasLayout('#0b1020'),
@@ -1915,7 +1915,10 @@ export const corridaInfinitaExample: ExtensionExample = {
  * em enxame que perseguem com moveTowards (velocidade por tipo) e tiro por MIRA
  * no clique via aimAhead. Sob pointer lock o mouse interno congela, então
  * pickAtMouse/pointerOver são banidos aqui; sem lock o jogo segue de pé (WASD
- * anda pelo fpsControls e o HUD funciona). Gerado por __gen_labirintoRobos.ts.
+ * anda pelo fpsControls e o HUD funciona). O recomeçar zera o yaw do corpo e
+ * arma travaTiro (30 quadros): o clique no botão "Recomeçar" borbulha até o
+ * listener de tiro do document e dispararia na mesma hora. Gerado por
+ * __gen_labirintoRobos.ts.
  */
 export const labirintoRobosExample: ExtensionExample = {
   name: 'Labirinto dos Robôs',
@@ -2545,6 +2548,14 @@ export const labirintoRobosExample: ExtensionExample = {
         },
         {
           type: 'var',
+          name: 'travaTiro',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
           name: 'encostou',
           value: {
             type: 'bool',
@@ -2690,6 +2701,22 @@ export const labirintoRobosExample: ExtensionExample = {
               },
             },
             {
+              type: 'g3d:setRotation',
+              objVar: 'jogador',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
               type: 'assign',
               name: 'vida',
               value: {
@@ -2711,6 +2738,14 @@ export const labirintoRobosExample: ExtensionExample = {
               value: {
                 type: 'num',
                 value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'travaTiro',
+              value: {
+                type: 'num',
+                value: 30,
               },
             },
             {
@@ -2777,175 +2812,141 @@ export const labirintoRobosExample: ExtensionExample = {
               },
               then: [
                 {
-                  type: 'var',
-                  name: 'alvo',
-                  value: {
-                    type: 'g3d:aimAhead',
-                    worldVar: 'cena',
-                    objVar: 'jogador',
-                    dist: {
-                      type: 'num',
-                      value: 30,
-                    },
-                  },
-                },
-                {
                   type: 'if',
                   cond: {
-                    type: 'var',
-                    name: 'alvo',
+                    type: 'binop',
+                    op: '<=',
+                    left: {
+                      type: 'var',
+                      name: 'travaTiro',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0,
+                    },
                   },
                   then: [
                     {
-                      type: 'g3d:forEachInSwarm',
-                      swarmVar: 'robosLentos',
-                      itemName: 'item',
-                      body: [
-                        {
-                          type: 'if',
-                          cond: {
-                            type: 'binop',
-                            op: '===',
-                            left: {
-                              type: 'var',
-                              name: 'item',
-                            },
-                            right: {
-                              type: 'var',
-                              name: 'alvo',
-                            },
-                          },
-                          then: [
-                            {
-                              type: 'g3d:removeFromSwarm',
-                              swarmVar: 'robosLentos',
-                              itemVar: 'item',
-                            },
-                            {
-                              type: 'assign',
-                              name: 'pontos',
-                              value: {
-                                type: 'binop',
-                                op: '+',
-                                left: {
-                                  type: 'var',
-                                  name: 'pontos',
-                                },
-                                right: {
-                                  type: 'num',
-                                  value: 1,
-                                },
-                              },
-                            },
-                            {
-                              type: 'g3d:playEffect',
-                              kind: 'explosion',
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                    {
-                      type: 'g3d:forEachInSwarm',
-                      swarmVar: 'robosRapidos',
-                      itemName: 'item',
-                      body: [
-                        {
-                          type: 'if',
-                          cond: {
-                            type: 'binop',
-                            op: '===',
-                            left: {
-                              type: 'var',
-                              name: 'item',
-                            },
-                            right: {
-                              type: 'var',
-                              name: 'alvo',
-                            },
-                          },
-                          then: [
-                            {
-                              type: 'g3d:removeFromSwarm',
-                              swarmVar: 'robosRapidos',
-                              itemVar: 'item',
-                            },
-                            {
-                              type: 'assign',
-                              name: 'pontos',
-                              value: {
-                                type: 'binop',
-                                op: '+',
-                                left: {
-                                  type: 'var',
-                                  name: 'pontos',
-                                },
-                                right: {
-                                  type: 'num',
-                                  value: 2,
-                                },
-                              },
-                            },
-                            {
-                              type: 'g3d:playEffect',
-                              kind: 'explosion',
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                    {
-                      type: 'setProperty',
-                      targetId: 'placar',
-                      property: 'textContent',
+                      type: 'var',
+                      name: 'alvo',
                       value: {
-                        type: 'var',
-                        name: 'pontos',
+                        type: 'g3d:aimAhead',
+                        worldVar: 'cena',
+                        objVar: 'jogador',
+                        dist: {
+                          type: 'num',
+                          value: 30,
+                        },
                       },
                     },
                     {
                       type: 'if',
                       cond: {
-                        type: 'binop',
-                        op: '===',
-                        left: {
-                          type: 'binop',
-                          op: '+',
-                          left: {
-                            type: 'g3d:countSwarm',
-                            swarmVar: 'robosLentos',
-                          },
-                          right: {
-                            type: 'g3d:countSwarm',
-                            swarmVar: 'robosRapidos',
-                          },
-                        },
-                        right: {
-                          type: 'num',
-                          value: 0,
-                        },
+                        type: 'var',
+                        name: 'alvo',
                       },
                       then: [
                         {
-                          type: 'assign',
-                          name: 'rodando',
-                          value: {
-                            type: 'bool',
-                            value: false,
-                          },
+                          type: 'g3d:forEachInSwarm',
+                          swarmVar: 'robosLentos',
+                          itemName: 'item',
+                          body: [
+                            {
+                              type: 'if',
+                              cond: {
+                                type: 'binop',
+                                op: '===',
+                                left: {
+                                  type: 'var',
+                                  name: 'item',
+                                },
+                                right: {
+                                  type: 'var',
+                                  name: 'alvo',
+                                },
+                              },
+                              then: [
+                                {
+                                  type: 'g3d:removeFromSwarm',
+                                  swarmVar: 'robosLentos',
+                                  itemVar: 'item',
+                                },
+                                {
+                                  type: 'assign',
+                                  name: 'pontos',
+                                  value: {
+                                    type: 'binop',
+                                    op: '+',
+                                    left: {
+                                      type: 'var',
+                                      name: 'pontos',
+                                    },
+                                    right: {
+                                      type: 'num',
+                                      value: 1,
+                                    },
+                                  },
+                                },
+                                {
+                                  type: 'g3d:playEffect',
+                                  kind: 'explosion',
+                                },
+                              ],
+                            },
+                          ],
+                        },
+                        {
+                          type: 'g3d:forEachInSwarm',
+                          swarmVar: 'robosRapidos',
+                          itemName: 'item',
+                          body: [
+                            {
+                              type: 'if',
+                              cond: {
+                                type: 'binop',
+                                op: '===',
+                                left: {
+                                  type: 'var',
+                                  name: 'item',
+                                },
+                                right: {
+                                  type: 'var',
+                                  name: 'alvo',
+                                },
+                              },
+                              then: [
+                                {
+                                  type: 'g3d:removeFromSwarm',
+                                  swarmVar: 'robosRapidos',
+                                  itemVar: 'item',
+                                },
+                                {
+                                  type: 'assign',
+                                  name: 'pontos',
+                                  value: {
+                                    type: 'binop',
+                                    op: '+',
+                                    left: {
+                                      type: 'var',
+                                      name: 'pontos',
+                                    },
+                                    right: {
+                                      type: 'num',
+                                      value: 2,
+                                    },
+                                  },
+                                },
+                                {
+                                  type: 'g3d:playEffect',
+                                  kind: 'explosion',
+                                },
+                              ],
+                            },
+                          ],
                         },
                         {
                           type: 'setProperty',
-                          targetId: 'fim-titulo',
-                          property: 'textContent',
-                          value: {
-                            type: 'str',
-                            value: 'Você venceu!',
-                          },
-                        },
-                        {
-                          type: 'setProperty',
-                          targetId: 'final-pontos',
+                          targetId: 'placar',
                           property: 'textContent',
                           value: {
                             type: 'var',
@@ -2953,14 +2954,65 @@ export const labirintoRobosExample: ExtensionExample = {
                           },
                         },
                         {
-                          type: 'classOp',
-                          targetId: 'fim',
-                          op: 'add',
-                          className: 'visivel',
-                        },
-                        {
-                          type: 'g3d:playEffect',
-                          kind: 'coin',
+                          type: 'if',
+                          cond: {
+                            type: 'binop',
+                            op: '===',
+                            left: {
+                              type: 'binop',
+                              op: '+',
+                              left: {
+                                type: 'g3d:countSwarm',
+                                swarmVar: 'robosLentos',
+                              },
+                              right: {
+                                type: 'g3d:countSwarm',
+                                swarmVar: 'robosRapidos',
+                              },
+                            },
+                            right: {
+                              type: 'num',
+                              value: 0,
+                            },
+                          },
+                          then: [
+                            {
+                              type: 'assign',
+                              name: 'rodando',
+                              value: {
+                                type: 'bool',
+                                value: false,
+                              },
+                            },
+                            {
+                              type: 'setProperty',
+                              targetId: 'fim-titulo',
+                              property: 'textContent',
+                              value: {
+                                type: 'str',
+                                value: 'Você venceu!',
+                              },
+                            },
+                            {
+                              type: 'setProperty',
+                              targetId: 'final-pontos',
+                              property: 'textContent',
+                              value: {
+                                type: 'var',
+                                name: 'pontos',
+                              },
+                            },
+                            {
+                              type: 'classOp',
+                              targetId: 'fim',
+                              op: 'add',
+                              className: 'visivel',
+                            },
+                            {
+                              type: 'g3d:playEffect',
+                              kind: 'coin',
+                            },
+                          ],
                         },
                       ],
                     },
@@ -3055,6 +3107,39 @@ export const labirintoRobosExample: ExtensionExample = {
                     type: 'num',
                     value: 0.09,
                   },
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'var',
+                      name: 'travaTiro',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'travaTiro',
+                      value: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'var',
+                          name: 'travaTiro',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 1,
+                        },
+                      },
+                    },
+                  ],
                 },
                 {
                   type: 'if',
@@ -3353,10 +3438,12 @@ export const labirintoRobosExample: ExtensionExample = {
 /**
  * Exemplo bundlado: "Mundo de Blocos" (nível 1 da família Mundo de Blocos, um
  * construtor estilo Minecraft): câmera ISOMÉTRICA com o mouse livre, cursor
- * translúcido que anda pela grade com as setas (gridPosition), chão e muralha
- * gerados com forRange do núcleo, espaço/Enter coloca o bloco do tipo
- * escolhido (empilha sozinho na célula ocupada), clique quebra via pickAtMouse
- * e o objetivo leve é uma torre de 5 blocos. Gerado por __gen_mundoBlocos.ts.
+ * translúcido que anda pela grade com as setas (gridPosition) e fica no TOPO
+ * da coluna da célula (senão envolveria o bloco térreo e roubaria o clique de
+ * quebrar), espaço coloca o bloco do tipo escolhido (empilha sozinho na célula
+ * ocupada; som/recorde só quando a colocação acontece), clique quebra via
+ * pickAtMouse e o objetivo leve é uma torre de 5 blocos, celebrada UMA vez.
+ * Gerado por __gen_mundoBlocos.ts.
  */
 export const mundoBlocosExample: ExtensionExample = {
   name: 'Mundo de Blocos',
@@ -3734,12 +3821,20 @@ export const mundoBlocosExample: ExtensionExample = {
           },
         },
         {
+          type: 'var',
+          name: 'alturaAlvo',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
           type: 'funcDecl',
-          name: 'colocarBloco',
+          name: 'medirAltura',
           params: [],
           body: [
             {
-              type: 'var',
+              type: 'assign',
               name: 'alturaAlvo',
               value: {
                 type: 'num',
@@ -3823,6 +3918,66 @@ export const mundoBlocosExample: ExtensionExample = {
                   ],
                 },
               ],
+            },
+          ],
+        },
+        {
+          type: 'funcDecl',
+          name: 'moverCursor',
+          params: [],
+          body: [
+            {
+              type: 'callFunction',
+              name: 'medirAltura',
+              args: [],
+            },
+            {
+              type: 'g3d:gridPosition',
+              objVar: 'cursor',
+              row: {
+                type: 'var',
+                name: 'linha',
+              },
+              col: {
+                type: 'var',
+                name: 'coluna',
+              },
+            },
+            {
+              type: 'g3d:setPosition',
+              objVar: 'cursor',
+              x: {
+                type: 'var',
+                name: 'coluna',
+              },
+              y: {
+                type: 'var',
+                name: 'alturaAlvo',
+              },
+              z: {
+                type: 'var',
+                name: 'linha',
+              },
+            },
+          ],
+        },
+        {
+          type: 'funcDecl',
+          name: 'colocarBloco',
+          params: [],
+          body: [
+            {
+              type: 'callFunction',
+              name: 'medirAltura',
+              args: [],
+            },
+            {
+              type: 'var',
+              name: 'antes',
+              value: {
+                type: 'g3d:countSwarm',
+                swarmVar: 'blocos',
+              },
             },
             {
               type: 'if',
@@ -3927,102 +4082,129 @@ export const mundoBlocosExample: ExtensionExample = {
               ],
             },
             {
-              type: 'g3d:playEffect',
-              kind: 'jump',
-            },
-            {
               type: 'if',
               cond: {
                 type: 'binop',
                 op: '>',
                 left: {
-                  type: 'binop',
-                  op: '+',
-                  left: {
-                    type: 'var',
-                    name: 'alturaAlvo',
-                  },
-                  right: {
-                    type: 'num',
-                    value: 1,
-                  },
+                  type: 'g3d:countSwarm',
+                  swarmVar: 'blocos',
                 },
                 right: {
                   type: 'var',
-                  name: 'recorde',
-                },
-              },
-              then: [
-                {
-                  type: 'assign',
-                  name: 'recorde',
-                  value: {
-                    type: 'binop',
-                    op: '+',
-                    left: {
-                      type: 'var',
-                      name: 'alturaAlvo',
-                    },
-                    right: {
-                      type: 'num',
-                      value: 1,
-                    },
-                  },
-                },
-                {
-                  type: 'setProperty',
-                  targetId: 'torre',
-                  property: 'textContent',
-                  value: {
-                    type: 'var',
-                    name: 'recorde',
-                  },
-                },
-              ],
-            },
-            {
-              type: 'if',
-              cond: {
-                type: 'binop',
-                op: '===',
-                left: {
-                  type: 'var',
-                  name: 'recorde',
-                },
-                right: {
-                  type: 'num',
-                  value: 5,
+                  name: 'antes',
                 },
               },
               then: [
                 {
                   type: 'g3d:playEffect',
-                  kind: 'coin',
+                  kind: 'jump',
                 },
                 {
-                  type: 'classOp',
-                  targetId: 'festa',
-                  op: 'add',
-                  className: 'visivel',
-                },
-                {
-                  type: 'setTimeout',
-                  delay: {
-                    type: 'num',
-                    value: 2500,
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'binop',
+                      op: '+',
+                      left: {
+                        type: 'var',
+                        name: 'alturaAlvo',
+                      },
+                      right: {
+                        type: 'num',
+                        value: 1,
+                      },
+                    },
+                    right: {
+                      type: 'var',
+                      name: 'recorde',
+                    },
                   },
-                  body: [
+                  then: [
                     {
-                      type: 'classOp',
-                      targetId: 'festa',
-                      op: 'remove',
-                      className: 'visivel',
+                      type: 'assign',
+                      name: 'recorde',
+                      value: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'var',
+                          name: 'alturaAlvo',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 1,
+                        },
+                      },
+                    },
+                    {
+                      type: 'setProperty',
+                      targetId: 'torre',
+                      property: 'textContent',
+                      value: {
+                        type: 'var',
+                        name: 'recorde',
+                      },
+                    },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'binop',
+                        op: '===',
+                        left: {
+                          type: 'var',
+                          name: 'recorde',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 5,
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'g3d:playEffect',
+                          kind: 'coin',
+                        },
+                        {
+                          type: 'classOp',
+                          targetId: 'festa',
+                          op: 'add',
+                          className: 'visivel',
+                        },
+                        {
+                          type: 'setTimeout',
+                          delay: {
+                            type: 'num',
+                            value: 2500,
+                          },
+                          body: [
+                            {
+                              type: 'classOp',
+                              targetId: 'festa',
+                              op: 'remove',
+                              className: 'visivel',
+                            },
+                          ],
+                        },
+                      ],
                     },
                   ],
                 },
               ],
             },
+            {
+              type: 'callFunction',
+              name: 'moverCursor',
+              args: [],
+            },
           ],
+        },
+        {
+          type: 'callFunction',
+          name: 'moverCursor',
+          args: [],
         },
       ],
       events: [
@@ -4233,16 +4415,9 @@ export const mundoBlocosExample: ExtensionExample = {
               ],
             },
             {
-              type: 'g3d:gridPosition',
-              objVar: 'cursor',
-              row: {
-                type: 'var',
-                name: 'linha',
-              },
-              col: {
-                type: 'var',
-                name: 'coluna',
-              },
+              type: 'callFunction',
+              name: 'moverCursor',
+              args: [],
             },
             {
               type: 'if',
@@ -4357,28 +4532,6 @@ export const mundoBlocosExample: ExtensionExample = {
                 },
                 right: {
                   type: 'str',
-                  value: 'Enter',
-                },
-              },
-              then: [
-                {
-                  type: 'callFunction',
-                  name: 'colocarBloco',
-                  args: [],
-                },
-              ],
-            },
-            {
-              type: 'if',
-              cond: {
-                type: 'binop',
-                op: '===',
-                left: {
-                  type: 'eventProp',
-                  prop: 'key',
-                },
-                right: {
-                  type: 'str',
                   value: ' ',
                 },
               },
@@ -4444,6 +4597,11 @@ export const mundoBlocosExample: ExtensionExample = {
                     {
                       type: 'g3d:playEffect',
                       kind: 'hit',
+                    },
+                    {
+                      type: 'callFunction',
+                      name: 'moverCursor',
+                      args: [],
                     },
                   ],
                 },

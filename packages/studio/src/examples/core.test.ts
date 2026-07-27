@@ -20,6 +20,19 @@ import {
   portasDoCasteloNaMaoExample,
 } from './core'
 
+describe('CORE_EXAMPLES — texto visível sem travessão', () => {
+  it('nenhum exemplo traz "—" em name, description ou dentro da IR', () => {
+    // O travessão é vetado em TODO texto visível do produto (voz da casa).
+    // name/description aparecem na vitrine de kits; strings da IR viram HUD,
+    // mensagens e telas do jogo gerado.
+    for (const example of CORE_EXAMPLES) {
+      expect(example.name, `name de ${example.name}`).not.toContain('—')
+      expect(example.description, `description de ${example.name}`).not.toContain('—')
+      expect(JSON.stringify(example.ir), `IR de ${example.name}`).not.toContain('—')
+    }
+  })
+})
+
 describe('CORE_EXAMPLES — Folio 3D procedural (Canvas 3D sem extensão)', () => {
   it('é válido, asset-free e usa apenas IR nativa', () => {
     expect(CORE_EXAMPLES).toContain(folioCanvasProceduralExample)
@@ -525,8 +538,13 @@ describe('CORE_EXAMPLES — aventuraNaMaoExample (aventura estilo Zelda na unha)
     // Y-SORT em DUAS PASSADAS pela base (sem .sort(fn)).
     expect(code).toContain('mato.y + mato.height <= baseHeroi')
     expect(code).toContain('inimigo.y + inimigo.height > baseHeroi')
-    // Laço com TEMPO real (velocidades por milissegundo × dt).
-    expect(code).toContain('const deltaTime = timeStamp - lastTime;')
+    // Laço com TEMPO real (velocidades por milissegundo × dt)…
+    expect(code).toContain('let deltaTime = timeStamp - lastTime;')
+    // …com CLAMP de pausa longa (trocar de aba não teleporta pela parede).
+    expect(code).toContain('deltaTime = 50;')
+    // Blur da janela zera as teclas; o inimigo colide como o herói.
+    expect(code).toContain('window.addEventListener("blur"')
+    expect(code).toContain('this.vx = dx / distancia * this.speed;')
   })
 })
 

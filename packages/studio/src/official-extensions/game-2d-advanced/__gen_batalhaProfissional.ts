@@ -15,12 +15,22 @@ import { parseJS } from '../../parsers/js'
  *   por isso o encontro selvagem usa overlapPercent + chance + pkmBattleWild
  *   (a grama do pkmGrassCells só sorteia por PASSO do rpgMoveGrid, que é RPG);
  * - a vitória é a CAPTURA: pkmCaught() lido no TOPO do onUpdate (a batalha
- *   devolve "jogando" sozinha ao terminar e o laço volta a rodar) — sem
- *   rpgOnBattleEnd. ⚠️ onEnterState("jogando") NÃO serve aqui: fechar batalha
- *   é RETOMADA (isMidResume) e o motor de propósito não roda os hooks de
- *   entrada nesse caminho — o playthrough pegou isso;
+ *   devolve "jogando" sozinha ao terminar e o laço volta a rodar).
+ *   ⚠️ onEnterState("jogando") NÃO serve aqui: fechar batalha é RETOMADA
+ *   (isMidResume) e o motor de propósito não roda os hooks de entrada nesse
+ *   caminho — o playthrough pegou isso;
  * - a vida do time é LEMBRADA entre trocas e batalhas pelo próprio kit; a fonte
- *   (pkmHealTeam) é o Centro de Cura num bloco.
+ *   (pkmHealTeam) é o Centro de Cura num bloco, e TAMBÉM repõe as bolas quando
+ *   zeram (pkmBallCount() == 0 → pkmGiveBall(3, 65)) — a captura é a ÚNICA
+ *   vitória, então sem reposição queimar as 5 bolas tornava vencer impossível
+ *   para sempre (softlock provado por playthrough no review);
+ * - rpgOnBattleEnd/rpgBattleWon são o conceito COMPARTILHADO de fim de batalha
+ *   (não existe pkmOnBattleEnd — ver ai.ts): o hook marca timeCaido = 1 quando
+ *   a batalha termina sem vitória e sem captura, e o root do mato só tenta o
+ *   encontro selvagem com timeCaido == 0 — sem isso, o time desmaiado no mato
+ *   virava spam de "Você não tem nenhum monstrinho em pé!" a cada 1-3s. A
+ *   fonte zera timeCaido junto com a cura (fugir também exige passar na fonte:
+ *   é o único leitor de estado do time que os blocos expõem).
  */
 export const BATALHA_PROFISSIONAL_SOURCE = `
 SZGameKit.setup({ width: 960, height: 540, background: "#8fce77", accent: "#2b8a3e" });
@@ -166,8 +176,14 @@ SZGameKit.placeCharacter(heroi, 140, 420);
 SZGameKit.setHitbox(heroi, 8, 8, 28, 44);
 SZGameKit.stateLook(heroi, "parado", "treinadora");
 SZGameKit.stateLook(heroi, "andando", "treinadora");
+let timeCaido = 0;
 SZGameKit.on("monstrinho:pegou", function () {
   SZGameKit.playEffect("win");
+});
+SZGameKit.rpgOnBattleEnd(function () {
+  if (!SZGameKit.rpgBattleWon() && !SZGameKit.pkmCaught()) {
+    timeCaido = 1;
+  }
 });
 SZGameKit.onUpdate(function (dt) {
   if (SZGameKit.pkmCaught()) {
@@ -187,12 +203,17 @@ SZGameKit.onUpdate(function (dt) {
   if (SZGameKit.everySeconds("cura", 1.5)) {
     if (SZGameKit.overlapPercent(heroi, "fonte") > 50) {
       SZGameKit.pkmHealTeam();
+      timeCaido = 0;
+      if (SZGameKit.pkmBallCount() == 0) {
+        SZGameKit.pkmGiveBall(3, 65);
+        SZGameKit.floatText("Bolas novas!", SZGameKit.charX(heroi), SZGameKit.charY(heroi) - 44, "#fff3bf", 18);
+      }
       SZGameKit.playEffect("powerup");
       SZGameKit.floatText("Time curado!", SZGameKit.charX(heroi), SZGameKit.charY(heroi) - 20, "#e7f5ff", 18);
     }
   }
   if (SZGameKit.everySeconds("mato", 1)) {
-    if (SZGameKit.overlapPercent(heroi, "grama") > 50 && SZGameKit.chance(35)) {
+    if (timeCaido == 0 && SZGameKit.overlapPercent(heroi, "grama") > 50 && SZGameKit.chance(35)) {
       SZGameKit.pkmBattleWild("Faiscolosso", 9);
     }
   }
@@ -212,7 +233,7 @@ SZGameKit.onDrawHud(function (ctx) {
   ctx.fillStyle = "#14331a";
   ctx.font = "16px sans-serif";
   ctx.fillText("Bolas de captura: " + SZGameKit.pkmBallCount(), 20, 128);
-  ctx.fillText("Fonte: cura o time. Mato fundo: monstrinho raro!", 20, 528);
+  ctx.fillText("Fonte: cura o time e repõe as bolas. Mato fundo: monstrinho raro!", 20, 528);
 });
 `.trim()
 

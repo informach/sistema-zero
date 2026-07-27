@@ -135,6 +135,12 @@ describe('Exemplo Corrida Infinita Profissional — drift contra o parser real',
     expect(models.every((m) => m === '')).toBe(true)
   })
 
+  it('nenhum texto visível usa travessão', () => {
+    expect(JSON.stringify(corridaInfinitaProfissionalExample.ir)).not.toContain('—')
+    expect(corridaInfinitaProfissionalExample.name).not.toContain('—')
+    expect(corridaInfinitaProfissionalExample.description ?? '').not.toContain('—')
+  })
+
   it('fixpoint textual: gerar → parsear → gerar é byte-estável', () => {
     const code1 = compileStatements(
       stripIds(behaviorStatements(corridaInfinitaProfissionalExample.ir)) as JSStatement[],

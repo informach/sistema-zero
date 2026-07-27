@@ -68,13 +68,14 @@ describe('Exemplo Mundo de Blocos — drift contra o parser real', () => {
       'g3d:removeFromSwarm', // o bloco apontado some do enxame
       'g3d:countSwarm', // só toca o som de quebra se algo saiu de verdade
       'g3d:setOpacity', // o cursor é translúcido
+      'g3d:setPosition', // o cursor fica no TOPO da coluna (não rouba o clique do térreo)
       'g3d:getPos', // empilhar: acha a altura livre da célula ocupada
       'g3d:spin', // o cursor gira devagar (a cena fica viva)
       'g3d:playEffect', // colocar/quebrar/vitória soam
-      'event', // setas, 1/2/3, Enter e clique
+      'event', // setas, 1/2/3, espaço e clique
       'eventProp', // a tecla do evento (event.key)
       'funcDecl', // colocarBloco() concentra a regra de empilhar
-      'callFunction', // chamada no Enter
+      'callFunction', // chamada no espaço
       'setProperty', // HUD do tipo atual e da torre por textContent
       'classOp', // a festa da torre de 5 aparece por classe
       'setTimeout', // e some sozinha depois de um tempinho
@@ -86,6 +87,9 @@ describe('Exemplo Mundo de Blocos — drift contra o parser real', () => {
     expect(raw).toContain('"tipo"')
     expect(raw).toContain('"recorde"')
     expect(raw).toContain('"alturaAlvo"')
+    // Enter saiu do jogo: espaço é o ÚNICO botão de colocar (o gesto de "start"
+    // do QA apertava Enter e colocava um bloco sem querer).
+    expect(raw).not.toContain('"Enter"')
   })
 
   it('⭐ veredito do spike: sem FPS o mouse é livre e o pick é permitido', () => {

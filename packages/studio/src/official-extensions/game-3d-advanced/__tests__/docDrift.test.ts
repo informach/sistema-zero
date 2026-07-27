@@ -146,6 +146,20 @@ describe('g3k — a doc não pode citar categoria que não existe', () => {
     expect([...citados].filter((n) => !apiKeys.has(n))).toEqual([])
   })
 
+  it('nenhum exemplo do manifest usa travessão em texto visível (name/description/IR)', () => {
+    // A regra da casa (SEM travessão em texto visível) vale para TODO exemplo,
+    // inclusive os futuros: cada drift individual tem o seu it, e este varre o
+    // manifest inteiro para que um exemplo NOVO sem drift próprio não escape.
+    const ruins: string[] = []
+    for (const ex of gameKit3DManifest.examples ?? []) {
+      if (ex.name.includes('—')) ruins.push(`${ex.name}: name`)
+      if ((ex.description ?? '').includes('—')) ruins.push(`${ex.name}: description`)
+      if (JSON.stringify(ex.ir).includes('—')) ruins.push(`${ex.name}: ir`)
+    }
+    expect(gameKit3DManifest.examples?.length ?? 0).toBeGreaterThanOrEqual(10)
+    expect(ruins).toEqual([])
+  })
+
   it('a description guarda folga sob o teto de 500 chars', () => {
     // 500 = MAX_DESCRIPTION_CHARS (src/extensions/manifest.ts): passar dele lança
     // ZodError no IMPORT do manifest → cascata em ~113 testes que o carregam

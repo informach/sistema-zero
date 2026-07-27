@@ -66,6 +66,12 @@ describe('Exemplo O Chefão das Sombras — drift contra o parser real', () => {
     )
   })
 
+  it('nenhum texto visível usa travessão', () => {
+    expect(JSON.stringify(chefaoDasSombrasExample.ir)).not.toContain('—')
+    expect(chefaoDasSombrasExample.name).not.toContain('—')
+    expect(chefaoDasSombrasExample.description ?? '').not.toContain('—')
+  })
+
   it('fixpoint textual: gerar → parsear → gerar é byte-estável', () => {
     const code1 = compileStatements(
       stripIds(behaviorStatements(chefaoDasSombrasExample.ir)) as JSStatement[],

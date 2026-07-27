@@ -46,7 +46,7 @@ export const aventuraProfissionalExample: ExtensionExample = {
           text: {
             type: 'str',
             value:
-              'Setas: andar. ESPAÇO: golpe de espada. Corte o mato, passe atrás das árvores e derrote os 7 monstros do campo!',
+              'Setas: andar. ESPAÇO: golpe de espada. Fique EM CIMA do mato e golpeie para cortar. Passe atrás das árvores e derrote os 7 monstros do campo!',
           },
           button: { type: 'str', value: 'Aventurar' },
         },

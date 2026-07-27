@@ -10,9 +10,12 @@ import { batalhaNaMaoExample } from '../../examples/core'
  * FIEL "na mão" — a lição "programa = DADOS + REGRAS": tabelas de golpes e
  * fichas em objetos/arrays, MATRIZ DE VANTAGEM como objeto aninhado lida por
  * chave (VANTAGEM[tipo][elemento]), dano = força × multiplicador, CURA = dano
- * negativo na MESMA função de aplicar (clamp da vida em [0, max]), menus com
- * cursor por setas + Enter desenhados no canvas, BANCO DE RESERVAS com a vida
- * LEMBRADA de quem sai, turno do inimigo com atraso por setTimeout encadeado
+ * negativo na MESMA função de aplicar (clamp da vida em [0, max]) e LIMITADA
+ * a 3 usos por batalha (o menu mostra "Curar x3"; com 0 o aviso não gasta o
+ * turno), menus com cursor por setas + Enter desenhados no canvas, BANCO DE
+ * RESERVAS com a vida LEMBRADA de quem sai, troca FORÇADA pós-nocaute que
+ * DEVOLVE a vez ao jogador (só a troca voluntária gasta o turno), turno do
+ * inimigo com atraso por setTimeout encadeado
  * (sorteia o golpe) e telas de início/vitória/derrota com Enter. O contrato: o
  * jogo INTEIRO vira blocos do NÚCLEO (0 rawJS/rawCSS/rawHTML, sem extensão) e
  * o round-trip é um FIXPOINT estável, textual e de blocos.
@@ -148,6 +151,8 @@ class Game {
         this.inimigo = new Monster(FICHAS[3], 560, 96);
         this.fase = 'acoes';
         this.mensagem = 'O que Fogorim vai fazer?';
+        this.trocaForcada = false;
+        this.curas = 3;
         this.menuAcoes.opcoes = ['Lutar', 'Trocar'];
         this.menuAcoes.cursor = 0;
     }
@@ -210,7 +215,14 @@ class Game {
     }
     abrirGolpes(){
         this.fase = 'golpes';
-        this.menuGolpes.opcoes = this.meuMonstro().golpes;
+        this.menuGolpes.opcoes = [];
+        this.meuMonstro().golpes.forEach(nome => {
+            if (nome === 'Curar'){
+                this.menuGolpes.opcoes.push('Curar x' + this.curas);
+            } else {
+                this.menuGolpes.opcoes.push(nome);
+            }
+        });
         this.menuGolpes.cursor = 0;
     }
     abrirTrocar(){
@@ -226,14 +238,29 @@ class Game {
         if (alvo.vida > 0 && indice !== this.ativo){
             this.ativo = indice;
             this.mensagem = 'Vai, ' + alvo.nome + '!';
-            this.esperarInimigo();
+            if (this.trocaForcada){
+                // Troca depois do nocaute NÃO gasta turno: a vez volta ao jogador.
+                this.trocaForcada = false;
+                this.abrirAcoes();
+            } else {
+                this.esperarInimigo();
+            }
         } else {
             this.mensagem = alvo.nome + ' não pode entrar!';
         }
     }
     jogadorAtaca(){
-        this.usarGolpe(this.meuMonstro(), this.inimigo, this.menuGolpes.escolha());
-        this.esperarInimigo();
+        const nome = this.meuMonstro().golpes[this.menuGolpes.cursor];
+        if (nome === 'Curar' && this.curas === 0){
+            // Sem curas, o aviso não gasta o turno: escolha outro golpe.
+            this.mensagem = 'As curas acabaram! Escolha outro golpe.';
+        } else {
+            if (nome === 'Curar'){
+                this.curas = this.curas - 1;
+            }
+            this.usarGolpe(this.meuMonstro(), this.inimigo, nome);
+            this.esperarInimigo();
+        }
     }
     usarGolpe(atacante, alvo, nome){
         const golpe = GOLPES[nome];
@@ -272,6 +299,7 @@ class Game {
     fimDoTurno(){
         if (this.meuMonstro().vida === 0){
             if (this.temReserva()){
+                this.trocaForcada = true;
                 this.abrirTrocar();
                 this.mensagem = this.meuMonstro().nome + ' desmaiou! Escolha outro.';
             } else {
@@ -475,6 +503,12 @@ describe('Batalha de Monstrinhos (curso) — 100% blocos do núcleo', () => {
     expect(js).toContain('" (" + monstro.vida + ")"')
     // Menu com cursor por índice e wrap por if (sem módulo).
     expect(js).toContain('this.cursor = this.cursor + delta;')
+    // Cura LIMITADA: contador visível no menu e gasto só quando cura de fato.
+    expect(js).toContain('"Curar x" + this.curas')
+    expect(js).toContain('this.curas = this.curas - 1;')
+    // Troca FORÇADA pós-nocaute devolve a vez ao jogador (sem golpe grátis).
+    expect(js).toContain('this.trocaForcada = false;')
+    expect(js).toContain('this.trocaForcada = true;')
   })
 
   it('IR→blocos: NENHUM bloco raw/avançado e o round-trip de blocos regenera igual', () => {

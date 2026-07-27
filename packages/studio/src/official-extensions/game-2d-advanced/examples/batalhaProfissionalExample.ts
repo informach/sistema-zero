@@ -4,17 +4,20 @@ import { withIndependentPeriodicLoops } from './withIndependentPeriodicLoops'
 /**
  * Exemplo bundlado: "Batalha de Monstrinhos Profissional" — o nível 2 da
  * família de batalha de monstrinhos (o Pokemon do Clear Code recriado com o
- * 👾 Kit Monstrinhos COMPLETO), SEM nenhum bloco do Kit RPG: o pátio é
- * movimento livre (moveWithKeys + regiões). Mostra as FICHAS data-driven
+ * 👾 Kit Monstrinhos COMPLETO), sem misturar as mecânicas do Kit RPG: o pátio
+ * é movimento livre (moveWithKeys + regiões). Mostra as FICHAS data-driven
  * (pkmCreature/pkmMove com tipo e força), a TABELA DE VANTAGEM real que a
  * criança escreve (pkmTypeChart: fogo>planta, água>fogo, planta>água, 2x e
  * 0.5x), o TIME com memória de vida entre trocas e batalhas (pkmGive +
  * pkmDrawTeam no HUD), a batalha de TREINADOR com menus navegáveis do kit
  * (pkmBattleTrainer + pkmTrainerCreature), o Centro de Cura num bloco
- * (pkmHealTeam na fonte) e o encontro selvagem manual no mato fundo
- * (overlapPercent + chance + pkmBattleWild) com CAPTURA como vitória:
- * pkmCaught lido no TOPO do onUpdate (fechar batalha é RETOMADA e não roda
- * onEnterState de "jogando"), sem rpgOnBattleEnd.
+ * (pkmHealTeam na fonte, que TAMBÉM repõe as bolas zeradas — a captura é a
+ * única vitória e não pode ficar impossível) e o encontro selvagem manual no
+ * mato fundo (overlapPercent + chance + pkmBattleWild, gated por timeCaido:
+ * time desmaiado não sorteia encontro nem vira spam de fala) com CAPTURA como
+ * vitória: pkmCaught lido no TOPO do onUpdate (fechar batalha é RETOMADA e
+ * não roda onEnterState de "jogando"). O fim de batalha usa o conceito
+ * COMPARTILHADO rpgOnBattleEnd/rpgBattleWon (não existe pkmOnBattleEnd).
  *
  * ⚠️ A IR foi GERADA pelo parser real a partir do script achatado (o fonte
  * vive em `__gen_batalhaProfissional.ts` — se o parser mudar a saída, o drift
@@ -909,12 +912,28 @@ export const batalhaProfissionalExample: ExtensionExample = withIndependentPerio
         },
         { type: 'gk:stateLook', charVar: 'heroi', state: 'parado', look: 'treinadora' },
         { type: 'gk:stateLook', charVar: 'heroi', state: 'andando', look: 'treinadora' },
+        { type: 'var', name: 'timeCaido', value: { type: 'num', value: 0 } },
       ],
       events: [
         {
           type: 'gk:onEvent',
           event: 'monstrinho:pegou',
           body: [{ type: 'gk:playEffect', fx: 'win' }],
+        },
+        {
+          type: 'gk:rpgOnBattleEnd',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: { type: 'logicalNot', value: { type: 'gk:rpgBattleWon' } },
+                right: { type: 'logicalNot', value: { type: 'gk:pkmCaught' } },
+              },
+              then: [{ type: 'assign', name: 'timeCaido', value: { type: 'num', value: 1 } }],
+            },
+          ],
         },
       ],
       loops: [
@@ -977,6 +996,36 @@ export const batalhaProfissionalExample: ExtensionExample = withIndependentPerio
                   },
                   then: [
                     { type: 'gk:pkmHealTeam' },
+                    { type: 'assign', name: 'timeCaido', value: { type: 'num', value: 0 } },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'binop',
+                        op: '==',
+                        left: { type: 'gk:pkmBallCount' },
+                        right: { type: 'num', value: 0 },
+                      },
+                      then: [
+                        {
+                          type: 'gk:pkmGiveBall',
+                          count: { type: 'num', value: 3 },
+                          power: { type: 'num', value: 65 },
+                        },
+                        {
+                          type: 'gk:floatText',
+                          text: { type: 'str', value: 'Bolas novas!' },
+                          x: { type: 'gk:charX', charVar: 'heroi' },
+                          y: {
+                            type: 'binop',
+                            op: '-',
+                            left: { type: 'gk:charY', charVar: 'heroi' },
+                            right: { type: 'num', value: 44 },
+                          },
+                          color: '#fff3bf',
+                          size: { type: 'num', value: 18 },
+                        },
+                      ],
+                    },
                     { type: 'gk:playEffect', fx: 'powerup' },
                     {
                       type: 'gk:floatText',
@@ -1005,10 +1054,20 @@ export const batalhaProfissionalExample: ExtensionExample = withIndependentPerio
                     type: 'logical',
                     op: '&&',
                     left: {
-                      type: 'binop',
-                      op: '>',
-                      left: { type: 'gk:overlapPercent', charVar: 'heroi', region: 'grama' },
-                      right: { type: 'num', value: 50 },
+                      type: 'logical',
+                      op: '&&',
+                      left: {
+                        type: 'binop',
+                        op: '==',
+                        left: { type: 'var', name: 'timeCaido' },
+                        right: { type: 'num', value: 0 },
+                      },
+                      right: {
+                        type: 'binop',
+                        op: '>',
+                        left: { type: 'gk:overlapPercent', charVar: 'heroi', region: 'grama' },
+                        right: { type: 'num', value: 50 },
+                      },
                     },
                     right: { type: 'gk:chance', percent: { type: 'num', value: 35 } },
                   },
@@ -1116,7 +1175,10 @@ export const batalhaProfissionalExample: ExtensionExample = withIndependentPerio
             {
               type: 'canvasFillText',
               ctxVar: 'ctx',
-              text: { type: 'str', value: 'Fonte: cura o time. Mato fundo: monstrinho raro!' },
+              text: {
+                type: 'str',
+                value: 'Fonte: cura o time e repõe as bolas. Mato fundo: monstrinho raro!',
+              },
               x: { type: 'num', value: 20 },
               y: { type: 'num', value: 528 },
             },

@@ -72,6 +72,12 @@ describe('Exemplo Quadra Maluca — drift contra o parser real', () => {
     expect(types.has('g3k:setBounce')).toBe(false)
   })
 
+  it('nenhum texto visível usa travessão', () => {
+    expect(JSON.stringify(quadraMalucaExample.ir)).not.toContain('—')
+    expect(quadraMalucaExample.name).not.toContain('—')
+    expect(quadraMalucaExample.description ?? '').not.toContain('—')
+  })
+
   it('fixpoint textual: gerar → parsear → gerar é byte-estável', () => {
     const code1 = compileStatements(
       stripIds(behaviorStatements(quadraMalucaExample.ir)) as JSStatement[],

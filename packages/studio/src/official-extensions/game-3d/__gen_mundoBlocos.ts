@@ -5,11 +5,15 @@ import { collectTypes, stripIds } from '../game-3d-advanced/exampleSourceUtils'
 /**
  * Gerador one-off da IR do exemplo "Mundo de Blocos" (nível 1 da família Mundo
  * de Blocos, um construtor estilo Minecraft): câmera ISOMÉTRICA (mouse livre),
- * cursor translúcido movido pela GRADE com as setas (gridPosition), chão e
- * muralha gerados com forRange do núcleo, colocar bloco com espaço/Enter
- * (empilha sozinho na célula ocupada), quebrar com pickAtMouse + clique e
- * objetivo leve
- * de torre de 5 blocos. Aqui NÃO há FPS: o mouse funciona livre, então
+ * cursor translúcido movido pela GRADE com as setas (gridPosition) e mantido no
+ * TOPO da coluna da célula (a mesma conta do colocar — um cursor em y=0
+ * envolveria o bloco térreo e roubaria o raycast do clique, deixando-o
+ * inquebrável), chão e muralha gerados com forRange do núcleo, colocar bloco só
+ * com ESPAÇO (Enter saiu: era atalho redundante e confundia o gesto de "start"
+ * do QA), quebrar com pickAtMouse + clique e objetivo leve de torre de 5
+ * blocos. Som/recorde só quando a colocação ACONTECEU (spawnInSwarm devolve
+ * null no teto do enxame) e a festa da torre de 5 toca UMA vez (dentro do ramo
+ * que atualiza o recorde). Aqui NÃO há FPS: o mouse funciona livre, então
  * pickAtMouse é permitido (diferente do Labirinto dos Robôs). Rode com
  * `bun src/official-extensions/game-3d/__gen_mundoBlocos.ts` e cole a saída em
  * examples.ts. O drift test (`mundoBlocosExample.test.ts`) guarda o resultado
@@ -42,8 +46,9 @@ let linha = 0;
 let coluna = 0;
 let tipo = 1;
 let recorde = 0;
-function colocarBloco() {
-  let alturaAlvo = 0;
+let alturaAlvo = 0;
+function medirAltura() {
+  alturaAlvo = 0;
   SZGame3D.forEachInSwarm(blocos, (item) => {
     if (SZGame3D.getPos(item, "x") === coluna) {
       if (SZGame3D.getPos(item, "z") === linha) {
@@ -53,6 +58,15 @@ function colocarBloco() {
       }
     }
   });
+}
+function moverCursor() {
+  medirAltura();
+  SZGame3D.gridPosition(cursor, linha, coluna);
+  SZGame3D.setPosition(cursor, coluna, alturaAlvo, linha);
+}
+function colocarBloco() {
+  medirAltura();
+  let antes = SZGame3D.countSwarm(blocos);
   if (tipo === 1) {
     SZGame3D.spawnInSwarm(blocos, moldeGrama, coluna, alturaAlvo, linha);
   }
@@ -62,19 +76,23 @@ function colocarBloco() {
   if (tipo === 3) {
     SZGame3D.spawnInSwarm(blocos, moldeMadeira, coluna, alturaAlvo, linha);
   }
-  SZGame3D.playEffect("jump");
-  if (alturaAlvo + 1 > recorde) {
-    recorde = alturaAlvo + 1;
-    document.getElementById("torre").textContent = recorde;
+  if (SZGame3D.countSwarm(blocos) > antes) {
+    SZGame3D.playEffect("jump");
+    if (alturaAlvo + 1 > recorde) {
+      recorde = alturaAlvo + 1;
+      document.getElementById("torre").textContent = recorde;
+      if (recorde === 5) {
+        SZGame3D.playEffect("coin");
+        document.getElementById("festa")?.classList.add("visivel");
+        setTimeout(() => {
+          document.getElementById("festa")?.classList.remove("visivel");
+        }, 2500);
+      }
+    }
   }
-  if (recorde === 5) {
-    SZGame3D.playEffect("coin");
-    document.getElementById("festa")?.classList.add("visivel");
-    setTimeout(() => {
-      document.getElementById("festa")?.classList.remove("visivel");
-    }, 2500);
-  }
+  moverCursor();
 }
+moverCursor();
 document.addEventListener("keydown", (event) => {
   if (event.key === "ArrowLeft") {
     if (coluna > -4) {
@@ -96,7 +114,7 @@ document.addEventListener("keydown", (event) => {
       linha = linha + 1;
     }
   }
-  SZGame3D.gridPosition(cursor, linha, coluna);
+  moverCursor();
   if (event.key === "1") {
     tipo = 1;
     document.getElementById("tipo").textContent = "grama";
@@ -109,9 +127,6 @@ document.addEventListener("keydown", (event) => {
     tipo = 3;
     document.getElementById("tipo").textContent = "madeira";
   }
-  if (event.key === "Enter") {
-    colocarBloco();
-  }
   if (event.key === " ") {
     colocarBloco();
   }
@@ -123,6 +138,7 @@ document.addEventListener("click", (event) => {
     SZGame3D.removeFromSwarm(blocos, alvo);
     if (SZGame3D.countSwarm(blocos) < antes) {
       SZGame3D.playEffect("hit");
+      moverCursor();
     }
   }
 });

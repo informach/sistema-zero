@@ -21,9 +21,18 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  *   espaço e Enter).
  * - Tabela de vantagem em `se`s explícitos: fogo contra planta = dano x2.
  * - Cura = dano negativo: changeHealth(+5); o runtime CLAMPA no máximo
- *   (utilities.ts) e o rótulo da tela avisa "até o máximo".
- * - ⭐ afterSeconds ("Depois de N segundos"): one-shot por partida que LIBERA
- *   os comandos (turno = "jogador") 2s depois do início; reiniciar re-arma.
+ *   (utilities.ts) e a mensagem avisa "curou até 5".
+ * - Poção LIMITADA: pocoes = 3 por partida; o placar "3 Poção (cura 5) x"
+ *   mostra quantas restam (drawScore: o texto do drawLabel é campo fixo, não
+ *   aceita concatenação); com 0, a tecla 3 só avisa e NÃO gasta o turno (a
+ *   cura vira estratégia e a derrota fica alcançável).
+ * - ⭐ afterSeconds ("Depois de N segundos"): one-shot por partida que marca
+ *   aberturaPronta = 1 aos 2s. Quem LIBERA o turno é uma raiz "A cada 0,5
+ *   segundos" que exige cena jogando + aberturaPronta + turno "espera" — assim
+ *   a liberação acontece no que vier POR ÚLTIMO (o timer ou entrar na cena) e
+ *   ficar parado na tela de título nunca consome o beat nem trava os comandos.
+ *   ⚠️ NÃO embrulhar o corpo do afterSeconds em "se cena é jogando": o one-shot
+ *   seria CONSUMIDO no título sem liberar o turno (softlock).
  * - Turnos: raiz "A cada 1,5 segundos" que SÓ age quando turno == "inimigo"
  *   (sorteia o golpe com randomChance/randomBetween e devolve o turno).
  */
@@ -51,6 +60,8 @@ SZGame2D.setHealth(rival, 20);
 let turno = "espera";
 let forca = 4;
 let dano = 0;
+let pocoes = 3;
+let aberturaPronta = 0;
 let mensagem = "Os monstrinhos se encaram!";
 SZGame2D.setScene("inicio");
 SZGame2D.onKey("Enter", function () {
@@ -85,10 +96,15 @@ document.addEventListener("keydown", (event) => {
         turno = "inimigo";
       }
       if (event.key == "3") {
-        SZGame2D.changeHealth(meu, 5);
-        SZGame2D.playFx("heal");
-        mensagem = "Poção! Brasinha curou até 5 de vida";
-        turno = "inimigo";
+        if (pocoes > 0) {
+          pocoes = pocoes - 1;
+          SZGame2D.changeHealth(meu, 5);
+          SZGame2D.playFx("heal");
+          mensagem = "Poção! Brasinha curou até 5 de vida";
+          turno = "inimigo";
+        } else {
+          mensagem = "As poções acabaram! Use a Faísca ou o Jato";
+        }
       }
     }
   }
@@ -116,7 +132,8 @@ SZGame2D.gameLoop(function update() {
     }
     SZGame2D.drawScore(ctx, ">", mensagem, 20, 252, "#f3f6ff", 13);
     SZGame2D.drawLabel(ctx, "1 Faísca (fogo, dano x2 na planta)", 20, 272, "#ffd166", 13, "left");
-    SZGame2D.drawLabel(ctx, "2 Jato (água, dano x1)   3 Poção (cura 5, até o máximo)", 20, 290, "#8fd0ff", 13, "left");
+    SZGame2D.drawLabel(ctx, "2 Jato (água, dano x1)", 20, 290, "#8fd0ff", 13, "left");
+    SZGame2D.drawScore(ctx, "3 Poção (cura 5) x", pocoes, 200, 290, "#8fd0ff", 13);
     if (SZGame2D.healthDepleted(rival)) {
       SZGame2D.playFx("win");
       SZGame2D.setScene("vitoria");
@@ -134,8 +151,17 @@ SZGame2D.gameLoop(function update() {
   }
 });
 if (SZGame2D.afterSeconds("abertura-da-batalha", 2)) {
-  turno = "jogador";
-  mensagem = "Sua vez! Aperte 1, 2 ou 3";
+  aberturaPronta = 1;
+}
+if (SZGame2D.everySeconds("liberar-comandos", 0.5)) {
+  if (SZGame2D.sceneIs("jogando")) {
+    if (aberturaPronta == 1) {
+      if (turno == "espera") {
+        turno = "jogador";
+        mensagem = "Sua vez! Aperte 1, 2 ou 3";
+      }
+    }
+  }
 }
 if (SZGame2D.everySeconds("vez-do-folhito", 1.5)) {
   if (SZGame2D.sceneIs("jogando")) {

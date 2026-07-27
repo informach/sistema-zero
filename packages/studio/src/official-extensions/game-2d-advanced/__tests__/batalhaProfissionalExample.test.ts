@@ -157,7 +157,7 @@ describe('Exemplo Batalha de Monstrinhos Profissional — drift contra o parser 
     expect(types.has('gk:pkmBattleWild')).toBe(true)
     // A vitória é a CAPTURA: pkmCaught() no TOPO do onUpdate (fechar batalha é
     // RETOMADA e o motor de propósito NÃO roda onEnterState("jogando") nesse
-    // caminho) — sem rpgOnBattleEnd, que é do Kit RPG.
+    // caminho).
     expect(types.has('gk:pkmCaught')).toBe(true)
     // O pátio é movimento livre + regiões (fonte e mato fundo).
     for (const t of [
@@ -175,15 +175,53 @@ describe('Exemplo Batalha de Monstrinhos Profissional — drift contra o parser 
     expect(batalhaProfissionalExample.assets ?? []).toHaveLength(0)
   })
 
-  it('⭐ não mistura kits: ZERO blocos rpg_*, zero luta/nave/td e zero Jogo 2D básico', () => {
+  it('⭐ não mistura kits: zero rpg_* (fora o fim de batalha), luta/nave/td e Jogo 2D básico', () => {
+    // rpgOnBattleEnd/rpgBattleWon são o conceito COMPARTILHADO de fim de
+    // batalha dos dois kits (não existe pkmOnBattleEnd — ver ai.ts): não
+    // contam como mistura. O resto do Kit RPG continua proibido aqui.
+    const sharedBattleEnd = new Set(['gk:rpgOnBattleEnd', 'gk:rpgBattleWon'])
     const types = collectTypes(behaviorStatements(batalhaProfissionalExample.ir))
     for (const type of types) {
-      expect(type.startsWith('gk:rpg')).toBe(false)
+      expect(type.startsWith('gk:rpg') && !sharedBattleEnd.has(type)).toBe(false)
       expect(type.startsWith('gk:luta')).toBe(false)
       expect(type.startsWith('gk:nave')).toBe(false)
       expect(type.startsWith('gk:td')).toBe(false)
       expect(type.startsWith('g2d:')).toBe(false)
     }
+  })
+
+  it('⭐ a fonte repõe as bolas zeradas: a captura (única vitória) nunca fica impossível', () => {
+    const statements = behaviorStatements(batalhaProfissionalExample.ir)
+    const raw = JSON.stringify(statements)
+    // Dentro do root da fonte: se pkmBallCount() == 0 → pkmGiveBall(3, 65).
+    expect(raw).toContain('"type":"gk:pkmBallCount"')
+    const refills = collectStatements(statements, 'gk:pkmGiveBall') as Array<{
+      count: { value: number }
+    }>
+    // Uma carga inicial (5) + a reposição da fonte (3).
+    expect(refills.map((s) => s.count.value).sort()).toEqual([3, 5])
+    expect(raw).toContain('Bolas novas!')
+  })
+
+  it('⭐ o mato só sorteia encontro com o time em pé (gate timeCaido)', () => {
+    const statements = behaviorStatements(batalhaProfissionalExample.ir)
+    const raw = JSON.stringify(statements)
+    // O hook compartilhado marca a queda: sem vitória e sem captura → timeCaido = 1.
+    const hooks = collectStatements(statements, 'gk:rpgOnBattleEnd')
+    expect(hooks.length).toBe(1)
+    const rawHook = JSON.stringify(hooks[0])
+    expect(rawHook).toContain('"type":"gk:rpgBattleWon"')
+    expect(rawHook).toContain('"type":"gk:pkmCaught"')
+    expect(rawHook).toContain('"name":"timeCaido","value":{"type":"num","value":1}')
+    // O root do mato exige timeCaido == 0 antes do chance + pkmBattleWild —
+    // sem o gate, o time desmaiado virava spam de fala a cada 1-3s.
+    const wildCalls = collectStatements(statements, 'gk:pkmBattleWild')
+    expect(wildCalls.length).toBe(1)
+    expect(raw).toContain(
+      '"op":"==","left":{"type":"var","name":"timeCaido"},"right":{"type":"num","value":0}',
+    )
+    // A fonte reabre o mato junto com a cura.
+    expect(raw).toContain('"name":"timeCaido","value":{"type":"num","value":0}')
   })
 
   it('textos visíveis sem travessão', () => {

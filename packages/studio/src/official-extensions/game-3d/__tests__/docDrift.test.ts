@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import type { ExtensionToolboxCategory } from '#extensions'
 import { gameThreeDPromptContext } from '../ai'
 import { gameThreeDBlocks, gameThreeDToolboxCategory } from '../blocks'
+import { gameThreeDManifest } from '../manifest'
 import { gameThreeDRuntime } from '../runtime'
 
 /**
@@ -53,6 +54,24 @@ describe('game-3d — a doc/IA não pode citar o que não existe', () => {
     // Anti-vácuo: o contexto cita dezenas de métodos; uma extração morta cairia p/ 0.
     expect(citados.size).toBeGreaterThanOrEqual(60)
     expect([...citados].filter((n) => !apiKeys.has(n))).toEqual([])
+  })
+
+  it('nenhum exemplo do manifest usa travessão em texto visível', () => {
+    // Guarda TRANSVERSAL (a versão por-exemplo vive nos drift tests dos jogos
+    // gerados; esta varre TODOS os exemplos do manifest, inclusive os antigos
+    // com IR embutida à mão): nome, descrição e o HTML do jogo (HUD/telas) são
+    // texto que a criança vê e a voz da casa não usa travessão.
+    const comTravessao = gameThreeDManifest.examples
+      .filter(
+        (ex) =>
+          ex.name.includes('—') ||
+          (ex.description ?? '').includes('—') ||
+          JSON.stringify(ex.ir.html ?? []).includes('—'),
+      )
+      .map((ex) => ex.name)
+    expect(comTravessao).toEqual([])
+    // Anti-vácuo: a varredura tem de estar olhando o catálogo real.
+    expect(gameThreeDManifest.examples.length).toBeGreaterThanOrEqual(10)
   })
 
   it('todo bloco está na toolbox em UM lugar só — e a categoria "Mais" não existe', () => {

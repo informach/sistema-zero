@@ -1309,7 +1309,20 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     if (!obj || !obj.position || !obj.getWorldDirection) return;
     var d = finite(dist, 0) * frameScale(obj);
     var v = new THREE.Vector3();
-    obj.getWorldDirection(v);
+    var world = worldOf(obj);
+    if (world && world._cameraMode === 'fps' && world._fpsObj === obj &&
+        world.camera && world.camera.getWorldDirection) {
+      // Em 1ª pessoa, "para a frente" é para onde o JOGADOR OLHA: a direção da
+      // câmera (a câmera-filha olha -Z enquanto o getWorldDirection do corpo
+      // aponta +Z — sem este ramo o passo saía 180° às costas da vista, a mesma
+      // classe do fix do aimAhead). O pitch é achatado (y = 0 + normaliza):
+      // andar olhando para cima/baixo segue no plano do chão, sem voar.
+      world.camera.getWorldDirection(v);
+      v.y = 0;
+      if (v.lengthSq() > 1e-8) v.normalize();
+    } else {
+      obj.getWorldDirection(v);
+    }
     obj.position.x += v.x * d;
     obj.position.y += v.y * d;
     obj.position.z += v.z * d;

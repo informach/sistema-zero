@@ -63,6 +63,26 @@ describe('Exemplo Labirinto dos Robôs Profissional — drift contra o parser re
     }
   })
 
+  it('cooldown de tiro: relógio proximoTiro por dt trava o gatilho em 1 tiro a cada 0,5 s', () => {
+    // Regressão do full review (Lote C): os i-frames do motor são de 0,5 s, e
+    // sem o cooldown dois cliques rápidos gastavam DOIS tiros por UM dano (o 2º
+    // acerto tocava faísca+som sem machucar). O relógio segue a receita dos
+    // relógios de spawn da Corrida Profissional: decrementa por dt e o disparo
+    // rearma em 0,5.
+    const raw = JSON.stringify(behaviorStatements(labirintoDosRobosProfissionalExample.ir))
+    expect(raw).toContain('proximoTiro')
+    expect(raw).toContain('0.5')
+    // O gatilho é clique E relógio zerado — não basta o mousePressed sozinho.
+    expect(raw).toContain('"type":"g3k:mousePressed"')
+    expect(raw).toContain('"op":"<="')
+  })
+
+  it('nenhum texto visível usa travessão', () => {
+    expect(JSON.stringify(labirintoDosRobosProfissionalExample.ir)).not.toContain('—')
+    expect(labirintoDosRobosProfissionalExample.name).not.toContain('—')
+    expect(labirintoDosRobosProfissionalExample.description ?? '').not.toContain('—')
+  })
+
   it('⭐ veredito do spike: sob pointer lock o mouse interno congela — pick/groundPoint/pointerOver BANIDOS', () => {
     const types = collectTypes(behaviorStatements(labirintoDosRobosProfissionalExample.ir))
     expect(types.has('g3k:pick')).toBe(false)

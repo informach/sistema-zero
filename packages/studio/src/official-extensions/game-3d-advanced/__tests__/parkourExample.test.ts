@@ -150,6 +150,12 @@ describe('Exemplo Parkour do Vulcão — drift contra o parser real', () => {
     expect(raw).toContain('"curve":"suave"')
   })
 
+  it('nenhum texto visível usa travessão', () => {
+    expect(JSON.stringify(parkourDoVulcaoExample.ir)).not.toContain('—')
+    expect(parkourDoVulcaoExample.name).not.toContain('—')
+    expect(parkourDoVulcaoExample.description ?? '').not.toContain('—')
+  })
+
   it('fixpoint textual: gerar → parsear → gerar é byte-estável', () => {
     const code1 = compileStatements(
       stripIds(behaviorStatements(parkourDoVulcaoExample.ir)) as JSStatement[],

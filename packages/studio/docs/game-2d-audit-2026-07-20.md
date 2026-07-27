@@ -11,7 +11,7 @@ A paleta permanece extensa por decisão de produto: são 209 definições de blo
 sendo responsabilidade do perfil de aprendizagem e de cada aula.
 
 A correção técnica desta auditoria foi publicada como **Jogo 2D 0.34.0**. O
-manifesto vigente está em **0.43.0** após os fechamentos subsequentes: grupos
+manifesto vigente está em **0.44.0** após os fechamentos subsequentes: grupos
 seguros também no modo Código, ciclo de vida gerenciado e HUD acessível em todos
 os caminhos públicos e legados, o full review de 23/07 (inimigo "patrulha" que
 respeita jogos sem gravidade, cartão de porta de entrada "Pegue a moeda" e redes
@@ -29,6 +29,9 @@ reinício), **Usar área de colisão de N% do tamanho** (o dial da colisão
 perdoadora — vale para as perguntas de encostar; a física de empurrar segue com
 o tamanho cheio, e "Mostrar a caixa de colisão" desenha a área efetiva) e
 **Desenhar o grupo ordenado pela base** (profundidade top-down por y+h).
+O 0.44.0 (27/07) fechou o full review dos exemplos Clear Code B na Batalha de
+Monstrinhos: abertura em duas peças que não trava na tela de título e Poção
+limitada a 3 usos por partida (derrota alcançável), com playthroughs novos.
 Não há achados abertos no escopo desta revisão.
 
 ## Escopo revisado

@@ -16,7 +16,7 @@ import {
 export const gameThreeDManifest: ExtensionManifest = {
   id: 'game-3d',
   name: 'Jogo 3D',
-  version: '0.19.0',
+  version: '0.20.0',
   description:
     'Blocos e comandos para criar jogos 3D com Three.js: cena/câmera/luz (e cena em tela cheia responsiva), cubos/esferas/caixas, posição/rotação/escala, física (velocidade, gravidade, pulo, colisão), teclado, câmera que segue, genéricos de grade isométrica e de movimento (círculo, distância, cair girando, deslizar, girar) e Kits prontos: "Desvie", "Travessia", "Corrida" e "Empilhar". Three.js carrega de um CDN fixado.',
   category: 'games',
@@ -70,7 +70,7 @@ em um evento ou em um construtor.
 - **Mover com o teclado (WASD/setas)**. Anda no plano.
 - **Definir velocidade** / **Fazer pular** (só no chão) / **Mover com gravidade (chão)**.
 - **A câmera segue o objeto**. Acompanha mantendo o enquadramento.
-- Movimento relativo, olhar/mira e câmeras em primeira pessoa, terceira pessoa e orbital. O último modo de câmera escolhido substitui o anterior sem manter a câmera presa ao objeto do modo FPS. Entrar em primeira pessoa sempre ativa uma câmera em perspectiva, mesmo depois de uma câmera isométrica ou aérea.
+- Movimento relativo, olhar/mira e câmeras em primeira pessoa, terceira pessoa e orbital. Com a câmera em primeira pessoa no objeto, **andar para frente** segue para onde o jogador olha (no plano do chão) e **objeto que está mirando** mira o que o jogador vê, inclusive olhando para cima ou para baixo. O último modo de câmera escolhido substitui o anterior sem manter a câmera presa ao objeto do modo FPS. Entrar em primeira pessoa sempre ativa uma câmera em perspectiva, mesmo depois de uma câmera isométrica ou aérea.
 - **Corpo + sólido + atualizar corpo**. Física AABB leve da própria plataforma, sem biblioteca externa pesada.
 
 ### Perguntas (booleanos. Caem num "se")

@@ -16,6 +16,11 @@ import { collectTypes } from './exampleSourceUtils'
  * O TIRO é o veredito do spike: sob pointer lock o mouse interno CONGELA, então
  * NADA de pick/groundPoint/pointerOver — o gatilho é mousePressed() e o projétil
  * é spawnFrom(tiro, herói) + moveForward (o yaw do FPS gira o mesmo mesh).
+ * ⭐ COOLDOWN DE TIRO (full review Lote C): os i-frames do motor são de 0,5 s,
+ * então dois cliques mais rápidos que isso gastariam DOIS tiros por UM dano
+ * (o 2º acerto toca faísca+som mas não machuca). O relógio proximoTiro (por
+ * dt, como os relógios de spawn da Corrida) trava o gatilho em 1 tiro a cada
+ * 0,5 s — clique afobado não desperdiça munição de feedback.
  * Zona de tiro (makeTrigger + onOverlap + isMold), i-frames via onHurt com
  * cameraShake, vinheta ligada, HUD, telas, névoa e setSeed. Sem .glb.
  */
@@ -64,8 +69,10 @@ SZGameKit3D.defineEffect("faisca", { count: 14, colorFrom: "#fde047", colorTo: "
 SZGameKit3D.defineEffect("choque", { count: 12, colorFrom: "#f43f5e", colorTo: "#111827", spread: 5, sizeFrom: 0.4, sizeTo: 0, life: 0.45, gravity: 0 });
 SZGameKit3D.defineEffect("explosao", { count: 30, colorFrom: "#fb923c", colorTo: "#111827", spread: 8, sizeFrom: 0.6, sizeTo: 0, life: 0.7, gravity: -6 });
 let restantes = 5;
+let proximoTiro = 0;
 SZGameKit3D.onEnterState("jogando", function () {
   restantes = 5;
+  proximoTiro = 0;
   SZGameKit3D.setSeed(7);
   SZGameKit3D.setAmbient(0.4);
   SZGameKit3D.setFog("#0b1120", 10, 38);
@@ -90,9 +97,11 @@ SZGameKit3D.onEnterState("jogando", function () {
 });
 SZGameKit3D.onEntityStateUpdate("heroi", "parado", function (ela, dt) {
   SZGameKit3D.moveFps(ela, 7);
-  if (SZGameKit3D.mousePressed()) {
+  proximoTiro = proximoTiro - dt;
+  if (SZGameKit3D.mousePressed() && proximoTiro <= 0) {
     SZGameKit3D.spawnFrom("tiro", ela);
     SZGameKit3D.playEffect("laser");
+    proximoTiro = 0.5;
   }
   SZGameKit3D.setHud("top-left", "Vida: " + SZGameKit3D.healthOf(ela));
 });

@@ -516,10 +516,11 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
     expect(vx * vx + vz * vz).toBeGreaterThan(1)
     tecla('keyup', 'w')
 
-    // A câmera que segue converge antes de qualquer mira de clique.
-    step(90)
-
     // (b) plantar: clique no chão → groundPoint + arredondar → célula (4, 6).
+    // ⭐ Guarda de alcance (Lote C): só planta com a célula a até 3 do herói,
+    // então o teste ANDA até perto da célula antes de clicar (como a criança).
+    api.place(heroi, 4, 0, 4)
+    step(90) // a câmera que segue converge antes de qualquer mira de clique
     clicarNoPonto(4, 0, 6)
     step(2)
     expect(api.countAlive('grama')).toBe(1)
@@ -545,13 +546,15 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
     tecla('keyup', '2')
     step(1)
     expect(stage.querySelector('.szg3k-hud-bottom-left')?.textContent).toBe('Bloco: pedra (1 2 3)')
-    step(60) // a câmera re-converge (o herói teleportou para cima do bloco)
+    api.place(heroi, 2, 0, 4) // a guarda de alcance pede o herói perto da célula (2, 2)
+    step(60) // a câmera re-converge (o herói teleportou)
     clicarNoPonto(2, 0, 2)
     step(2)
     expect(api.countAlive('pedra')).toBe(1)
     expect(stage.querySelector('.szg3k-hud-top-left')?.textContent).toBe('Blocos: 2 de 30')
 
-    // (e) X liga o modo reciclar e o clique NO bloco (pick, mouse livre) o recolhe.
+    // (e) X liga o modo reciclar e o clique NO bloco (pick ÚNICO sem molde +
+    // cascata isMold, Lote C) recolhe SÓ o bloco da frente sob o mouse.
     api.place(heroi, -4, 0, -6) // sai de cima do alvo
     step(60)
     tecla('keydown', 'x')
@@ -561,10 +564,10 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
     expect(stage.querySelector('.szg3k-hud-top-right')?.textContent).toBe(
       'Modo: reciclar (X troca)',
     )
-    clicarNoPonto(4, 0.6, 6) // o MIOLO do bloco de grama
+    clicarNoPonto(2, 0.6, 2) // o MIOLO do bloco de pedra (o mais próximo da câmera)
     step(2)
-    expect(api.countAlive('grama')).toBe(0)
-    expect(api.countAlive('pedra')).toBe(1) // o pick é por molde: só o clicado saiu
+    expect(api.countAlive('pedra')).toBe(0)
+    expect(api.countAlive('grama')).toBe(1) // o pick é o PRIMEIRO sob o mouse: só o clicado saiu
 
     // (f) objetivo: pousar no topo da muralha (y 2,4 > 2,2) vence. O pingo baixo
     // limpa o grounded velho (mesmo gotcha do (c)); só o POUSO de verdade no

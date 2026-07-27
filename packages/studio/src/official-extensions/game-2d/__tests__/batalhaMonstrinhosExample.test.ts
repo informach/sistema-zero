@@ -107,10 +107,32 @@ describe('Exemplo Batalha de Monstrinhos — drift contra o parser real', () => 
     for (const key of ['1', '2', '3']) {
       expect(raw).toContain(`{"type":"str","value":"${key}"}`)
     }
-    // As opções ficam DESENHADAS (o game-2d não tem menus navegáveis) e os
-    // rótulos EXPLICITAM a tabela de vantagem e o teto da cura.
+    // As opções ficam DESENHADAS (o game-2d não tem menus navegáveis); a
+    // Poção é um PLACAR (drawScore) que mostra quantas restam.
     expect(raw).toContain('1 Faísca (fogo, dano x2 na planta)')
-    expect(raw).toContain('2 Jato (água, dano x1)   3 Poção (cura 5, até o máximo)')
+    expect(raw).toContain('2 Jato (água, dano x1)')
+    expect(raw).toContain('"label":"3 Poção (cura 5) x","value":{"type":"var","name":"pocoes"}')
+  })
+
+  it('poção limitada: 3 por partida, decremento no uso e aviso sem gastar o turno', () => {
+    const raw = JSON.stringify(behaviorStatements(batalhaMonstrinhosExample.ir))
+    // O estoque nasce com 3 no "Ao iniciar" (reiniciar repõe).
+    expect(raw).toContain('"type":"var","name":"pocoes","value":{"type":"num","value":3}')
+    // O uso é guardado por "se pocoes > 0" e gasta 1 (pocoes = pocoes - 1).
+    expect(raw).toContain(
+      '"op":">","left":{"type":"var","name":"pocoes"},"right":{"type":"num","value":0}',
+    )
+    expect(raw).toContain(
+      '"name":"pocoes","value":{"type":"binop","op":"-","left":{"type":"var","name":"pocoes"},"right":{"type":"num","value":1}}',
+    )
+    // Sem poção: só a mensagem muda — o ramo senão NÃO passa o turno ao rival.
+    expect(raw).toContain('As poções acabaram! Use a Faísca ou o Jato')
+    const keydown = behaviorStatements(batalhaMonstrinhosExample.ir).find(
+      (statement) => statement.type === 'event',
+    )
+    const potionBranch = JSON.stringify(keydown).match(/"else":\[(.*?)\]/)
+    expect(potionBranch).not.toBeNull()
+    expect(potionBranch?.[1] ?? '').not.toContain('"inimigo"')
   })
 
   it('tabela de vantagem em ses: fogo x2, água x1, e a poção cura sem passar do máximo', () => {
@@ -129,22 +151,41 @@ describe('Exemplo Batalha de Monstrinhos — drift contra o parser real', () => 
     )
   })
 
-  it('turnos: afterSeconds é o one-shot de abertura e a vez do inimigo é a raiz periódica', () => {
+  it('turnos: afterSeconds só marca a abertura e uma raiz de 0,5s libera os comandos', () => {
     const loops = batalhaMonstrinhosExample.ir.behavior.loops
-    // ⭐ USO GENUÍNO do afterSeconds: liberar os comandos UMA vez por partida.
+    // ⭐ O one-shot NÃO mexe no turno: só marca aberturaPronta = 1. Se ele
+    // liberasse o turno direto, ficar na tela de título >2s consumiria o beat
+    // (e um "se cena é jogando" no corpo viraria SOFTLOCK: one-shot consumido
+    // no título sem liberar nada).
     const opening = loops.find(
       (statement): statement is Extract<JSStatement, { type: 'g2d:afterSeconds' }> =>
         statement.type === 'g2d:afterSeconds',
     )
     expect(opening).toBeDefined()
-    expect(JSON.stringify(opening)).toContain(
-      '"name":"turno","value":{"type":"str","value":"jogador"}',
-    )
-    // O turno REPETIDO do inimigo NUNCA usa afterSeconds (é one-shot!): é uma
-    // raiz "A cada 1,5 segundos" que só age quando turno == "inimigo".
-    const enemyTurn = loops.find(
+    const rawOpening = JSON.stringify(opening)
+    expect(rawOpening).toContain('"name":"aberturaPronta","value":{"type":"num","value":1}')
+    expect(rawOpening).not.toContain('"name":"turno"')
+    expect(rawOpening).not.toContain('g2d:sceneIs')
+    // Quem LIBERA é a raiz "A cada 0,5 segundos": cena jogando + aberturaPronta
+    // + turno "espera" → turno = "jogador". Libera no que vier POR ÚLTIMO
+    // (timer ou entrar na cena) e nunca trava.
+    const everyRoots = loops.filter(
       (statement): statement is Extract<JSStatement, { type: 'g2d:everySeconds' }> =>
         statement.type === 'g2d:everySeconds',
+    )
+    const release = everyRoots.find(
+      (statement) => JSON.stringify(statement.seconds) === '{"type":"num","value":0.5}',
+    )
+    expect(release).toBeDefined()
+    const rawRelease = JSON.stringify(release)
+    expect(rawRelease).toContain('"type":"g2d:sceneIs","name":"jogando"')
+    expect(rawRelease).toContain('"name":"aberturaPronta"')
+    expect(rawRelease).toContain('{"type":"str","value":"espera"}')
+    expect(rawRelease).toContain('"name":"turno","value":{"type":"str","value":"jogador"}')
+    // O turno REPETIDO do inimigo NUNCA usa afterSeconds (é one-shot!): é uma
+    // raiz "A cada 1,5 segundos" que só age quando turno == "inimigo".
+    const enemyTurn = everyRoots.find(
+      (statement) => JSON.stringify(statement.seconds) === '{"type":"num","value":1.5}',
     )
     expect(enemyTurn).toBeDefined()
     expect(enemyTurn?.seconds).toEqual({ type: 'num', value: 1.5 })

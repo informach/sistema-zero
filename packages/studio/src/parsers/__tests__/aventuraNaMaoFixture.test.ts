@@ -13,9 +13,12 @@ import { aventuraNaMaoExample } from '../../examples/core'
  * (timer de quadros), espada × inimigo = dano + KNOCKBACK (vetor invertido por
  * alguns quadros), espada × mato = destrói + partículas (quadradinhos que
  * somem), FSM do inimigo por distância (parado/perseguir/atacar em string +
- * ifs), i-frames com piscada por Math.floor(...) % 2 e Y-SORT em DUAS PASSADAS
- * (quem tem a base acima do herói desenha atrás; .sort(fn) não round-tripa).
- * Laço com TEMPO real (timestamp + deltaTime, velocidades por ms) e telas de
+ * ifs), INIMIGO que também colide nos obstáculos (mesmo resolverX/resolverY do
+ * herói = desliza na parede), i-frames com piscada por Math.floor(...) % 2 e
+ * Y-SORT em DUAS PASSADAS (quem tem a base acima do herói desenha atrás;
+ * .sort(fn) não round-tripa). Laço com TEMPO real (timestamp + deltaTime com
+ * CLAMP de 50ms: trocar de aba não teleporta ninguém através das paredes),
+ * blur da janela zera as teclas (seta não fica presa) e telas de
  * início/vitória/derrota com Enter. O contrato: o jogo INTEIRO vira blocos do
  * NÚCLEO (0 rawJS/rawCSS/rawHTML, sem extensão) e o round-trip é um FIXPOINT
  * estável, textual e de blocos.
@@ -166,6 +169,8 @@ class Enemy {
         this.width = 30;
         this.height = 30;
         this.speed = 0.12;
+        this.vx = 0;
+        this.vy = 0;
         this.vida = 3;
         this.state = 'parado';
         this.invencivel = 0;
@@ -180,9 +185,11 @@ class Enemy {
         }
         if (this.kbTimer > 0){
             this.kbTimer = this.kbTimer - 1;
-            this.x = this.x + this.kbx * deltaTime;
-            this.y = this.y + this.kby * deltaTime;
+            this.vx = this.kbx;
+            this.vy = this.kby;
         } else {
+            this.vx = 0;
+            this.vy = 0;
             const dx = this.game.player.x - this.x;
             const dy = this.game.player.y - this.y;
             const distancia = Math.hypot(dx, dy);
@@ -194,13 +201,41 @@ class Enemy {
                 this.state = 'atacar';
             }
             if (this.state === 'perseguir'){
-                this.x = this.x + dx / distancia * this.speed * deltaTime;
-                this.y = this.y + dy / distancia * this.speed * deltaTime;
+                this.vx = dx / distancia * this.speed;
+                this.vy = dy / distancia * this.speed;
             }
             if (this.state === 'atacar'){
                 this.game.machucarHeroi(this);
             }
         }
+        this.x = this.x + this.vx * deltaTime;
+        this.resolverX();
+        this.y = this.y + this.vy * deltaTime;
+        this.resolverY();
+    }
+    resolverX(){
+        this.game.obstaculos.forEach(obs => {
+            if (this.game.checkCollision(this, obs)){
+                if (this.vx > 0){
+                    this.x = obs.x - this.width;
+                }
+                if (this.vx < 0){
+                    this.x = obs.x + obs.width;
+                }
+            }
+        });
+    }
+    resolverY(){
+        this.game.obstaculos.forEach(obs => {
+            if (this.game.checkCollision(this, obs)){
+                if (this.vy > 0){
+                    this.y = obs.y - this.height;
+                }
+                if (this.vy < 0){
+                    this.y = obs.y + obs.height;
+                }
+            }
+        });
     }
     draw(){
         if (this.invencivel === 0 || Math.floor(this.invencivel / 4) % 2 === 0){
@@ -267,6 +302,10 @@ class Game {
             if (indice > -1){
                 this.keys.splice(indice, 1);
             }
+        });
+        // Sem foco na janela, nenhuma seta fica presa.
+        window.addEventListener('blur', () => {
+            this.keys = [];
         });
     }
     montarMundo(){
@@ -491,8 +530,12 @@ const game = new Game(canvas);
 let lastTime = 0;
 function animate(timeStamp){
     requestAnimationFrame(animate);
-    const deltaTime = timeStamp - lastTime;
+    let deltaTime = timeStamp - lastTime;
     lastTime = timeStamp;
+    // Pausa longa (trocar de aba) não pode virar um salto gigante.
+    if (deltaTime > 50){
+        deltaTime = 50;
+    }
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     game.update(deltaTime);
     game.draw();
@@ -633,8 +676,15 @@ describe('Aventura do Herói (curso) — 100% blocos do núcleo', () => {
     expect(js).toContain('inimigo.y + inimigo.height > baseHeroi')
     // Mato destrutível com culling por filter.
     expect(js).toContain('this.matos = this.matos.filter((mato) => !mato.markedForDeletion);')
-    // Laço com TEMPO real (velocidades por milissegundo × dt).
-    expect(js).toContain('const deltaTime = timeStamp - lastTime;')
+    // Laço com TEMPO real (velocidades por milissegundo × dt)…
+    expect(js).toContain('let deltaTime = timeStamp - lastTime;')
+    // …com CLAMP: pausa longa (trocar de aba) não vira teleporte pela parede.
+    expect(js).toContain('if (deltaTime > 50)')
+    expect(js).toContain('deltaTime = 50;')
+    // Perder o foco da janela zera as teclas (seta não fica presa).
+    expect(js).toContain('window.addEventListener("blur"')
+    // O INIMIGO também colide nos obstáculos (desliza na parede como o herói).
+    expect(js).toContain('this.vx = dx / distancia * this.speed;')
   })
 
   it('IR→blocos: NENHUM bloco raw/avançado e o round-trip de blocos regenera igual', () => {

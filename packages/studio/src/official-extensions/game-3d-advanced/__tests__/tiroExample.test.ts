@@ -65,6 +65,12 @@ describe('Exemplo Tiro ao Alvo — drift contra o parser real', () => {
     }
   })
 
+  it('nenhum texto visível usa travessão', () => {
+    expect(JSON.stringify(tiroAoAlvoExample.ir)).not.toContain('—')
+    expect(tiroAoAlvoExample.name).not.toContain('—')
+    expect(tiroAoAlvoExample.description ?? '').not.toContain('—')
+  })
+
   it('fixpoint textual: gerar → parsear → gerar é byte-estável', () => {
     const code1 = compileStatements(
       stripIds(behaviorStatements(tiroAoAlvoExample.ir)) as JSStatement[],

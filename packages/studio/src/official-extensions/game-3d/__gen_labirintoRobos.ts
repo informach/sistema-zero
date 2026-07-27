@@ -9,7 +9,10 @@ import { collectTypes, stripIds } from '../game-3d-advanced/exampleSourceUtils'
  * perseguem o jogador e tiro por MIRA (aimAhead) no clique. ⚠️ Sob pointer lock
  * o mouse interno congela, então pickAtMouse/pointerOver são BANIDOS aqui; o
  * hitscan é aimAhead (o yaw do FPS gira o OBJETO, o aim segue a mira
- * horizontal; os robôs ficam na altura do corpo). Rode com
+ * horizontal; os robôs ficam na altura do corpo). O recomeçar zera o yaw do
+ * corpo (setRotation) e arma travaTiro = 30 quadros: o clique no botão
+ * "Recomeçar" borbulha até o listener de tiro do document e, sem a trava,
+ * disparava na mesma hora (podendo matar um robô recém-nascido). Rode com
  * `bun src/official-extensions/game-3d/__gen_labirintoRobos.ts` e cole a saída
  * em examples.ts. O drift test (`labirintoRobosExample.test.ts`) guarda o
  * resultado importando o SOURCE daqui (uma cópia só do fonte).
@@ -54,6 +57,7 @@ const robosRapidos = SZGame3D.createSwarm(cena);
 let vida = 3;
 let pontos = 0;
 let recarga = 0;
+let travaTiro = 0;
 let encostou = false;
 let rodando = true;
 function recomecar() {
@@ -69,9 +73,11 @@ function recomecar() {
   SZGame3D.spawnInSwarm(robosRapidos, moldeRapido, -6, 0, 6);
   SZGame3D.spawnInSwarm(robosRapidos, moldeRapido, 5, 0, 0);
   SZGame3D.setPosition(jogador, 0, 0, 6);
+  SZGame3D.setRotation(jogador, 0, 0, 0);
   vida = 3;
   pontos = 0;
   recarga = 0;
+  travaTiro = 30;
   document.getElementById("vida").textContent = vida;
   document.getElementById("placar").textContent = pontos;
   document.getElementById("dano").style.opacity = "0";
@@ -81,29 +87,31 @@ function recomecar() {
 recomecar();
 document.addEventListener("click", (event) => {
   if (rodando) {
-    let alvo = SZGame3D.aimAhead(cena, jogador, 30);
-    if (alvo) {
-      SZGame3D.forEachInSwarm(robosLentos, (item) => {
-        if (item === alvo) {
-          SZGame3D.removeFromSwarm(robosLentos, item);
-          pontos = pontos + 1;
-          SZGame3D.playEffect("explosion");
+    if (travaTiro <= 0) {
+      let alvo = SZGame3D.aimAhead(cena, jogador, 30);
+      if (alvo) {
+        SZGame3D.forEachInSwarm(robosLentos, (item) => {
+          if (item === alvo) {
+            SZGame3D.removeFromSwarm(robosLentos, item);
+            pontos = pontos + 1;
+            SZGame3D.playEffect("explosion");
+          }
+        });
+        SZGame3D.forEachInSwarm(robosRapidos, (item) => {
+          if (item === alvo) {
+            SZGame3D.removeFromSwarm(robosRapidos, item);
+            pontos = pontos + 2;
+            SZGame3D.playEffect("explosion");
+          }
+        });
+        document.getElementById("placar").textContent = pontos;
+        if (SZGame3D.countSwarm(robosLentos) + SZGame3D.countSwarm(robosRapidos) === 0) {
+          rodando = false;
+          document.getElementById("fim-titulo").textContent = "Você venceu!";
+          document.getElementById("final-pontos").textContent = pontos;
+          document.getElementById("fim")?.classList.add("visivel");
+          SZGame3D.playEffect("coin");
         }
-      });
-      SZGame3D.forEachInSwarm(robosRapidos, (item) => {
-        if (item === alvo) {
-          SZGame3D.removeFromSwarm(robosRapidos, item);
-          pontos = pontos + 2;
-          SZGame3D.playEffect("explosion");
-        }
-      });
-      document.getElementById("placar").textContent = pontos;
-      if (SZGame3D.countSwarm(robosLentos) + SZGame3D.countSwarm(robosRapidos) === 0) {
-        rodando = false;
-        document.getElementById("fim-titulo").textContent = "Você venceu!";
-        document.getElementById("final-pontos").textContent = pontos;
-        document.getElementById("fim")?.classList.add("visivel");
-        SZGame3D.playEffect("coin");
       }
     }
   }
@@ -122,6 +130,9 @@ document.getElementById("retry")?.addEventListener("click", (event) => {
 SZGame3D.animate(cena, () => {
   if (rodando) {
     SZGame3D.fpsControls(jogador, cena, 0.09);
+    if (travaTiro > 0) {
+      travaTiro = travaTiro - 1;
+    }
     if (recarga > 0) {
       recarga = recarga - 1;
       if (recarga === 30) {

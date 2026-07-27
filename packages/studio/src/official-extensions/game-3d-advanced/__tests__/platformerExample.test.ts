@@ -110,6 +110,12 @@ describe('Exemplo Salto nas Nuvens — drift contra o parser real', () => {
     expect(types.has('g3k:setAmbient')).toBe(true)
   })
 
+  it('nenhum texto visível usa travessão', () => {
+    expect(JSON.stringify(saltoNasNuvensExample.ir)).not.toContain('—')
+    expect(saltoNasNuvensExample.name).not.toContain('—')
+    expect(saltoNasNuvensExample.description ?? '').not.toContain('—')
+  })
+
   it('fixpoint textual: gerar → parsear → gerar é byte-estável', () => {
     const code1 = compileStatements(
       stripIds(behaviorStatements(saltoNasNuvensExample.ir)) as JSStatement[],

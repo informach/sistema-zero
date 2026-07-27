@@ -74,16 +74,41 @@ describe('Exemplo Mundo de Blocos Profissional — drift contra o parser real', 
     expect(types.has('g3k:keyPressed')).toBe(true)
   })
 
-  it('remover: modo reciclar (X alterna) com pick por molde + recycle', () => {
+  it('remover: modo reciclar (X alterna) = UM pick SEM molde + cascata isMold + recycle', () => {
     const statements = behaviorStatements(mundoDeBlocosProfissionalExample.ir)
     const types = collectTypes(statements)
-    for (const t of ['g3k:pick', 'g3k:exists', 'g3k:recycle']) {
+    for (const t of ['g3k:pick', 'g3k:isMold', 'g3k:recycle']) {
       expect(types.has(t)).toBe(true)
     }
     const raw = JSON.stringify(statements)
     for (const nome of ['"reciclar"', '"construir"']) {
       expect(raw).toContain(nome)
     }
+    // Regressão do full review (Lote C): eram TRÊS pick() por molde, e um
+    // clique reciclava até 3 blocos ATRAVÉS de oclusão (um por molde). Agora é
+    // UM pick sem molde (o primeiro sob o mouse) filtrado por isMold — herói,
+    // muralha e árvore caem no vazio.
+    const picks = [...raw.matchAll(/"type":"g3k:pick"/g)]
+    expect(picks.length).toBe(1)
+    expect(raw).toContain('"mold":""')
+  })
+
+  it('guarda de alcance: só planta com a célula a até 3 do herói (clique no céu = nada)', () => {
+    // groundPoint devolve 0 nos DOIS eixos quando o raio não corta o chão
+    // (clique no céu/acima do horizonte) — sem a guarda, nascia um bloco
+    // fantasma na origem, com som e poeira, gastando o teto de 30.
+    const statements = behaviorStatements(mundoDeBlocosProfissionalExample.ir)
+    const raw = JSON.stringify(statements)
+    expect(raw).toContain('"fn":"abs"')
+    expect(raw).toContain('"op":"<="')
+    // O alcance de 3 cobre a célula do herói e as vizinhas (grade de 2 em 2).
+    expect(raw).toContain('{"type":"num","value":3}')
+  })
+
+  it('nenhum texto visível usa travessão', () => {
+    expect(JSON.stringify(mundoDeBlocosProfissionalExample.ir)).not.toContain('—')
+    expect(mundoDeBlocosProfissionalExample.name).not.toContain('—')
+    expect(mundoDeBlocosProfissionalExample.description ?? '').not.toContain('—')
   })
 
   it('teto de blocos: o mundo lota em 200 entidades, então o exemplo limita a 30 e avisa', () => {

@@ -15,8 +15,10 @@ import { mundoDeBlocosNaMaoExample } from '../../examples/core'
  * mecânica-assinatura de COLOCAR NA FACE (Raycaster pelo CENTRO → célula do
  * bloco atingido + face.normal → célula vizinha; alcance ~6 células), remover
  * com X, tipos por teclas 1/2/3 num HUD em DOM, GERAÇÃO procedural por loops
- * (chão 16×16 + muralha + 2 árvores com tronco e copa), contagem de blocos via
- * cena.children.length e objetivo verificável: construir até TOCAR A NUVEM.
+ * (chão 16×16 + muralha + 2 árvores com tronco e copa), contagem HONESTA de
+ * "Objetos na cena" via cena.children.length (conta luzes e nuvem também, por
+ * isso o rótulo não fala "blocos") e objetivo verificável: construir até TOCAR
+ * A NUVEM.
  * O contrato: o jogo INTEIRO vira blocos do NÚCLEO (0 rawJS/rawCSS/rawHTML) e
  * o round-trip é um FIXPOINT estável, textual e de blocos.
  */
@@ -31,7 +33,7 @@ const INDEX_HTML = `<!DOCTYPE html>
 </head>
 <body>
     <canvas id="palco" width="960" height="600"></canvas>
-    <div id="painel">Bloco: <span id="tipo">grama</span> Blocos na cena: <span id="blocos">0</span></div>
+    <div id="painel">Bloco: <span id="tipo">grama</span> Objetos na cena: <span id="blocos">0</span></div>
     <div id="ajuda">Arraste para olhar. WASD anda. Espaço pula. C coloca na face. X remove. 1 grama, 2 pedra, 3 madeira. Suba até tocar a nuvem!</div>
     <div id="mira">+</div>
     <div id="aviso">Você tocou a nuvem! Aperte Enter para continuar construindo</div>
@@ -258,8 +260,8 @@ class Game {
     }
   }
   contar() {
-    const totalDeBlocos = cena.children.length;
-    document.getElementById("blocos").textContent = totalDeBlocos;
+    const totalDeObjetos = cena.children.length;
+    document.getElementById("blocos").textContent = totalDeObjetos;
   }
   verificar() {
     if (!this.venceu && camera.position.y > 10.4) {
@@ -460,8 +462,10 @@ describe('Mundo de Blocos (Clear Code 3D) — 100% blocos do núcleo', () => {
     expect(js).toContain('this.colocar("grama", x, 0, z);')
     expect(js).toContain('this.colocar("pedra", i, 1, 0);')
     expect(js).toContain('this.plantarArvore(4, 4);')
-    // Toque didático: contar os blocos da cena no HUD.
+    // Toque didático: contar os OBJETOS da cena no HUD (rótulo honesto: o
+    // cena.children.length conta luzes e nuvem também).
     expect(js).toContain('cena.children.length')
+    expect(files1['index.html']).toContain('Objetos na cena:')
   })
 
   it('IR→blocos: NENHUM bloco raw/avançado e o round-trip de blocos regenera igual', () => {

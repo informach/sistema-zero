@@ -138,6 +138,12 @@ describe('Exemplo Defesa da Torre — drift contra o parser real', () => {
     expect(parsed).toEqual(stripIds(behaviorStatements(defesaDaTorreExample.ir)) as JSStatement[])
   })
 
+  it('nenhum texto visível usa travessão', () => {
+    expect(JSON.stringify(defesaDaTorreExample.ir)).not.toContain('—')
+    expect(defesaDaTorreExample.name).not.toContain('—')
+    expect(defesaDaTorreExample.description ?? '').not.toContain('—')
+  })
+
   it('fixpoint textual: gerar → parsear → gerar é byte-estável', () => {
     const code1 = compileStatements(
       stripIds(behaviorStatements(defesaDaTorreExample.ir)) as JSStatement[],

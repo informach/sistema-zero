@@ -98,6 +98,7 @@ interface Api {
   pkmGive: Fn
   pkmBattleWild: Fn
   pkmTeamSize: () => number
+  pkmBallCount: () => number
   pkmCaught: () => boolean
   missionKill: Fn
   tileAt: (map: string, x: number, y: number) => number
@@ -1818,6 +1819,140 @@ describe('gk — playthrough mínimo: Batalha de Monstrinhos Profissional (rede 
     expect(h.api.state()).toBe('vitoria')
     expect(h.api.pkmCaught()).toBe(true)
     expect(h.api.pkmTeamSize()).toBe(4) // o lendário ENTROU para o time
+  })
+
+  it('⭐ regressão: queimar as 5 bolas não tranca a vitória — a fonte repõe 3 e a captura sai', async () => {
+    // O review provou o softlock com um playthrough temporário: a captura é a
+    // ÚNICA vitória e, sem reposição, 5 bolas falhadas (lendário difícil =
+    // ~11-32% por arremesso) tornavam vencer IMPOSSÍVEL para sempre. Este é o
+    // mesmo roteiro INVERTIDO como regressão permanente.
+    const h = loadRuntime()
+    await bootBatalha(h)
+    let tick = 0
+    // Anda até o meio do mato fundo (overlapPercent > 50).
+    h.fire('keydown', { key: 'ArrowRight' })
+    for (let i = 0; i < 48; i++) h.nextFrame(++tick * 50)
+    h.fire('keyup', { key: 'ArrowRight' })
+    expect(h.api.pkmBallCount()).toBe(5)
+
+    const realRandom = Math.random
+    try {
+      // Sorte BAIXA só para o encontro nascer no próximo tique do mato.
+      Math.random = () => 0.001
+      for (let i = 0; i < 80 && h.api.state() === 'jogando'; i++) h.nextFrame(++tick * 50)
+      expect(h.api.state()).toBe('batalha')
+
+      // Sorte 0,9: a bola SEMPRE falha (~10,8%), o Trovão de Fogo (90) SEMPRE
+      // erra e a Brasa (95) SEMPRE acerta. ↓+ESPAÇO escolhe "Bola" (índice 1)
+      // até a mochila ZERAR.
+      Math.random = () => 0.9
+      for (let i = 0; i < 600 && h.api.pkmBallCount() > 0; i++) {
+        h.fire('keydown', { key: 'ArrowDown' })
+        h.fire('keydown', { key: ' ' })
+        h.nextFrame(++tick * 50)
+      }
+      expect(h.api.pkmBallCount()).toBe(0)
+
+      // Sem bola no menu, ESPAÇO puro = Lutar → Brasa até a batalha ACABAR
+      // (vitória por nocaute; o pátio volta com a mochila ainda vazia).
+      for (let i = 0; i < 900 && h.api.state() === 'batalha'; i++) {
+        h.fire('keydown', { key: ' ' })
+        h.nextFrame(++tick * 50)
+      }
+      // Solta as teclas marteladas na batalha, senão o pátio anda sozinho.
+      h.fire('keyup', { key: ' ' })
+      h.fire('keyup', { key: 'ArrowDown' })
+      expect(h.api.state()).toBe('jogando')
+      expect(h.api.pkmBallCount()).toBe(0)
+
+      // Pré-fix, este era o fim da linha. Agora a fonte cura E repõe 3 bolas.
+      // Do mato (x≈716, y≈420) até a fonte (região 50..180 × 40..150).
+      h.fire('keydown', { key: 'ArrowLeft' })
+      for (let i = 0; i < 53; i++) h.nextFrame(++tick * 50)
+      h.fire('keyup', { key: 'ArrowLeft' })
+      h.fire('keydown', { key: 'ArrowUp' })
+      for (let i = 0; i < 32; i++) h.nextFrame(++tick * 50)
+      h.fire('keyup', { key: 'ArrowUp' })
+      for (let i = 0; i < 40; i++) h.nextFrame(++tick * 50) // tique de 1,5s da cura
+      expect(h.api.pkmBallCount()).toBe(3)
+
+      // Volta ao mato fundo e captura com sorte baixa: a vitória VOLTOU.
+      Math.random = () => 0.001
+      h.fire('keydown', { key: 'ArrowRight' })
+      for (let i = 0; i < 55; i++) h.nextFrame(++tick * 50)
+      h.fire('keyup', { key: 'ArrowRight' })
+      h.fire('keydown', { key: 'ArrowDown' })
+      for (let i = 0; i < 35; i++) h.nextFrame(++tick * 50)
+      h.fire('keyup', { key: 'ArrowDown' })
+      for (let i = 0; i < 80 && h.api.state() === 'jogando'; i++) h.nextFrame(++tick * 50)
+      expect(h.api.state()).toBe('batalha')
+      for (let i = 0; i < 400 && h.api.state() !== 'vitoria'; i++) {
+        h.fire('keydown', { key: 'ArrowDown' })
+        h.fire('keydown', { key: ' ' })
+        h.nextFrame(++tick * 50)
+      }
+    } finally {
+      Math.random = realRandom
+    }
+    expect(h.api.state()).toBe('vitoria')
+    expect(h.api.pkmCaught()).toBe(true)
+  })
+
+  it('⭐ regressão: time desmaiado não vira spam de fala no mato; a fonte reabre o encontro', async () => {
+    const h = loadRuntime()
+    await bootBatalha(h)
+    let tick = 0
+    h.fire('keydown', { key: 'ArrowRight' })
+    for (let i = 0; i < 48; i++) h.nextFrame(++tick * 50)
+    h.fire('keyup', { key: 'ArrowRight' })
+
+    const realRandom = Math.random
+    try {
+      Math.random = () => 0.001
+      for (let i = 0; i < 80 && h.api.state() === 'jogando'; i++) h.nextFrame(++tick * 50)
+      expect(h.api.state()).toBe('batalha')
+
+      // Sorte 0,5: ↓+ESPAÇO nunca ataca (Bola falha → Trocar troca → Fugir
+      // falha em 50) enquanto o Trovão de Fogo SEMPRE acerta: o time inteiro
+      // desmaia e a batalha termina em derrota.
+      Math.random = () => 0.5
+      for (let i = 0; i < 1500 && h.api.state() === 'batalha'; i++) {
+        h.fire('keydown', { key: 'ArrowDown' })
+        h.fire('keydown', { key: ' ' })
+        h.nextFrame(++tick * 50)
+      }
+      // Solta as teclas marteladas na batalha, senão o pátio anda sozinho.
+      h.fire('keyup', { key: ' ' })
+      h.fire('keyup', { key: 'ArrowDown' })
+      expect(h.api.state()).toBe('jogando')
+
+      // Parado no MESMO mato com sorte que sortearia encontro todo tique:
+      // nada de batalha e nada do aviso repetido (o gate timeCaido segura).
+      Math.random = () => 0.001
+      texts = []
+      for (let i = 0; i < 100; i++) h.nextFrame(++tick * 50)
+      expect(h.api.state()).toBe('jogando')
+      expect(texts.some((t) => t.text.includes('monstrinho em pé'))).toBe(false)
+
+      // A fonte cura o time (e zera o gate); o mato volta a sortear encontro.
+      h.fire('keydown', { key: 'ArrowLeft' })
+      for (let i = 0; i < 53; i++) h.nextFrame(++tick * 50)
+      h.fire('keyup', { key: 'ArrowLeft' })
+      h.fire('keydown', { key: 'ArrowUp' })
+      for (let i = 0; i < 32; i++) h.nextFrame(++tick * 50)
+      h.fire('keyup', { key: 'ArrowUp' })
+      for (let i = 0; i < 40; i++) h.nextFrame(++tick * 50)
+      h.fire('keydown', { key: 'ArrowRight' })
+      for (let i = 0; i < 55; i++) h.nextFrame(++tick * 50)
+      h.fire('keyup', { key: 'ArrowRight' })
+      h.fire('keydown', { key: 'ArrowDown' })
+      for (let i = 0; i < 35; i++) h.nextFrame(++tick * 50)
+      h.fire('keyup', { key: 'ArrowDown' })
+      for (let i = 0; i < 80 && h.api.state() === 'jogando'; i++) h.nextFrame(++tick * 50)
+      expect(h.api.state()).toBe('batalha')
+    } finally {
+      Math.random = realRandom
+    }
   })
 })
 

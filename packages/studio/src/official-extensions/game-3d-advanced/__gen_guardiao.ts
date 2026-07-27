@@ -13,7 +13,7 @@ import { collectTypes, stripIds } from './exampleSourceUtils'
 export const GUARDIAO_SOURCE = `
 SZGameKit3D.setup({ width: 1280, height: 720, world: 60, sky: "#082f49", ground: "#134e4a" });
 SZGameKit3D.setEffects({ shadows: true, bloom: true, strength: 1.2, vignette: true });
-SZGameKit3D.setScreenText("menu", "Guardião do Portal", "Segure os invasores por 30 segundos! Fale com eles, tremam as pedras — e o acaso é sempre o mesmo, por causa da semente.", "Guardar");
+SZGameKit3D.setScreenText("menu", "Guardião do Portal", "Segure os invasores por 30 segundos! Fale com eles, tremam as pedras. E o acaso é sempre o mesmo, por causa da semente.", "Guardar");
 SZGameKit3D.setScreenText("vitoria", "O portal resistiu!", "Você segurou até o fim.", "Guardar de novo");
 SZGameKit3D.setScreenText("fim", "O portal caiu...", "Os invasores passaram.", "Tentar de novo");
 SZGameKit3D.defineMold("portal", { health: 100, speed: 0 }, function () {
