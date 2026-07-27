@@ -5628,6 +5628,59 @@ export const valeEnsolaradoExample: ExtensionExample = beginnerGameExample({
                   groupVar: 'chao',
                 },
                 {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'g2d:centerY',
+                      spriteVar: 'heroi',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 300,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g2d:changeHealth',
+                      spriteVar: 'heroi',
+                      delta: {
+                        type: 'num',
+                        value: -1,
+                      },
+                    },
+                    {
+                      type: 'g2d:setPosition',
+                      spriteVar: 'heroi',
+                      x: {
+                        type: 'num',
+                        value: 60,
+                      },
+                      y: {
+                        type: 'num',
+                        value: 150,
+                      },
+                    },
+                    {
+                      type: 'memberSet',
+                      object: {
+                        type: 'var',
+                        name: 'heroi',
+                      },
+                      name: 'vy',
+                      value: {
+                        type: 'num',
+                        value: 0,
+                      },
+                    },
+                    {
+                      type: 'g2d:playFx',
+                      fx: 'hurt',
+                    },
+                  ],
+                },
+                {
                   type: 'g2d:updateEnemyType',
                   typeVar: 'gambas',
                   ctxVar: 'ctx',

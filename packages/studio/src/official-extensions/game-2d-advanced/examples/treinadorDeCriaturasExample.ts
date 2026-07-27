@@ -767,7 +767,7 @@ export const treinadorDeCriaturasExample: ExtensionExample = {
             },
             {
               type: 'gk:rpgCreateNpc',
-              name: 'Aldea',
+              name: 'Aldeã',
               cx: { type: 'num', value: 8 },
               cy: { type: 'num', value: 5 },
               image: '',
@@ -888,7 +888,7 @@ export const treinadorDeCriaturasExample: ExtensionExample = {
         },
         {
           type: 'gk:rpgOnTalk',
-          npc: 'Aldea',
+          npc: 'Aldeã',
           body: [
             {
               type: 'gk:rpgSay',
@@ -896,7 +896,7 @@ export const treinadorDeCriaturasExample: ExtensionExample = {
                 type: 'str',
                 value: 'Ei, treinador! Você viu a minha criatura? Ela fugiu para a grama alta.',
               },
-              speaker: { type: 'str', value: 'Aldea' },
+              speaker: { type: 'str', value: 'Aldeã' },
             },
           ],
         },

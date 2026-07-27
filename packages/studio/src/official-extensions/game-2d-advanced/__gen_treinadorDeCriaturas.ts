@@ -163,7 +163,7 @@ SZGameKit.on("monstrinho:pegou", function () {
 SZGameKit.rpgOnEnterMap("cidade", function () {
   SZGameKit.rpgCreateNpc("Professor", 4, 3, "", "professor");
   SZGameKit.rpgCreateNpc("Idoso", 14, 4, "", "idoso");
-  SZGameKit.rpgCreateNpc("Aldea", 8, 5, "", "aldea");
+  SZGameKit.rpgCreateNpc("Aldeã", 8, 5, "", "aldea");
   SZGameKit.rpgCreateNpc("Enfermeira", 3, 12, "", "enfermeira");
   SZGameKit.rpgBlockCell(4, 2);
   SZGameKit.rpgBlockCell(14, 3);
@@ -188,8 +188,8 @@ SZGameKit.rpgOnTalk("Professor", function () {
 SZGameKit.rpgOnTalk("Idoso", function () {
   SZGameKit.rpgSay("Meus ossos doem. No meu tempo, fogo vencia planta e água apagava o fogo!", "Idoso");
 });
-SZGameKit.rpgOnTalk("Aldea", function () {
-  SZGameKit.rpgSay("Ei, treinador! Você viu a minha criatura? Ela fugiu para a grama alta.", "Aldea");
+SZGameKit.rpgOnTalk("Aldeã", function () {
+  SZGameKit.rpgSay("Ei, treinador! Você viu a minha criatura? Ela fugiu para a grama alta.", "Aldeã");
 });
 SZGameKit.rpgOnTalk("Enfermeira", function () {
   SZGameKit.rpgSay("Deixe suas criaturas descansarem. Prontas de novo!", "Enfermeira");

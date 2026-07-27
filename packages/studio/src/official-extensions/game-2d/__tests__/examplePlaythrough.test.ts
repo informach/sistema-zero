@@ -1578,6 +1578,21 @@ describe('playthrough dos exemplos exatos do Jogo 2D', () => {
     game.nextFrame()
     expect(heroi?.y ?? 0).toBeLessThan(antesDoPulo)
 
+    // Cair no poço do chão (a lacuna de 60px entre x340 e x400) NÃO trava o jogo:
+    // o herói perde um coração e respawna no começo do vale, em vez de despencar
+    // pra sempre. Regressão do soft-lock achado no full review R3+R4 — sem o
+    // tratador de queda, heroi.y cresceria sem limite e este teste falharia.
+    if (heroi) {
+      heroi.x = 360
+      heroi.y = 236
+      heroi.vy = 0
+    }
+    const vidaAntesDaQueda = heroi?.hp ?? 0
+    for (let frame = 0; frame < 40; frame += 1) game.nextFrame()
+    expect((heroi?.y ?? 999) + (heroi?.h ?? 0)).toBeLessThanOrEqual(270)
+    expect(heroi?.x ?? 999).toBeLessThan(340)
+    expect(heroi?.hp ?? 0).toBe(vidaAntesDaQueda - 1)
+
     // Juntar as 6 gemas: teletransporta o herói para cima de cada gema.
     for (let found = 0; found < 6; found += 1) {
       const gema = gemas?.items[0]

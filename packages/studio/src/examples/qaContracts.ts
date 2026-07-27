@@ -956,7 +956,8 @@ export const EXAMPLE_QA_CONTRACTS = [
     key: 'core:Treinador de Criaturas (na mão)',
     name: 'Treinador de Criaturas (na mão)',
     experience: 'game',
-    promise: 'O jogo estilo pokemon feito só com o núcleo: explorar o mapa e batalhar por turnos.',
+    promise:
+      'O jogo estilo caça-monstrinhos feito só com o núcleo: explorar o mapa e batalhar por turnos.',
     scenario:
       'Andar com A/W/S/D, falar com o morador no espaço, entrar no mato, batalhar com as setas e Enter, vencer ou perder.',
     interactions: ['start', 'wasd', 'space', 'arrows'],

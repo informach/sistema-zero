@@ -132,9 +132,9 @@ describe('Exemplo Treinador de Criaturas Profissional — drift contra o parser 
     expect(types.has('gk:pkmGive')).toBe(true)
     expect(types.has('gk:pkmGiveBall')).toBe(true)
     expect(types.has('gk:pkmHealTeam')).toBe(true)
-    // 4 aldeões conversáveis (Professor/Idoso/Aldea/Enfermeira).
+    // 4 aldeões conversáveis (Professor/Idoso/Aldeã/Enfermeira).
     const npcs = collectStatements(statements, 'gk:rpgCreateNpc') as Array<{ name: string }>
-    expect(npcs.map((n) => n.name).sort()).toEqual(['Aldea', 'Enfermeira', 'Idoso', 'Professor'])
+    expect(npcs.map((n) => n.name).sort()).toEqual(['Aldeã', 'Enfermeira', 'Idoso', 'Professor'])
   })
 
   it('⭐ as zonas de batalha do original viram grama + criaturas selvagens', () => {

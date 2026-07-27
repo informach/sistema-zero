@@ -33,6 +33,10 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  *   dano do original.
  * - PERDER: ficar sem corações (as 3 vidas do original). VENCER: juntar as 6
  *   gemas. Telas de início/vitória/derrota com reinício por Enter.
+ * - POÇO: o chão tem uma lacuna (como os buracos do original). Cair nela NÃO
+ *   trava o jogo — o herói perde 1 coração e volta ao começo do vale (respawn),
+ *   igual ao degrau Profissional (gk). Sem isso, andar pelo chão e cair na
+ *   lacuna prendia a partida (nem vencia, nem morria, nem reiniciava).
  * - 100% procedural (formas e cores, sem tilemap nem PNGs).
  */
 export const VALE_ENSOLARADO_SOURCE = `
@@ -122,6 +126,13 @@ SZGame2D.gameLoop(function update() {
     SZGame2D.arrowsX(heroi, 3);
     SZGame2D.applyVelocity(heroi);
     SZGame2D.collideGroup(heroi, chao);
+    if (SZGame2D.centerY(heroi) > 300) {
+      SZGame2D.changeHealth(heroi, -1);
+      heroi.x = 60;
+      heroi.y = 150;
+      heroi.vy = 0;
+      SZGame2D.playFx("hurt");
+    }
     SZGame2D.updateEnemyType(gambas, ctx, heroi);
     SZGame2D.forEachInGroup(gambas, (gamba) => {
       SZGame2D.collideGroup(gamba, chao);
