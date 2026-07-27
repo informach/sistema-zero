@@ -4680,7 +4680,7 @@ export const patrulhaEspacialExample: ExtensionExample = {
               {
                 type: 'element',
                 tag: 'h1',
-                text: 'A nave bateu!',
+                text: 'A nave encostou!',
               },
               {
                 type: 'element',
@@ -5250,6 +5250,14 @@ export const patrulhaEspacialExample: ExtensionExample = {
             {
               type: 'assign',
               name: 'inclinacao',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'relogio',
               value: {
                 type: 'num',
                 value: 0,
@@ -5861,6 +5869,14 @@ export const patrulhaEspacialExample: ExtensionExample = {
                       ],
                     },
                     {
+                      type: 'var',
+                      name: 'ativo',
+                      value: {
+                        type: 'bool',
+                        value: true,
+                      },
+                    },
+                    {
                       type: 'g3d:forEachInSwarm',
                       swarmVar: 'tiros',
                       itemName: 'tiro',
@@ -5868,49 +5884,66 @@ export const patrulhaEspacialExample: ExtensionExample = {
                         {
                           type: 'if',
                           cond: {
-                            type: 'g3d:collides',
-                            aVar: 'tiro',
-                            bVar: 'meteoro',
+                            type: 'var',
+                            name: 'ativo',
                           },
                           then: [
                             {
-                              type: 'g3d:removeFromSwarm',
-                              swarmVar: 'meteoros',
-                              itemVar: 'meteoro',
-                            },
-                            {
-                              type: 'g3d:removeFromSwarm',
-                              swarmVar: 'tiros',
-                              itemVar: 'tiro',
-                            },
-                            {
-                              type: 'assign',
-                              name: 'pontos',
-                              value: {
-                                type: 'binop',
-                                op: '+',
-                                left: {
-                                  type: 'var',
+                              type: 'if',
+                              cond: {
+                                type: 'g3d:collides',
+                                aVar: 'tiro',
+                                bVar: 'meteoro',
+                              },
+                              then: [
+                                {
+                                  type: 'g3d:removeFromSwarm',
+                                  swarmVar: 'meteoros',
+                                  itemVar: 'meteoro',
+                                },
+                                {
+                                  type: 'g3d:removeFromSwarm',
+                                  swarmVar: 'tiros',
+                                  itemVar: 'tiro',
+                                },
+                                {
+                                  type: 'assign',
                                   name: 'pontos',
+                                  value: {
+                                    type: 'binop',
+                                    op: '+',
+                                    left: {
+                                      type: 'var',
+                                      name: 'pontos',
+                                    },
+                                    right: {
+                                      type: 'num',
+                                      value: 1,
+                                    },
+                                  },
                                 },
-                                right: {
-                                  type: 'num',
-                                  value: 1,
+                                {
+                                  type: 'g3d:playEffect',
+                                  kind: 'hit',
                                 },
-                              },
-                            },
-                            {
-                              type: 'g3d:playEffect',
-                              kind: 'hit',
-                            },
-                            {
-                              type: 'setProperty',
-                              targetId: 'pontos',
-                              property: 'textContent',
-                              value: {
-                                type: 'var',
-                                name: 'pontos',
-                              },
+                                {
+                                  type: 'setProperty',
+                                  targetId: 'pontos',
+                                  property: 'textContent',
+                                  value: {
+                                    type: 'var',
+                                    name: 'pontos',
+                                  },
+                                },
+                                {
+                                  type: 'assign',
+                                  name: 'ativo',
+                                  value: {
+                                    type: 'bool',
+                                    value: false,
+                                  },
+                                },
+                              ],
                             },
                           ],
                         },
@@ -5988,6 +6021,14 @@ export const patrulhaEspacialExample: ExtensionExample = {
                       ],
                     },
                     {
+                      type: 'var',
+                      name: 'ativo',
+                      value: {
+                        type: 'bool',
+                        value: true,
+                      },
+                    },
+                    {
                       type: 'g3d:forEachInSwarm',
                       swarmVar: 'tiros',
                       itemName: 'tiro',
@@ -5995,49 +6036,66 @@ export const patrulhaEspacialExample: ExtensionExample = {
                         {
                           type: 'if',
                           cond: {
-                            type: 'g3d:collides',
-                            aVar: 'tiro',
-                            bVar: 'meteoro',
+                            type: 'var',
+                            name: 'ativo',
                           },
                           then: [
                             {
-                              type: 'g3d:removeFromSwarm',
-                              swarmVar: 'meteorosRapidos',
-                              itemVar: 'meteoro',
-                            },
-                            {
-                              type: 'g3d:removeFromSwarm',
-                              swarmVar: 'tiros',
-                              itemVar: 'tiro',
-                            },
-                            {
-                              type: 'assign',
-                              name: 'pontos',
-                              value: {
-                                type: 'binop',
-                                op: '+',
-                                left: {
-                                  type: 'var',
+                              type: 'if',
+                              cond: {
+                                type: 'g3d:collides',
+                                aVar: 'tiro',
+                                bVar: 'meteoro',
+                              },
+                              then: [
+                                {
+                                  type: 'g3d:removeFromSwarm',
+                                  swarmVar: 'meteorosRapidos',
+                                  itemVar: 'meteoro',
+                                },
+                                {
+                                  type: 'g3d:removeFromSwarm',
+                                  swarmVar: 'tiros',
+                                  itemVar: 'tiro',
+                                },
+                                {
+                                  type: 'assign',
                                   name: 'pontos',
+                                  value: {
+                                    type: 'binop',
+                                    op: '+',
+                                    left: {
+                                      type: 'var',
+                                      name: 'pontos',
+                                    },
+                                    right: {
+                                      type: 'num',
+                                      value: 2,
+                                    },
+                                  },
                                 },
-                                right: {
-                                  type: 'num',
-                                  value: 2,
+                                {
+                                  type: 'g3d:playEffect',
+                                  kind: 'hit',
                                 },
-                              },
-                            },
-                            {
-                              type: 'g3d:playEffect',
-                              kind: 'hit',
-                            },
-                            {
-                              type: 'setProperty',
-                              targetId: 'pontos',
-                              property: 'textContent',
-                              value: {
-                                type: 'var',
-                                name: 'pontos',
-                              },
+                                {
+                                  type: 'setProperty',
+                                  targetId: 'pontos',
+                                  property: 'textContent',
+                                  value: {
+                                    type: 'var',
+                                    name: 'pontos',
+                                  },
+                                },
+                                {
+                                  type: 'assign',
+                                  name: 'ativo',
+                                  value: {
+                                    type: 'bool',
+                                    value: false,
+                                  },
+                                },
+                              ],
                             },
                           ],
                         },

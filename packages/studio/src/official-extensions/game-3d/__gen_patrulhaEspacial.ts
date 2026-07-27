@@ -75,6 +75,7 @@ document.getElementById("retry")?.addEventListener("click", (event) => {
   });
   naveX = 0;
   inclinacao = 0;
+  relogio = 0;
   velocidade = 0.14;
   recarga = 0;
   tempo = 0;
@@ -133,13 +134,17 @@ SZGame3D.animate(cena, () => {
       if (SZGame3D.isNear(nave, meteoro, 1.5)) {
         encostou = true;
       }
+      let ativo = true;
       SZGame3D.forEachInSwarm(tiros, (tiro) => {
-        if (SZGame3D.collides(tiro, meteoro)) {
-          SZGame3D.removeFromSwarm(meteoros, meteoro);
-          SZGame3D.removeFromSwarm(tiros, tiro);
-          pontos = pontos + 1;
-          SZGame3D.playEffect("hit");
-          document.getElementById("pontos").textContent = pontos;
+        if (ativo) {
+          if (SZGame3D.collides(tiro, meteoro)) {
+            SZGame3D.removeFromSwarm(meteoros, meteoro);
+            SZGame3D.removeFromSwarm(tiros, tiro);
+            pontos = pontos + 1;
+            SZGame3D.playEffect("hit");
+            document.getElementById("pontos").textContent = pontos;
+            ativo = false;
+          }
         }
       });
     });
@@ -150,13 +155,17 @@ SZGame3D.animate(cena, () => {
       if (SZGame3D.isNear(nave, meteoro, 1.2)) {
         encostou = true;
       }
+      let ativo = true;
       SZGame3D.forEachInSwarm(tiros, (tiro) => {
-        if (SZGame3D.collides(tiro, meteoro)) {
-          SZGame3D.removeFromSwarm(meteorosRapidos, meteoro);
-          SZGame3D.removeFromSwarm(tiros, tiro);
-          pontos = pontos + 2;
-          SZGame3D.playEffect("hit");
-          document.getElementById("pontos").textContent = pontos;
+        if (ativo) {
+          if (SZGame3D.collides(tiro, meteoro)) {
+            SZGame3D.removeFromSwarm(meteorosRapidos, meteoro);
+            SZGame3D.removeFromSwarm(tiros, tiro);
+            pontos = pontos + 2;
+            SZGame3D.playEffect("hit");
+            document.getElementById("pontos").textContent = pontos;
+            ativo = false;
+          }
         }
       });
     });

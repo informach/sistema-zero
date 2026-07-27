@@ -555,8 +555,8 @@ export const EXAMPLE_QA_CONTRACTS = [
     experience: 'game',
     promise: 'Destruir vinte meteoros que brilham antes de explodir, numa chuva que acelera.',
     scenario:
-      'Começar, andar com A/D ou setas, atirar com espaço, ver a morte dramática, bater três vezes e vencer.',
-    interactions: ['wasd', 'arrows', 'space'],
+      'Patrulhar pelo botão, andar com A/D ou setas, atirar com espaço, ver a morte dramática, encostar três vezes e vencer.',
+    interactions: ['click', 'wasd', 'arrows', 'space'],
   },
   {
     key: 'game-3d-advanced:Labirinto dos Robôs Profissional',

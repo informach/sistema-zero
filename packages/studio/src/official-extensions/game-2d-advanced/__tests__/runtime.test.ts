@@ -2833,6 +2833,30 @@ describe('SZGameKit — R11: física geral (gravidade, chão, colisão sólida)'
     expect(h.api.cooldownReady(outro, 0.2)).toBe(true)
   })
 
+  it('recarga é prazo ABSOLUTO: esperar entre tiros destrava mesmo SEM chamar no meio', async () => {
+    // Regressão do fix do Lote D. A receita canônica é edge-trigger ("se
+    // keyPressed(' ') e cooldownReady(nave, 0.2)"): a criança APERTA, SOLTA,
+    // espera e aperta de novo — ou seja, cooldownReady NÃO é chamado enquanto o
+    // botão está solto. A versão antiga descontava currentDt só nas chamadas, então
+    // a espera com o botão solto não contava e o 2º tiro ficava travado.
+    const h = loadRuntime()
+    await startGame(h)
+    h.api.setState('jogando')
+    const c = h.api.createCharacter({ w: 32, h: 32 })
+    h.clock.value = 0
+    h.nextFrame(0)
+    expect(h.api.cooldownReady(c, 0.2)).toBe(true) // aperta: arma a recarga de 0,2 s
+    expect(h.api.cooldownReady(c, 0.2)).toBe(false) // no mesmo instante: recarregando
+    // Passa ~0,4 s de JOGO em quadros SEM chamar cooldownReady no meio (botão solto).
+    for (let i = 1; i <= 5; i++) {
+      h.clock.value = i * 80
+      h.nextFrame(i * 80)
+    }
+    // A espera REAL contou (playTime avançou): o próximo aperto dispara. Com a
+    // versão por-chamada, o _cd nunca teria decrementado e isto seria false.
+    expect(h.api.cooldownReady(c, 0.2)).toBe(true)
+  })
+
   it('quicar nas bordas inverte a velocidade (breakout/pong)', async () => {
     const h = loadRuntime()
     h.api.setup({ width: 400, height: 300 })

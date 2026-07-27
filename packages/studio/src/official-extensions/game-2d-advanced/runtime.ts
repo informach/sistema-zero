@@ -439,6 +439,12 @@ ${gameRuntimeDomains}
           combatants[ci]._iFrames = 0;
           combatants[ci]._pushX = 0;
           combatants[ci]._pushY = 0;
+          // Recarga do tiro/golpe é prazo ABSOLUTO em playTime, que acaba de
+          // zerar acima. Um personagem que SOBREVIVE ao recomeço (fluxo sem
+          // factory) guardaria um _cd no futuro e travaria o 1º tiro; zerar
+          // aqui reabre a partida nova. No fluxo canônico (managedProjectRun) o
+          // personagem nasce de novo com _cd:0, mas zerar não custa nada.
+          combatants[ci]._cd = 0;
         }
         combatants.length = 0;
         // Zera os golpes de ação em voo (senão um golpe do jogo anterior "toca").
