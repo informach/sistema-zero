@@ -39,7 +39,7 @@ Não há achados abertos no escopo desta revisão.
 - dez fragmentos que compõem o runtime injetado;
 - definição → Blockly → IR → JavaScript → parser → workspace state;
 - manifesto, permissões, documentação do aluno e contexto da IA;
-- 16 exemplos, assets, classificação pedagógica e execução no Chromium;
+- 18 exemplos, assets, classificação pedagógica e execução no Chromium;
 - ciclo de vida, pausa, reinício, câmera, grupos, colisões, áudio, DPR,
   segurança, desempenho e tratamento de erros;
 - testes da extensão e integrações externas de Blockly/parser.

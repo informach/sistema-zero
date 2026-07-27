@@ -5,7 +5,9 @@ import {
   animatedHeroExample,
   asteroidsClassicExample,
   asteroidsExample,
+  aventuraHeroiExample,
   balloonExample,
+  batalhaMonstrinhosExample,
   cameraAdventureExample,
   catchCoinExample,
   codeDrawnExample,
@@ -108,7 +110,13 @@ function exampleHarness(example: ExtensionExample, random: () => number = Math.r
   const documentObject = {
     hidden: false,
     title: example.name,
-    addEventListener() {},
+    // O evento GENÉRICO de teclado do núcleo registra em document (o do g2d
+    // registra em window) — os dois caem no MESMO mapa, e fireKey alcança ambos.
+    addEventListener(name: string, listener: Listener) {
+      const group = listeners.get(name) ?? []
+      group.push(listener)
+      listeners.set(name, group)
+    },
     removeEventListener() {},
     getElementById(id: string) {
       return nodesById.get(id) ?? null
@@ -891,6 +899,161 @@ describe('playthrough dos exemplos exatos do Jogo 2D', () => {
     expect(coins?.items).toHaveLength(0)
     expect(game.scores['Moedas:']).toBe(4)
     expect(game.api.cameraX()).toBeGreaterThan(0)
+    expect(game.errors).toEqual([])
+    expect(game.warnings).toEqual([])
+  })
+
+  it('Batalha de Monstrinhos trava os comandos, aplica a vantagem, alterna turnos e clampa a cura', () => {
+    // random fixo 0,5: randomChance(60) é true → o rival sempre usa o Chicote (-3).
+    const game = exampleHarness(batalhaMonstrinhosExample, () => 0.5)
+    const [meu, rival] = game.sprites
+    expect(meu?.hp).toBe(20)
+    expect(rival?.hp).toBe(20)
+    expect(game.api.sceneIs('inicio')).toBe(true)
+    game.fireKey('Enter')
+    expect(game.api.sceneIs('jogando')).toBe(true)
+
+    // Antes do "Depois de 2 segundos" (one-shot), o menu está TRAVADO.
+    game.fireKey('1')
+    game.fireKey('1', 'keyup')
+    game.nextFrame()
+    expect(rival?.hp).toBe(20)
+
+    // ~2,2s depois o afterSeconds libera o turno do jogador.
+    for (let frame = 0; frame < 130; frame += 1) game.nextFrame()
+    game.fireKey('1')
+    game.fireKey('1', 'keyup')
+    game.nextFrame()
+    // Faísca: fogo contra planta = forca(4) × 2 = 8 de dano.
+    expect(rival?.hp).toBe(12)
+
+    // A vez do rival: a raiz "A cada 1,5s" devolve o golpe e o turno.
+    for (let frame = 0; frame < 100; frame += 1) game.nextFrame()
+    expect(meu?.hp).toBe(17)
+
+    // Poção: cura "até 5" mas o runtime CLAMPA no máximo (17 + 5 → 20).
+    game.fireKey('3')
+    game.fireKey('3', 'keyup')
+    game.nextFrame()
+    expect(meu?.hp).toBe(20)
+
+    // Mais dois golpes de fogo encerram a batalha: 12 → 4 → 0.
+    for (let frame = 0; frame < 100; frame += 1) game.nextFrame()
+    game.fireKey('1')
+    game.fireKey('1', 'keyup')
+    game.nextFrame()
+    expect(rival?.hp).toBe(4)
+    for (let frame = 0; frame < 100; frame += 1) game.nextFrame()
+    game.fireKey('1')
+    game.fireKey('1', 'keyup')
+    game.nextFrame()
+    expect(rival?.hp).toBe(0)
+    expect(game.api.sceneIs('vitoria')).toBe(true)
+
+    // Enter reinicia limpo (e o afterSeconds re-arma junto).
+    game.fireKey('Enter', 'keyup')
+    game.fireKey('Enter')
+    game.nextFrame()
+    expect(game.api.sceneIs('inicio')).toBe(true)
+    const restartedRival = game.sprites.at(-1)
+    expect(restartedRival?.hp).toBe(20)
+    expect(game.errors).toEqual([])
+    expect(game.warnings).toEqual([])
+  })
+
+  it('Aventura do Herói anda com câmera, corta o mato, fere com a espada temporária e conclui', () => {
+    const game = exampleHarness(aventuraHeroiExample)
+    const hero = game.sprites[0]
+    const cenario = game.groups[0]
+    const golpes = game.groups[1]
+    const guarda = game.enemyTypes[0]
+    expect(hero).toBeDefined()
+    expect(guarda?.items).toHaveLength(4)
+    // O herói entra no MESMO grupo das árvores (drawGroupByY ordena os dois).
+    expect(cenario?.items).toHaveLength(7)
+    expect(cenario?.items[0]).toBe(hero as CapturedSprite)
+
+    game.fireKey('Enter')
+    expect(game.api.sceneIs('jogando')).toBe(true)
+    const startX = hero?.x ?? 0
+    game.fireKey('ArrowRight')
+    for (let frame = 0; frame < 3; frame += 1) game.nextFrame()
+    game.fireKey('ArrowRight', 'keyup')
+    expect(hero?.x).toBeGreaterThan(startX)
+    // Mundo maior que a tela: a câmera já rolou.
+    expect(game.api.cameraX()).toBeGreaterThan(0)
+
+    // Espada temporária: nasce no espaço e o pruneOld (0,3s) some com ela.
+    game.fireKey('Space')
+    game.fireKey('Space', 'keyup')
+    expect(golpes?.items).toHaveLength(1)
+    for (let frame = 0; frame < 30; frame += 1) game.nextFrame()
+    expect(golpes?.items).toHaveLength(0)
+
+    // Mato destrutível: golpe em cima da peça 2 quebra o tile e dá 1 ponto.
+    if (hero) {
+      hero.x = 289
+      hero.y = 690
+    }
+    game.fireKey('Space')
+    game.fireKey('Space', 'keyup')
+    game.nextFrame()
+    expect(game.scores['Pontos:']).toBe(1)
+
+    // Contato com o guardião: hurtByEnemy com i-frames (piscar).
+    const enemy = guarda?.items[0]
+    if (enemy && hero) {
+      enemy.x = hero.x
+      enemy.y = hero.y
+    }
+    game.nextFrame()
+    expect(hero?.hp).toBe(5)
+    expect(hero?.blinkFrames ?? 0).toBeGreaterThan(0)
+    // Enquanto pisca, o contato contínuo NÃO drena a vida.
+    game.nextFrame()
+    expect(hero?.hp).toBe(5)
+
+    // A espada fere o guardião (e é consumida no golpe). Antes, afasta os
+    // dois e deixa o pruneOld levar o golpe do mato (ainda vivo, < 0,3s).
+    if (hero) {
+      hero.x = 800
+      hero.y = 600
+    }
+    if (enemy) {
+      enemy.x = 1000
+      enemy.y = 300
+    }
+    for (let frame = 0; frame < 30; frame += 1) game.nextFrame()
+    expect(golpes?.items).toHaveLength(0)
+    if (enemy && hero) {
+      enemy.x = hero.x + 30
+      enemy.y = hero.y - 4
+      enemy.hp = 3
+    }
+    game.fireKey('Space')
+    game.fireKey('Space', 'keyup')
+    game.nextFrame()
+    expect(enemy?.hp).toBe(2)
+    expect(golpes?.items).toHaveLength(0)
+
+    // Derrotar os 4 guardiões conclui a aventura (+5 pontos por guardião).
+    for (const guardian of guarda?.items ?? []) guardian.hp = 0
+    game.nextFrame()
+    expect(game.scores['Pontos:']).toBe(21)
+    expect(game.api.sceneIs('vitoria')).toBe(true)
+
+    // Reinicia e ainda dá para perder: vida zerada troca para a derrota.
+    game.fireKey('Enter', 'keyup')
+    game.fireKey('Enter')
+    game.nextFrame()
+    expect(game.api.sceneIs('inicio')).toBe(true)
+    game.fireKey('Enter', 'keyup')
+    game.fireKey('Enter')
+    const restartedHero = game.sprites.at(-1)
+    expect(restartedHero).toBeDefined()
+    if (restartedHero) restartedHero.hp = 0
+    game.nextFrame()
+    expect(game.api.sceneIs('derrota')).toBe(true)
     expect(game.errors).toEqual([])
     expect(game.warnings).toEqual([])
   })

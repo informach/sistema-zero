@@ -123,6 +123,24 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['start', 'space'],
   },
   {
+    key: 'game-2d:Batalha de Monstrinhos',
+    name: 'Batalha de Monstrinhos',
+    experience: 'game',
+    promise: 'Batalha por turnos com vantagem de tipo: fogo tira o dobro da planta e a poção cura.',
+    scenario:
+      'Enter começa; após a abertura os golpes liberam nas teclas 1/2/3, o rival devolve e a vida zerada troca a cena.',
+    interactions: ['start', 'digit-1', 'choice-2'],
+  },
+  {
+    key: 'game-2d:Aventura do Herói',
+    name: 'Aventura do Herói',
+    experience: 'game',
+    promise: 'Mundo top-down maior que a tela com mato cortável, espada temporária e guardiões.',
+    scenario:
+      'Enter começa; setas andam com a câmera seguindo; espaço corta o mato e fere guardiões; derrotar os quatro vence.',
+    interactions: ['start', 'arrows', 'space'],
+  },
+  {
     key: 'game-2d:Guerra de Gorilas',
     name: 'Guerra de Gorilas',
     experience: 'game',
@@ -221,6 +239,24 @@ export const EXAMPLE_QA_CONTRACTS = [
     promise: 'Pular cactos com molde, pool, parallax e recorde salvo de verdade.',
     scenario: 'Correr, saltar obstáculos cada vez mais rápidos, bater e ver o recorde guardado.',
     interactions: ['space', 'arrows', 'click'],
+  },
+  {
+    key: 'game-2d-advanced:Batalha de Monstrinhos Profissional',
+    name: 'Batalha de Monstrinhos Profissional',
+    experience: 'game',
+    promise: 'Montar o time, escrever a tabela de vantagem e capturar o lendário.',
+    scenario:
+      'Andar até a rival, batalhar pelos menus do kit, curar na fonte e capturar no mato fundo.',
+    interactions: ['arrows', 'space'],
+  },
+  {
+    key: 'game-2d-advanced:Aventura do Herói Profissional',
+    name: 'Aventura do Herói Profissional',
+    experience: 'game',
+    promise: 'Explorar um mundo maior que a tela e derrotar os sete monstros com a espada.',
+    scenario:
+      'Cortar o mato, passar atrás das árvores e vencer javalis e lobos até a tela de vitória.',
+    interactions: ['arrows', 'space'],
   },
   {
     key: 'game-2d-advanced:Bichinhos do Quintal',
@@ -639,5 +675,23 @@ export const EXAMPLE_QA_CONTRACTS = [
     promise: 'Correr sem fim em three.js puro com esteira, pool e colisão na mão.',
     scenario: 'Trocar de pista, pular obstáculos, ver a velocidade crescer, bater e reiniciar.',
     interactions: ['arrows', 'space', 'click'],
+  },
+  {
+    key: 'core:Batalha de Monstrinhos (na mão)',
+    name: 'Batalha de Monstrinhos (na mão)',
+    experience: 'game',
+    promise: 'Vencer a batalha por turnos com golpes, vantagem de elemento, cura e troca.',
+    scenario:
+      'Começar, escolher golpe no menu com cursor, trocar de monstrinho, aguardar o turno do inimigo e vencer ou reiniciar.',
+    interactions: ['start', 'arrows', 'escape'],
+  },
+  {
+    key: 'core:Aventura do Herói (na mão)',
+    name: 'Aventura do Herói (na mão)',
+    experience: 'game',
+    promise: 'Explorar o mundo com câmera, cortar mato e derrotar quatro inimigos com a espada.',
+    scenario:
+      'Começar, andar com deslize na parede, golpear mato e inimigos com knockback e vencer ou perder e reiniciar.',
+    interactions: ['start', 'arrows', 'space'],
   },
 ] as const satisfies readonly ExampleQAContract[]

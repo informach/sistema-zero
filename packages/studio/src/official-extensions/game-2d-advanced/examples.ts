@@ -1,5 +1,7 @@
 export { arenaGoblinsExample } from './examples/arenaGoblinsExample'
+export { aventuraProfissionalExample } from './examples/aventuraProfissionalExample'
 export { batalhaEmEquipeExample } from './examples/batalhaEmEquipeExample'
+export { batalhaProfissionalExample } from './examples/batalhaProfissionalExample'
 export { bichinhosDoQuintalExample } from './examples/bichinhosDoQuintalExample'
 export { cacaMoedasExample } from './examples/cacaMoedasExample'
 export { cobrinhaExample } from './examples/cobrinhaExample'

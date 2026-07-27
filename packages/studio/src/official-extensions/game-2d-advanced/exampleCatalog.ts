@@ -1,6 +1,8 @@
 import {
   arenaGoblinsExample,
+  aventuraProfissionalExample,
   batalhaEmEquipeExample,
+  batalhaProfissionalExample,
   bichinhosDoQuintalExample,
   cacaMoedasExample,
   cobrinhaExample,
@@ -26,7 +28,9 @@ export const gameKitExamples = [
   cacaMoedasExample,
   arenaGoblinsExample,
   vilaDoDragaoExample,
+  batalhaProfissionalExample,
   florestaNinjaExample,
+  aventuraProfissionalExample,
   saltoNaFlorestaExample,
   dinoProfissionalExample,
   bichinhosDoQuintalExample,

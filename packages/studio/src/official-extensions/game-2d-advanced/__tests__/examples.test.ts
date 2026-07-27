@@ -11,7 +11,9 @@ import { parseJS } from '../../../parsers/js'
 import { gameKitBlocks } from '../blocks'
 import {
   arenaGoblinsExample,
+  aventuraProfissionalExample,
   batalhaEmEquipeExample,
+  batalhaProfissionalExample,
   bichinhosDoQuintalExample,
   cacaMoedasExample,
   cobrinhaExample,
@@ -38,7 +40,9 @@ const EXAMPLES = [
   cacaMoedasExample,
   arenaGoblinsExample,
   vilaDoDragaoExample,
+  batalhaProfissionalExample,
   florestaNinjaExample,
+  aventuraProfissionalExample,
   saltoNaFlorestaExample,
   dinoProfissionalExample,
   bichinhosDoQuintalExample,
@@ -91,6 +95,44 @@ const REQUIRED_TYPES = {
     'gk:isInvincible',
     'gk:setMission',
     'gk:defineEffect',
+  ],
+  'Batalha de Monstrinhos Profissional': [
+    'gk:pkmCreature',
+    'gk:pkmMove',
+    'gk:pkmTypeChart',
+    'gk:pkmCatchDifficulty',
+    'gk:pkmGive',
+    'gk:pkmGiveBall',
+    'gk:pkmDrawTeam',
+    'gk:pkmHealTeam',
+    'gk:pkmBattleTrainer',
+    'gk:pkmTrainerCreature',
+    'gk:pkmBattleWild',
+    'gk:pkmCaught',
+    'gk:overlapPercent',
+    'gk:defineRegion',
+  ],
+  'Aventura do Herói Profissional': [
+    'gk:createEmptyTilemap',
+    'gk:cameraFollowMap',
+    'gk:attackFacing',
+    'gk:setSwingWindow',
+    'gk:didHit',
+    'gk:setEntityState',
+    'gk:entityState',
+    'gk:distanceBetween',
+    'gk:seek',
+    'gk:patrolAround',
+    'gk:hurt',
+    'gk:isInvincible',
+    'gk:knockback',
+    'gk:breakTileAt',
+    'gk:defineEffect',
+    'gk:burst',
+    'gk:drawByDepth',
+    'gk:drawHearts',
+    'gk:setMission',
+    'gk:missionKill',
   ],
   'Vila do Dragão': [
     'gk:rpgSetStartMap',
@@ -285,7 +327,7 @@ beforeAll(() => {
 })
 
 describe('game-2d-advanced — catálogo dos exemplos', () => {
-  it('manifest mantém os 20 exemplos canônicos na ordem da vitrine', () => {
+  it('manifest mantém os 22 exemplos canônicos na ordem da vitrine', () => {
     expect(gameKitExtension.manifest.examples.map((example) => example.name)).toEqual(
       EXAMPLES.map((example) => example.name),
     )

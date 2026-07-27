@@ -3,6 +3,8 @@ import { compileStatements, generateJS } from '#generators'
 import { behaviorStatements, SZIRV2Schema } from '#ir'
 import { buildWorkspaceStateFromIR } from '../blockly/workspaceState'
 import {
+  aventuraNaMaoExample,
+  batalhaNaMaoExample,
   CORE_EXAMPLES,
   corridaInfinitaNaMaoExample,
   defesaDaTorreNaMaoExample,
@@ -406,5 +408,122 @@ describe('CORE_EXAMPLES — dueloNaMaoExample (luta 2 jogadores na unha)', () =>
     expect(dueloNaMaoExample.assets ?? []).toEqual([])
     const code = compileStatements(behaviorStatements(dueloNaMaoExample.ir), 0)
     expect(code).toContain('p2.health = p2.health - 15')
+  })
+})
+
+describe('CORE_EXAMPLES — batalhaNaMaoExample (batalha de monstrinhos na unha)', () => {
+  it('está em CORE_EXAMPLES, sem extensões e com IR válido', () => {
+    expect(CORE_EXAMPLES).toContain(batalhaNaMaoExample)
+    expect(batalhaNaMaoExample.ir.extensions).toEqual([])
+    expect(SZIRV2Schema.safeParse(batalhaNaMaoExample.ir).success).toBe(true)
+  })
+
+  it('NÃO usa código avançado nem blocos de extensão', () => {
+    const types = collectTypes(batalhaNaMaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('rawCSS')).toBe(false)
+    expect(types.has('rawHTML')).toBe(false)
+    expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
+  })
+
+  it('usa a lição "dados + regras" na mão (tabelas + matriz por chave + turno), sem asset', () => {
+    const types = collectTypes(batalhaNaMaoExample.ir)
+    for (const expected of [
+      'classDecl', // Monster/Menu/Game
+      'newExpr', // new Monster(FICHAS[0], …) / new Menu(…)
+      'objectLiteral', // as TABELAS: golpes, fichas, cores e a matriz aninhada
+      'array', // fichas e listas de golpes
+      'index', // GOLPES[nome] / VANTAGEM[golpe.tipo] (objeto por chave)
+      'indexGet', // VANTAGEM[…][alvo.elemento] — o segundo nível da matriz
+      'setTimeout', // turno do inimigo com ATRASO (encadeado)
+      'randomFloat', // o inimigo SORTEIA o golpe
+      'mathUnary', // Math.floor do sorteio
+      'forEach', // menus e time (banco de reservas)
+      'memberCallExpr', // this.meuMonstro().draw() — chamada em valor
+      'event', // keydown no construtor (cursor + Enter)
+      'canvasSetup',
+      'canvasFillText', // menus/mensagens/telas desenhados no canvas
+      'canvasArc', // monstrinhos desenhados por código
+      'requestFrame', // laço de animação na mão
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
+    // é 100% desenhado: não precisa de nenhum asset embutido
+    expect(batalhaNaMaoExample.assets ?? []).toEqual([])
+    const code = compileStatements(behaviorStatements(batalhaNaMaoExample.ir), 0)
+    // A MATRIZ DE VANTAGEM lida por chave (programa = dados + regras).
+    expect(code).toContain('VANTAGEM[golpe.tipo][alvo.elemento]')
+    // Dano = força × multiplicador; CURA = dano negativo na MESMA função.
+    expect(code).toContain('alvo.aplicar(golpe.forca * mult)')
+    expect(code).toContain('atacante.aplicar(golpe.forca)')
+    // Clamp da vida em [0, max].
+    expect(code).toContain('this.vida = this.vida - dano;')
+    // Turno do inimigo com atraso + sorteio.
+    expect(code).toContain('setTimeout(() => {')
+    expect(code).toContain('Math.floor(Math.random() * this.inimigo.golpes.length)')
+    // Banco de reservas: a vida de quem sai fica LEMBRADA no objeto.
+    expect(code).toContain('" (" + monstro.vida + ")"')
+  })
+})
+
+describe('CORE_EXAMPLES — aventuraNaMaoExample (aventura estilo Zelda na unha)', () => {
+  it('está em CORE_EXAMPLES, sem extensões e com IR válido', () => {
+    expect(CORE_EXAMPLES).toContain(aventuraNaMaoExample)
+    expect(aventuraNaMaoExample.ir.extensions).toEqual([])
+    expect(SZIRV2Schema.safeParse(aventuraNaMaoExample.ir).success).toBe(true)
+  })
+
+  it('NÃO usa código avançado nem blocos de extensão', () => {
+    const types = collectTypes(aventuraNaMaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('rawCSS')).toBe(false)
+    expect(types.has('rawHTML')).toBe(false)
+    expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
+  })
+
+  it('usa câmera + colisão por eixo + FSM por distância na mão, sem asset', () => {
+    const types = collectTypes(aventuraNaMaoExample.ir)
+    for (const expected of [
+      'classDecl', // Player/Enemy/Grass/Game
+      'newExpr', // new Enemy(this, …) / new Grass(…)
+      'canvasTranslate', // a CÂMERA na mão (HUD fica fora do translate)
+      'canvasSave', // cerca o translate do mundo
+      'canvasRestore',
+      'mathBinary', // Math.hypot — distância da FSM e do knockback
+      'mathUnary', // Math.floor da piscada de i-frames
+      'arrayFilter', // culling de mato/inimigo/partícula
+      'objectLiteral', // obstáculos e partículas como objetos-dados
+      'forRange', // grades de mato e corações do HUD
+      'forEach', // varre obstáculos/inimigos/partículas
+      'funcDecl', // animate(timeStamp) — o laço com TEMPO na mão
+      'requestFrame',
+      'canvasSetup',
+      'canvasFillRect', // herói/mato/espada desenhados por código
+      'canvasArc', // corações do HUD
+      'randomFloat', // as partículas espalham sorteadas
+      'event', // keydown/keyup no construtor
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
+    // é 100% desenhado: não precisa de nenhum asset embutido
+    expect(aventuraNaMaoExample.assets ?? []).toEqual([])
+    const code = compileStatements(behaviorStatements(aventuraNaMaoExample.ir), 0)
+    // CÂMERA: o mundo desloca pro lado contrário.
+    expect(code).toContain('ctx.translate(0 - this.cameraX, 0 - this.cameraY)')
+    // COLISÃO POR EIXO (wall-slide): mover X → resolver → mover Y → resolver.
+    expect(code).toContain('this.x = this.x + this.vx * deltaTime;')
+    expect(code).toContain('this.resolverX();')
+    expect(code).toContain('this.resolverY();')
+    // KNOCKBACK com vetor normalizado + i-frames com piscada.
+    expect(code).toContain('quem.kbx = dx / distancia * forca;')
+    expect(code).toContain('Math.floor(this.invencivel / 4) % 2 === 0')
+    // FSM por distância (estado em string).
+    expect(code).toContain('Math.hypot(dx, dy)')
+    expect(code).toContain('this.state = "perseguir";')
+    // Y-SORT em DUAS PASSADAS pela base (sem .sort(fn)).
+    expect(code).toContain('mato.y + mato.height <= baseHeroi')
+    expect(code).toContain('inimigo.y + inimigo.height > baseHeroi')
+    // Laço com TEMPO real (velocidades por milissegundo × dt).
+    expect(code).toContain('const deltaTime = timeStamp - lastTime;')
   })
 })

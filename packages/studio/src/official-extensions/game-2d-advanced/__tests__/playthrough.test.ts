@@ -1,6 +1,10 @@
 import { afterAll, afterEach, describe, expect, it } from 'bun:test'
 import { generateJS } from '#generators'
-import { vilaDoDragaoExample } from '../examples'
+import {
+  aventuraProfissionalExample,
+  batalhaProfissionalExample,
+  vilaDoDragaoExample,
+} from '../examples'
 import { gameKitRuntime } from '../runtime'
 
 /**
@@ -94,6 +98,9 @@ interface Api {
   pkmGive: Fn
   pkmBattleWild: Fn
   pkmTeamSize: () => number
+  pkmCaught: () => boolean
+  missionKill: Fn
+  tileAt: (map: string, x: number, y: number) => number
   flashScreen: Fn
   createCharacter: Fn
   placeCharacter: Fn
@@ -1731,5 +1738,193 @@ describe('gk — JOGAR uma partida inteira do 🏰 Kit Defesa de Torre (R26)', (
     expect(h.api.countActive('torre')).toBe(0) // o reset recolheu a torre antiga
     clickAt(300, 220) // o lugar liberou: comprar de novo cobra de novo
     expect(h.api.tdCoins()).toBe(50)
+  })
+})
+
+describe('gk — playthrough mínimo: Batalha de Monstrinhos Profissional (rede pré-e2e)', () => {
+  /** Roda o exemplo EXATO (IR embutida → generateJS → runtime real). */
+  async function bootBatalha(h: Harness): Promise<void> {
+    const code = generateJS({
+      behavior: batalhaProfissionalExample.ir.behavior,
+      lifecycle: 'game-2d-advanced',
+    })
+    new Function('window', 'SZGameKit', code)(h.window, h.api)
+    await Promise.resolve()
+    await Promise.resolve()
+    h.api.restartGame()
+  }
+
+  it('⭐ o pátio leva à rival e a batalha de treinador é JOGADA até o fim', async () => {
+    const h = loadRuntime()
+    await bootBatalha(h)
+    expect(h.api.state()).toBe('jogando')
+    expect(h.api.pkmTeamSize()).toBe(3) // o time nasce montado (pkmGive x3)
+
+    let tick = 0
+    // Sobe primeiro (contorna o mato fundo) e depois vai para a direita até a
+    // rival Alice, apertando ESPAÇO — o desafio é touching + keyPressed.
+    h.fire('keydown', { key: 'ArrowUp' })
+    for (let i = 0; i < 14; i++) h.nextFrame(++tick * 50)
+    h.fire('keyup', { key: 'ArrowUp' })
+    h.fire('keydown', { key: 'ArrowRight' })
+    for (let i = 0; i < 70 && h.api.state() === 'jogando'; i++) {
+      h.fire('keydown', { key: ' ' })
+      h.nextFrame(++tick * 50)
+    }
+    h.fire('keyup', { key: 'ArrowRight' })
+    expect(h.api.state()).toBe('batalha')
+
+    // Martela espaço: menus do kit (Lutar → 1º golpe) até a batalha ACABAR —
+    // vitória OU derrota devolvem 'jogando'; travar em qualquer fase é softlock.
+    for (let i = 1; i <= 900 && h.api.state() === 'batalha'; i++) {
+      h.fire('keydown', { key: ' ' })
+      h.nextFrame((tick + i) * 50)
+    }
+    expect(h.api.state()).toBe('jogando')
+  })
+
+  it('⭐ capturar o Faiscolosso no mato fundo vira a tela de vitória', async () => {
+    const h = loadRuntime()
+    await bootBatalha(h)
+
+    let tick = 0
+    // Anda para a direita até o meio do mato fundo (overlapPercent > 50).
+    h.fire('keydown', { key: 'ArrowRight' })
+    for (let i = 0; i < 48; i++) h.nextFrame(++tick * 50)
+    h.fire('keyup', { key: 'ArrowRight' })
+    expect(h.api.state()).toBe('jogando')
+
+    // Sorte fixa BAIXA: o encontro dispara no próximo tique de 1 s e a bola
+    // SEMPRE captura (chance(x) = random*100 < x). Igual ao teste da lutaAI.
+    const realRandom = Math.random
+    Math.random = () => 0.001
+    try {
+      for (let i = 0; i < 80 && h.api.state() === 'jogando'; i++) {
+        h.nextFrame(++tick * 50)
+      }
+      expect(h.api.state()).toBe('batalha')
+      // ↓ e ESPAÇO no MESMO quadro: o stepUiInput move o índice ANTES de
+      // selecionar, então com o menu aberto isto escolhe SEMPRE "Bola" (índice
+      // 1, nunca o "Lutar" do índice 0); com a fala aberta, o espaço só avança
+      // o texto. Capturou → fim da batalha → 'jogando' → 'vitoria'.
+      for (let i = 0; i < 400 && h.api.state() !== 'vitoria'; i++) {
+        h.fire('keydown', { key: 'ArrowDown' })
+        h.fire('keydown', { key: ' ' })
+        h.nextFrame(++tick * 50)
+      }
+    } finally {
+      Math.random = realRandom
+    }
+    expect(h.api.state()).toBe('vitoria')
+    expect(h.api.pkmCaught()).toBe(true)
+    expect(h.api.pkmTeamSize()).toBe(4) // o lendário ENTROU para o time
+  })
+})
+
+describe('gk — playthrough mínimo: Aventura do Herói Profissional (rede pré-e2e)', () => {
+  interface Bicho {
+    x: number
+    y: number
+  }
+
+  async function bootAventura(h: Harness): Promise<void> {
+    const code = generateJS({
+      behavior: aventuraProfissionalExample.ir.behavior,
+      lifecycle: 'game-2d-advanced',
+    })
+    new Function('window', 'SZGameKit', code)(h.window, h.api)
+    await Promise.resolve()
+    await Promise.resolve()
+    h.api.restartGame()
+  }
+
+  function vivos(h: Harness, mold: string): Bicho[] {
+    const out: Bicho[] = []
+    h.api.forEachActive(mold, (e: unknown) => out.push(e as Bicho))
+    return out
+  }
+
+  it('o campo nasce vivo: enxames, árvores, HUD de contagem e mato no mapa', async () => {
+    const h = loadRuntime()
+    await bootAventura(h)
+    expect(h.api.state()).toBe('jogando')
+    expect(h.api.countActive('javali')).toBe(4)
+    expect(h.api.countActive('lobo')).toBe(3)
+    expect(h.api.countActive('arvore')).toBe(6)
+    expect(h.api.tileAt('campo', 928, 736)).toBe(1) // a fileira de mato existe
+    texts = []
+    h.nextFrame(50)
+    expect(texts.some((item) => item.text === 'Javalis: 4')).toBe(true)
+    expect(texts.some((item) => item.text === 'Lobos: 3')).toBe(true)
+
+    // Parado longe, ninguém atravessa o mapa: os javalis PATRULHAM o posto.
+    for (let i = 2; i <= 30; i++) h.nextFrame(i * 50)
+    for (const javali of vivos(h, 'javali')) expect(javali.x).toBeGreaterThan(1000)
+  })
+
+  it('⭐ cortar o mato REMOVE a peça do mapa (breakTileAt de verdade)', async () => {
+    const h = loadRuntime()
+    await bootAventura(h)
+    let tick = 0
+    // Diagonal até a altura da fileira e depois reto até o primeiro tufo.
+    h.fire('keydown', { key: 'ArrowRight' })
+    h.fire('keydown', { key: 'ArrowDown' })
+    for (let i = 0; i < 25; i++) h.nextFrame(++tick * 50)
+    h.fire('keyup', { key: 'ArrowDown' })
+    for (let i = 0; i < 40; i++) h.nextFrame(++tick * 50)
+    h.fire('keyup', { key: 'ArrowRight' })
+    expect(h.api.tileAt('campo', 943, 729)).toBe(1) // pisou no mato, peça viva
+    h.fire('keydown', { key: ' ' }) // golpe de espada em cima do tufo
+    h.nextFrame(++tick * 50)
+    expect(h.api.tileAt('campo', 943, 729)).toBe(-1) // cortou: sumiu do MAPA
+  })
+
+  it('⭐ FSM por distância: chegar perto acorda o bando e o golpe deles derruba o herói', async () => {
+    const h = loadRuntime()
+    await bootAventura(h)
+    let tick = 0
+    h.fire('keydown', { key: 'ArrowRight' })
+    for (let i = 0; i < 90; i++) h.nextFrame(++tick * 50)
+    h.fire('keyup', { key: 'ArrowRight' })
+    expect(h.api.state()).toBe('jogando')
+    // Parado no meio do bando: perseguir → golpe → toque com i-frames tira 12
+    // por vez (o dano vem do MOLDE via propertyOf) até o fim de jogo.
+    for (let i = 0; i < 600 && h.api.state() === 'jogando'; i++) {
+      h.nextFrame(++tick * 50)
+    }
+    expect(h.api.state()).toBe('fim')
+  })
+
+  it('⭐ a espada com janela derrota javali de verdade (didHit + recycle)', async () => {
+    const h = loadRuntime()
+    await bootAventura(h)
+    let caiu = 0
+    h.api.on('inimigo:caiu', () => {
+      caiu += 1
+    })
+    let tick = 0
+    h.fire('keydown', { key: 'ArrowRight' })
+    for (let i = 0; i < 90; i++) h.nextFrame(++tick * 50)
+    h.fire('keyup', { key: 'ArrowRight' })
+    // Martela o golpe virado para o bando que chega pela direita.
+    for (let i = 0; i < 400 && caiu === 0 && h.api.state() === 'jogando'; i++) {
+      h.fire('keydown', { key: ' ' })
+      h.nextFrame(++tick * 50)
+      h.fire('keyup', { key: ' ' })
+    }
+    expect(caiu).toBeGreaterThan(0)
+    // Quem chega primeiro na espada depende da patrulha (javali OU lobo): o
+    // que importa é que o bando ENCOLHEU de verdade (didHit → hurt → recycle).
+    expect(h.api.countActive('javali') + h.api.countActive('lobo')).toBeLessThan(7)
+  })
+
+  it('a missão de derrotar todos liga a tela de vitória pronta', async () => {
+    const h = loadRuntime()
+    await bootAventura(h)
+    // setMission(0, 7): a contagem de derrotados é quem decide (rede do motor —
+    // os playthroughs acima provam que missionKill roda no didHit real).
+    for (let i = 0; i < 7; i++) h.api.missionKill()
+    h.nextFrame(50)
+    expect(h.api.state()).toBe('vitoria')
   })
 })
