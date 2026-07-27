@@ -11,7 +11,7 @@ A paleta permanece extensa por decisão de produto: são 209 definições de blo
 sendo responsabilidade do perfil de aprendizagem e de cada aula.
 
 A correção técnica desta auditoria foi publicada como **Jogo 2D 0.34.0**. O
-manifesto vigente está em **0.48.0** após os fechamentos subsequentes: grupos
+manifesto vigente está em **0.49.0** após os fechamentos subsequentes: grupos
 seguros também no modo Código, ciclo de vida gerenciado e HUD acessível em todos
 os caminhos públicos e legados, o full review de 23/07 (inimigo "patrulha" que
 respeita jogos sem gravidade, cartão de porta de entrada "Pegue a moeda" e redes
@@ -53,6 +53,9 @@ Ensolarado" (sunnyland-platformer: pulo entre plataformas, gemas para juntar,
 gambá e águia como inimigos, câmera que segue) e "Vila Ninja" (ninja-adventure:
 aventura top-down num mini-mundo, ataque com espaço e câmera que segue), ambos
 100% procedurais, com drift tests e playthroughs próprios.
+O 0.49.0 (27/07) somou o exemplo "Treinador de Criaturas" (pokemon-style-game:
+andar no mapa top-down, entrar no mato alto e vencer uma batalha por turnos com
+as teclas 1/2/3), 100% procedural, com drift test e playthrough próprios.
 Não há achados abertos no escopo desta revisão.
 
 ## Escopo revisado

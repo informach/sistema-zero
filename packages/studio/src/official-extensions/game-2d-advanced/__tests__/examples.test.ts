@@ -36,6 +36,7 @@ import {
   quebraBlocosExample,
   reinoAbertoExample,
   saltoNaFlorestaExample,
+  treinadorDeCriaturasExample,
   valeEnsolaradoExample,
   vilaDoDragaoExample,
   vilaNinjaExample,
@@ -58,6 +59,7 @@ const EXAMPLES = [
   chuvaProfissionalExample,
   muralhaProfissionalExample,
   bichinhosDoQuintalExample,
+  treinadorDeCriaturasExample,
   invasaoDosOvnisExample,
   dueloDosBonecosExample,
   dueloDeHeroisProfissionalExample,
@@ -296,6 +298,34 @@ const REQUIRED_TYPES = {
     'gk:pkmCaught',
     'gk:rpgOnBattleEnd',
   ],
+  'Treinador de Criaturas Profissional': [
+    'gk:rpgSetStartMap',
+    'gk:rpgCreateMap',
+    'gk:rpgOnEnterMap',
+    'gk:rpgMoveGrid',
+    'gk:rpgBlockCell',
+    'gk:rpgCreateNpc',
+    'gk:rpgOnTalk',
+    'gk:rpgSay',
+    'gk:rpgDrawNpcs',
+    'gk:rpgAddFlag',
+    'gk:rpgHasFlag',
+    'gk:cameraFollow',
+    'gk:pkmCreature',
+    'gk:pkmMove',
+    'gk:pkmTypeChart',
+    'gk:pkmCatchDifficulty',
+    'gk:pkmGive',
+    'gk:pkmGiveBall',
+    'gk:pkmGrassCells',
+    'gk:pkmWild',
+    'gk:pkmHealTeam',
+    'gk:pkmDrawTeam',
+    'gk:pkmCaught',
+    'gk:pkmTeamSize',
+    'gk:rpgOnBattleEnd',
+    'gk:drawByDepth',
+  ],
   'Invasão dos Óvnis': [
     'gk:naveShip',
     'gk:navePowerup',
@@ -467,7 +497,7 @@ beforeAll(() => {
 })
 
 describe('game-2d-advanced — catálogo dos exemplos', () => {
-  it('manifest mantém os 29 exemplos canônicos na ordem da vitrine', () => {
+  it('manifest mantém os 30 exemplos canônicos na ordem da vitrine', () => {
     expect(gameKitExtension.manifest.examples.map((example) => example.name)).toEqual(
       EXAMPLES.map((example) => example.name),
     )
@@ -477,6 +507,7 @@ describe('game-2d-advanced — catálogo dos exemplos', () => {
   it('cenários RPG desenham o fundo no mapa, nunca por cima no onDraw global', () => {
     for (const example of [
       bichinhosDoQuintalExample,
+      treinadorDeCriaturasExample,
       reinoAbertoExample,
       batalhaEmEquipeExample,
       oChefaoExample,

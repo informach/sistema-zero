@@ -8,6 +8,7 @@ import {
   escaladaProfissionalExample,
   muralhaProfissionalExample,
   portasDoCasteloProfissionalExample,
+  treinadorDeCriaturasExample,
   valeEnsolaradoExample,
   vilaDoDragaoExample,
   vilaNinjaExample,
@@ -2914,5 +2915,163 @@ describe('gk — playthrough mínimo: Vila Ninja Profissional (rede pré-e2e)', 
     for (let i = 0; i < 6; i++) h.api.missionKill()
     h.nextFrame(50)
     expect(h.api.state()).toBe('vitoria')
+  })
+})
+
+describe('gk — playthrough mínimo: Treinador de Criaturas Profissional (rede pré-e2e)', () => {
+  /** Roda o exemplo EXATO (IR embutida → generateJS → runtime real) — o
+   *  pokemon-style-game com o mundo do Kit RPG (grade + câmera) e a batalha do
+   *  Kit Monstrinhos. */
+  async function bootTreinador(h: Harness): Promise<void> {
+    const code = generateJS({
+      behavior: treinadorDeCriaturasExample.ir.behavior,
+      lifecycle: 'game-2d-advanced',
+    })
+    new Function('window', 'SZGameKit', code)(h.window, h.api)
+    await Promise.resolve()
+    await Promise.resolve()
+    h.api.restartGame()
+  }
+
+  interface RpgInspect {
+    heroCellX: number | null
+    heroCellY: number | null
+    facingDirection: string | null
+    dialogOpen: boolean
+  }
+  function rpg(h: Harness): RpgInspect {
+    return (
+      (h.inspectors['game-2d-advanced:rpg']?.() as RpgInspect | undefined) ?? {
+        heroCellX: null,
+        heroCellY: null,
+        facingDirection: null,
+        dialogOpen: false,
+      }
+    )
+  }
+
+  /** Anda pela GRADE até a célula alvo, uma célula por vez (~6 quadros/célula a
+   *  220px/s), decidindo a tecla pelo eixo com maior diferença. */
+  function walkTo(h: Harness, tx: number, ty: number, tick: { n: number }): void {
+    for (let guard = 0; guard < 300; guard++) {
+      if (h.api.state() !== 'jogando') return
+      const r = rpg(h)
+      if (r.heroCellX === tx && r.heroCellY === ty) return
+      let key = ''
+      if ((r.heroCellX ?? 0) > tx) key = 'ArrowLeft'
+      else if ((r.heroCellX ?? 0) < tx) key = 'ArrowRight'
+      else if ((r.heroCellY ?? 0) > ty) key = 'ArrowUp'
+      else key = 'ArrowDown'
+      h.fire('keydown', { key })
+      for (let k = 0; k < 6; k++) h.nextFrame(++tick.n * 50)
+      h.fire('keyup', { key })
+      h.nextFrame(++tick.n * 50)
+    }
+  }
+
+  /** Vira para uma direção (um toque encaixado numa célula gira sem andar se há
+   *  parede/NPC à frente). */
+  function encarar(h: Harness, key: string, tick: { n: number }): void {
+    h.fire('keydown', { key })
+    h.nextFrame(++tick.n * 50)
+    h.fire('keyup', { key })
+  }
+
+  /** Fecha a fala apertando ESPAÇO SÓ enquanto ela está aberta: o stepUiInput
+   *  CONSOME o espaço que fecha, então o rpgMoveGrid do mesmo quadro não
+   *  re-conversa. Parar de apertar ao fechar é o que evita reabrir. */
+  function fecharFala(h: Harness, tick: { n: number }): void {
+    for (let i = 0; i < 12 && rpg(h).dialogOpen; i++) {
+      h.fire('keydown', { key: ' ' })
+      h.nextFrame(++tick.n * 50)
+      h.fire('keyup', { key: ' ' })
+      h.nextFrame(++tick.n * 50)
+    }
+  }
+
+  /** O herói em (7,6) sobe até o Professor em (4,3): anda até (4,4), vira para
+   *  cima e conversa (recebe a inicial + 6 bolas), depois fecha a fala. */
+  function pegarInicial(h: Harness, tick: { n: number }): void {
+    walkTo(h, 4, 4, tick)
+    encarar(h, 'ArrowUp', tick)
+    h.fire('keydown', { key: ' ' })
+    h.nextFrame(++tick.n * 50)
+    h.fire('keyup', { key: ' ' })
+    fecharFala(h, tick)
+  }
+
+  it('⭐ o mundo nasce vivo: câmera, mapa da cidade e time VAZIO até falar com o Professor', async () => {
+    const h = loadRuntime()
+    await bootTreinador(h)
+    expect(h.api.state()).toBe('jogando')
+    expect(h.api.rpgCurrentMap()).toBe('cidade')
+    // A criança começa SEM criatura: o Professor é quem dá a inicial.
+    expect(h.api.pkmTeamSize()).toBe(0)
+    expect(h.api.pkmBallCount()).toBe(0)
+  })
+
+  it('⭐ o Professor DÁ o inicial e as bolas ao conversar (villager do original)', async () => {
+    const h = loadRuntime()
+    await bootTreinador(h)
+    const tick = { n: 0 }
+    h.nextFrame(++tick.n * 50)
+    pegarInicial(h, tick)
+    expect(rpg(h).dialogOpen).toBe(false) // a fala fechou (herói livre de novo)
+    expect(h.api.pkmTeamSize()).toBe(1) // o Chaminho entrou no time
+    expect(h.api.pkmBallCount()).toBe(6) // e as 6 bolas
+  })
+
+  it('⭐ a Enfermeira cura o time (o Centro de Cura do original num bloco)', async () => {
+    const h = loadRuntime()
+    await bootTreinador(h)
+    const tick = { n: 0 }
+    h.nextFrame(++tick.n * 50)
+    pegarInicial(h, tick)
+    expect(h.api.pkmTeamSize()).toBe(1)
+    // A Enfermeira está em (3,12), com uma parede em (3,11). Desce PRIMEIRO pela
+    // coluna 4 (a parede não deixa descer pela 3) e entra por baixo, em (3,13),
+    // de frente para ela. O pkmHealTeam roda dentro do rpgOnTalk.
+    walkTo(h, 4, 13, tick)
+    walkTo(h, 3, 13, tick)
+    encarar(h, 'ArrowUp', tick)
+    h.fire('keydown', { key: ' ' })
+    h.nextFrame(++tick.n * 50)
+    h.fire('keyup', { key: ' ' })
+    expect(rpg(h).dialogOpen).toBe(true) // a Enfermeira abriu a fala
+    fecharFala(h, tick)
+    expect(h.api.state()).toBe('jogando') // curar não quebra o mundo
+  })
+
+  it('⭐ pisar na grama alta dispara um encontro selvagem, e a batalha ACABA (não congela)', async () => {
+    const h = loadRuntime()
+    await bootTreinador(h)
+    const tick = { n: 0 }
+    h.nextFrame(++tick.n * 50)
+    // Pega a inicial primeiro (senão o encontro aborta sem time em pé).
+    pegarInicial(h, tick)
+    expect(h.api.pkmTeamSize()).toBe(1)
+
+    // A grama alta cobre as células (6,8)..(18,14). O encontro é por PASSO na
+    // grama; sorte BAIXA garante que ele dispara ao pisar nela.
+    const realRandom = Math.random
+    Math.random = () => 0.001
+    try {
+      walkTo(h, 6, 8, tick) // desce/vai até a beira da grama; o encontro salta no caminho
+      expect(h.api.state()).toBe('batalha') // a grama disparou o encontro selvagem
+
+      // Martela ↓ + ESPAÇO: ↓ move o índice do menu para "Bola" (índice 1) e o
+      // ESPAÇO seleciona/avança a fala. Com sorte baixa a captura SEMPRE sai →
+      // fim da batalha → volta para 'jogando' (travar em qualquer fase = softlock).
+      for (let i = 0; i < 400 && h.api.state() === 'batalha'; i++) {
+        h.fire('keydown', { key: 'ArrowDown' })
+        h.fire('keydown', { key: ' ' })
+        h.nextFrame(++tick.n * 50)
+      }
+    } finally {
+      Math.random = realRandom
+    }
+    expect(h.api.state()).toBe('jogando')
+    expect(h.api.pkmCaught()).toBe(true)
+    expect(h.api.pkmTeamSize()).toBe(2) // a criatura selvagem entrou no time
   })
 })

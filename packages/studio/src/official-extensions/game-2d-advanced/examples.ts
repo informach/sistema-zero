@@ -24,6 +24,7 @@ export { portasDoCasteloProfissionalExample } from './examples/portasDoCasteloPr
 export { quebraBlocosExample } from './examples/quebraBlocosExample'
 export { reinoAbertoExample } from './examples/reinoAbertoExample'
 export { saltoNaFlorestaExample } from './examples/saltoNaFlorestaExample'
+export { treinadorDeCriaturasExample } from './examples/treinadorDeCriaturasExample'
 export { valeEnsolaradoExample } from './examples/valeEnsolaradoExample'
 export { vilaDoDragaoExample } from './examples/vilaDoDragaoExample'
 export { vilaNinjaExample } from './examples/vilaNinjaExample'

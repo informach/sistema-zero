@@ -24,6 +24,7 @@ import {
   portasDoCasteloExample,
   stickHeroExample,
   tilemapExample,
+  treinadorDeCriaturasExample,
   valeEnsolaradoExample,
   vilaNinjaExample,
 } from '../examples'
@@ -1649,6 +1650,94 @@ describe('playthrough dos exemplos exatos do Jogo 2D', () => {
     const restartedHero = game.sprites.at(-1)
     expect(restartedHero).toBeDefined()
     if (restartedHero) restartedHero.hp = 0
+    game.nextFrame()
+    expect(game.api.sceneIs('derrota')).toBe(true)
+    expect(game.errors).toEqual([])
+    expect(game.warnings).toEqual([])
+  })
+
+  it('Treinador de Criaturas: anda no mapa, entra no mato, batalha por turnos, vence e também pode perder', () => {
+    // random fixo 0,99: randomChance(50) falha -> a criatura usa a patada (-6).
+    const game = exampleHarness(treinadorDeCriaturasExample, () => 0.99)
+    // Ordem de criação: heroi, criatura, mato.
+    const heroi = game.sprites[0]
+    const rival = game.sprites[1]
+    const mato = game.sprites[2]
+    expect(heroi).toBeDefined()
+    expect(rival?.hp).toBe(24)
+    expect(mato).toBeDefined()
+    expect(game.api.sceneIs('inicio')).toBe(true)
+
+    game.fireKey('Enter')
+    expect(game.api.sceneIs('mapa')).toBe(true)
+
+    // Anda nas 4 direções (top-down): a seta pra direita desloca no x.
+    const startX = heroi?.x ?? 0
+    game.fireKey('ArrowRight')
+    for (let frame = 0; frame < 4; frame += 1) game.nextFrame()
+    game.fireKey('ArrowRight', 'keyup')
+    expect(heroi?.x ?? 0).toBeGreaterThan(startX)
+
+    // Longe do mato ainda é MAPA (a batalha só começa ao encostar na zona).
+    if (heroi && mato) {
+      heroi.x = mato.x - 200
+      heroi.y = mato.y
+    }
+    game.nextFrame()
+    expect(game.api.sceneIs('mapa')).toBe(true)
+
+    // Encostar no mato alto dispara a batalha por turnos (o battleZones).
+    if (heroi && mato) {
+      heroi.x = mato.x
+      heroi.y = mato.y
+    }
+    game.nextFrame()
+    expect(game.api.sceneIs('batalha')).toBe(true)
+
+    // Sua vez: a tecla 1 (Brasa) tira 8 da criatura.
+    game.fireKey('1')
+    game.fireKey('1', 'keyup')
+    game.nextFrame()
+    expect(rival?.hp).toBe(16)
+
+    // A vez da criatura: a raiz "A cada 1,2s" devolve o golpe (patada -6) e o turno.
+    const minhaVida = heroi?.hp ?? 24
+    for (let frame = 0; frame < 90; frame += 1) game.nextFrame()
+    expect(heroi?.hp ?? 0).toBe(minhaVida - 6)
+
+    // Mais dois golpes de Brasa encerram a batalha: 16 -> 8 -> 0.
+    game.fireKey('1')
+    game.fireKey('1', 'keyup')
+    game.nextFrame()
+    expect(rival?.hp).toBe(8)
+    for (let frame = 0; frame < 90; frame += 1) game.nextFrame()
+    game.fireKey('1')
+    game.fireKey('1', 'keyup')
+    game.nextFrame()
+    expect(rival?.hp).toBe(0)
+    expect(game.api.sceneIs('vitoria')).toBe(true)
+
+    // Enter reinicia limpo: de volta ao início com a criatura de vida cheia.
+    game.fireKey('Enter', 'keyup')
+    game.fireKey('Enter')
+    game.nextFrame()
+    expect(game.api.sceneIs('inicio')).toBe(true)
+    const restartedRival = game.sprites.at(-2)
+    expect(restartedRival?.hp).toBe(24)
+
+    // Também dá para PERDER: entra na batalha e zera a própria vida.
+    game.fireKey('Enter', 'keyup')
+    game.fireKey('Enter')
+    expect(game.api.sceneIs('mapa')).toBe(true)
+    const heroi2 = game.sprites.at(-3)
+    const mato2 = game.sprites.at(-1)
+    if (heroi2 && mato2) {
+      heroi2.x = mato2.x
+      heroi2.y = mato2.y
+    }
+    game.nextFrame()
+    expect(game.api.sceneIs('batalha')).toBe(true)
+    if (heroi2) heroi2.hp = 0
     game.nextFrame()
     expect(game.api.sceneIs('derrota')).toBe(true)
     expect(game.errors).toEqual([])

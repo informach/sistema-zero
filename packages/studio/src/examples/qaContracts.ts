@@ -932,4 +932,33 @@ export const EXAMPLE_QA_CONTRACTS = [
       'Andar com A/W/S/D, golpear com espaço, derrotar os inimigos, vencer e reiniciar com Enter.',
     interactions: ['start', 'wasd', 'space'],
   },
+  {
+    key: 'game-2d:Treinador de Criaturas',
+    name: 'Treinador de Criaturas',
+    experience: 'game',
+    promise:
+      'Andar no mapa, entrar no mato alto e vencer uma batalha por turnos contra a criatura.',
+    scenario:
+      'Começar, andar com as setas, encostar no mato, batalhar com as teclas 1/2/3, vencer e reiniciar.',
+    interactions: ['start', 'arrows', 'digit-1', 'choice-2'],
+  },
+  {
+    key: 'game-2d-advanced:Treinador de Criaturas Profissional',
+    name: 'Treinador de Criaturas Profissional',
+    experience: 'game',
+    promise:
+      'Explorar a cidade com o kit, achar criaturas na grama e capturar por batalha de turnos.',
+    scenario:
+      'Andar pela cidade com as setas, falar com os aldeões, entrar na grama, batalhar e capturar.',
+    interactions: ['arrows', 'space'],
+  },
+  {
+    key: 'core:Treinador de Criaturas (na mão)',
+    name: 'Treinador de Criaturas (na mão)',
+    experience: 'game',
+    promise: 'O jogo estilo pokemon feito só com o núcleo: explorar o mapa e batalhar por turnos.',
+    scenario:
+      'Andar com A/W/S/D, falar com o morador no espaço, entrar no mato, batalhar com as setas e Enter, vencer ou perder.',
+    interactions: ['start', 'wasd', 'space', 'arrows'],
+  },
 ] as const satisfies readonly ExampleQAContract[]

@@ -20,6 +20,7 @@ import {
   passeio3dNaMaoExample,
   patrulhaEspacialNaMaoExample,
   portasDoCasteloNaMaoExample,
+  treinadorDeCriaturasNaMaoExample,
   valeEnsolaradoNaMaoExample,
   vilaNinjaNaMaoExample,
 } from './core'
@@ -1051,5 +1052,90 @@ describe('CORE_EXAMPLES — vilaNinjaNaMaoExample (aventura top-down ninja na un
     expect(JSON.stringify(buildWorkspaceStateFromIR(vilaNinjaNaMaoExample.ir))).not.toContain(
       '"sz_adv_raw_js"',
     )
+  })
+})
+
+describe('CORE_EXAMPLES — treinadorDeCriaturasNaMaoExample (pokemon FIEL na unha)', () => {
+  it('é exportado, sem extensões e com IR válido', () => {
+    expect(CORE_EXAMPLES).toContain(treinadorDeCriaturasNaMaoExample)
+    expect(treinadorDeCriaturasNaMaoExample.ir.extensions).toEqual([])
+    expect(SZIRV2Schema.safeParse(treinadorDeCriaturasNaMaoExample.ir).success).toBe(true)
+  })
+
+  it('nome e descrição em pt-BR com acentos e sem travessão', () => {
+    expect(treinadorDeCriaturasNaMaoExample.name).toBe('Treinador de Criaturas (na mão)')
+    expect(treinadorDeCriaturasNaMaoExample.name).toContain('mão')
+    expect(treinadorDeCriaturasNaMaoExample.name).not.toContain('—')
+    expect(treinadorDeCriaturasNaMaoExample.description).not.toContain('—')
+    expect(treinadorDeCriaturasNaMaoExample.description).toContain('núcleo')
+    expect(treinadorDeCriaturasNaMaoExample.description).toContain('câmera')
+    expect(treinadorDeCriaturasNaMaoExample.description).toContain('fila de ações')
+    expect(JSON.stringify(treinadorDeCriaturasNaMaoExample.ir)).not.toContain('—')
+    // os textos desenhados no canvas mantêm os acentos pt-BR corretos
+    const irText = JSON.stringify(treinadorDeCriaturasNaMaoExample.ir)
+    expect(irText).toContain('Você venceu!')
+    expect(irText).toContain('Sua criatura desmaiou...')
+    expect(irText).toContain('criatura selvagem')
+    expect(irText).toContain('Olá! Cuidado com a grama alta.')
+    expect(irText).toContain('vai fazer?')
+  })
+
+  it('NÃO usa código avançado nem blocos de extensão', () => {
+    const types = collectTypes(treinadorDeCriaturasNaMaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('rawCSS')).toBe(false)
+    expect(types.has('rawHTML')).toBe(false)
+    expect(
+      [...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:') || t.startsWith('gk:')),
+    ).toBe(false)
+  })
+
+  it('reproduz as 2 cenas: exploração com câmera + batalha por turnos com fila', () => {
+    const types = collectTypes(treinadorDeCriaturasNaMaoExample.ir)
+    for (const expected of [
+      'classDecl', // Sprite / Character / Monster
+      'superCall', // HERANÇA: Character/Monster estendem Sprite
+      'funcDecl', // overlap / usarGolpe / passo / atualizarCamera / animate...
+      'newInstance', // new Sprite(...) / new Monster(...)
+      'newExpr', // characters.push(new Character(...))
+      'setThisProp', // o estado das criaturas vive nos objetos
+      'canvasFillRect', // herói, criaturas, tiles e barras são retângulos
+      'canvasSave', // a câmera: save…
+      'canvasTranslate', // …translate (segue o herói)…
+      'canvasRestore', // …e restore
+      'requestFrame', // pedir o próximo quadro chamando animate
+      'canvasSetup',
+      'forRange', // laços aninhados varrem o mapa + a fila + o menu
+      'arrayPush', // enfileirar a próxima ação (queue.push)
+      'arrayRemove', // consumir a fila (queue.shift)
+      'mathBinary', // Math.max/Math.min do limite da câmera
+      'mathUnary', // Math.floor do sorteio do golpe
+      'randomFloat', // a grama tem CHANCE / o inimigo sorteia o golpe
+      'event', // keydown/keyup
+    ]) {
+      expect(types.has(expected), `IR deveria conter ${expected}`).toBe(true)
+    }
+    // é 100% desenhado: não precisa de nenhum asset embutido
+    expect(treinadorDeCriaturasNaMaoExample.assets ?? []).toEqual([])
+    const code = compileStatements(behaviorStatements(treinadorDeCriaturasNaMaoExample.ir), 0)
+    // CENA 1 — o mapa é MAIOR que a tela e a câmera segue o herói com LIMITE
+    expect(code).toContain('camera.x = Math.max(0, Math.min(camera.x, worldWidth - viewWidth));')
+    expect(code).toContain('ctx.translate(0 - camera.x, 0 - camera.y);')
+    // a ZONA DE BATALHA: pisar na grama tem chance de iniciar a batalha
+    expect(code).toContain('Math.random() < 0.02')
+    // CENA 2 — a FILA DE AÇÕES: push para enfileirar, shift para consumir
+    expect(code).toContain('queue.push("inimigoAtaca");')
+    expect(code).toContain('queue.shift();')
+    // o inimigo REVIDA sorteando o golpe da própria lista
+    expect(code).toContain('Math.floor(Math.random() * inimigo.golpes.length)')
+    // ESTADO COMPARTILHADO entre as cenas
+    expect(code).toContain('battle.initiated = true;')
+    expect(code).toContain('battle.initiated = false;')
+  })
+
+  it('IR→blocos não contém bloco raw/avançado', () => {
+    expect(
+      JSON.stringify(buildWorkspaceStateFromIR(treinadorDeCriaturasNaMaoExample.ir)),
+    ).not.toContain('"sz_adv_raw_js"')
   })
 })

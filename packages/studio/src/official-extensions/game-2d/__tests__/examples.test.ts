@@ -57,8 +57,8 @@ describe('game-2d — todos os exemplos da vitrine (manifest.examples)', () => {
     registerExtensionBlocks(gameTwoDBlocks)
   })
 
-  it('a vitrine tem os 25 exemplos (anti-vácuo)', () => {
-    expect(gameTwoDManifest.examples.length).toBe(25)
+  it('a vitrine tem os 26 exemplos (anti-vácuo)', () => {
+    expect(gameTwoDManifest.examples.length).toBe(26)
   })
 
   it('todos ensinam início e preparo explícitos, sem canvas escondido no HTML', () => {
@@ -72,10 +72,10 @@ describe('game-2d — todos os exemplos da vitrine (manifest.examples)', () => {
     }
   })
 
-  it('mantém a classificação prometida: 20 jogos, 4 demonstrações e 1 exploração', () => {
+  it('mantém a classificação prometida: 21 jogos, 4 demonstrações e 1 exploração', () => {
     const counts = { game: 0, demo: 0, exploration: 0 }
     for (const example of gameTwoDManifest.examples) counts[example.experience] += 1
-    expect(counts).toEqual({ game: 20, demo: 4, exploration: 1 })
+    expect(counts).toEqual({ game: 21, demo: 4, exploration: 1 })
   })
 
   for (const ex of gameTwoDManifest.examples) {

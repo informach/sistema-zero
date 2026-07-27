@@ -56,7 +56,7 @@ beforeAll(() => {
   }
 })
 
-describe('contrato transversal dos 107 exemplos da KitGallery', () => {
+describe('contrato transversal dos 110 exemplos da KitGallery', () => {
   it('catálogo e contratos têm exatamente as mesmas chaves', () => {
     const catalogKeys = catalogEntries()
       .map((entry) => entry.key)
@@ -64,14 +64,14 @@ describe('contrato transversal dos 107 exemplos da KitGallery', () => {
     const contractKeys = EXAMPLE_QA_CONTRACTS.map((contract) => contract.key).sort()
 
     expect(catalogKeys).toEqual(contractKeys)
-    expect(catalogKeys).toHaveLength(107)
-    expect(new Set(catalogKeys).size).toBe(107)
+    expect(catalogKeys).toHaveLength(110)
+    expect(new Set(catalogKeys).size).toBe(110)
   })
 
-  it('mantém a classificação acordada: 86 jogos, 9 demos e 12 explorações', () => {
+  it('mantém a classificação acordada: 89 jogos, 9 demos e 12 explorações', () => {
     const counts = { game: 0, demo: 0, exploration: 0 }
     for (const contract of EXAMPLE_QA_CONTRACTS) counts[contract.experience] += 1
-    expect(counts).toEqual({ game: 86, demo: 9, exploration: 12 })
+    expect(counts).toEqual({ game: 89, demo: 9, exploration: 12 })
   })
 
   const contractsByKey = new Map<string, ExampleQAContract>(
