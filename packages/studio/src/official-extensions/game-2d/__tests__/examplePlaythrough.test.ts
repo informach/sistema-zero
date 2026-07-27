@@ -1184,32 +1184,22 @@ describe('playthrough dos exemplos exatos do Jogo 2D', () => {
     game.nextFrame()
     expect(game.scores['Moedas:']).toBe(50)
 
-    // A torre atira sozinha (a cada 0,5 s): um tiro nasce e voa para a esquerda.
-    const tirosAntes = tiros?.items.length ?? 0
-    for (let frame = 0; frame < 40; frame += 1) game.nextFrame()
-    expect(tiros?.items.length ?? 0).toBeGreaterThan(tirosAntes)
-    const tiro = tiros?.items[0]
-    const tiroX = tiro?.x ?? 0
-    game.nextFrame()
-    expect(tiro?.x ?? 0).toBeLessThan(tiroX)
-
-    // Destruir: invasor injetado sobre um tiro parado = +25 moedas, os dois somem.
+    // A torre atira sozinha (a cada 0,5 s) e, como a bala (y 182) agora divide a
+    // MESMA faixa dos invasores (y 168) — o P1 do review —, ela os ABATE de verdade:
+    // a bala é consumida no impacto e as moedas SOBEM (+25 por invasor), sem nenhuma
+    // injeção artificial sobre o tiro. Antes do fix a bala voava numa faixa vazia e
+    // as moedas de abate nunca subiam. Observamos a janela: em ALGUM quadro há tiro
+    // em voo (a torre dispara) E as moedas crescem (a bala encosta no invasor).
     const moedasAntes = game.scores['Moedas:'] ?? 0
-    if (tiro && inimigos) {
-      tiro.vx = 0
-      tiro.vy = 0
-      game.api.spawn(inimigos, {
-        x: tiro.x,
-        y: tiro.y,
-        w: 30,
-        h: 30,
-        color: '#c0504d',
-        vx: 0,
-        vy: 0,
-      })
+    let viuTiro = false
+    let moedasSubiram = false
+    for (let frame = 0; frame < 120; frame += 1) {
+      game.nextFrame()
+      if ((tiros?.items.length ?? 0) > 0) viuTiro = true
+      if ((game.scores['Moedas:'] ?? 0) > moedasAntes) moedasSubiram = true
     }
-    game.nextFrame()
-    expect(game.scores['Moedas:'] ?? 0).toBeGreaterThanOrEqual(moedasAntes + 25)
+    expect(viuTiro).toBe(true)
+    expect(moedasSubiram).toBe(true)
 
     // Invasor que encosta no castelo tira 1 vida e some.
     const vidasAntes = game.scores['Vidas:'] ?? 10

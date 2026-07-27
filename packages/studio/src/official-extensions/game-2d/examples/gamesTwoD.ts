@@ -478,7 +478,7 @@ export const muralhaDoReinoExample: ExtensionExample = beginnerGameExample({
                           },
                           y: {
                             type: 'num',
-                            value: 236,
+                            value: 196,
                           },
                           w: {
                             type: 'num',
@@ -905,15 +905,8 @@ export const muralhaDoReinoExample: ExtensionExample = beginnerGameExample({
                     value: -40,
                   },
                   y: {
-                    type: 'g2d:randomBetween',
-                    min: {
-                      type: 'num',
-                      value: 150,
-                    },
-                    max: {
-                      type: 'num',
-                      value: 190,
-                    },
+                    type: 'num',
+                    value: 168,
                   },
                   w: {
                     type: 'num',
@@ -972,8 +965,8 @@ export const muralhaDoReinoExample: ExtensionExample = beginnerGameExample({
                         spriteVar: 'torre',
                       },
                       y: {
-                        type: 'g2d:spriteY',
-                        spriteVar: 'torre',
+                        type: 'num',
+                        value: 182,
                       },
                       radius: {
                         type: 'num',

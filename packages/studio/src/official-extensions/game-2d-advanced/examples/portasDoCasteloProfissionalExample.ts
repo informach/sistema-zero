@@ -41,7 +41,7 @@ export const portasDoCasteloProfissionalExample: ExtensionExample = {
           text: {
             type: 'str',
             value:
-              'A/D ou setas para andar. Espaço para pular. Chegue na porta de cada sala para passar de fase. São 3 salas ate a saída!',
+              'Use as setas para andar e pular. Chegue na porta de cada sala para passar de fase. São 3 salas até a saída!',
           },
           button: { type: 'str', value: 'Entrar' },
         },

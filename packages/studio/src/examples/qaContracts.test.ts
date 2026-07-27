@@ -68,7 +68,7 @@ describe('contrato transversal dos 101 exemplos da KitGallery', () => {
     expect(new Set(catalogKeys).size).toBe(101)
   })
 
-  it('mantém a classificação acordada: 72 jogos, 9 demos e 12 explorações', () => {
+  it('mantém a classificação acordada: 80 jogos, 9 demos e 12 explorações', () => {
     const counts = { game: 0, demo: 0, exploration: 0 }
     for (const contract of EXAMPLE_QA_CONTRACTS) counts[contract.experience] += 1
     expect(counts).toEqual({ game: 80, demo: 9, exploration: 12 })

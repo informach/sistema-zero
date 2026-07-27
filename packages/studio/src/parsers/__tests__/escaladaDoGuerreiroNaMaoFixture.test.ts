@@ -20,7 +20,7 @@ import { parseProjectFilesWithDiagnostics } from '../index'
  * são retângulos (asset-free) e os construtores usam parâmetros simples (o
  * parser recusa `constructor({...})` desestruturado). O objetivo é ALCANÇAR o
  * topo (encostar na bandeira) e uma tela de vitória aparece; A/D andam, W pula.
- * O laço usa dt REAL clampado em 50ms. A prova é a mesma dos outros fixtures:
+ * O laço usa passo fixo por quadro. A prova é a mesma dos outros fixtures:
  * 0 raw + fixpoint textual + round-trip por blocos + a IR embutida bate.
  */
 

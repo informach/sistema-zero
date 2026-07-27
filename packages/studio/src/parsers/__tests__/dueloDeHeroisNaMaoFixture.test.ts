@@ -15,8 +15,7 @@ import { parseProjectFilesWithDiagnostics } from '../index'
  * NÚCLEO, sem extensão. Dois lutadores no MESMO teclado, gravidade + chão,
  * golpe com CAIXA DE GOLPE à frente (o overlap tira 15 de vida), barras de
  * vida DESENHADAS no canvas (o "na mão" no lugar do gsap.to('#health')),
- * cronômetro regressivo e a tela de vencedor. Asset-free (retângulos), dt REAL
- * clampado em 50ms.
+ * cronômetro regressivo e a tela de vencedor. Asset-free (retângulos), passo fixo por quadro.
  *
  * ⚠️ JOGABILIDADE CORRIGIDA contra o fixture antigo (que "não funcionava
  * direito"):

@@ -21,7 +21,7 @@ export const escaladaProfissionalExample: ExtensionExample = {
   name: 'Escalada do Guerreiro Profissional',
   experience: 'game',
   description:
-    'A plataforma de subida do motor avançado: pulo gostoso, tábuas que se atravessa por baixo, câmera que acompanha o herói subindo e a maior altura guardada. Suba ate a bandeira no topo!',
+    'A plataforma de subida do motor avançado: pulo gostoso, tábuas que se atravessa por baixo, câmera que acompanha o herói subindo e a maior altura guardada. Suba até a bandeira no topo!',
   ir: {
     html: [],
     css: [],
@@ -42,8 +42,7 @@ export const escaladaProfissionalExample: ExtensionExample = {
           title: { type: 'str', value: 'Escalada do Guerreiro Profissional' },
           text: {
             type: 'str',
-            value:
-              'A/D ou setas para andar. Espaço para pular. Suba pelas tábuas ate a bandeira no topo!',
+            value: 'Use as setas para andar e pular. Suba pelas tábuas até a bandeira no topo!',
           },
           button: { type: 'str', value: 'Escalar' },
         },
@@ -53,7 +52,7 @@ export const escaladaProfissionalExample: ExtensionExample = {
           title: { type: 'str', value: 'Chegou ao topo!' },
           text: {
             type: 'str',
-            value: 'Voce escalou a torre inteira. A maior altura fica guardada!',
+            value: 'Você escalou a torre inteira. A maior altura fica guardada!',
           },
           button: { type: 'str', value: 'Escalar de novo' },
         },
@@ -347,9 +346,15 @@ export const escaladaProfissionalExample: ExtensionExample = {
         },
         {
           type: 'gk:spawnFromMold',
+          mold: 'chao',
+          x: { type: 'num', value: 360 },
+          y: { type: 'num', value: 1420 },
+        },
+        {
+          type: 'gk:spawnFromMold',
           mold: 'tabua',
-          x: { type: 'num', value: 300 },
-          y: { type: 'num', value: 1240 },
+          x: { type: 'num', value: 260 },
+          y: { type: 'num', value: 1300 },
         },
         {
           type: 'gk:spawnFromMold',

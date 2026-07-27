@@ -28,8 +28,8 @@ import { parseJS } from '../../parsers/js'
  */
 export const ESCALADA_PROFISSIONAL_SOURCE = `
 SZGameKit.setup({ width: 960, height: 540, background: "#4a6fa5", accent: "#e07a3f" });
-SZGameKit.setScreenText("menu", "Escalada do Guerreiro Profissional", "A/D ou setas para andar. Espaço para pular. Suba pelas tábuas ate a bandeira no topo!", "Escalar");
-SZGameKit.setScreenText("vitoria", "Chegou ao topo!", "Voce escalou a torre inteira. A maior altura fica guardada!", "Escalar de novo");
+SZGameKit.setScreenText("menu", "Escalada do Guerreiro Profissional", "Use as setas para andar e pular. Suba pelas tábuas até a bandeira no topo!", "Escalar");
+SZGameKit.setScreenText("vitoria", "Chegou ao topo!", "Você escalou a torre inteira. A maior altura fica guardada!", "Escalar de novo");
 SZGameKit.defineLook("guerreiro", function (ctx) {
   ctx.fillStyle = "#d9a066";
   ctx.fillRect(8, 2, 16, 14);
@@ -77,7 +77,8 @@ SZGameKit.respawn(heroi);
 SZGameKit.spawnFromMold("chao", 0, 1420);
 SZGameKit.spawnFromMold("chao", 120, 1420);
 SZGameKit.spawnFromMold("chao", 240, 1420);
-SZGameKit.spawnFromMold("tabua", 300, 1240);
+SZGameKit.spawnFromMold("chao", 360, 1420);
+SZGameKit.spawnFromMold("tabua", 260, 1300);
 SZGameKit.spawnFromMold("tabua", 120, 1080);
 SZGameKit.spawnFromMold("tabua", 420, 940);
 SZGameKit.spawnFromMold("tabua", 200, 780);

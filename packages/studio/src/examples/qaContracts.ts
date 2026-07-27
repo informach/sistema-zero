@@ -816,7 +816,7 @@ export const EXAMPLE_QA_CONTRACTS = [
     experience: 'game',
     promise: 'Defender o reino com a lógica de torre feita só com o núcleo.',
     scenario:
-      'Começar, comprar torres no clique, encarar as 5 ondas, perder ou vencer e reiniciar.',
+      'Comprar torres no clique, encarar as 5 ondas, perder ou vencer e reiniciar com Enter.',
     interactions: ['start', 'click'],
   },
   {

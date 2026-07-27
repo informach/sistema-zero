@@ -40,6 +40,14 @@ O 0.46.0 (27/07) somou dois exemplos recriando jogos do Chris Courses no básico
 que atiram sozinhas, ondas e vidas) e "Escalada do Guerreiro" (vertical-platformer:
 pulo entre plataformas com câmera que sobe até a bandeira do topo), ambos 100%
 procedurais, com drift tests e playthroughs próprios.
+O 0.47.0 (27/07) somou mais dois exemplos Chris Courses no básico: "Duelo de
+Heróis" (fighting-game: dois jogadores no mesmo teclado, caixa de golpe, barras de
+vida e cronômetro) e "Portas do Castelo" (kings-and-pigs: plataforma por fases em
+que a porta troca de salão com fade), ambos 100% procedurais, com drift tests e
+playthroughs próprios; junto entraram as teclas a/d/w/s/f nos dropdowns on_key/
+key_down (2 jogadores). Um full review depois corrigiu o alinhamento da faixa de
+tiro da "Muralha do Reino" (as balas voavam numa faixa vazia; agora encostam nos
+invasores).
 Não há achados abertos no escopo desta revisão.
 
 ## Escopo revisado

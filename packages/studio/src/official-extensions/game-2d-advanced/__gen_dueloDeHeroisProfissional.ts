@@ -29,7 +29,7 @@ import { parseJS } from '../../parsers/js'
  */
 export const DUELO_DE_HEROIS_PROFISSIONAL_SOURCE = `
 SZGameKit.setup({ width: 960, height: 540, background: "#241733", accent: "#ffd166" });
-SZGameKit.setScreenText("menu", "Duelo de Heróis Profissional", "Jogador 1: A/D anda, W pula, S agacha, F defende, G soco, H chute, J especial. Jogador 2: setas + teclas 1 2 3. Melhor de 3 rounds!", "Lutar");
+SZGameKit.setScreenText("menu", "Duelo de Heróis Profissional", "Jogador 1: A/D anda, W pula, S agacha, F defende, G soco, H chute, J especial. Jogador 2: setas anda e pula, 0 defende, teclas 1 soco, 2 chute, 3 especial. Melhor de 3 rounds!", "Lutar");
 SZGameKit.defineLook("samurai", function (ctx) {
   ctx.fillStyle = "#e8d9b5";
   ctx.fillRect(14, 4, 22, 20);

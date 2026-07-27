@@ -17,7 +17,7 @@ import { parseProjectFilesWithDiagnostics } from '../index'
  * de FASE: chegar na PORTA e apertar para cima dispara um FADE preto na mão (o
  * overlay que sobe e desce de opacidade quadro a quadro, com globalAlpha) — o
  * "na mão" no lugar do gsap.to(overlay) do original — que carrega a próxima
- * fase e volta o fade. Asset-free (retângulos), dt REAL clampado em 50ms.
+ * fase e volta o fade. Asset-free (retângulos), passo fixo por quadro.
  *
  * ⚠️ JOGABILIDADE CORRIGIDA contra o fixture antigo (que "não funcionava
  * direito"):
@@ -27,7 +27,7 @@ import { parseProjectFilesWithDiagnostics } from '../index'
  *    querer, sem intenção nenhuma.
  *  - Enquanto o fade acontece, o herói fica TRAVADO (não anda nem pula no meio da
  *    troca de fase), como o `preventInput` do original.
- *  - O tempo do jogo virou dt REAL clampado em 50ms (trocar de aba não teleporta
+ *  - O tempo do jogo virou passo fixo por quadro (trocar de aba não teleporta
  *    o fade).
  */
 

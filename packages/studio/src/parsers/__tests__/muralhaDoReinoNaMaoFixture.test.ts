@@ -21,7 +21,7 @@ import { parseProjectFilesWithDiagnostics } from '../index'
  * ondas; perde quando um inimigo escapa com as vidas zeradas (o `#gameOver`
  * do curso vira uma tela desenhada por código). Asset-free: o caminho é uma
  * linha grossa, inimigos são círculos com barra de vida, torres são quadrados,
- * tiros são bolinhas. O laço usa dt REAL clampado em 50ms (trocar de aba não
+ * tiros são bolinhas. O laço usa passo fixo por quadro (trocar de aba não
  * teleporta). A prova é a mesma dos outros fixtures: 0 raw + fixpoint textual +
  * round-trip por blocos + a IR embutida na vitrine bate com a que o parser gera.
  */

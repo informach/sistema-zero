@@ -85,9 +85,7 @@ describe('Exemplo Muralha do Reino — drift contra o parser real', () => {
       'g2d:pruneOffscreen', // o culling do original nos tiros
       'g2d:forEachInGroup', // cada torre atira
       'g2d:everySeconds', // nasce invasor + torres atiram + próxima onda
-      'g2d:randomBetween',
       'g2d:centerX', // o tiro sai do centro da torre
-      'g2d:spriteY',
       'g2d:playExplosion',
       'g2d:playMusic',
       'g2d:playFx',
@@ -114,14 +112,15 @@ describe('Exemplo Muralha do Reino — drift contra o parser real', () => {
         statement.type === 'g2d:everySeconds',
     )
     expect(everyRoots).toHaveLength(3)
-    // O spawn de invasor sorteia a faixa e nasce fora da tela, indo para a direita.
+    // O invasor nasce fora da tela numa FILA reta (y fixo na faixa dos tiros das
+    // torres, senão a bala horizontal nunca encostaria) e marcha para a direita.
     const spawner = everyRoots.find(
       (statement) => JSON.stringify(statement.seconds) === '{"type":"num","value":1.2}',
     )
     const rawSpawner = JSON.stringify(spawner)
     expect(rawSpawner).toContain('"type":"g2d:sceneIs","name":"jogando"')
     expect(rawSpawner).toContain('"type":"g2d:spawnInGroup","groupVar":"inimigos"')
-    expect(rawSpawner).toContain('"y":{"type":"g2d:randomBetween"')
+    expect(rawSpawner).toContain('"y":{"type":"num","value":168}')
     // As torres atiram a cada 0,5 s: um forEach solta um tiro por torre.
     const atira = everyRoots.find(
       (statement) => JSON.stringify(statement.seconds) === '{"type":"num","value":0.5}',

@@ -77,7 +77,7 @@ SZGame2D.onPointer(function (px, py) {
     if (px < 380) {
       if (moedas >= 50) {
         moedas = moedas - 50;
-        SZGame2D.spawn(torres, { x: px - 18, y: 236, w: 36, h: 44, color: "#8a8f99", vx: 0, vy: 0 });
+        SZGame2D.spawn(torres, { x: px - 18, y: 196, w: 36, h: 44, color: "#8a8f99", vx: 0, vy: 0 });
         SZGame2D.playFx("confirm");
       }
     }
@@ -132,13 +132,13 @@ SZGame2D.gameLoop(function update() {
 });
 if (SZGame2D.everySeconds("nasce-invasor", 1.2)) {
   if (SZGame2D.sceneIs("jogando")) {
-    SZGame2D.spawn(inimigos, { x: -40, y: SZGame2D.randomBetween(150, 190), w: 30, h: 30, color: "#c0504d", vx: onda + 1, vy: 0 });
+    SZGame2D.spawn(inimigos, { x: -40, y: 168, w: 30, h: 30, color: "#c0504d", vx: onda + 1, vy: 0 });
   }
 }
 if (SZGame2D.everySeconds("torres-atiram", 0.5)) {
   if (SZGame2D.sceneIs("jogando")) {
     SZGame2D.forEachInGroup(torres, (torre) => {
-      SZGame2D.spawnBullet(tiros, { x: SZGame2D.centerX(torre), y: SZGame2D.spriteY(torre), radius: 5, color: "#9cff57", vx: -6, vy: 0 });
+      SZGame2D.spawnBullet(tiros, { x: SZGame2D.centerX(torre), y: 182, radius: 5, color: "#9cff57", vx: -6, vy: 0 });
     });
   }
 }

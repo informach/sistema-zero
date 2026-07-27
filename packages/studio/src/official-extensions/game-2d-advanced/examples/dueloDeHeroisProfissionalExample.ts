@@ -41,7 +41,7 @@ export const dueloDeHeroisProfissionalExample: ExtensionExample = {
           text: {
             type: 'str',
             value:
-              'Jogador 1: A/D anda, W pula, S agacha, F defende, G soco, H chute, J especial. Jogador 2: setas + teclas 1 2 3. Melhor de 3 rounds!',
+              'Jogador 1: A/D anda, W pula, S agacha, F defende, G soco, H chute, J especial. Jogador 2: setas anda e pula, 0 defende, teclas 1 soco, 2 chute, 3 especial. Melhor de 3 rounds!',
           },
           button: { type: 'str', value: 'Lutar' },
         },

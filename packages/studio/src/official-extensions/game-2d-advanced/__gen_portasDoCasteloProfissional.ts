@@ -31,7 +31,7 @@ import { parseJS } from '../../parsers/js'
  */
 export const PORTAS_DO_CASTELO_PROFISSIONAL_SOURCE = `
 SZGameKit.setup({ width: 960, height: 540, background: "#2b2136", accent: "#ffd166" });
-SZGameKit.setScreenText("menu", "Portas do Castelo Profissional", "A/D ou setas para andar. Espaço para pular. Chegue na porta de cada sala para passar de fase. São 3 salas ate a saída!", "Entrar");
+SZGameKit.setScreenText("menu", "Portas do Castelo Profissional", "Use as setas para andar e pular. Chegue na porta de cada sala para passar de fase. São 3 salas até a saída!", "Entrar");
 SZGameKit.setScreenText("vitoria", "Você escapou do castelo!", "Passou pelas 3 salas e achou a porta de saída. O rei está livre!", "Jogar de novo");
 SZGameKit.defineLook("rei", function (ctx) {
   ctx.fillStyle = "#f2d16b";

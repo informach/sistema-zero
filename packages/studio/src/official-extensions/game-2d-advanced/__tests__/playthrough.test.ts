@@ -2386,8 +2386,8 @@ describe('gk — playthrough mínimo: Escalada do Guerreiro Profissional (rede p
     const h = loadRuntime()
     await bootEscalada(h)
     expect(h.api.state()).toBe('jogando')
-    // O "Ao iniciar" monta a torre inteira com moldes (3 tijolos de base + 8 tábuas).
-    expect(h.api.countActive('chao')).toBe(3)
+    // O "Ao iniciar" monta a torre inteira com moldes (4 tijolos de base + 8 tábuas).
+    expect(h.api.countActive('chao')).toBe(4)
     expect(h.api.countActive('tabua')).toBe(8)
     texts = []
     h.nextFrame(50)
