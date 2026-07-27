@@ -4,6 +4,8 @@ import {
   aventuraProfissionalExample,
   batalhaProfissionalExample,
   chuvaProfissionalExample,
+  escaladaProfissionalExample,
+  muralhaProfissionalExample,
   vilaDoDragaoExample,
 } from '../examples'
 import { gameKitRuntime } from '../runtime'
@@ -200,6 +202,11 @@ interface Api {
   overlapGroups: Fn
   hurt: Fn
   isDead: (c: unknown) => boolean
+  // 🧗 Escalada do Guerreiro — câmera que segue no mundo alto + checkpoint
+  cameraFollow: Fn
+  cameraY: () => number
+  setCheckpoint: Fn
+  respawn: Fn
   drawActive: Fn
 }
 
@@ -2235,5 +2242,246 @@ describe('gk — playthrough mínimo: Chuva de Meteoros Profissional (rede pré-
     } finally {
       Math.random = realRandom
     }
+  })
+})
+
+describe('gk — playthrough mínimo: Muralha do Reino Profissional (rede pré-e2e)', () => {
+  interface Corpo {
+    x: number
+    y: number
+  }
+
+  /** Roda o exemplo EXATO (IR embutida → generateJS → runtime real). */
+  async function bootMuralha(h: Harness): Promise<void> {
+    const code = generateJS({
+      behavior: muralhaProfissionalExample.ir.behavior,
+      lifecycle: 'game-2d-advanced',
+    })
+    new Function('window', 'SZGameKit', code)(h.window, h.api)
+    await Promise.resolve()
+    await Promise.resolve()
+    h.api.restartGame()
+  }
+
+  function vivos(h: Harness, mold: string): Corpo[] {
+    const out: Corpo[] = []
+    h.api.forEachActive(mold, (e: unknown) => out.push(e as Corpo))
+    return out
+  }
+
+  /** Dispara um clique REAL no canvas (o pointerdown vive no elemento). Rect 0×0
+   *  no headless → toGameCoords cai no fallback escala 1, então clientX/Y = coord
+   *  do jogo (o mesmo truque do playthrough do Defesa do Reino / R26). */
+  function clickAt(x: number, y: number) {
+    const canvas = document.querySelector('#szgk-canvas')
+    if (!canvas) throw new Error('sem canvas para clicar')
+    const ev = new MouseEvent('pointerdown', { clientX: x, clientY: y, bubbles: true })
+    canvas.dispatchEvent(ev)
+  }
+
+  it('⭐ a onda já entra pelo caminho e marcha ponto a ponto', async () => {
+    const h = loadRuntime()
+    await bootMuralha(h)
+    expect(h.api.state()).toBe('jogando')
+    // O exemplo já dispara tdWave("trilha", 3, ...) no "Ao iniciar".
+    expect(h.api.countActive('invasor')).toBe(3)
+    const lider = vivos(h, 'invasor').reduce((a, b) => (a.x >= b.x ? a : b))
+    const x0 = lider.x
+    for (let i = 1; i <= 20; i++) h.nextFrame(i * 50)
+    expect(lider.x).toBeGreaterThan(x0) // andou o caminho (entra pela esquerda p/ +x)
+  })
+
+  it('⭐ comprar torre num lugar paga 50 e ocupa; clicar de novo não faz nada', async () => {
+    const h = loadRuntime()
+    await bootMuralha(h)
+    expect(h.api.tdCoins()).toBe(100)
+    clickAt(120, 230) // o 1º tdSlot
+    expect(h.api.countActive('torre')).toBe(1)
+    expect(h.api.tdCoins()).toBe(50) // pagou 50 (o coins - 50 do original)
+    clickAt(120, 230) // lugar ocupado → nada
+    expect(h.api.countActive('torre')).toBe(1)
+    expect(h.api.tdCoins()).toBe(50)
+  })
+
+  it('⭐ sem moedas: a compra é negada e nada nasce', async () => {
+    const h = loadRuntime()
+    await bootMuralha(h)
+    let negada = 0
+    h.api.on('compra:negada', () => {
+      negada += 1
+    })
+    // Esvazia o cofre comprando 2 torres (100 → 50 → 0), a 3ª é negada.
+    clickAt(120, 230)
+    clickAt(320, 230)
+    expect(h.api.tdCoins()).toBe(0)
+    clickAt(340, 400)
+    expect(negada).toBe(1)
+    expect(h.api.countActive('torre')).toBe(2) // a 3ª não nasceu
+  })
+
+  it('⭐ a torre mira o invasor mais avançado, atira e derruba (com +25 moedas)', async () => {
+    const h = loadRuntime()
+    await bootMuralha(h)
+    // Compra uma torre colada no início do caminho (o 1º slot) e deixa a onda vir.
+    clickAt(120, 230)
+    expect(h.api.countActive('torre')).toBe(1)
+    const antesCoins = h.api.tdCoins()
+    const inv0 = h.api.countActive('invasor')
+    // Roda tempo suficiente p/ a torre recarregar, mirar e os tiros baterem.
+    let algumMorreu = false
+    for (let i = 1; i <= 400 && !algumMorreu; i++) {
+      h.nextFrame(i * 50)
+      if (h.api.countActive('invasor') < inv0) algumMorreu = true
+    }
+    expect(algumMorreu).toBe(true) // pelo menos 1 orc caiu na mira da torre
+    expect(h.api.tdCoins()).toBeGreaterThan(antesCoins) // +25 por orc derrotado
+  })
+
+  it('⭐ orc que passa tira um coração; zerar acaba o jogo', async () => {
+    const h = loadRuntime()
+    await bootMuralha(h)
+    let passou = 0
+    h.api.on('invasor:passou', () => {
+      passou += 1
+    })
+    // SEM torres: deixa a onda inteira vazar pela direita, quadro a quadro, até o
+    // fim (a onda cresce a cada onda limpa; 10 corações caem antes de esgotar).
+    for (let i = 1; i <= 4000 && h.api.state() === 'jogando'; i++) h.nextFrame(i * 50)
+    expect(passou).toBeGreaterThanOrEqual(10) // vazaram corações suficientes
+    expect(h.api.state()).toBe('fim') // a muralha caiu
+  })
+})
+
+describe('gk — playthrough mínimo: Escalada do Guerreiro Profissional (rede pré-e2e)', () => {
+  interface Heroi {
+    x: number
+    y: number
+    vx: number
+    vy: number
+    onGround: boolean
+  }
+
+  /** Roda o exemplo EXATO (IR embutida → generateJS → runtime real). */
+  async function bootEscalada(h: Harness): Promise<void> {
+    const code = generateJS({
+      behavior: escaladaProfissionalExample.ir.behavior,
+      lifecycle: 'game-2d-advanced',
+    })
+    new Function('window', 'SZGameKit', code)(h.window, h.api)
+    await Promise.resolve()
+    await Promise.resolve()
+    h.api.restartGame()
+  }
+
+  /** O placar que a criança VÊ ("Altura: N" do onDrawHud), ou -1. */
+  function alturaNoHud(): number {
+    const linha = texts.find((t) => t.text.startsWith('Altura: '))
+    return linha ? Number(linha.text.slice('Altura: '.length)) : -1
+  }
+
+  it('⭐ a fase nasce montada: chão de tijolos, tábuas para subir e HUD de altura', async () => {
+    const h = loadRuntime()
+    await bootEscalada(h)
+    expect(h.api.state()).toBe('jogando')
+    // O "Ao iniciar" monta a torre inteira com moldes (3 tijolos de base + 8 tábuas).
+    expect(h.api.countActive('chao')).toBe(3)
+    expect(h.api.countActive('tabua')).toBe(8)
+    texts = []
+    h.nextFrame(50)
+    expect(alturaNoHud()).toBeGreaterThanOrEqual(0) // o HUD desenha a altura
+    const recordeNoHud = texts.find((t) => t.text.startsWith('Recorde: '))
+    expect(recordeNoHud).toBeDefined()
+  })
+
+  it('⭐ o herói cai, pousa no chão de moldes e a câmera acompanha subindo', async () => {
+    const h = loadRuntime()
+    await bootEscalada(h)
+    // O herói começa no checkpoint (80, 1360) e cai no chão de tijolos (y=1420).
+    // Sem handle direto do personagem, a prova é a ALTURA do HUD e a CÂMERA:
+    // cair e assentar deixa a altura estável, e a câmera para de descer.
+    for (let i = 1; i <= 30; i++) h.nextFrame(i * 50)
+    texts = []
+    h.nextFrame(31 * 50)
+    const alturaPousado = alturaNoHud()
+    expect(alturaPousado).toBeGreaterThanOrEqual(0)
+    const camY0 = h.api.cameraY()
+    for (let i = 32; i <= 42; i++) h.nextFrame(i * 50)
+    // Parado no chão: a câmera fixou (o herói não desce mais).
+    expect(Math.abs(h.api.cameraY() - camY0)).toBeLessThan(2)
+    texts = []
+    h.nextFrame(43 * 50)
+    expect(alturaNoHud()).toBeCloseTo(alturaPousado, -1) // altura estável no chão
+  })
+
+  // Mecânica do 🏃 Kit Plataforma numa arena mínima (os MESMOS blocos que o
+  // exemplo usa) — o boot do exemplo não devolve o handle do personagem, então
+  // as provas de física/vitória rodam aqui, como o playthrough do Kit Plataforma.
+  async function arena(h: Harness): Promise<void> {
+    h.api.setup({ width: 960, height: 540 })
+    h.api.defineMold('chao', { w: 200, h: 24, color: '#6b4f3a' })
+    h.api.defineMold('tabua', { w: 110, h: 12, color: '#a0763d' })
+    await startGame(h)
+    h.api.setState('jogando')
+    h.api.setJumpFeel(0.1, 0.1, 0.3, 2000)
+  }
+
+  it('⭐ pular sobe pela tábua one-way e a câmera segue no mundo alto', async () => {
+    const h = loadRuntime()
+    await arena(h)
+    const g = h.api.createCharacter({ w: 32, h: 48, speed: 200, color: '#4a76b8' }) as Heroi
+    h.api.spawnFromMold('chao', 0, 460)
+    h.api.placeCharacter(g, 100, 412)
+    h.api.cameraFollow(g, 960, 1500)
+    h.api.onUpdate((dt: number) => {
+      h.api.platformerHero(g, 200, 620, dt)
+      h.api.collideGroup(g, 'chao')
+      h.api.oneWayPlatform(g, 'tabua', dt)
+    })
+    for (let i = 1; i <= 4; i++) h.nextFrame(i * 50) // assenta
+    expect(g.onGround).toBe(true)
+    const yChao = g.y
+    const camY0 = h.api.cameraY()
+    for (let i = 5; i <= 10; i++) {
+      h.fire('keydown', { key: ' ' })
+      h.nextFrame(i * 50)
+    }
+    expect(g.y).toBeLessThan(yChao - 20) // subiu
+    expect(g.vy).toBeLessThan(0)
+    expect(h.api.cameraY()).toBeLessThan(camY0) // a câmera acompanha p/ cima
+  })
+
+  it('⭐ cair no buraco renasce no checkpoint; a bandeira no topo dá a vitória', async () => {
+    const h = loadRuntime()
+    await arena(h)
+    const g = h.api.createCharacter({ w: 32, h: 48, speed: 200, color: '#4a76b8' }) as Heroi
+    h.api.setCheckpoint(80, 360)
+    h.api.respawn(g)
+    h.api.defineRegion('topo', 300, 60, 200, 100)
+    let venceu = false
+    h.api.onUpdate((dt: number) => {
+      h.api.platformerHero(g, 200, 620, dt)
+      if (h.api.charY(g) > 1560) h.api.respawn(g)
+      if (h.api.isInside(g, 'topo')) {
+        venceu = true
+        h.api.setState('vitoria')
+      }
+    })
+    // Cai no abismo (o gate é charY > 1560): renasce perto do checkpoint (80, 360).
+    g.x = 700
+    g.y = 1700
+    g.vx = 0
+    g.vy = 0
+    h.nextFrame(50)
+    expect(g.x).toBeCloseTo(80, -1)
+    expect(g.y).toBeLessThan(1000)
+    expect(h.api.state()).toBe('jogando') // cair não é fim, é recomeçar
+    // Teleporta para dentro da bandeira do topo: vitória.
+    g.x = 380
+    g.y = 100
+    g.vx = 0
+    g.vy = 0
+    h.nextFrame(100)
+    expect(venceu).toBe(true)
+    expect(h.api.state()).toBe('vitoria')
   })
 })

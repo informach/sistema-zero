@@ -776,4 +776,55 @@ export const EXAMPLE_QA_CONTRACTS = [
       'Começar com Enter ou clique, mover com as setas, atirar e ver o flash, colidir e reiniciar.',
     interactions: ['start', 'arrows', 'space', 'click'],
   },
+  {
+    key: 'game-2d:Muralha do Reino',
+    name: 'Muralha do Reino',
+    experience: 'game',
+    promise: 'Segurar as ondas de invasores comprando torres que atiram sozinhas.',
+    scenario: 'Começar, comprar torres no clique, derrotar as ondas, perder ou vencer e reiniciar.',
+    interactions: ['start', 'click'],
+  },
+  {
+    key: 'game-2d:Escalada do Guerreiro',
+    name: 'Escalada do Guerreiro',
+    experience: 'game',
+    promise: 'Subir pulando de plataforma em plataforma até a bandeira do topo.',
+    scenario: 'Começar, andar e pular com as setas, subir com a câmera e alcançar a bandeira.',
+    interactions: ['start', 'arrows'],
+  },
+  {
+    key: 'game-2d-advanced:Muralha do Reino Profissional',
+    name: 'Muralha do Reino Profissional',
+    experience: 'game',
+    promise: 'Defender o reino com o kit de torres: caminho, ondas crescentes e moedas.',
+    scenario:
+      'Comprar torres no clique, mirar os invasores, ganhar moedas, perder corações e recomeçar.',
+    interactions: ['click'],
+  },
+  {
+    key: 'game-2d-advanced:Escalada do Guerreiro Profissional',
+    name: 'Escalada do Guerreiro Profissional',
+    experience: 'game',
+    promise: 'Subir com o kit de plataforma: pulo gostoso, tábuas e câmera que acompanha.',
+    scenario:
+      'Andar e pular com as setas, subir pelas tábuas, renascer ao cair e alcançar a bandeira.',
+    interactions: ['arrows'],
+  },
+  {
+    key: 'core:Muralha do Reino (na mão)',
+    name: 'Muralha do Reino (na mão)',
+    experience: 'game',
+    promise: 'Defender o reino com a lógica de torre feita só com o núcleo.',
+    scenario:
+      'Começar, comprar torres no clique, encarar as 5 ondas, perder ou vencer e reiniciar.',
+    interactions: ['start', 'click'],
+  },
+  {
+    key: 'core:Escalada do Guerreiro (na mão)',
+    name: 'Escalada do Guerreiro (na mão)',
+    experience: 'game',
+    promise: 'Subir a plataforma vertical feita só com o núcleo, com câmera que acompanha.',
+    scenario: 'Andar com A e D, pular com W, atravessar tábuas por baixo e alcançar a bandeira.',
+    interactions: ['wasd'],
+  },
 ] as const satisfies readonly ExampleQAContract[]

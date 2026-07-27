@@ -23,10 +23,12 @@ import {
   dinoProfissionalExample,
   dueloDeCartasExample,
   dueloDosBonecosExample,
+  escaladaProfissionalExample,
   florestaNinjaExample,
   invasaoDosOvnisExample,
   jogoDaMemoriaExample,
   meuPrimeiroJogoExample,
+  muralhaProfissionalExample,
   oChefaoExample,
   oChefaoFichaExample,
   quebraBlocosExample,
@@ -45,8 +47,10 @@ const EXAMPLES = [
   florestaNinjaExample,
   aventuraProfissionalExample,
   saltoNaFlorestaExample,
+  escaladaProfissionalExample,
   dinoProfissionalExample,
   chuvaProfissionalExample,
+  muralhaProfissionalExample,
   bichinhosDoQuintalExample,
   invasaoDosOvnisExample,
   dueloDosBonecosExample,
@@ -217,6 +221,20 @@ const REQUIRED_TYPES = {
     'gk:respawn',
     'gk:platformerAnim',
   ],
+  'Escalada do Guerreiro Profissional': [
+    'gk:platformerHero',
+    'gk:setJumpFeel',
+    'gk:oneWayPlatform',
+    'gk:collideGroup',
+    'gk:dropThrough',
+    'gk:cameraFollow',
+    'gk:setCheckpoint',
+    'gk:respawn',
+    'gk:defineRegion',
+    'gk:isInside',
+    'gk:saveValue',
+    'gk:savedValue',
+  ],
   'Bichinhos do Quintal': [
     'gk:rpgSetStartMap',
     'gk:rpgCreateMap',
@@ -262,6 +280,21 @@ const REQUIRED_TYPES = {
     'gk:pathPoint',
     'gk:pickActive',
     'gk:launchTowards',
+  ],
+  'Muralha do Reino Profissional': [
+    'gk:tdSetCoins',
+    'gk:tdSlot',
+    'gk:tdOnBuy',
+    'gk:tdAddCoins',
+    'gk:tdCoins',
+    'gk:tdDrawRange',
+    'gk:tdWave',
+    'gk:definePath',
+    'gk:pathPoint',
+    'gk:pickActive',
+    'gk:distanceBetween',
+    'gk:launchTowards',
+    'gk:drawHearts',
   ],
   'Reino Aberto': [
     'gk:rpgSetStartMap',
@@ -356,7 +389,7 @@ beforeAll(() => {
 })
 
 describe('game-2d-advanced — catálogo dos exemplos', () => {
-  it('manifest mantém os 23 exemplos canônicos na ordem da vitrine', () => {
+  it('manifest mantém os 25 exemplos canônicos na ordem da vitrine', () => {
     expect(gameKitExtension.manifest.examples.map((example) => example.name)).toEqual(
       EXAMPLES.map((example) => example.name),
     )

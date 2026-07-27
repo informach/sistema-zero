@@ -9,11 +9,13 @@ import {
   chuvaDeMeteorosNaMaoExample,
   corridaInfinitaNaMaoExample,
   dinoNaMaoExample,
+  escaladaDoGuerreiroNaMaoExample,
   folioCanvasProceduralExample,
   gorilasNaMaoExample,
   invadersNaMaoExample,
   labirintoDosRobosNaMaoExample,
   mundoDeBlocosNaMaoExample,
+  muralhaDoReinoNaMaoExample,
   passeio3dNaMaoExample,
   patrulhaEspacialNaMaoExample,
 } from './core'
@@ -671,5 +673,114 @@ describe('CORE_EXAMPLES — patrulhaEspacialNaMaoExample (Space Shooter 3D Clear
     expect(code).toContain('const dt = relogio.getDelta();')
     expect(code).toContain('document.getElementById("pontos").textContent = Math.floor(pontos);')
     expect(code).toContain('cena.children.length')
+  })
+})
+
+describe('CORE_EXAMPLES — muralhaDoReinoNaMaoExample (defesa de torre Chris Courses na unha)', () => {
+  it('está em CORE_EXAMPLES, sem extensões e com IR válido', () => {
+    expect(CORE_EXAMPLES).toContain(muralhaDoReinoNaMaoExample)
+    expect(muralhaDoReinoNaMaoExample.ir.extensions).toEqual([])
+    expect(SZIRV2Schema.safeParse(muralhaDoReinoNaMaoExample.ir).success).toBe(true)
+  })
+
+  it('NÃO usa código avançado nem blocos de extensão', () => {
+    const types = collectTypes(muralhaDoReinoNaMaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('rawCSS')).toBe(false)
+    expect(types.has('rawHTML')).toBe(false)
+    expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
+  })
+
+  it('usa waypoints + mira por distância + tiro que persegue, sem asset', () => {
+    const types = collectTypes(muralhaDoReinoNaMaoExample.ir)
+    for (const expected of [
+      'classDecl', // Enemy / Shot / Tower
+      'funcDecl', // dist(...) / spawnWave / restart / animate(timeStamp)
+      'newExpr', // new Enemy(...) / new Shot(...) / new Tower(...)
+      'setThisProp', // o estado vive nos objetos
+      'canvasStroke', // o caminho é uma linha grossa (moveTo/lineTo/stroke)
+      'canvasFillRect', // torres, barras de vida e slots são retângulos
+      'canvasBeginPath', // inimigos e tiros são círculos (beginPath + arc + fill)
+      'canvasFill', // preenche o círculo desenhado
+      'canvasFillText', // placar (moedas/vidas/onda) + telas de fim/vitória
+      'requestFrame', // pedir o próximo quadro chamando animate
+      'canvasSetup',
+      'mathBinary', // Math.hypot da distância + Math.atan2 do rumo
+      'mathUnary', // Math.cos / Math.sin do passo
+      'forRange', // varre inimigos / torres / tiros / slots
+      'event', // pointermove + click (comprar torre) + keydown (Enter)
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
+    // é 100% desenhado: não precisa de nenhum asset embutido
+    expect(muralhaDoReinoNaMaoExample.assets ?? []).toEqual([])
+    const code = compileStatements(behaviorStatements(muralhaDoReinoNaMaoExample.ir), 0)
+    // o inimigo vira com atan2 e anda com cos/sin (caminho por waypoints)
+    expect(code).toContain('const angle = Math.atan2(target.y - this.y, target.x - this.x);')
+    expect(code).toContain('this.x = this.x + Math.cos(angle) * this.speed;')
+    // a torre mira o MAIS PRÓXIMO no alcance e o tiro persegue o alvo
+    expect(code).toContain('const d = dist(this.x, this.y, e.x, e.y);')
+    expect(code).toContain('Math.atan2(this.target.y - this.y, this.target.x - this.x)')
+    // dt REAL clampado em 50ms (trocar de aba não teleporta)
+    expect(code).toContain('dt = 50;')
+  })
+
+  it('IR→blocos não contém bloco raw/avançado', () => {
+    expect(JSON.stringify(buildWorkspaceStateFromIR(muralhaDoReinoNaMaoExample.ir))).not.toContain(
+      '"sz_adv_raw_js"',
+    )
+  })
+})
+
+describe('CORE_EXAMPLES — escaladaDoGuerreiroNaMaoExample (plataforma vertical Chris Courses na unha)', () => {
+  it('está em CORE_EXAMPLES, sem extensões e com IR válido', () => {
+    expect(CORE_EXAMPLES).toContain(escaladaDoGuerreiroNaMaoExample)
+    expect(escaladaDoGuerreiroNaMaoExample.ir.extensions).toEqual([])
+    expect(SZIRV2Schema.safeParse(escaladaDoGuerreiroNaMaoExample.ir).success).toBe(true)
+  })
+
+  it('NÃO usa código avançado nem blocos de extensão', () => {
+    const types = collectTypes(escaladaDoGuerreiroNaMaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('rawCSS')).toBe(false)
+    expect(types.has('rawHTML')).toBe(false)
+    expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
+  })
+
+  it('usa gravidade + colisão AABB em x e y + plataforma one-way + câmera, sem asset', () => {
+    const types = collectTypes(escaladaDoGuerreiroNaMaoExample.ir)
+    for (const expected of [
+      'classDecl', // Block / Platform / Player
+      'funcDecl', // overlap(...) AABB / updateCamera / animate
+      'newInstance', // new Block(...) / new Platform(...) / new Player(...)
+      'setThisProp', // o estado do herói vive no objeto
+      'canvasFillRect', // herói, blocos, plataformas e bandeira são retângulos
+      'canvasSave', // a câmera: save…
+      'canvasScale', // …scale…
+      'canvasTranslate', // …translate (segue o herói)…
+      'canvasRestore', // …e restore
+      'requestFrame', // pedir o próximo quadro chamando animate
+      'canvasSetup',
+      'forRange', // varre blocos e plataformas
+      'event', // keydown/keyup (A/D andam, W pula)
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
+    // é 100% desenhado: não precisa de nenhum asset embutido
+    expect(escaladaDoGuerreiroNaMaoExample.assets ?? []).toEqual([])
+    const code = compileStatements(behaviorStatements(escaladaDoGuerreiroNaMaoExample.ir), 0)
+    // a gravidade e a colisão AABB resolvida por eixo (empurra pelo movimento)
+    expect(code).toContain('this.vy = this.vy + gravity;')
+    // a plataforma de UMA via: só segura o herói vindo CAINDO de cima
+    expect(code).toContain('const prevFeet = feet - this.vy;')
+    // a câmera acompanha o herói com a receita de save + scale + translate
+    expect(code).toContain('ctx.scale(scale, scale);')
+    expect(code).toContain('ctx.translate(0 - camera.x, 0 - camera.y);')
+  })
+
+  it('IR→blocos não contém bloco raw/avançado', () => {
+    expect(
+      JSON.stringify(buildWorkspaceStateFromIR(escaladaDoGuerreiroNaMaoExample.ir)),
+    ).not.toContain('"sz_adv_raw_js"')
   })
 })

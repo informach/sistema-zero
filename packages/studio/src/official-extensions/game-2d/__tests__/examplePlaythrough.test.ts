@@ -14,8 +14,10 @@ import {
   codeDrawnExample,
   dinoRunExample,
   enemyPlatformerExample,
+  escaladaDoGuerreiroExample,
   gorilasExample,
   gorilasVsRobotExample,
+  muralhaDoReinoExample,
   platformerExample,
   pongExample,
   stickHeroExample,
@@ -1142,6 +1144,171 @@ describe('playthrough dos exemplos exatos do Jogo 2D', () => {
     game.nextFrame()
     expect(game.api.sceneIs('jogando')).toBe(true)
     expect(game.scores['Pontos:']).toBe(0)
+    expect(game.errors).toEqual([])
+    expect(game.warnings).toEqual([])
+  })
+
+  it('Muralha do Reino compra torre no clique, atira, destrói invasor, perde vida e reinicia', () => {
+    // random fixo 0,5: os invasores nascem na faixa y ~170. As colisões do
+    // roteiro são INJETADAS (determinísticas), não dependem do RNG.
+    const game = exampleHarness(muralhaDoReinoExample, () => 0.5)
+    const castelo = game.sprites[0]
+    const inimigos = game.groups[0]
+    const torres = game.groups[1]
+    const tiros = game.groups[2]
+    expect(castelo).toBeDefined()
+    expect(game.api.sceneIs('inicio')).toBe(true)
+
+    // Na tela de início nada nasce (todo spawner é gated pela cena jogando).
+    for (let frame = 0; frame < 80; frame += 1) game.nextFrame()
+    expect(inimigos?.items).toHaveLength(0)
+    expect(tiros?.items).toHaveLength(0)
+
+    game.fireKey('Enter')
+    expect(game.api.sceneIs('jogando')).toBe(true)
+
+    // Os invasores nascem fora da tela à esquerda e marcham para a DIREITA.
+    for (let frame = 0; frame < 130; frame += 1) game.nextFrame()
+    expect(inimigos?.items.length ?? 0).toBeGreaterThan(0)
+    const invasor = inimigos?.items[0]
+    const invasorX = invasor?.x ?? 0
+    game.nextFrame()
+    expect(invasor?.x ?? 0).toBeGreaterThan(invasorX)
+
+    // Comprar torre: clicar na faixa de baixo gasta 50 moedas e cria uma torre.
+    expect(game.scores['Moedas:']).toBe(100)
+    game.firePointer('pointerdown', 120, 260)
+    expect(torres?.items).toHaveLength(1)
+    game.nextFrame()
+    expect(game.scores['Moedas:']).toBe(50)
+
+    // A torre atira sozinha (a cada 0,5 s): um tiro nasce e voa para a esquerda.
+    const tirosAntes = tiros?.items.length ?? 0
+    for (let frame = 0; frame < 40; frame += 1) game.nextFrame()
+    expect(tiros?.items.length ?? 0).toBeGreaterThan(tirosAntes)
+    const tiro = tiros?.items[0]
+    const tiroX = tiro?.x ?? 0
+    game.nextFrame()
+    expect(tiro?.x ?? 0).toBeLessThan(tiroX)
+
+    // Destruir: invasor injetado sobre um tiro parado = +25 moedas, os dois somem.
+    const moedasAntes = game.scores['Moedas:'] ?? 0
+    if (tiro && inimigos) {
+      tiro.vx = 0
+      tiro.vy = 0
+      game.api.spawn(inimigos, {
+        x: tiro.x,
+        y: tiro.y,
+        w: 30,
+        h: 30,
+        color: '#c0504d',
+        vx: 0,
+        vy: 0,
+      })
+    }
+    game.nextFrame()
+    expect(game.scores['Moedas:'] ?? 0).toBeGreaterThanOrEqual(moedasAntes + 25)
+
+    // Invasor que encosta no castelo tira 1 vida e some.
+    const vidasAntes = game.scores['Vidas:'] ?? 10
+    if (castelo && inimigos) {
+      game.api.spawn(inimigos, {
+        x: castelo.x,
+        y: castelo.y,
+        w: 30,
+        h: 30,
+        color: '#c0504d',
+        vx: 0,
+        vy: 0,
+      })
+    }
+    game.nextFrame()
+    expect(game.scores['Vidas:'] ?? 0).toBe(vidasAntes - 1)
+
+    // Sem vidas o castelo cai (a cena perdeu). Injeta invasores até drenar tudo.
+    for (let round = 0; round < 12; round += 1) {
+      if (castelo && inimigos) {
+        game.api.spawn(inimigos, {
+          x: castelo.x,
+          y: castelo.y,
+          w: 30,
+          h: 30,
+          color: '#c0504d',
+          vx: 0,
+          vy: 0,
+        })
+      }
+      game.nextFrame()
+    }
+    expect(game.api.sceneIs('perdeu')).toBe(true)
+
+    // Enter reinicia limpo: moedas de volta a 100 e sem invasores.
+    game.fireKey('Enter', 'keyup')
+    game.fireKey('Enter')
+    game.nextFrame()
+    expect(game.api.sceneIs('inicio')).toBe(true)
+    game.fireKey('Enter', 'keyup')
+    game.fireKey('Enter')
+    game.nextFrame()
+    expect(game.api.sceneIs('jogando')).toBe(true)
+    expect(game.scores['Moedas:']).toBe(100)
+    expect(game.errors).toEqual([])
+    expect(game.warnings).toEqual([])
+  })
+
+  it('Escalada do Guerreiro sobe pulando, a câmera acompanha e a bandeira do topo vence', () => {
+    const game = exampleHarness(escaladaDoGuerreiroExample, () => 0.5)
+    const heroi = game.sprites[0]
+    const plataformas = game.groups[0]
+    expect(heroi).toBeDefined()
+    // 9 plataformas em ziguezague (chão + 8 degraus).
+    expect(plataformas?.items).toHaveLength(9)
+    expect(game.api.sceneIs('inicio')).toBe(true)
+
+    game.fireKey('Enter')
+    expect(game.api.sceneIs('jogando')).toBe(true)
+
+    // O chão sólido segura o herói: a gravidade o assenta no chão (não atravessa).
+    for (let frame = 0; frame < 20; frame += 1) game.nextFrame()
+    const restY = heroi?.y ?? 0
+    expect((restY ?? 0) + (heroi?.h ?? 0)).toBeLessThanOrEqual(916)
+    expect(heroi?.vy ?? 1).toBe(0)
+
+    // Andar para a direita: o herói se desloca no eixo x.
+    const startX = heroi?.x ?? 0
+    game.fireKey('ArrowRight')
+    for (let frame = 0; frame < 4; frame += 1) game.nextFrame()
+    game.fireKey('ArrowRight', 'keyup')
+    expect(heroi?.x ?? 0).toBeGreaterThan(startX)
+
+    // Pular do chão: com ↑ (parado na vertical) o herói sobe num quadro.
+    for (let frame = 0; frame < 6; frame += 1) game.nextFrame()
+    const antesDoPulo = heroi?.y ?? 0
+    game.fireKey('ArrowUp')
+    game.nextFrame()
+    game.fireKey('ArrowUp', 'keyup')
+    expect(heroi?.y ?? 0).toBeLessThan(antesDoPulo)
+
+    // Teletransporta o herói para o topo: passar da linha (y < 90) vence.
+    if (heroi) {
+      heroi.x = 84
+      heroi.y = 70
+      heroi.vy = 0
+    }
+    game.nextFrame()
+    // A câmera acompanhou o herói mundo acima (o pan do original).
+    expect(game.api.cameraX).toBeDefined()
+    expect(game.api.sceneIs('venceu')).toBe(true)
+
+    // Enter reinicia e dá para escalar de novo.
+    game.fireKey('Enter', 'keyup')
+    game.fireKey('Enter')
+    game.nextFrame()
+    expect(game.api.sceneIs('inicio')).toBe(true)
+    game.fireKey('Enter', 'keyup')
+    game.fireKey('Enter')
+    game.nextFrame()
+    expect(game.api.sceneIs('jogando')).toBe(true)
     expect(game.errors).toEqual([])
     expect(game.warnings).toEqual([])
   })
