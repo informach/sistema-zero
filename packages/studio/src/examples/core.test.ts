@@ -13,6 +13,8 @@ import {
   folioCanvasProceduralExample,
   gorilasNaMaoExample,
   invadersNaMaoExample,
+  labirintoDosRobosNaMaoExample,
+  mundoDeBlocosNaMaoExample,
   passeio3dNaMaoExample,
   plataformaVerticalNaMaoExample,
   portasDoCasteloNaMaoExample,
@@ -525,5 +527,133 @@ describe('CORE_EXAMPLES — aventuraNaMaoExample (aventura estilo Zelda na unha)
     expect(code).toContain('inimigo.y + inimigo.height > baseHeroi')
     // Laço com TEMPO real (velocidades por milissegundo × dt).
     expect(code).toContain('const deltaTime = timeStamp - lastTime;')
+  })
+})
+
+describe('CORE_EXAMPLES — labirintoDosRobosNaMaoExample (labirinto Doom 3D Clear Code na unha)', () => {
+  it('está em CORE_EXAMPLES, sem extensões e com IR válido', () => {
+    expect(CORE_EXAMPLES).toContain(labirintoDosRobosNaMaoExample)
+    expect(labirintoDosRobosNaMaoExample.ir.extensions).toEqual([])
+    expect(SZIRV2Schema.safeParse(labirintoDosRobosNaMaoExample.ir).success).toBe(true)
+  })
+
+  it('NÃO usa código avançado nem blocos de extensão', () => {
+    const types = collectTypes(labirintoDosRobosNaMaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('rawCSS')).toBe(false)
+    expect(types.has('rawHTML')).toBe(false)
+    expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
+  })
+
+  it('gera Three.js CRU com câmera FPS por arrastar + mapa em texto + FSM + tiro pelo centro, sem asset', () => {
+    const types = collectTypes(labirintoDosRobosNaMaoExample.ir)
+    for (const expected of [
+      'importStar', // import * as THREE from 'three' — o motor à mostra
+      'newInstance', // new THREE.X(...) na unha (renderer/cena/câmera/mirador)
+      'newExpr', // new THREE.Group()/Mesh DENTRO da classe + new Robot(this, …)
+      'classDecl', // Robot (grupo de caixas + FSM) e Game (estado da partida)
+      'funcDecl', // criarParede + resolverX/resolverZ (a AABB compartilhada)
+      'forRange', // varrer o MAPA em strings (linha × coluna)
+      'forEach', // paredes na colisão + robôs a cada quadro
+      'arrayFilter', // culling dos robôs derrotados (só os vivos ficam)
+      'callFunction', // resolverX(camera, 0.5) — a colisão é uma função
+      'mathBinary', // Math.hypot — a distância da FSM
+      'mathUnary', // Math.sin/cos do yaw — a lição da base vetorial
+      'event', // pointerdown/move/up (arrastar) + keydown/keyup (WASD/espaço)
+      'eventProp', // event.clientX / event.code
+      'animationLoop', // o laço de quadro com THREE.Clock (dt)
+      'setProperty', // HUD em DOM (vida + pontos)
+      'setStyle', // flash de dano + aviso de fim de jogo
+      'memberCall', // setFromCamera/lookAt/add/remove na unha
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
+    // é 100% procedural (BoxGeometry + cores): nenhum asset embutido, sem GLB
+    expect(labirintoDosRobosNaMaoExample.assets ?? []).toEqual([])
+    const code = compileStatements(behaviorStatements(labirintoDosRobosNaMaoExample.ir), 0)
+    expect(code).toContain("import * as THREE from 'three'")
+    // câmera FPS: ordem YXZ + giro por ARRASTAR (pointer lock é vetado)
+    expect(code).toContain('camera.rotation.order = "YXZ";')
+    expect(code).toContain('(event.clientX - ultimoX) * 0.005')
+    // a base vetorial do yaw: andar NO PLANO com sin/cos
+    expect(code).toContain('Math.sin(anguloY)')
+    // o labirinto é DATA-DRIVEN: paredes nascem de um mapa em strings
+    expect(code).toContain('if (letra === "P")')
+    // AABB eixo a eixo com wall-slide (empurra de volta pelo eixo invadido)
+    expect(code).toContain('objeto.position.x = parede.position.x - 1 - raio;')
+    // tiro pelo CENTRO: Raycaster + mira fixa + dono do mesh atingido
+    expect(code).toContain('mirador.setFromCamera(centro, camera);')
+    expect(code).toContain('alvo.object.parent === robo.grupo')
+    // FSM por distância + dano com i-frames
+    expect(code).toContain('this.estado = "perseguir";')
+    expect(code).toContain('this.vida = this.vida - 10;')
+    // névoa p/ o clima do labirinto
+    expect(code).toContain('new THREE.Fog')
+  })
+})
+
+describe('CORE_EXAMPLES — mundoDeBlocosNaMaoExample (Minecraft 3D Clear Code na unha)', () => {
+  it('está em CORE_EXAMPLES, sem extensões e com IR válido', () => {
+    expect(CORE_EXAMPLES).toContain(mundoDeBlocosNaMaoExample)
+    expect(mundoDeBlocosNaMaoExample.ir.extensions).toEqual([])
+    expect(SZIRV2Schema.safeParse(mundoDeBlocosNaMaoExample.ir).success).toBe(true)
+  })
+
+  it('NÃO usa código avançado nem blocos de extensão', () => {
+    const types = collectTypes(mundoDeBlocosNaMaoExample.ir)
+    expect(types.has('rawJS')).toBe(false)
+    expect(types.has('rawCSS')).toBe(false)
+    expect(types.has('rawHTML')).toBe(false)
+    expect([...types].some((t) => t.startsWith('g2d:') || t.startsWith('g3d:'))).toBe(false)
+  })
+
+  it('gera Three.js CRU com o mapa por chave + colocar na face + coluna de blocos, sem asset', () => {
+    const types = collectTypes(mundoDeBlocosNaMaoExample.ir)
+    for (const expected of [
+      'importStar', // import * as THREE from 'three' — o motor à mostra
+      'newInstance', // new THREE.X(...) na unha (renderer/cena/câmera/mirador)
+      'newExpr', // new THREE.Mesh(caixaGeo, material) DENTRO do World.colocar
+      'classDecl', // World (mapa de células) / Player (física) / Game (gestos)
+      'objectLiteral', // this.celulas = {} — o MAPA do mundo
+      'indexGet', // this.celulas[chave] — ler a célula por chave
+      'indexSet', // this.celulas[chave] = bloco — gravar a célula
+      'call', // chaveDe(x, y, z) como VALOR — a chave "x,y,z" é uma função
+      'return', // chaveDe/alturaDoTopo devolvem valor
+      'funcDecl', // chaveDe — a chave de célula na unha
+      'forRange', // geração procedural: chão 16×16, muralha e árvores
+      'mathUnary', // Math.round — a célula do jogador
+      'event', // pointerdown/move/up (arrastar) + keydown/keyup (WASD/pulo)
+      'eventProp', // event.clientX / event.code
+      'animationLoop', // o laço de quadro com THREE.Clock (dt)
+      'setProperty', // HUD em DOM (tipo de bloco + contagem)
+      'setStyle', // aviso de vitória (tocou a nuvem)
+      'memberCall', // setFromCamera/add/remove na unha
+      'memberCallExpr', // mirador.intersectObjects(…) / this.mundo.alturaDoTopo(…)
+    ]) {
+      expect(types.has(expected)).toBe(true)
+    }
+    // é 100% procedural (BoxGeometry + cores): nenhum asset embutido, sem GLB
+    expect(mundoDeBlocosNaMaoExample.assets ?? []).toEqual([])
+    const code = compileStatements(behaviorStatements(mundoDeBlocosNaMaoExample.ir), 0)
+    expect(code).toContain("import * as THREE from 'three'")
+    // câmera FPS por ARRASTAR com ordem YXZ (pointer lock é vetado)
+    expect(code).toContain('camera.rotation.order = "YXZ";')
+    expect(code).toContain('(event.clientX - ultimoX) * 0.005')
+    // o MAPA por chave de célula "x,y,z" (indexGet/indexSet)
+    expect(code).toContain('return x + "," + y + "," + z;')
+    expect(code).toContain('this.celulas[chave] = bloco;')
+    // a mecânica-assinatura: COLOCAR NA FACE (célula atingida + face.normal)
+    expect(code).toContain('mirador.setFromCamera(centro, camera);')
+    expect(code).toContain('alvo.object.position.x + alvo.face.normal.x')
+    // alcance limitado do ray, como no jogo real
+    expect(code).toContain('alvo.distance < 6')
+    // pulo com gravidade + pouso sobre a COLUNA de blocos da célula
+    expect(code).toContain('this.vy = this.vy - 12 * dt;')
+    expect(code).toContain('camera.position.y = topo + 1.6;')
+    // geração procedural por loops: chão, muralha e árvores
+    expect(code).toContain('this.colocar("grama", x, 0, z);')
+    expect(code).toContain('this.plantarArvore(4, 4);')
+    // toque didático: contar os blocos da cena no HUD
+    expect(code).toContain('cena.children.length')
   })
 })

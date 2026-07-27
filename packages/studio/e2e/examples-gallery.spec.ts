@@ -220,6 +220,8 @@ async function applyInteraction(
     'horn-h': ['h'],
     'digit-1': ['1'],
     'choice-2': ['2'],
+    'place-c': ['c'],
+    'remove-x': ['x'],
   }
   for (const key of keys[interaction]) await page.keyboard.press(key)
 }

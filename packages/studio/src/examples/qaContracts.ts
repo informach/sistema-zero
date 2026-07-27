@@ -14,6 +14,8 @@ export type ExampleQAInteraction =
   | 'horn-h'
   | 'digit-1'
   | 'choice-2'
+  | 'place-c'
+  | 'remove-x'
   | 'auto'
 
 export interface ExampleQAContract {
@@ -427,6 +429,24 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['arrows', 'space'],
   },
   {
+    key: 'game-3d:Labirinto dos Robôs',
+    name: 'Labirinto dos Robôs',
+    experience: 'game',
+    promise: 'Andar em primeira pessoa pelo labirinto e derrotar robôs com a mira central.',
+    scenario:
+      'Andar com WASD, pular, clicar para travar a mira e atirar, tomar dano e vencer ou reiniciar.',
+    interactions: ['start', 'wasd', 'space', 'click'],
+  },
+  {
+    key: 'game-3d:Mundo de Blocos',
+    name: 'Mundo de Blocos',
+    experience: 'game',
+    promise: 'Construir com blocos na grade isométrica e empilhar uma torre de cinco.',
+    scenario:
+      'Mover o cursor com as setas, colocar com espaço, trocar o tipo com 1 e quebrar com o clique.',
+    interactions: ['start', 'arrows', 'space', 'digit-1', 'click'],
+  },
+  {
     key: 'game-3d:Cubo girando',
     name: 'Cubo girando',
     experience: 'demo',
@@ -499,6 +519,24 @@ export const EXAMPLE_QA_CONTRACTS = [
     scenario:
       'Começar, trocar de faixa com A/D ou setas, pular com espaço, pegar moeda, bater e reiniciar.',
     interactions: ['wasd', 'arrows', 'space'],
+  },
+  {
+    key: 'game-3d-advanced:Labirinto dos Robôs Profissional',
+    name: 'Labirinto dos Robôs Profissional',
+    experience: 'game',
+    promise: 'Atirar em primeira pessoa em robôs com cérebro de patrulha, perseguição e ataque.',
+    scenario:
+      'Travar a mira, andar, derrotar um robô por tiro, morrer encostado, limpar os cinco e vencer.',
+    interactions: ['click', 'wasd'],
+  },
+  {
+    key: 'game-3d-advanced:Mundo de Blocos Profissional',
+    name: 'Mundo de Blocos Profissional',
+    experience: 'game',
+    promise: 'Plantar blocos sólidos na grade com o clique e subir até o topo da muralha.',
+    scenario:
+      'Andar, plantar bloco, subir nele, trocar o tipo com 1/2/3, reciclar com X e vencer no topo.',
+    interactions: ['click', 'wasd', 'space', 'digit-1'],
   },
   {
     key: 'world-3d:Meu Mundo',
@@ -693,5 +731,23 @@ export const EXAMPLE_QA_CONTRACTS = [
     scenario:
       'Começar, andar com deslize na parede, golpear mato e inimigos com knockback e vencer ou perder e reiniciar.',
     interactions: ['start', 'arrows', 'space'],
+  },
+  {
+    key: 'core:Labirinto dos Robôs (na mão)',
+    name: 'Labirinto dos Robôs (na mão)',
+    experience: 'game',
+    promise: 'Andar pelo labirinto em primeira pessoa, mirar pelo centro e derrotar os robôs.',
+    scenario:
+      'Arrastar para olhar, andar com WASD, atirar com espaço num robô, tomar dano, vencer ou perder e reiniciar.',
+    interactions: ['drag', 'wasd', 'space', 'click'],
+  },
+  {
+    key: 'core:Mundo de Blocos (na mão)',
+    name: 'Mundo de Blocos (na mão)',
+    experience: 'game',
+    promise: 'Colocar e remover blocos na face mirada e construir uma torre até a nuvem.',
+    scenario:
+      'Arrastar para olhar, andar e pular, trocar o tipo com 1/2/3, colocar com C na face mirada e remover com X.',
+    interactions: ['drag', 'wasd', 'space', 'digit-1', 'place-c', 'remove-x'],
   },
 ] as const satisfies readonly ExampleQAContract[]

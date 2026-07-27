@@ -6,6 +6,8 @@ import {
   chefaoDasSombrasExample,
   defesaDaTorreExample,
   guardiaoDoPortalExample,
+  labirintoDosRobosProfissionalExample,
+  mundoDeBlocosProfissionalExample,
   parkourDoVulcaoExample,
   quadraMalucaExample,
   saltoNasNuvensExample,
@@ -362,5 +364,220 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
     expect(tituloDaTela(stage, 'vitoria')).toBe('Sombra derrotada!')
     // Provou que o onHurt trocou de fase lendo a vida DURANTE a luta (não só o fim).
     expect(viuFaseAvancada).toBe(true)
+  })
+
+  it('⭐ Labirinto dos Robôs Profissional: a FSM patrulha→persegue→ataca; o tiro do FPS derrota; limpar tudo vence', async () => {
+    const { api, step, stage } = await loadExampleKit(
+      jsDoExemplo(labirintoDosRobosProfissionalExample),
+    )
+    expect(api.state()).toBe('menu')
+    apertarBotaoDe(stage, 'menu') // "Entrar"
+    expect(api.state()).toBe('jogando')
+    expect(api.countAlive('vigia')).toBe(3)
+    expect(api.countAlive('tanque')).toBe(2)
+
+    const canvas = stage.querySelector('canvas')
+    if (!canvas) throw new Error('canvas do exemplo não montou')
+    // ⭐ Veredito do spike: o gatilho do FPS é o CLIQUE (mousePressed funciona
+    // sob pointer lock) — sem pick, o teste só precisa despachar o pointerdown.
+    const atirar = (): void => {
+      canvas.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
+      window.dispatchEvent(new PointerEvent('pointerup'))
+    }
+    // Estaciona todo robô que NÃO é o alvo num canto longe (>9 do herói): o
+    // duelo fica determinístico e ninguém fura a linha de tiro do teste.
+    const estacionarOutros = (alvo: unknown): void => {
+      const outros: unknown[] = []
+      for (const mold of ['vigia', 'tanque']) {
+        api.forEachAlive(mold, (e) => {
+          if (e !== alvo) outros.push(e)
+        })
+      }
+      for (const o of outros) api.place(o, 14, 0, 14)
+    }
+
+    // (a) moveFps: tecla REAL move o herói em 1ª pessoa (WASD relativo ao olhar).
+    let heroi = primeiroVivo(api, 'heroi')
+    expect(heroi).not.toBeNull()
+    step(4)
+    tecla('keydown', 'w')
+    step(3)
+    const vx = api.velocityOf(heroi, 'x')
+    const vz = api.velocityOf(heroi, 'z')
+    expect(vx * vx + vz * vz).toBeGreaterThan(1)
+    tecla('keyup', 'w')
+
+    // (b) FSM: o robô nasce em 'parado' e o stateTimer o leva a 'patrulhar'.
+    const umVigia = primeiroVivo(api, 'vigia')
+    step(12)
+    expect(api.stateOf(umVigia)).toBe('patrulhar')
+
+    // (c) herói a menos de 9 → 'perseguir' (a 2ª etapa do cérebro).
+    api.place(umVigia, 0, 0, -9)
+    api.place(heroi, 0, 0, -3)
+    step(3)
+    expect(api.stateOf(umVigia)).toBe('perseguir')
+
+    // (d) TIRO: o mesh do herói vira com setYaw (é o MESMO giro que o pointer
+    // lock faria) e spawnFrom+moveForward levam o projétil até o vigia. Duas
+    // balas com i-frames de 0,5 s entre elas derrubam os 20 de vida.
+    for (let i = 0; i < 300 && api.countAlive('vigia') === 3; i++) {
+      api.place(umVigia, 0, 0, -9)
+      estacionarOutros(umVigia)
+      api.place(heroi, 0, 0, -3)
+      api.setYaw(heroi, 180) // a frente +Z do herói aponta para -Z (o robô)
+      if (i % 20 === 0) atirar()
+      step(1)
+    }
+    expect(api.countAlive('vigia')).toBe(2)
+    step(1)
+    expect(stage.querySelector('.szg3k-hud-top-right')?.textContent).toBe('Robôs: 4')
+
+    // (e) ATACAR: encostar liga a 3ª etapa e o dano do tanque é 15 (data-driven).
+    // ⚠️ O tanque saiu de (d) ESTACIONADO no mesmo canto dos vigias — este
+    // playthrough pegou exatamente isso na 1ª rodada (um vigia parado ao lado
+    // roubava o golpe por 8). Traz o alvo para um ponto limpo ANTES do duelo.
+    const tanque = primeiroVivo(api, 'tanque')
+    api.place(tanque, 0, 0, -9)
+    estacionarOutros(tanque)
+    const vidaAntes = api.healthOf(heroi)
+    api.place(heroi, 0, 0, -9)
+    step(6)
+    expect(api.stateOf(tanque)).not.toBe('patrulhar')
+    expect(api.healthOf(heroi)).toBe(vidaAntes - 15)
+
+    // (f) derrota JOGÁVEL: grudado no tanque, os golpes de 1,2 s zeram a vida.
+    for (let i = 0; i < 400 && api.state() === 'jogando'; i++) {
+      estacionarOutros(tanque)
+      api.place(heroi, api.posOf(tanque, 'x'), 0, api.posOf(tanque, 'z'))
+      step(1)
+    }
+    expect(api.state()).toBe('fim')
+    expect(tituloDaTela(stage, 'fim')).toBe('Os robôs venceram...')
+
+    // (g) partida nova: caçar os 5 robôs no duelo pinado até a vitória.
+    apertarBotaoDe(stage, 'fim') // "Tentar de novo"
+    expect(api.state()).toBe('jogando')
+    heroi = primeiroVivo(api, 'heroi')
+    for (let i = 0; i < 1600 && api.state() === 'jogando'; i++) {
+      const alvo = primeiroVivo(api, 'vigia') ?? primeiroVivo(api, 'tanque')
+      if (alvo) {
+        api.place(alvo, 0, 0, -9)
+        estacionarOutros(alvo)
+        api.place(heroi, 0, 0, -3)
+        api.setYaw(heroi, 180)
+        if (i % 20 === 0) atirar()
+      }
+      step(1)
+    }
+    expect(api.state()).toBe('vitoria')
+    expect(tituloDaTela(stage, 'vitoria')).toBe('Labirinto limpo!')
+  })
+
+  it('⭐ Mundo de Blocos Profissional: o clique planta bloco SÓLIDO na grade, dá para SUBIR nele, e o topo da muralha vence', async () => {
+    const { api, step, stage, renderers } = await loadExampleKit(
+      jsDoExemplo(mundoDeBlocosProfissionalExample),
+    )
+    apertarBotaoDe(stage, 'menu') // "Construir"
+    expect(api.state()).toBe('jogando')
+    expect(api.countAlive('muralha')).toBe(3)
+    expect(api.countAlive('arvore')).toBe(3) // a geração semeada plantou o cenário
+
+    const canvas = stage.querySelector('canvas')
+    if (!canvas) throw new Error('canvas do exemplo não montou')
+    // Projeta um PONTO do mundo com a câmera real e clica ali (o rect do canvas
+    // no happy-dom é 0×0 → o rastreador cai em width/height 1, então
+    // clientX = (ndc+1)/2 — a mesma receita do Tiro ao Alvo).
+    const clicarNoPonto = (x: number, y: number, z: number): void => {
+      const cam = renderers[0]?.camera
+      if (!cam) throw new Error('sem câmera viva')
+      const v = new THREE.Vector3(x, y, z)
+      v.project(cam)
+      if (v.z > 1 || Math.abs(v.x) > 0.98 || Math.abs(v.y) > 0.98) {
+        throw new Error('o ponto do teste saiu da tela — reposicione o clique')
+      }
+      canvas.dispatchEvent(
+        new PointerEvent('pointerdown', {
+          bubbles: true,
+          clientX: (v.x + 1) / 2,
+          clientY: (1 - v.y) / 2,
+        }),
+      )
+      window.dispatchEvent(new PointerEvent('pointerup'))
+    }
+
+    // (a) andar: platformerKeys com tecla real (3ª pessoa, mouse LIVRE).
+    const heroi = primeiroVivo(api, 'heroi')
+    expect(heroi).not.toBeNull()
+    tecla('keydown', 'w')
+    step(3)
+    const vx = api.velocityOf(heroi, 'x')
+    const vz = api.velocityOf(heroi, 'z')
+    expect(vx * vx + vz * vz).toBeGreaterThan(1)
+    tecla('keyup', 'w')
+
+    // A câmera que segue converge antes de qualquer mira de clique.
+    step(90)
+
+    // (b) plantar: clique no chão → groundPoint + arredondar → célula (4, 6).
+    clicarNoPonto(4, 0, 6)
+    step(2)
+    expect(api.countAlive('grama')).toBe(1)
+    const bloco = primeiroVivo(api, 'grama')
+    expect(api.posOf(bloco, 'x')).toBeCloseTo(4, 5)
+    expect(api.posOf(bloco, 'z')).toBeCloseTo(6, 5)
+
+    // (c) ⭐ o bloco plantado é SÓLIDO: cair de cima pousa no TOPO (~1,2), não no
+    // chão. ⚠️ Gotcha que ESTE playthrough pegou: o place() não limpa o grounded
+    // do pouso anterior, e o cérebro roda ANTES da física — teleportar para
+    // y > 2,2 dispara a vitória com o grounded VELHO. Por isso o pingo é BAIXO
+    // (y 2,0 < 2,2): um quadro de queda limpa o grounded antes de qualquer coisa.
+    api.place(heroi, 4, 2, 6)
+    step(30)
+    expect(api.state()).toBe('jogando') // pousar no bloco (1,2) NÃO vence
+    expect(api.onGround(heroi)).toBe(true)
+    expect(api.posOf(heroi, 'y')).toBeGreaterThan(1)
+    expect(api.posOf(heroi, 'y')).toBeLessThan(1.5)
+
+    // (d) tecla 2 troca o tipo (HUD mostra) e o clique planta PEDRA noutra célula.
+    tecla('keydown', '2')
+    step(1)
+    tecla('keyup', '2')
+    step(1)
+    expect(stage.querySelector('.szg3k-hud-bottom-left')?.textContent).toBe('Bloco: pedra (1 2 3)')
+    step(60) // a câmera re-converge (o herói teleportou para cima do bloco)
+    clicarNoPonto(2, 0, 2)
+    step(2)
+    expect(api.countAlive('pedra')).toBe(1)
+    expect(stage.querySelector('.szg3k-hud-top-left')?.textContent).toBe('Blocos: 2 de 30')
+
+    // (e) X liga o modo reciclar e o clique NO bloco (pick, mouse livre) o recolhe.
+    api.place(heroi, -4, 0, -6) // sai de cima do alvo
+    step(60)
+    tecla('keydown', 'x')
+    step(1)
+    tecla('keyup', 'x')
+    step(1)
+    expect(stage.querySelector('.szg3k-hud-top-right')?.textContent).toBe(
+      'Modo: reciclar (X troca)',
+    )
+    clicarNoPonto(4, 0.6, 6) // o MIOLO do bloco de grama
+    step(2)
+    expect(api.countAlive('grama')).toBe(0)
+    expect(api.countAlive('pedra')).toBe(1) // o pick é por molde: só o clicado saiu
+
+    // (f) objetivo: pousar no topo da muralha (y 2,4 > 2,2) vence. O pingo baixo
+    // limpa o grounded velho (mesmo gotcha do (c)); só o POUSO de verdade no
+    // topo pode disparar a vitória.
+    api.place(heroi, 0, 1.5, -8)
+    step(2)
+    expect(api.state()).toBe('jogando')
+    api.place(heroi, 0, 6, 10)
+    step(2)
+    expect(api.state()).toBe('jogando') // no ar sobre a muralha ainda NÃO venceu
+    const quadros = stepUntil(step, () => api.state() !== 'jogando', 120)
+    expect(quadros).toBeGreaterThan(0)
+    expect(api.state()).toBe('vitoria')
+    expect(tituloDaTela(stage, 'vitoria')).toBe('Chegou ao topo!')
   })
 })

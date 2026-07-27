@@ -1907,3 +1907,2569 @@ export const corridaInfinitaExample: ExtensionExample = {
     ],
   },
 }
+
+/**
+ * Exemplo bundlado: "Labirinto dos Robôs" (nível 1 da família Labirinto, um FPS
+ * estilo Doom básico): câmera em primeira pessoa presa ao jogador (clique trava
+ * o mouse), labirinto de paredes SÓLIDAS seguradas pela física de corpo, robôs
+ * em enxame que perseguem com moveTowards (velocidade por tipo) e tiro por MIRA
+ * no clique via aimAhead. Sob pointer lock o mouse interno congela, então
+ * pickAtMouse/pointerOver são banidos aqui; sem lock o jogo segue de pé (WASD
+ * anda pelo fpsControls e o HUD funciona). Gerado por __gen_labirintoRobos.ts.
+ */
+export const labirintoRobosExample: ExtensionExample = {
+  name: 'Labirinto dos Robôs',
+  experience: 'game',
+  description:
+    'Um labirinto em primeira pessoa: clique para travar a mira, ande com WASD e gire com o mouse. Robôs brilhantes te perseguem! Mire e atire com o clique antes que a vida acabe.',
+  ir: {
+    html: [
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'vida-caixa',
+        children: [
+          {
+            type: 'text',
+            text: 'Vida ',
+          },
+          {
+            type: 'element',
+            tag: 'span',
+            id: 'vida',
+            text: '3',
+          },
+        ],
+      },
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'placar-caixa',
+        children: [
+          {
+            type: 'text',
+            text: 'Pontos ',
+          },
+          {
+            type: 'element',
+            tag: 'span',
+            id: 'placar',
+            text: '0',
+          },
+        ],
+      },
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'mira',
+        text: '+',
+      },
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'dano',
+      },
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'hint',
+        text: 'Clique para mirar. WASD anda, o mouse gira, o clique atira. R recomeça.',
+      },
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'fim',
+        children: [
+          {
+            type: 'element',
+            tag: 'div',
+            id: 'fim-caixa',
+            children: [
+              {
+                type: 'element',
+                tag: 'h1',
+                id: 'fim-titulo',
+                text: 'Fim de jogo',
+              },
+              {
+                type: 'element',
+                tag: 'p',
+                children: [
+                  {
+                    type: 'text',
+                    text: 'Pontos: ',
+                  },
+                  {
+                    type: 'element',
+                    tag: 'span',
+                    id: 'final-pontos',
+                  },
+                ],
+              },
+              {
+                type: 'element',
+                tag: 'button',
+                id: 'retry',
+                text: 'Recomeçar',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    css: [
+      {
+        type: 'googleFont',
+        family: 'Press Start 2P',
+      },
+      {
+        selector: 'body',
+        declarations: {
+          margin: '0',
+          overflow: 'hidden',
+          'font-family': '"Press Start 2P", cursive',
+        },
+      },
+      {
+        selector: '#vida-caixa',
+        declarations: {
+          position: 'absolute',
+          top: '20px',
+          left: '20px',
+          'font-size': '1em',
+          color: 'white',
+          'z-index': '2',
+        },
+      },
+      {
+        selector: '#placar-caixa',
+        declarations: {
+          position: 'absolute',
+          top: '20px',
+          right: '20px',
+          'font-size': '1em',
+          color: 'white',
+          'z-index': '2',
+        },
+      },
+      {
+        selector: '#mira',
+        declarations: {
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          color: 'white',
+          'font-size': '1.6em',
+          'pointer-events': 'none',
+          'z-index': '2',
+        },
+      },
+      {
+        selector: '#dano',
+        declarations: {
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          'min-width': '100%',
+          'min-height': '100%',
+          'background-color': '#dc2626',
+          opacity: '0',
+          transition: 'opacity 0.3s',
+          'pointer-events': 'none',
+          'z-index': '1',
+        },
+      },
+      {
+        selector: '#hint',
+        declarations: {
+          position: 'absolute',
+          bottom: '20px',
+          left: '0',
+          'min-width': '100%',
+          'text-align': 'center',
+          'font-size': '0.7em',
+          color: 'white',
+          'z-index': '2',
+        },
+      },
+      {
+        selector: '#fim',
+        declarations: {
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          'min-width': '100%',
+          'min-height': '100%',
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          visibility: 'hidden',
+          'z-index': '3',
+        },
+      },
+      {
+        selector: '#fim.visivel',
+        declarations: {
+          visibility: 'visible',
+        },
+      },
+      {
+        selector: '#fim-caixa',
+        declarations: {
+          display: 'flex',
+          'flex-direction': 'column',
+          'align-items': 'center',
+          'background-color': 'white',
+          padding: '20px',
+          'text-align': 'center',
+        },
+      },
+      {
+        selector: '#fim-caixa button',
+        declarations: {
+          'background-color': '#7c3aed',
+          color: 'white',
+          padding: '16px 32px',
+          'font-family': 'inherit',
+          cursor: 'pointer',
+          border: 'none',
+        },
+      },
+    ],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'g3d:createFullscreenScene',
+          varName: 'cena',
+          bg: '#0f172a',
+        },
+        {
+          type: 'g3d:setSky',
+          worldVar: 'cena',
+          top: '#1e293b',
+          bottom: '#475569',
+        },
+        {
+          type: 'g3d:setFog',
+          worldVar: 'cena',
+          color: '#0f172a',
+          near: {
+            type: 'num',
+            value: 6,
+          },
+          far: {
+            type: 'num',
+            value: 26,
+          },
+        },
+        {
+          type: 'g3d:createBlock',
+          varName: 'chao',
+          worldVar: 'cena',
+          width: {
+            type: 'num',
+            value: 18,
+          },
+          height: {
+            type: 'num',
+            value: 1,
+          },
+          depth: {
+            type: 'num',
+            value: 18,
+          },
+          color: '#1f2937',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'chao',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: -1,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:setSolid',
+          objVar: 'chao',
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'jogador',
+          worldVar: 'cena',
+          size: {
+            type: 'num',
+            value: 1,
+          },
+          color: '#38bdf8',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'jogador',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 0,
+          },
+          z: {
+            type: 'num',
+            value: 6,
+          },
+        },
+        {
+          type: 'g3d:body',
+          objVar: 'jogador',
+          gravity: {
+            type: 'num',
+            value: -0.02,
+          },
+        },
+        {
+          type: 'g3d:createBlock',
+          varName: 'paredeNorte',
+          worldVar: 'cena',
+          width: {
+            type: 'num',
+            value: 18,
+          },
+          height: {
+            type: 'num',
+            value: 3,
+          },
+          depth: {
+            type: 'num',
+            value: 1,
+          },
+          color: '#7c3aed',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'paredeNorte',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 1,
+          },
+          z: {
+            type: 'num',
+            value: -8.5,
+          },
+        },
+        {
+          type: 'g3d:setSolid',
+          objVar: 'paredeNorte',
+        },
+        {
+          type: 'g3d:createBlock',
+          varName: 'paredeSul',
+          worldVar: 'cena',
+          width: {
+            type: 'num',
+            value: 18,
+          },
+          height: {
+            type: 'num',
+            value: 3,
+          },
+          depth: {
+            type: 'num',
+            value: 1,
+          },
+          color: '#7c3aed',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'paredeSul',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 1,
+          },
+          z: {
+            type: 'num',
+            value: 8.5,
+          },
+        },
+        {
+          type: 'g3d:setSolid',
+          objVar: 'paredeSul',
+        },
+        {
+          type: 'g3d:createBlock',
+          varName: 'paredeOeste',
+          worldVar: 'cena',
+          width: {
+            type: 'num',
+            value: 1,
+          },
+          height: {
+            type: 'num',
+            value: 3,
+          },
+          depth: {
+            type: 'num',
+            value: 18,
+          },
+          color: '#7c3aed',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'paredeOeste',
+          x: {
+            type: 'num',
+            value: -8.5,
+          },
+          y: {
+            type: 'num',
+            value: 1,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:setSolid',
+          objVar: 'paredeOeste',
+        },
+        {
+          type: 'g3d:createBlock',
+          varName: 'paredeLeste',
+          worldVar: 'cena',
+          width: {
+            type: 'num',
+            value: 1,
+          },
+          height: {
+            type: 'num',
+            value: 3,
+          },
+          depth: {
+            type: 'num',
+            value: 18,
+          },
+          color: '#7c3aed',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'paredeLeste',
+          x: {
+            type: 'num',
+            value: 8.5,
+          },
+          y: {
+            type: 'num',
+            value: 1,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:setSolid',
+          objVar: 'paredeLeste',
+        },
+        {
+          type: 'g3d:createBlock',
+          varName: 'muroNorte',
+          worldVar: 'cena',
+          width: {
+            type: 'num',
+            value: 12,
+          },
+          height: {
+            type: 'num',
+            value: 3,
+          },
+          depth: {
+            type: 'num',
+            value: 1,
+          },
+          color: '#6d28d9',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'muroNorte',
+          x: {
+            type: 'num',
+            value: -2,
+          },
+          y: {
+            type: 'num',
+            value: 1,
+          },
+          z: {
+            type: 'num',
+            value: -3,
+          },
+        },
+        {
+          type: 'g3d:setSolid',
+          objVar: 'muroNorte',
+        },
+        {
+          type: 'g3d:createBlock',
+          varName: 'muroSul',
+          worldVar: 'cena',
+          width: {
+            type: 'num',
+            value: 12,
+          },
+          height: {
+            type: 'num',
+            value: 3,
+          },
+          depth: {
+            type: 'num',
+            value: 1,
+          },
+          color: '#6d28d9',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'muroSul',
+          x: {
+            type: 'num',
+            value: 2,
+          },
+          y: {
+            type: 'num',
+            value: 1,
+          },
+          z: {
+            type: 'num',
+            value: 2,
+          },
+        },
+        {
+          type: 'g3d:setSolid',
+          objVar: 'muroSul',
+        },
+        {
+          type: 'g3d:fpsCamera',
+          worldVar: 'cena',
+          objVar: 'jogador',
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'moldeLento',
+          worldVar: 'cena',
+          size: {
+            type: 'num',
+            value: 1,
+          },
+          color: '#f43f5e',
+        },
+        {
+          type: 'g3d:setMaterial',
+          objVar: 'moldeLento',
+          kind: 'glow',
+        },
+        {
+          type: 'g3d:setVisible',
+          objVar: 'moldeLento',
+          mode: 'hide',
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'moldeRapido',
+          worldVar: 'cena',
+          size: {
+            type: 'num',
+            value: 0.7,
+          },
+          color: '#f59e0b',
+        },
+        {
+          type: 'g3d:setMaterial',
+          objVar: 'moldeRapido',
+          kind: 'glow',
+        },
+        {
+          type: 'g3d:setVisible',
+          objVar: 'moldeRapido',
+          mode: 'hide',
+        },
+        {
+          type: 'g3d:createSwarm',
+          varName: 'robosLentos',
+          worldVar: 'cena',
+        },
+        {
+          type: 'g3d:createSwarm',
+          varName: 'robosRapidos',
+          worldVar: 'cena',
+        },
+        {
+          type: 'var',
+          name: 'vida',
+          value: {
+            type: 'num',
+            value: 3,
+          },
+        },
+        {
+          type: 'var',
+          name: 'pontos',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'recarga',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'encostou',
+          value: {
+            type: 'bool',
+            value: false,
+          },
+        },
+        {
+          type: 'var',
+          name: 'rodando',
+          value: {
+            type: 'bool',
+            value: true,
+          },
+        },
+        {
+          type: 'funcDecl',
+          name: 'recomecar',
+          params: [],
+          body: [
+            {
+              type: 'g3d:forEachInSwarm',
+              swarmVar: 'robosLentos',
+              itemName: 'item',
+              body: [
+                {
+                  type: 'g3d:removeFromSwarm',
+                  swarmVar: 'robosLentos',
+                  itemVar: 'item',
+                },
+              ],
+            },
+            {
+              type: 'g3d:forEachInSwarm',
+              swarmVar: 'robosRapidos',
+              itemName: 'item',
+              body: [
+                {
+                  type: 'g3d:removeFromSwarm',
+                  swarmVar: 'robosRapidos',
+                  itemVar: 'item',
+                },
+              ],
+            },
+            {
+              type: 'g3d:spawnInSwarm',
+              swarmVar: 'robosLentos',
+              originalVar: 'moldeLento',
+              x: {
+                type: 'num',
+                value: -5,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3d:spawnInSwarm',
+              swarmVar: 'robosLentos',
+              originalVar: 'moldeLento',
+              x: {
+                type: 'num',
+                value: 5,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: -6,
+              },
+            },
+            {
+              type: 'g3d:spawnInSwarm',
+              swarmVar: 'robosLentos',
+              originalVar: 'moldeLento',
+              x: {
+                type: 'num',
+                value: -5,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: -6,
+              },
+            },
+            {
+              type: 'g3d:spawnInSwarm',
+              swarmVar: 'robosRapidos',
+              originalVar: 'moldeRapido',
+              x: {
+                type: 'num',
+                value: -6,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 6,
+              },
+            },
+            {
+              type: 'g3d:spawnInSwarm',
+              swarmVar: 'robosRapidos',
+              originalVar: 'moldeRapido',
+              x: {
+                type: 'num',
+                value: 5,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3d:setPosition',
+              objVar: 'jogador',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 6,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'vida',
+              value: {
+                type: 'num',
+                value: 3,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'pontos',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'recarga',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'setProperty',
+              targetId: 'vida',
+              property: 'textContent',
+              value: {
+                type: 'var',
+                name: 'vida',
+              },
+            },
+            {
+              type: 'setProperty',
+              targetId: 'placar',
+              property: 'textContent',
+              value: {
+                type: 'var',
+                name: 'pontos',
+              },
+            },
+            {
+              type: 'setStyle',
+              targetId: 'dano',
+              property: 'opacity',
+              value: {
+                type: 'str',
+                value: '0',
+              },
+            },
+            {
+              type: 'classOp',
+              targetId: 'fim',
+              op: 'remove',
+              className: 'visivel',
+            },
+            {
+              type: 'assign',
+              name: 'rodando',
+              value: {
+                type: 'bool',
+                value: true,
+              },
+            },
+          ],
+        },
+        {
+          type: 'callFunction',
+          name: 'recomecar',
+          args: [],
+        },
+      ],
+      events: [
+        {
+          type: 'event',
+          target: 'document',
+          targetKind: 'document',
+          event: 'click',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'var',
+                name: 'rodando',
+              },
+              then: [
+                {
+                  type: 'var',
+                  name: 'alvo',
+                  value: {
+                    type: 'g3d:aimAhead',
+                    worldVar: 'cena',
+                    objVar: 'jogador',
+                    dist: {
+                      type: 'num',
+                      value: 30,
+                    },
+                  },
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'var',
+                    name: 'alvo',
+                  },
+                  then: [
+                    {
+                      type: 'g3d:forEachInSwarm',
+                      swarmVar: 'robosLentos',
+                      itemName: 'item',
+                      body: [
+                        {
+                          type: 'if',
+                          cond: {
+                            type: 'binop',
+                            op: '===',
+                            left: {
+                              type: 'var',
+                              name: 'item',
+                            },
+                            right: {
+                              type: 'var',
+                              name: 'alvo',
+                            },
+                          },
+                          then: [
+                            {
+                              type: 'g3d:removeFromSwarm',
+                              swarmVar: 'robosLentos',
+                              itemVar: 'item',
+                            },
+                            {
+                              type: 'assign',
+                              name: 'pontos',
+                              value: {
+                                type: 'binop',
+                                op: '+',
+                                left: {
+                                  type: 'var',
+                                  name: 'pontos',
+                                },
+                                right: {
+                                  type: 'num',
+                                  value: 1,
+                                },
+                              },
+                            },
+                            {
+                              type: 'g3d:playEffect',
+                              kind: 'explosion',
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                    {
+                      type: 'g3d:forEachInSwarm',
+                      swarmVar: 'robosRapidos',
+                      itemName: 'item',
+                      body: [
+                        {
+                          type: 'if',
+                          cond: {
+                            type: 'binop',
+                            op: '===',
+                            left: {
+                              type: 'var',
+                              name: 'item',
+                            },
+                            right: {
+                              type: 'var',
+                              name: 'alvo',
+                            },
+                          },
+                          then: [
+                            {
+                              type: 'g3d:removeFromSwarm',
+                              swarmVar: 'robosRapidos',
+                              itemVar: 'item',
+                            },
+                            {
+                              type: 'assign',
+                              name: 'pontos',
+                              value: {
+                                type: 'binop',
+                                op: '+',
+                                left: {
+                                  type: 'var',
+                                  name: 'pontos',
+                                },
+                                right: {
+                                  type: 'num',
+                                  value: 2,
+                                },
+                              },
+                            },
+                            {
+                              type: 'g3d:playEffect',
+                              kind: 'explosion',
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                    {
+                      type: 'setProperty',
+                      targetId: 'placar',
+                      property: 'textContent',
+                      value: {
+                        type: 'var',
+                        name: 'pontos',
+                      },
+                    },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'binop',
+                        op: '===',
+                        left: {
+                          type: 'binop',
+                          op: '+',
+                          left: {
+                            type: 'g3d:countSwarm',
+                            swarmVar: 'robosLentos',
+                          },
+                          right: {
+                            type: 'g3d:countSwarm',
+                            swarmVar: 'robosRapidos',
+                          },
+                        },
+                        right: {
+                          type: 'num',
+                          value: 0,
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'assign',
+                          name: 'rodando',
+                          value: {
+                            type: 'bool',
+                            value: false,
+                          },
+                        },
+                        {
+                          type: 'setProperty',
+                          targetId: 'fim-titulo',
+                          property: 'textContent',
+                          value: {
+                            type: 'str',
+                            value: 'Você venceu!',
+                          },
+                        },
+                        {
+                          type: 'setProperty',
+                          targetId: 'final-pontos',
+                          property: 'textContent',
+                          value: {
+                            type: 'var',
+                            name: 'pontos',
+                          },
+                        },
+                        {
+                          type: 'classOp',
+                          targetId: 'fim',
+                          op: 'add',
+                          className: 'visivel',
+                        },
+                        {
+                          type: 'g3d:playEffect',
+                          kind: 'coin',
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'event',
+          target: 'document',
+          targetKind: 'document',
+          event: 'keydown',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '===',
+                left: {
+                  type: 'eventProp',
+                  prop: 'key',
+                },
+                right: {
+                  type: 'str',
+                  value: 'r',
+                },
+              },
+              then: [
+                {
+                  type: 'callFunction',
+                  name: 'recomecar',
+                  args: [],
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '===',
+                left: {
+                  type: 'eventProp',
+                  prop: 'key',
+                },
+                right: {
+                  type: 'str',
+                  value: 'R',
+                },
+              },
+              then: [
+                {
+                  type: 'callFunction',
+                  name: 'recomecar',
+                  args: [],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'event',
+          target: 'retry',
+          event: 'click',
+          body: [
+            {
+              type: 'callFunction',
+              name: 'recomecar',
+              args: [],
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3d:animate',
+          worldVar: 'cena',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'var',
+                name: 'rodando',
+              },
+              then: [
+                {
+                  type: 'g3d:fpsControls',
+                  objVar: 'jogador',
+                  worldVar: 'cena',
+                  speed: {
+                    type: 'num',
+                    value: 0.09,
+                  },
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'var',
+                      name: 'recarga',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'recarga',
+                      value: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'var',
+                          name: 'recarga',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 1,
+                        },
+                      },
+                    },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'binop',
+                        op: '===',
+                        left: {
+                          type: 'var',
+                          name: 'recarga',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 30,
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'setStyle',
+                          targetId: 'dano',
+                          property: 'opacity',
+                          value: {
+                            type: 'str',
+                            value: '0',
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: 'assign',
+                  name: 'encostou',
+                  value: {
+                    type: 'bool',
+                    value: false,
+                  },
+                },
+                {
+                  type: 'g3d:forEachInSwarm',
+                  swarmVar: 'robosLentos',
+                  itemName: 'item',
+                  body: [
+                    {
+                      type: 'g3d:moveTowards',
+                      objVar: 'item',
+                      x: {
+                        type: 'g3d:getPos',
+                        objVar: 'jogador',
+                        axis: 'x',
+                      },
+                      y: {
+                        type: 'g3d:getPos',
+                        objVar: 'item',
+                        axis: 'y',
+                      },
+                      z: {
+                        type: 'g3d:getPos',
+                        objVar: 'jogador',
+                        axis: 'z',
+                      },
+                      factor: {
+                        type: 'num',
+                        value: 0.006,
+                      },
+                    },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'g3d:collides',
+                        aVar: 'jogador',
+                        bVar: 'item',
+                      },
+                      then: [
+                        {
+                          type: 'assign',
+                          name: 'encostou',
+                          value: {
+                            type: 'bool',
+                            value: true,
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: 'g3d:forEachInSwarm',
+                  swarmVar: 'robosRapidos',
+                  itemName: 'item',
+                  body: [
+                    {
+                      type: 'g3d:moveTowards',
+                      objVar: 'item',
+                      x: {
+                        type: 'g3d:getPos',
+                        objVar: 'jogador',
+                        axis: 'x',
+                      },
+                      y: {
+                        type: 'g3d:getPos',
+                        objVar: 'item',
+                        axis: 'y',
+                      },
+                      z: {
+                        type: 'g3d:getPos',
+                        objVar: 'jogador',
+                        axis: 'z',
+                      },
+                      factor: {
+                        type: 'num',
+                        value: 0.015,
+                      },
+                    },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'g3d:collides',
+                        aVar: 'jogador',
+                        bVar: 'item',
+                      },
+                      then: [
+                        {
+                          type: 'assign',
+                          name: 'encostou',
+                          value: {
+                            type: 'bool',
+                            value: true,
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'var',
+                    name: 'encostou',
+                  },
+                  then: [
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'binop',
+                        op: '===',
+                        left: {
+                          type: 'var',
+                          name: 'recarga',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 0,
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'assign',
+                          name: 'vida',
+                          value: {
+                            type: 'binop',
+                            op: '-',
+                            left: {
+                              type: 'var',
+                              name: 'vida',
+                            },
+                            right: {
+                              type: 'num',
+                              value: 1,
+                            },
+                          },
+                        },
+                        {
+                          type: 'assign',
+                          name: 'recarga',
+                          value: {
+                            type: 'num',
+                            value: 90,
+                          },
+                        },
+                        {
+                          type: 'setProperty',
+                          targetId: 'vida',
+                          property: 'textContent',
+                          value: {
+                            type: 'var',
+                            name: 'vida',
+                          },
+                        },
+                        {
+                          type: 'setStyle',
+                          targetId: 'dano',
+                          property: 'opacity',
+                          value: {
+                            type: 'str',
+                            value: '0.5',
+                          },
+                        },
+                        {
+                          type: 'g3d:playEffect',
+                          kind: 'hit',
+                        },
+                        {
+                          type: 'if',
+                          cond: {
+                            type: 'binop',
+                            op: '===',
+                            left: {
+                              type: 'var',
+                              name: 'vida',
+                            },
+                            right: {
+                              type: 'num',
+                              value: 0,
+                            },
+                          },
+                          then: [
+                            {
+                              type: 'assign',
+                              name: 'rodando',
+                              value: {
+                                type: 'bool',
+                                value: false,
+                              },
+                            },
+                            {
+                              type: 'setProperty',
+                              targetId: 'fim-titulo',
+                              property: 'textContent',
+                              value: {
+                                type: 'str',
+                                value: 'Os robôs te pegaram!',
+                              },
+                            },
+                            {
+                              type: 'setProperty',
+                              targetId: 'final-pontos',
+                              property: 'textContent',
+                              value: {
+                                type: 'var',
+                                name: 'pontos',
+                              },
+                            },
+                            {
+                              type: 'classOp',
+                              targetId: 'fim',
+                              op: 'add',
+                              className: 'visivel',
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    extensions: [{ extensionId: 'game-3d' }],
+  },
+}
+
+/**
+ * Exemplo bundlado: "Mundo de Blocos" (nível 1 da família Mundo de Blocos, um
+ * construtor estilo Minecraft): câmera ISOMÉTRICA com o mouse livre, cursor
+ * translúcido que anda pela grade com as setas (gridPosition), chão e muralha
+ * gerados com forRange do núcleo, espaço/Enter coloca o bloco do tipo
+ * escolhido (empilha sozinho na célula ocupada), clique quebra via pickAtMouse
+ * e o objetivo leve é uma torre de 5 blocos. Gerado por __gen_mundoBlocos.ts.
+ */
+export const mundoBlocosExample: ExtensionExample = {
+  name: 'Mundo de Blocos',
+  experience: 'game',
+  description:
+    'Um mundinho de blocos com câmera isométrica: mova o cursor com as setas, coloque blocos com espaço e quebre com o clique. Troque o tipo com 1, 2 e 3 e construa uma torre de 5 blocos!',
+  ir: {
+    html: [
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'tipo-caixa',
+        children: [
+          {
+            type: 'text',
+            text: 'Bloco: ',
+          },
+          {
+            type: 'element',
+            tag: 'span',
+            id: 'tipo',
+            text: 'grama',
+          },
+        ],
+      },
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'torre-caixa',
+        children: [
+          {
+            type: 'text',
+            text: 'Torre: ',
+          },
+          {
+            type: 'element',
+            tag: 'span',
+            id: 'torre',
+            text: '0',
+          },
+        ],
+      },
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'hint',
+        text: 'Setas movem o cursor. Espaço coloca o bloco e o clique quebra. Troque com 1, 2 e 3.',
+      },
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'festa',
+        children: [
+          {
+            type: 'element',
+            tag: 'div',
+            id: 'festa-caixa',
+            children: [
+              {
+                type: 'element',
+                tag: 'h1',
+                text: 'Parabéns! Torre de 5 blocos!',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    css: [
+      {
+        type: 'googleFont',
+        family: 'Press Start 2P',
+      },
+      {
+        selector: 'body',
+        declarations: {
+          margin: '0',
+          overflow: 'hidden',
+          'font-family': '"Press Start 2P", cursive',
+        },
+      },
+      {
+        selector: '#tipo-caixa',
+        declarations: {
+          position: 'absolute',
+          top: '20px',
+          left: '20px',
+          'font-size': '0.9em',
+          color: 'white',
+          'z-index': '1',
+        },
+      },
+      {
+        selector: '#torre-caixa',
+        declarations: {
+          position: 'absolute',
+          top: '20px',
+          right: '20px',
+          'font-size': '0.9em',
+          color: 'white',
+          'z-index': '1',
+        },
+      },
+      {
+        selector: '#hint',
+        declarations: {
+          position: 'absolute',
+          bottom: '20px',
+          left: '0',
+          'min-width': '100%',
+          'text-align': 'center',
+          'font-size': '0.7em',
+          color: 'white',
+          'z-index': '1',
+        },
+      },
+      {
+        selector: '#festa',
+        declarations: {
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          'min-width': '100%',
+          'min-height': '100%',
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          visibility: 'hidden',
+          'pointer-events': 'none',
+          'z-index': '2',
+        },
+      },
+      {
+        selector: '#festa.visivel',
+        declarations: {
+          visibility: 'visible',
+        },
+      },
+      {
+        selector: '#festa-caixa',
+        declarations: {
+          'background-color': 'white',
+          padding: '20px',
+          'text-align': 'center',
+        },
+      },
+    ],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'g3d:createFullscreenScene',
+          varName: 'mundo',
+          bg: '#0ea5e9',
+        },
+        {
+          type: 'g3d:setSky',
+          worldVar: 'mundo',
+          top: '#38bdf8',
+          bottom: '#bae6fd',
+        },
+        {
+          type: 'g3d:isometricCamera',
+          worldVar: 'mundo',
+          followVar: '',
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'moldeGrama',
+          worldVar: 'mundo',
+          size: {
+            type: 'num',
+            value: 1,
+          },
+          color: '#22c55e',
+        },
+        {
+          type: 'g3d:setVisible',
+          objVar: 'moldeGrama',
+          mode: 'hide',
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'moldePedra',
+          worldVar: 'mundo',
+          size: {
+            type: 'num',
+            value: 1,
+          },
+          color: '#94a3b8',
+        },
+        {
+          type: 'g3d:setVisible',
+          objVar: 'moldePedra',
+          mode: 'hide',
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'moldeMadeira',
+          worldVar: 'mundo',
+          size: {
+            type: 'num',
+            value: 1,
+          },
+          color: '#b45309',
+        },
+        {
+          type: 'g3d:setVisible',
+          objVar: 'moldeMadeira',
+          mode: 'hide',
+        },
+        {
+          type: 'g3d:createSwarm',
+          varName: 'chao',
+          worldVar: 'mundo',
+        },
+        {
+          type: 'g3d:createSwarm',
+          varName: 'blocos',
+          worldVar: 'mundo',
+        },
+        {
+          type: 'forRange',
+          varName: 'linhaChao',
+          from: {
+            type: 'num',
+            value: -4,
+          },
+          to: {
+            type: 'num',
+            value: 5,
+          },
+          step: {
+            type: 'num',
+            value: 1,
+          },
+          body: [
+            {
+              type: 'forRange',
+              varName: 'colunaChao',
+              from: {
+                type: 'num',
+                value: -4,
+              },
+              to: {
+                type: 'num',
+                value: 5,
+              },
+              step: {
+                type: 'num',
+                value: 1,
+              },
+              body: [
+                {
+                  type: 'g3d:spawnInSwarm',
+                  swarmVar: 'chao',
+                  originalVar: 'moldeGrama',
+                  x: {
+                    type: 'var',
+                    name: 'colunaChao',
+                  },
+                  y: {
+                    type: 'num',
+                    value: -1,
+                  },
+                  z: {
+                    type: 'var',
+                    name: 'linhaChao',
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'forRange',
+          varName: 'passo',
+          from: {
+            type: 'num',
+            value: -4,
+          },
+          to: {
+            type: 'num',
+            value: 5,
+          },
+          step: {
+            type: 'num',
+            value: 1,
+          },
+          body: [
+            {
+              type: 'g3d:spawnInSwarm',
+              swarmVar: 'blocos',
+              originalVar: 'moldePedra',
+              x: {
+                type: 'var',
+                name: 'passo',
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: -4,
+              },
+            },
+            {
+              type: 'g3d:spawnInSwarm',
+              swarmVar: 'blocos',
+              originalVar: 'moldePedra',
+              x: {
+                type: 'var',
+                name: 'passo',
+              },
+              y: {
+                type: 'num',
+                value: 1,
+              },
+              z: {
+                type: 'num',
+                value: -4,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'cursor',
+          worldVar: 'mundo',
+          size: {
+            type: 'num',
+            value: 1.05,
+          },
+          color: '#fde047',
+        },
+        {
+          type: 'g3d:setOpacity',
+          objVar: 'cursor',
+          opacity: {
+            type: 'num',
+            value: 0.45,
+          },
+        },
+        {
+          type: 'var',
+          name: 'linha',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'coluna',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'tipo',
+          value: {
+            type: 'num',
+            value: 1,
+          },
+        },
+        {
+          type: 'var',
+          name: 'recorde',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'funcDecl',
+          name: 'colocarBloco',
+          params: [],
+          body: [
+            {
+              type: 'var',
+              name: 'alturaAlvo',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3d:forEachInSwarm',
+              swarmVar: 'blocos',
+              itemName: 'item',
+              body: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '===',
+                    left: {
+                      type: 'g3d:getPos',
+                      objVar: 'item',
+                      axis: 'x',
+                    },
+                    right: {
+                      type: 'var',
+                      name: 'coluna',
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'binop',
+                        op: '===',
+                        left: {
+                          type: 'g3d:getPos',
+                          objVar: 'item',
+                          axis: 'z',
+                        },
+                        right: {
+                          type: 'var',
+                          name: 'linha',
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'if',
+                          cond: {
+                            type: 'binop',
+                            op: '>=',
+                            left: {
+                              type: 'g3d:getPos',
+                              objVar: 'item',
+                              axis: 'y',
+                            },
+                            right: {
+                              type: 'var',
+                              name: 'alturaAlvo',
+                            },
+                          },
+                          then: [
+                            {
+                              type: 'assign',
+                              name: 'alturaAlvo',
+                              value: {
+                                type: 'binop',
+                                op: '+',
+                                left: {
+                                  type: 'g3d:getPos',
+                                  objVar: 'item',
+                                  axis: 'y',
+                                },
+                                right: {
+                                  type: 'num',
+                                  value: 1,
+                                },
+                              },
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '===',
+                left: {
+                  type: 'var',
+                  name: 'tipo',
+                },
+                right: {
+                  type: 'num',
+                  value: 1,
+                },
+              },
+              then: [
+                {
+                  type: 'g3d:spawnInSwarm',
+                  swarmVar: 'blocos',
+                  originalVar: 'moldeGrama',
+                  x: {
+                    type: 'var',
+                    name: 'coluna',
+                  },
+                  y: {
+                    type: 'var',
+                    name: 'alturaAlvo',
+                  },
+                  z: {
+                    type: 'var',
+                    name: 'linha',
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '===',
+                left: {
+                  type: 'var',
+                  name: 'tipo',
+                },
+                right: {
+                  type: 'num',
+                  value: 2,
+                },
+              },
+              then: [
+                {
+                  type: 'g3d:spawnInSwarm',
+                  swarmVar: 'blocos',
+                  originalVar: 'moldePedra',
+                  x: {
+                    type: 'var',
+                    name: 'coluna',
+                  },
+                  y: {
+                    type: 'var',
+                    name: 'alturaAlvo',
+                  },
+                  z: {
+                    type: 'var',
+                    name: 'linha',
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '===',
+                left: {
+                  type: 'var',
+                  name: 'tipo',
+                },
+                right: {
+                  type: 'num',
+                  value: 3,
+                },
+              },
+              then: [
+                {
+                  type: 'g3d:spawnInSwarm',
+                  swarmVar: 'blocos',
+                  originalVar: 'moldeMadeira',
+                  x: {
+                    type: 'var',
+                    name: 'coluna',
+                  },
+                  y: {
+                    type: 'var',
+                    name: 'alturaAlvo',
+                  },
+                  z: {
+                    type: 'var',
+                    name: 'linha',
+                  },
+                },
+              ],
+            },
+            {
+              type: 'g3d:playEffect',
+              kind: 'jump',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '>',
+                left: {
+                  type: 'binop',
+                  op: '+',
+                  left: {
+                    type: 'var',
+                    name: 'alturaAlvo',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 1,
+                  },
+                },
+                right: {
+                  type: 'var',
+                  name: 'recorde',
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'recorde',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'var',
+                      name: 'alturaAlvo',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
+                  },
+                },
+                {
+                  type: 'setProperty',
+                  targetId: 'torre',
+                  property: 'textContent',
+                  value: {
+                    type: 'var',
+                    name: 'recorde',
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '===',
+                left: {
+                  type: 'var',
+                  name: 'recorde',
+                },
+                right: {
+                  type: 'num',
+                  value: 5,
+                },
+              },
+              then: [
+                {
+                  type: 'g3d:playEffect',
+                  kind: 'coin',
+                },
+                {
+                  type: 'classOp',
+                  targetId: 'festa',
+                  op: 'add',
+                  className: 'visivel',
+                },
+                {
+                  type: 'setTimeout',
+                  delay: {
+                    type: 'num',
+                    value: 2500,
+                  },
+                  body: [
+                    {
+                      type: 'classOp',
+                      targetId: 'festa',
+                      op: 'remove',
+                      className: 'visivel',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      events: [
+        {
+          type: 'event',
+          target: 'document',
+          targetKind: 'document',
+          event: 'keydown',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '===',
+                left: {
+                  type: 'eventProp',
+                  prop: 'key',
+                },
+                right: {
+                  type: 'str',
+                  value: 'ArrowLeft',
+                },
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'var',
+                      name: 'coluna',
+                    },
+                    right: {
+                      type: 'num',
+                      value: -4,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'coluna',
+                      value: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'var',
+                          name: 'coluna',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 1,
+                        },
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '===',
+                left: {
+                  type: 'eventProp',
+                  prop: 'key',
+                },
+                right: {
+                  type: 'str',
+                  value: 'ArrowRight',
+                },
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<',
+                    left: {
+                      type: 'var',
+                      name: 'coluna',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 4,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'coluna',
+                      value: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'var',
+                          name: 'coluna',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 1,
+                        },
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '===',
+                left: {
+                  type: 'eventProp',
+                  prop: 'key',
+                },
+                right: {
+                  type: 'str',
+                  value: 'ArrowUp',
+                },
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'var',
+                      name: 'linha',
+                    },
+                    right: {
+                      type: 'num',
+                      value: -4,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'linha',
+                      value: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'var',
+                          name: 'linha',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 1,
+                        },
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '===',
+                left: {
+                  type: 'eventProp',
+                  prop: 'key',
+                },
+                right: {
+                  type: 'str',
+                  value: 'ArrowDown',
+                },
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<',
+                    left: {
+                      type: 'var',
+                      name: 'linha',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 4,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'linha',
+                      value: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'var',
+                          name: 'linha',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 1,
+                        },
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'g3d:gridPosition',
+              objVar: 'cursor',
+              row: {
+                type: 'var',
+                name: 'linha',
+              },
+              col: {
+                type: 'var',
+                name: 'coluna',
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '===',
+                left: {
+                  type: 'eventProp',
+                  prop: 'key',
+                },
+                right: {
+                  type: 'str',
+                  value: '1',
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'tipo',
+                  value: {
+                    type: 'num',
+                    value: 1,
+                  },
+                },
+                {
+                  type: 'setProperty',
+                  targetId: 'tipo',
+                  property: 'textContent',
+                  value: {
+                    type: 'str',
+                    value: 'grama',
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '===',
+                left: {
+                  type: 'eventProp',
+                  prop: 'key',
+                },
+                right: {
+                  type: 'str',
+                  value: '2',
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'tipo',
+                  value: {
+                    type: 'num',
+                    value: 2,
+                  },
+                },
+                {
+                  type: 'setProperty',
+                  targetId: 'tipo',
+                  property: 'textContent',
+                  value: {
+                    type: 'str',
+                    value: 'pedra',
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '===',
+                left: {
+                  type: 'eventProp',
+                  prop: 'key',
+                },
+                right: {
+                  type: 'str',
+                  value: '3',
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'tipo',
+                  value: {
+                    type: 'num',
+                    value: 3,
+                  },
+                },
+                {
+                  type: 'setProperty',
+                  targetId: 'tipo',
+                  property: 'textContent',
+                  value: {
+                    type: 'str',
+                    value: 'madeira',
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '===',
+                left: {
+                  type: 'eventProp',
+                  prop: 'key',
+                },
+                right: {
+                  type: 'str',
+                  value: 'Enter',
+                },
+              },
+              then: [
+                {
+                  type: 'callFunction',
+                  name: 'colocarBloco',
+                  args: [],
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '===',
+                left: {
+                  type: 'eventProp',
+                  prop: 'key',
+                },
+                right: {
+                  type: 'str',
+                  value: ' ',
+                },
+              },
+              then: [
+                {
+                  type: 'callFunction',
+                  name: 'colocarBloco',
+                  args: [],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'event',
+          target: 'document',
+          targetKind: 'document',
+          event: 'click',
+          body: [
+            {
+              type: 'var',
+              name: 'alvo',
+              value: {
+                type: 'g3d:pickAtMouse',
+                worldVar: 'mundo',
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'var',
+                name: 'alvo',
+              },
+              then: [
+                {
+                  type: 'var',
+                  name: 'antes',
+                  value: {
+                    type: 'g3d:countSwarm',
+                    swarmVar: 'blocos',
+                  },
+                },
+                {
+                  type: 'g3d:removeFromSwarm',
+                  swarmVar: 'blocos',
+                  itemVar: 'alvo',
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<',
+                    left: {
+                      type: 'g3d:countSwarm',
+                      swarmVar: 'blocos',
+                    },
+                    right: {
+                      type: 'var',
+                      name: 'antes',
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3d:playEffect',
+                      kind: 'hit',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3d:animate',
+          worldVar: 'mundo',
+          body: [
+            {
+              type: 'g3d:spin',
+              objVar: 'cursor',
+              axis: 'y',
+              speed: {
+                type: 'num',
+                value: 0.02,
+              },
+            },
+          ],
+        },
+      ],
+    },
+    extensions: [{ extensionId: 'game-3d' }],
+  },
+}

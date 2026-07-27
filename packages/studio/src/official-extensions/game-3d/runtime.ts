@@ -1410,8 +1410,17 @@ export const gameThreeDRuntime = `import * as THREE from 'three';
     if (!belongsToWorld(world, obj, 'aim-world', 'Mirar à frente')) return null;
     var d = typeof dist === 'number' ? dist : 100;
     _syncMatrices(world);
-    obj.getWorldDirection(_fwd);
-    if (obj.getWorldPosition) obj.getWorldPosition(_origin); else _origin.copy(obj.position);
+    if (world._cameraMode === 'fps' && world._fpsObj === obj && world.camera) {
+      // Em 1ª pessoa a mira é o que o JOGADOR VÊ: a direção da câmera (que já
+      // inclui o pitch do mouse), não o +Z do corpo — getWorldDirection de
+      // Object3D aponta +Z enquanto a câmera-filha olha -Z, o que espelharia o
+      // tiro 180°. Origem na câmera para o raio sair do olho (crosshair real).
+      world.camera.getWorldDirection(_fwd);
+      world.camera.getWorldPosition(_origin);
+    } else {
+      obj.getWorldDirection(_fwd);
+      if (obj.getWorldPosition) obj.getWorldPosition(_origin); else _origin.copy(obj.position);
+    }
     _ray.set(_origin, _fwd);
     _ray.far = d;
     var hits = _ray.intersectObjects(pickList(world), true);

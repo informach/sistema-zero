@@ -7831,3 +7831,3518 @@ export const corridaInfinitaProfissionalExample: ExtensionExample = {
     },
   },
 }
+
+/**
+ * Exemplo da vitrine "Labirinto dos Robôs Profissional" — o FPS estilo Doom do
+ * motor avançado (nível 2 da família "Labirinto"): camera_fps + move_fps
+ * (clique trava a mira), labirinto de paredes como moldes SÓLIDOS e robôs de
+ * DOIS tipos data-driven (vigia rápido/frágil × tanque lento/forte) com FSM de
+ * 3 estados (patrulhar → perseguir → atacar) e memória por entidade (gavetas
+ * alvoX/alvoZ). ⭐ Veredito do spike: sob pointer lock o mouse interno CONGELA,
+ * então NADA de pick/groundPoint/pointerOver — o gatilho é mousePressed() e o
+ * projétil alinhado ao olhar é spawnFrom + moveForward (o yaw do FPS gira o
+ * mesh do herói). i-frames com onHurt + tremor + vinheta. 100% asset-free.
+ *
+ * ⚠️ IR GERADA pelo parser real (ver __gen_labirintoProfissional.ts); o drift
+ * test em __tests__/labirintoProfissionalExample.test.ts guarda o resultado.
+ */
+export const labirintoDosRobosProfissionalExample: ExtensionExample = {
+  name: 'Labirinto dos Robôs Profissional',
+  experience: 'game',
+  description:
+    'Um FPS de labirinto: trave a mira, ande com WASD e atire com o clique. Robôs de dois tipos patrulham, perseguem e atacam com cérebro de 3 estados. Desligue todos. Tudo de peças, sem imagem.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 44,
+          },
+          sky: '#0b1120',
+          ground: '#1e293b',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1.2,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Labirinto dos Robôs',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Clique para travar a mira. Ande com WASD, olhe com o mouse e atire com o clique. Robôs patrulham os corredores: desligue os 5!',
+          },
+          button: {
+            type: 'str',
+            value: 'Entrar',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Labirinto limpo!',
+          },
+          text: {
+            type: 'str',
+            value: 'Todos os robôs foram desligados. Que pontaria!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'Os robôs venceram...',
+          },
+          text: {
+            type: 'str',
+            value: 'Sua energia acabou. Atire de longe e recue pelos corredores!',
+          },
+          button: {
+            type: 'str',
+            value: 'Tentar de novo',
+          },
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'heroi',
+          health: {
+            type: 'num',
+            value: 60,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#0ea5e9',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.8,
+              },
+              h: {
+                type: 'num',
+                value: 1,
+              },
+              d: {
+                type: 'num',
+                value: 0.8,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.5,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'cone',
+              material: 'brilho',
+              color: '#22d3ee',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.25,
+              },
+              h: {
+                type: 'num',
+                value: 0.5,
+              },
+              d: {
+                type: 'num',
+                value: 0.25,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.9,
+              },
+              z: {
+                type: 'num',
+                value: 0.55,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'tiro',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'brilho',
+              color: '#fde047',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.3,
+              },
+              h: {
+                type: 'num',
+                value: 0.3,
+              },
+              d: {
+                type: 'num',
+                value: 0.3,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1.15,
+              },
+              z: {
+                type: 'num',
+                value: 0.3,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'vigia',
+          health: {
+            type: 'num',
+            value: 20,
+          },
+          speed: {
+            type: 'num',
+            value: 4.2,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'normal',
+              color: '#ef4444',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 1.1,
+              },
+              h: {
+                type: 'num',
+                value: 1.1,
+              },
+              d: {
+                type: 'num',
+                value: 1.1,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.6,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'brilho',
+              color: '#fca5a5',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.35,
+              },
+              h: {
+                type: 'num',
+                value: 0.18,
+              },
+              d: {
+                type: 'num',
+                value: 0.2,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.75,
+              },
+              z: {
+                type: 'num',
+                value: 0.55,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'cone',
+              material: 'normal',
+              color: '#7f1d1d',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.4,
+              },
+              h: {
+                type: 'num',
+                value: 0.5,
+              },
+              d: {
+                type: 'num',
+                value: 0.4,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1.35,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'tanque',
+          health: {
+            type: 'num',
+            value: 45,
+          },
+          speed: {
+            type: 'num',
+            value: 2.2,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#7c3aed',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 1.6,
+              },
+              h: {
+                type: 'num',
+                value: 1.4,
+              },
+              d: {
+                type: 'num',
+                value: 1.2,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.7,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'brilho',
+              color: '#c4b5fd',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.6,
+              },
+              h: {
+                type: 'num',
+                value: 0.25,
+              },
+              d: {
+                type: 'num',
+                value: 0.2,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1,
+              },
+              z: {
+                type: 'num',
+                value: 0.65,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'cylinder',
+              material: 'normal',
+              color: '#4c1d95',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.8,
+              },
+              h: {
+                type: 'num',
+                value: 0.4,
+              },
+              d: {
+                type: 'num',
+                value: 0.8,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1.6,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'muralha',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#334155',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 38,
+              },
+              h: {
+                type: 'num',
+                value: 3,
+              },
+              d: {
+                type: 'num',
+                value: 1,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1.5,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'muralhaLado',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#334155',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 1,
+              },
+              h: {
+                type: 'num',
+                value: 3,
+              },
+              d: {
+                type: 'num',
+                value: 38,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1.5,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'parede',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#475569',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 12,
+              },
+              h: {
+                type: 'num',
+                value: 3,
+              },
+              d: {
+                type: 'num',
+                value: 1,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1.5,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'paredeLado',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#475569',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 1,
+              },
+              h: {
+                type: 'num',
+                value: 3,
+              },
+              d: {
+                type: 'num',
+                value: 12,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1.5,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:setPhysics',
+          mold: 'heroi',
+          kind: 'personagem',
+        },
+        {
+          type: 'g3k:makeTrigger',
+          mold: 'tiro',
+        },
+        {
+          type: 'g3k:makeSolid',
+          mold: 'muralha',
+        },
+        {
+          type: 'g3k:makeSolid',
+          mold: 'muralhaLado',
+        },
+        {
+          type: 'g3k:makeSolid',
+          mold: 'parede',
+        },
+        {
+          type: 'g3k:makeSolid',
+          mold: 'paredeLado',
+        },
+        {
+          type: 'g3k:defineEffect',
+          name: 'faisca',
+          count: {
+            type: 'num',
+            value: 14,
+          },
+          colorFrom: '#fde047',
+          colorTo: '#7f1d1d',
+          spread: {
+            type: 'num',
+            value: 4,
+          },
+          sizeFrom: {
+            type: 'num',
+            value: 0.35,
+          },
+          sizeTo: {
+            type: 'num',
+            value: 0,
+          },
+          life: {
+            type: 'num',
+            value: 0.4,
+          },
+          gravity: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3k:defineEffect',
+          name: 'choque',
+          count: {
+            type: 'num',
+            value: 12,
+          },
+          colorFrom: '#f43f5e',
+          colorTo: '#111827',
+          spread: {
+            type: 'num',
+            value: 5,
+          },
+          sizeFrom: {
+            type: 'num',
+            value: 0.4,
+          },
+          sizeTo: {
+            type: 'num',
+            value: 0,
+          },
+          life: {
+            type: 'num',
+            value: 0.45,
+          },
+          gravity: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3k:defineEffect',
+          name: 'explosao',
+          count: {
+            type: 'num',
+            value: 30,
+          },
+          colorFrom: '#fb923c',
+          colorTo: '#111827',
+          spread: {
+            type: 'num',
+            value: 8,
+          },
+          sizeFrom: {
+            type: 'num',
+            value: 0.6,
+          },
+          sizeTo: {
+            type: 'num',
+            value: 0,
+          },
+          life: {
+            type: 'num',
+            value: 0.7,
+          },
+          gravity: {
+            type: 'num',
+            value: -6,
+          },
+        },
+        {
+          type: 'var',
+          name: 'restantes',
+          value: {
+            type: 'num',
+            value: 5,
+          },
+        },
+        {
+          type: 'g3k:stateTimer',
+          mold: 'tiro',
+          state: 'parado',
+          sec: {
+            type: 'num',
+            value: 1.1,
+          },
+          next: 'sumir',
+        },
+        {
+          type: 'g3k:stateTimer',
+          mold: 'vigia',
+          state: 'parado',
+          sec: {
+            type: 'num',
+            value: 0.2,
+          },
+          next: 'patrulhar',
+        },
+        {
+          type: 'g3k:stateTimer',
+          mold: 'vigia',
+          state: 'atacar',
+          sec: {
+            type: 'num',
+            value: 0.8,
+          },
+          next: 'perseguir',
+        },
+        {
+          type: 'g3k:stateTimer',
+          mold: 'tanque',
+          state: 'parado',
+          sec: {
+            type: 'num',
+            value: 0.2,
+          },
+          next: 'patrulhar',
+        },
+        {
+          type: 'g3k:stateTimer',
+          mold: 'tanque',
+          state: 'atacar',
+          sec: {
+            type: 'num',
+            value: 1.2,
+          },
+          next: 'perseguir',
+        },
+      ],
+      events: [
+        {
+          type: 'g3k:onEnterState',
+          name: 'jogando',
+          body: [
+            {
+              type: 'assign',
+              name: 'restantes',
+              value: {
+                type: 'num',
+                value: 5,
+              },
+            },
+            {
+              type: 'g3k:setSeed',
+              seed: {
+                type: 'num',
+                value: 7,
+              },
+            },
+            {
+              type: 'g3k:setAmbient',
+              intensity: {
+                type: 'num',
+                value: 0.4,
+              },
+            },
+            {
+              type: 'g3k:setFog',
+              color: '#0b1120',
+              near: {
+                type: 'num',
+                value: 10,
+              },
+              far: {
+                type: 'num',
+                value: 38,
+              },
+            },
+            {
+              type: 'g3k:addLight',
+              color: '#f97316',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 6,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+              intensity: {
+                type: 'num',
+                value: 1.4,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'muralha',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 17,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'muralha',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: -17,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'muralhaLado',
+              x: {
+                type: 'num',
+                value: 17,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'muralhaLado',
+              x: {
+                type: 'num',
+                value: -17,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'parede',
+              x: {
+                type: 'num',
+                value: -6,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 8,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'parede',
+              x: {
+                type: 'num',
+                value: 6,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: -8,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'parede',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'paredeLado',
+              x: {
+                type: 'num',
+                value: 8,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 6,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'paredeLado',
+              x: {
+                type: 'num',
+                value: -8,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: -6,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'vigia',
+              x: {
+                type: 'num',
+                value: -12,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 12,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'vigia',
+              x: {
+                type: 'num',
+                value: 12,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 12,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'vigia',
+              x: {
+                type: 'num',
+                value: 12,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: -12,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'tanque',
+              x: {
+                type: 'num',
+                value: -12,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: -12,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'tanque',
+              x: {
+                type: 'num',
+                value: 5,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 5,
+              },
+            },
+            {
+              type: 'g3k:spawnNamed',
+              varName: 'jogador',
+              mold: 'heroi',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1,
+              },
+              z: {
+                type: 'num',
+                value: -13,
+              },
+            },
+            {
+              type: 'g3k:cameraFps',
+              charVar: 'jogador',
+            },
+            {
+              type: 'g3k:say',
+              charVar: 'jogador',
+              text: {
+                type: 'str',
+                value: 'Limpe o labirinto!',
+              },
+              seconds: {
+                type: 'num',
+                value: 2,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEnterEntityState',
+          mold: 'tiro',
+          state: 'sumir',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:recycle',
+              charVar: 'ela',
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEnterEntityState',
+          mold: 'vigia',
+          state: 'patrulhar',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:setEntityValue',
+              charVar: 'ela',
+              key: 'alvoX',
+              value: {
+                type: 'g3k:randomBetween',
+                from: {
+                  type: 'num',
+                  value: -13,
+                },
+                to: {
+                  type: 'num',
+                  value: 13,
+                },
+              },
+            },
+            {
+              type: 'g3k:setEntityValue',
+              charVar: 'ela',
+              key: 'alvoZ',
+              value: {
+                type: 'g3k:randomBetween',
+                from: {
+                  type: 'num',
+                  value: -13,
+                },
+                to: {
+                  type: 'num',
+                  value: 13,
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEnterEntityState',
+          mold: 'vigia',
+          state: 'atacar',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:storeNearest',
+              varName: 'alvo',
+              mold: 'heroi',
+              charVar: 'ela',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:exists',
+                charVar: 'alvo',
+              },
+              then: [
+                {
+                  type: 'g3k:hurt',
+                  charVar: 'alvo',
+                  amount: {
+                    type: 'num',
+                    value: 8,
+                  },
+                },
+                {
+                  type: 'g3k:burstOn',
+                  effect: 'choque',
+                  charVar: 'ela',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEnterEntityState',
+          mold: 'tanque',
+          state: 'patrulhar',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:setEntityValue',
+              charVar: 'ela',
+              key: 'alvoX',
+              value: {
+                type: 'g3k:randomBetween',
+                from: {
+                  type: 'num',
+                  value: -13,
+                },
+                to: {
+                  type: 'num',
+                  value: 13,
+                },
+              },
+            },
+            {
+              type: 'g3k:setEntityValue',
+              charVar: 'ela',
+              key: 'alvoZ',
+              value: {
+                type: 'g3k:randomBetween',
+                from: {
+                  type: 'num',
+                  value: -13,
+                },
+                to: {
+                  type: 'num',
+                  value: 13,
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEnterEntityState',
+          mold: 'tanque',
+          state: 'atacar',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:storeNearest',
+              varName: 'alvo',
+              mold: 'heroi',
+              charVar: 'ela',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:exists',
+                charVar: 'alvo',
+              },
+              then: [
+                {
+                  type: 'g3k:hurt',
+                  charVar: 'alvo',
+                  amount: {
+                    type: 'num',
+                    value: 15,
+                  },
+                },
+                {
+                  type: 'g3k:burstOn',
+                  effect: 'choque',
+                  charVar: 'ela',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onOverlap',
+          mold: 'tiro',
+          zoneName: 'zona',
+          whoName: 'quem',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '||',
+                left: {
+                  type: 'g3k:isMold',
+                  charVar: 'quem',
+                  mold: 'vigia',
+                },
+                right: {
+                  type: 'g3k:isMold',
+                  charVar: 'quem',
+                  mold: 'tanque',
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:hurt',
+                  charVar: 'quem',
+                  amount: {
+                    type: 'num',
+                    value: 15,
+                  },
+                },
+                {
+                  type: 'g3k:burstOn',
+                  effect: 'faisca',
+                  charVar: 'quem',
+                },
+                {
+                  type: 'g3k:playEffect',
+                  fx: 'hit',
+                },
+                {
+                  type: 'g3k:recycle',
+                  charVar: 'zona',
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: {
+                  type: 'logical',
+                  op: '&&',
+                  left: {
+                    type: 'logical',
+                    op: '&&',
+                    left: {
+                      type: 'logicalNot',
+                      value: {
+                        type: 'g3k:isMold',
+                        charVar: 'quem',
+                        mold: 'heroi',
+                      },
+                    },
+                    right: {
+                      type: 'logicalNot',
+                      value: {
+                        type: 'g3k:isMold',
+                        charVar: 'quem',
+                        mold: 'vigia',
+                      },
+                    },
+                  },
+                  right: {
+                    type: 'logicalNot',
+                    value: {
+                      type: 'g3k:isMold',
+                      charVar: 'quem',
+                      mold: 'tanque',
+                    },
+                  },
+                },
+                right: {
+                  type: 'logicalNot',
+                  value: {
+                    type: 'g3k:isMold',
+                    charVar: 'quem',
+                    mold: 'tiro',
+                  },
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:recycle',
+                  charVar: 'zona',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onHurt',
+          mold: 'heroi',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:cameraShake',
+              strength: {
+                type: 'num',
+                value: 0.5,
+              },
+              seconds: {
+                type: 'num',
+                value: 0.4,
+              },
+            },
+            {
+              type: 'g3k:playEffect',
+              fx: 'hurt',
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityDeath',
+          mold: 'vigia',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:burstOn',
+              effect: 'explosao',
+              charVar: 'ela',
+            },
+            {
+              type: 'g3k:playEffect',
+              fx: 'explosion',
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityDeath',
+          mold: 'tanque',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:burstOn',
+              effect: 'explosao',
+              charVar: 'ela',
+            },
+            {
+              type: 'g3k:playEffect',
+              fx: 'explosion',
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityDeath',
+          mold: 'heroi',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:burstOn',
+              effect: 'explosao',
+              charVar: 'ela',
+            },
+            {
+              type: 'g3k:playEffect',
+              fx: 'gameover',
+            },
+            {
+              type: 'g3k:endGame',
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'heroi',
+          state: 'parado',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:moveFps',
+              charVar: 'ela',
+              speed: {
+                type: 'num',
+                value: 7,
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:mousePressed',
+              },
+              then: [
+                {
+                  type: 'g3k:spawnFrom',
+                  mold: 'tiro',
+                  fromVar: 'ela',
+                },
+                {
+                  type: 'g3k:playEffect',
+                  fx: 'laser',
+                },
+              ],
+            },
+            {
+              type: 'g3k:hudText',
+              slot: 'top-left',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'str',
+                  value: 'Vida: ',
+                },
+                right: {
+                  type: 'g3k:healthOf',
+                  charVar: 'ela',
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'tiro',
+          state: 'parado',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:moveForward',
+              charVar: 'ela',
+              speed: {
+                type: 'num',
+                value: 26,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'vigia',
+          state: 'patrulhar',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:seekPoint',
+              charVar: 'ela',
+              x: {
+                type: 'g3k:entityValue',
+                key: 'alvoX',
+                charVar: 'ela',
+              },
+              z: {
+                type: 'g3k:entityValue',
+                key: 'alvoZ',
+                charVar: 'ela',
+              },
+            },
+            {
+              type: 'g3k:faceVelocity',
+              charVar: 'ela',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:randomChance',
+                percent: {
+                  type: 'num',
+                  value: 1,
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:setEntityValue',
+                  charVar: 'ela',
+                  key: 'alvoX',
+                  value: {
+                    type: 'g3k:randomBetween',
+                    from: {
+                      type: 'num',
+                      value: -13,
+                    },
+                    to: {
+                      type: 'num',
+                      value: 13,
+                    },
+                  },
+                },
+                {
+                  type: 'g3k:setEntityValue',
+                  charVar: 'ela',
+                  key: 'alvoZ',
+                  value: {
+                    type: 'g3k:randomBetween',
+                    from: {
+                      type: 'num',
+                      value: -13,
+                    },
+                    to: {
+                      type: 'num',
+                      value: 13,
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'g3k:storeNearest',
+              varName: 'alvo',
+              mold: 'heroi',
+              charVar: 'ela',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: {
+                  type: 'g3k:exists',
+                  charVar: 'alvo',
+                },
+                right: {
+                  type: 'g3k:touches',
+                  aVar: 'ela',
+                  bVar: 'alvo',
+                  dist: {
+                    type: 'num',
+                    value: 9,
+                  },
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:setEntityState',
+                  charVar: 'ela',
+                  state: 'perseguir',
+                },
+                {
+                  type: 'g3k:say',
+                  charVar: 'ela',
+                  text: {
+                    type: 'str',
+                    value: 'Te vi!',
+                  },
+                  seconds: {
+                    type: 'num',
+                    value: 1,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'vigia',
+          state: 'perseguir',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:storeNearest',
+              varName: 'alvo',
+              mold: 'heroi',
+              charVar: 'ela',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logicalNot',
+                value: {
+                  type: 'g3k:exists',
+                  charVar: 'alvo',
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:setEntityState',
+                  charVar: 'ela',
+                  state: 'patrulhar',
+                },
+              ],
+              else: [
+                {
+                  type: 'g3k:seekPoint',
+                  charVar: 'ela',
+                  x: {
+                    type: 'g3k:posOf',
+                    axis: 'x',
+                    charVar: 'alvo',
+                  },
+                  z: {
+                    type: 'g3k:posOf',
+                    axis: 'z',
+                    charVar: 'alvo',
+                  },
+                },
+                {
+                  type: 'g3k:faceVelocity',
+                  charVar: 'ela',
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'g3k:touches',
+                    aVar: 'ela',
+                    bVar: 'alvo',
+                    dist: {
+                      type: 'num',
+                      value: 1.6,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3k:setEntityState',
+                      charVar: 'ela',
+                      state: 'atacar',
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logicalNot',
+                    value: {
+                      type: 'g3k:touches',
+                      aVar: 'ela',
+                      bVar: 'alvo',
+                      dist: {
+                        type: 'num',
+                        value: 12,
+                      },
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3k:setEntityState',
+                      charVar: 'ela',
+                      state: 'patrulhar',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'tanque',
+          state: 'patrulhar',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:seekPoint',
+              charVar: 'ela',
+              x: {
+                type: 'g3k:entityValue',
+                key: 'alvoX',
+                charVar: 'ela',
+              },
+              z: {
+                type: 'g3k:entityValue',
+                key: 'alvoZ',
+                charVar: 'ela',
+              },
+            },
+            {
+              type: 'g3k:faceVelocity',
+              charVar: 'ela',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:randomChance',
+                percent: {
+                  type: 'num',
+                  value: 1,
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:setEntityValue',
+                  charVar: 'ela',
+                  key: 'alvoX',
+                  value: {
+                    type: 'g3k:randomBetween',
+                    from: {
+                      type: 'num',
+                      value: -13,
+                    },
+                    to: {
+                      type: 'num',
+                      value: 13,
+                    },
+                  },
+                },
+                {
+                  type: 'g3k:setEntityValue',
+                  charVar: 'ela',
+                  key: 'alvoZ',
+                  value: {
+                    type: 'g3k:randomBetween',
+                    from: {
+                      type: 'num',
+                      value: -13,
+                    },
+                    to: {
+                      type: 'num',
+                      value: 13,
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'g3k:storeNearest',
+              varName: 'alvo',
+              mold: 'heroi',
+              charVar: 'ela',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: {
+                  type: 'g3k:exists',
+                  charVar: 'alvo',
+                },
+                right: {
+                  type: 'g3k:touches',
+                  aVar: 'ela',
+                  bVar: 'alvo',
+                  dist: {
+                    type: 'num',
+                    value: 7,
+                  },
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:setEntityState',
+                  charVar: 'ela',
+                  state: 'perseguir',
+                },
+                {
+                  type: 'g3k:say',
+                  charVar: 'ela',
+                  text: {
+                    type: 'str',
+                    value: 'Intruso!',
+                  },
+                  seconds: {
+                    type: 'num',
+                    value: 1,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'tanque',
+          state: 'perseguir',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:storeNearest',
+              varName: 'alvo',
+              mold: 'heroi',
+              charVar: 'ela',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logicalNot',
+                value: {
+                  type: 'g3k:exists',
+                  charVar: 'alvo',
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:setEntityState',
+                  charVar: 'ela',
+                  state: 'patrulhar',
+                },
+              ],
+              else: [
+                {
+                  type: 'g3k:seekPoint',
+                  charVar: 'ela',
+                  x: {
+                    type: 'g3k:posOf',
+                    axis: 'x',
+                    charVar: 'alvo',
+                  },
+                  z: {
+                    type: 'g3k:posOf',
+                    axis: 'z',
+                    charVar: 'alvo',
+                  },
+                },
+                {
+                  type: 'g3k:faceVelocity',
+                  charVar: 'ela',
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'g3k:touches',
+                    aVar: 'ela',
+                    bVar: 'alvo',
+                    dist: {
+                      type: 'num',
+                      value: 1.8,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3k:setEntityState',
+                      charVar: 'ela',
+                      state: 'atacar',
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logicalNot',
+                    value: {
+                      type: 'g3k:touches',
+                      aVar: 'ela',
+                      bVar: 'alvo',
+                      dist: {
+                        type: 'num',
+                        value: 10,
+                      },
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3k:setEntityState',
+                      charVar: 'ela',
+                      state: 'patrulhar',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:cullFar',
+              mold: 'tiro',
+              dist: {
+                type: 'num',
+                value: 34,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'restantes',
+              value: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'g3k:countAlive',
+                  mold: 'vigia',
+                },
+                right: {
+                  type: 'g3k:countAlive',
+                  mold: 'tanque',
+                },
+              },
+            },
+            {
+              type: 'g3k:hudText',
+              slot: 'top-right',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'str',
+                  value: 'Robôs: ',
+                },
+                right: {
+                  type: 'var',
+                  name: 'restantes',
+                },
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '<',
+                left: {
+                  type: 'var',
+                  name: 'restantes',
+                },
+                right: {
+                  type: 'num',
+                  value: 1,
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:playEffect',
+                  fx: 'win',
+                },
+                {
+                  type: 'g3k:setState',
+                  name: 'vitoria',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+}
+
+/**
+ * Exemplo da vitrine "Mundo de Blocos Profissional" — o construtor estilo
+ * Minecraft do motor avançado (nível 2 da família "Mundo de Blocos"), em
+ * 3ª PESSOA de propósito (adaptação do spike: camera_fps congela o mouse
+ * interno e mataria a construção). cameraFollow deixa o mouse LIVRE:
+ * groundPoint + Math.round do núcleo arredondam o clique para a grade de 2 em
+ * 2 e o spawn planta um bloco SÓLIDO (dá para subir); teclas 1/2/3 trocam o
+ * molde (grama/pedra/madeira), X liga o modo reciclar (pick + recycle) e o
+ * teto de 30 blocos avisa pela fala. Muralha + árvores compostas nascem por
+ * setSeed; vitória verificável: pousar acima de y 2.2 (o topo da muralha).
+ *
+ * ⚠️ IR GERADA pelo parser real (ver __gen_mundoProfissional.ts); o drift
+ * test em __tests__/mundoProfissionalExample.test.ts guarda o resultado.
+ */
+export const mundoDeBlocosProfissionalExample: ExtensionExample = {
+  name: 'Mundo de Blocos Profissional',
+  experience: 'game',
+  description:
+    'Construtor 3D em 3ª pessoa: ande com WASD, pule, escolha o bloco com 1, 2 e 3 e clique no chão para plantar blocos sólidos. Suba neles, monte uma escada até o topo da muralha. X liga o reciclar.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 44,
+          },
+          sky: '#7dd3fc',
+          ground: '#86efac',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1,
+          },
+          vignette: false,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Mundo de Blocos',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Ande com WASD e pule com espaço. Escolha o bloco com 1, 2 e 3 e clique no chão para construir. Aperte X para reciclar. Monte uma escada e suba no topo da muralha!',
+          },
+          button: {
+            type: 'str',
+            value: 'Construir',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Chegou ao topo!',
+          },
+          text: {
+            type: 'str',
+            value: 'Você construiu a própria escada até a muralha. Jogue de novo e invente outra!',
+          },
+          button: {
+            type: 'str',
+            value: 'Construir de novo',
+          },
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'heroi',
+          health: {
+            type: 'num',
+            value: 100,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#f59e0b',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.8,
+              },
+              h: {
+                type: 'num',
+                value: 0.9,
+              },
+              d: {
+                type: 'num',
+                value: 0.5,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.45,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'normal',
+              color: '#fde68a',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.6,
+              },
+              h: {
+                type: 'num',
+                value: 0.6,
+              },
+              d: {
+                type: 'num',
+                value: 0.6,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1.2,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#78350f',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.3,
+              },
+              h: {
+                type: 'num',
+                value: 0.2,
+              },
+              d: {
+                type: 'num',
+                value: 0.3,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1.5,
+              },
+              z: {
+                type: 'num',
+                value: 0.1,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'grama',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#92400e',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 1.9,
+              },
+              h: {
+                type: 'num',
+                value: 1,
+              },
+              d: {
+                type: 'num',
+                value: 1.9,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.5,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#4ade80',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 1.9,
+              },
+              h: {
+                type: 'num',
+                value: 0.2,
+              },
+              d: {
+                type: 'num',
+                value: 1.9,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1.1,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'pedra',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#94a3b8',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 1.9,
+              },
+              h: {
+                type: 'num',
+                value: 1.2,
+              },
+              d: {
+                type: 'num',
+                value: 1.9,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.6,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#64748b',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 1.2,
+              },
+              h: {
+                type: 'num',
+                value: 0.4,
+              },
+              d: {
+                type: 'num',
+                value: 1.2,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.9,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'madeira',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#b45309',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 1.9,
+              },
+              h: {
+                type: 'num',
+                value: 1.2,
+              },
+              d: {
+                type: 'num',
+                value: 1.9,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.6,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#78350f',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 1.92,
+              },
+              h: {
+                type: 'num',
+                value: 0.25,
+              },
+              d: {
+                type: 'num',
+                value: 1.92,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.6,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'muralha',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#a8a29e',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 12,
+              },
+              h: {
+                type: 'num',
+                value: 2.4,
+              },
+              d: {
+                type: 'num',
+                value: 1.2,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1.2,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#78716c',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 12,
+              },
+              h: {
+                type: 'num',
+                value: 0.3,
+              },
+              d: {
+                type: 'num',
+                value: 1.4,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 2.25,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'arvore',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'cylinder',
+              material: 'normal',
+              color: '#78350f',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.6,
+              },
+              h: {
+                type: 'num',
+                value: 1.6,
+              },
+              d: {
+                type: 'num',
+                value: 0.6,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'cone',
+              material: 'normal',
+              color: '#16a34a',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 2.4,
+              },
+              h: {
+                type: 'num',
+                value: 2.2,
+              },
+              d: {
+                type: 'num',
+                value: 2.4,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 2.6,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:setPhysics',
+          mold: 'heroi',
+          kind: 'personagem',
+        },
+        {
+          type: 'g3k:makeSolid',
+          mold: 'grama',
+        },
+        {
+          type: 'g3k:makeSolid',
+          mold: 'pedra',
+        },
+        {
+          type: 'g3k:makeSolid',
+          mold: 'madeira',
+        },
+        {
+          type: 'g3k:makeSolid',
+          mold: 'muralha',
+        },
+        {
+          type: 'g3k:makeSolid',
+          mold: 'arvore',
+        },
+        {
+          type: 'g3k:defineEffect',
+          name: 'poeira',
+          count: {
+            type: 'num',
+            value: 16,
+          },
+          colorFrom: '#fef3c7',
+          colorTo: '#86efac',
+          spread: {
+            type: 'num',
+            value: 4,
+          },
+          sizeFrom: {
+            type: 'num',
+            value: 0.4,
+          },
+          sizeTo: {
+            type: 'num',
+            value: 0,
+          },
+          life: {
+            type: 'num',
+            value: 0.5,
+          },
+          gravity: {
+            type: 'num',
+            value: -4,
+          },
+        },
+        {
+          type: 'var',
+          name: 'modo',
+          value: {
+            type: 'str',
+            value: 'construir',
+          },
+        },
+        {
+          type: 'var',
+          name: 'tipoDeBloco',
+          value: {
+            type: 'str',
+            value: 'grama',
+          },
+        },
+        {
+          type: 'var',
+          name: 'blocos',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+      ],
+      events: [
+        {
+          type: 'g3k:onEnterState',
+          name: 'jogando',
+          body: [
+            {
+              type: 'assign',
+              name: 'modo',
+              value: {
+                type: 'str',
+                value: 'construir',
+              },
+            },
+            {
+              type: 'assign',
+              name: 'tipoDeBloco',
+              value: {
+                type: 'str',
+                value: 'grama',
+              },
+            },
+            {
+              type: 'assign',
+              name: 'blocos',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:setSeed',
+              seed: {
+                type: 'num',
+                value: 12,
+              },
+            },
+            {
+              type: 'g3k:setAmbient',
+              intensity: {
+                type: 'num',
+                value: 0.85,
+              },
+            },
+            {
+              type: 'g3k:setFog',
+              color: '#bae6fd',
+              near: {
+                type: 'num',
+                value: 30,
+              },
+              far: {
+                type: 'num',
+                value: 70,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'muralha',
+              x: {
+                type: 'num',
+                value: -12,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 10,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'muralha',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 10,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'muralha',
+              x: {
+                type: 'num',
+                value: 12,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 10,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'arvore',
+              x: {
+                type: 'g3k:randomBetween',
+                from: {
+                  type: 'num',
+                  value: -15,
+                },
+                to: {
+                  type: 'num',
+                  value: -8,
+                },
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'g3k:randomBetween',
+                from: {
+                  type: 'num',
+                  value: -12,
+                },
+                to: {
+                  type: 'num',
+                  value: -2,
+                },
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'arvore',
+              x: {
+                type: 'g3k:randomBetween',
+                from: {
+                  type: 'num',
+                  value: -15,
+                },
+                to: {
+                  type: 'num',
+                  value: -8,
+                },
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'g3k:randomBetween',
+                from: {
+                  type: 'num',
+                  value: 0,
+                },
+                to: {
+                  type: 'num',
+                  value: 6,
+                },
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'arvore',
+              x: {
+                type: 'g3k:randomBetween',
+                from: {
+                  type: 'num',
+                  value: -7,
+                },
+                to: {
+                  type: 'num',
+                  value: -2,
+                },
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'g3k:randomBetween',
+                from: {
+                  type: 'num',
+                  value: -14,
+                },
+                to: {
+                  type: 'num',
+                  value: -8,
+                },
+              },
+            },
+            {
+              type: 'g3k:spawnNamed',
+              varName: 'jogador',
+              mold: 'heroi',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1,
+              },
+              z: {
+                type: 'num',
+                value: -4,
+              },
+            },
+            {
+              type: 'g3k:cameraFollow',
+              charVar: 'jogador',
+              dist: {
+                type: 'num',
+                value: 13,
+              },
+              height: {
+                type: 'num',
+                value: 7,
+              },
+            },
+            {
+              type: 'g3k:cameraSmooth',
+              lambda: {
+                type: 'num',
+                value: 4,
+              },
+            },
+            {
+              type: 'g3k:say',
+              charVar: 'jogador',
+              text: {
+                type: 'str',
+                value: 'Clique no chão para construir!',
+              },
+              seconds: {
+                type: 'num',
+                value: 3,
+              },
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'heroi',
+          state: 'parado',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:platformerKeys',
+              charVar: 'ela',
+              speed: {
+                type: 'num',
+                value: 6,
+              },
+              jump: {
+                type: 'num',
+                value: 9,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'blocos',
+              value: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '+',
+                  left: {
+                    type: 'g3k:countAlive',
+                    mold: 'grama',
+                  },
+                  right: {
+                    type: 'g3k:countAlive',
+                    mold: 'pedra',
+                  },
+                },
+                right: {
+                  type: 'g3k:countAlive',
+                  mold: 'madeira',
+                },
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:keyPressed',
+                key: '1',
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'tipoDeBloco',
+                  value: {
+                    type: 'str',
+                    value: 'grama',
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:keyPressed',
+                key: '2',
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'tipoDeBloco',
+                  value: {
+                    type: 'str',
+                    value: 'pedra',
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:keyPressed',
+                key: '3',
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'tipoDeBloco',
+                  value: {
+                    type: 'str',
+                    value: 'madeira',
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:keyPressed',
+                key: 'x',
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '===',
+                    left: {
+                      type: 'var',
+                      name: 'modo',
+                    },
+                    right: {
+                      type: 'str',
+                      value: 'construir',
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'modo',
+                      value: {
+                        type: 'str',
+                        value: 'reciclar',
+                      },
+                    },
+                  ],
+                  else: [
+                    {
+                      type: 'assign',
+                      name: 'modo',
+                      value: {
+                        type: 'str',
+                        value: 'construir',
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:mousePressed',
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '===',
+                    left: {
+                      type: 'var',
+                      name: 'modo',
+                    },
+                    right: {
+                      type: 'str',
+                      value: 'reciclar',
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3k:pick',
+                      varName: 'alvoGrama',
+                      mold: 'grama',
+                    },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'g3k:exists',
+                        charVar: 'alvoGrama',
+                      },
+                      then: [
+                        {
+                          type: 'g3k:burstOn',
+                          effect: 'poeira',
+                          charVar: 'alvoGrama',
+                        },
+                        {
+                          type: 'g3k:recycle',
+                          charVar: 'alvoGrama',
+                        },
+                        {
+                          type: 'g3k:playEffect',
+                          fx: 'click',
+                        },
+                      ],
+                    },
+                    {
+                      type: 'g3k:pick',
+                      varName: 'alvoPedra',
+                      mold: 'pedra',
+                    },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'g3k:exists',
+                        charVar: 'alvoPedra',
+                      },
+                      then: [
+                        {
+                          type: 'g3k:burstOn',
+                          effect: 'poeira',
+                          charVar: 'alvoPedra',
+                        },
+                        {
+                          type: 'g3k:recycle',
+                          charVar: 'alvoPedra',
+                        },
+                        {
+                          type: 'g3k:playEffect',
+                          fx: 'click',
+                        },
+                      ],
+                    },
+                    {
+                      type: 'g3k:pick',
+                      varName: 'alvoMadeira',
+                      mold: 'madeira',
+                    },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'g3k:exists',
+                        charVar: 'alvoMadeira',
+                      },
+                      then: [
+                        {
+                          type: 'g3k:burstOn',
+                          effect: 'poeira',
+                          charVar: 'alvoMadeira',
+                        },
+                        {
+                          type: 'g3k:recycle',
+                          charVar: 'alvoMadeira',
+                        },
+                        {
+                          type: 'g3k:playEffect',
+                          fx: 'click',
+                        },
+                      ],
+                    },
+                  ],
+                  else: [
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'binop',
+                        op: '>=',
+                        left: {
+                          type: 'var',
+                          name: 'blocos',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 30,
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'g3k:say',
+                          charVar: 'ela',
+                          text: {
+                            type: 'str',
+                            value: 'O mundo lotou! Aperte X e recicle uns blocos.',
+                          },
+                          seconds: {
+                            type: 'num',
+                            value: 2,
+                          },
+                        },
+                      ],
+                      else: [
+                        {
+                          type: 'var',
+                          name: 'celulaX',
+                          value: {
+                            type: 'binop',
+                            op: '*',
+                            left: {
+                              type: 'mathUnary',
+                              fn: 'round',
+                              arg: {
+                                type: 'binop',
+                                op: '/',
+                                left: {
+                                  type: 'g3k:groundPoint',
+                                  axis: 'x',
+                                },
+                                right: {
+                                  type: 'num',
+                                  value: 2,
+                                },
+                              },
+                            },
+                            right: {
+                              type: 'num',
+                              value: 2,
+                            },
+                          },
+                          kind: 'const',
+                        },
+                        {
+                          type: 'var',
+                          name: 'celulaZ',
+                          value: {
+                            type: 'binop',
+                            op: '*',
+                            left: {
+                              type: 'mathUnary',
+                              fn: 'round',
+                              arg: {
+                                type: 'binop',
+                                op: '/',
+                                left: {
+                                  type: 'g3k:groundPoint',
+                                  axis: 'z',
+                                },
+                                right: {
+                                  type: 'num',
+                                  value: 2,
+                                },
+                              },
+                            },
+                            right: {
+                              type: 'num',
+                              value: 2,
+                            },
+                          },
+                          kind: 'const',
+                        },
+                        {
+                          type: 'if',
+                          cond: {
+                            type: 'binop',
+                            op: '===',
+                            left: {
+                              type: 'var',
+                              name: 'tipoDeBloco',
+                            },
+                            right: {
+                              type: 'str',
+                              value: 'grama',
+                            },
+                          },
+                          then: [
+                            {
+                              type: 'g3k:spawn',
+                              mold: 'grama',
+                              x: {
+                                type: 'var',
+                                name: 'celulaX',
+                              },
+                              y: {
+                                type: 'num',
+                                value: 0,
+                              },
+                              z: {
+                                type: 'var',
+                                name: 'celulaZ',
+                              },
+                            },
+                          ],
+                        },
+                        {
+                          type: 'if',
+                          cond: {
+                            type: 'binop',
+                            op: '===',
+                            left: {
+                              type: 'var',
+                              name: 'tipoDeBloco',
+                            },
+                            right: {
+                              type: 'str',
+                              value: 'pedra',
+                            },
+                          },
+                          then: [
+                            {
+                              type: 'g3k:spawn',
+                              mold: 'pedra',
+                              x: {
+                                type: 'var',
+                                name: 'celulaX',
+                              },
+                              y: {
+                                type: 'num',
+                                value: 0,
+                              },
+                              z: {
+                                type: 'var',
+                                name: 'celulaZ',
+                              },
+                            },
+                          ],
+                        },
+                        {
+                          type: 'if',
+                          cond: {
+                            type: 'binop',
+                            op: '===',
+                            left: {
+                              type: 'var',
+                              name: 'tipoDeBloco',
+                            },
+                            right: {
+                              type: 'str',
+                              value: 'madeira',
+                            },
+                          },
+                          then: [
+                            {
+                              type: 'g3k:spawn',
+                              mold: 'madeira',
+                              x: {
+                                type: 'var',
+                                name: 'celulaX',
+                              },
+                              y: {
+                                type: 'num',
+                                value: 0,
+                              },
+                              z: {
+                                type: 'var',
+                                name: 'celulaZ',
+                              },
+                            },
+                          ],
+                        },
+                        {
+                          type: 'g3k:burstAt',
+                          effect: 'poeira',
+                          x: {
+                            type: 'var',
+                            name: 'celulaX',
+                          },
+                          y: {
+                            type: 'num',
+                            value: 1,
+                          },
+                          z: {
+                            type: 'var',
+                            name: 'celulaZ',
+                          },
+                        },
+                        {
+                          type: 'g3k:playEffect',
+                          fx: 'coin',
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: {
+                  type: 'binop',
+                  op: '>',
+                  left: {
+                    type: 'g3k:posOf',
+                    axis: 'y',
+                    charVar: 'ela',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 2.2,
+                  },
+                },
+                right: {
+                  type: 'g3k:onGround',
+                  charVar: 'ela',
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:playEffect',
+                  fx: 'win',
+                },
+                {
+                  type: 'g3k:setState',
+                  name: 'vitoria',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:hudText',
+              slot: 'top-left',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '+',
+                  left: {
+                    type: 'str',
+                    value: 'Blocos: ',
+                  },
+                  right: {
+                    type: 'var',
+                    name: 'blocos',
+                  },
+                },
+                right: {
+                  type: 'str',
+                  value: ' de 30',
+                },
+              },
+            },
+            {
+              type: 'g3k:hudText',
+              slot: 'bottom-left',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '+',
+                  left: {
+                    type: 'str',
+                    value: 'Bloco: ',
+                  },
+                  right: {
+                    type: 'var',
+                    name: 'tipoDeBloco',
+                  },
+                },
+                right: {
+                  type: 'str',
+                  value: ' (1 2 3)',
+                },
+              },
+            },
+            {
+              type: 'g3k:hudText',
+              slot: 'top-right',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '+',
+                  left: {
+                    type: 'str',
+                    value: 'Modo: ',
+                  },
+                  right: {
+                    type: 'var',
+                    name: 'modo',
+                  },
+                },
+                right: {
+                  type: 'str',
+                  value: ' (X troca)',
+                },
+              },
+            },
+          ],
+        },
+      ],
+    },
+  },
+}

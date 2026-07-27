@@ -192,6 +192,8 @@ export interface KitApi {
   startSpawner(mold: string, seconds: number, where: string): void
   // 6º review: identidade, rumo a ponto, barra de vida e jorros múltiplos.
   isMold(e: unknown, mold: string): boolean
+  // Lote C (FPS/construtor): o playthrough lê o estado da FSM do robô.
+  stateOf(e: unknown): string
   seekPoint(e: unknown, x: number, z: number): void
   showHealthBar(mold: string, on: boolean): void
   defineEmitter(name: string, opts: Record<string, unknown>): void

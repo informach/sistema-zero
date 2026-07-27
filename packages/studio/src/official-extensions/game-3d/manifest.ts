@@ -3,6 +3,8 @@ import {
   corridaInfinitaExample,
   crossingExample,
   dodgeExample,
+  labirintoRobosExample,
+  mundoBlocosExample,
   nightExample,
   raceExample,
   rotatingCubeExample,
@@ -14,7 +16,7 @@ import {
 export const gameThreeDManifest: ExtensionManifest = {
   id: 'game-3d',
   name: 'Jogo 3D',
-  version: '0.18.0',
+  version: '0.19.0',
   description:
     'Blocos e comandos para criar jogos 3D com Three.js: cena/câmera/luz (e cena em tela cheia responsiva), cubos/esferas/caixas, posição/rotação/escala, física (velocidade, gravidade, pulo, colisão), teclado, câmera que segue, genéricos de grade isométrica e de movimento (círculo, distância, cair girando, deslizar, girar) e Kits prontos: "Desvie", "Travessia", "Corrida" e "Empilhar". Three.js carrega de um CDN fixado.',
   category: 'games',
@@ -145,7 +147,7 @@ em um evento ou em um construtor.
 - Os seletores separam o mundo completo do Jogo 3D de uma cena Three.js crua do Canvas 3D e só oferecem recursos já declarados naquele ponto. Transformações genéricas aceitam objetos das duas camadas; comandos que usam um mundo do jogo oferecem somente objetos ligados ao Jogo 3D. Resultados de **objeto sob o mouse** e **objeto que está mirando** guardados numa variável também aparecem nesses seletores. Objetos, modelos, grupos e enxames não podem misturar cenas diferentes; o runtime ignora a operação incompatível e mostra um aviso.
 - Há limites didáticos de segurança para objetos, luzes, enxames, linhas e andares; remova ou faça a poda de itens temporários. Ao reiniciar o preview, o runtime também encerra WebGL, listeners e áudio.
 - Todos os blocos desta categoria são **iniciante-3d**. A aula usa \`allowBlocks\` para revelar somente os necessários, sem retirar capacidade da extensão.
-- Comece por **"Cubo girando"**; depois avance para **"Desvie dos blocos"**, **"Atravesse a rua"**, **"Corrida maluca"** e **"Torre maluca"**.
+- Comece por **"Cubo girando"**; depois avance para **"Desvie dos blocos"**, **"Atravesse a rua"**, **"Corrida maluca"** e **"Torre maluca"**. Os exemplos **"Labirinto dos Robôs"** (primeira pessoa com mira) e **"Mundo de Blocos"** (construtor em grade isométrica) mostram a física de corpo/sólidos e a grade com o mouse livre.
 `,
   examples: [
     rotatingCubeExample,
@@ -154,6 +156,8 @@ em um evento ou em um construtor.
     swarmExample,
     dodgeExample,
     corridaInfinitaExample,
+    labirintoRobosExample,
+    mundoBlocosExample,
     crossingExample,
     raceExample,
     stackExample,
