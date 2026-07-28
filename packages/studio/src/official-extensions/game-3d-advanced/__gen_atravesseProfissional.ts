@@ -9,7 +9,7 @@ import { collectTypes } from './exampleSourceUtils'
  * (`atravesseProfissionalExample.test.ts`) guarda o resultado.
  *
  * O Crossy Road (hopper voxel do Hunor Borbely) recriado no motor avançado
- * (nível Profissional da família "Atravesse a rua"): o boneco PULA em grade
+ * (nível Profissional da família "Atravesse a Rua"): o boneco PULA em grade
  * (keyPressed muda a célula-alvo + seekPoint desliza suave até ela), atravessa
  * faixas onde CARROS cruzam a pista (spawnados no onUpdate em lanes à frente,
  * com setVelocity somando velocidade). ⭐ os carros são reciclados por X OFF-LANE

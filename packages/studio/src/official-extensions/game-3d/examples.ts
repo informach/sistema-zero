@@ -444,13 +444,13 @@ export const dodgeExample: ExtensionExample = {
 }
 
 /**
- * Exemplo bundlado: "Atravesse a rua" (Crossy Road / Frogger). Personagem que
+ * Exemplo bundlado: "Atravesse a Rua" (Crossy Road / Frogger). Personagem que
  * pula de casa em casa numa grade isométrica, desviando de carros e caminhões
  * que andam e dão a volta. HUD (pontuação, fim de jogo, setas) feito com blocos
  * de HTML/CSS/DOM, ligado ao jogo pelos blocos do Kit Travessia.
  */
 export const crossingExample: ExtensionExample = {
-  name: 'Atravesse a rua',
+  name: 'Atravesse a Rua',
   experience: 'game',
   description:
     'Pule de casa em casa numa grade isométrica e desvie dos carros e caminhões. Pontuação e fim de jogo no HUD.',
@@ -659,13 +659,13 @@ export const crossingExample: ExtensionExample = {
 }
 
 /**
- * Exemplo bundlado: "Corrida maluca" (corrida top-down). Carro que dá voltas numa
+ * Exemplo bundlado: "Corrida Maluca" (corrida top-down). Carro que dá voltas numa
  * pista oval controlado por acelerar/frear (↑/↓), desviando de carros e caminhões
  * rivais; pontuação = voltas. Câmera aérea. HUD (placar, botões, fim de jogo) com
  * blocos HTML/CSS/DOM ligado pelos blocos do Kit Corrida.
  */
 export const raceExample: ExtensionExample = {
-  name: 'Corrida maluca',
+  name: 'Corrida Maluca',
   experience: 'game',
   description:
     'Dê voltas na pista (↑ acelera, ↓ freia) desviando dos rivais. A pontuação são as voltas completas.',

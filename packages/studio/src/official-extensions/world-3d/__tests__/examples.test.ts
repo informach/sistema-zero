@@ -64,7 +64,7 @@ function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string>
 const CASES = [
   { name: 'Meu Mundo', source: MEU_MUNDO_SOURCE, example: meuMundoExample },
   { name: 'Corrida do Por do Sol', source: CORRIDA_SOURCE, example: corridaExample },
-  { name: 'Pista Maluca', source: PISTA_MALUCA_SOURCE, example: pistaMalucaExample },
+  { name: 'Corrida Maluca Profissional', source: PISTA_MALUCA_SOURCE, example: pistaMalucaExample },
   { name: 'Boliche na Praca', source: BOLICHE_SOURCE, example: bolicheExample },
   { name: 'Inverno Magico', source: INVERNO_SOURCE, example: invernoExample },
   { name: 'Ilha dos Criadores', source: ILHA_SOURCE, example: ilhaExample },

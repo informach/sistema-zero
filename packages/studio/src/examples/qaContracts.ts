@@ -416,16 +416,16 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['click'],
   },
   {
-    key: 'game-3d:Corrida maluca',
-    name: 'Corrida maluca',
+    key: 'game-3d:Corrida Maluca',
+    name: 'Corrida Maluca',
     experience: 'game',
     promise: 'Completar voltas desviando de rivais.',
     scenario: 'Acelerar, frear, virar, completar volta e reiniciar.',
     interactions: ['arrows'],
   },
   {
-    key: 'game-3d:Atravesse a rua',
-    name: 'Atravesse a rua',
+    key: 'game-3d:Atravesse a Rua',
+    name: 'Atravesse a Rua',
     experience: 'game',
     promise: 'Cruzar uma grade isométrica desviando do trânsito.',
     scenario: 'Pular casas, pontuar, colidir, ver fim e reiniciar.',
@@ -602,8 +602,8 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['wasd'],
   },
   {
-    key: 'world-3d:Pista Maluca',
-    name: 'Pista Maluca',
+    key: 'world-3d:Corrida Maluca Profissional',
+    name: 'Corrida Maluca Profissional',
     experience: 'game',
     promise: 'Dirigir pela cidadezinha desviando do transito e fechar as voltas nos aneis.',
     scenario:
@@ -724,11 +724,11 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['arrows'],
   },
   {
-    key: 'core:Traffic Run (na mão)',
-    name: 'Traffic Run (na mão)',
+    key: 'core:Corrida Maluca (na mão)',
+    name: 'Corrida Maluca (na mão)',
     experience: 'game',
     promise:
-      'O Traffic Run feito só com o núcleo Canvas 3D: dar voltas na pista desviando dos rivais.',
+      'A Corrida Maluca feita só com o núcleo Canvas 3D: dar voltas na pista desviando dos rivais.',
     scenario:
       'Acelerar e frear com as setas, trocar de faixa para os lados, desviar dos carros rivais e completar 3 voltas.',
     interactions: ['arrows'],

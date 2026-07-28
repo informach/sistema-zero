@@ -6,7 +6,7 @@ import { parseJS } from '../js'
 import { parseProjectFiles } from '../project'
 
 /**
- * Fixture-âncora do exemplo "Traffic Run (na mão)": o corredor de pista do Hunor
+ * Fixture-âncora do exemplo "Corrida Maluca (na mão)": o corredor de pista do Hunor
  * Borbely recriado SÓ com blocos do núcleo Canvas 3D (three.js CRU), pela VIA B
  * — a pista é um plano com CanvasTexture desenhada por Canvas 2D (dois discos
  * beginPath+arc+fill formando o anel de asfalto), sem THREE.Shape nem
@@ -187,7 +187,7 @@ function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string>
   return out
 }
 
-describe('Canvas 3D — Traffic Run (na mão) fixture', () => {
+describe('Canvas 3D — Corrida Maluca (na mão) fixture', () => {
   it('parseia SEM rawJS/rawHTML/rawCSS', () => {
     const ir = parseProjectFiles({ 'index.html': HTML, 'style.css': CSS, 'script.js': JS })
     const types = collectTypes(ir)

@@ -2288,10 +2288,10 @@ export const fazendinhaExample: ExtensionExample = {
 }
 
 export const pistaMalucaExample: ExtensionExample = {
-  name: 'Pista Maluca',
+  name: 'Corrida Maluca Profissional',
   experience: 'game',
   description:
-    'O corredor Traffic Run recriado no Mundo 3D: dirija um carro de corrida pela cidadezinha, desvie do transito autonomo e passe pelos aneis na ordem para fechar as voltas. O recorde fica salvo. So blocos do Mundo 3D, sem imagens.',
+    'O corredor de pista Corrida Maluca recriado no Mundo 3D: dirija um carro de corrida pela cidadezinha, desvie do transito autonomo e passe pelos aneis na ordem para fechar as voltas. O recorde fica salvo. So blocos do Mundo 3D, sem imagens.',
   ir: {
     html: [],
     css: [],
@@ -2318,7 +2318,7 @@ export const pistaMalucaExample: ExtensionExample = {
           type: 'w3d:totemText',
           x: { type: 'num', value: 0 },
           z: { type: 'num', value: 14 },
-          title: 'Pista Maluca',
+          title: 'Corrida Maluca',
           body: 'Dirija pela cidade e passe pelos aneis na ordem, desviando do transito!',
         },
         {

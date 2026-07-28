@@ -746,7 +746,7 @@ export const crossyRoadNaMaoExample: CoreExample = {
   ir: normalizeSZIR(crossyRoadNaMaoIr),
 }
 
-// "Traffic Run (na mao)": o corredor de pista do Hunor Borbely recriado SO com
+// "Corrida Maluca (na mao)": o corredor de pista do Hunor Borbely recriado SO com
 // blocos do nucleo Canvas 3D (three.js cru, sem extensao), asset-free e pela
 // VIA B (pista por CanvasTexture com aneis beginPath+arc+fill, sem Shape/
 // Extrude): camera ortografica, carro que da voltas por angulo, acelerar/frear
@@ -758,10 +758,10 @@ const trafficRunNaMaoIr = JSON.parse(
 ) as SZIR
 
 export const trafficRunNaMaoExample: CoreExample = {
-  name: 'Traffic Run (na mão)',
+  name: 'Corrida Maluca (na mão)',
   experience: 'game',
   description:
-    'O Traffic Run recriado só com blocos do núcleo Canvas 3D (three.js de verdade, sem extensão): dirija um carro que dá voltas numa pista circular, acelere e freie com as setas para cima e para baixo, troque de faixa com as setas dos lados e desvie dos carros rivais. Complete 3 voltas sem bater. Abra a Ponte para ver o código three.js.',
+    'A Corrida Maluca recriada só com blocos do núcleo Canvas 3D (three.js de verdade, sem extensão): dirija um carro que dá voltas numa pista circular, acelere e freie com as setas para cima e para baixo, troque de faixa com as setas dos lados e desvie dos carros rivais. Complete 3 voltas sem bater. Abra a Ponte para ver o código three.js.',
   ir: normalizeSZIR(trafficRunNaMaoIr),
 }
 export const CORE_EXAMPLES: readonly CoreExample[] = [

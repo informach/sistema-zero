@@ -2,7 +2,7 @@ import { normalizeSZIR } from '#ir'
 import { parseJS } from '../../parsers/js'
 
 /**
- * Gerador one-off da IR do exemplo "Pista Maluca" (nível DIRIGIR/mundo do
+ * Gerador one-off da IR do exemplo "Corrida Maluca Profissional" (nível DIRIGIR/mundo do
  * Traffic Run — o corredor de pista do Hunor Borbely recriado no Mundo 3D).
  * Rode com `bun src/official-extensions/world-3d/__gen_pistaMaluca.ts` e cole a
  * saída em examples.ts. O drift test (`__tests__/examples.test.ts`) guarda o
@@ -23,7 +23,7 @@ SZWorld3D.traffic(8, "semaforos");
 SZWorld3D.car({ style: "corrida", color: "#ef4444" });
 SZWorld3D.carBoost(2);
 SZWorld3D.engineSound("ligado");
-SZWorld3D.totemText(0, 14, "Pista Maluca", "Dirija pela cidade e passe pelos aneis na ordem, desviando do transito!");
+SZWorld3D.totemText(0, 14, "Corrida Maluca", "Dirija pela cidade e passe pelos aneis na ordem, desviando do transito!");
 SZWorld3D.raceCreate(0, 18, 90, 2);
 SZWorld3D.raceCheckpoint(28, 0, 0);
 SZWorld3D.raceCheckpoint(0, -28, 90);

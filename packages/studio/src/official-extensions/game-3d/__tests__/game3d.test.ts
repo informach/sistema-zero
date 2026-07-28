@@ -650,11 +650,11 @@ describe('game-3d — schema e exemplo', () => {
     expect(findBlock(everyFrames, 'sz_g3d_spawn_enemy')).toBeTruthy()
   })
 
-  it('o exemplo "Atravesse a rua" tem IR válido', () => {
+  it('o exemplo "Atravesse a Rua" tem IR válido', () => {
     expect(SZIRV2Schema.safeParse(crossingExample.ir).success).toBe(true)
   })
 
-  it('o exemplo "Corrida maluca" tem IR válido', () => {
+  it('o exemplo "Corrida Maluca" tem IR válido', () => {
     expect(SZIRV2Schema.safeParse(raceExample.ir).success).toBe(true)
   })
 

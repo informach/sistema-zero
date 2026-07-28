@@ -448,7 +448,7 @@ describe('parseJS — Travessia + grade genérica (game-3d)', () => {
 })
 
 describe('roundtrip do crossingExample (gerar → parsear)', () => {
-  it('o jogo "Atravesse a rua" volta a virar blocos g3d (sem degradar para rawJS)', () => {
+  it('o jogo "Atravesse a Rua" volta a virar blocos g3d (sem degradar para rawJS)', () => {
     const code = compileStatements(behaviorStatements(crossingExample.ir), 0)
     const ir = parseJS(code)
     const types = collectTypes(ir)
@@ -536,7 +536,7 @@ describe('parseJS — Corrida + genéricos top-down (game-3d)', () => {
 })
 
 describe('roundtrip do raceExample (gerar → parsear)', () => {
-  it('o jogo "Corrida maluca" volta a virar blocos g3d (sem degradar para rawJS)', () => {
+  it('o jogo "Corrida Maluca" volta a virar blocos g3d (sem degradar para rawJS)', () => {
     const code = compileStatements(behaviorStatements(raceExample.ir), 0)
     const ir = parseJS(code)
     const types = collectTypes(ir)
