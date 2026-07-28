@@ -61,12 +61,12 @@ SZGame2D.gameLoop(function update() {
     if (bola.y + bola.h >= 300) {
       bola.vy = 0 - Math.abs(bola.vy);
     }
-    if (SZGame2D.touches(jogador, bola)) {
+    if (SZGame2D.touches(jogador, bola) && bola.vx < 0) {
       bola.vx = Math.abs(bola.vx) + 0.3;
       bola.vy = bola.vy + (bola.y - jogador.y - 16) * 0.08;
       SZGame2D.playFx("coin");
     }
-    if (SZGame2D.touches(computador, bola)) {
+    if (SZGame2D.touches(computador, bola) && bola.vx > 0) {
       bola.vx = 0 - Math.abs(bola.vx) - 0.3;
       bola.vy = bola.vy + (bola.y - computador.y - 16) * 0.08;
       SZGame2D.playFx("coin");

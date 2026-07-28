@@ -3987,12 +3987,10 @@ export const pongExample: ExtensionExample = beginnerGameExample({
           margin: '0',
         },
       },
-      {
-        selector: 'canvas',
-        declarations: { border: '2px solid #22d3ee', background: '#11172a' },
-      },
+      { selector: 'canvas', declarations: { border: '2px solid #22d3ee', background: '#11172a' } },
     ],
     version: 2,
+    extensions: [{ extensionId: 'game-2d' }],
     behavior: {
       start: [
         {
@@ -4476,9 +4474,29 @@ export const pongExample: ExtensionExample = beginnerGameExample({
                 {
                   type: 'if',
                   cond: {
-                    type: 'g2d:touches',
-                    aVar: 'jogador',
-                    bVar: 'bola',
+                    type: 'logical',
+                    op: '&&',
+                    left: {
+                      type: 'g2d:touches',
+                      aVar: 'jogador',
+                      bVar: 'bola',
+                    },
+                    right: {
+                      type: 'binop',
+                      op: '<',
+                      left: {
+                        type: 'memberGet',
+                        object: {
+                          type: 'var',
+                          name: 'bola',
+                        },
+                        name: 'vx',
+                      },
+                      right: {
+                        type: 'num',
+                        value: 0,
+                      },
+                    },
                   },
                   then: [
                     {
@@ -4562,9 +4580,29 @@ export const pongExample: ExtensionExample = beginnerGameExample({
                 {
                   type: 'if',
                   cond: {
-                    type: 'g2d:touches',
-                    aVar: 'computador',
-                    bVar: 'bola',
+                    type: 'logical',
+                    op: '&&',
+                    left: {
+                      type: 'g2d:touches',
+                      aVar: 'computador',
+                      bVar: 'bola',
+                    },
+                    right: {
+                      type: 'binop',
+                      op: '>',
+                      left: {
+                        type: 'memberGet',
+                        object: {
+                          type: 'var',
+                          name: 'bola',
+                        },
+                        name: 'vx',
+                      },
+                      right: {
+                        type: 'num',
+                        value: 0,
+                      },
+                    },
                   },
                   then: [
                     {
@@ -4957,6 +4995,5 @@ export const pongExample: ExtensionExample = beginnerGameExample({
         },
       ],
     },
-    extensions: [{ extensionId: 'game-2d' }],
   },
 })

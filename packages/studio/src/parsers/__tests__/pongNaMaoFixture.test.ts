@@ -109,8 +109,11 @@ document.addEventListener('keyup', (event) => {
 });
 
 function passo(agora){
-    const deltaTime = agora - ultimo;
+    let deltaTime = agora - ultimo;
     ultimo = agora;
+    if (deltaTime > 50){
+        deltaTime = 50;
+    }
     ctx.fillStyle = '#11172a';
     ctx.fillRect(0, 0, 480, 320);
     if (rodando === true){
@@ -169,7 +172,7 @@ function passo(agora){
     }
     requestAnimationFrame(passo);
 }
-requestAnimationFrame(passo);`
+passo(0);`
 
 const GAME_FILES = { 'index.html': HTML, 'style.css': CSS, 'script.js': JS }
 
@@ -210,15 +213,16 @@ describe('Pong (Clear Code) — 100% blocos do núcleo', () => {
   })
 
   it('usa as técnicas do Pong OOP (classes Paddle/Ball, laço com deltaTime, teclado)', () => {
+    // Como o dino na-mão: a prova é o CÓDIGO gerado dos blocos, não um tipo de IR.
     const { ir } = parseProjectFilesWithDiagnostics(GAME_FILES)
     const types = collectTypes(ir)
-    const raw = JSON.stringify(ir)
-    expect(types.has('classDecl')).toBe(true) // as classes de verdade
-    expect(types.has('animationLoop')).toBe(true) // requestAnimationFrame com o tempo
+    const js = generateProjectFiles({ ir, projectName: 'Pong' })['script.js']
+    expect(js).toContain('class Paddle') // as classes de verdade
+    expect(js).toContain('class Ball')
+    expect(js).toContain('deltaTime') // o tempo do quadro (a regra de ouro do curso)
+    expect(js).toContain('deltaTime = 50') // o clamp anti-teleporte do 1o quadro/aba
     expect(types.has('event')).toBe(true) // keydown/keyup
-    expect(raw).toContain('"Paddle"')
-    expect(raw).toContain('"Ball"')
-    expect(raw).toContain('deltaTime') // o tempo do quadro (a regra de ouro do curso)
+    const raw = JSON.stringify(ir)
     expect(raw).toContain('"pontos"')
     expect(raw).toContain('"pontosCpu"')
   })
