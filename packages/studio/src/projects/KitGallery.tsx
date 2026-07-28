@@ -43,6 +43,7 @@ const KIT_EMOJI: Record<string, string> = {
   'Pong Profissional': '🎾',
   'Pong (na mão)': '🥎',
   'Mundo Pirata': '🏴‍☠️',
+  'Mundo Pirata Profissional': '⚓',
   'Herói que anda': '🏃',
   'Mini plataforma': '🦘',
   'Sala com paredes': '🧱',

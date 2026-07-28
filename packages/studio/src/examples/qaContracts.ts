@@ -81,6 +81,15 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['start', 'arrows'],
   },
   {
+    key: 'game-2d-advanced:Mundo Pirata Profissional',
+    name: 'Mundo Pirata Profissional',
+    experience: 'game',
+    promise: 'Vencer uma fase de plataforma com controlador do motor, tábuas atravessáveis, 3 inimigos e vidas.',
+    scenario:
+      'Começar, correr e pular, descer pelas tábuas, pisar em 3 tipos de inimigo, desviar das pérolas, pegar moedas, usar as vidas e o checkpoint e chegar na bandeira.',
+    interactions: ['start', 'arrows'],
+  },
+  {
     key: 'game-2d:Herói que anda',
     name: 'Herói que anda',
     experience: 'demo',
