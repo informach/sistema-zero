@@ -33,8 +33,11 @@ concurrency:
 jobs:
   ci:
     name: ci
+    # 30min: o typecheck do studio ficou pesado (~16min) com o volume de IR dos
+    # exemplos de jogo (trilogias Clear Code + jogos 3D); antes 20min estourava e
+    # o job era CANCELADO (GitHub marca timeout como "cancelled", não "failure").
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     services:
       fiscal-postgres:
         image: postgres:16
