@@ -11,6 +11,7 @@ import {
   parkourDoVulcaoExample,
   patrulhaEspacialProfissionalExample,
   quadraMalucaExample,
+  reunirRebanhoProfissionalExample,
   saltoNasNuvensExample,
   tiroAoAlvoExample,
 } from '../examples'
@@ -119,6 +120,45 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
     expect(api.state()).toBe('vitoria')
     expect(telaAtiva(stage, 'vitoria')).toBe(true)
     expect(tituloDaTela(stage, 'vitoria')).toBe('O cristal sobreviveu!')
+  })
+
+  it('⭐ Reunir o Rebanho Profissional: guiar o rebanho ao curral vence', async () => {
+    const { api, step, stage } = await loadExampleKit(
+      jsDoExemplo(reunirRebanhoProfissionalExample),
+    )
+    expect(api.state()).toBe('menu')
+    api.setSeed(1)
+    apertarBotaoDe(stage, 'menu') // "Pastorear"
+    expect(api.state()).toBe('jogando')
+
+    // O pastor fica na posição inicial FIXA (0,1,8) — o teste não aperta tecla.
+    // Então dirige o REBANHO por teleporte (place re-indexa na hora, como nos de
+    // plataforma): cada bichinho é levado ao pastor (a vizinhança do gancho DO
+    // EXEMPLO o põe em "seguindo") e depois solto no curral (a zona o entrega).
+    // Chegar a 'vitoria' prova que o laço reunir→entregar FECHA (não trava).
+    step(15) // os bichinhos saem de "parado" e entram em "vagando" (stateTimer 0,2 s)
+
+    let venceu = false
+    for (let i = 0; i < 240 && !venceu; i++) {
+      let alvo: unknown = null
+      api.forEachAlive('bicho', (b) => {
+        if (!alvo && api.entityStateIs(b, 'vagando')) alvo = b
+      })
+      if (alvo) {
+        api.place(alvo, 0, 0.5, 8) // encosta no pastor → vira "seguindo"
+        step(1)
+        api.place(alvo, 16, 0.5, 16) // solta no curral → entregue (+1 ponto)
+        step(1)
+      } else {
+        step(2) // deixa o trickle nascer e amadurecer para "vagando"
+      }
+      if (api.state() !== 'jogando') venceu = true
+    }
+
+    expect(venceu).toBe(true) // false = softlock (reunir/entregar não fecha)
+    expect(api.state()).toBe('vitoria')
+    expect(telaAtiva(stage, 'vitoria')).toBe(true)
+    expect(tituloDaTela(stage, 'vitoria')).toBe('Rebanho reunido!')
   })
 
   it('⭐ Salto nas Nuvens: tecla REAL move, cair volta ao menu, moedas dão vitória', async () => {

@@ -14220,3 +14220,1546 @@ export const atravesseProfissionalExample: ExtensionExample = {
     },
   },
 }
+
+export const reunirRebanhoProfissionalExample: ExtensionExample = {
+  name: 'Reunir o Rebanho Profissional',
+  experience: 'game',
+  description:
+    'Pastoreie no motor avançado: cada bichinho tem cérebro próprio (vagar e seguir). Chegue perto para o rebanho seguir você e leve o grupo ao curral. Reúna 8 antes do tempo. Tudo de peças, sem imagem.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 60,
+          },
+          sky: '#7dd3fc',
+          ground: '#166534',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1.1,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Reunir o Rebanho Profissional',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Ande com WASD ou as setas. Chegue perto dos bichinhos que vagam para eles seguirem você e leve o rebanho ao curral dourado. Reúna 8 antes do tempo acabar!',
+          },
+          button: {
+            type: 'str',
+            value: 'Pastorear',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Rebanho reunido!',
+          },
+          text: {
+            type: 'str',
+            value: 'Você guiou 8 bichinhos até o curral. Que pastor!',
+          },
+          button: {
+            type: 'str',
+            value: 'Pastorear de novo',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'O tempo acabou...',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Faltaram bichinhos no curral. Chegue perto para eles seguirem e leve o grupo junto!',
+          },
+          button: {
+            type: 'str',
+            value: 'Tentar de novo',
+          },
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'pastor',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#0ea5e9',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.9,
+              },
+              h: {
+                type: 'num',
+                value: 1.2,
+              },
+              d: {
+                type: 'num',
+                value: 0.9,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.6,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'cone',
+              material: 'brilho',
+              color: '#fbbf24',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.7,
+              },
+              h: {
+                type: 'num',
+                value: 0.5,
+              },
+              d: {
+                type: 'num',
+                value: 0.7,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1.35,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'bicho',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 4.5,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'normal',
+              color: '#f8fafc',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 1,
+              },
+              h: {
+                type: 'num',
+                value: 0.9,
+              },
+              d: {
+                type: 'num',
+                value: 1.1,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.5,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#1f2937',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.35,
+              },
+              h: {
+                type: 'num',
+                value: 0.35,
+              },
+              d: {
+                type: 'num',
+                value: 0.35,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.6,
+              },
+              z: {
+                type: 'num',
+                value: 0.55,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'curral',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'brilho',
+              color: '#fbbf24',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 6,
+              },
+              h: {
+                type: 'num',
+                value: 0.3,
+              },
+              d: {
+                type: 'num',
+                value: 6,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.15,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#b45309',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 6,
+              },
+              h: {
+                type: 'num',
+                value: 1,
+              },
+              d: {
+                type: 'num',
+                value: 0.3,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.5,
+              },
+              z: {
+                type: 'num',
+                value: -3,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#b45309',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.3,
+              },
+              h: {
+                type: 'num',
+                value: 1,
+              },
+              d: {
+                type: 'num',
+                value: 6,
+              },
+              x: {
+                type: 'num',
+                value: -3,
+              },
+              y: {
+                type: 'num',
+                value: 0.5,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:makeTrigger',
+          mold: 'curral',
+        },
+        {
+          type: 'g3k:defineEffect',
+          name: 'laco',
+          count: {
+            type: 'num',
+            value: 14,
+          },
+          colorFrom: '#22d3ee',
+          colorTo: '#0369a1',
+          spread: {
+            type: 'num',
+            value: 4,
+          },
+          sizeFrom: {
+            type: 'num',
+            value: 0.35,
+          },
+          sizeTo: {
+            type: 'num',
+            value: 0,
+          },
+          life: {
+            type: 'num',
+            value: 0.4,
+          },
+          gravity: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3k:defineEffect',
+          name: 'entrega',
+          count: {
+            type: 'num',
+            value: 22,
+          },
+          colorFrom: '#fde047',
+          colorTo: '#166534',
+          spread: {
+            type: 'num',
+            value: 6,
+          },
+          sizeFrom: {
+            type: 'num',
+            value: 0.5,
+          },
+          sizeTo: {
+            type: 'num',
+            value: 0,
+          },
+          life: {
+            type: 'num',
+            value: 0.6,
+          },
+          gravity: {
+            type: 'num',
+            value: 2,
+          },
+        },
+        {
+          type: 'var',
+          name: 'pontos',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'tempoRestante',
+          value: {
+            type: 'num',
+            value: 75,
+          },
+        },
+        {
+          type: 'var',
+          name: 'pastorX',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'pastorZ',
+          value: {
+            type: 'num',
+            value: 8,
+          },
+        },
+        {
+          type: 'var',
+          name: 'proximoBicho',
+          value: {
+            type: 'num',
+            value: 1.5,
+          },
+        },
+        {
+          type: 'g3k:stateTimer',
+          mold: 'bicho',
+          state: 'parado',
+          sec: {
+            type: 'num',
+            value: 0.2,
+          },
+          next: 'vagando',
+        },
+      ],
+      events: [
+        {
+          type: 'g3k:onEnterState',
+          name: 'jogando',
+          body: [
+            {
+              type: 'assign',
+              name: 'pontos',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'tempoRestante',
+              value: {
+                type: 'num',
+                value: 75,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'pastorX',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'pastorZ',
+              value: {
+                type: 'num',
+                value: 8,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'proximoBicho',
+              value: {
+                type: 'num',
+                value: 1.5,
+              },
+            },
+            {
+              type: 'g3k:setSeed',
+              seed: {
+                type: 'num',
+                value: 5,
+              },
+            },
+            {
+              type: 'g3k:setAmbient',
+              intensity: {
+                type: 'num',
+                value: 0.55,
+              },
+            },
+            {
+              type: 'g3k:setFog',
+              color: '#7dd3fc',
+              near: {
+                type: 'num',
+                value: 55,
+              },
+              far: {
+                type: 'num',
+                value: 120,
+              },
+            },
+            {
+              type: 'g3k:addLight',
+              color: '#fef9c3',
+              x: {
+                type: 'num',
+                value: -8,
+              },
+              y: {
+                type: 'num',
+                value: 14,
+              },
+              z: {
+                type: 'num',
+                value: -6,
+              },
+              intensity: {
+                type: 'num',
+                value: 1.2,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'curral',
+              x: {
+                type: 'num',
+                value: 16,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 16,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'bicho',
+              x: {
+                type: 'num',
+                value: -12,
+              },
+              y: {
+                type: 'num',
+                value: 0.5,
+              },
+              z: {
+                type: 'num',
+                value: -6,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'bicho',
+              x: {
+                type: 'num',
+                value: -6,
+              },
+              y: {
+                type: 'num',
+                value: 0.5,
+              },
+              z: {
+                type: 'num',
+                value: 10,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'bicho',
+              x: {
+                type: 'num',
+                value: 4,
+              },
+              y: {
+                type: 'num',
+                value: 0.5,
+              },
+              z: {
+                type: 'num',
+                value: -12,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'bicho',
+              x: {
+                type: 'num',
+                value: 12,
+              },
+              y: {
+                type: 'num',
+                value: 0.5,
+              },
+              z: {
+                type: 'num',
+                value: -4,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'bicho',
+              x: {
+                type: 'num',
+                value: -14,
+              },
+              y: {
+                type: 'num',
+                value: 0.5,
+              },
+              z: {
+                type: 'num',
+                value: 6,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'bicho',
+              x: {
+                type: 'num',
+                value: 8,
+              },
+              y: {
+                type: 'num',
+                value: 0.5,
+              },
+              z: {
+                type: 'num',
+                value: 8,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'bicho',
+              x: {
+                type: 'num',
+                value: -2,
+              },
+              y: {
+                type: 'num',
+                value: 0.5,
+              },
+              z: {
+                type: 'num',
+                value: -14,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'bicho',
+              x: {
+                type: 'num',
+                value: 14,
+              },
+              y: {
+                type: 'num',
+                value: 0.5,
+              },
+              z: {
+                type: 'num',
+                value: 12,
+              },
+            },
+            {
+              type: 'g3k:spawnNamed',
+              varName: 'guia',
+              mold: 'pastor',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1,
+              },
+              z: {
+                type: 'num',
+                value: 8,
+              },
+            },
+            {
+              type: 'g3k:cameraFollow',
+              charVar: 'guia',
+              dist: {
+                type: 'num',
+                value: 16,
+              },
+              height: {
+                type: 'num',
+                value: 13,
+              },
+            },
+            {
+              type: 'g3k:cameraSmooth',
+              lambda: {
+                type: 'num',
+                value: 6,
+              },
+            },
+            {
+              type: 'g3k:say',
+              charVar: 'guia',
+              text: {
+                type: 'str',
+                value: 'Toca o rebanho!',
+              },
+              seconds: {
+                type: 'num',
+                value: 2,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEnterEntityState',
+          mold: 'bicho',
+          state: 'vagando',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:setEntityValue',
+              charVar: 'ela',
+              key: 'alvoX',
+              value: {
+                type: 'g3k:randomBetween',
+                from: {
+                  type: 'num',
+                  value: -16,
+                },
+                to: {
+                  type: 'num',
+                  value: 16,
+                },
+              },
+            },
+            {
+              type: 'g3k:setEntityValue',
+              charVar: 'ela',
+              key: 'alvoZ',
+              value: {
+                type: 'g3k:randomBetween',
+                from: {
+                  type: 'num',
+                  value: -16,
+                },
+                to: {
+                  type: 'num',
+                  value: 16,
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onOverlap',
+          mold: 'curral',
+          zoneName: 'zona',
+          whoName: 'quem',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: {
+                  type: 'g3k:isMold',
+                  charVar: 'quem',
+                  mold: 'bicho',
+                },
+                right: {
+                  type: 'g3k:entityStateIs',
+                  charVar: 'quem',
+                  state: 'seguindo',
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:burstOn',
+                  effect: 'entrega',
+                  charVar: 'quem',
+                },
+                {
+                  type: 'g3k:playEffect',
+                  fx: 'coin',
+                },
+                {
+                  type: 'g3k:recycle',
+                  charVar: 'quem',
+                },
+                {
+                  type: 'assign',
+                  name: 'pontos',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'var',
+                      name: 'pontos',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'pastor',
+          state: 'parado',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '||',
+                left: {
+                  type: 'g3k:keyDown',
+                  key: 'a',
+                },
+                right: {
+                  type: 'g3k:keyDown',
+                  key: 'esquerda',
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'pastorX',
+                  value: {
+                    type: 'binop',
+                    op: '-',
+                    left: {
+                      type: 'var',
+                      name: 'pastorX',
+                    },
+                    right: {
+                      type: 'binop',
+                      op: '*',
+                      left: {
+                        type: 'num',
+                        value: 13,
+                      },
+                      right: {
+                        type: 'var',
+                        name: 'dt',
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '||',
+                left: {
+                  type: 'g3k:keyDown',
+                  key: 'd',
+                },
+                right: {
+                  type: 'g3k:keyDown',
+                  key: 'direita',
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'pastorX',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'var',
+                      name: 'pastorX',
+                    },
+                    right: {
+                      type: 'binop',
+                      op: '*',
+                      left: {
+                        type: 'num',
+                        value: 13,
+                      },
+                      right: {
+                        type: 'var',
+                        name: 'dt',
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '||',
+                left: {
+                  type: 'g3k:keyDown',
+                  key: 'w',
+                },
+                right: {
+                  type: 'g3k:keyDown',
+                  key: 'cima',
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'pastorZ',
+                  value: {
+                    type: 'binop',
+                    op: '-',
+                    left: {
+                      type: 'var',
+                      name: 'pastorZ',
+                    },
+                    right: {
+                      type: 'binop',
+                      op: '*',
+                      left: {
+                        type: 'num',
+                        value: 13,
+                      },
+                      right: {
+                        type: 'var',
+                        name: 'dt',
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '||',
+                left: {
+                  type: 'g3k:keyDown',
+                  key: 's',
+                },
+                right: {
+                  type: 'g3k:keyDown',
+                  key: 'baixo',
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'pastorZ',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'var',
+                      name: 'pastorZ',
+                    },
+                    right: {
+                      type: 'binop',
+                      op: '*',
+                      left: {
+                        type: 'num',
+                        value: 13,
+                      },
+                      right: {
+                        type: 'var',
+                        name: 'dt',
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '<',
+                left: {
+                  type: 'var',
+                  name: 'pastorX',
+                },
+                right: {
+                  type: 'num',
+                  value: -24,
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'pastorX',
+                  value: {
+                    type: 'num',
+                    value: -24,
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '>',
+                left: {
+                  type: 'var',
+                  name: 'pastorX',
+                },
+                right: {
+                  type: 'num',
+                  value: 24,
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'pastorX',
+                  value: {
+                    type: 'num',
+                    value: 24,
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '<',
+                left: {
+                  type: 'var',
+                  name: 'pastorZ',
+                },
+                right: {
+                  type: 'num',
+                  value: -24,
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'pastorZ',
+                  value: {
+                    type: 'num',
+                    value: -24,
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '>',
+                left: {
+                  type: 'var',
+                  name: 'pastorZ',
+                },
+                right: {
+                  type: 'num',
+                  value: 24,
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'pastorZ',
+                  value: {
+                    type: 'num',
+                    value: 24,
+                  },
+                },
+              ],
+            },
+            {
+              type: 'g3k:place',
+              charVar: 'ela',
+              x: {
+                type: 'var',
+                name: 'pastorX',
+              },
+              y: {
+                type: 'num',
+                value: 1,
+              },
+              z: {
+                type: 'var',
+                name: 'pastorZ',
+              },
+            },
+            {
+              type: 'g3k:hudText',
+              slot: 'top-left',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '+',
+                  left: {
+                    type: 'str',
+                    value: 'Reunidos: ',
+                  },
+                  right: {
+                    type: 'var',
+                    name: 'pontos',
+                  },
+                },
+                right: {
+                  type: 'str',
+                  value: ' de 8',
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'bicho',
+          state: 'vagando',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:seekPoint',
+              charVar: 'ela',
+              x: {
+                type: 'g3k:entityValue',
+                key: 'alvoX',
+                charVar: 'ela',
+              },
+              z: {
+                type: 'g3k:entityValue',
+                key: 'alvoZ',
+                charVar: 'ela',
+              },
+            },
+            {
+              type: 'g3k:faceVelocity',
+              charVar: 'ela',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:randomChance',
+                percent: {
+                  type: 'num',
+                  value: 1,
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:setEntityValue',
+                  charVar: 'ela',
+                  key: 'alvoX',
+                  value: {
+                    type: 'g3k:randomBetween',
+                    from: {
+                      type: 'num',
+                      value: -16,
+                    },
+                    to: {
+                      type: 'num',
+                      value: 16,
+                    },
+                  },
+                },
+                {
+                  type: 'g3k:setEntityValue',
+                  charVar: 'ela',
+                  key: 'alvoZ',
+                  value: {
+                    type: 'g3k:randomBetween',
+                    from: {
+                      type: 'num',
+                      value: -16,
+                    },
+                    to: {
+                      type: 'num',
+                      value: 16,
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'g3k:storeNearest',
+              varName: 'guia',
+              mold: 'pastor',
+              charVar: 'ela',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: {
+                  type: 'g3k:exists',
+                  charVar: 'guia',
+                },
+                right: {
+                  type: 'g3k:touches',
+                  aVar: 'ela',
+                  bVar: 'guia',
+                  dist: {
+                    type: 'num',
+                    value: 3,
+                  },
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:setEntityState',
+                  charVar: 'ela',
+                  state: 'seguindo',
+                },
+                {
+                  type: 'g3k:burstOn',
+                  effect: 'laco',
+                  charVar: 'ela',
+                },
+                {
+                  type: 'g3k:playEffect',
+                  fx: 'coin',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'bicho',
+          state: 'seguindo',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:storeNearest',
+              varName: 'guia',
+              mold: 'pastor',
+              charVar: 'ela',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logicalNot',
+                value: {
+                  type: 'g3k:exists',
+                  charVar: 'guia',
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:setEntityState',
+                  charVar: 'ela',
+                  state: 'vagando',
+                },
+              ],
+              else: [
+                {
+                  type: 'g3k:seekPoint',
+                  charVar: 'ela',
+                  x: {
+                    type: 'g3k:posOf',
+                    axis: 'x',
+                    charVar: 'guia',
+                  },
+                  z: {
+                    type: 'g3k:posOf',
+                    axis: 'z',
+                    charVar: 'guia',
+                  },
+                },
+                {
+                  type: 'g3k:faceVelocity',
+                  charVar: 'ela',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'assign',
+              name: 'tempoRestante',
+              value: {
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'var',
+                  name: 'tempoRestante',
+                },
+                right: {
+                  type: 'var',
+                  name: 'dt',
+                },
+              },
+            },
+            {
+              type: 'assign',
+              name: 'proximoBicho',
+              value: {
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'var',
+                  name: 'proximoBicho',
+                },
+                right: {
+                  type: 'var',
+                  name: 'dt',
+                },
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: {
+                  type: 'binop',
+                  op: '<=',
+                  left: {
+                    type: 'var',
+                    name: 'proximoBicho',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 0,
+                  },
+                },
+                right: {
+                  type: 'binop',
+                  op: '<',
+                  left: {
+                    type: 'g3k:countAlive',
+                    mold: 'bicho',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 8,
+                  },
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'proximoBicho',
+                  value: {
+                    type: 'num',
+                    value: 3,
+                  },
+                },
+                {
+                  type: 'g3k:spawn',
+                  mold: 'bicho',
+                  x: {
+                    type: 'g3k:randomBetween',
+                    from: {
+                      type: 'num',
+                      value: -16,
+                    },
+                    to: {
+                      type: 'num',
+                      value: 16,
+                    },
+                  },
+                  y: {
+                    type: 'num',
+                    value: 0.5,
+                  },
+                  z: {
+                    type: 'g3k:randomBetween',
+                    from: {
+                      type: 'num',
+                      value: -16,
+                    },
+                    to: {
+                      type: 'num',
+                      value: 16,
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'g3k:hudText',
+              slot: 'top-right',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '+',
+                  left: {
+                    type: 'str',
+                    value: 'Tempo: ',
+                  },
+                  right: {
+                    type: 'mathUnary',
+                    fn: 'floor',
+                    arg: {
+                      type: 'var',
+                      name: 'tempoRestante',
+                    },
+                  },
+                },
+                right: {
+                  type: 'str',
+                  value: 's',
+                },
+              },
+            },
+            {
+              type: 'g3k:hudText',
+              slot: 'bottom-right',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'str',
+                  value: 'No campo: ',
+                },
+                right: {
+                  type: 'g3k:countAlive',
+                  mold: 'bicho',
+                },
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '>=',
+                left: {
+                  type: 'var',
+                  name: 'pontos',
+                },
+                right: {
+                  type: 'num',
+                  value: 8,
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:playEffect',
+                  fx: 'win',
+                },
+                {
+                  type: 'g3k:setState',
+                  name: 'vitoria',
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '<=',
+                left: {
+                  type: 'var',
+                  name: 'tempoRestante',
+                },
+                right: {
+                  type: 'num',
+                  value: 0,
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:playEffect',
+                  fx: 'gameover',
+                },
+                {
+                  type: 'g3k:setState',
+                  name: 'fim',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+}

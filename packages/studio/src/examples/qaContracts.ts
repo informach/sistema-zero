@@ -441,6 +441,15 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['click'],
   },
   {
+    key: 'game-3d:Reunir o Rebanho',
+    name: 'Reunir o Rebanho',
+    experience: 'game',
+    promise: 'Guiar os bichinhos que vagam pelo campo até o curral, gerenciando o rebanho que segue você.',
+    scenario:
+      'Andar com as setas para os bichinhos seguirem, levá-los ao curral, reunir 8 antes do tempo acabar e recomeçar.',
+    interactions: ['wasd', 'arrows'],
+  },
+  {
     key: 'game-3d:Desvie dos blocos',
     name: 'Desvie dos blocos',
     experience: 'game',
@@ -499,6 +508,15 @@ export const EXAMPLE_QA_CONTRACTS = [
     promise: 'Torres autônomas defendem um cristal com máquina de estados.',
     scenario: 'Observar mira, tiro, recarga, vitória/derrota e reinício.',
     interactions: ['auto'],
+  },
+  {
+    key: 'game-3d-advanced:Reunir o Rebanho Profissional',
+    name: 'Reunir o Rebanho Profissional',
+    experience: 'game',
+    promise: 'Bichinhos com cérebro próprio vagam e seguem o pastor, gerenciados pela vizinhança do motor.',
+    scenario:
+      'Andar com WASD, chegar perto para os bichinhos seguirem, levar o rebanho ao curral, reunir 8 antes do tempo e ver vitória ou derrota.',
+    interactions: ['wasd', 'arrows'],
   },
   {
     key: 'game-3d-advanced:Salto nas Nuvens',
@@ -751,6 +769,16 @@ export const EXAMPLE_QA_CONTRACTS = [
     scenario:
       'Ver os invasores nascerem na beirada e caminharem ao centro, a torre girar e zapear um a um, o céu ficar verde ao parar 20 (ou vermelho se um chegar no cristal) e apertar uma tecla para recomeçar.',
     interactions: ['auto'],
+  },
+  {
+    key: 'core:Reunir o Rebanho (na mão)',
+    name: 'Reunir o Rebanho (na mão)',
+    experience: 'game',
+    promise:
+      'O Entity Management feito só com o núcleo Canvas 3D: guiar com as setas os bichinhos que vagam até o curral.',
+    scenario:
+      'Andar com as setas ou WASD, encostar nos bichinhos para eles seguirem, levar o rebanho ao curral dourado, reunir 10 e ver o céu ficar verde.',
+    interactions: ['wasd', 'arrows'],
   },
   {
     key: 'core:Folio 3D procedural (na mão)',

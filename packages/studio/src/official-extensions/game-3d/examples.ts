@@ -7139,3 +7139,1108 @@ export const defesaDaTorreBasicoExample: ExtensionExample = {
     },
   },
 }
+
+export const reunirRebanhoBasicoExample: ExtensionExample = {
+  name: 'Reunir o Rebanho',
+  experience: 'game',
+  description:
+    'Os bichinhos vagam pelo campo. Chegue perto com as setas para eles seguirem você e leve o rebanho ao curral dourado. Reúna 8 antes do tempo acabar!',
+  ir: {
+    html: [
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'score',
+        text: '0',
+      },
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'timer',
+        text: '45',
+      },
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'results',
+        children: [
+          {
+            type: 'element',
+            tag: 'div',
+            id: 'results-box',
+            children: [
+              {
+                type: 'element',
+                tag: 'h1',
+                text: 'Fim do pastoreio',
+              },
+              {
+                type: 'element',
+                tag: 'p',
+                children: [
+                  {
+                    type: 'text',
+                    text: 'Bichinhos reunidos: ',
+                  },
+                  {
+                    type: 'element',
+                    tag: 'span',
+                    id: 'final-score',
+                  },
+                ],
+              },
+              {
+                type: 'element',
+                tag: 'button',
+                id: 'retry',
+                text: 'Jogar de novo',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    css: [
+      {
+        type: 'googleFont',
+        family: 'Press Start 2P',
+      },
+      {
+        selector: 'body',
+        declarations: {
+          margin: '0',
+          overflow: 'hidden',
+          'font-family': '"Press Start 2P", cursive',
+        },
+      },
+      {
+        selector: 'canvas',
+        declarations: {
+          display: 'block',
+          width: '100vw',
+          height: '100vh',
+        },
+      },
+      {
+        selector: '#score',
+        declarations: {
+          position: 'absolute',
+          top: '20px',
+          left: '20px',
+          'font-size': '1.5em',
+          color: 'white',
+        },
+      },
+      {
+        selector: '#timer',
+        declarations: {
+          position: 'absolute',
+          top: '20px',
+          right: '20px',
+          'font-size': '1.5em',
+          color: '#fbbf24',
+        },
+      },
+      {
+        selector: '#results',
+        declarations: {
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          'min-width': '100%',
+          'min-height': '100%',
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          visibility: 'hidden',
+        },
+      },
+      {
+        selector: '#results.visivel',
+        declarations: {
+          visibility: 'visible',
+        },
+      },
+      {
+        selector: '#results-box',
+        declarations: {
+          display: 'flex',
+          'flex-direction': 'column',
+          'align-items': 'center',
+          'background-color': 'white',
+          padding: '20px',
+        },
+      },
+      {
+        selector: '#results-box button',
+        declarations: {
+          'background-color': '#22d3ee',
+          color: 'white',
+          padding: '16px 32px',
+          'font-family': 'inherit',
+          cursor: 'pointer',
+        },
+      },
+    ],
+    extensions: [
+      {
+        extensionId: 'game-3d',
+      },
+    ],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'g3d:createFullscreenScene',
+          varName: 'cena',
+          bg: '#0f172a',
+        },
+        {
+          type: 'g3d:setSky',
+          worldVar: 'cena',
+          top: '#1e293b',
+          bottom: '#334155',
+        },
+        {
+          type: 'g3d:topCamera',
+          worldVar: 'cena',
+          followVar: '',
+        },
+        {
+          type: 'g3d:setFog',
+          worldVar: 'cena',
+          color: '#0f172a',
+          near: {
+            type: 'num',
+            value: 40,
+          },
+          far: {
+            type: 'num',
+            value: 110,
+          },
+        },
+        {
+          type: 'g3d:addSunLight',
+          worldVar: 'cena',
+          color: '#e2e8f0',
+          intensity: {
+            type: 'num',
+            value: 1,
+          },
+        },
+        {
+          type: 'g3d:createBlock',
+          varName: 'chao',
+          worldVar: 'cena',
+          width: {
+            type: 'num',
+            value: 34,
+          },
+          height: {
+            type: 'num',
+            value: 1,
+          },
+          depth: {
+            type: 'num',
+            value: 34,
+          },
+          color: '#14532d',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'chao',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: -0.5,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:createBlock',
+          varName: 'curral',
+          worldVar: 'cena',
+          width: {
+            type: 'num',
+            value: 6,
+          },
+          height: {
+            type: 'num',
+            value: 0.3,
+          },
+          depth: {
+            type: 'num',
+            value: 6,
+          },
+          color: '#fbbf24',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'curral',
+          x: {
+            type: 'num',
+            value: 9,
+          },
+          y: {
+            type: 'num',
+            value: 0.15,
+          },
+          z: {
+            type: 'num',
+            value: 9,
+          },
+        },
+        {
+          type: 'g3d:setMaterial',
+          objVar: 'curral',
+          kind: 'glow',
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'heroi',
+          worldVar: 'cena',
+          size: {
+            type: 'num',
+            value: 1.3,
+          },
+          color: '#38bdf8',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'heroi',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 0.65,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'moldeErrante',
+          worldVar: 'cena',
+          size: {
+            type: 'num',
+            value: 1,
+          },
+          color: '#f472b6',
+        },
+        {
+          type: 'g3d:setVisible',
+          objVar: 'moldeErrante',
+          mode: 'hide',
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'moldeSeguidor',
+          worldVar: 'cena',
+          size: {
+            type: 'num',
+            value: 1,
+          },
+          color: '#22d3ee',
+        },
+        {
+          type: 'g3d:setVisible',
+          objVar: 'moldeSeguidor',
+          mode: 'hide',
+        },
+        {
+          type: 'g3d:createSwarm',
+          varName: 'errantes',
+          worldVar: 'cena',
+        },
+        {
+          type: 'g3d:createSwarm',
+          varName: 'seguidores',
+          worldVar: 'cena',
+        },
+        {
+          type: 'var',
+          name: 'pontos',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'tempo',
+          value: {
+            type: 'num',
+            value: 45,
+          },
+        },
+        {
+          type: 'var',
+          name: 'rodando',
+          value: {
+            type: 'bool',
+            value: true,
+          },
+        },
+      ],
+      events: [
+        {
+          type: 'event',
+          target: 'retry',
+          event: 'click',
+          body: [
+            {
+              type: 'g3d:forEachInSwarm',
+              swarmVar: 'errantes',
+              itemName: 'item',
+              body: [
+                {
+                  type: 'g3d:removeFromSwarm',
+                  swarmVar: 'errantes',
+                  itemVar: 'item',
+                },
+              ],
+            },
+            {
+              type: 'g3d:forEachInSwarm',
+              swarmVar: 'seguidores',
+              itemName: 'item',
+              body: [
+                {
+                  type: 'g3d:removeFromSwarm',
+                  swarmVar: 'seguidores',
+                  itemVar: 'item',
+                },
+              ],
+            },
+            {
+              type: 'assign',
+              name: 'pontos',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'tempo',
+              value: {
+                type: 'num',
+                value: 45,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'rodando',
+              value: {
+                type: 'bool',
+                value: true,
+              },
+            },
+            {
+              type: 'g3d:setPosition',
+              objVar: 'heroi',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.65,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'setProperty',
+              targetId: 'score',
+              property: 'textContent',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'setProperty',
+              targetId: 'timer',
+              property: 'textContent',
+              value: {
+                type: 'num',
+                value: 45,
+              },
+            },
+            {
+              type: 'classOp',
+              targetId: 'results',
+              op: 'remove',
+              className: 'visivel',
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3d:animate',
+          worldVar: 'cena',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'var',
+                name: 'rodando',
+              },
+              then: [
+                {
+                  type: 'g3d:spin',
+                  objVar: 'curral',
+                  axis: 'y',
+                  speed: {
+                    type: 'num',
+                    value: 0.4,
+                  },
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logical',
+                    op: '||',
+                    left: {
+                      type: 'g3d:keyDown',
+                      key: 'ArrowLeft',
+                    },
+                    right: {
+                      type: 'g3d:keyDown',
+                      key: 'KeyA',
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3d:moveBy',
+                      objVar: 'heroi',
+                      x: {
+                        type: 'num',
+                        value: -0.16,
+                      },
+                      y: {
+                        type: 'num',
+                        value: 0,
+                      },
+                      z: {
+                        type: 'num',
+                        value: 0,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logical',
+                    op: '||',
+                    left: {
+                      type: 'g3d:keyDown',
+                      key: 'ArrowRight',
+                    },
+                    right: {
+                      type: 'g3d:keyDown',
+                      key: 'KeyD',
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3d:moveBy',
+                      objVar: 'heroi',
+                      x: {
+                        type: 'num',
+                        value: 0.16,
+                      },
+                      y: {
+                        type: 'num',
+                        value: 0,
+                      },
+                      z: {
+                        type: 'num',
+                        value: 0,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logical',
+                    op: '||',
+                    left: {
+                      type: 'g3d:keyDown',
+                      key: 'ArrowUp',
+                    },
+                    right: {
+                      type: 'g3d:keyDown',
+                      key: 'KeyW',
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3d:moveBy',
+                      objVar: 'heroi',
+                      x: {
+                        type: 'num',
+                        value: 0,
+                      },
+                      y: {
+                        type: 'num',
+                        value: 0,
+                      },
+                      z: {
+                        type: 'num',
+                        value: -0.16,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logical',
+                    op: '||',
+                    left: {
+                      type: 'g3d:keyDown',
+                      key: 'ArrowDown',
+                    },
+                    right: {
+                      type: 'g3d:keyDown',
+                      key: 'KeyS',
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3d:moveBy',
+                      objVar: 'heroi',
+                      x: {
+                        type: 'num',
+                        value: 0,
+                      },
+                      y: {
+                        type: 'num',
+                        value: 0,
+                      },
+                      z: {
+                        type: 'num',
+                        value: 0.16,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<',
+                    left: {
+                      type: 'g3d:getPos',
+                      objVar: 'heroi',
+                      axis: 'x',
+                    },
+                    right: {
+                      type: 'num',
+                      value: -13,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3d:setPosition',
+                      objVar: 'heroi',
+                      x: {
+                        type: 'num',
+                        value: -13,
+                      },
+                      y: {
+                        type: 'num',
+                        value: 0.65,
+                      },
+                      z: {
+                        type: 'g3d:getPos',
+                        objVar: 'heroi',
+                        axis: 'z',
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'g3d:getPos',
+                      objVar: 'heroi',
+                      axis: 'x',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 13,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3d:setPosition',
+                      objVar: 'heroi',
+                      x: {
+                        type: 'num',
+                        value: 13,
+                      },
+                      y: {
+                        type: 'num',
+                        value: 0.65,
+                      },
+                      z: {
+                        type: 'g3d:getPos',
+                        objVar: 'heroi',
+                        axis: 'z',
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<',
+                    left: {
+                      type: 'g3d:getPos',
+                      objVar: 'heroi',
+                      axis: 'z',
+                    },
+                    right: {
+                      type: 'num',
+                      value: -13,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3d:setPosition',
+                      objVar: 'heroi',
+                      x: {
+                        type: 'g3d:getPos',
+                        objVar: 'heroi',
+                        axis: 'x',
+                      },
+                      y: {
+                        type: 'num',
+                        value: 0.65,
+                      },
+                      z: {
+                        type: 'num',
+                        value: -13,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'g3d:getPos',
+                      objVar: 'heroi',
+                      axis: 'z',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 13,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3d:setPosition',
+                      objVar: 'heroi',
+                      x: {
+                        type: 'g3d:getPos',
+                        objVar: 'heroi',
+                        axis: 'x',
+                      },
+                      y: {
+                        type: 'num',
+                        value: 0.65,
+                      },
+                      z: {
+                        type: 'num',
+                        value: 13,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'g3d:forEachInSwarm',
+                  swarmVar: 'errantes',
+                  itemName: 'item',
+                  body: [
+                    {
+                      type: 'g3d:spin',
+                      objVar: 'item',
+                      axis: 'y',
+                      speed: {
+                        type: 'num',
+                        value: 1.5,
+                      },
+                    },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'g3d:isNear',
+                        aVar: 'heroi',
+                        bVar: 'item',
+                        dist: {
+                          type: 'num',
+                          value: 1.7,
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'g3d:spawnInSwarm',
+                          swarmVar: 'seguidores',
+                          originalVar: 'moldeSeguidor',
+                          x: {
+                            type: 'g3d:getPos',
+                            objVar: 'item',
+                            axis: 'x',
+                          },
+                          y: {
+                            type: 'num',
+                            value: 0.65,
+                          },
+                          z: {
+                            type: 'g3d:getPos',
+                            objVar: 'item',
+                            axis: 'z',
+                          },
+                        },
+                        {
+                          type: 'g3d:removeFromSwarm',
+                          swarmVar: 'errantes',
+                          itemVar: 'item',
+                        },
+                        {
+                          type: 'g3d:playEffect',
+                          kind: 'coin',
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: 'g3d:forEachInSwarm',
+                  swarmVar: 'seguidores',
+                  itemName: 'item',
+                  body: [
+                    {
+                      type: 'g3d:moveTowards',
+                      objVar: 'item',
+                      x: {
+                        type: 'g3d:getPos',
+                        objVar: 'heroi',
+                        axis: 'x',
+                      },
+                      y: {
+                        type: 'num',
+                        value: 0.65,
+                      },
+                      z: {
+                        type: 'g3d:getPos',
+                        objVar: 'heroi',
+                        axis: 'z',
+                      },
+                      factor: {
+                        type: 'num',
+                        value: 0.08,
+                      },
+                    },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'g3d:isNear',
+                        aVar: 'curral',
+                        bVar: 'item',
+                        dist: {
+                          type: 'num',
+                          value: 3,
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'g3d:removeFromSwarm',
+                          swarmVar: 'seguidores',
+                          itemVar: 'item',
+                        },
+                        {
+                          type: 'assign',
+                          name: 'pontos',
+                          value: {
+                            type: 'binop',
+                            op: '+',
+                            left: {
+                              type: 'var',
+                              name: 'pontos',
+                            },
+                            right: {
+                              type: 'num',
+                              value: 1,
+                            },
+                          },
+                        },
+                        {
+                          type: 'g3d:playEffect',
+                          kind: 'coin',
+                        },
+                        {
+                          type: 'setProperty',
+                          targetId: 'score',
+                          property: 'textContent',
+                          value: {
+                            type: 'var',
+                            name: 'pontos',
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>=',
+                    left: {
+                      type: 'var',
+                      name: 'pontos',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 8,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'rodando',
+                      value: {
+                        type: 'bool',
+                        value: false,
+                      },
+                    },
+                    {
+                      type: 'g3d:playEffect',
+                      kind: 'coin',
+                    },
+                    {
+                      type: 'setProperty',
+                      targetId: 'final-score',
+                      property: 'textContent',
+                      value: {
+                        type: 'var',
+                        name: 'pontos',
+                      },
+                    },
+                    {
+                      type: 'classOp',
+                      targetId: 'results',
+                      op: 'add',
+                      className: 'visivel',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3d:everySeconds',
+          secs: {
+            type: 'num',
+            value: 1.4,
+          },
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'var',
+                name: 'rodando',
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<',
+                    left: {
+                      type: 'g3d:countSwarm',
+                      swarmVar: 'errantes',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 6,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'var',
+                      name: 'angulo',
+                      value: {
+                        type: 'binop',
+                        op: '*',
+                        left: {
+                          type: 'randomFloat',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 6.283,
+                        },
+                      },
+                      kind: 'const',
+                    },
+                    {
+                      type: 'g3d:spawnInSwarm',
+                      swarmVar: 'errantes',
+                      originalVar: 'moldeErrante',
+                      x: {
+                        type: 'binop',
+                        op: '*',
+                        left: {
+                          type: 'mathUnary',
+                          fn: 'cos',
+                          arg: {
+                            type: 'var',
+                            name: 'angulo',
+                          },
+                        },
+                        right: {
+                          type: 'num',
+                          value: 10,
+                        },
+                      },
+                      y: {
+                        type: 'num',
+                        value: 0.65,
+                      },
+                      z: {
+                        type: 'binop',
+                        op: '*',
+                        left: {
+                          type: 'mathUnary',
+                          fn: 'sin',
+                          arg: {
+                            type: 'var',
+                            name: 'angulo',
+                          },
+                        },
+                        right: {
+                          type: 'num',
+                          value: 10,
+                        },
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3d:everySeconds',
+          secs: {
+            type: 'num',
+            value: 1,
+          },
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'var',
+                name: 'rodando',
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'tempo',
+                  value: {
+                    type: 'binop',
+                    op: '-',
+                    left: {
+                      type: 'var',
+                      name: 'tempo',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
+                  },
+                },
+                {
+                  type: 'setProperty',
+                  targetId: 'timer',
+                  property: 'textContent',
+                  value: {
+                    type: 'var',
+                    name: 'tempo',
+                  },
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<=',
+                    left: {
+                      type: 'var',
+                      name: 'tempo',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'rodando',
+                      value: {
+                        type: 'bool',
+                        value: false,
+                      },
+                    },
+                    {
+                      type: 'setProperty',
+                      targetId: 'final-score',
+                      property: 'textContent',
+                      value: {
+                        type: 'var',
+                        name: 'pontos',
+                      },
+                    },
+                    {
+                      type: 'classOp',
+                      targetId: 'results',
+                      op: 'add',
+                      className: 'visivel',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+}
