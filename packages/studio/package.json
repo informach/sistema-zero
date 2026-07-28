@@ -27,7 +27,7 @@
   },
   "scripts": {
     "dev": "vite --config playground/vite.config.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "NODE_OPTIONS=--max-old-space-size=8192 tsc --noEmit",
     "test": "bun test src",
     "e2e": "playwright test",
     "check": "biome check .",
