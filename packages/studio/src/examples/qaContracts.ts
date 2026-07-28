@@ -108,6 +108,15 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['start', 'arrows', 'space'],
   },
   {
+    key: 'game-2d-advanced:Safári de Monstros Profissional',
+    name: 'Safári de Monstros Profissional',
+    experience: 'game',
+    promise: 'Explorar dois biomas em grade, capturar os monstros no overworld sem batalha e evoluir o parceiro.',
+    scenario:
+      'Começar, andar pela grade com as setas, conversar com o Sábio, apertar Espaço de frente para cada monstro selvagem e capturá-lo, cruzar a borda leste para a Caverna, juntar os 5 e ver o parceiro evoluir na vitória.',
+    interactions: ['start', 'arrows', 'space'],
+  },
+  {
     key: 'game-2d:Herói que anda',
     name: 'Herói que anda',
     experience: 'demo',
