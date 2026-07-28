@@ -99,6 +99,15 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['arrows'],
   },
   {
+    key: 'game-2d:Safári de Monstros',
+    name: 'Safári de Monstros',
+    experience: 'game',
+    promise: 'Explorar um mundo, capturar monstros selvagens no próprio mapa e ver o parceiro evoluir.',
+    scenario:
+      'Começar, andar pelo mundo com as setas, entrar no mato para um monstro aparecer, apertar Espaço colado nele para capturar, juntar 5 no caderno e ver o parceiro evoluir.',
+    interactions: ['start', 'arrows', 'space'],
+  },
+  {
     key: 'game-2d:Herói que anda',
     name: 'Herói que anda',
     experience: 'demo',
