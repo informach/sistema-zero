@@ -94,6 +94,9 @@ class Pirata {
     }
     update(deltaTime, plataformas){
         this.vy = this.vy + 0.0016 * deltaTime;
+        if (this.vy > 0.4){
+            this.vy = 0.4;
+        }
         this.x = this.x + this.vx * deltaTime;
         this.y = this.y + this.vy * deltaTime;
         this.noChao = false;
@@ -208,6 +211,9 @@ function passo(agora){
         cameraX = pirata.x - 180;
         if (cameraX < 0){
             cameraX = 0;
+        }
+        if (cameraX > 1060){
+            cameraX = 1060;
         }
         for (let i = 0; i < inimigos.length; i = i + 1){
             const bicho = inimigos[i];
