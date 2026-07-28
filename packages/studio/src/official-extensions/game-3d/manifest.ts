@@ -2,6 +2,7 @@ import type { ExtensionManifest } from '#extensions'
 import {
   aLendaDoHeroiBasicoExample,
   cacaEstelarBasicoExample,
+  cercoNaBaseBasicoExample,
   corridaInfinitaExample,
   crossingExample,
   defesaDaTorreBasicoExample,
@@ -21,7 +22,7 @@ import {
 export const gameThreeDManifest: ExtensionManifest = {
   id: 'game-3d',
   name: 'Jogo 3D',
-  version: '0.25.0',
+  version: '0.26.0',
   description:
     'Blocos e comandos para criar jogos 3D com Three.js: cena/câmera/luz (e cena em tela cheia responsiva), cubos/esferas/caixas, posição/rotação/escala, física (velocidade, gravidade, pulo, colisão), teclado, câmera que segue, genéricos de grade isométrica e de movimento (círculo, distância, cair girando, deslizar, girar) e Kits prontos: "Desvie", "Travessia", "Corrida" e "Empilhar". Three.js carrega de um CDN fixado.',
   category: 'games',
@@ -170,6 +171,7 @@ em um evento ou em um construtor.
     reunirRebanhoBasicoExample,
     aLendaDoHeroiBasicoExample,
     cacaEstelarBasicoExample,
+    cercoNaBaseBasicoExample,
     stackExample,
   ],
 }

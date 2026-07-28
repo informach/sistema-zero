@@ -5,6 +5,7 @@ import type { BehaviorIR } from '#ir'
 import {
   aLendaDoHeroiProfissionalExample,
   cacaEstelarProfissionalExample,
+  cercoNaBaseProfissionalExample,
   chefaoDasSombrasExample,
   defesaDaTorreExample,
   guardiaoDoPortalExample,
@@ -839,5 +840,56 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
     tecla('keyup', ' ')
     expect(api.state()).toBe('vitoria')
     expect(tituloDaTela(stage, 'vitoria')).toBe('Ás dos céus!')
+  })
+
+  it('⭐ Cerco na Base Profissional: os aliens derrubam o guarda parado; carregar e abater 12 vence', async () => {
+    const { api, step, stage } = await loadExampleKit(jsDoExemplo(cercoNaBaseProfissionalExample))
+    expect(api.state()).toBe('menu')
+    apertarBotaoDe(stage, 'menu') // "Defender"
+    expect(api.state()).toBe('jogando')
+    step(2)
+
+    // (a) derrota JOGÁVEL: o guarda parado, sem atirar, com um alien grudado nele.
+    // O cérebro do alien (parado→avancando por nearest+seekPoint) o leva a encostar,
+    // e o dano de contato (hurt 1 com i-frames) zera as 6 vidas até a tela de fim.
+    let guarda = primeiroVivo(api, 'heroi')
+    expect(guarda).not.toBeNull()
+    for (let i = 0; i < 1500 && api.state() === 'jogando'; i++) {
+      api.place(guarda, 0, 1, 0)
+      const a = primeiroVivo(api, 'alien')
+      if (a) api.place(a, 0, 0.5, 0)
+      step(1)
+    }
+    expect(api.state()).toBe('fim')
+    expect(tituloDaTela(stage, 'fim')).toBe('A base caiu...')
+
+    // (b) vitória ATIRANDO: partida nova. Fixa o guarda encarando +Z, pina UM alien
+    // à frente (no caminho do tiro) e estaciona os outros longe. O ciclo CARREGA
+    // (segura o espaço ~1 s) e SOLTA para disparar o tiro FORTE (carga >= 0,8 →
+    // 10 de dano = abate o alien de 8 num tiro). A munição recarrega no ritmo do
+    // disparo, então não acaba. 12 abates fecham em vitória.
+    apertarBotaoDe(stage, 'fim') // "Tentar de novo"
+    expect(api.state()).toBe('jogando')
+    guarda = primeiroVivo(api, 'heroi')
+    for (let i = 0; i < 4000 && api.state() === 'jogando'; i++) {
+      api.place(guarda, 0, 1, 0)
+      api.setYaw(guarda, 0) // encara +Z; o tiro voa nessa direção
+      const alvo = primeiroVivo(api, 'alien')
+      if (alvo) {
+        api.forEachAlive('alien', (a) => {
+          if (a !== alvo) api.place(a, 30, 0.5, 30)
+        })
+        api.place(alvo, 0, 0.5, 3) // à frente, no caminho do tiro
+      }
+      if (i % 80 < 60) {
+        tecla('keydown', ' ') // segurando: carrega o blaster
+      } else {
+        tecla('keyup', ' ') // soltou: dispara o tiro forte
+      }
+      step(1)
+    }
+    tecla('keyup', ' ')
+    expect(api.state()).toBe('vitoria')
+    expect(tituloDaTela(stage, 'vitoria')).toBe('Base salva!')
   })
 })

@@ -531,6 +531,16 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['wasd', 'arrows', 'space'],
   },
   {
+    key: 'game-3d:Cerco na Base',
+    name: 'Cerco na Base',
+    experience: 'game',
+    promise:
+      'Um FPS de arena em 1ª pessoa: mirar com o mouse e segurar o espaço para carregar o tiro, com munição que recarrega.',
+    scenario:
+      'Mirar com o mouse, segurar o espaço para carregar e soltar para atirar nos aliens em ondas, abater 12 antes que as 3 vidas acabem e recomeçar.',
+    interactions: ['wasd', 'arrows', 'space', 'click'],
+  },
+  {
     key: 'game-3d:Desvie dos blocos',
     name: 'Desvie dos blocos',
     experience: 'game',
@@ -618,6 +628,16 @@ export const EXAMPLE_QA_CONTRACTS = [
       'Naves inimigas com cérebro próprio vagam, perseguem e fogem; o tiro pra frente as derruba.',
     scenario:
       'Voar com WASD, atirar com espaço ou clique nas naves inimigas, abater 10 antes dos escudos acabarem e ver vitória ou derrota.',
+    interactions: ['wasd', 'arrows', 'space', 'click'],
+  },
+  {
+    key: 'game-3d-advanced:Cerco na Base Profissional',
+    name: 'Cerco na Base Profissional',
+    experience: 'game',
+    promise:
+      'FPS de defesa em 1ª pessoa (cameraFps) com tiro carregado e munição limitada; aliens avançam em ondas.',
+    scenario:
+      'Olhar com o mouse, andar com WASD, carregar e soltar o espaço para disparar nos aliens, abater 12 antes da vida acabar e ver vitória ou derrota.',
     interactions: ['wasd', 'arrows', 'space', 'click'],
   },
   {
@@ -901,6 +921,16 @@ export const EXAMPLE_QA_CONTRACTS = [
     scenario:
       'Voar com as setas ou WASD, disparar com a barra de espaço nas naves inimigas, abater 10 e ver o céu ficar dourado.',
     interactions: ['wasd', 'arrows', 'space'],
+  },
+  {
+    key: 'core:Cerco na Base (na mão)',
+    name: 'Cerco na Base (na mão)',
+    experience: 'game',
+    promise:
+      'O FPS feito só com o núcleo Canvas 3D: câmera em 1ª pessoa (Raycaster de mira) e aliens em ondas num pool instanciado.',
+    scenario:
+      'Olhar arrastando o mouse, segurar e soltar o espaço para atirar na mira nos aliens, abater 12 e ver o céu ficar dourado.',
+    interactions: ['space', 'click'],
   },
   {
     key: 'core:Folio 3D procedural (na mão)',
