@@ -90,6 +90,15 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['start', 'arrows'],
   },
   {
+    key: 'core:Mundo Pirata (na mão)',
+    name: 'Mundo Pirata (na mão)',
+    experience: 'game',
+    promise: 'A plataforma pirata feita só com o núcleo Canvas 2D: classes, deltaTime, gravidade e câmera que rola.',
+    scenario:
+      'Correr e pular com as setas, pegar moedas, pisar nos inimigos, desviar dos buracos com 3 vidas e chegar na bandeira do fim.',
+    interactions: ['arrows'],
+  },
+  {
     key: 'game-2d:Herói que anda',
     name: 'Herói que anda',
     experience: 'demo',
