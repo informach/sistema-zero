@@ -45,12 +45,85 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['start', 'arrows'],
   },
   {
-    key: 'game-2d:Pong simples',
-    name: 'Pong simples',
+    key: 'game-2d:Pong',
+    name: 'Pong',
     experience: 'game',
     promise: 'Disputar uma partida de Pong contra o computador até cinco pontos.',
-    scenario: 'Começar, mover a raquete, marcar/sofrer cinco pontos, concluir e reiniciar.',
+    scenario:
+      'Começar, mover a raquete com as setas, rebater a bola nas paredes e raquetes, marcar/sofrer cinco pontos e reiniciar.',
     interactions: ['start', 'arrows'],
+  },
+  {
+    key: 'game-2d-advanced:Pong Profissional',
+    name: 'Pong Profissional',
+    experience: 'game',
+    promise: 'Ganhar o Pong no motor avançado com ângulo por contato e bola que acelera a cada troca.',
+    scenario:
+      'Começar, mover a raquete com as setas, rebater dando ângulo, ver a bola acelerar no rally, fazer sete pontos e ver vitória ou derrota.',
+    interactions: ['start', 'arrows'],
+  },
+  {
+    key: 'core:Pong (na mão)',
+    name: 'Pong (na mão)',
+    experience: 'game',
+    promise: 'O Pong feito só com o núcleo Canvas 2D: classes Paddle e Ball, deltaTime e rebote por ângulo.',
+    scenario:
+      'Mover a raquete com as setas, rebater a bola com ângulo pelo ponto de contato, marcar até cinco contra a IA do computador e apertar Enter para recomeçar.',
+    interactions: ['arrows'],
+  },
+  {
+    key: 'game-2d:Mundo Pirata',
+    name: 'Mundo Pirata',
+    experience: 'game',
+    promise: 'Atravessar uma fase de plataforma lateral pegando moedas e pisando nos inimigos até a bandeira.',
+    scenario:
+      'Começar, correr e pular pelas plataformas com as setas, pegar moedas, pisar nos caranguejos, desviar dos buracos, chegar na bandeira e reiniciar.',
+    interactions: ['start', 'arrows'],
+  },
+  {
+    key: 'game-2d-advanced:Mundo Pirata Profissional',
+    name: 'Mundo Pirata Profissional',
+    experience: 'game',
+    promise: 'Vencer uma fase de plataforma com controlador do motor, tábuas atravessáveis, 3 inimigos e vidas.',
+    scenario:
+      'Começar, correr e pular, descer pelas tábuas, pisar em 3 tipos de inimigo, desviar das pérolas, pegar moedas, usar as vidas e o checkpoint e chegar na bandeira.',
+    interactions: ['start', 'arrows'],
+  },
+  {
+    key: 'core:Mundo Pirata (na mão)',
+    name: 'Mundo Pirata (na mão)',
+    experience: 'game',
+    promise: 'A plataforma pirata feita só com o núcleo Canvas 2D: classes, deltaTime, gravidade e câmera que rola.',
+    scenario:
+      'Correr e pular com as setas, pegar moedas, pisar nos inimigos, desviar dos buracos com 3 vidas e chegar na bandeira do fim.',
+    interactions: ['arrows'],
+  },
+  {
+    key: 'game-2d:Safári de Monstros',
+    name: 'Safári de Monstros',
+    experience: 'game',
+    promise: 'Explorar um mundo, capturar monstros selvagens no próprio mapa e ver o parceiro evoluir.',
+    scenario:
+      'Começar, andar pelo mundo com as setas, entrar no mato para um monstro aparecer, apertar Espaço colado nele para capturar, juntar 5 no caderno e ver o parceiro evoluir.',
+    interactions: ['start', 'arrows', 'space'],
+  },
+  {
+    key: 'game-2d-advanced:Safári de Monstros Profissional',
+    name: 'Safári de Monstros Profissional',
+    experience: 'game',
+    promise: 'Explorar dois biomas em grade, capturar os monstros no overworld sem batalha e evoluir o parceiro.',
+    scenario:
+      'Começar, andar pela grade com as setas, conversar com o Sábio, apertar Espaço de frente para cada monstro selvagem e capturá-lo, cruzar a borda leste para a Caverna, juntar os 5 e ver o parceiro evoluir na vitória.',
+    interactions: ['start', 'arrows', 'space'],
+  },
+  {
+    key: 'core:Safári de Monstros (na mão)',
+    name: 'Safári de Monstros (na mão)',
+    experience: 'game',
+    promise: 'O overworld de captura só com o núcleo Canvas 2D: classes, tilemap por texto, câmera e AABB.',
+    scenario:
+      'Começar, andar com WASD por um mundo maior que a tela com câmera que segue, apertar espaço colado num monstro na grama para capturar, juntar 5 e ver o parceiro evoluir no HUD.',
+    interactions: ['start', 'wasd', 'space'],
   },
   {
     key: 'game-2d:Herói que anda',

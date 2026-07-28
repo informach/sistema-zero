@@ -7019,3 +7019,4118 @@ export const heroiQueEvoluiExample: ExtensionExample = beginnerGameExample({
     extensions: [{ extensionId: 'game-2d' }],
   },
 })
+
+/**
+ * Exemplo bundlado: "Pong" (degrau BÁSICO da trilogia Pong do Clear Code; refaz
+ * o antigo "Pong simples"). Gerado por __gen_pong.ts; drift test: pongExample.test.ts.
+ */
+export const pongExample: ExtensionExample = beginnerGameExample({
+  name: 'Pong',
+  experience: 'game',
+  description:
+    'Dispute Pong contra o computador: mova a raquete azul com as setas para cima e para baixo, rebata a bola e faça 5 pontos antes dele. Enter começa e reinicia.',
+  ir: {
+    html: [{ type: 'canvas', id: 'tela', width: 440, height: 300 }],
+    css: [
+      {
+        selector: 'body',
+        declarations: {
+          background: '#0b1020',
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          'min-height': '100vh',
+          margin: '0',
+        },
+      },
+      { selector: 'canvas', declarations: { border: '2px solid #22d3ee', background: '#11172a' } },
+    ],
+    version: 2,
+    extensions: [{ extensionId: 'game-2d' }],
+    behavior: {
+      start: [
+        {
+          type: 'g2d:createSprite',
+          varName: 'jogador',
+          x: {
+            type: 'num',
+            value: 20,
+          },
+          y: {
+            type: 'num',
+            value: 128,
+          },
+          w: {
+            type: 'num',
+            value: 12,
+          },
+          h: {
+            type: 'num',
+            value: 44,
+          },
+          color: '#22d3ee',
+        },
+        {
+          type: 'g2d:createSprite',
+          varName: 'computador',
+          x: {
+            type: 'num',
+            value: 408,
+          },
+          y: {
+            type: 'num',
+            value: 128,
+          },
+          w: {
+            type: 'num',
+            value: 12,
+          },
+          h: {
+            type: 'num',
+            value: 44,
+          },
+          color: '#f472b6',
+        },
+        {
+          type: 'g2d:createSprite',
+          varName: 'bola',
+          x: {
+            type: 'num',
+            value: 214,
+          },
+          y: {
+            type: 'num',
+            value: 144,
+          },
+          w: {
+            type: 'num',
+            value: 12,
+          },
+          h: {
+            type: 'num',
+            value: 12,
+          },
+          color: '#fbbf24',
+        },
+        {
+          type: 'g2d:setVelocity',
+          spriteVar: 'bola',
+          vx: {
+            type: 'num',
+            value: 3,
+          },
+          vy: {
+            type: 'num',
+            value: 2,
+          },
+        },
+        {
+          type: 'var',
+          name: 'pontos',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'pontosComputador',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:setScene',
+          name: 'inicio',
+        },
+      ],
+      events: [
+        {
+          type: 'g2d:onKey',
+          key: 'Enter',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'inicio',
+              },
+              then: [
+                {
+                  type: 'g2d:setScene',
+                  name: 'jogando',
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'vitoria',
+              },
+              then: [
+                {
+                  type: 'g2d:restart',
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'derrota',
+              },
+              then: [
+                {
+                  type: 'g2d:restart',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g2d:updateEachFrame',
+          body: [
+            {
+              type: 'g2d:clear',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'inicio',
+              },
+              then: [
+                {
+                  type: 'g2d:showScreen',
+                  ctxVar: 'ctx',
+                  title: {
+                    type: 'str',
+                    value: 'Pong',
+                  },
+                  subtitle: {
+                    type: 'str',
+                    value:
+                      'Mova a raquete azul com as setas para cima e para baixo. O primeiro a 5 pontos vence!',
+                  },
+                  hint: {
+                    type: 'str',
+                    value: 'Aperte Enter para começar',
+                  },
+                  bg: '#11172a',
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'jogando',
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'g2d:keyDown',
+                    key: 'ArrowUp',
+                  },
+                  then: [
+                    {
+                      type: 'memberSet',
+                      object: {
+                        type: 'var',
+                        name: 'jogador',
+                      },
+                      name: 'y',
+                      value: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'memberGet',
+                          object: {
+                            type: 'var',
+                            name: 'jogador',
+                          },
+                          name: 'y',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 5,
+                        },
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'g2d:keyDown',
+                    key: 'ArrowDown',
+                  },
+                  then: [
+                    {
+                      type: 'memberSet',
+                      object: {
+                        type: 'var',
+                        name: 'jogador',
+                      },
+                      name: 'y',
+                      value: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'memberGet',
+                          object: {
+                            type: 'var',
+                            name: 'jogador',
+                          },
+                          name: 'y',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 5,
+                        },
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'g2d:clampToScreen',
+                  spriteVar: 'jogador',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'memberGet',
+                      object: {
+                        type: 'var',
+                        name: 'bola',
+                      },
+                      name: 'y',
+                    },
+                    right: {
+                      type: 'binop',
+                      op: '+',
+                      left: {
+                        type: 'memberGet',
+                        object: {
+                          type: 'var',
+                          name: 'computador',
+                        },
+                        name: 'y',
+                      },
+                      right: {
+                        type: 'num',
+                        value: 26,
+                      },
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'memberSet',
+                      object: {
+                        type: 'var',
+                        name: 'computador',
+                      },
+                      name: 'y',
+                      value: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'memberGet',
+                          object: {
+                            type: 'var',
+                            name: 'computador',
+                          },
+                          name: 'y',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 3.4,
+                        },
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<',
+                    left: {
+                      type: 'memberGet',
+                      object: {
+                        type: 'var',
+                        name: 'bola',
+                      },
+                      name: 'y',
+                    },
+                    right: {
+                      type: 'binop',
+                      op: '+',
+                      left: {
+                        type: 'memberGet',
+                        object: {
+                          type: 'var',
+                          name: 'computador',
+                        },
+                        name: 'y',
+                      },
+                      right: {
+                        type: 'num',
+                        value: 18,
+                      },
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'memberSet',
+                      object: {
+                        type: 'var',
+                        name: 'computador',
+                      },
+                      name: 'y',
+                      value: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'memberGet',
+                          object: {
+                            type: 'var',
+                            name: 'computador',
+                          },
+                          name: 'y',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 3.4,
+                        },
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'g2d:clampToScreen',
+                  spriteVar: 'computador',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'g2d:applyVelocity',
+                  spriteVar: 'bola',
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<=',
+                    left: {
+                      type: 'memberGet',
+                      object: {
+                        type: 'var',
+                        name: 'bola',
+                      },
+                      name: 'y',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'memberSet',
+                      object: {
+                        type: 'var',
+                        name: 'bola',
+                      },
+                      name: 'vy',
+                      value: {
+                        type: 'mathUnary',
+                        fn: 'abs',
+                        arg: {
+                          type: 'memberGet',
+                          object: {
+                            type: 'var',
+                            name: 'bola',
+                          },
+                          name: 'vy',
+                        },
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>=',
+                    left: {
+                      type: 'binop',
+                      op: '+',
+                      left: {
+                        type: 'memberGet',
+                        object: {
+                          type: 'var',
+                          name: 'bola',
+                        },
+                        name: 'y',
+                      },
+                      right: {
+                        type: 'memberGet',
+                        object: {
+                          type: 'var',
+                          name: 'bola',
+                        },
+                        name: 'h',
+                      },
+                    },
+                    right: {
+                      type: 'num',
+                      value: 300,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'memberSet',
+                      object: {
+                        type: 'var',
+                        name: 'bola',
+                      },
+                      name: 'vy',
+                      value: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'num',
+                          value: 0,
+                        },
+                        right: {
+                          type: 'mathUnary',
+                          fn: 'abs',
+                          arg: {
+                            type: 'memberGet',
+                            object: {
+                              type: 'var',
+                              name: 'bola',
+                            },
+                            name: 'vy',
+                          },
+                        },
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logical',
+                    op: '&&',
+                    left: {
+                      type: 'g2d:touches',
+                      aVar: 'jogador',
+                      bVar: 'bola',
+                    },
+                    right: {
+                      type: 'binop',
+                      op: '<',
+                      left: {
+                        type: 'memberGet',
+                        object: {
+                          type: 'var',
+                          name: 'bola',
+                        },
+                        name: 'vx',
+                      },
+                      right: {
+                        type: 'num',
+                        value: 0,
+                      },
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g2d:setVelocity',
+                      spriteVar: 'bola',
+                      vx: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'mathUnary',
+                          fn: 'abs',
+                          arg: {
+                            type: 'memberGet',
+                            object: {
+                              type: 'var',
+                              name: 'bola',
+                            },
+                            name: 'vx',
+                          },
+                        },
+                        right: {
+                          type: 'num',
+                          value: 0.3,
+                        },
+                      },
+                      vy: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'memberGet',
+                          object: {
+                            type: 'var',
+                            name: 'bola',
+                          },
+                          name: 'vy',
+                        },
+                        right: {
+                          type: 'binop',
+                          op: '*',
+                          left: {
+                            type: 'binop',
+                            op: '-',
+                            left: {
+                              type: 'binop',
+                              op: '-',
+                              left: {
+                                type: 'memberGet',
+                                object: {
+                                  type: 'var',
+                                  name: 'bola',
+                                },
+                                name: 'y',
+                              },
+                              right: {
+                                type: 'memberGet',
+                                object: {
+                                  type: 'var',
+                                  name: 'jogador',
+                                },
+                                name: 'y',
+                              },
+                            },
+                            right: {
+                              type: 'num',
+                              value: 16,
+                            },
+                          },
+                          right: {
+                            type: 'num',
+                            value: 0.08,
+                          },
+                        },
+                      },
+                    },
+                    {
+                      type: 'g2d:playFx',
+                      fx: 'coin',
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logical',
+                    op: '&&',
+                    left: {
+                      type: 'g2d:touches',
+                      aVar: 'computador',
+                      bVar: 'bola',
+                    },
+                    right: {
+                      type: 'binop',
+                      op: '>',
+                      left: {
+                        type: 'memberGet',
+                        object: {
+                          type: 'var',
+                          name: 'bola',
+                        },
+                        name: 'vx',
+                      },
+                      right: {
+                        type: 'num',
+                        value: 0,
+                      },
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g2d:setVelocity',
+                      spriteVar: 'bola',
+                      vx: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'binop',
+                          op: '-',
+                          left: {
+                            type: 'num',
+                            value: 0,
+                          },
+                          right: {
+                            type: 'mathUnary',
+                            fn: 'abs',
+                            arg: {
+                              type: 'memberGet',
+                              object: {
+                                type: 'var',
+                                name: 'bola',
+                              },
+                              name: 'vx',
+                            },
+                          },
+                        },
+                        right: {
+                          type: 'num',
+                          value: 0.3,
+                        },
+                      },
+                      vy: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'memberGet',
+                          object: {
+                            type: 'var',
+                            name: 'bola',
+                          },
+                          name: 'vy',
+                        },
+                        right: {
+                          type: 'binop',
+                          op: '*',
+                          left: {
+                            type: 'binop',
+                            op: '-',
+                            left: {
+                              type: 'binop',
+                              op: '-',
+                              left: {
+                                type: 'memberGet',
+                                object: {
+                                  type: 'var',
+                                  name: 'bola',
+                                },
+                                name: 'y',
+                              },
+                              right: {
+                                type: 'memberGet',
+                                object: {
+                                  type: 'var',
+                                  name: 'computador',
+                                },
+                                name: 'y',
+                              },
+                            },
+                            right: {
+                              type: 'num',
+                              value: 16,
+                            },
+                          },
+                          right: {
+                            type: 'num',
+                            value: 0.08,
+                          },
+                        },
+                      },
+                    },
+                    {
+                      type: 'g2d:playFx',
+                      fx: 'coin',
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<',
+                    left: {
+                      type: 'memberGet',
+                      object: {
+                        type: 'var',
+                        name: 'bola',
+                      },
+                      name: 'x',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'pontosComputador',
+                      value: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'var',
+                          name: 'pontosComputador',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 1,
+                        },
+                      },
+                    },
+                    {
+                      type: 'g2d:setPosition',
+                      spriteVar: 'bola',
+                      x: {
+                        type: 'num',
+                        value: 214,
+                      },
+                      y: {
+                        type: 'num',
+                        value: 144,
+                      },
+                    },
+                    {
+                      type: 'g2d:setVelocity',
+                      spriteVar: 'bola',
+                      vx: {
+                        type: 'num',
+                        value: 3,
+                      },
+                      vy: {
+                        type: 'g2d:randomBetween',
+                        min: {
+                          type: 'num',
+                          value: -2,
+                        },
+                        max: {
+                          type: 'num',
+                          value: 2,
+                        },
+                      },
+                    },
+                    {
+                      type: 'g2d:playFx',
+                      fx: 'gameover',
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'memberGet',
+                      object: {
+                        type: 'var',
+                        name: 'bola',
+                      },
+                      name: 'x',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 440,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'pontos',
+                      value: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'var',
+                          name: 'pontos',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 1,
+                        },
+                      },
+                    },
+                    {
+                      type: 'g2d:setPosition',
+                      spriteVar: 'bola',
+                      x: {
+                        type: 'num',
+                        value: 214,
+                      },
+                      y: {
+                        type: 'num',
+                        value: 144,
+                      },
+                    },
+                    {
+                      type: 'g2d:setVelocity',
+                      spriteVar: 'bola',
+                      vx: {
+                        type: 'num',
+                        value: -3,
+                      },
+                      vy: {
+                        type: 'g2d:randomBetween',
+                        min: {
+                          type: 'num',
+                          value: -2,
+                        },
+                        max: {
+                          type: 'num',
+                          value: 2,
+                        },
+                      },
+                    },
+                    {
+                      type: 'g2d:playFx',
+                      fx: 'jump',
+                    },
+                  ],
+                },
+                {
+                  type: 'g2d:drawSprite',
+                  spriteVar: 'jogador',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'g2d:drawSprite',
+                  spriteVar: 'computador',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'g2d:drawSprite',
+                  spriteVar: 'bola',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'g2d:drawScore',
+                  ctxVar: 'ctx',
+                  label: 'Você:',
+                  value: {
+                    type: 'var',
+                    name: 'pontos',
+                  },
+                  x: {
+                    type: 'num',
+                    value: 20,
+                  },
+                  y: {
+                    type: 'num',
+                    value: 28,
+                  },
+                  color: '#22d3ee',
+                  size: {
+                    type: 'num',
+                    value: 20,
+                  },
+                },
+                {
+                  type: 'g2d:drawScore',
+                  ctxVar: 'ctx',
+                  label: 'PC:',
+                  value: {
+                    type: 'var',
+                    name: 'pontosComputador',
+                  },
+                  x: {
+                    type: 'num',
+                    value: 330,
+                  },
+                  y: {
+                    type: 'num',
+                    value: 28,
+                  },
+                  color: '#f472b6',
+                  size: {
+                    type: 'num',
+                    value: 20,
+                  },
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>=',
+                    left: {
+                      type: 'var',
+                      name: 'pontos',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 5,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g2d:setScene',
+                      name: 'vitoria',
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>=',
+                    left: {
+                      type: 'var',
+                      name: 'pontosComputador',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 5,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g2d:setScene',
+                      name: 'derrota',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'vitoria',
+              },
+              then: [
+                {
+                  type: 'g2d:showScreen',
+                  ctxVar: 'ctx',
+                  title: {
+                    type: 'str',
+                    value: 'Você venceu!',
+                  },
+                  subtitle: {
+                    type: 'str',
+                    value: 'Você fez 5 pontos antes do computador. Mandou bem!',
+                  },
+                  hint: {
+                    type: 'str',
+                    value: 'Aperte Enter para jogar de novo',
+                  },
+                  bg: '#14532d',
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'derrota',
+              },
+              then: [
+                {
+                  type: 'g2d:showScreen',
+                  ctxVar: 'ctx',
+                  title: {
+                    type: 'str',
+                    value: 'O computador venceu',
+                  },
+                  subtitle: {
+                    type: 'str',
+                    value:
+                      'Ele chegou a 5 pontos primeiro. Tente rebater com a beirada da raquete!',
+                  },
+                  hint: {
+                    type: 'str',
+                    value: 'Aperte Enter para jogar de novo',
+                  },
+                  bg: '#5a2a2a',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+})
+
+/**
+ * Exemplo bundlado: "Mundo Pirata" (degrau BÁSICO da trilogia de plataforma
+ * lateral do Clear Code — Super Pirate World). Gerado por __gen_mundoPirata.ts;
+ * drift test: mundoPirataExample.test.ts.
+ */
+export const mundoPirataExample: ExtensionExample = beginnerGameExample({
+  name: 'Mundo Pirata',
+  experience: 'game',
+  description:
+    'Uma aventura de plataforma pirata: corra e pule com as setas por um mundo largo, pegue moedas, pise nos caranguejos e desvie dos buracos até a bandeira do fim. Enter começa e reinicia.',
+  ir: {
+    html: [{ type: 'canvas', id: 'tela', width: 480, height: 300 }],
+    css: [
+      {
+        selector: 'body',
+        declarations: {
+          background: '#0e2a38',
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          'min-height': '100vh',
+          margin: '0',
+        },
+      },
+      {
+        selector: 'canvas',
+        declarations: {
+          border: '3px solid #123a4a',
+          'border-radius': '12px',
+          background: '#8ecae6',
+        },
+      },
+    ],
+    version: 2,
+    extensions: [{ extensionId: 'game-2d' }],
+    behavior: {
+      start: [
+        {
+          type: 'g2d:fitScreen',
+          percent: {
+            type: 'num',
+            value: 100,
+          },
+        },
+        {
+          type: 'g2d:setGravity',
+          value: {
+            type: 'num',
+            value: 0.5,
+          },
+        },
+        {
+          type: 'g2d:defineShape',
+          shapeName: 'pirata',
+          body: [
+            {
+              type: 'g2d:paintRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 6,
+              },
+              y: {
+                type: 'num',
+                value: 14,
+              },
+              w: {
+                type: 'num',
+                value: 16,
+              },
+              h: {
+                type: 'num',
+                value: 18,
+              },
+              color: '#c0392b',
+            },
+            {
+              type: 'g2d:paintCircle',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 14,
+              },
+              y: {
+                type: 'num',
+                value: 9,
+              },
+              r: {
+                type: 'num',
+                value: 7,
+              },
+              color: '#f7c8a2',
+            },
+            {
+              type: 'g2d:paintRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 3,
+              },
+              y: {
+                type: 'num',
+                value: 3,
+              },
+              w: {
+                type: 'num',
+                value: 22,
+              },
+              h: {
+                type: 'num',
+                value: 6,
+              },
+              color: '#2c3e50',
+            },
+            {
+              type: 'g2d:paintRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 8,
+              },
+              y: {
+                type: 'num',
+                value: 32,
+              },
+              w: {
+                type: 'num',
+                value: 5,
+              },
+              h: {
+                type: 'num',
+                value: 11,
+              },
+              color: '#34495e',
+            },
+            {
+              type: 'g2d:paintRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 15,
+              },
+              y: {
+                type: 'num',
+                value: 32,
+              },
+              w: {
+                type: 'num',
+                value: 5,
+              },
+              h: {
+                type: 'num',
+                value: 11,
+              },
+              color: '#34495e',
+            },
+          ],
+        },
+        {
+          type: 'g2d:defineShape',
+          shapeName: 'caranguejo',
+          body: [
+            {
+              type: 'g2d:paintEllipse',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 12,
+              },
+              y: {
+                type: 'num',
+                value: 12,
+              },
+              w: {
+                type: 'num',
+                value: 11,
+              },
+              h: {
+                type: 'num',
+                value: 7,
+              },
+              color: '#e67e22',
+            },
+            {
+              type: 'g2d:paintRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 2,
+              },
+              y: {
+                type: 'num',
+                value: 6,
+              },
+              w: {
+                type: 'num',
+                value: 4,
+              },
+              h: {
+                type: 'num',
+                value: 6,
+              },
+              color: '#c0392b',
+            },
+            {
+              type: 'g2d:paintRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 18,
+              },
+              y: {
+                type: 'num',
+                value: 6,
+              },
+              w: {
+                type: 'num',
+                value: 4,
+              },
+              h: {
+                type: 'num',
+                value: 6,
+              },
+              color: '#c0392b',
+            },
+          ],
+        },
+        {
+          type: 'g2d:createShapeSprite',
+          varName: 'heroi',
+          shapeName: 'pirata',
+          x: {
+            type: 'num',
+            value: 40,
+          },
+          y: {
+            type: 'num',
+            value: 190,
+          },
+          w: {
+            type: 'num',
+            value: 28,
+          },
+          h: {
+            type: 'num',
+            value: 44,
+          },
+        },
+        {
+          type: 'g2d:setHitboxScale',
+          spriteVar: 'heroi',
+          percent: {
+            type: 'num',
+            value: 80,
+          },
+        },
+        {
+          type: 'g2d:createGroup',
+          varName: 'plataformas',
+        },
+        {
+          type: 'g2d:spawnInGroup',
+          groupVar: 'plataformas',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 264,
+          },
+          w: {
+            type: 'num',
+            value: 360,
+          },
+          h: {
+            type: 'num',
+            value: 40,
+          },
+          color: '#8d6e63',
+          vx: {
+            type: 'num',
+            value: 0,
+          },
+          vy: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:spawnInGroup',
+          groupVar: 'plataformas',
+          x: {
+            type: 'num',
+            value: 440,
+          },
+          y: {
+            type: 'num',
+            value: 264,
+          },
+          w: {
+            type: 'num',
+            value: 360,
+          },
+          h: {
+            type: 'num',
+            value: 40,
+          },
+          color: '#8d6e63',
+          vx: {
+            type: 'num',
+            value: 0,
+          },
+          vy: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:spawnInGroup',
+          groupVar: 'plataformas',
+          x: {
+            type: 'num',
+            value: 880,
+          },
+          y: {
+            type: 'num',
+            value: 264,
+          },
+          w: {
+            type: 'num',
+            value: 720,
+          },
+          h: {
+            type: 'num',
+            value: 40,
+          },
+          color: '#8d6e63',
+          vx: {
+            type: 'num',
+            value: 0,
+          },
+          vy: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:spawnInGroup',
+          groupVar: 'plataformas',
+          x: {
+            type: 'num',
+            value: 300,
+          },
+          y: {
+            type: 'num',
+            value: 196,
+          },
+          w: {
+            type: 'num',
+            value: 90,
+          },
+          h: {
+            type: 'num',
+            value: 18,
+          },
+          color: '#a1887f',
+          vx: {
+            type: 'num',
+            value: 0,
+          },
+          vy: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:spawnInGroup',
+          groupVar: 'plataformas',
+          x: {
+            type: 'num',
+            value: 590,
+          },
+          y: {
+            type: 'num',
+            value: 184,
+          },
+          w: {
+            type: 'num',
+            value: 90,
+          },
+          h: {
+            type: 'num',
+            value: 18,
+          },
+          color: '#a1887f',
+          vx: {
+            type: 'num',
+            value: 0,
+          },
+          vy: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:spawnInGroup',
+          groupVar: 'plataformas',
+          x: {
+            type: 'num',
+            value: 1040,
+          },
+          y: {
+            type: 'num',
+            value: 196,
+          },
+          w: {
+            type: 'num',
+            value: 90,
+          },
+          h: {
+            type: 'num',
+            value: 18,
+          },
+          color: '#a1887f',
+          vx: {
+            type: 'num',
+            value: 0,
+          },
+          vy: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:spawnInGroup',
+          groupVar: 'plataformas',
+          x: {
+            type: 'num',
+            value: 1280,
+          },
+          y: {
+            type: 'num',
+            value: 176,
+          },
+          w: {
+            type: 'num',
+            value: 90,
+          },
+          h: {
+            type: 'num',
+            value: 18,
+          },
+          color: '#a1887f',
+          vx: {
+            type: 'num',
+            value: 0,
+          },
+          vy: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:createGroup',
+          varName: 'moedas',
+        },
+        {
+          type: 'g2d:spawnInGroup',
+          groupVar: 'moedas',
+          x: {
+            type: 'num',
+            value: 200,
+          },
+          y: {
+            type: 'num',
+            value: 224,
+          },
+          w: {
+            type: 'num',
+            value: 16,
+          },
+          h: {
+            type: 'num',
+            value: 16,
+          },
+          color: '#ffd166',
+          vx: {
+            type: 'num',
+            value: 0,
+          },
+          vy: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:spawnInGroup',
+          groupVar: 'moedas',
+          x: {
+            type: 'num',
+            value: 330,
+          },
+          y: {
+            type: 'num',
+            value: 168,
+          },
+          w: {
+            type: 'num',
+            value: 16,
+          },
+          h: {
+            type: 'num',
+            value: 16,
+          },
+          color: '#ffd166',
+          vx: {
+            type: 'num',
+            value: 0,
+          },
+          vy: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:spawnInGroup',
+          groupVar: 'moedas',
+          x: {
+            type: 'num',
+            value: 620,
+          },
+          y: {
+            type: 'num',
+            value: 156,
+          },
+          w: {
+            type: 'num',
+            value: 16,
+          },
+          h: {
+            type: 'num',
+            value: 16,
+          },
+          color: '#ffd166',
+          vx: {
+            type: 'num',
+            value: 0,
+          },
+          vy: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:spawnInGroup',
+          groupVar: 'moedas',
+          x: {
+            type: 'num',
+            value: 700,
+          },
+          y: {
+            type: 'num',
+            value: 224,
+          },
+          w: {
+            type: 'num',
+            value: 16,
+          },
+          h: {
+            type: 'num',
+            value: 16,
+          },
+          color: '#ffd166',
+          vx: {
+            type: 'num',
+            value: 0,
+          },
+          vy: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:spawnInGroup',
+          groupVar: 'moedas',
+          x: {
+            type: 'num',
+            value: 1070,
+          },
+          y: {
+            type: 'num',
+            value: 168,
+          },
+          w: {
+            type: 'num',
+            value: 16,
+          },
+          h: {
+            type: 'num',
+            value: 16,
+          },
+          color: '#ffd166',
+          vx: {
+            type: 'num',
+            value: 0,
+          },
+          vy: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:spawnInGroup',
+          groupVar: 'moedas',
+          x: {
+            type: 'num',
+            value: 1310,
+          },
+          y: {
+            type: 'num',
+            value: 148,
+          },
+          w: {
+            type: 'num',
+            value: 16,
+          },
+          h: {
+            type: 'num',
+            value: 16,
+          },
+          color: '#ffd166',
+          vx: {
+            type: 'num',
+            value: 0,
+          },
+          vy: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:spawnInGroup',
+          groupVar: 'moedas',
+          x: {
+            type: 'num',
+            value: 1460,
+          },
+          y: {
+            type: 'num',
+            value: 224,
+          },
+          w: {
+            type: 'num',
+            value: 16,
+          },
+          h: {
+            type: 'num',
+            value: 16,
+          },
+          color: '#ffd166',
+          vx: {
+            type: 'num',
+            value: 0,
+          },
+          vy: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:createGroup',
+          varName: 'inimigos',
+        },
+        {
+          type: 'g2d:spawnInGroup',
+          groupVar: 'inimigos',
+          x: {
+            type: 'num',
+            value: 520,
+          },
+          y: {
+            type: 'num',
+            value: 240,
+          },
+          w: {
+            type: 'num',
+            value: 24,
+          },
+          h: {
+            type: 'num',
+            value: 20,
+          },
+          color: '#e67e22',
+          vx: {
+            type: 'num',
+            value: 0.7,
+          },
+          vy: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:spawnInGroup',
+          groupVar: 'inimigos',
+          x: {
+            type: 'num',
+            value: 980,
+          },
+          y: {
+            type: 'num',
+            value: 240,
+          },
+          w: {
+            type: 'num',
+            value: 24,
+          },
+          h: {
+            type: 'num',
+            value: 20,
+          },
+          color: '#e67e22',
+          vx: {
+            type: 'num',
+            value: 0.7,
+          },
+          vy: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:spawnInGroup',
+          groupVar: 'inimigos',
+          x: {
+            type: 'num',
+            value: 1200,
+          },
+          y: {
+            type: 'num',
+            value: 240,
+          },
+          w: {
+            type: 'num',
+            value: 24,
+          },
+          h: {
+            type: 'num',
+            value: 20,
+          },
+          color: '#e67e22',
+          vx: {
+            type: 'num',
+            value: 0.7,
+          },
+          vy: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:createSprite',
+          varName: 'bandeira',
+          x: {
+            type: 'num',
+            value: 1540,
+          },
+          y: {
+            type: 'num',
+            value: 200,
+          },
+          w: {
+            type: 'num',
+            value: 16,
+          },
+          h: {
+            type: 'num',
+            value: 64,
+          },
+          color: '#ffd166',
+        },
+        {
+          type: 'var',
+          name: 'pontos',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:playMusic',
+          tune: 'adventure',
+        },
+        {
+          type: 'g2d:setScene',
+          name: 'inicio',
+        },
+      ],
+      events: [
+        {
+          type: 'g2d:onKey',
+          key: 'Enter',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'inicio',
+              },
+              then: [
+                {
+                  type: 'g2d:setScene',
+                  name: 'jogando',
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'venceu',
+              },
+              then: [
+                {
+                  type: 'g2d:restart',
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'perdeu',
+              },
+              then: [
+                {
+                  type: 'g2d:restart',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g2d:onKey',
+          key: 'ArrowUp',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'jogando',
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '==',
+                    left: {
+                      type: 'g2d:spriteVy',
+                      spriteVar: 'heroi',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'memberSet',
+                      object: {
+                        type: 'var',
+                        name: 'heroi',
+                      },
+                      name: 'vy',
+                      value: {
+                        type: 'num',
+                        value: -11,
+                      },
+                    },
+                    {
+                      type: 'g2d:playFx',
+                      fx: 'jump',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g2d:updateEachFrame',
+          body: [
+            {
+              type: 'g2d:clear',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'inicio',
+              },
+              then: [
+                {
+                  type: 'g2d:showScreen',
+                  ctxVar: 'ctx',
+                  title: {
+                    type: 'str',
+                    value: 'Mundo Pirata',
+                  },
+                  subtitle: {
+                    type: 'str',
+                    value:
+                      'Corra com as setas e pule com a seta para cima. Pegue as moedas, pise nos caranguejos e chegue na bandeira do fim. Cuidado com os buracos!',
+                  },
+                  hint: {
+                    type: 'str',
+                    value: 'Aperte Enter para começar a aventura',
+                  },
+                  bg: '#123a4a',
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'jogando',
+              },
+              then: [
+                {
+                  type: 'g2d:cameraFollow',
+                  spriteVar: 'heroi',
+                  worldW: {
+                    type: 'num',
+                    value: 1600,
+                  },
+                  worldH: {
+                    type: 'num',
+                    value: 300,
+                  },
+                },
+                {
+                  type: 'g2d:arrowsX',
+                  spriteVar: 'heroi',
+                  speed: {
+                    type: 'num',
+                    value: 3,
+                  },
+                },
+                {
+                  type: 'g2d:applyVelocity',
+                  spriteVar: 'heroi',
+                },
+                {
+                  type: 'g2d:collideGroup',
+                  spriteVar: 'heroi',
+                  groupVar: 'plataformas',
+                },
+                {
+                  type: 'g2d:forEachInGroup',
+                  groupVar: 'inimigos',
+                  itemName: 'bicho',
+                  body: [
+                    {
+                      type: 'memberSet',
+                      object: {
+                        type: 'var',
+                        name: 'bicho',
+                      },
+                      name: 'x',
+                      value: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'memberGet',
+                          object: {
+                            type: 'var',
+                            name: 'bicho',
+                          },
+                          name: 'x',
+                        },
+                        right: {
+                          type: 'memberGet',
+                          object: {
+                            type: 'var',
+                            name: 'bicho',
+                          },
+                          name: 'vx',
+                        },
+                      },
+                    },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'binop',
+                        op: '<',
+                        left: {
+                          type: 'memberGet',
+                          object: {
+                            type: 'var',
+                            name: 'bicho',
+                          },
+                          name: 'x',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 460,
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'memberSet',
+                          object: {
+                            type: 'var',
+                            name: 'bicho',
+                          },
+                          name: 'vx',
+                          value: {
+                            type: 'num',
+                            value: 0.7,
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'binop',
+                        op: '>',
+                        left: {
+                          type: 'memberGet',
+                          object: {
+                            type: 'var',
+                            name: 'bicho',
+                          },
+                          name: 'x',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 1500,
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'memberSet',
+                          object: {
+                            type: 'var',
+                            name: 'bicho',
+                          },
+                          name: 'vx',
+                          value: {
+                            type: 'num',
+                            value: -0.7,
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: 'g2d:onSpriteGroupOverlap',
+                  spriteVar: 'heroi',
+                  groupVar: 'moedas',
+                  itemName: 'moeda',
+                  body: [
+                    {
+                      type: 'g2d:removeFromGroup',
+                      spriteVar: 'moeda',
+                      groupVar: 'moedas',
+                    },
+                    {
+                      type: 'assign',
+                      name: 'pontos',
+                      value: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'var',
+                          name: 'pontos',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 1,
+                        },
+                      },
+                    },
+                    {
+                      type: 'g2d:playFx',
+                      fx: 'coin',
+                    },
+                  ],
+                },
+                {
+                  type: 'g2d:onSpriteGroupOverlap',
+                  spriteVar: 'heroi',
+                  groupVar: 'inimigos',
+                  itemName: 'bicho',
+                  body: [
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'logical',
+                        op: '&&',
+                        left: {
+                          type: 'binop',
+                          op: '>',
+                          left: {
+                            type: 'g2d:spriteVy',
+                            spriteVar: 'heroi',
+                          },
+                          right: {
+                            type: 'num',
+                            value: 0,
+                          },
+                        },
+                        right: {
+                          type: 'binop',
+                          op: '<',
+                          left: {
+                            type: 'binop',
+                            op: '+',
+                            left: {
+                              type: 'g2d:spriteY',
+                              spriteVar: 'heroi',
+                            },
+                            right: {
+                              type: 'num',
+                              value: 30,
+                            },
+                          },
+                          right: {
+                            type: 'memberGet',
+                            object: {
+                              type: 'var',
+                              name: 'bicho',
+                            },
+                            name: 'y',
+                          },
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'g2d:removeFromGroup',
+                          spriteVar: 'bicho',
+                          groupVar: 'inimigos',
+                        },
+                        {
+                          type: 'memberSet',
+                          object: {
+                            type: 'var',
+                            name: 'heroi',
+                          },
+                          name: 'vy',
+                          value: {
+                            type: 'num',
+                            value: -8,
+                          },
+                        },
+                        {
+                          type: 'assign',
+                          name: 'pontos',
+                          value: {
+                            type: 'binop',
+                            op: '+',
+                            left: {
+                              type: 'var',
+                              name: 'pontos',
+                            },
+                            right: {
+                              type: 'num',
+                              value: 2,
+                            },
+                          },
+                        },
+                        {
+                          type: 'g2d:explode',
+                          spriteVar: 'bicho',
+                          color: '#e67e22',
+                        },
+                        {
+                          type: 'g2d:playFx',
+                          fx: 'coin',
+                        },
+                      ],
+                      else: [
+                        {
+                          type: 'g2d:shake',
+                          ctxVar: 'ctx',
+                          intensity: {
+                            type: 'num',
+                            value: 8,
+                          },
+                        },
+                        {
+                          type: 'g2d:playFx',
+                          fx: 'gameover',
+                        },
+                        {
+                          type: 'g2d:setScene',
+                          name: 'perdeu',
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'g2d:spriteY',
+                      spriteVar: 'heroi',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 340,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g2d:playFx',
+                      fx: 'gameover',
+                    },
+                    {
+                      type: 'g2d:setScene',
+                      name: 'perdeu',
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'g2d:spriteX',
+                      spriteVar: 'heroi',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1524,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g2d:playFx',
+                      fx: 'win',
+                    },
+                    {
+                      type: 'g2d:setScene',
+                      name: 'venceu',
+                    },
+                  ],
+                },
+                {
+                  type: 'g2d:drawGroup',
+                  groupVar: 'plataformas',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'g2d:drawGroup',
+                  groupVar: 'moedas',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'g2d:drawGroup',
+                  groupVar: 'inimigos',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'g2d:drawSprite',
+                  spriteVar: 'bandeira',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'g2d:drawSprite',
+                  spriteVar: 'heroi',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'g2d:drawScore',
+                  ctxVar: 'ctx',
+                  label: 'Tesouro:',
+                  value: {
+                    type: 'var',
+                    name: 'pontos',
+                  },
+                  x: {
+                    type: 'num',
+                    value: 12,
+                  },
+                  y: {
+                    type: 'num',
+                    value: 26,
+                  },
+                  color: '#ffffff',
+                  size: {
+                    type: 'num',
+                    value: 16,
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'venceu',
+              },
+              then: [
+                {
+                  type: 'g2d:showScreen',
+                  ctxVar: 'ctx',
+                  title: {
+                    type: 'str',
+                    value: 'Chegou na bandeira!',
+                  },
+                  subtitle: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'binop',
+                      op: '+',
+                      left: {
+                        type: 'str',
+                        value: 'Você atravessou o Mundo Pirata inteiro e pegou ',
+                      },
+                      right: {
+                        type: 'var',
+                        name: 'pontos',
+                      },
+                    },
+                    right: {
+                      type: 'str',
+                      value: ' de tesouro. Que aventureiro!',
+                    },
+                  },
+                  hint: {
+                    type: 'str',
+                    value: 'Aperte Enter para jogar de novo',
+                  },
+                  bg: '#14532d',
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'perdeu',
+              },
+              then: [
+                {
+                  type: 'g2d:showScreen',
+                  ctxVar: 'ctx',
+                  title: {
+                    type: 'str',
+                    value: 'Que perrengue!',
+                  },
+                  subtitle: {
+                    type: 'str',
+                    value:
+                      'O pirata caiu ou encostou de lado num caranguejo. Pise em cima deles e desvie dos buracos!',
+                  },
+                  hint: {
+                    type: 'str',
+                    value: 'Aperte Enter para tentar de novo',
+                  },
+                  bg: '#5a2a2a',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+})
+
+/**
+ * "Safári de Monstros" (base): overworld de captura estilo Monster Hunter
+ * (Python-Monsters). Diferencial da trilogia = capturar NO MAPA (sem tela de
+ * batalha) + parceiro que evolui. Gerado por __gen_safariDeMonstros.ts;
+ * drift test: safariDeMonstrosExample.test.ts.
+ */
+export const safariDeMonstrosExample: ExtensionExample = beginnerGameExample({
+  name: 'Safári de Monstros',
+  experience: 'game',
+  description:
+    'Explore um mundo de monstros com as setas. No mato alto aparecem monstros selvagens: chegue perto e aperte Espaço para capturar. Junte 5 no caderno e veja seu parceiro evoluir. Enter começa e reinicia.',
+  ir: {
+    html: [{ type: 'canvas', id: 'tela', width: 480, height: 270 }],
+    css: [
+      {
+        selector: 'body',
+        declarations: {
+          background: '#12281c',
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          'min-height': '100vh',
+          margin: '0',
+        },
+      },
+      {
+        selector: 'canvas',
+        declarations: {
+          border: '3px solid #1d3a28',
+          'border-radius': '12px',
+          background: '#3a7d44',
+        },
+      },
+    ],
+    version: 2,
+    extensions: [{ extensionId: 'game-2d' }],
+    behavior: {
+      start: [
+        {
+          type: 'g2d:fitScreen',
+          percent: {
+            type: 'num',
+            value: 100,
+          },
+        },
+        {
+          type: 'g2d:defineShape',
+          shapeName: 'explorador',
+          body: [
+            {
+              type: 'g2d:paintRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 6,
+              },
+              y: {
+                type: 'num',
+                value: 6,
+              },
+              w: {
+                type: 'num',
+                value: 20,
+              },
+              h: {
+                type: 'num',
+                value: 5,
+              },
+              color: '#b8860b',
+            },
+            {
+              type: 'g2d:paintRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 9,
+              },
+              y: {
+                type: 'num',
+                value: 9,
+              },
+              w: {
+                type: 'num',
+                value: 14,
+              },
+              h: {
+                type: 'num',
+                value: 6,
+              },
+              color: '#e8b088',
+            },
+            {
+              type: 'g2d:paintCircle',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 13,
+              },
+              y: {
+                type: 'num',
+                value: 12,
+              },
+              r: {
+                type: 'num',
+                value: 1,
+              },
+              color: '#20122f',
+            },
+            {
+              type: 'g2d:paintCircle',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 19,
+              },
+              y: {
+                type: 'num',
+                value: 12,
+              },
+              r: {
+                type: 'num',
+                value: 1,
+              },
+              color: '#20122f',
+            },
+            {
+              type: 'g2d:paintRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 7,
+              },
+              y: {
+                type: 'num',
+                value: 15,
+              },
+              w: {
+                type: 'num',
+                value: 18,
+              },
+              h: {
+                type: 'num',
+                value: 12,
+              },
+              color: '#2e8b57',
+            },
+            {
+              type: 'g2d:paintRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 4,
+              },
+              y: {
+                type: 'num',
+                value: 16,
+              },
+              w: {
+                type: 'num',
+                value: 4,
+              },
+              h: {
+                type: 'num',
+                value: 9,
+              },
+              color: '#e8b088',
+            },
+            {
+              type: 'g2d:paintRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 24,
+              },
+              y: {
+                type: 'num',
+                value: 16,
+              },
+              w: {
+                type: 'num',
+                value: 4,
+              },
+              h: {
+                type: 'num',
+                value: 9,
+              },
+              color: '#e8b088',
+            },
+          ],
+        },
+        {
+          type: 'g2d:defineShape',
+          shapeName: 'filhote',
+          body: [
+            {
+              type: 'g2d:paintCircle',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 12,
+              },
+              y: {
+                type: 'num',
+                value: 14,
+              },
+              r: {
+                type: 'num',
+                value: 9,
+              },
+              color: '#4fa3d1',
+            },
+            {
+              type: 'g2d:paintCircle',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 9,
+              },
+              y: {
+                type: 'num',
+                value: 12,
+              },
+              r: {
+                type: 'num',
+                value: 2,
+              },
+              color: '#ffffff',
+            },
+            {
+              type: 'g2d:paintCircle',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 15,
+              },
+              y: {
+                type: 'num',
+                value: 12,
+              },
+              r: {
+                type: 'num',
+                value: 2,
+              },
+              color: '#ffffff',
+            },
+            {
+              type: 'g2d:paintCircle',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 9,
+              },
+              y: {
+                type: 'num',
+                value: 12,
+              },
+              r: {
+                type: 'num',
+                value: 1,
+              },
+              color: '#20122f',
+            },
+            {
+              type: 'g2d:paintCircle',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 15,
+              },
+              y: {
+                type: 'num',
+                value: 12,
+              },
+              r: {
+                type: 'num',
+                value: 1,
+              },
+              color: '#20122f',
+            },
+          ],
+        },
+        {
+          type: 'g2d:defineShape',
+          shapeName: 'adulto',
+          body: [
+            {
+              type: 'g2d:paintTriangle',
+              ctxVar: 'ctx',
+              x1: {
+                type: 'num',
+                value: 2,
+              },
+              y1: {
+                type: 'num',
+                value: 18,
+              },
+              x2: {
+                type: 'num',
+                value: 12,
+              },
+              y2: {
+                type: 'num',
+                value: 6,
+              },
+              x3: {
+                type: 'num',
+                value: 12,
+              },
+              y3: {
+                type: 'num',
+                value: 22,
+              },
+              color: '#2c78a8',
+            },
+            {
+              type: 'g2d:paintTriangle',
+              ctxVar: 'ctx',
+              x1: {
+                type: 'num',
+                value: 22,
+              },
+              y1: {
+                type: 'num',
+                value: 18,
+              },
+              x2: {
+                type: 'num',
+                value: 12,
+              },
+              y2: {
+                type: 'num',
+                value: 6,
+              },
+              x3: {
+                type: 'num',
+                value: 12,
+              },
+              y3: {
+                type: 'num',
+                value: 22,
+              },
+              color: '#2c78a8',
+            },
+            {
+              type: 'g2d:paintCircle',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 12,
+              },
+              y: {
+                type: 'num',
+                value: 15,
+              },
+              r: {
+                type: 'num',
+                value: 11,
+              },
+              color: '#4fa3d1',
+            },
+            {
+              type: 'g2d:paintCircle',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 8,
+              },
+              y: {
+                type: 'num',
+                value: 12,
+              },
+              r: {
+                type: 'num',
+                value: 2,
+              },
+              color: '#ffe066',
+            },
+            {
+              type: 'g2d:paintCircle',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 16,
+              },
+              y: {
+                type: 'num',
+                value: 12,
+              },
+              r: {
+                type: 'num',
+                value: 2,
+              },
+              color: '#ffe066',
+            },
+            {
+              type: 'g2d:paintCircle',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 8,
+              },
+              y: {
+                type: 'num',
+                value: 12,
+              },
+              r: {
+                type: 'num',
+                value: 1,
+              },
+              color: '#20122f',
+            },
+            {
+              type: 'g2d:paintCircle',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 16,
+              },
+              y: {
+                type: 'num',
+                value: 12,
+              },
+              r: {
+                type: 'num',
+                value: 1,
+              },
+              color: '#20122f',
+            },
+          ],
+        },
+        {
+          type: 'g2d:defineShape',
+          shapeName: 'selvagem',
+          body: [
+            {
+              type: 'g2d:paintCircle',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 14,
+              },
+              y: {
+                type: 'num',
+                value: 16,
+              },
+              r: {
+                type: 'num',
+                value: 12,
+              },
+              color: '#8e44ad',
+            },
+            {
+              type: 'g2d:paintTriangle',
+              ctxVar: 'ctx',
+              x1: {
+                type: 'num',
+                value: 6,
+              },
+              y1: {
+                type: 'num',
+                value: 8,
+              },
+              x2: {
+                type: 'num',
+                value: 3,
+              },
+              y2: {
+                type: 'num',
+                value: 0,
+              },
+              x3: {
+                type: 'num',
+                value: 11,
+              },
+              y3: {
+                type: 'num',
+                value: 8,
+              },
+              color: '#5a2d82',
+            },
+            {
+              type: 'g2d:paintTriangle',
+              ctxVar: 'ctx',
+              x1: {
+                type: 'num',
+                value: 22,
+              },
+              y1: {
+                type: 'num',
+                value: 8,
+              },
+              x2: {
+                type: 'num',
+                value: 25,
+              },
+              y2: {
+                type: 'num',
+                value: 0,
+              },
+              x3: {
+                type: 'num',
+                value: 17,
+              },
+              y3: {
+                type: 'num',
+                value: 8,
+              },
+              color: '#5a2d82',
+            },
+            {
+              type: 'g2d:paintCircle',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 10,
+              },
+              y: {
+                type: 'num',
+                value: 15,
+              },
+              r: {
+                type: 'num',
+                value: 3,
+              },
+              color: '#ff5e5e',
+            },
+            {
+              type: 'g2d:paintCircle',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 18,
+              },
+              y: {
+                type: 'num',
+                value: 15,
+              },
+              r: {
+                type: 'num',
+                value: 3,
+              },
+              color: '#ff5e5e',
+            },
+            {
+              type: 'g2d:paintCircle',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 10,
+              },
+              y: {
+                type: 'num',
+                value: 15,
+              },
+              r: {
+                type: 'num',
+                value: 1,
+              },
+              color: '#20122f',
+            },
+            {
+              type: 'g2d:paintCircle',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 18,
+              },
+              y: {
+                type: 'num',
+                value: 15,
+              },
+              r: {
+                type: 'num',
+                value: 1,
+              },
+              color: '#20122f',
+            },
+          ],
+        },
+        {
+          type: 'g2d:defineShape',
+          shapeName: 'sabio',
+          body: [
+            {
+              type: 'g2d:paintRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 8,
+              },
+              y: {
+                type: 'num',
+                value: 4,
+              },
+              w: {
+                type: 'num',
+                value: 12,
+              },
+              h: {
+                type: 'num',
+                value: 8,
+              },
+              color: '#dcd6c8',
+            },
+            {
+              type: 'g2d:paintCircle',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 12,
+              },
+              y: {
+                type: 'num',
+                value: 9,
+              },
+              r: {
+                type: 'num',
+                value: 1,
+              },
+              color: '#20122f',
+            },
+            {
+              type: 'g2d:paintCircle',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 16,
+              },
+              y: {
+                type: 'num',
+                value: 9,
+              },
+              r: {
+                type: 'num',
+                value: 1,
+              },
+              color: '#20122f',
+            },
+            {
+              type: 'g2d:paintRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 10,
+              },
+              y: {
+                type: 'num',
+                value: 12,
+              },
+              w: {
+                type: 'num',
+                value: 8,
+              },
+              h: {
+                type: 'num',
+                value: 6,
+              },
+              color: '#c0c0c0',
+            },
+            {
+              type: 'g2d:paintRect',
+              ctxVar: 'ctx',
+              x: {
+                type: 'num',
+                value: 6,
+              },
+              y: {
+                type: 'num',
+                value: 18,
+              },
+              w: {
+                type: 'num',
+                value: 16,
+              },
+              h: {
+                type: 'num',
+                value: 12,
+              },
+              color: '#6a5acd',
+            },
+          ],
+        },
+        {
+          type: 'g2d:createShapeSprite',
+          varName: 'explorador',
+          shapeName: 'explorador',
+          x: {
+            type: 'num',
+            value: 90,
+          },
+          y: {
+            type: 'num',
+            value: 210,
+          },
+          w: {
+            type: 'num',
+            value: 30,
+          },
+          h: {
+            type: 'num',
+            value: 30,
+          },
+        },
+        {
+          type: 'g2d:setHitboxScale',
+          spriteVar: 'explorador',
+          percent: {
+            type: 'num',
+            value: 80,
+          },
+        },
+        {
+          type: 'g2d:createShapeSprite',
+          varName: 'filhote',
+          shapeName: 'filhote',
+          x: {
+            type: 'num',
+            value: 60,
+          },
+          y: {
+            type: 'num',
+            value: 210,
+          },
+          w: {
+            type: 'num',
+            value: 24,
+          },
+          h: {
+            type: 'num',
+            value: 26,
+          },
+        },
+        {
+          type: 'g2d:createShapeSprite',
+          varName: 'adulto',
+          shapeName: 'adulto',
+          x: {
+            type: 'num',
+            value: 60,
+          },
+          y: {
+            type: 'num',
+            value: 210,
+          },
+          w: {
+            type: 'num',
+            value: 28,
+          },
+          h: {
+            type: 'num',
+            value: 30,
+          },
+        },
+        {
+          type: 'g2d:createShapeSprite',
+          varName: 'selvagem',
+          shapeName: 'selvagem',
+          x: {
+            type: 'num',
+            value: -100,
+          },
+          y: {
+            type: 'num',
+            value: -100,
+          },
+          w: {
+            type: 'num',
+            value: 30,
+          },
+          h: {
+            type: 'num',
+            value: 32,
+          },
+        },
+        {
+          type: 'g2d:createShapeSprite',
+          varName: 'sabio',
+          shapeName: 'sabio',
+          x: {
+            type: 'num',
+            value: 240,
+          },
+          y: {
+            type: 'num',
+            value: 60,
+          },
+          w: {
+            type: 'num',
+            value: 28,
+          },
+          h: {
+            type: 'num',
+            value: 34,
+          },
+        },
+        {
+          type: 'g2d:createGroup',
+          varName: 'muros',
+        },
+        {
+          type: 'g2d:spawnInGroup',
+          groupVar: 'muros',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 0,
+          },
+          w: {
+            type: 'num',
+            value: 480,
+          },
+          h: {
+            type: 'num',
+            value: 20,
+          },
+          color: '#4a4038',
+          vx: {
+            type: 'num',
+            value: 0,
+          },
+          vy: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:spawnInGroup',
+          groupVar: 'muros',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 250,
+          },
+          w: {
+            type: 'num',
+            value: 480,
+          },
+          h: {
+            type: 'num',
+            value: 20,
+          },
+          color: '#4a4038',
+          vx: {
+            type: 'num',
+            value: 0,
+          },
+          vy: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:spawnInGroup',
+          groupVar: 'muros',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 0,
+          },
+          w: {
+            type: 'num',
+            value: 20,
+          },
+          h: {
+            type: 'num',
+            value: 270,
+          },
+          color: '#4a4038',
+          vx: {
+            type: 'num',
+            value: 0,
+          },
+          vy: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:spawnInGroup',
+          groupVar: 'muros',
+          x: {
+            type: 'num',
+            value: 460,
+          },
+          y: {
+            type: 'num',
+            value: 0,
+          },
+          w: {
+            type: 'num',
+            value: 20,
+          },
+          h: {
+            type: 'num',
+            value: 270,
+          },
+          color: '#4a4038',
+          vx: {
+            type: 'num',
+            value: 0,
+          },
+          vy: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:spawnInGroup',
+          groupVar: 'muros',
+          x: {
+            type: 'num',
+            value: 150,
+          },
+          y: {
+            type: 'num',
+            value: 120,
+          },
+          w: {
+            type: 'num',
+            value: 40,
+          },
+          h: {
+            type: 'num',
+            value: 40,
+          },
+          color: '#5a4e42',
+          vx: {
+            type: 'num',
+            value: 0,
+          },
+          vy: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:createGroup',
+          varName: 'matos',
+        },
+        {
+          type: 'g2d:spawnInGroup',
+          groupVar: 'matos',
+          x: {
+            type: 'num',
+            value: 300,
+          },
+          y: {
+            type: 'num',
+            value: 150,
+          },
+          w: {
+            type: 'num',
+            value: 90,
+          },
+          h: {
+            type: 'num',
+            value: 70,
+          },
+          color: '#2e7d4f',
+          vx: {
+            type: 'num',
+            value: 0,
+          },
+          vy: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:spawnInGroup',
+          groupVar: 'matos',
+          x: {
+            type: 'num',
+            value: 60,
+          },
+          y: {
+            type: 'num',
+            value: 60,
+          },
+          w: {
+            type: 'num',
+            value: 80,
+          },
+          h: {
+            type: 'num',
+            value: 60,
+          },
+          color: '#2e7d4f',
+          vx: {
+            type: 'num',
+            value: 0,
+          },
+          vy: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g2d:spawnInGroup',
+          groupVar: 'matos',
+          x: {
+            type: 'num',
+            value: 340,
+          },
+          y: {
+            type: 'num',
+            value: 210,
+          },
+          w: {
+            type: 'num',
+            value: 90,
+          },
+          h: {
+            type: 'num',
+            value: 40,
+          },
+          color: '#2e7d4f',
+          vx: {
+            type: 'num',
+            value: 0,
+          },
+          vy: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'capturados',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'selvagemAtivo',
+          value: {
+            type: 'bool',
+            value: false,
+          },
+        },
+        {
+          type: 'var',
+          name: 'evoluido',
+          value: {
+            type: 'bool',
+            value: false,
+          },
+        },
+        {
+          type: 'var',
+          name: 'mensagem',
+          value: {
+            type: 'str',
+            value: 'Ande no mato para achar um monstro selvagem!',
+          },
+        },
+        {
+          type: 'g2d:setScene',
+          name: 'inicio',
+        },
+      ],
+      events: [
+        {
+          type: 'g2d:onKey',
+          key: 'Enter',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'inicio',
+              },
+              then: [
+                {
+                  type: 'g2d:setScene',
+                  name: 'mundo',
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'vitoria',
+              },
+              then: [
+                {
+                  type: 'g2d:restart',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g2d:onKey',
+          key: 'Space',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'mundo',
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '==',
+                    left: {
+                      type: 'var',
+                      name: 'selvagemAtivo',
+                    },
+                    right: {
+                      type: 'bool',
+                      value: true,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'g2d:touches',
+                        aVar: 'explorador',
+                        bVar: 'selvagem',
+                      },
+                      then: [
+                        {
+                          type: 'if',
+                          cond: {
+                            type: 'g2d:randomChance',
+                            percent: {
+                              type: 'num',
+                              value: 70,
+                            },
+                          },
+                          then: [
+                            {
+                              type: 'assign',
+                              name: 'capturados',
+                              value: {
+                                type: 'binop',
+                                op: '+',
+                                left: {
+                                  type: 'var',
+                                  name: 'capturados',
+                                },
+                                right: {
+                                  type: 'num',
+                                  value: 1,
+                                },
+                              },
+                            },
+                            {
+                              type: 'assign',
+                              name: 'mensagem',
+                              value: {
+                                type: 'binop',
+                                op: '+',
+                                left: {
+                                  type: 'str',
+                                  value: 'Capturou! Monstros no caderno: ',
+                                },
+                                right: {
+                                  type: 'var',
+                                  name: 'capturados',
+                                },
+                              },
+                            },
+                            {
+                              type: 'g2d:playFx',
+                              fx: 'win',
+                            },
+                          ],
+                          else: [
+                            {
+                              type: 'assign',
+                              name: 'mensagem',
+                              value: {
+                                type: 'str',
+                                value: 'O monstro fugiu! Procure outro no mato.',
+                              },
+                            },
+                            {
+                              type: 'g2d:playFx',
+                              fx: 'hurt',
+                            },
+                          ],
+                        },
+                        {
+                          type: 'assign',
+                          name: 'selvagemAtivo',
+                          value: {
+                            type: 'bool',
+                            value: false,
+                          },
+                        },
+                        {
+                          type: 'g2d:setPosition',
+                          spriteVar: 'selvagem',
+                          x: {
+                            type: 'num',
+                            value: -100,
+                          },
+                          y: {
+                            type: 'num',
+                            value: -100,
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g2d:updateEachFrame',
+          body: [
+            {
+              type: 'g2d:clear',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'inicio',
+              },
+              then: [
+                {
+                  type: 'g2d:showScreen',
+                  ctxVar: 'ctx',
+                  title: {
+                    type: 'str',
+                    value: 'Safári de Monstros',
+                  },
+                  subtitle: {
+                    type: 'str',
+                    value:
+                      'Ande com as setas pelo mundo. No mato alto aparecem monstros selvagens. Chegue perto e aperte Espaço para capturar. Junte 5 e seu parceiro evolui!',
+                  },
+                  hint: {
+                    type: 'str',
+                    value: 'Aperte Enter para começar',
+                  },
+                  bg: '#1f2a44',
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'mundo',
+              },
+              then: [
+                {
+                  type: 'g2d:topDown',
+                  spriteVar: 'explorador',
+                  speed: {
+                    type: 'num',
+                    value: 3,
+                  },
+                },
+                {
+                  type: 'g2d:collideGroup',
+                  spriteVar: 'explorador',
+                  groupVar: 'muros',
+                },
+                {
+                  type: 'g2d:drawGroup',
+                  groupVar: 'matos',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'g2d:drawGroup',
+                  groupVar: 'muros',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'g2d:drawSprite',
+                  spriteVar: 'sabio',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '==',
+                    left: {
+                      type: 'var',
+                      name: 'evoluido',
+                    },
+                    right: {
+                      type: 'bool',
+                      value: true,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g2d:setPosition',
+                      spriteVar: 'adulto',
+                      x: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'g2d:spriteX',
+                          spriteVar: 'explorador',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 26,
+                        },
+                      },
+                      y: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'g2d:spriteY',
+                          spriteVar: 'explorador',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 4,
+                        },
+                      },
+                    },
+                    {
+                      type: 'g2d:drawSprite',
+                      spriteVar: 'adulto',
+                      ctxVar: 'ctx',
+                    },
+                  ],
+                  else: [
+                    {
+                      type: 'g2d:setPosition',
+                      spriteVar: 'filhote',
+                      x: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'g2d:spriteX',
+                          spriteVar: 'explorador',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 24,
+                        },
+                      },
+                      y: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'g2d:spriteY',
+                          spriteVar: 'explorador',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 4,
+                        },
+                      },
+                    },
+                    {
+                      type: 'g2d:drawSprite',
+                      spriteVar: 'filhote',
+                      ctxVar: 'ctx',
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '==',
+                    left: {
+                      type: 'var',
+                      name: 'selvagemAtivo',
+                    },
+                    right: {
+                      type: 'bool',
+                      value: true,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g2d:drawSprite',
+                      spriteVar: 'selvagem',
+                      ctxVar: 'ctx',
+                    },
+                  ],
+                },
+                {
+                  type: 'g2d:drawSprite',
+                  spriteVar: 'explorador',
+                  ctxVar: 'ctx',
+                },
+                {
+                  type: 'g2d:drawScore',
+                  ctxVar: 'ctx',
+                  label: 'Caderno de monstros:',
+                  value: {
+                    type: 'var',
+                    name: 'capturados',
+                  },
+                  x: {
+                    type: 'num',
+                    value: 26,
+                  },
+                  y: {
+                    type: 'num',
+                    value: 40,
+                  },
+                  color: '#f3f6ff',
+                  size: {
+                    type: 'num',
+                    value: 14,
+                  },
+                },
+                {
+                  type: 'g2d:drawScore',
+                  ctxVar: 'ctx',
+                  label: '>',
+                  value: {
+                    type: 'var',
+                    name: 'mensagem',
+                  },
+                  x: {
+                    type: 'num',
+                    value: 26,
+                  },
+                  y: {
+                    type: 'num',
+                    value: 262,
+                  },
+                  color: '#ffe9a8',
+                  size: {
+                    type: 'num',
+                    value: 13,
+                  },
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'g2d:touches',
+                    aVar: 'explorador',
+                    bVar: 'sabio',
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'mensagem',
+                      value: {
+                        type: 'str',
+                        value: 'Sabio: fique no mato e aperte Espaco colado no monstro!',
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '==',
+                    left: {
+                      type: 'var',
+                      name: 'selvagemAtivo',
+                    },
+                    right: {
+                      type: 'bool',
+                      value: false,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g2d:onSpriteGroupOverlap',
+                      spriteVar: 'explorador',
+                      groupVar: 'matos',
+                      itemName: 'mato',
+                      body: [
+                        {
+                          type: 'if',
+                          cond: {
+                            type: 'binop',
+                            op: '==',
+                            left: {
+                              type: 'var',
+                              name: 'selvagemAtivo',
+                            },
+                            right: {
+                              type: 'bool',
+                              value: false,
+                            },
+                          },
+                          then: [
+                            {
+                              type: 'if',
+                              cond: {
+                                type: 'g2d:randomChance',
+                                percent: {
+                                  type: 'num',
+                                  value: 3,
+                                },
+                              },
+                              then: [
+                                {
+                                  type: 'g2d:setPosition',
+                                  spriteVar: 'selvagem',
+                                  x: {
+                                    type: 'mathBinary',
+                                    fn: 'min',
+                                    a: {
+                                      type: 'binop',
+                                      op: '+',
+                                      left: {
+                                        type: 'g2d:spriteX',
+                                        spriteVar: 'explorador',
+                                      },
+                                      right: {
+                                        type: 'num',
+                                        value: 32,
+                                      },
+                                    },
+                                    b: {
+                                      type: 'num',
+                                      value: 420,
+                                    },
+                                  },
+                                  y: {
+                                    type: 'g2d:spriteY',
+                                    spriteVar: 'explorador',
+                                  },
+                                },
+                                {
+                                  type: 'assign',
+                                  name: 'selvagemAtivo',
+                                  value: {
+                                    type: 'bool',
+                                    value: true,
+                                  },
+                                },
+                                {
+                                  type: 'assign',
+                                  name: 'mensagem',
+                                  value: {
+                                    type: 'str',
+                                    value: 'Um monstro selvagem apareceu! Aperte Espaco!',
+                                  },
+                                },
+                                {
+                                  type: 'g2d:playFx',
+                                  fx: 'start',
+                                },
+                              ],
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>=',
+                    left: {
+                      type: 'var',
+                      name: 'capturados',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 3,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'binop',
+                        op: '==',
+                        left: {
+                          type: 'var',
+                          name: 'evoluido',
+                        },
+                        right: {
+                          type: 'bool',
+                          value: false,
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'assign',
+                          name: 'evoluido',
+                          value: {
+                            type: 'bool',
+                            value: true,
+                          },
+                        },
+                        {
+                          type: 'assign',
+                          name: 'mensagem',
+                          value: {
+                            type: 'str',
+                            value: 'Seu parceiro evoluiu!',
+                          },
+                        },
+                        {
+                          type: 'g2d:shake',
+                          ctxVar: 'ctx',
+                          intensity: {
+                            type: 'num',
+                            value: 6,
+                          },
+                        },
+                        {
+                          type: 'g2d:playFx',
+                          fx: 'powerup',
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>=',
+                    left: {
+                      type: 'var',
+                      name: 'capturados',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 5,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g2d:playFx',
+                      fx: 'win',
+                    },
+                    {
+                      type: 'g2d:setScene',
+                      name: 'vitoria',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g2d:sceneIs',
+                name: 'vitoria',
+              },
+              then: [
+                {
+                  type: 'g2d:showScreen',
+                  ctxVar: 'ctx',
+                  title: {
+                    type: 'str',
+                    value: 'Safari completo!',
+                  },
+                  subtitle: {
+                    type: 'str',
+                    value:
+                      'Voce capturou 5 monstros e seu parceiro evoluiu. Um verdadeiro cacador de monstros!',
+                  },
+                  hint: {
+                    type: 'str',
+                    value: 'Aperte Enter para jogar de novo',
+                  },
+                  bg: '#1d4d33',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+})
