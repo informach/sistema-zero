@@ -7904,15 +7904,23 @@ export const safariDeMonstrosExample: ExtensionExample = beginnerGameExample({
                                   type: 'g2d:setPosition',
                                   spriteVar: 'selvagem',
                                   x: {
-                                    type: 'binop',
-                                    op: '+',
-                                    left: {
-                                      type: 'g2d:spriteX',
-                                      spriteVar: 'explorador',
+                                    type: 'mathBinary',
+                                    fn: 'min',
+                                    a: {
+                                      type: 'binop',
+                                      op: '+',
+                                      left: {
+                                        type: 'g2d:spriteX',
+                                        spriteVar: 'explorador',
+                                      },
+                                      right: {
+                                        type: 'num',
+                                        value: 32,
+                                      },
                                     },
-                                    right: {
+                                    b: {
                                       type: 'num',
-                                      value: 32,
+                                      value: 420,
                                     },
                                   },
                                   y: {

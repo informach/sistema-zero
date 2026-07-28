@@ -154,7 +154,7 @@ SZGame2D.gameLoop(function update() {
       SZGame2D.overlapSpriteGroup(() => explorador, matos, function (mato) {
         if (selvagemAtivo == false) {
           if (SZGame2D.randomChance(3)) {
-            selvagem.x = SZGame2D.spriteX(explorador) + 32;
+            selvagem.x = Math.min(SZGame2D.spriteX(explorador) + 32, 420);
             selvagem.y = SZGame2D.spriteY(explorador);
             selvagemAtivo = true;
             mensagem = "Um monstro selvagem apareceu! Aperte Espaco!";
