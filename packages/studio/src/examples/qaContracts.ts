@@ -541,6 +541,16 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['wasd', 'arrows', 'space', 'click'],
   },
   {
+    key: 'game-3d:Mina de Cristais',
+    name: 'Mina de Cristais',
+    experience: 'game',
+    promise:
+      'Uma mina isométrica: clicar nos blocos para cavar, coletando os cristais brilhantes e ignorando a pedra, contra o relógio.',
+    scenario:
+      'Clicar nos blocos para cavar, coletar 10 cristais entre a pedra enquanto veias novas surgem, e ganhar ou perder quando o tempo acaba.',
+    interactions: ['click'],
+  },
+  {
     key: 'game-3d:Desvie dos blocos',
     name: 'Desvie dos blocos',
     experience: 'game',
@@ -639,6 +649,16 @@ export const EXAMPLE_QA_CONTRACTS = [
     scenario:
       'Olhar com o mouse, andar com WASD, carregar e soltar o espaço para disparar nos aliens, abater 12 antes da vida acabar e ver vitória ou derrota.',
     interactions: ['wasd', 'arrows', 'space', 'click'],
+  },
+  {
+    key: 'game-3d-advanced:Mina de Cristais Profissional',
+    name: 'Mina de Cristais Profissional',
+    experience: 'game',
+    promise:
+      'Minerador em 3ª pessoa (moveWithKeys + cameraFollow) que anda pela mina e clica nos blocos para cavar cristais, contra o relógio.',
+    scenario:
+      'Andar com WASD, clicar nos blocos para cavar (pick + recycle) coletando 10 cristais entre a pedra enquanto veias novas surgem, e ver vitória ou derrota quando o tempo acaba.',
+    interactions: ['wasd', 'click'],
   },
   {
     key: 'game-3d-advanced:Salto nas Nuvens',
@@ -931,6 +951,16 @@ export const EXAMPLE_QA_CONTRACTS = [
     scenario:
       'Olhar arrastando o mouse, segurar e soltar o espaço para atirar na mira nos aliens, abater 12 e ver o céu ficar dourado.',
     interactions: ['space', 'click'],
+  },
+  {
+    key: 'core:Mina de Cristais (na mão)',
+    name: 'Mina de Cristais (na mão)',
+    experience: 'game',
+    promise:
+      'A mina feita só com o núcleo Canvas 3D: câmera isométrica (OrthographicCamera) e mira por clique (Raycaster) sobre dois pools instanciados de pedra e cristal.',
+    scenario:
+      'Clicar nos blocos para cavar, coletar 10 cristais entre a pedra enquanto veias novas surgem, e ver o céu ficar dourado na vitória ou vermelho no fim do tempo.',
+    interactions: ['click'],
   },
   {
     key: 'core:Folio 3D procedural (na mão)',

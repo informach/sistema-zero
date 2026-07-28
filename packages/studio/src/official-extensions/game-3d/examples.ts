@@ -11945,3 +11945,936 @@ export const cercoNaBaseBasicoExample: ExtensionExample = {
     },
   },
 }
+
+export const minaDeCristaisBasicoExample: ExtensionExample = {
+  name: 'Mina de Cristais',
+  experience: 'game',
+  description:
+    'Uma mina isométrica de cristais. Clique nos blocos para cavar: a pedra é entulho, mas os cristais brilhantes valem ponto. Veias novas surgem sozinhas. Colete 10 cristais antes que o tempo acabe!',
+  ir: {
+    html: [
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'status',
+        children: [
+          {
+            type: 'text',
+            text: 'Cristais: ',
+          },
+          {
+            type: 'element',
+            tag: 'span',
+            id: 'placar',
+            text: '0',
+          },
+          {
+            type: 'text',
+            text: ' de 10    Tempo: ',
+          },
+          {
+            type: 'element',
+            tag: 'span',
+            id: 'tempo',
+            text: '50',
+          },
+          {
+            type: 'text',
+            text: 's',
+          },
+        ],
+      },
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'dica',
+        text: 'Clique nos blocos para cavar!',
+      },
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'fim',
+        children: [
+          {
+            type: 'element',
+            tag: 'div',
+            id: 'fim-caixa',
+            children: [
+              {
+                type: 'element',
+                tag: 'h1',
+                id: 'fim-titulo',
+                text: 'Fim da mina',
+              },
+              {
+                type: 'element',
+                tag: 'p',
+                children: [
+                  {
+                    type: 'text',
+                    text: 'Cristais coletados: ',
+                  },
+                  {
+                    type: 'element',
+                    tag: 'span',
+                    id: 'final-pontos',
+                  },
+                ],
+              },
+              {
+                type: 'element',
+                tag: 'button',
+                id: 'retry',
+                text: 'Minerar de novo',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    css: [
+      {
+        type: 'googleFont',
+        family: 'Press Start 2P',
+      },
+      {
+        selector: 'body',
+        declarations: {
+          margin: '0',
+          overflow: 'hidden',
+          'font-family': '"Press Start 2P", cursive',
+        },
+      },
+      {
+        selector: 'canvas',
+        declarations: {
+          display: 'block',
+          width: '100vw',
+          height: '100vh',
+        },
+      },
+      {
+        selector: '#status',
+        declarations: {
+          position: 'absolute',
+          top: '20px',
+          left: '20px',
+          'font-size': '0.9em',
+          color: 'white',
+        },
+      },
+      {
+        selector: '#dica',
+        declarations: {
+          position: 'absolute',
+          bottom: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          color: '#67e8f9',
+          'font-size': '0.7em',
+        },
+      },
+      {
+        selector: '#fim',
+        declarations: {
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          'min-width': '100%',
+          'min-height': '100%',
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          visibility: 'hidden',
+        },
+      },
+      {
+        selector: '#fim.visivel',
+        declarations: {
+          visibility: 'visible',
+        },
+      },
+      {
+        selector: '#fim-caixa',
+        declarations: {
+          display: 'flex',
+          'flex-direction': 'column',
+          'align-items': 'center',
+          'background-color': 'white',
+          color: '#0f0a1e',
+          padding: '20px',
+          'text-align': 'center',
+        },
+      },
+      {
+        selector: '#fim-caixa button',
+        declarations: {
+          'background-color': '#22d3ee',
+          color: 'white',
+          padding: '16px 32px',
+          'font-family': 'inherit',
+          cursor: 'pointer',
+        },
+      },
+    ],
+    extensions: [
+      {
+        extensionId: 'game-3d',
+      },
+    ],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'g3d:createFullscreenScene',
+          varName: 'cena',
+          bg: '#0f0a1e',
+        },
+        {
+          type: 'g3d:setSky',
+          worldVar: 'cena',
+          top: '#241a33',
+          bottom: '#4c1d95',
+        },
+        {
+          type: 'g3d:setFog',
+          worldVar: 'cena',
+          color: '#0f0a1e',
+          near: {
+            type: 'num',
+            value: 10,
+          },
+          far: {
+            type: 'num',
+            value: 46,
+          },
+        },
+        {
+          type: 'g3d:createBlock',
+          varName: 'chao',
+          worldVar: 'cena',
+          width: {
+            type: 'num',
+            value: 20,
+          },
+          height: {
+            type: 'num',
+            value: 1,
+          },
+          depth: {
+            type: 'num',
+            value: 20,
+          },
+          color: '#1a1226',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'chao',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: -0.6,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'moldePedra',
+          worldVar: 'cena',
+          size: {
+            type: 'num',
+            value: 1,
+          },
+          color: '#57534e',
+        },
+        {
+          type: 'g3d:setVisible',
+          objVar: 'moldePedra',
+          mode: 'hide',
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'moldeCristal',
+          worldVar: 'cena',
+          size: {
+            type: 'num',
+            value: 1,
+          },
+          color: '#22d3ee',
+        },
+        {
+          type: 'g3d:setMaterial',
+          objVar: 'moldeCristal',
+          kind: 'glow',
+        },
+        {
+          type: 'g3d:setVisible',
+          objVar: 'moldeCristal',
+          mode: 'hide',
+        },
+        {
+          type: 'g3d:createSwarm',
+          varName: 'pedras',
+          worldVar: 'cena',
+        },
+        {
+          type: 'g3d:createSwarm',
+          varName: 'cristais',
+          worldVar: 'cena',
+        },
+        {
+          type: 'g3d:isometricCamera',
+          worldVar: 'cena',
+          followVar: '',
+        },
+        {
+          type: 'var',
+          name: 'pontos',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'tempo',
+          value: {
+            type: 'num',
+            value: 50,
+          },
+        },
+        {
+          type: 'var',
+          name: 'rodando',
+          value: {
+            type: 'bool',
+            value: true,
+          },
+        },
+        {
+          type: 'funcDecl',
+          name: 'cavarChance',
+          params: [],
+          body: [
+            {
+              type: 'return',
+              value: {
+                type: 'binop',
+                op: '<',
+                left: {
+                  type: 'randomFloat',
+                },
+                right: {
+                  type: 'num',
+                  value: 0.3,
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: 'funcDecl',
+          name: 'encherAMina',
+          params: [],
+          body: [
+            {
+              type: 'g3d:forEachInSwarm',
+              swarmVar: 'pedras',
+              itemName: 'item',
+              body: [
+                {
+                  type: 'g3d:removeFromSwarm',
+                  swarmVar: 'pedras',
+                  itemVar: 'item',
+                },
+              ],
+            },
+            {
+              type: 'g3d:forEachInSwarm',
+              swarmVar: 'cristais',
+              itemName: 'item',
+              body: [
+                {
+                  type: 'g3d:removeFromSwarm',
+                  swarmVar: 'cristais',
+                  itemVar: 'item',
+                },
+              ],
+            },
+            {
+              type: 'forRange',
+              varName: 'linha',
+              from: {
+                type: 'num',
+                value: -3,
+              },
+              to: {
+                type: 'num',
+                value: 4,
+              },
+              step: {
+                type: 'num',
+                value: 1,
+              },
+              body: [
+                {
+                  type: 'forRange',
+                  varName: 'coluna',
+                  from: {
+                    type: 'num',
+                    value: -3,
+                  },
+                  to: {
+                    type: 'num',
+                    value: 4,
+                  },
+                  step: {
+                    type: 'num',
+                    value: 1,
+                  },
+                  body: [
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'call',
+                        name: 'cavarChance',
+                        args: [],
+                      },
+                      then: [
+                        {
+                          type: 'g3d:spawnInSwarm',
+                          swarmVar: 'cristais',
+                          originalVar: 'moldeCristal',
+                          x: {
+                            type: 'var',
+                            name: 'coluna',
+                          },
+                          y: {
+                            type: 'num',
+                            value: 0,
+                          },
+                          z: {
+                            type: 'var',
+                            name: 'linha',
+                          },
+                        },
+                      ],
+                      else: [
+                        {
+                          type: 'g3d:spawnInSwarm',
+                          swarmVar: 'pedras',
+                          originalVar: 'moldePedra',
+                          x: {
+                            type: 'var',
+                            name: 'coluna',
+                          },
+                          y: {
+                            type: 'num',
+                            value: 0,
+                          },
+                          z: {
+                            type: 'var',
+                            name: 'linha',
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'funcDecl',
+          name: 'atualizarHud',
+          params: [],
+          body: [
+            {
+              type: 'setProperty',
+              targetId: 'placar',
+              property: 'textContent',
+              value: {
+                type: 'var',
+                name: 'pontos',
+              },
+            },
+            {
+              type: 'setProperty',
+              targetId: 'tempo',
+              property: 'textContent',
+              value: {
+                type: 'var',
+                name: 'tempo',
+              },
+            },
+          ],
+        },
+        {
+          type: 'funcDecl',
+          name: 'recomecar',
+          params: [],
+          body: [
+            {
+              type: 'callFunction',
+              name: 'encherAMina',
+              args: [],
+            },
+            {
+              type: 'assign',
+              name: 'pontos',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'tempo',
+              value: {
+                type: 'num',
+                value: 50,
+              },
+            },
+            {
+              type: 'callFunction',
+              name: 'atualizarHud',
+              args: [],
+            },
+            {
+              type: 'classOp',
+              targetId: 'fim',
+              op: 'remove',
+              className: 'visivel',
+            },
+            {
+              type: 'assign',
+              name: 'rodando',
+              value: {
+                type: 'bool',
+                value: true,
+              },
+            },
+          ],
+        },
+        {
+          type: 'callFunction',
+          name: 'recomecar',
+          args: [],
+        },
+      ],
+      events: [
+        {
+          type: 'event',
+          target: 'retry',
+          event: 'click',
+          body: [
+            {
+              type: 'callFunction',
+              name: 'recomecar',
+              args: [],
+            },
+          ],
+        },
+        {
+          type: 'event',
+          target: 'document',
+          targetKind: 'document',
+          event: 'click',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'var',
+                name: 'rodando',
+              },
+              then: [
+                {
+                  type: 'var',
+                  name: 'alvo',
+                  value: {
+                    type: 'g3d:pickAtMouse',
+                    worldVar: 'cena',
+                  },
+                  kind: 'const',
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'var',
+                    name: 'alvo',
+                  },
+                  then: [
+                    {
+                      type: 'var',
+                      name: 'antesC',
+                      value: {
+                        type: 'g3d:countSwarm',
+                        swarmVar: 'cristais',
+                      },
+                    },
+                    {
+                      type: 'g3d:removeFromSwarm',
+                      swarmVar: 'cristais',
+                      itemVar: 'alvo',
+                    },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'binop',
+                        op: '<',
+                        left: {
+                          type: 'g3d:countSwarm',
+                          swarmVar: 'cristais',
+                        },
+                        right: {
+                          type: 'var',
+                          name: 'antesC',
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'assign',
+                          name: 'pontos',
+                          value: {
+                            type: 'binop',
+                            op: '+',
+                            left: {
+                              type: 'var',
+                              name: 'pontos',
+                            },
+                            right: {
+                              type: 'num',
+                              value: 1,
+                            },
+                          },
+                        },
+                        {
+                          type: 'g3d:playEffect',
+                          kind: 'coin',
+                        },
+                        {
+                          type: 'callFunction',
+                          name: 'atualizarHud',
+                          args: [],
+                        },
+                        {
+                          type: 'if',
+                          cond: {
+                            type: 'binop',
+                            op: '>=',
+                            left: {
+                              type: 'var',
+                              name: 'pontos',
+                            },
+                            right: {
+                              type: 'num',
+                              value: 10,
+                            },
+                          },
+                          then: [
+                            {
+                              type: 'assign',
+                              name: 'rodando',
+                              value: {
+                                type: 'bool',
+                                value: false,
+                              },
+                            },
+                            {
+                              type: 'setProperty',
+                              targetId: 'fim-titulo',
+                              property: 'textContent',
+                              value: {
+                                type: 'str',
+                                value: 'Filão lendário!',
+                              },
+                            },
+                            {
+                              type: 'setProperty',
+                              targetId: 'final-pontos',
+                              property: 'textContent',
+                              value: {
+                                type: 'var',
+                                name: 'pontos',
+                              },
+                            },
+                            {
+                              type: 'classOp',
+                              targetId: 'fim',
+                              op: 'add',
+                              className: 'visivel',
+                            },
+                          ],
+                        },
+                      ],
+                      else: [
+                        {
+                          type: 'var',
+                          name: 'antesP',
+                          value: {
+                            type: 'g3d:countSwarm',
+                            swarmVar: 'pedras',
+                          },
+                        },
+                        {
+                          type: 'g3d:removeFromSwarm',
+                          swarmVar: 'pedras',
+                          itemVar: 'alvo',
+                        },
+                        {
+                          type: 'if',
+                          cond: {
+                            type: 'binop',
+                            op: '<',
+                            left: {
+                              type: 'g3d:countSwarm',
+                              swarmVar: 'pedras',
+                            },
+                            right: {
+                              type: 'var',
+                              name: 'antesP',
+                            },
+                          },
+                          then: [
+                            {
+                              type: 'g3d:playEffect',
+                              kind: 'hit',
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3d:everySeconds',
+          secs: {
+            type: 'num',
+            value: 1,
+          },
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'var',
+                name: 'rodando',
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'tempo',
+                  value: {
+                    type: 'binop',
+                    op: '-',
+                    left: {
+                      type: 'var',
+                      name: 'tempo',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
+                  },
+                },
+                {
+                  type: 'callFunction',
+                  name: 'atualizarHud',
+                  args: [],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<',
+                    left: {
+                      type: 'binop',
+                      op: '+',
+                      left: {
+                        type: 'g3d:countSwarm',
+                        swarmVar: 'pedras',
+                      },
+                      right: {
+                        type: 'g3d:countSwarm',
+                        swarmVar: 'cristais',
+                      },
+                    },
+                    right: {
+                      type: 'num',
+                      value: 60,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'var',
+                      name: 'coluna',
+                      value: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'mathUnary',
+                          fn: 'floor',
+                          arg: {
+                            type: 'binop',
+                            op: '*',
+                            left: {
+                              type: 'randomFloat',
+                            },
+                            right: {
+                              type: 'num',
+                              value: 9,
+                            },
+                          },
+                        },
+                        right: {
+                          type: 'num',
+                          value: 4,
+                        },
+                      },
+                      kind: 'const',
+                    },
+                    {
+                      type: 'var',
+                      name: 'linha',
+                      value: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'mathUnary',
+                          fn: 'floor',
+                          arg: {
+                            type: 'binop',
+                            op: '*',
+                            left: {
+                              type: 'randomFloat',
+                            },
+                            right: {
+                              type: 'num',
+                              value: 9,
+                            },
+                          },
+                        },
+                        right: {
+                          type: 'num',
+                          value: 4,
+                        },
+                      },
+                      kind: 'const',
+                    },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'call',
+                        name: 'cavarChance',
+                        args: [],
+                      },
+                      then: [
+                        {
+                          type: 'g3d:spawnInSwarm',
+                          swarmVar: 'cristais',
+                          originalVar: 'moldeCristal',
+                          x: {
+                            type: 'var',
+                            name: 'coluna',
+                          },
+                          y: {
+                            type: 'num',
+                            value: 0,
+                          },
+                          z: {
+                            type: 'var',
+                            name: 'linha',
+                          },
+                        },
+                      ],
+                      else: [
+                        {
+                          type: 'g3d:spawnInSwarm',
+                          swarmVar: 'pedras',
+                          originalVar: 'moldePedra',
+                          x: {
+                            type: 'var',
+                            name: 'coluna',
+                          },
+                          y: {
+                            type: 'num',
+                            value: 0,
+                          },
+                          z: {
+                            type: 'var',
+                            name: 'linha',
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<=',
+                    left: {
+                      type: 'var',
+                      name: 'tempo',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'rodando',
+                      value: {
+                        type: 'bool',
+                        value: false,
+                      },
+                    },
+                    {
+                      type: 'setProperty',
+                      targetId: 'fim-titulo',
+                      property: 'textContent',
+                      value: {
+                        type: 'str',
+                        value: 'A mina fechou...',
+                      },
+                    },
+                    {
+                      type: 'setProperty',
+                      targetId: 'final-pontos',
+                      property: 'textContent',
+                      value: {
+                        type: 'var',
+                        name: 'pontos',
+                      },
+                    },
+                    {
+                      type: 'classOp',
+                      targetId: 'fim',
+                      op: 'add',
+                      className: 'visivel',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+}

@@ -10,6 +10,7 @@ import {
   defesaDaTorreExample,
   guardiaoDoPortalExample,
   labirintoDosRobosProfissionalExample,
+  minaDeCristaisProfissionalExample,
   mundoDeBlocosProfissionalExample,
   parkourDoVulcaoExample,
   patrulhaEspacialProfissionalExample,
@@ -891,5 +892,74 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
     tecla('keyup', ' ')
     expect(api.state()).toBe('vitoria')
     expect(tituloDaTela(stage, 'vitoria')).toBe('Base salva!')
+  })
+
+  it('⭐ Mina de Cristais Profissional: sem cavar o tempo acaba; clicar 10 cristais entre a pedra vence', async () => {
+    const { api, step, stage, renderers } = await loadExampleKit(
+      jsDoExemplo(minaDeCristaisProfissionalExample),
+    )
+    expect(api.state()).toBe('menu')
+    apertarBotaoDe(stage, 'menu') // "Minerar"
+    expect(api.state()).toBe('jogando')
+    // A veia inicial da mina: 6 cristais escondidos entre 12 pedras.
+    expect(api.countAlive('cristal')).toBe(6)
+    expect(api.countAlive('pedra')).toBe(12)
+
+    // (a) derrota JOGÁVEL: sem cavar nada, o cronômetro da mina (55 s) fecha em
+    // "A mina fechou..." — a tela de fim NÃO é código morto.
+    const derrota = stepUntil(step, () => api.state() !== 'jogando', 1800)
+    expect(derrota).toBeGreaterThan(0)
+    expect(api.state()).toBe('fim')
+    expect(tituloDaTela(stage, 'fim')).toBe('A mina fechou...')
+
+    // (b) vitória CAVANDO: partida nova. Fixa o minerador num ponto de vista com
+    // a mina toda à frente (encara -Z) e deixa a câmera 3ª pessoa convergir. Aí
+    // clica os cristais um a um (projeta a posição real na câmera e despacha o
+    // pointerdown ali — a mesma receita do Tiro ao Alvo e do Mundo de Blocos:
+    // mousePressed → pick → isMold("cristal") → recycle + ponto). Veias novas
+    // (spawn semeado) repõem o minério, então os 10 cristais aparecem antes do
+    // tempo. Pedra no caminho do raio só é entulho: cavá-la revela o cristal.
+    apertarBotaoDe(stage, 'fim') // "Tentar de novo"
+    expect(api.state()).toBe('jogando')
+    const cavador = primeiroVivo(api, 'mineiro')
+    expect(cavador).not.toBeNull()
+    api.place(cavador, 0, 1, -3) // no meio da mina; a câmera 3ª pessoa fica atrás
+    step(40) // a câmera que segue converge antes de qualquer mira de clique
+
+    const canvas = stage.querySelector('canvas')
+    if (!canvas) throw new Error('canvas do exemplo não montou')
+    const clicarNumCristalVisivel = (): boolean => {
+      const cam = renderers[0]?.camera
+      if (!cam) return false
+      let clicado = false
+      api.forEachAlive('cristal', (c) => {
+        if (clicado) return
+        const v = new THREE.Vector3(api.posOf(c, 'x'), api.posOf(c, 'y') + 0.4, api.posOf(c, 'z'))
+        v.project(cam)
+        if (v.z > 1 || Math.abs(v.x) > 0.95 || Math.abs(v.y) > 0.95) return
+        canvas.dispatchEvent(
+          new PointerEvent('pointerdown', {
+            bubbles: true,
+            clientX: (v.x + 1) / 2,
+            clientY: (1 - v.y) / 2,
+          }),
+        )
+        window.dispatchEvent(new PointerEvent('pointerup'))
+        clicado = true
+      })
+      return clicado
+    }
+    let viuHudNoMeio = false
+    for (let i = 0; i < 1500 && api.state() === 'jogando'; i++) {
+      api.place(cavador, 0, 1, -3) // segura o ponto de vista (câmera estável)
+      clicarNumCristalVisivel()
+      step(1)
+      const hud = stage.querySelector('.szg3k-hud-top-left')?.textContent ?? ''
+      if (hud.startsWith('Cristais:') && !hud.startsWith('Cristais: 0')) viuHudNoMeio = true
+    }
+    expect(api.state()).toBe('vitoria')
+    expect(tituloDaTela(stage, 'vitoria')).toBe('Filão lendário!')
+    // Provou que o placar subiu de verdade durante a mineração (não pulou do 0).
+    expect(viuHudNoMeio).toBe(true)
   })
 })

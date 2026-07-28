@@ -19651,3 +19651,1235 @@ export const cercoNaBaseProfissionalExample: ExtensionExample = {
     },
   },
 }
+
+export const minaDeCristaisProfissionalExample: ExtensionExample = {
+  name: 'Mina de Cristais Profissional',
+  experience: 'game',
+  description:
+    'Minerador 3D em 3ª pessoa no motor avançado: ande com WASD e clique nos blocos para cavar. A pedra é entulho, mas os cristais valem ponto. Colete 10 cristais antes que o tempo da mina acabe.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 44,
+          },
+          sky: '#0f0a1e',
+          ground: '#241a33',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1.5,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Mina de Cristais Profissional',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Ande com WASD e clique nos blocos para CAVAR. A pedra é só entulho, mas os cristais brilhantes valem ponto! Veias novas de minério vão surgindo. Colete 10 cristais antes que o tempo acabe.',
+          },
+          button: {
+            type: 'str',
+            value: 'Minerar',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Filão lendário!',
+          },
+          text: {
+            type: 'str',
+            value: 'Você garimpou os 10 cristais da mina.',
+          },
+          button: {
+            type: 'str',
+            value: 'Minerar de novo',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'A mina fechou...',
+          },
+          text: {
+            type: 'str',
+            value:
+              'O tempo acabou. Cave a pedra rápido para achar os cristais escondidos entre ela!',
+          },
+          button: {
+            type: 'str',
+            value: 'Tentar de novo',
+          },
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'mineiro',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#f59e0b',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.8,
+              },
+              h: {
+                type: 'num',
+                value: 1,
+              },
+              d: {
+                type: 'num',
+                value: 0.6,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.5,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'normal',
+              color: '#fde68a',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.6,
+              },
+              h: {
+                type: 'num',
+                value: 0.6,
+              },
+              d: {
+                type: 'num',
+                value: 0.6,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1.25,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'brilho',
+              color: '#fef08a',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.3,
+              },
+              h: {
+                type: 'num',
+                value: 0.2,
+              },
+              d: {
+                type: 'num',
+                value: 0.2,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1.45,
+              },
+              z: {
+                type: 'num',
+                value: 0.28,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'pedra',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#57534e',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 1.6,
+              },
+              h: {
+                type: 'num',
+                value: 1.6,
+              },
+              d: {
+                type: 'num',
+                value: 1.6,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#44403c',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 1.62,
+              },
+              h: {
+                type: 'num',
+                value: 0.4,
+              },
+              d: {
+                type: 'num',
+                value: 1.62,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.4,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'cristal',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#3b3556',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 1.6,
+              },
+              h: {
+                type: 'num',
+                value: 1.6,
+              },
+              d: {
+                type: 'num',
+                value: 1.6,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'cone',
+              material: 'brilho',
+              color: '#22d3ee',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.8,
+              },
+              h: {
+                type: 'num',
+                value: 1.2,
+              },
+              d: {
+                type: 'num',
+                value: 0.8,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.5,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineEffect',
+          name: 'poeira',
+          count: {
+            type: 'num',
+            value: 16,
+          },
+          colorFrom: '#a8a29e',
+          colorTo: '#241a33',
+          spread: {
+            type: 'num',
+            value: 4,
+          },
+          sizeFrom: {
+            type: 'num',
+            value: 0.5,
+          },
+          sizeTo: {
+            type: 'num',
+            value: 0,
+          },
+          life: {
+            type: 'num',
+            value: 0.4,
+          },
+          gravity: {
+            type: 'num',
+            value: 2,
+          },
+        },
+        {
+          type: 'g3k:defineEffect',
+          name: 'faisca',
+          count: {
+            type: 'num',
+            value: 22,
+          },
+          colorFrom: '#67e8f9',
+          colorTo: '#0e7490',
+          spread: {
+            type: 'num',
+            value: 5,
+          },
+          sizeFrom: {
+            type: 'num',
+            value: 0.5,
+          },
+          sizeTo: {
+            type: 'num',
+            value: 0,
+          },
+          life: {
+            type: 'num',
+            value: 0.5,
+          },
+          gravity: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'cristais',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'tempo',
+          value: {
+            type: 'num',
+            value: 55,
+          },
+        },
+        {
+          type: 'var',
+          name: 'proximaVeia',
+          value: {
+            type: 'num',
+            value: 1.5,
+          },
+        },
+      ],
+      events: [
+        {
+          type: 'g3k:onEnterState',
+          name: 'jogando',
+          body: [
+            {
+              type: 'assign',
+              name: 'cristais',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'tempo',
+              value: {
+                type: 'num',
+                value: 55,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'proximaVeia',
+              value: {
+                type: 'num',
+                value: 1.5,
+              },
+            },
+            {
+              type: 'g3k:setSeed',
+              seed: {
+                type: 'num',
+                value: 7,
+              },
+            },
+            {
+              type: 'g3k:setAmbient',
+              intensity: {
+                type: 'num',
+                value: 0.4,
+              },
+            },
+            {
+              type: 'g3k:setFog',
+              color: '#0f0a1e',
+              near: {
+                type: 'num',
+                value: 26,
+              },
+              far: {
+                type: 'num',
+                value: 80,
+              },
+            },
+            {
+              type: 'g3k:addLight',
+              color: '#67e8f9',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 15,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+              intensity: {
+                type: 'num',
+                value: 1.1,
+              },
+            },
+            {
+              type: 'g3k:spawnNamed',
+              varName: 'cavador',
+              mold: 'mineiro',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1,
+              },
+              z: {
+                type: 'num',
+                value: -3,
+              },
+            },
+            {
+              type: 'g3k:cameraFollow',
+              charVar: 'cavador',
+              dist: {
+                type: 'num',
+                value: 13,
+              },
+              height: {
+                type: 'num',
+                value: 8,
+              },
+            },
+            {
+              type: 'g3k:cameraSmooth',
+              lambda: {
+                type: 'num',
+                value: 5,
+              },
+            },
+            {
+              type: 'g3k:say',
+              charVar: 'cavador',
+              text: {
+                type: 'str',
+                value: 'Clique nos blocos para cavar!',
+              },
+              seconds: {
+                type: 'num',
+                value: 3,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'pedra',
+              x: {
+                type: 'num',
+                value: -4,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: -6,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'cristal',
+              x: {
+                type: 'num',
+                value: -2,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: -6,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'pedra',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: -6,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'cristal',
+              x: {
+                type: 'num',
+                value: 2,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: -6,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'pedra',
+              x: {
+                type: 'num',
+                value: 4,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: -6,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'cristal',
+              x: {
+                type: 'num',
+                value: -4,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: -4,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'pedra',
+              x: {
+                type: 'num',
+                value: -2,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: -4,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'pedra',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: -4,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'pedra',
+              x: {
+                type: 'num',
+                value: 2,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: -4,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'cristal',
+              x: {
+                type: 'num',
+                value: 4,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: -4,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'pedra',
+              x: {
+                type: 'num',
+                value: -4,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: -2,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'pedra',
+              x: {
+                type: 'num',
+                value: -2,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: -2,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'cristal',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: -2,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'pedra',
+              x: {
+                type: 'num',
+                value: 2,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: -2,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'pedra',
+              x: {
+                type: 'num',
+                value: 4,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: -2,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'pedra',
+              x: {
+                type: 'num',
+                value: -2,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'cristal',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'pedra',
+              x: {
+                type: 'num',
+                value: 2,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'mineiro',
+          state: 'parado',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:moveWithKeys',
+              charVar: 'ela',
+              speed: {
+                type: 'num',
+                value: 8,
+              },
+            },
+            {
+              type: 'g3k:faceVelocity',
+              charVar: 'ela',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:mousePressed',
+              },
+              then: [
+                {
+                  type: 'g3k:pick',
+                  varName: 'alvo',
+                  mold: '',
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'g3k:exists',
+                    charVar: 'alvo',
+                  },
+                  then: [
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'g3k:isMold',
+                        charVar: 'alvo',
+                        mold: 'cristal',
+                      },
+                      then: [
+                        {
+                          type: 'g3k:burstOn',
+                          effect: 'faisca',
+                          charVar: 'alvo',
+                        },
+                        {
+                          type: 'g3k:playEffect',
+                          fx: 'coin',
+                        },
+                        {
+                          type: 'g3k:recycle',
+                          charVar: 'alvo',
+                        },
+                        {
+                          type: 'assign',
+                          name: 'cristais',
+                          value: {
+                            type: 'binop',
+                            op: '+',
+                            left: {
+                              type: 'var',
+                              name: 'cristais',
+                            },
+                            right: {
+                              type: 'num',
+                              value: 1,
+                            },
+                          },
+                        },
+                      ],
+                    },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'g3k:isMold',
+                        charVar: 'alvo',
+                        mold: 'pedra',
+                      },
+                      then: [
+                        {
+                          type: 'g3k:burstOn',
+                          effect: 'poeira',
+                          charVar: 'alvo',
+                        },
+                        {
+                          type: 'g3k:playEffect',
+                          fx: 'hit',
+                        },
+                        {
+                          type: 'g3k:recycle',
+                          charVar: 'alvo',
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'assign',
+              name: 'tempo',
+              value: {
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'var',
+                  name: 'tempo',
+                },
+                right: {
+                  type: 'var',
+                  name: 'dt',
+                },
+              },
+            },
+            {
+              type: 'assign',
+              name: 'proximaVeia',
+              value: {
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'var',
+                  name: 'proximaVeia',
+                },
+                right: {
+                  type: 'var',
+                  name: 'dt',
+                },
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: {
+                  type: 'binop',
+                  op: '<=',
+                  left: {
+                    type: 'var',
+                    name: 'proximaVeia',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 0,
+                  },
+                },
+                right: {
+                  type: 'binop',
+                  op: '<',
+                  left: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'g3k:countAlive',
+                      mold: 'pedra',
+                    },
+                    right: {
+                      type: 'g3k:countAlive',
+                      mold: 'cristal',
+                    },
+                  },
+                  right: {
+                    type: 'num',
+                    value: 40,
+                  },
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'proximaVeia',
+                  value: {
+                    type: 'num',
+                    value: 1,
+                  },
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'g3k:randomChance',
+                    percent: {
+                      type: 'num',
+                      value: 40,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3k:spawn',
+                      mold: 'cristal',
+                      x: {
+                        type: 'g3k:randomBetween',
+                        from: {
+                          type: 'num',
+                          value: -9,
+                        },
+                        to: {
+                          type: 'num',
+                          value: 9,
+                        },
+                      },
+                      y: {
+                        type: 'num',
+                        value: 0.8,
+                      },
+                      z: {
+                        type: 'g3k:randomBetween',
+                        from: {
+                          type: 'num',
+                          value: -9,
+                        },
+                        to: {
+                          type: 'num',
+                          value: 6,
+                        },
+                      },
+                    },
+                  ],
+                  else: [
+                    {
+                      type: 'g3k:spawn',
+                      mold: 'pedra',
+                      x: {
+                        type: 'g3k:randomBetween',
+                        from: {
+                          type: 'num',
+                          value: -9,
+                        },
+                        to: {
+                          type: 'num',
+                          value: 9,
+                        },
+                      },
+                      y: {
+                        type: 'num',
+                        value: 0.8,
+                      },
+                      z: {
+                        type: 'g3k:randomBetween',
+                        from: {
+                          type: 'num',
+                          value: -9,
+                        },
+                        to: {
+                          type: 'num',
+                          value: 6,
+                        },
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'g3k:hudText',
+              slot: 'top-left',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '+',
+                  left: {
+                    type: 'str',
+                    value: 'Cristais: ',
+                  },
+                  right: {
+                    type: 'var',
+                    name: 'cristais',
+                  },
+                },
+                right: {
+                  type: 'str',
+                  value: ' de 10',
+                },
+              },
+            },
+            {
+              type: 'g3k:hudText',
+              slot: 'top-right',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '+',
+                  left: {
+                    type: 'str',
+                    value: 'Tempo: ',
+                  },
+                  right: {
+                    type: 'mathUnary',
+                    fn: 'floor',
+                    arg: {
+                      type: 'var',
+                      name: 'tempo',
+                    },
+                  },
+                },
+                right: {
+                  type: 'str',
+                  value: 's',
+                },
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '>=',
+                left: {
+                  type: 'var',
+                  name: 'cristais',
+                },
+                right: {
+                  type: 'num',
+                  value: 10,
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:playEffect',
+                  fx: 'win',
+                },
+                {
+                  type: 'g3k:setState',
+                  name: 'vitoria',
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '<=',
+                left: {
+                  type: 'var',
+                  name: 'tempo',
+                },
+                right: {
+                  type: 'num',
+                  value: 0,
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:playEffect',
+                  fx: 'gameover',
+                },
+                {
+                  type: 'g3k:setState',
+                  name: 'fim',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+}
