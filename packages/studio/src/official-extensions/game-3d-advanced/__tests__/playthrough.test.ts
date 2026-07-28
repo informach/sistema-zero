@@ -4,6 +4,7 @@ import { generateJS } from '#generators'
 import type { BehaviorIR } from '#ir'
 import {
   aLendaDoHeroiProfissionalExample,
+  cacaEstelarProfissionalExample,
   chefaoDasSombrasExample,
   defesaDaTorreExample,
   guardiaoDoPortalExample,
@@ -785,5 +786,58 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
     tecla('keyup', ' ')
     expect(api.state()).toBe('vitoria')
     expect(tituloDaTela(stage, 'vitoria')).toBe('Herói lendário!')
+  })
+
+  it('⭐ Caça Estelar Profissional: as naves inimigas derrubam a nave parada; abater 10 vence', async () => {
+    const { api, step, stage } = await loadExampleKit(jsDoExemplo(cacaEstelarProfissionalExample))
+    expect(api.state()).toBe('menu')
+    apertarBotaoDe(stage, 'menu') // "Decolar"
+    expect(api.state()).toBe('jogando')
+
+    // As barras de vida (nave + caça) sobem: o combate está de pé.
+    step(2)
+    expect(stage.querySelectorAll('.szg3k-bar').length).toBeGreaterThanOrEqual(1)
+
+    // (a) derrota JOGÁVEL: a nave parada e as caças entrando/saindo em cima dela.
+    // A zona de acerto (makeTrigger + onOverlap) fere a nave a cada ENTRADA (os
+    // i-frames espaçam), e os 5 escudos zeram até a tela de fim. Prova que o dano
+    // à nave NÃO é código morto.
+    let nave = primeiroVivo(api, 'nave')
+    expect(nave).not.toBeNull()
+    for (let i = 0; i < 1500 && api.state() === 'jogando'; i++) {
+      api.place(nave, 0, 1, 0)
+      api.forEachAlive('caca', (c) => {
+        if (i % 2 === 0) api.place(c, 0, 1, 0)
+        else api.place(c, 30, 1, 30)
+      })
+      step(1)
+    }
+    expect(api.state()).toBe('fim')
+    expect(tituloDaTela(stage, 'fim')).toBe('Nave abatida...')
+
+    // (b) vitória CAÇANDO: partida nova. Fixa a nave parada encarando +Z, pina UMA
+    // caça logo à frente (no caminho do tiro) e estaciona as outras longe. Segurar
+    // o gatilho (espaço) faz o tiro (spawnFrom + moveForward) acertar; dois tiros
+    // (com i-frames) derrubam cada caça e 10 abates fecham em vitória. Chegar lá
+    // prova que o laço caçar→abater FECHA (não trava).
+    apertarBotaoDe(stage, 'fim') // "Tentar de novo"
+    expect(api.state()).toBe('jogando')
+    nave = primeiroVivo(api, 'nave')
+    tecla('keydown', ' ') // o gatilho fica preso
+    for (let i = 0; i < 3200 && api.state() === 'jogando'; i++) {
+      api.place(nave, 0, 1, 0)
+      api.setYaw(nave, 0) // encara +Z (a frente do molde), o tiro voa nessa direção
+      const alvo = primeiroVivo(api, 'caca')
+      if (alvo) {
+        api.forEachAlive('caca', (c) => {
+          if (c !== alvo) api.place(c, 30, 1, 30)
+        })
+        api.place(alvo, 0, 1, 2) // na frente da nave, no caminho do tiro
+      }
+      step(1)
+    }
+    tecla('keyup', ' ')
+    expect(api.state()).toBe('vitoria')
+    expect(tituloDaTela(stage, 'vitoria')).toBe('Ás dos céus!')
   })
 })

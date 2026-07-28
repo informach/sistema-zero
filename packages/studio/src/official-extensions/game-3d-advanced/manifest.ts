@@ -2,6 +2,7 @@ import type { ExtensionManifest } from '#extensions'
 import {
   aLendaDoHeroiProfissionalExample,
   atravesseProfissionalExample,
+  cacaEstelarProfissionalExample,
   chefaoDasSombrasExample,
   corridaInfinitaProfissionalExample,
   defesaDaTorreExample,
@@ -19,7 +20,7 @@ import {
 export const gameKit3DManifest: ExtensionManifest = {
   id: 'game-3d-advanced',
   name: 'Jogo 3D Avançado',
-  version: '0.18.0',
+  version: '0.19.0',
   description:
     'A base de um jogo 3D profissional, portada de um curso de engine. Um SANDBOX 3D completo. Entidades com máquina de estados que ANIMA o boneco .glb sozinha; física por TIPO (bola quica, personagem não, gelo escorrega) com pulo, rampas e plataformas; peças, modelos, luz e névoa; câmera que segue/orbita/1ª pessoa com zoom, tremor e WASD relativo a ela; partículas; enxames com pool; vizinhança por grade; combate com chefões, fala, cronômetro, sorteio semeado, HUD e música.',
   category: 'games',
@@ -352,5 +353,6 @@ maior e se cura um pouco. Desvie do anel com WASD.
     atravesseProfissionalExample,
     reunirRebanhoProfissionalExample,
     aLendaDoHeroiProfissionalExample,
+    cacaEstelarProfissionalExample,
   ],
 }
