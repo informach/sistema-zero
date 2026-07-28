@@ -1,7 +1,7 @@
 import type { ExtensionExample } from '#extensions'
 
 /**
- * Exemplo da vitrine "Defesa da Torre" — torres com FSM própria (parado →
+ * Exemplo da vitrine "Defesa da Torre Profissional" — torres com FSM própria (parado →
  * mirar → atirar → recarregar) caçam invasores que nascem na beirada e
  * perseguem o cristal. Exercita: moldes de peças, pool/spawner, FSM por
  * entidade, vizinhança (nearest/forEachNear), combate, faíscas, telas, HUD e
@@ -12,7 +12,7 @@ import type { ExtensionExample } from '#extensions'
  * saída, o drift avisa: rode o fonte por parseJS e cole o resultado aqui.
  */
 export const defesaDaTorreExample: ExtensionExample = {
-  name: 'Defesa da Torre',
+  name: 'Defesa da Torre Profissional',
   experience: 'game',
   description:
     'Torres com cérebro próprio (máquina de estados: parado → mirar → atirar → recarregar) caçam os invasores que avançam contra o cristal. Tudo montado de peças: nenhuma imagem.',
@@ -59,7 +59,7 @@ export const defesaDaTorreExample: ExtensionExample = {
           screen: 'menu',
           title: {
             type: 'str',
-            value: 'Defesa da Torre',
+            value: 'Defesa da Torre Profissional',
           },
           text: {
             type: 'str',

@@ -15,7 +15,7 @@ import { parseExampleLifecycleSource } from './exampleLifecycleSource'
 import { collectTypes, stripIds } from './testUtils'
 
 /**
- * Drift do exemplo "Defesa da Torre": a IR embutida em examples.ts foi gerada
+ * Drift do exemplo "Defesa da Torre Profissional": a IR embutida em examples.ts foi gerada
  * pelo parser real a partir do SOURCE achatado abaixo. Se o parser/gerador
  * mudarem a forma canônica, este teste avisa — re-rode o fonte por parseJS e
  * re-embuta a IR (comentário no examples.ts).
@@ -24,7 +24,7 @@ import { collectTypes, stripIds } from './testUtils'
 const SOURCE = `
 SZGameKit3D.setup({ width: 1280, height: 720, world: 60, sky: "#0b1026", ground: "#14532d" });
 SZGameKit3D.setEffects({ shadows: true, bloom: true, strength: 1.2, vignette: true });
-SZGameKit3D.setScreenText("menu", "Defesa da Torre", "Os invasores vêm da beirada do mundo. Suas torres têm cérebro próprio!", "Defender");
+SZGameKit3D.setScreenText("menu", "Defesa da Torre Profissional", "Os invasores vêm da beirada do mundo. Suas torres têm cérebro próprio!", "Defender");
 SZGameKit3D.setScreenText("vitoria", "O cristal sobreviveu!", "As torres agradecem.", "Defender de novo");
 SZGameKit3D.setScreenText("fim", "O cristal caiu!", "Os invasores passaram. Proteja o cristal na próxima!", "Tentar de novo");
 SZGameKit3D.defineMold("cristal", { health: 200, speed: 0 }, function () {
@@ -124,7 +124,7 @@ beforeAll(() => {
   registerExtensionBlocks(gameKit3DBlocks)
 })
 
-describe('Exemplo Defesa da Torre — drift contra o parser real', () => {
+describe('Exemplo Defesa da Torre Profissional — drift contra o parser real', () => {
   it('está registrado no manifest e a extensão é nível avançado', () => {
     expect(gameKit3DManifest.examples).toContain(defesaDaTorreExample)
     expect(defesaDaTorreExample.ir.extensions).toEqual([{ extensionId: 'game-3d-advanced' }])

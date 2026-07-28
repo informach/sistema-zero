@@ -6397,3 +6397,745 @@ export const patrulhaEspacialExample: ExtensionExample = {
     ],
   },
 }
+
+/**
+ * Exemplo bundlado: "Defesa da Torre" (nível BÁSICO do Tower Defense, montado só
+ * com genéricos do Jogo 3D — não há kit TD). Uma torre no centro defende um
+ * cristal SOZINHA: os invasores (enxame) nascem na beirada e caminham ao meio
+ * (moveTowards); a torre gira e zapeia um por vez dentro do alcance, com recarga.
+ * A mira/tiro/FSM completa vive no degrau "Defesa da Torre Profissional" (g3k).
+ */
+export const defesaDaTorreBasicoExample: ExtensionExample = {
+  name: 'Defesa da Torre',
+  experience: 'game',
+  description:
+    'Uma torre no centro defende o cristal sozinha: os invasores nascem na beirada e vêm ao meio, e a torre zapeia um por vez. Pare 20 invasores para vencer!',
+  ir: {
+    html: [
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'score',
+        text: '0',
+      },
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'results',
+        children: [
+          {
+            type: 'element',
+            tag: 'div',
+            id: 'results-box',
+            children: [
+              {
+                type: 'element',
+                tag: 'h1',
+                text: 'Fim da rodada',
+              },
+              {
+                type: 'element',
+                tag: 'p',
+                children: [
+                  {
+                    type: 'text',
+                    text: 'Invasores parados: ',
+                  },
+                  {
+                    type: 'element',
+                    tag: 'span',
+                    id: 'final-score',
+                  },
+                ],
+              },
+              {
+                type: 'element',
+                tag: 'button',
+                id: 'retry',
+                text: 'Recomeçar',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    css: [
+      {
+        type: 'googleFont',
+        family: 'Press Start 2P',
+      },
+      {
+        selector: 'body',
+        declarations: {
+          margin: '0',
+          overflow: 'hidden',
+          'font-family': '"Press Start 2P", cursive',
+        },
+      },
+      {
+        selector: 'canvas',
+        declarations: {
+          display: 'block',
+          width: '100vw',
+          height: '100vh',
+        },
+      },
+      {
+        selector: '#score',
+        declarations: {
+          position: 'absolute',
+          top: '20px',
+          left: '20px',
+          'font-size': '1.5em',
+          color: 'white',
+        },
+      },
+      {
+        selector: '#results',
+        declarations: {
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          'min-width': '100%',
+          'min-height': '100%',
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          visibility: 'hidden',
+        },
+      },
+      {
+        selector: '#results.visivel',
+        declarations: {
+          visibility: 'visible',
+        },
+      },
+      {
+        selector: '#results-box',
+        declarations: {
+          display: 'flex',
+          'flex-direction': 'column',
+          'align-items': 'center',
+          'background-color': 'white',
+          padding: '20px',
+        },
+      },
+      {
+        selector: '#results-box button',
+        declarations: {
+          'background-color': '#38bdf8',
+          color: 'white',
+          padding: '16px 32px',
+          'font-family': 'inherit',
+          cursor: 'pointer',
+        },
+      },
+    ],
+    extensions: [
+      {
+        extensionId: 'game-3d',
+      },
+    ],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'g3d:createFullscreenScene',
+          varName: 'cena',
+          bg: '#0f172a',
+        },
+        {
+          type: 'g3d:setSky',
+          worldVar: 'cena',
+          top: '#1e293b',
+          bottom: '#334155',
+        },
+        {
+          type: 'g3d:topCamera',
+          worldVar: 'cena',
+          followVar: '',
+        },
+        {
+          type: 'g3d:setFog',
+          worldVar: 'cena',
+          color: '#0f172a',
+          near: {
+            type: 'num',
+            value: 34,
+          },
+          far: {
+            type: 'num',
+            value: 90,
+          },
+        },
+        {
+          type: 'g3d:addSunLight',
+          worldVar: 'cena',
+          color: '#e2e8f0',
+          intensity: {
+            type: 'num',
+            value: 1,
+          },
+        },
+        {
+          type: 'g3d:createBlock',
+          varName: 'chao',
+          worldVar: 'cena',
+          width: {
+            type: 'num',
+            value: 44,
+          },
+          height: {
+            type: 'num',
+            value: 1,
+          },
+          depth: {
+            type: 'num',
+            value: 44,
+          },
+          color: '#1e293b',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'chao',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: -0.5,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'cristal',
+          worldVar: 'cena',
+          size: {
+            type: 'num',
+            value: 2,
+          },
+          color: '#38bdf8',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'cristal',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 1,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:setMaterial',
+          objVar: 'cristal',
+          kind: 'glow',
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'torre',
+          worldVar: 'cena',
+          size: {
+            type: 'num',
+            value: 1.5,
+          },
+          color: '#f8fafc',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'torre',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 1.4,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:createBlock',
+          varName: 'cano',
+          worldVar: 'cena',
+          width: {
+            type: 'num',
+            value: 0.4,
+          },
+          height: {
+            type: 'num',
+            value: 0.4,
+          },
+          depth: {
+            type: 'num',
+            value: 1.8,
+          },
+          color: '#94a3b8',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'cano',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 1.4,
+          },
+          z: {
+            type: 'num',
+            value: 1,
+          },
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'molde',
+          worldVar: 'cena',
+          size: {
+            type: 'num',
+            value: 1,
+          },
+          color: '#f43f5e',
+        },
+        {
+          type: 'g3d:setVisible',
+          objVar: 'molde',
+          mode: 'hide',
+        },
+        {
+          type: 'g3d:createSwarm',
+          varName: 'inimigos',
+          worldVar: 'cena',
+        },
+        {
+          type: 'var',
+          name: 'pontos',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'recarga',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'rodando',
+          value: {
+            type: 'bool',
+            value: true,
+          },
+        },
+      ],
+      events: [
+        {
+          type: 'event',
+          target: 'retry',
+          event: 'click',
+          body: [
+            {
+              type: 'g3d:forEachInSwarm',
+              swarmVar: 'inimigos',
+              itemName: 'item',
+              body: [
+                {
+                  type: 'g3d:removeFromSwarm',
+                  swarmVar: 'inimigos',
+                  itemVar: 'item',
+                },
+              ],
+            },
+            {
+              type: 'assign',
+              name: 'pontos',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'recarga',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'rodando',
+              value: {
+                type: 'bool',
+                value: true,
+              },
+            },
+            {
+              type: 'setProperty',
+              targetId: 'score',
+              property: 'textContent',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'classOp',
+              targetId: 'results',
+              op: 'remove',
+              className: 'visivel',
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3d:animate',
+          worldVar: 'cena',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'var',
+                name: 'rodando',
+              },
+              then: [
+                {
+                  type: 'g3d:spin',
+                  objVar: 'torre',
+                  axis: 'y',
+                  speed: {
+                    type: 'num',
+                    value: 1.4,
+                  },
+                },
+                {
+                  type: 'g3d:spin',
+                  objVar: 'cristal',
+                  axis: 'y',
+                  speed: {
+                    type: 'num',
+                    value: 0.6,
+                  },
+                },
+                {
+                  type: 'assign',
+                  name: 'recarga',
+                  value: {
+                    type: 'binop',
+                    op: '-',
+                    left: {
+                      type: 'var',
+                      name: 'recarga',
+                    },
+                    right: {
+                      type: 'g3d:dt',
+                      worldVar: 'cena',
+                    },
+                  },
+                },
+                {
+                  type: 'g3d:forEachInSwarm',
+                  swarmVar: 'inimigos',
+                  itemName: 'item',
+                  body: [
+                    {
+                      type: 'g3d:moveTowards',
+                      objVar: 'item',
+                      x: {
+                        type: 'num',
+                        value: 0,
+                      },
+                      y: {
+                        type: 'g3d:getPos',
+                        objVar: 'item',
+                        axis: 'y',
+                      },
+                      z: {
+                        type: 'num',
+                        value: 0,
+                      },
+                      factor: {
+                        type: 'num',
+                        value: 0.02,
+                      },
+                    },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'g3d:isNear',
+                        aVar: 'cristal',
+                        bVar: 'item',
+                        dist: {
+                          type: 'num',
+                          value: 1.8,
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'assign',
+                          name: 'rodando',
+                          value: {
+                            type: 'bool',
+                            value: false,
+                          },
+                        },
+                        {
+                          type: 'g3d:playEffect',
+                          kind: 'explosion',
+                        },
+                        {
+                          type: 'setProperty',
+                          targetId: 'final-score',
+                          property: 'textContent',
+                          value: {
+                            type: 'var',
+                            name: 'pontos',
+                          },
+                        },
+                        {
+                          type: 'classOp',
+                          targetId: 'results',
+                          op: 'add',
+                          className: 'visivel',
+                        },
+                      ],
+                    },
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'logical',
+                        op: '&&',
+                        left: {
+                          type: 'binop',
+                          op: '<=',
+                          left: {
+                            type: 'var',
+                            name: 'recarga',
+                          },
+                          right: {
+                            type: 'num',
+                            value: 0,
+                          },
+                        },
+                        right: {
+                          type: 'g3d:isNear',
+                          aVar: 'torre',
+                          bVar: 'item',
+                          dist: {
+                            type: 'num',
+                            value: 6,
+                          },
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'g3d:removeFromSwarm',
+                          swarmVar: 'inimigos',
+                          itemVar: 'item',
+                        },
+                        {
+                          type: 'g3d:playEffect',
+                          kind: 'hit',
+                        },
+                        {
+                          type: 'assign',
+                          name: 'pontos',
+                          value: {
+                            type: 'binop',
+                            op: '+',
+                            left: {
+                              type: 'var',
+                              name: 'pontos',
+                            },
+                            right: {
+                              type: 'num',
+                              value: 1,
+                            },
+                          },
+                        },
+                        {
+                          type: 'assign',
+                          name: 'recarga',
+                          value: {
+                            type: 'num',
+                            value: 0.35,
+                          },
+                        },
+                        {
+                          type: 'setProperty',
+                          targetId: 'score',
+                          property: 'textContent',
+                          value: {
+                            type: 'var',
+                            name: 'pontos',
+                          },
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>=',
+                    left: {
+                      type: 'var',
+                      name: 'pontos',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 20,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'rodando',
+                      value: {
+                        type: 'bool',
+                        value: false,
+                      },
+                    },
+                    {
+                      type: 'g3d:playEffect',
+                      kind: 'coin',
+                    },
+                    {
+                      type: 'setProperty',
+                      targetId: 'final-score',
+                      property: 'textContent',
+                      value: {
+                        type: 'var',
+                        name: 'pontos',
+                      },
+                    },
+                    {
+                      type: 'classOp',
+                      targetId: 'results',
+                      op: 'add',
+                      className: 'visivel',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3d:everySeconds',
+          secs: {
+            type: 'num',
+            value: 1.1,
+          },
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'var',
+                name: 'rodando',
+              },
+              then: [
+                {
+                  type: 'var',
+                  name: 'angulo',
+                  value: {
+                    type: 'binop',
+                    op: '*',
+                    left: {
+                      type: 'randomFloat',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 6.283,
+                    },
+                  },
+                  kind: 'const',
+                },
+                {
+                  type: 'var',
+                  name: 'ex',
+                  value: {
+                    type: 'binop',
+                    op: '*',
+                    left: {
+                      type: 'mathUnary',
+                      fn: 'cos',
+                      arg: {
+                        type: 'var',
+                        name: 'angulo',
+                      },
+                    },
+                    right: {
+                      type: 'num',
+                      value: 14,
+                    },
+                  },
+                  kind: 'const',
+                },
+                {
+                  type: 'var',
+                  name: 'ez',
+                  value: {
+                    type: 'binop',
+                    op: '*',
+                    left: {
+                      type: 'mathUnary',
+                      fn: 'sin',
+                      arg: {
+                        type: 'var',
+                        name: 'angulo',
+                      },
+                    },
+                    right: {
+                      type: 'num',
+                      value: 14,
+                    },
+                  },
+                  kind: 'const',
+                },
+                {
+                  type: 'g3d:spawnInSwarm',
+                  swarmVar: 'inimigos',
+                  originalVar: 'molde',
+                  x: {
+                    type: 'var',
+                    name: 'ex',
+                  },
+                  y: {
+                    type: 'num',
+                    value: 1,
+                  },
+                  z: {
+                    type: 'var',
+                    name: 'ez',
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+}

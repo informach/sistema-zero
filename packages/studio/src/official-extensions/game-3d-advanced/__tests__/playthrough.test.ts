@@ -103,7 +103,7 @@ afterEach(() => {
 })
 
 describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
-  it('⭐ Defesa da Torre: as torres defendem SOZINHAS até a vitória', async () => {
+  it('⭐ Defesa da Torre Profissional: as torres defendem SOZINHAS até a vitória', async () => {
     const { api, step, stage } = await loadExampleKit(jsDoExemplo(defesaDaTorreExample))
     expect(api.state()).toBe('menu')
     // O exemplo NÃO semeia — a semente do teste vale porque o reset do

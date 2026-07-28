@@ -100,6 +100,8 @@ const KIT_EMOJI: Record<string, string> = {
   'Caça-moedas profissional': '🪙',
   'Arena dos Goblins': '👹',
   'Defesa da Torre': '🏰',
+  'Defesa da Torre Profissional': '🧙',
+  'Defesa da Torre (na mão)': '⚡',
   'Salto nas Nuvens': '☁️',
   'Parkour do Vulcão': '🌋',
   'Quadra Maluca': '🏀',

@@ -432,6 +432,15 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['arrows'],
   },
   {
+    key: 'game-3d:Defesa da Torre',
+    name: 'Defesa da Torre',
+    experience: 'game',
+    promise: 'Uma torre no centro defende o cristal sozinha zapeando os invasores do enxame.',
+    scenario:
+      'Ver os invasores nascerem na beirada, a torre zapear um a um, pontuar até 20 e recomeçar.',
+    interactions: ['click'],
+  },
+  {
     key: 'game-3d:Desvie dos blocos',
     name: 'Desvie dos blocos',
     experience: 'game',
@@ -484,8 +493,8 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['auto'],
   },
   {
-    key: 'game-3d-advanced:Defesa da Torre',
-    name: 'Defesa da Torre',
+    key: 'game-3d-advanced:Defesa da Torre Profissional',
+    name: 'Defesa da Torre Profissional',
     experience: 'game',
     promise: 'Torres autônomas defendem um cristal com máquina de estados.',
     scenario: 'Observar mira, tiro, recarga, vitória/derrota e reinício.',
@@ -732,6 +741,16 @@ export const EXAMPLE_QA_CONTRACTS = [
     scenario:
       'Acelerar e frear com as setas, trocar de faixa para os lados, desviar dos carros rivais e completar 3 voltas.',
     interactions: ['arrows'],
+  },
+  {
+    key: 'core:Defesa da Torre (na mão)',
+    name: 'Defesa da Torre (na mão)',
+    experience: 'game',
+    promise:
+      'O Tower Defense feito só com o núcleo Canvas 3D: a torre zapeia sozinha os invasores do enxame.',
+    scenario:
+      'Ver os invasores nascerem na beirada e caminharem ao centro, a torre girar e zapear um a um, o céu ficar verde ao parar 20 (ou vermelho se um chegar no cristal) e apertar uma tecla para recomeçar.',
+    interactions: ['auto'],
   },
   {
     key: 'core:Folio 3D procedural (na mão)',
