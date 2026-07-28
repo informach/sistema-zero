@@ -135,6 +135,36 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['start', 'arrows', 'space'],
   },
   {
+    key: 'game-2d:Herói que Evolui',
+    name: 'Herói que Evolui',
+    experience: 'game',
+    promise:
+      'Cortar monstros com a espada para ganhar experiência, subir de nível (mais forte e curando) e chegar ao nível 5.',
+    scenario:
+      'Enter ou espaço começa; andar com as setas, golpear com espaço, derrotar monstros para ganhar EXP, subir de nível e vencer no nível 5.',
+    interactions: ['start', 'arrows', 'space'],
+  },
+  {
+    key: 'game-2d:Fazenda Feliz',
+    name: 'Fazenda Feliz',
+    experience: 'game',
+    promise:
+      'Cuidar de uma fazendinha: plantar nos canteiros, esperar crescer, colher o que estiver maduro e juntar 30 moedas.',
+    scenario:
+      'Enter ou espaço começa; andar com as setas, plantar com espaço, esperar os brotos crescerem, colher os maduros e vencer com 30 moedas.',
+    interactions: ['start', 'arrows', 'space'],
+  },
+  {
+    key: 'game-2d:Sobrevivente',
+    name: 'Sobrevivente',
+    experience: 'game',
+    promise:
+      'Fugir da horda numa arena enquanto a arma atira sozinha no monstrinho mais perto, aguentando o máximo de tempo.',
+    scenario:
+      'Enter ou espaço começa; andar com as setas, deixar a arma automática derrotar os monstrinhos, perder os corações ao encostar e reiniciar.',
+    interactions: ['start', 'arrows'],
+  },
+  {
     key: 'game-2d:Batalha de Monstrinhos',
     name: 'Batalha de Monstrinhos',
     experience: 'game',
@@ -260,6 +290,36 @@ export const EXAMPLE_QA_CONTRACTS = [
     scenario:
       'Decolar pelo botão, voar, atirar com recarga, destruir meteoros, bater e ver o recorde guardado.',
     interactions: ['click', 'arrows', 'space'],
+  },
+  {
+    key: 'game-2d-advanced:Herói que Evolui Profissional',
+    name: 'Herói que Evolui Profissional',
+    experience: 'game',
+    promise:
+      'Combate top-down com câmera e FSM de inimigo, mais o menu de melhoria: cada nível deixa escolher espada, alcance ou velocidade.',
+    scenario:
+      'Começar pelo botão, andar com WASD, golpear com espaço, derrotar monstros para ganhar EXP, escolher a melhoria no menu e chegar ao nível 6.',
+    interactions: ['click', 'wasd', 'space'],
+  },
+  {
+    key: 'game-2d-advanced:Fazenda Feliz Profissional',
+    name: 'Fazenda Feliz Profissional',
+    experience: 'game',
+    promise:
+      'Cuidar da fazenda com câmera e ferramentas: arar, plantar, regar, dormir para crescer e vender a colheita por moedas.',
+    scenario:
+      'Começar pelo botão, andar com WASD, trocar de ferramenta e usar com espaço, dormir para o dia passar, colher, vender na loja e juntar 50 moedas.',
+    interactions: ['click', 'wasd', 'space'],
+  },
+  {
+    key: 'game-2d-advanced:Sobrevivente Profissional',
+    name: 'Sobrevivente Profissional',
+    experience: 'game',
+    promise:
+      'Sobreviver num mundo com câmera, mira contínua no mouse, horda com pool e EXP que sobe de nível e acelera a arma.',
+    scenario:
+      'Começar pelo botão, fugir com WASD, a arma mira o mouse e atira sozinha, derrotar monstrinhos para subir de nível e cumprir a missão.',
+    interactions: ['click', 'wasd'],
   },
   {
     key: 'game-2d-advanced:Batalha de Monstrinhos Profissional',
@@ -1047,6 +1107,36 @@ export const EXAMPLE_QA_CONTRACTS = [
     scenario:
       'Andar com A/W/S/D, golpear com espaço, derrotar os inimigos, vencer e reiniciar com Enter.',
     interactions: ['start', 'wasd', 'space'],
+  },
+  {
+    key: 'core:Herói que Evolui (na mão)',
+    name: 'Herói que Evolui (na mão)',
+    experience: 'game',
+    promise:
+      'Zelda com evolução feito só com o núcleo: câmera que segue, ataque de caixa na direção e tela de melhoria a cada nível.',
+    scenario:
+      'Enter começa; andar com A/W/S/D, golpear com espaço, derrotar monstros, escolher a melhoria com 1/2/3 ao subir de nível e vencer no nível 5.',
+    interactions: ['start', 'wasd', 'space', 'digit-1'],
+  },
+  {
+    key: 'core:Fazenda Feliz (na mão)',
+    name: 'Fazenda Feliz (na mão)',
+    experience: 'game',
+    promise:
+      'Fazendinha feita só com o núcleo: grade de canteiros numa lista, câmera que segue, ferramentas e o ciclo do dia.',
+    scenario:
+      'Enter começa; andar com as setas, trocar ferramenta com Q, usar com espaço, dormir com C, colher, vender com V e juntar 40 moedas.',
+    interactions: ['start', 'wasd', 'space'],
+  },
+  {
+    key: 'core:Sobrevivente (na mão)',
+    name: 'Sobrevivente (na mão)',
+    experience: 'game',
+    promise:
+      'Atirador de sobrevivência feito só com o núcleo: classes com pool, câmera que segue e arma que mira sozinha no mais perto.',
+    scenario:
+      'Enter começa; andar com as setas, a arma automática derrota os monstrinhos que perseguem, perder a vida ao encostar e reiniciar.',
+    interactions: ['start', 'arrows'],
   },
   {
     key: 'game-2d:Treinador de Criaturas',
