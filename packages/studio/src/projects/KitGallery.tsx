@@ -41,6 +41,7 @@ const KIT_EMOJI: Record<string, string> = {
   'Pegue a moeda': '💰',
   Pong: '🏓',
   'Pong Profissional': '🎾',
+  'Pong (na mão)': '🥎',
   'Herói que anda': '🏃',
   'Mini plataforma': '🦘',
   'Sala com paredes': '🧱',

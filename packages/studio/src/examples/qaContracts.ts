@@ -63,6 +63,15 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['start', 'arrows'],
   },
   {
+    key: 'core:Pong (na mão)',
+    name: 'Pong (na mão)',
+    experience: 'game',
+    promise: 'O Pong feito só com o núcleo Canvas 2D: classes Paddle e Ball, deltaTime e rebote por ângulo.',
+    scenario:
+      'Mover a raquete com as setas, rebater a bola com ângulo pelo ponto de contato, marcar até cinco contra a IA do computador e apertar Enter para recomeçar.',
+    interactions: ['arrows'],
+  },
+  {
     key: 'game-2d:Herói que anda',
     name: 'Herói que anda',
     experience: 'demo',
