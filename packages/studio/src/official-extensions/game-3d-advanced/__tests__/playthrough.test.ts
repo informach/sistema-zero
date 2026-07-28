@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import { generateJS } from '#generators'
 import type { BehaviorIR } from '#ir'
 import {
+  aLendaDoHeroiProfissionalExample,
   chefaoDasSombrasExample,
   defesaDaTorreExample,
   guardiaoDoPortalExample,
@@ -123,9 +124,7 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
   })
 
   it('⭐ Reunir o Rebanho Profissional: guiar o rebanho ao curral vence', async () => {
-    const { api, step, stage } = await loadExampleKit(
-      jsDoExemplo(reunirRebanhoProfissionalExample),
-    )
+    const { api, step, stage } = await loadExampleKit(jsDoExemplo(reunirRebanhoProfissionalExample))
     expect(api.state()).toBe('menu')
     api.setSeed(1)
     apertarBotaoDe(stage, 'menu') // "Pastorear"
@@ -736,5 +735,55 @@ describe('g3k — JOGAR os exemplos até o fim (não só abrir)', () => {
     }
     expect(api.state()).toBe('vitoria')
     expect(tituloDaTela(stage, 'vitoria')).toBe('Patrulha cumprida!')
+  })
+
+  it('⭐ A Lenda do Herói Profissional: monstros derrubam o herói parado; caçar 10 com a espada vence', async () => {
+    const { api, step, stage } = await loadExampleKit(jsDoExemplo(aLendaDoHeroiProfissionalExample))
+    expect(api.state()).toBe('menu')
+    apertarBotaoDe(stage, 'menu') // "Começar a aventura"
+    expect(api.state()).toBe('jogando')
+
+    // As barras de vida (herói + monstro) sobem: o combate está de pé.
+    step(2)
+    expect(stage.querySelectorAll('.szg3k-bar').length).toBeGreaterThanOrEqual(1)
+
+    // (a) derrota JOGÁVEL: o herói parado, sem atacar, com um monstro grudado. O
+    // cérebro do monstro (vagando→perseguindo por nearest+touches) o leva a
+    // encostar, e os golpes de contato (hurt 1 com i-frames) zeram os 6 corações
+    // até a tela de fim. Prova que o dano ao herói NÃO é código morto.
+    let heroi = primeiroVivo(api, 'heroi')
+    expect(heroi).not.toBeNull()
+    for (let i = 0; i < 900 && api.state() === 'jogando'; i++) {
+      api.place(heroi, 0, 1, 0)
+      const m = primeiroVivo(api, 'monstro')
+      if (m) api.place(m, 0, 0.6, 0)
+      step(1)
+    }
+    expect(api.state()).toBe('fim')
+    expect(tituloDaTela(stage, 'fim')).toBe('O herói caiu...')
+
+    // (b) vitória CAÇANDO: partida nova. Fixa o alvo no alcance da ESPADA (2,5 <
+    // 3 do golpe, mas fora dos 1,6 do dano de contato) e estaciona os outros num
+    // canto, para o herói bater sem apanhar. Segurar a espada (espaço) abate cada
+    // monstro; 10 abates (onEntityDeath) fecham em vitória. Chegar lá prova que o
+    // laço caçar→abater FECHA (não trava) e que o herói não morre no alcance certo.
+    apertarBotaoDe(stage, 'fim') // "Tentar de novo"
+    expect(api.state()).toBe('jogando')
+    heroi = primeiroVivo(api, 'heroi')
+    tecla('keydown', ' ') // a espada fica erguida
+    for (let i = 0; i < 2400 && api.state() === 'jogando'; i++) {
+      const alvo = primeiroVivo(api, 'monstro')
+      if (alvo) {
+        api.forEachAlive('monstro', (m) => {
+          if (m !== alvo) api.place(m, 24, 0.6, 24)
+        })
+        api.place(alvo, 0, 0.6, 0)
+        api.place(heroi, 2.5, 1, 0)
+      }
+      step(1)
+    }
+    tecla('keyup', ' ')
+    expect(api.state()).toBe('vitoria')
+    expect(tituloDaTela(stage, 'vitoria')).toBe('Herói lendário!')
   })
 })

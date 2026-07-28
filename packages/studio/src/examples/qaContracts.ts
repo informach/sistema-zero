@@ -444,10 +444,21 @@ export const EXAMPLE_QA_CONTRACTS = [
     key: 'game-3d:Reunir o Rebanho',
     name: 'Reunir o Rebanho',
     experience: 'game',
-    promise: 'Guiar os bichinhos que vagam pelo campo até o curral, gerenciando o rebanho que segue você.',
+    promise:
+      'Guiar os bichinhos que vagam pelo campo até o curral, gerenciando o rebanho que segue você.',
     scenario:
       'Andar com as setas para os bichinhos seguirem, levá-los ao curral, reunir 8 antes do tempo acabar e recomeçar.',
     interactions: ['wasd', 'arrows'],
+  },
+  {
+    key: 'game-3d:A Lenda do Herói',
+    name: 'A Lenda do Herói',
+    experience: 'game',
+    promise:
+      'Um herói que ataca de perto com a espada os monstros que vagam e perseguem pela clareira.',
+    scenario:
+      'Andar com as setas ou WASD, atacar com a barra de espaço os monstros por perto, derrotar 10 antes que os 3 corações acabem e recomeçar.',
+    interactions: ['wasd', 'arrows', 'space'],
   },
   {
     key: 'game-3d:Desvie dos blocos',
@@ -513,10 +524,21 @@ export const EXAMPLE_QA_CONTRACTS = [
     key: 'game-3d-advanced:Reunir o Rebanho Profissional',
     name: 'Reunir o Rebanho Profissional',
     experience: 'game',
-    promise: 'Bichinhos com cérebro próprio vagam e seguem o pastor, gerenciados pela vizinhança do motor.',
+    promise:
+      'Bichinhos com cérebro próprio vagam e seguem o pastor, gerenciados pela vizinhança do motor.',
     scenario:
       'Andar com WASD, chegar perto para os bichinhos seguirem, levar o rebanho ao curral, reunir 8 antes do tempo e ver vitória ou derrota.',
     interactions: ['wasd', 'arrows'],
+  },
+  {
+    key: 'game-3d-advanced:A Lenda do Herói Profissional',
+    name: 'A Lenda do Herói Profissional',
+    experience: 'game',
+    promise:
+      'Monstros com cérebro próprio vagam e perseguem o herói; a espada os derrota de perto.',
+    scenario:
+      'Andar com WASD, atacar com espaço ou clique os monstros por perto, derrotar 10 antes dos corações acabarem e ver vitória ou derrota.',
+    interactions: ['wasd', 'arrows', 'space', 'click'],
   },
   {
     key: 'game-3d-advanced:Salto nas Nuvens',
@@ -779,6 +801,16 @@ export const EXAMPLE_QA_CONTRACTS = [
     scenario:
       'Andar com as setas ou WASD, encostar nos bichinhos para eles seguirem, levar o rebanho ao curral dourado, reunir 10 e ver o céu ficar verde.',
     interactions: ['wasd', 'arrows'],
+  },
+  {
+    key: 'core:A Lenda do Herói (na mão)',
+    name: 'A Lenda do Herói (na mão)',
+    experience: 'game',
+    promise:
+      'O RPG de ação feito só com o núcleo Canvas 3D: um herói que ataca com a espada os monstros que perseguem.',
+    scenario:
+      'Andar com as setas ou WASD, atacar com a barra de espaço os monstros por perto, derrotar 10 e ver o céu ficar dourado.',
+    interactions: ['wasd', 'arrows', 'space'],
   },
   {
     key: 'core:Folio 3D procedural (na mão)',

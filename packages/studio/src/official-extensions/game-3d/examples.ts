@@ -8244,3 +8244,1164 @@ export const reunirRebanhoBasicoExample: ExtensionExample = {
     },
   },
 }
+
+export const aLendaDoHeroiBasicoExample: ExtensionExample = {
+  name: 'A Lenda do Herói',
+  experience: 'game',
+  description:
+    'Um herói numa clareira cheia de monstros. Ande com as setas e ataque de perto com a barra de espaço. Os monstros vagam e perseguem você. Derrote 10 antes que os 3 corações acabem!',
+  ir: {
+    html: [
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'score',
+        text: 'Monstros: 0 de 10',
+      },
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'hearts',
+        text: 'Vida: 3',
+      },
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'results',
+        children: [
+          {
+            type: 'element',
+            tag: 'div',
+            id: 'results-box',
+            children: [
+              {
+                type: 'element',
+                tag: 'h1',
+                id: 'result-title',
+                text: 'Fim da aventura',
+              },
+              {
+                type: 'element',
+                tag: 'p',
+                children: [
+                  {
+                    type: 'text',
+                    text: 'Monstros derrotados: ',
+                  },
+                  {
+                    type: 'element',
+                    tag: 'span',
+                    id: 'final-score',
+                  },
+                ],
+              },
+              {
+                type: 'element',
+                tag: 'button',
+                id: 'retry',
+                text: 'Jogar de novo',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    css: [
+      {
+        type: 'googleFont',
+        family: 'Press Start 2P',
+      },
+      {
+        selector: 'body',
+        declarations: {
+          margin: '0',
+          overflow: 'hidden',
+          'font-family': '"Press Start 2P", cursive',
+        },
+      },
+      {
+        selector: 'canvas',
+        declarations: {
+          display: 'block',
+          width: '100vw',
+          height: '100vh',
+        },
+      },
+      {
+        selector: '#score',
+        declarations: {
+          position: 'absolute',
+          top: '20px',
+          left: '20px',
+          'font-size': '1.1em',
+          color: 'white',
+        },
+      },
+      {
+        selector: '#hearts',
+        declarations: {
+          position: 'absolute',
+          top: '20px',
+          right: '20px',
+          'font-size': '1.1em',
+          color: '#f87171',
+        },
+      },
+      {
+        selector: '#results',
+        declarations: {
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          'min-width': '100%',
+          'min-height': '100%',
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          visibility: 'hidden',
+        },
+      },
+      {
+        selector: '#results.visivel',
+        declarations: {
+          visibility: 'visible',
+        },
+      },
+      {
+        selector: '#results-box',
+        declarations: {
+          display: 'flex',
+          'flex-direction': 'column',
+          'align-items': 'center',
+          'background-color': 'white',
+          color: '#0f2417',
+          padding: '20px',
+          'text-align': 'center',
+        },
+      },
+      {
+        selector: '#results-box button',
+        declarations: {
+          'background-color': '#2563eb',
+          color: 'white',
+          padding: '16px 32px',
+          'font-family': 'inherit',
+          cursor: 'pointer',
+        },
+      },
+    ],
+    extensions: [
+      {
+        extensionId: 'game-3d',
+      },
+    ],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'g3d:createFullscreenScene',
+          varName: 'cena',
+          bg: '#0f2417',
+        },
+        {
+          type: 'g3d:setSky',
+          worldVar: 'cena',
+          top: '#1e3a2a',
+          bottom: '#2f5541',
+        },
+        {
+          type: 'g3d:topCamera',
+          worldVar: 'cena',
+          followVar: '',
+        },
+        {
+          type: 'g3d:setFog',
+          worldVar: 'cena',
+          color: '#0f2417',
+          near: {
+            type: 'num',
+            value: 42,
+          },
+          far: {
+            type: 'num',
+            value: 120,
+          },
+        },
+        {
+          type: 'g3d:addSunLight',
+          worldVar: 'cena',
+          color: '#fef9c3',
+          intensity: {
+            type: 'num',
+            value: 1,
+          },
+        },
+        {
+          type: 'g3d:createBlock',
+          varName: 'chao',
+          worldVar: 'cena',
+          width: {
+            type: 'num',
+            value: 36,
+          },
+          height: {
+            type: 'num',
+            value: 1,
+          },
+          depth: {
+            type: 'num',
+            value: 36,
+          },
+          color: '#14532d',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'chao',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: -0.5,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:createBlock',
+          varName: 'castelo',
+          worldVar: 'cena',
+          width: {
+            type: 'num',
+            value: 5,
+          },
+          height: {
+            type: 'num',
+            value: 4,
+          },
+          depth: {
+            type: 'num',
+            value: 5,
+          },
+          color: '#6b7280',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'castelo',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 1.5,
+          },
+          z: {
+            type: 'num',
+            value: -15,
+          },
+        },
+        {
+          type: 'g3d:setMaterial',
+          objVar: 'castelo',
+          kind: 'metal',
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'heroi',
+          worldVar: 'cena',
+          size: {
+            type: 'num',
+            value: 1.3,
+          },
+          color: '#2563eb',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'heroi',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 0.65,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'coroa',
+          worldVar: 'cena',
+          size: {
+            type: 'num',
+            value: 0.6,
+          },
+          color: '#fcd34d',
+        },
+        {
+          type: 'g3d:setMaterial',
+          objVar: 'coroa',
+          kind: 'glow',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'coroa',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 1.6,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'moldeMonstro',
+          worldVar: 'cena',
+          size: {
+            type: 'num',
+            value: 1,
+          },
+          color: '#7c3aed',
+        },
+        {
+          type: 'g3d:setVisible',
+          objVar: 'moldeMonstro',
+          mode: 'hide',
+        },
+        {
+          type: 'g3d:createSwarm',
+          varName: 'monstros',
+          worldVar: 'cena',
+        },
+        {
+          type: 'var',
+          name: 'pontos',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'vida',
+          value: {
+            type: 'num',
+            value: 3,
+          },
+        },
+        {
+          type: 'var',
+          name: 'heroiX',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'heroiZ',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'rodando',
+          value: {
+            type: 'bool',
+            value: true,
+          },
+        },
+      ],
+      events: [
+        {
+          type: 'event',
+          target: 'retry',
+          event: 'click',
+          body: [
+            {
+              type: 'g3d:forEachInSwarm',
+              swarmVar: 'monstros',
+              itemName: 'item',
+              body: [
+                {
+                  type: 'g3d:removeFromSwarm',
+                  swarmVar: 'monstros',
+                  itemVar: 'item',
+                },
+              ],
+            },
+            {
+              type: 'assign',
+              name: 'pontos',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'vida',
+              value: {
+                type: 'num',
+                value: 3,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'heroiX',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'heroiZ',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'rodando',
+              value: {
+                type: 'bool',
+                value: true,
+              },
+            },
+            {
+              type: 'g3d:setPosition',
+              objVar: 'heroi',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.65,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'setProperty',
+              targetId: 'score',
+              property: 'textContent',
+              value: {
+                type: 'str',
+                value: 'Monstros: 0 de 10',
+              },
+            },
+            {
+              type: 'setProperty',
+              targetId: 'hearts',
+              property: 'textContent',
+              value: {
+                type: 'str',
+                value: 'Vida: 3',
+              },
+            },
+            {
+              type: 'classOp',
+              targetId: 'results',
+              op: 'remove',
+              className: 'visivel',
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3d:animate',
+          worldVar: 'cena',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'var',
+                name: 'rodando',
+              },
+              then: [
+                {
+                  type: 'g3d:spin',
+                  objVar: 'coroa',
+                  axis: 'y',
+                  speed: {
+                    type: 'num',
+                    value: 1.2,
+                  },
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logical',
+                    op: '||',
+                    left: {
+                      type: 'g3d:keyDown',
+                      key: 'ArrowLeft',
+                    },
+                    right: {
+                      type: 'g3d:keyDown',
+                      key: 'KeyA',
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'heroiX',
+                      value: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'var',
+                          name: 'heroiX',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 0.16,
+                        },
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logical',
+                    op: '||',
+                    left: {
+                      type: 'g3d:keyDown',
+                      key: 'ArrowRight',
+                    },
+                    right: {
+                      type: 'g3d:keyDown',
+                      key: 'KeyD',
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'heroiX',
+                      value: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'var',
+                          name: 'heroiX',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 0.16,
+                        },
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logical',
+                    op: '||',
+                    left: {
+                      type: 'g3d:keyDown',
+                      key: 'ArrowUp',
+                    },
+                    right: {
+                      type: 'g3d:keyDown',
+                      key: 'KeyW',
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'heroiZ',
+                      value: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'var',
+                          name: 'heroiZ',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 0.16,
+                        },
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logical',
+                    op: '||',
+                    left: {
+                      type: 'g3d:keyDown',
+                      key: 'ArrowDown',
+                    },
+                    right: {
+                      type: 'g3d:keyDown',
+                      key: 'KeyS',
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'heroiZ',
+                      value: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'var',
+                          name: 'heroiZ',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 0.16,
+                        },
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<',
+                    left: {
+                      type: 'var',
+                      name: 'heroiX',
+                    },
+                    right: {
+                      type: 'num',
+                      value: -16,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'heroiX',
+                      value: {
+                        type: 'num',
+                        value: -16,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'var',
+                      name: 'heroiX',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 16,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'heroiX',
+                      value: {
+                        type: 'num',
+                        value: 16,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<',
+                    left: {
+                      type: 'var',
+                      name: 'heroiZ',
+                    },
+                    right: {
+                      type: 'num',
+                      value: -16,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'heroiZ',
+                      value: {
+                        type: 'num',
+                        value: -16,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'var',
+                      name: 'heroiZ',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 16,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'heroiZ',
+                      value: {
+                        type: 'num',
+                        value: 16,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'g3d:setPosition',
+                  objVar: 'heroi',
+                  x: {
+                    type: 'var',
+                    name: 'heroiX',
+                  },
+                  y: {
+                    type: 'num',
+                    value: 0.65,
+                  },
+                  z: {
+                    type: 'var',
+                    name: 'heroiZ',
+                  },
+                },
+                {
+                  type: 'g3d:setPosition',
+                  objVar: 'coroa',
+                  x: {
+                    type: 'var',
+                    name: 'heroiX',
+                  },
+                  y: {
+                    type: 'num',
+                    value: 1.6,
+                  },
+                  z: {
+                    type: 'var',
+                    name: 'heroiZ',
+                  },
+                },
+                {
+                  type: 'g3d:forEachInSwarm',
+                  swarmVar: 'monstros',
+                  itemName: 'item',
+                  body: [
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'logical',
+                        op: '&&',
+                        left: {
+                          type: 'g3d:keyDown',
+                          key: 'Space',
+                        },
+                        right: {
+                          type: 'g3d:isNear',
+                          aVar: 'heroi',
+                          bVar: 'item',
+                          dist: {
+                            type: 'num',
+                            value: 2.3,
+                          },
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'g3d:removeFromSwarm',
+                          swarmVar: 'monstros',
+                          itemVar: 'item',
+                        },
+                        {
+                          type: 'assign',
+                          name: 'pontos',
+                          value: {
+                            type: 'binop',
+                            op: '+',
+                            left: {
+                              type: 'var',
+                              name: 'pontos',
+                            },
+                            right: {
+                              type: 'num',
+                              value: 1,
+                            },
+                          },
+                        },
+                        {
+                          type: 'g3d:playEffect',
+                          kind: 'coin',
+                        },
+                        {
+                          type: 'setProperty',
+                          targetId: 'score',
+                          property: 'textContent',
+                          value: {
+                            type: 'binop',
+                            op: '+',
+                            left: {
+                              type: 'binop',
+                              op: '+',
+                              left: {
+                                type: 'str',
+                                value: 'Monstros: ',
+                              },
+                              right: {
+                                type: 'var',
+                                name: 'pontos',
+                              },
+                            },
+                            right: {
+                              type: 'str',
+                              value: ' de 10',
+                            },
+                          },
+                        },
+                      ],
+                      else: [
+                        {
+                          type: 'if',
+                          cond: {
+                            type: 'g3d:isNear',
+                            aVar: 'heroi',
+                            bVar: 'item',
+                            dist: {
+                              type: 'num',
+                              value: 1.35,
+                            },
+                          },
+                          then: [
+                            {
+                              type: 'g3d:removeFromSwarm',
+                              swarmVar: 'monstros',
+                              itemVar: 'item',
+                            },
+                            {
+                              type: 'assign',
+                              name: 'vida',
+                              value: {
+                                type: 'binop',
+                                op: '-',
+                                left: {
+                                  type: 'var',
+                                  name: 'vida',
+                                },
+                                right: {
+                                  type: 'num',
+                                  value: 1,
+                                },
+                              },
+                            },
+                            {
+                              type: 'g3d:playEffect',
+                              kind: 'hit',
+                            },
+                            {
+                              type: 'setProperty',
+                              targetId: 'hearts',
+                              property: 'textContent',
+                              value: {
+                                type: 'binop',
+                                op: '+',
+                                left: {
+                                  type: 'str',
+                                  value: 'Vida: ',
+                                },
+                                right: {
+                                  type: 'var',
+                                  name: 'vida',
+                                },
+                              },
+                            },
+                          ],
+                          else: [
+                            {
+                              type: 'if',
+                              cond: {
+                                type: 'g3d:isNear',
+                                aVar: 'heroi',
+                                bVar: 'item',
+                                dist: {
+                                  type: 'num',
+                                  value: 13,
+                                },
+                              },
+                              then: [
+                                {
+                                  type: 'g3d:moveTowards',
+                                  objVar: 'item',
+                                  x: {
+                                    type: 'g3d:getPos',
+                                    objVar: 'heroi',
+                                    axis: 'x',
+                                  },
+                                  y: {
+                                    type: 'num',
+                                    value: 0.65,
+                                  },
+                                  z: {
+                                    type: 'g3d:getPos',
+                                    objVar: 'heroi',
+                                    axis: 'z',
+                                  },
+                                  factor: {
+                                    type: 'num',
+                                    value: 0.05,
+                                  },
+                                },
+                              ],
+                              else: [
+                                {
+                                  type: 'g3d:spin',
+                                  objVar: 'item',
+                                  axis: 'y',
+                                  speed: {
+                                    type: 'num',
+                                    value: 1.6,
+                                  },
+                                },
+                              ],
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>=',
+                    left: {
+                      type: 'var',
+                      name: 'pontos',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 10,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'rodando',
+                      value: {
+                        type: 'bool',
+                        value: false,
+                      },
+                    },
+                    {
+                      type: 'g3d:playEffect',
+                      kind: 'coin',
+                    },
+                    {
+                      type: 'setProperty',
+                      targetId: 'result-title',
+                      property: 'textContent',
+                      value: {
+                        type: 'str',
+                        value: 'Herói lendário!',
+                      },
+                    },
+                    {
+                      type: 'setProperty',
+                      targetId: 'final-score',
+                      property: 'textContent',
+                      value: {
+                        type: 'var',
+                        name: 'pontos',
+                      },
+                    },
+                    {
+                      type: 'classOp',
+                      targetId: 'results',
+                      op: 'add',
+                      className: 'visivel',
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<=',
+                    left: {
+                      type: 'var',
+                      name: 'vida',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'rodando',
+                      value: {
+                        type: 'bool',
+                        value: false,
+                      },
+                    },
+                    {
+                      type: 'g3d:playEffect',
+                      kind: 'explosion',
+                    },
+                    {
+                      type: 'setProperty',
+                      targetId: 'result-title',
+                      property: 'textContent',
+                      value: {
+                        type: 'str',
+                        value: 'O herói caiu...',
+                      },
+                    },
+                    {
+                      type: 'setProperty',
+                      targetId: 'final-score',
+                      property: 'textContent',
+                      value: {
+                        type: 'var',
+                        name: 'pontos',
+                      },
+                    },
+                    {
+                      type: 'classOp',
+                      targetId: 'results',
+                      op: 'add',
+                      className: 'visivel',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3d:everySeconds',
+          secs: {
+            type: 'num',
+            value: 1.6,
+          },
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'var',
+                name: 'rodando',
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<',
+                    left: {
+                      type: 'g3d:countSwarm',
+                      swarmVar: 'monstros',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 6,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'var',
+                      name: 'angulo',
+                      value: {
+                        type: 'binop',
+                        op: '*',
+                        left: {
+                          type: 'randomFloat',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 6.283,
+                        },
+                      },
+                      kind: 'const',
+                    },
+                    {
+                      type: 'g3d:spawnInSwarm',
+                      swarmVar: 'monstros',
+                      originalVar: 'moldeMonstro',
+                      x: {
+                        type: 'binop',
+                        op: '*',
+                        left: {
+                          type: 'mathUnary',
+                          fn: 'cos',
+                          arg: {
+                            type: 'var',
+                            name: 'angulo',
+                          },
+                        },
+                        right: {
+                          type: 'num',
+                          value: 13,
+                        },
+                      },
+                      y: {
+                        type: 'num',
+                        value: 0.65,
+                      },
+                      z: {
+                        type: 'binop',
+                        op: '*',
+                        left: {
+                          type: 'mathUnary',
+                          fn: 'sin',
+                          arg: {
+                            type: 'var',
+                            name: 'angulo',
+                          },
+                        },
+                        right: {
+                          type: 'num',
+                          value: 13,
+                        },
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+}

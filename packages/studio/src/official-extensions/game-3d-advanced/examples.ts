@@ -15763,3 +15763,1129 @@ export const reunirRebanhoProfissionalExample: ExtensionExample = {
     },
   },
 }
+
+export const aLendaDoHeroiProfissionalExample: ExtensionExample = {
+  name: 'A Lenda do Herói Profissional',
+  experience: 'game',
+  description:
+    'RPG de ação no motor avançado: herói em 3ª pessoa com espada. Cada monstro tem cérebro próprio que vaga e persegue. Ataque de perto e derrote 10 antes dos corações acabarem.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 55,
+          },
+          sky: '#86efac',
+          ground: '#14532d',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'A Lenda do Herói Profissional',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Ande com WASD ou as setas e ataque com a barra de espaço ou o clique. Cada monstro tem cérebro próprio: vaga pela clareira e persegue você. Derrote 10 antes que seus corações acabem!',
+          },
+          button: {
+            type: 'str',
+            value: 'Começar a aventura',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Herói lendário!',
+          },
+          text: {
+            type: 'str',
+            value: 'Você derrotou os 10 monstros da clareira. A floresta está a salvo!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'O herói caiu...',
+          },
+          text: {
+            type: 'str',
+            value: 'Os monstros foram demais. Ataque de perto e recue quando estiver sem corações!',
+          },
+          button: {
+            type: 'str',
+            value: 'Tentar de novo',
+          },
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'heroi',
+          health: {
+            type: 'num',
+            value: 6,
+          },
+          speed: {
+            type: 'num',
+            value: 9,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#2563eb',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.9,
+              },
+              h: {
+                type: 'num',
+                value: 1.2,
+              },
+              d: {
+                type: 'num',
+                value: 0.9,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.6,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'brilho',
+              color: '#fcd34d',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.75,
+              },
+              h: {
+                type: 'num',
+                value: 0.75,
+              },
+              d: {
+                type: 'num',
+                value: 0.75,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1.45,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'metal',
+              color: '#e5e7eb',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.18,
+              },
+              h: {
+                type: 'num',
+                value: 1.1,
+              },
+              d: {
+                type: 'num',
+                value: 0.18,
+              },
+              x: {
+                type: 'num',
+                value: 0.65,
+              },
+              y: {
+                type: 'num',
+                value: 0.95,
+              },
+              z: {
+                type: 'num',
+                value: 0.25,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'monstro',
+          health: {
+            type: 'num',
+            value: 12,
+          },
+          speed: {
+            type: 'num',
+            value: 3.4,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'normal',
+              color: '#7c3aed',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 1.1,
+              },
+              h: {
+                type: 'num',
+                value: 1,
+              },
+              d: {
+                type: 'num',
+                value: 1.1,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.55,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'brilho',
+              color: '#f87171',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.3,
+              },
+              h: {
+                type: 'num',
+                value: 0.3,
+              },
+              d: {
+                type: 'num',
+                value: 0.3,
+              },
+              x: {
+                type: 'num',
+                value: 0.25,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: 0.5,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'brilho',
+              color: '#f87171',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.3,
+              },
+              h: {
+                type: 'num',
+                value: 0.3,
+              },
+              d: {
+                type: 'num',
+                value: 0.3,
+              },
+              x: {
+                type: 'num',
+                value: -0.25,
+              },
+              y: {
+                type: 'num',
+                value: 0.8,
+              },
+              z: {
+                type: 'num',
+                value: 0.5,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'cone',
+              material: 'normal',
+              color: '#4c1d95',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.5,
+              },
+              h: {
+                type: 'num',
+                value: 0.6,
+              },
+              d: {
+                type: 'num',
+                value: 0.5,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1.25,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:showHealthBar',
+          mold: 'heroi',
+          on: true,
+        },
+        {
+          type: 'g3k:showHealthBar',
+          mold: 'monstro',
+          on: true,
+        },
+        {
+          type: 'g3k:defineEffect',
+          name: 'golpe',
+          count: {
+            type: 'num',
+            value: 14,
+          },
+          colorFrom: '#fde68a',
+          colorTo: '#b45309',
+          spread: {
+            type: 'num',
+            value: 4,
+          },
+          sizeFrom: {
+            type: 'num',
+            value: 0.4,
+          },
+          sizeTo: {
+            type: 'num',
+            value: 0,
+          },
+          life: {
+            type: 'num',
+            value: 0.3,
+          },
+          gravity: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3k:defineEffect',
+          name: 'pofe',
+          count: {
+            type: 'num',
+            value: 20,
+          },
+          colorFrom: '#a78bfa',
+          colorTo: '#14532d',
+          spread: {
+            type: 'num',
+            value: 6,
+          },
+          sizeFrom: {
+            type: 'num',
+            value: 0.6,
+          },
+          sizeTo: {
+            type: 'num',
+            value: 0,
+          },
+          life: {
+            type: 'num',
+            value: 0.5,
+          },
+          gravity: {
+            type: 'num',
+            value: 2,
+          },
+        },
+        {
+          type: 'var',
+          name: 'derrotados',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'proximoMonstro',
+          value: {
+            type: 'num',
+            value: 1.5,
+          },
+        },
+        {
+          type: 'g3k:stateTimer',
+          mold: 'monstro',
+          state: 'parado',
+          sec: {
+            type: 'num',
+            value: 0.3,
+          },
+          next: 'vagando',
+        },
+      ],
+      events: [
+        {
+          type: 'g3k:onEnterState',
+          name: 'jogando',
+          body: [
+            {
+              type: 'assign',
+              name: 'derrotados',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'proximoMonstro',
+              value: {
+                type: 'num',
+                value: 1.5,
+              },
+            },
+            {
+              type: 'g3k:setSeed',
+              seed: {
+                type: 'num',
+                value: 9,
+              },
+            },
+            {
+              type: 'g3k:setAmbient',
+              intensity: {
+                type: 'num',
+                value: 0.6,
+              },
+            },
+            {
+              type: 'g3k:setFog',
+              color: '#86efac',
+              near: {
+                type: 'num',
+                value: 45,
+              },
+              far: {
+                type: 'num',
+                value: 110,
+              },
+            },
+            {
+              type: 'g3k:addLight',
+              color: '#fef9c3',
+              x: {
+                type: 'num',
+                value: -8,
+              },
+              y: {
+                type: 'num',
+                value: 16,
+              },
+              z: {
+                type: 'num',
+                value: -6,
+              },
+              intensity: {
+                type: 'num',
+                value: 1.2,
+              },
+            },
+            {
+              type: 'g3k:spawnNamed',
+              varName: 'heroi',
+              mold: 'heroi',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:cameraFollow',
+              charVar: 'heroi',
+              dist: {
+                type: 'num',
+                value: 14,
+              },
+              height: {
+                type: 'num',
+                value: 12,
+              },
+            },
+            {
+              type: 'g3k:cameraSmooth',
+              lambda: {
+                type: 'num',
+                value: 6,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'monstro',
+              x: {
+                type: 'num',
+                value: -12,
+              },
+              y: {
+                type: 'num',
+                value: 0.6,
+              },
+              z: {
+                type: 'num',
+                value: -8,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'monstro',
+              x: {
+                type: 'num',
+                value: 11,
+              },
+              y: {
+                type: 'num',
+                value: 0.6,
+              },
+              z: {
+                type: 'num',
+                value: -10,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'monstro',
+              x: {
+                type: 'num',
+                value: -9,
+              },
+              y: {
+                type: 'num',
+                value: 0.6,
+              },
+              z: {
+                type: 'num',
+                value: 11,
+              },
+            },
+            {
+              type: 'g3k:say',
+              charVar: 'heroi',
+              text: {
+                type: 'str',
+                value: 'Pela floresta!',
+              },
+              seconds: {
+                type: 'num',
+                value: 2,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEnterEntityState',
+          mold: 'monstro',
+          state: 'vagando',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:setEntityValue',
+              charVar: 'ela',
+              key: 'alvoX',
+              value: {
+                type: 'g3k:randomBetween',
+                from: {
+                  type: 'num',
+                  value: -18,
+                },
+                to: {
+                  type: 'num',
+                  value: 18,
+                },
+              },
+            },
+            {
+              type: 'g3k:setEntityValue',
+              charVar: 'ela',
+              key: 'alvoZ',
+              value: {
+                type: 'g3k:randomBetween',
+                from: {
+                  type: 'num',
+                  value: -18,
+                },
+                to: {
+                  type: 'num',
+                  value: 18,
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityDeath',
+          mold: 'monstro',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:burstOn',
+              effect: 'pofe',
+              charVar: 'ela',
+            },
+            {
+              type: 'g3k:playEffect',
+              fx: 'coin',
+            },
+            {
+              type: 'assign',
+              name: 'derrotados',
+              value: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'var',
+                  name: 'derrotados',
+                },
+                right: {
+                  type: 'num',
+                  value: 1,
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityDeath',
+          mold: 'heroi',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:burstOn',
+              effect: 'pofe',
+              charVar: 'ela',
+            },
+            {
+              type: 'g3k:playEffect',
+              fx: 'gameover',
+            },
+            {
+              type: 'g3k:setState',
+              name: 'fim',
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'heroi',
+          state: 'parado',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:moveWithKeys',
+              charVar: 'ela',
+              speed: {
+                type: 'num',
+                value: 9,
+              },
+            },
+            {
+              type: 'g3k:faceVelocity',
+              charVar: 'ela',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '||',
+                left: {
+                  type: 'g3k:keyDown',
+                  key: 'espaço',
+                },
+                right: {
+                  type: 'g3k:mousePressed',
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:forEachNear',
+                  charVar: 'ela',
+                  mold: 'monstro',
+                  radius: {
+                    type: 'num',
+                    value: 3,
+                  },
+                  itemName: 'alvo',
+                  body: [
+                    {
+                      type: 'g3k:hurt',
+                      charVar: 'alvo',
+                      amount: {
+                        type: 'num',
+                        value: 6,
+                      },
+                    },
+                    {
+                      type: 'g3k:burstOn',
+                      effect: 'golpe',
+                      charVar: 'alvo',
+                    },
+                    {
+                      type: 'g3k:playEffect',
+                      fx: 'hit',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'monstro',
+          state: 'vagando',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:seekPoint',
+              charVar: 'ela',
+              x: {
+                type: 'g3k:entityValue',
+                key: 'alvoX',
+                charVar: 'ela',
+              },
+              z: {
+                type: 'g3k:entityValue',
+                key: 'alvoZ',
+                charVar: 'ela',
+              },
+            },
+            {
+              type: 'g3k:faceVelocity',
+              charVar: 'ela',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:randomChance',
+                percent: {
+                  type: 'num',
+                  value: 1,
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:setEntityValue',
+                  charVar: 'ela',
+                  key: 'alvoX',
+                  value: {
+                    type: 'g3k:randomBetween',
+                    from: {
+                      type: 'num',
+                      value: -18,
+                    },
+                    to: {
+                      type: 'num',
+                      value: 18,
+                    },
+                  },
+                },
+                {
+                  type: 'g3k:setEntityValue',
+                  charVar: 'ela',
+                  key: 'alvoZ',
+                  value: {
+                    type: 'g3k:randomBetween',
+                    from: {
+                      type: 'num',
+                      value: -18,
+                    },
+                    to: {
+                      type: 'num',
+                      value: 18,
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'g3k:storeNearest',
+              varName: 'heroi',
+              mold: 'heroi',
+              charVar: 'ela',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: {
+                  type: 'g3k:exists',
+                  charVar: 'heroi',
+                },
+                right: {
+                  type: 'g3k:touches',
+                  aVar: 'ela',
+                  bVar: 'heroi',
+                  dist: {
+                    type: 'num',
+                    value: 9,
+                  },
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:setEntityState',
+                  charVar: 'ela',
+                  state: 'perseguindo',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'monstro',
+          state: 'perseguindo',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:storeNearest',
+              varName: 'heroi',
+              mold: 'heroi',
+              charVar: 'ela',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logicalNot',
+                value: {
+                  type: 'g3k:exists',
+                  charVar: 'heroi',
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:setEntityState',
+                  charVar: 'ela',
+                  state: 'vagando',
+                },
+              ],
+              else: [
+                {
+                  type: 'g3k:seekPoint',
+                  charVar: 'ela',
+                  x: {
+                    type: 'g3k:posOf',
+                    axis: 'x',
+                    charVar: 'heroi',
+                  },
+                  z: {
+                    type: 'g3k:posOf',
+                    axis: 'z',
+                    charVar: 'heroi',
+                  },
+                },
+                {
+                  type: 'g3k:faceVelocity',
+                  charVar: 'ela',
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'g3k:touches',
+                    aVar: 'ela',
+                    bVar: 'heroi',
+                    dist: {
+                      type: 'num',
+                      value: 1.6,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3k:hurt',
+                      charVar: 'heroi',
+                      amount: {
+                        type: 'num',
+                        value: 1,
+                      },
+                    },
+                    {
+                      type: 'g3k:burstOn',
+                      effect: 'pofe',
+                      charVar: 'heroi',
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logicalNot',
+                    value: {
+                      type: 'g3k:touches',
+                      aVar: 'ela',
+                      bVar: 'heroi',
+                      dist: {
+                        type: 'num',
+                        value: 13,
+                      },
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3k:setEntityState',
+                      charVar: 'ela',
+                      state: 'vagando',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'assign',
+              name: 'proximoMonstro',
+              value: {
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'var',
+                  name: 'proximoMonstro',
+                },
+                right: {
+                  type: 'var',
+                  name: 'dt',
+                },
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: {
+                  type: 'binop',
+                  op: '<=',
+                  left: {
+                    type: 'var',
+                    name: 'proximoMonstro',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 0,
+                  },
+                },
+                right: {
+                  type: 'binop',
+                  op: '<',
+                  left: {
+                    type: 'g3k:countAlive',
+                    mold: 'monstro',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 5,
+                  },
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'proximoMonstro',
+                  value: {
+                    type: 'num',
+                    value: 2.5,
+                  },
+                },
+                {
+                  type: 'g3k:spawn',
+                  mold: 'monstro',
+                  x: {
+                    type: 'g3k:randomBetween',
+                    from: {
+                      type: 'num',
+                      value: -18,
+                    },
+                    to: {
+                      type: 'num',
+                      value: 18,
+                    },
+                  },
+                  y: {
+                    type: 'num',
+                    value: 0.6,
+                  },
+                  z: {
+                    type: 'g3k:randomBetween',
+                    from: {
+                      type: 'num',
+                      value: -18,
+                    },
+                    to: {
+                      type: 'num',
+                      value: 18,
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'g3k:hudText',
+              slot: 'top-left',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '+',
+                  left: {
+                    type: 'str',
+                    value: 'Monstros: ',
+                  },
+                  right: {
+                    type: 'var',
+                    name: 'derrotados',
+                  },
+                },
+                right: {
+                  type: 'str',
+                  value: ' de 10',
+                },
+              },
+            },
+            {
+              type: 'g3k:hudText',
+              slot: 'top-right',
+              text: {
+                type: 'str',
+                value: 'Ataque com espaço ou clique',
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '>=',
+                left: {
+                  type: 'var',
+                  name: 'derrotados',
+                },
+                right: {
+                  type: 'num',
+                  value: 10,
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:playEffect',
+                  fx: 'win',
+                },
+                {
+                  type: 'g3k:setState',
+                  name: 'vitoria',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+}
