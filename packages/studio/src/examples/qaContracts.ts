@@ -521,6 +521,16 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['wasd', 'arrows', 'space'],
   },
   {
+    key: 'game-3d:Caça Estelar',
+    name: 'Caça Estelar',
+    experience: 'game',
+    promise:
+      'Uma nave que voa livre pela arena e dispara no inimigo mais perto para abater as naves inimigas.',
+    scenario:
+      'Voar com as setas ou WASD, disparar com a barra de espaço nas naves por perto, abater 10 antes que os 3 escudos acabem e recomeçar.',
+    interactions: ['wasd', 'arrows', 'space'],
+  },
+  {
     key: 'game-3d:Desvie dos blocos',
     name: 'Desvie dos blocos',
     experience: 'game',
@@ -598,6 +608,16 @@ export const EXAMPLE_QA_CONTRACTS = [
       'Monstros com cérebro próprio vagam e perseguem o herói; a espada os derrota de perto.',
     scenario:
       'Andar com WASD, atacar com espaço ou clique os monstros por perto, derrotar 10 antes dos corações acabarem e ver vitória ou derrota.',
+    interactions: ['wasd', 'arrows', 'space', 'click'],
+  },
+  {
+    key: 'game-3d-advanced:Caça Estelar Profissional',
+    name: 'Caça Estelar Profissional',
+    experience: 'game',
+    promise:
+      'Naves inimigas com cérebro próprio vagam, perseguem e fogem; o tiro pra frente as derruba.',
+    scenario:
+      'Voar com WASD, atirar com espaço ou clique nas naves inimigas, abater 10 antes dos escudos acabarem e ver vitória ou derrota.',
     interactions: ['wasd', 'arrows', 'space', 'click'],
   },
   {
@@ -870,6 +890,16 @@ export const EXAMPLE_QA_CONTRACTS = [
       'O RPG de ação feito só com o núcleo Canvas 3D: um herói que ataca com a espada os monstros que perseguem.',
     scenario:
       'Andar com as setas ou WASD, atacar com a barra de espaço os monstros por perto, derrotar 10 e ver o céu ficar dourado.',
+    interactions: ['wasd', 'arrows', 'space'],
+  },
+  {
+    key: 'core:Caça Estelar (na mão)',
+    name: 'Caça Estelar (na mão)',
+    experience: 'game',
+    promise:
+      'A batalha espacial feita só com o núcleo Canvas 3D: uma nave que voa livre e dispara para abater as naves inimigas.',
+    scenario:
+      'Voar com as setas ou WASD, disparar com a barra de espaço nas naves inimigas, abater 10 e ver o céu ficar dourado.',
     interactions: ['wasd', 'arrows', 'space'],
   },
   {

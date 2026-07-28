@@ -16889,3 +16889,1386 @@ export const aLendaDoHeroiProfissionalExample: ExtensionExample = {
     },
   },
 }
+
+export const cacaEstelarProfissionalExample: ExtensionExample = {
+  name: 'Caça Estelar Profissional',
+  experience: 'game',
+  description:
+    'Dogfight no motor avançado: pilote em voo livre e atire pra frente. As naves inimigas têm cérebro próprio: vagam, perseguem e fogem quando atingidas. Abata 10 antes dos escudos acabarem.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 60,
+          },
+          sky: '#0b1030',
+          ground: '#111827',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: true,
+          strength: {
+            type: 'num',
+            value: 1.3,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Caça Estelar Profissional',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Voe com WASD ou as setas e atire com a barra de espaço ou o clique. As naves inimigas vagam, perseguem e fogem quando atingidas. Abata 10 antes que os escudos acabem!',
+          },
+          button: {
+            type: 'str',
+            value: 'Decolar',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Ás dos céus!',
+          },
+          text: {
+            type: 'str',
+            value: 'Você abateu as 10 naves inimigas. O espaço está seguro!',
+          },
+          button: {
+            type: 'str',
+            value: 'Voar de novo',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'Nave abatida...',
+          },
+          text: {
+            type: 'str',
+            value: 'Os inimigos foram demais. Persiga as naves que fogem e desvie das que atacam!',
+          },
+          button: {
+            type: 'str',
+            value: 'Tentar de novo',
+          },
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'nave',
+          health: {
+            type: 'num',
+            value: 5,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#38bdf8',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.8,
+              },
+              h: {
+                type: 'num',
+                value: 0.4,
+              },
+              d: {
+                type: 'num',
+                value: 1.6,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#0ea5e9',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 2.2,
+              },
+              h: {
+                type: 'num',
+                value: 0.15,
+              },
+              d: {
+                type: 'num',
+                value: 0.6,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: -0.1,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'brilho',
+              color: '#e0f2fe',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.5,
+              },
+              h: {
+                type: 'num',
+                value: 0.4,
+              },
+              d: {
+                type: 'num',
+                value: 0.5,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.25,
+              },
+              z: {
+                type: 'num',
+                value: 0.3,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'cone',
+              material: 'brilho',
+              color: '#fca5a5',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.3,
+              },
+              h: {
+                type: 'num',
+                value: 0.5,
+              },
+              d: {
+                type: 'num',
+                value: 0.3,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: -1,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'caca',
+          health: {
+            type: 'num',
+            value: 10,
+          },
+          speed: {
+            type: 'num',
+            value: 6,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#ef4444',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.7,
+              },
+              h: {
+                type: 'num',
+                value: 0.4,
+              },
+              d: {
+                type: 'num',
+                value: 1.3,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#b91c1c',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 1.8,
+              },
+              h: {
+                type: 'num',
+                value: 0.15,
+              },
+              d: {
+                type: 'num',
+                value: 0.5,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'brilho',
+              color: '#fecaca',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.35,
+              },
+              h: {
+                type: 'num',
+                value: 0.35,
+              },
+              d: {
+                type: 'num',
+                value: 0.35,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.2,
+              },
+              z: {
+                type: 'num',
+                value: 0.3,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'tiro',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'sphere',
+              material: 'brilho',
+              color: '#fde047',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.3,
+              },
+              h: {
+                type: 'num',
+                value: 0.3,
+              },
+              d: {
+                type: 'num',
+                value: 0.6,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:showHealthBar',
+          mold: 'nave',
+          on: true,
+        },
+        {
+          type: 'g3k:showHealthBar',
+          mold: 'caca',
+          on: true,
+        },
+        {
+          type: 'g3k:makeTrigger',
+          mold: 'caca',
+        },
+        {
+          type: 'g3k:defineEffect',
+          name: 'faisca',
+          count: {
+            type: 'num',
+            value: 10,
+          },
+          colorFrom: '#fde047',
+          colorTo: '#b45309',
+          spread: {
+            type: 'num',
+            value: 3,
+          },
+          sizeFrom: {
+            type: 'num',
+            value: 0.3,
+          },
+          sizeTo: {
+            type: 'num',
+            value: 0,
+          },
+          life: {
+            type: 'num',
+            value: 0.3,
+          },
+          gravity: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3k:defineEffect',
+          name: 'estouro',
+          count: {
+            type: 'num',
+            value: 24,
+          },
+          colorFrom: '#f87171',
+          colorTo: '#0b1030',
+          spread: {
+            type: 'num',
+            value: 7,
+          },
+          sizeFrom: {
+            type: 'num',
+            value: 0.7,
+          },
+          sizeTo: {
+            type: 'num',
+            value: 0,
+          },
+          life: {
+            type: 'num',
+            value: 0.6,
+          },
+          gravity: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'pontos',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'proximaCaca',
+          value: {
+            type: 'num',
+            value: 1,
+          },
+        },
+        {
+          type: 'var',
+          name: 'recarga',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3k:stateTimer',
+          mold: 'tiro',
+          state: 'parado',
+          sec: {
+            type: 'num',
+            value: 1.4,
+          },
+          next: 'sumir',
+        },
+        {
+          type: 'g3k:stateTimer',
+          mold: 'caca',
+          state: 'parado',
+          sec: {
+            type: 'num',
+            value: 0.3,
+          },
+          next: 'vagando',
+        },
+        {
+          type: 'g3k:stateTimer',
+          mold: 'caca',
+          state: 'fugindo',
+          sec: {
+            type: 'num',
+            value: 1.5,
+          },
+          next: 'perseguindo',
+        },
+      ],
+      events: [
+        {
+          type: 'g3k:onEnterState',
+          name: 'jogando',
+          body: [
+            {
+              type: 'assign',
+              name: 'pontos',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'proximaCaca',
+              value: {
+                type: 'num',
+                value: 1,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'recarga',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:setSeed',
+              seed: {
+                type: 'num',
+                value: 4,
+              },
+            },
+            {
+              type: 'g3k:setAmbient',
+              intensity: {
+                type: 'num',
+                value: 0.5,
+              },
+            },
+            {
+              type: 'g3k:setFog',
+              color: '#0b1030',
+              near: {
+                type: 'num',
+                value: 50,
+              },
+              far: {
+                type: 'num',
+                value: 130,
+              },
+            },
+            {
+              type: 'g3k:addLight',
+              color: '#a5b4fc',
+              x: {
+                type: 'num',
+                value: -10,
+              },
+              y: {
+                type: 'num',
+                value: 18,
+              },
+              z: {
+                type: 'num',
+                value: -8,
+              },
+              intensity: {
+                type: 'num',
+                value: 1.1,
+              },
+            },
+            {
+              type: 'g3k:spawnNamed',
+              varName: 'nave',
+              mold: 'nave',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 1,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:cameraFollow',
+              charVar: 'nave',
+              dist: {
+                type: 'num',
+                value: 13,
+              },
+              height: {
+                type: 'num',
+                value: 7,
+              },
+            },
+            {
+              type: 'g3k:cameraSmooth',
+              lambda: {
+                type: 'num',
+                value: 6,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'caca',
+              x: {
+                type: 'num',
+                value: -14,
+              },
+              y: {
+                type: 'num',
+                value: 1,
+              },
+              z: {
+                type: 'num',
+                value: -12,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'caca',
+              x: {
+                type: 'num',
+                value: 13,
+              },
+              y: {
+                type: 'num',
+                value: 1,
+              },
+              z: {
+                type: 'num',
+                value: -10,
+              },
+            },
+            {
+              type: 'g3k:spawn',
+              mold: 'caca',
+              x: {
+                type: 'num',
+                value: -8,
+              },
+              y: {
+                type: 'num',
+                value: 1,
+              },
+              z: {
+                type: 'num',
+                value: 13,
+              },
+            },
+            {
+              type: 'g3k:say',
+              charVar: 'nave',
+              text: {
+                type: 'str',
+                value: 'Ao ataque!',
+              },
+              seconds: {
+                type: 'num',
+                value: 2,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEnterEntityState',
+          mold: 'tiro',
+          state: 'sumir',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:recycle',
+              charVar: 'ela',
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEnterEntityState',
+          mold: 'caca',
+          state: 'vagando',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:setEntityValue',
+              charVar: 'ela',
+              key: 'alvoX',
+              value: {
+                type: 'g3k:randomBetween',
+                from: {
+                  type: 'num',
+                  value: -20,
+                },
+                to: {
+                  type: 'num',
+                  value: 20,
+                },
+              },
+            },
+            {
+              type: 'g3k:setEntityValue',
+              charVar: 'ela',
+              key: 'alvoZ',
+              value: {
+                type: 'g3k:randomBetween',
+                from: {
+                  type: 'num',
+                  value: -20,
+                },
+                to: {
+                  type: 'num',
+                  value: 20,
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onHurt',
+          mold: 'caca',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:setEntityState',
+              charVar: 'ela',
+              state: 'fugindo',
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEnterEntityState',
+          mold: 'caca',
+          state: 'fugindo',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:setEntityValue',
+              charVar: 'ela',
+              key: 'alvoX',
+              value: {
+                type: 'g3k:randomBetween',
+                from: {
+                  type: 'num',
+                  value: -22,
+                },
+                to: {
+                  type: 'num',
+                  value: 22,
+                },
+              },
+            },
+            {
+              type: 'g3k:setEntityValue',
+              charVar: 'ela',
+              key: 'alvoZ',
+              value: {
+                type: 'g3k:randomBetween',
+                from: {
+                  type: 'num',
+                  value: -22,
+                },
+                to: {
+                  type: 'num',
+                  value: 22,
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onOverlap',
+          mold: 'caca',
+          zoneName: 'zona',
+          whoName: 'quem',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:isMold',
+                charVar: 'quem',
+                mold: 'tiro',
+              },
+              then: [
+                {
+                  type: 'g3k:hurt',
+                  charVar: 'zona',
+                  amount: {
+                    type: 'num',
+                    value: 5,
+                  },
+                },
+                {
+                  type: 'g3k:burstOn',
+                  effect: 'faisca',
+                  charVar: 'quem',
+                },
+                {
+                  type: 'g3k:playEffect',
+                  fx: 'hit',
+                },
+                {
+                  type: 'g3k:recycle',
+                  charVar: 'quem',
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:isMold',
+                charVar: 'quem',
+                mold: 'nave',
+              },
+              then: [
+                {
+                  type: 'g3k:hurt',
+                  charVar: 'quem',
+                  amount: {
+                    type: 'num',
+                    value: 1,
+                  },
+                },
+                {
+                  type: 'g3k:burstOn',
+                  effect: 'estouro',
+                  charVar: 'quem',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityDeath',
+          mold: 'caca',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:burstOn',
+              effect: 'estouro',
+              charVar: 'ela',
+            },
+            {
+              type: 'g3k:playEffect',
+              fx: 'coin',
+            },
+            {
+              type: 'assign',
+              name: 'pontos',
+              value: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'var',
+                  name: 'pontos',
+                },
+                right: {
+                  type: 'num',
+                  value: 1,
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityDeath',
+          mold: 'nave',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:burstOn',
+              effect: 'estouro',
+              charVar: 'ela',
+            },
+            {
+              type: 'g3k:playEffect',
+              fx: 'gameover',
+            },
+            {
+              type: 'g3k:setState',
+              name: 'fim',
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'nave',
+          state: 'parado',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:moveWithKeys',
+              charVar: 'ela',
+              speed: {
+                type: 'num',
+                value: 14,
+              },
+            },
+            {
+              type: 'g3k:faceVelocity',
+              charVar: 'ela',
+            },
+            {
+              type: 'assign',
+              name: 'recarga',
+              value: {
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'var',
+                  name: 'recarga',
+                },
+                right: {
+                  type: 'var',
+                  name: 'dt',
+                },
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: {
+                  type: 'logical',
+                  op: '||',
+                  left: {
+                    type: 'g3k:keyDown',
+                    key: 'espaço',
+                  },
+                  right: {
+                    type: 'g3k:mousePressed',
+                  },
+                },
+                right: {
+                  type: 'binop',
+                  op: '<=',
+                  left: {
+                    type: 'var',
+                    name: 'recarga',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 0,
+                  },
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'recarga',
+                  value: {
+                    type: 'num',
+                    value: 0.35,
+                  },
+                },
+                {
+                  type: 'g3k:spawnFrom',
+                  mold: 'tiro',
+                  fromVar: 'ela',
+                },
+                {
+                  type: 'g3k:playEffect',
+                  fx: 'laser',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'tiro',
+          state: 'parado',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:moveForward',
+              charVar: 'ela',
+              speed: {
+                type: 'num',
+                value: 45,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'caca',
+          state: 'vagando',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:seekPoint',
+              charVar: 'ela',
+              x: {
+                type: 'g3k:entityValue',
+                key: 'alvoX',
+                charVar: 'ela',
+              },
+              z: {
+                type: 'g3k:entityValue',
+                key: 'alvoZ',
+                charVar: 'ela',
+              },
+            },
+            {
+              type: 'g3k:faceVelocity',
+              charVar: 'ela',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:randomChance',
+                percent: {
+                  type: 'num',
+                  value: 1,
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:setEntityValue',
+                  charVar: 'ela',
+                  key: 'alvoX',
+                  value: {
+                    type: 'g3k:randomBetween',
+                    from: {
+                      type: 'num',
+                      value: -20,
+                    },
+                    to: {
+                      type: 'num',
+                      value: 20,
+                    },
+                  },
+                },
+                {
+                  type: 'g3k:setEntityValue',
+                  charVar: 'ela',
+                  key: 'alvoZ',
+                  value: {
+                    type: 'g3k:randomBetween',
+                    from: {
+                      type: 'num',
+                      value: -20,
+                    },
+                    to: {
+                      type: 'num',
+                      value: 20,
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'g3k:storeNearest',
+              varName: 'nave',
+              mold: 'nave',
+              charVar: 'ela',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: {
+                  type: 'g3k:exists',
+                  charVar: 'nave',
+                },
+                right: {
+                  type: 'g3k:touches',
+                  aVar: 'ela',
+                  bVar: 'nave',
+                  dist: {
+                    type: 'num',
+                    value: 14,
+                  },
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:setEntityState',
+                  charVar: 'ela',
+                  state: 'perseguindo',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'caca',
+          state: 'perseguindo',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:storeNearest',
+              varName: 'nave',
+              mold: 'nave',
+              charVar: 'ela',
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logicalNot',
+                value: {
+                  type: 'g3k:exists',
+                  charVar: 'nave',
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:setEntityState',
+                  charVar: 'ela',
+                  state: 'vagando',
+                },
+              ],
+              else: [
+                {
+                  type: 'g3k:seekPoint',
+                  charVar: 'ela',
+                  x: {
+                    type: 'g3k:posOf',
+                    axis: 'x',
+                    charVar: 'nave',
+                  },
+                  z: {
+                    type: 'g3k:posOf',
+                    axis: 'z',
+                    charVar: 'nave',
+                  },
+                },
+                {
+                  type: 'g3k:faceVelocity',
+                  charVar: 'ela',
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logicalNot',
+                    value: {
+                      type: 'g3k:touches',
+                      aVar: 'ela',
+                      bVar: 'nave',
+                      dist: {
+                        type: 'num',
+                        value: 22,
+                      },
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3k:setEntityState',
+                      charVar: 'ela',
+                      state: 'vagando',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'caca',
+          state: 'fugindo',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'g3k:seekPoint',
+              charVar: 'ela',
+              x: {
+                type: 'g3k:entityValue',
+                key: 'alvoX',
+                charVar: 'ela',
+              },
+              z: {
+                type: 'g3k:entityValue',
+                key: 'alvoZ',
+                charVar: 'ela',
+              },
+            },
+            {
+              type: 'g3k:faceVelocity',
+              charVar: 'ela',
+            },
+          ],
+        },
+        {
+          type: 'g3k:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'assign',
+              name: 'proximaCaca',
+              value: {
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'var',
+                  name: 'proximaCaca',
+                },
+                right: {
+                  type: 'var',
+                  name: 'dt',
+                },
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '&&',
+                left: {
+                  type: 'binop',
+                  op: '<=',
+                  left: {
+                    type: 'var',
+                    name: 'proximaCaca',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 0,
+                  },
+                },
+                right: {
+                  type: 'binop',
+                  op: '<',
+                  left: {
+                    type: 'g3k:countAlive',
+                    mold: 'caca',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 5,
+                  },
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'proximaCaca',
+                  value: {
+                    type: 'num',
+                    value: 2,
+                  },
+                },
+                {
+                  type: 'g3k:spawn',
+                  mold: 'caca',
+                  x: {
+                    type: 'g3k:randomBetween',
+                    from: {
+                      type: 'num',
+                      value: -20,
+                    },
+                    to: {
+                      type: 'num',
+                      value: 20,
+                    },
+                  },
+                  y: {
+                    type: 'num',
+                    value: 1,
+                  },
+                  z: {
+                    type: 'g3k:randomBetween',
+                    from: {
+                      type: 'num',
+                      value: -20,
+                    },
+                    to: {
+                      type: 'num',
+                      value: 20,
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'g3k:cullFar',
+              mold: 'tiro',
+              dist: {
+                type: 'num',
+                value: 60,
+              },
+            },
+            {
+              type: 'g3k:hudText',
+              slot: 'top-left',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '+',
+                  left: {
+                    type: 'str',
+                    value: 'Naves: ',
+                  },
+                  right: {
+                    type: 'var',
+                    name: 'pontos',
+                  },
+                },
+                right: {
+                  type: 'str',
+                  value: ' de 10',
+                },
+              },
+            },
+            {
+              type: 'g3k:hudText',
+              slot: 'top-right',
+              text: {
+                type: 'str',
+                value: 'Atire com espaço ou clique',
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '>=',
+                left: {
+                  type: 'var',
+                  name: 'pontos',
+                },
+                right: {
+                  type: 'num',
+                  value: 10,
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:playEffect',
+                  fx: 'win',
+                },
+                {
+                  type: 'g3k:setState',
+                  name: 'vitoria',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+}

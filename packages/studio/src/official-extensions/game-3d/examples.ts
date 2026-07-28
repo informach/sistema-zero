@@ -9405,3 +9405,1109 @@ export const aLendaDoHeroiBasicoExample: ExtensionExample = {
     },
   },
 }
+
+export const cacaEstelarBasicoExample: ExtensionExample = {
+  name: 'Caça Estelar',
+  experience: 'game',
+  description:
+    'Uma nave numa arena espacial cheia de inimigos. Voe livre com as setas e dispare no inimigo mais perto com a barra de espaço. As naves vagam e perseguem você. Abata 10 antes que os 3 escudos acabem!',
+  ir: {
+    html: [
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'score',
+        text: 'Naves: 0 de 10',
+      },
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'shields',
+        text: 'Escudos: 3',
+      },
+      {
+        type: 'element',
+        tag: 'div',
+        id: 'results',
+        children: [
+          {
+            type: 'element',
+            tag: 'div',
+            id: 'results-box',
+            children: [
+              {
+                type: 'element',
+                tag: 'h1',
+                id: 'result-title',
+                text: 'Fim da patrulha',
+              },
+              {
+                type: 'element',
+                tag: 'p',
+                children: [
+                  {
+                    type: 'text',
+                    text: 'Naves abatidas: ',
+                  },
+                  {
+                    type: 'element',
+                    tag: 'span',
+                    id: 'final-score',
+                  },
+                ],
+              },
+              {
+                type: 'element',
+                tag: 'button',
+                id: 'retry',
+                text: 'Jogar de novo',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    css: [
+      {
+        type: 'googleFont',
+        family: 'Press Start 2P',
+      },
+      {
+        selector: 'body',
+        declarations: {
+          margin: '0',
+          overflow: 'hidden',
+          'font-family': '"Press Start 2P", cursive',
+        },
+      },
+      {
+        selector: 'canvas',
+        declarations: {
+          display: 'block',
+          width: '100vw',
+          height: '100vh',
+        },
+      },
+      {
+        selector: '#score',
+        declarations: {
+          position: 'absolute',
+          top: '20px',
+          left: '20px',
+          'font-size': '1.1em',
+          color: 'white',
+        },
+      },
+      {
+        selector: '#shields',
+        declarations: {
+          position: 'absolute',
+          top: '20px',
+          right: '20px',
+          'font-size': '1.1em',
+          color: '#22d3ee',
+        },
+      },
+      {
+        selector: '#results',
+        declarations: {
+          position: 'absolute',
+          top: '0',
+          left: '0',
+          'min-width': '100%',
+          'min-height': '100%',
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          visibility: 'hidden',
+        },
+      },
+      {
+        selector: '#results.visivel',
+        declarations: {
+          visibility: 'visible',
+        },
+      },
+      {
+        selector: '#results-box',
+        declarations: {
+          display: 'flex',
+          'flex-direction': 'column',
+          'align-items': 'center',
+          'background-color': 'white',
+          color: '#050818',
+          padding: '20px',
+          'text-align': 'center',
+        },
+      },
+      {
+        selector: '#results-box button',
+        declarations: {
+          'background-color': '#22d3ee',
+          color: 'white',
+          padding: '16px 32px',
+          'font-family': 'inherit',
+          cursor: 'pointer',
+        },
+      },
+    ],
+    extensions: [
+      {
+        extensionId: 'game-3d',
+      },
+    ],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'g3d:createFullscreenScene',
+          varName: 'cena',
+          bg: '#050818',
+        },
+        {
+          type: 'g3d:setSky',
+          worldVar: 'cena',
+          top: '#0b1030',
+          bottom: '#1e1b4b',
+        },
+        {
+          type: 'g3d:topCamera',
+          worldVar: 'cena',
+          followVar: '',
+        },
+        {
+          type: 'g3d:setFog',
+          worldVar: 'cena',
+          color: '#050818',
+          near: {
+            type: 'num',
+            value: 44,
+          },
+          far: {
+            type: 'num',
+            value: 130,
+          },
+        },
+        {
+          type: 'g3d:addSunLight',
+          worldVar: 'cena',
+          color: '#a5b4fc',
+          intensity: {
+            type: 'num',
+            value: 1,
+          },
+        },
+        {
+          type: 'g3d:createBlock',
+          varName: 'chao',
+          worldVar: 'cena',
+          width: {
+            type: 'num',
+            value: 36,
+          },
+          height: {
+            type: 'num',
+            value: 1,
+          },
+          depth: {
+            type: 'num',
+            value: 36,
+          },
+          color: '#0f172a',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'chao',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: -0.5,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'nucleo',
+          worldVar: 'cena',
+          size: {
+            type: 'num',
+            value: 2,
+          },
+          color: '#38bdf8',
+        },
+        {
+          type: 'g3d:setMaterial',
+          objVar: 'nucleo',
+          kind: 'glow',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'nucleo',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: -0.4,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'nave',
+          worldVar: 'cena',
+          size: {
+            type: 'num',
+            value: 1.2,
+          },
+          color: '#22d3ee',
+        },
+        {
+          type: 'g3d:setPosition',
+          objVar: 'nave',
+          x: {
+            type: 'num',
+            value: 0,
+          },
+          y: {
+            type: 'num',
+            value: 0.6,
+          },
+          z: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'g3d:createBox',
+          varName: 'moldeCaca',
+          worldVar: 'cena',
+          size: {
+            type: 'num',
+            value: 1,
+          },
+          color: '#ef4444',
+        },
+        {
+          type: 'g3d:setVisible',
+          objVar: 'moldeCaca',
+          mode: 'hide',
+        },
+        {
+          type: 'g3d:createSwarm',
+          varName: 'cacas',
+          worldVar: 'cena',
+        },
+        {
+          type: 'var',
+          name: 'pontos',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'escudo',
+          value: {
+            type: 'num',
+            value: 3,
+          },
+        },
+        {
+          type: 'var',
+          name: 'naveX',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'naveZ',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'rodando',
+          value: {
+            type: 'bool',
+            value: true,
+          },
+        },
+      ],
+      events: [
+        {
+          type: 'event',
+          target: 'retry',
+          event: 'click',
+          body: [
+            {
+              type: 'g3d:forEachInSwarm',
+              swarmVar: 'cacas',
+              itemName: 'item',
+              body: [
+                {
+                  type: 'g3d:removeFromSwarm',
+                  swarmVar: 'cacas',
+                  itemVar: 'item',
+                },
+              ],
+            },
+            {
+              type: 'assign',
+              name: 'pontos',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'escudo',
+              value: {
+                type: 'num',
+                value: 3,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'naveX',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'naveZ',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'rodando',
+              value: {
+                type: 'bool',
+                value: true,
+              },
+            },
+            {
+              type: 'g3d:setPosition',
+              objVar: 'nave',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.6,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'setProperty',
+              targetId: 'score',
+              property: 'textContent',
+              value: {
+                type: 'str',
+                value: 'Naves: 0 de 10',
+              },
+            },
+            {
+              type: 'setProperty',
+              targetId: 'shields',
+              property: 'textContent',
+              value: {
+                type: 'str',
+                value: 'Escudos: 3',
+              },
+            },
+            {
+              type: 'classOp',
+              targetId: 'results',
+              op: 'remove',
+              className: 'visivel',
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3d:animate',
+          worldVar: 'cena',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'var',
+                name: 'rodando',
+              },
+              then: [
+                {
+                  type: 'g3d:spin',
+                  objVar: 'nucleo',
+                  axis: 'y',
+                  speed: {
+                    type: 'num',
+                    value: 0.6,
+                  },
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logical',
+                    op: '||',
+                    left: {
+                      type: 'g3d:keyDown',
+                      key: 'ArrowLeft',
+                    },
+                    right: {
+                      type: 'g3d:keyDown',
+                      key: 'KeyA',
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'naveX',
+                      value: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'var',
+                          name: 'naveX',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 0.18,
+                        },
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logical',
+                    op: '||',
+                    left: {
+                      type: 'g3d:keyDown',
+                      key: 'ArrowRight',
+                    },
+                    right: {
+                      type: 'g3d:keyDown',
+                      key: 'KeyD',
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'naveX',
+                      value: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'var',
+                          name: 'naveX',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 0.18,
+                        },
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logical',
+                    op: '||',
+                    left: {
+                      type: 'g3d:keyDown',
+                      key: 'ArrowUp',
+                    },
+                    right: {
+                      type: 'g3d:keyDown',
+                      key: 'KeyW',
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'naveZ',
+                      value: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'var',
+                          name: 'naveZ',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 0.18,
+                        },
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logical',
+                    op: '||',
+                    left: {
+                      type: 'g3d:keyDown',
+                      key: 'ArrowDown',
+                    },
+                    right: {
+                      type: 'g3d:keyDown',
+                      key: 'KeyS',
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'naveZ',
+                      value: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'var',
+                          name: 'naveZ',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 0.18,
+                        },
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<',
+                    left: {
+                      type: 'var',
+                      name: 'naveX',
+                    },
+                    right: {
+                      type: 'num',
+                      value: -16,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'naveX',
+                      value: {
+                        type: 'num',
+                        value: -16,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'var',
+                      name: 'naveX',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 16,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'naveX',
+                      value: {
+                        type: 'num',
+                        value: 16,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<',
+                    left: {
+                      type: 'var',
+                      name: 'naveZ',
+                    },
+                    right: {
+                      type: 'num',
+                      value: -16,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'naveZ',
+                      value: {
+                        type: 'num',
+                        value: -16,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'var',
+                      name: 'naveZ',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 16,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'naveZ',
+                      value: {
+                        type: 'num',
+                        value: 16,
+                      },
+                    },
+                  ],
+                },
+                {
+                  type: 'g3d:setPosition',
+                  objVar: 'nave',
+                  x: {
+                    type: 'var',
+                    name: 'naveX',
+                  },
+                  y: {
+                    type: 'num',
+                    value: 0.6,
+                  },
+                  z: {
+                    type: 'var',
+                    name: 'naveZ',
+                  },
+                },
+                {
+                  type: 'g3d:forEachInSwarm',
+                  swarmVar: 'cacas',
+                  itemName: 'item',
+                  body: [
+                    {
+                      type: 'if',
+                      cond: {
+                        type: 'logical',
+                        op: '&&',
+                        left: {
+                          type: 'g3d:keyDown',
+                          key: 'Space',
+                        },
+                        right: {
+                          type: 'g3d:isNear',
+                          aVar: 'nave',
+                          bVar: 'item',
+                          dist: {
+                            type: 'num',
+                            value: 2.6,
+                          },
+                        },
+                      },
+                      then: [
+                        {
+                          type: 'g3d:removeFromSwarm',
+                          swarmVar: 'cacas',
+                          itemVar: 'item',
+                        },
+                        {
+                          type: 'assign',
+                          name: 'pontos',
+                          value: {
+                            type: 'binop',
+                            op: '+',
+                            left: {
+                              type: 'var',
+                              name: 'pontos',
+                            },
+                            right: {
+                              type: 'num',
+                              value: 1,
+                            },
+                          },
+                        },
+                        {
+                          type: 'g3d:playEffect',
+                          kind: 'coin',
+                        },
+                        {
+                          type: 'setProperty',
+                          targetId: 'score',
+                          property: 'textContent',
+                          value: {
+                            type: 'binop',
+                            op: '+',
+                            left: {
+                              type: 'binop',
+                              op: '+',
+                              left: {
+                                type: 'str',
+                                value: 'Naves: ',
+                              },
+                              right: {
+                                type: 'var',
+                                name: 'pontos',
+                              },
+                            },
+                            right: {
+                              type: 'str',
+                              value: ' de 10',
+                            },
+                          },
+                        },
+                      ],
+                      else: [
+                        {
+                          type: 'if',
+                          cond: {
+                            type: 'g3d:isNear',
+                            aVar: 'nave',
+                            bVar: 'item',
+                            dist: {
+                              type: 'num',
+                              value: 1.4,
+                            },
+                          },
+                          then: [
+                            {
+                              type: 'g3d:removeFromSwarm',
+                              swarmVar: 'cacas',
+                              itemVar: 'item',
+                            },
+                            {
+                              type: 'assign',
+                              name: 'escudo',
+                              value: {
+                                type: 'binop',
+                                op: '-',
+                                left: {
+                                  type: 'var',
+                                  name: 'escudo',
+                                },
+                                right: {
+                                  type: 'num',
+                                  value: 1,
+                                },
+                              },
+                            },
+                            {
+                              type: 'g3d:playEffect',
+                              kind: 'hit',
+                            },
+                            {
+                              type: 'setProperty',
+                              targetId: 'shields',
+                              property: 'textContent',
+                              value: {
+                                type: 'binop',
+                                op: '+',
+                                left: {
+                                  type: 'str',
+                                  value: 'Escudos: ',
+                                },
+                                right: {
+                                  type: 'var',
+                                  name: 'escudo',
+                                },
+                              },
+                            },
+                          ],
+                          else: [
+                            {
+                              type: 'if',
+                              cond: {
+                                type: 'g3d:isNear',
+                                aVar: 'nave',
+                                bVar: 'item',
+                                dist: {
+                                  type: 'num',
+                                  value: 13,
+                                },
+                              },
+                              then: [
+                                {
+                                  type: 'g3d:moveTowards',
+                                  objVar: 'item',
+                                  x: {
+                                    type: 'g3d:getPos',
+                                    objVar: 'nave',
+                                    axis: 'x',
+                                  },
+                                  y: {
+                                    type: 'num',
+                                    value: 0.6,
+                                  },
+                                  z: {
+                                    type: 'g3d:getPos',
+                                    objVar: 'nave',
+                                    axis: 'z',
+                                  },
+                                  factor: {
+                                    type: 'num',
+                                    value: 0.06,
+                                  },
+                                },
+                              ],
+                              else: [
+                                {
+                                  type: 'g3d:spin',
+                                  objVar: 'item',
+                                  axis: 'y',
+                                  speed: {
+                                    type: 'num',
+                                    value: 1.6,
+                                  },
+                                },
+                              ],
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>=',
+                    left: {
+                      type: 'var',
+                      name: 'pontos',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 10,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'rodando',
+                      value: {
+                        type: 'bool',
+                        value: false,
+                      },
+                    },
+                    {
+                      type: 'g3d:playEffect',
+                      kind: 'coin',
+                    },
+                    {
+                      type: 'setProperty',
+                      targetId: 'result-title',
+                      property: 'textContent',
+                      value: {
+                        type: 'str',
+                        value: 'Ás dos céus!',
+                      },
+                    },
+                    {
+                      type: 'setProperty',
+                      targetId: 'final-score',
+                      property: 'textContent',
+                      value: {
+                        type: 'var',
+                        name: 'pontos',
+                      },
+                    },
+                    {
+                      type: 'classOp',
+                      targetId: 'results',
+                      op: 'add',
+                      className: 'visivel',
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<=',
+                    left: {
+                      type: 'var',
+                      name: 'escudo',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'rodando',
+                      value: {
+                        type: 'bool',
+                        value: false,
+                      },
+                    },
+                    {
+                      type: 'g3d:playEffect',
+                      kind: 'explosion',
+                    },
+                    {
+                      type: 'setProperty',
+                      targetId: 'result-title',
+                      property: 'textContent',
+                      value: {
+                        type: 'str',
+                        value: 'Nave abatida...',
+                      },
+                    },
+                    {
+                      type: 'setProperty',
+                      targetId: 'final-score',
+                      property: 'textContent',
+                      value: {
+                        type: 'var',
+                        name: 'pontos',
+                      },
+                    },
+                    {
+                      type: 'classOp',
+                      targetId: 'results',
+                      op: 'add',
+                      className: 'visivel',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3d:everySeconds',
+          secs: {
+            type: 'num',
+            value: 1.6,
+          },
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'var',
+                name: 'rodando',
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<',
+                    left: {
+                      type: 'g3d:countSwarm',
+                      swarmVar: 'cacas',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 6,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'var',
+                      name: 'angulo',
+                      value: {
+                        type: 'binop',
+                        op: '*',
+                        left: {
+                          type: 'randomFloat',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 6.283,
+                        },
+                      },
+                      kind: 'const',
+                    },
+                    {
+                      type: 'g3d:spawnInSwarm',
+                      swarmVar: 'cacas',
+                      originalVar: 'moldeCaca',
+                      x: {
+                        type: 'binop',
+                        op: '*',
+                        left: {
+                          type: 'mathUnary',
+                          fn: 'cos',
+                          arg: {
+                            type: 'var',
+                            name: 'angulo',
+                          },
+                        },
+                        right: {
+                          type: 'num',
+                          value: 14,
+                        },
+                      },
+                      y: {
+                        type: 'num',
+                        value: 0.6,
+                      },
+                      z: {
+                        type: 'binop',
+                        op: '*',
+                        left: {
+                          type: 'mathUnary',
+                          fn: 'sin',
+                          arg: {
+                            type: 'var',
+                            name: 'angulo',
+                          },
+                        },
+                        right: {
+                          type: 'num',
+                          value: 14,
+                        },
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+}
