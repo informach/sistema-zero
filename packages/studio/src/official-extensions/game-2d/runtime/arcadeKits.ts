@@ -319,6 +319,13 @@ export const gameTwoDArcadeKitsRuntime = `  // ---- Kit "Nave & Asteroides" (v0.
   function warnEnemyTypeEmptyOnce(type) {
     if (!type || !type.config || type._spawned || type._warnedNoSpawn) return;
     if (!type.items || type.items.length !== 0) return;
+    // GRAÇA: jogos de ONDA soltam o 1º inimigo via "A cada N quadros", alguns
+    // segundos depois do início. Sem esta janela, o aviso dispararia já no 1º
+    // quadro (antes da 1ª onda) — falso-positivo em Sobrevivente/Herói que Evolui
+    // e reprova o smoke e2e. ~6s (chamado ~2×/quadro por update+draw) dá tempo à
+    // onda; se NUNCA soltar (esquecimento real), avisa depois disso.
+    type._emptyUpdates = (type._emptyUpdates || 0) + 1;
+    if (type._emptyUpdates < 720) return;
     type._warnedNoSpawn = true;
     console.warn(
       'SZGame2D: o tipo de inimigo foi criado, mas nenhum inimigo foi solto ainda, por isso nada aparece. Use o bloco "Soltar um inimigo do tipo ... em x y" (fora do "A cada quadro"; para ondas, use dentro de "A cada N quadros fazer").'
