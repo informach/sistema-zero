@@ -551,7 +551,7 @@ describe('roundtrip do pongExample (gerar → parsear)', () => {
       'g2d:createSprite',
       'g2d:setVelocity',
       'g2d:applyVelocity',
-      'g2d:collides',
+      'g2d:touches',
       'g2d:onKey',
       'g2d:setScene',
     ]) {

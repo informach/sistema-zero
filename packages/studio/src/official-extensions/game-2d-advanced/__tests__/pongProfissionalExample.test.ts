@@ -77,7 +77,9 @@ describe('Exemplo Pong Profissional — drift contra o parser real', () => {
     const types = collectTypes(parsed)
     expect(types.has('rawJS')).toBe(false)
     expect(types.has('memberCall')).toBe(false)
-    expect(parsed).toEqual(stripIds(behaviorStatements(pongProfissionalExample.ir)) as JSStatement[])
+    expect(parsed).toEqual(
+      stripIds(behaviorStatements(pongProfissionalExample.ir)) as JSStatement[],
+    )
   })
 
   it('exercita a mecânica prometida do Pong Profissional', () => {

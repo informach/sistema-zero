@@ -419,12 +419,18 @@ describe('Safári de Monstros (Clear Code) — 100% blocos do núcleo', () => {
   it('usa as técnicas do overworld de captura (câmera clamp, captura, evolução)', () => {
     const { ir } = parseProjectFilesWithDiagnostics(GAME_FILES)
     const js = generateProjectFiles({ ir, projectName: 'Safári de Monstros' })['script.js']
-    for (const cls of ['class Sprite', 'class Npc extends Sprite', 'class Monstro extends Sprite']) {
+    for (const cls of [
+      'class Sprite',
+      'class Npc extends Sprite',
+      'class Monstro extends Sprite',
+    ]) {
       expect(js).toContain(cls)
     }
     expect(js).toContain('super(x, y, cor);') // herança
     // tilemap por texto data-driven + câmera com LIMITE.
-    expect(js).toContain('boundaries.push({ x: col * tile, y: r * tile, width: tile, height: tile });')
+    expect(js).toContain(
+      'boundaries.push({ x: col * tile, y: r * tile, width: tile, height: tile });',
+    )
     expect(js).toContain('camera.x = Math.max(0, Math.min(camera.x, worldWidth - viewWidth));')
     expect(js).toContain('ctx.translate(0 - camera.x, 0 - camera.y);')
     // a captura acontece NO mapa (chance) e conta no caderno.

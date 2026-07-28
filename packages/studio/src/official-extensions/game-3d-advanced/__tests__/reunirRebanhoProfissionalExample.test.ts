@@ -93,7 +93,13 @@ describe('Exemplo Reunir o Rebanho Profissional — drift contra o parser real',
   it('⭐ o curral é a ÚNICA zona e SÓ entrega quem está "seguindo" (filtro de estado)', () => {
     const statements = behaviorStatements(reunirRebanhoProfissionalExample.ir)
     const types = collectTypes(statements)
-    for (const t of ['g3k:makeTrigger', 'g3k:onOverlap', 'g3k:isMold', 'g3k:entityStateIs', 'g3k:recycle']) {
+    for (const t of [
+      'g3k:makeTrigger',
+      'g3k:onOverlap',
+      'g3k:isMold',
+      'g3k:entityStateIs',
+      'g3k:recycle',
+    ]) {
       expect(types.has(t)).toBe(true)
     }
     // O gancho da zona filtra por molde "bicho" E por estado "seguindo": o pastor

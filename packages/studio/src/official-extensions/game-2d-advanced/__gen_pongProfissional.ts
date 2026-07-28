@@ -140,9 +140,7 @@ if (import.meta.main) {
     extensions: [{ extensionId: 'game-2d-advanced' }],
   })
   const behavior = stripIds(JSON.parse(JSON.stringify(normalized.behavior)))
-  const types = collectTypes(
-    behaviorStatements({ ...normalized, behavior } as typeof normalized),
-  )
+  const types = collectTypes(behaviorStatements({ ...normalized, behavior } as typeof normalized))
   const bad = [...types].filter((t) => t === 'rawJS' || t === 'memberCall')
   if (bad.length) console.error('DRIFT:', bad)
   console.log(JSON.stringify(behavior, null, 2))

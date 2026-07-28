@@ -57,8 +57,8 @@ describe('game-2d — todos os exemplos da vitrine (manifest.examples)', () => {
     registerExtensionBlocks(gameTwoDBlocks)
   })
 
-  it('a vitrine tem os 26 exemplos (anti-vácuo)', () => {
-    expect(gameTwoDManifest.examples.length).toBe(26)
+  it('a vitrine tem os 31 exemplos (anti-vácuo)', () => {
+    expect(gameTwoDManifest.examples.length).toBe(31)
   })
 
   it('todos ensinam início e preparo explícitos, sem canvas escondido no HTML', () => {
@@ -72,10 +72,10 @@ describe('game-2d — todos os exemplos da vitrine (manifest.examples)', () => {
     }
   })
 
-  it('mantém a classificação prometida: 21 jogos, 4 demonstrações e 1 exploração', () => {
+  it('mantém a classificação prometida: 26 jogos, 4 demonstrações e 1 exploração', () => {
     const counts = { game: 0, demo: 0, exploration: 0 }
     for (const example of gameTwoDManifest.examples) counts[example.experience] += 1
-    expect(counts).toEqual({ game: 21, demo: 4, exploration: 1 })
+    expect(counts).toEqual({ game: 26, demo: 4, exploration: 1 })
   })
 
   for (const ex of gameTwoDManifest.examples) {
@@ -266,8 +266,8 @@ describe('pongExample (game-2d) — partida completa', () => {
   it('tem adversário, placar, estados de conclusão e novo jogo', () => {
     const code = compileStatements(behaviorStatements(pongExample.ir), 0)
     expect(code).toContain('SZGame2D.applyVelocity(bola)')
-    expect(code).toContain('SZGame2D.isColliding(jogador, bola)')
-    expect(code).toContain('SZGame2D.isColliding(computador, bola)')
+    expect(code).toContain('SZGame2D.touches(jogador, bola)')
+    expect(code).toContain('SZGame2D.touches(computador, bola)')
     expect(code).toContain('bola.vx = Math.abs(bola.vx)')
     expect(code).toContain('pontosComputador = pontosComputador + 1')
     expect(code).toContain('SZGame2D.setScene("vitoria")')

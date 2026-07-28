@@ -542,7 +542,7 @@ describe('playthrough dos exemplos exatos do Jogo 2D', () => {
     const firstBall = game.sprites[2]
     expect(firstBall).toBeDefined()
     for (let point = 0; point < 8 && !game.api.sceneIs('vitoria'); point += 1) {
-      if (firstBall) firstBall.x = 405
+      if (firstBall) firstBall.x = 450
       game.nextFrame()
     }
     expect(game.scores['Você:']).toBe(5)
