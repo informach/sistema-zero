@@ -117,6 +117,15 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['start', 'arrows', 'space'],
   },
   {
+    key: 'core:Safári de Monstros (na mão)',
+    name: 'Safári de Monstros (na mão)',
+    experience: 'game',
+    promise: 'O overworld de captura só com o núcleo Canvas 2D: classes, tilemap por texto, câmera e AABB.',
+    scenario:
+      'Começar, andar com WASD por um mundo maior que a tela com câmera que segue, apertar espaço colado num monstro na grama para capturar, juntar 5 e ver o parceiro evoluir no HUD.',
+    interactions: ['start', 'wasd', 'space'],
+  },
+  {
     key: 'game-2d:Herói que anda',
     name: 'Herói que anda',
     experience: 'demo',
