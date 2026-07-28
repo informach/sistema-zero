@@ -599,9 +599,13 @@ describe('avisos pedagógicos (tipo sem spawn / criar dentro do laço)', () => {
       const api = load()
       const ctx = fakeCtx()
       const t = api.createEnemyType({ behavior: 'perseguidor' })
-      api.updateEnemyType(t, ctx, null)
-      api.drawEnemyType(ctx, t)
-      api.updateEnemyType(t, ctx, null)
+      // O aviso tem GRAÇA (~6s) p/ jogos de ONDA soltarem o 1º inimigo antes de
+      // acusar esquecimento; roda update+draw além do limite (720 chamadas) p/
+      // exercitar o esquecimento REAL. Segue avisando UMA vez só.
+      for (let i = 0; i < 400; i += 1) {
+        api.updateEnemyType(t, ctx, null)
+        api.drawEnemyType(ctx, t)
+      }
       expect(warn).toHaveBeenCalledTimes(1)
       expect(String(warn.mock.calls[0]?.[0])).toContain('Soltar um inimigo do tipo')
       // Outro tipo que JÁ nasce com spawn não deve gerar aviso novo.
