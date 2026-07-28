@@ -39,7 +39,7 @@ const EXPERIENCE_BADGE_CLASS: Record<ExampleExperience, string> = {
 /** Emoji decorativo por nome de exemplo (novo/renomeado cai no controle 🎮). */
 const KIT_EMOJI: Record<string, string> = {
   'Pegue a moeda': '💰',
-  'Pong simples': '🏓',
+  Pong: '🏓',
   'Herói que anda': '🏃',
   'Mini plataforma': '🦘',
   'Sala com paredes': '🧱',

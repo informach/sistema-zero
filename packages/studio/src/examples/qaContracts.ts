@@ -45,11 +45,12 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['start', 'arrows'],
   },
   {
-    key: 'game-2d:Pong simples',
-    name: 'Pong simples',
+    key: 'game-2d:Pong',
+    name: 'Pong',
     experience: 'game',
     promise: 'Disputar uma partida de Pong contra o computador até cinco pontos.',
-    scenario: 'Começar, mover a raquete, marcar/sofrer cinco pontos, concluir e reiniciar.',
+    scenario:
+      'Começar, mover a raquete com as setas, rebater a bola nas paredes e raquetes, marcar/sofrer cinco pontos e reiniciar.',
     interactions: ['start', 'arrows'],
   },
   {
