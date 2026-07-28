@@ -577,6 +577,15 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['click', 'wasd', 'space', 'digit-1'],
   },
   {
+    key: 'game-3d-advanced:Atravesse a Rua Profissional',
+    name: 'Atravesse a Rua Profissional',
+    experience: 'game',
+    promise: 'Pular em grade e atravessar 20 faixas desviando dos carros que cruzam a pista.',
+    scenario:
+      'Pular com as setas, esperar a brecha entre os carros, avançar as faixas e vencer na faixa 20.',
+    interactions: ['wasd'],
+  },
+  {
     key: 'world-3d:Meu Mundo',
     name: 'Meu Mundo',
     experience: 'exploration',
@@ -590,6 +599,15 @@ export const EXAMPLE_QA_CONTRACTS = [
     experience: 'game',
     promise: 'Completar checkpoints ordenados com cronômetro e recorde.',
     scenario: 'Passar pelos cinco checkpoints, fechar volta e registrar recorde.',
+    interactions: ['wasd'],
+  },
+  {
+    key: 'world-3d:Pista Maluca',
+    name: 'Pista Maluca',
+    experience: 'game',
+    promise: 'Dirigir pela cidadezinha desviando do transito e fechar as voltas nos aneis.',
+    scenario:
+      'Acelerar pela cidade, evitar os carros do transito, passar pelos aneis na ordem e registrar o recorde.',
     interactions: ['wasd'],
   },
   {
@@ -695,6 +713,25 @@ export const EXAMPLE_QA_CONTRACTS = [
     promise: 'Dirigir num mundo Three.js com câmera, clima e áudio posicional.',
     scenario: 'Dirigir pela floresta, buzinar e observar câmera, névoa e ciclo diário.',
     interactions: ['wasd', 'horn-h'],
+  },
+  {
+    key: 'core:Atravesse a Rua (na mão)',
+    name: 'Atravesse a Rua (na mão)',
+    experience: 'game',
+    promise: 'O Crossy Road feito só com o núcleo Canvas 3D: pular em grade e desviar dos carros.',
+    scenario:
+      'Pular pelas faixas com as setas, desviar dos carros que cruzam, o céu fica verde ao chegar do outro lado e vermelho ao ser atropelado.',
+    interactions: ['arrows'],
+  },
+  {
+    key: 'core:Traffic Run (na mão)',
+    name: 'Traffic Run (na mão)',
+    experience: 'game',
+    promise:
+      'O Traffic Run feito só com o núcleo Canvas 3D: dar voltas na pista desviando dos rivais.',
+    scenario:
+      'Acelerar e frear com as setas, trocar de faixa para os lados, desviar dos carros rivais e completar 3 voltas.',
+    interactions: ['arrows'],
   },
   {
     key: 'core:Folio 3D procedural (na mão)',

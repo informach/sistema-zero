@@ -13042,3 +13042,1181 @@ export const patrulhaEspacialProfissionalExample: ExtensionExample = {
     },
   },
 }
+
+export const atravesseProfissionalExample: ExtensionExample = {
+  name: 'Atravesse a Rua Profissional',
+  experience: 'game',
+  description:
+    'O Crossy Road no motor avancado: pule em grade com as setas, atravesse as faixas e desvie dos carros que cruzam a pista. Chegue na faixa 20 sem ser atropelado. Tudo de pecas, sem imagem.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [
+      {
+        extensionId: 'game-3d-advanced',
+      },
+    ],
+    version: 2,
+    behavior: {
+      start: [
+        {
+          type: 'g3k:setup',
+          w: {
+            type: 'num',
+            value: 1280,
+          },
+          h: {
+            type: 'num',
+            value: 720,
+          },
+          world: {
+            type: 'num',
+            value: 80,
+          },
+          sky: '#bfe3ff',
+          ground: '#8ecb62',
+        },
+        {
+          type: 'g3k:setEffects',
+          shadows: true,
+          bloom: false,
+          strength: {
+            type: 'num',
+            value: 1,
+          },
+          vignette: true,
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'menu',
+          title: {
+            type: 'str',
+            value: 'Atravesse a Rua Profissional',
+          },
+          text: {
+            type: 'str',
+            value:
+              'Pule com as setas (ou WASD) e atravesse 20 faixas sem ser atropelado. Espere a faixa abrir e pule na hora certa!',
+          },
+          button: {
+            type: 'str',
+            value: 'Atravessar',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'vitoria',
+          title: {
+            type: 'str',
+            value: 'Voce atravessou!',
+          },
+          text: {
+            type: 'str',
+            value: 'Chegou do outro lado em seguranca depois de 20 faixas. Que reflexos!',
+          },
+          button: {
+            type: 'str',
+            value: 'Jogar de novo',
+          },
+        },
+        {
+          type: 'g3k:setScreenText',
+          screen: 'fim',
+          title: {
+            type: 'str',
+            value: 'Foi atropelado!',
+          },
+          text: {
+            type: 'str',
+            value: 'Um carro te pegou. Olhe as duas direcoes e pule na brecha!',
+          },
+          button: {
+            type: 'str',
+            value: 'Tentar de novo',
+          },
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'heroi',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 16,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#f8fafc',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.7,
+              },
+              h: {
+                type: 'num',
+                value: 0.7,
+              },
+              d: {
+                type: 'num',
+                value: 0.7,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.4,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#f0619a',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.24,
+              },
+              h: {
+                type: 'num',
+                value: 0.24,
+              },
+              d: {
+                type: 'num',
+                value: 0.24,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.86,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:defineMold',
+          name: 'carro',
+          health: {
+            type: 'num',
+            value: 1,
+          },
+          speed: {
+            type: 'num',
+            value: 0,
+          },
+          body: [
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#ef4444',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 1.7,
+              },
+              h: {
+                type: 'num',
+                value: 0.5,
+              },
+              d: {
+                type: 'num',
+                value: 0.9,
+              },
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0.3,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:part',
+              shape: 'box',
+              material: 'normal',
+              color: '#dbeafe',
+              texture: '',
+              model: '',
+              w: {
+                type: 'num',
+                value: 0.8,
+              },
+              h: {
+                type: 'num',
+                value: 0.36,
+              },
+              d: {
+                type: 'num',
+                value: 0.86,
+              },
+              x: {
+                type: 'num',
+                value: -0.15,
+              },
+              y: {
+                type: 'num',
+                value: 0.66,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:setPhysics',
+          mold: 'heroi',
+          kind: 'personagem',
+        },
+        {
+          type: 'g3k:makeTrigger',
+          mold: 'carro',
+        },
+        {
+          type: 'g3k:defineEffect',
+          name: 'batida',
+          count: {
+            type: 'num',
+            value: 24,
+          },
+          colorFrom: '#f87171',
+          colorTo: '#111827',
+          spread: {
+            type: 'num',
+            value: 5,
+          },
+          sizeFrom: {
+            type: 'num',
+            value: 0.5,
+          },
+          sizeTo: {
+            type: 'num',
+            value: 0,
+          },
+          life: {
+            type: 'num',
+            value: 0.5,
+          },
+          gravity: {
+            type: 'num',
+            value: -3,
+          },
+        },
+        {
+          type: 'var',
+          name: 'linha',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'coluna',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'alvoX',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'alvoZ',
+          value: {
+            type: 'num',
+            value: 0,
+          },
+        },
+        {
+          type: 'var',
+          name: 'proximoCarro',
+          value: {
+            type: 'num',
+            value: 0.8,
+          },
+        },
+        {
+          type: 'var',
+          name: 'velocidade',
+          value: {
+            type: 'num',
+            value: 7,
+          },
+        },
+      ],
+      events: [
+        {
+          type: 'g3k:onEnterState',
+          name: 'jogando',
+          body: [
+            {
+              type: 'assign',
+              name: 'linha',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'coluna',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'alvoX',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'alvoZ',
+              value: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'proximoCarro',
+              value: {
+                type: 'num',
+                value: 0.8,
+              },
+            },
+            {
+              type: 'assign',
+              name: 'velocidade',
+              value: {
+                type: 'num',
+                value: 7,
+              },
+            },
+            {
+              type: 'g3k:setSeed',
+              seed: {
+                type: 'num',
+                value: 5,
+              },
+            },
+            {
+              type: 'g3k:setAmbient',
+              intensity: {
+                type: 'num',
+                value: 0.7,
+              },
+            },
+            {
+              type: 'g3k:setFog',
+              color: '#bfe3ff',
+              near: {
+                type: 'num',
+                value: 44,
+              },
+              far: {
+                type: 'num',
+                value: 96,
+              },
+            },
+            {
+              type: 'g3k:addLight',
+              color: '#fff7d6',
+              x: {
+                type: 'num',
+                value: -8,
+              },
+              y: {
+                type: 'num',
+                value: 16,
+              },
+              z: {
+                type: 'num',
+                value: -6,
+              },
+              intensity: {
+                type: 'num',
+                value: 1,
+              },
+            },
+            {
+              type: 'g3k:spawnNamed',
+              varName: 'boneco',
+              mold: 'heroi',
+              x: {
+                type: 'num',
+                value: 0,
+              },
+              y: {
+                type: 'num',
+                value: 0,
+              },
+              z: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:setYaw',
+              charVar: 'boneco',
+              degrees: {
+                type: 'num',
+                value: 0,
+              },
+            },
+            {
+              type: 'g3k:cameraFollow',
+              charVar: 'boneco',
+              dist: {
+                type: 'num',
+                value: 11,
+              },
+              height: {
+                type: 'num',
+                value: 15,
+              },
+            },
+            {
+              type: 'g3k:cameraSmooth',
+              lambda: {
+                type: 'num',
+                value: 5,
+              },
+            },
+            {
+              type: 'g3k:say',
+              charVar: 'boneco',
+              text: {
+                type: 'str',
+                value: 'Vai!',
+              },
+              seconds: {
+                type: 'num',
+                value: 1,
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onOverlap',
+          mold: 'carro',
+          zoneName: 'zona',
+          whoName: 'quem',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'g3k:isMold',
+                charVar: 'quem',
+                mold: 'heroi',
+              },
+              then: [
+                {
+                  type: 'g3k:burstOn',
+                  effect: 'batida',
+                  charVar: 'quem',
+                },
+                {
+                  type: 'g3k:hurt',
+                  charVar: 'quem',
+                  amount: {
+                    type: 'num',
+                    value: 1,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: 'g3k:onEntityDeath',
+          mold: 'heroi',
+          itemName: 'ela',
+          body: [
+            {
+              type: 'g3k:cameraShake',
+              strength: {
+                type: 'num',
+                value: 0.6,
+              },
+              seconds: {
+                type: 'num',
+                value: 0.4,
+              },
+            },
+            {
+              type: 'g3k:playEffect',
+              fx: 'gameover',
+            },
+            {
+              type: 'g3k:endGame',
+            },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'g3k:onEntityStateUpdate',
+          mold: 'heroi',
+          state: 'parado',
+          itemName: 'ela',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '||',
+                left: {
+                  type: 'g3k:keyPressed',
+                  key: 'w',
+                },
+                right: {
+                  type: 'g3k:keyPressed',
+                  key: 'cima',
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'linha',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'var',
+                      name: 'linha',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 1,
+                    },
+                  },
+                },
+                {
+                  type: 'assign',
+                  name: 'alvoZ',
+                  value: {
+                    type: 'binop',
+                    op: '*',
+                    left: {
+                      type: 'var',
+                      name: 'linha',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 2,
+                    },
+                  },
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '||',
+                left: {
+                  type: 'g3k:keyPressed',
+                  key: 's',
+                },
+                right: {
+                  type: 'g3k:keyPressed',
+                  key: 'baixo',
+                },
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'var',
+                      name: 'linha',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 0,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'linha',
+                      value: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'var',
+                          name: 'linha',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 1,
+                        },
+                      },
+                    },
+                    {
+                      type: 'assign',
+                      name: 'alvoZ',
+                      value: {
+                        type: 'binop',
+                        op: '*',
+                        left: {
+                          type: 'var',
+                          name: 'linha',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 2,
+                        },
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '||',
+                left: {
+                  type: 'g3k:keyPressed',
+                  key: 'a',
+                },
+                right: {
+                  type: 'g3k:keyPressed',
+                  key: 'esquerda',
+                },
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '>',
+                    left: {
+                      type: 'var',
+                      name: 'coluna',
+                    },
+                    right: {
+                      type: 'num',
+                      value: -4,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'coluna',
+                      value: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'var',
+                          name: 'coluna',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 1,
+                        },
+                      },
+                    },
+                    {
+                      type: 'assign',
+                      name: 'alvoX',
+                      value: {
+                        type: 'binop',
+                        op: '*',
+                        left: {
+                          type: 'var',
+                          name: 'coluna',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 2,
+                        },
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'logical',
+                op: '||',
+                left: {
+                  type: 'g3k:keyPressed',
+                  key: 'd',
+                },
+                right: {
+                  type: 'g3k:keyPressed',
+                  key: 'direita',
+                },
+              },
+              then: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'binop',
+                    op: '<',
+                    left: {
+                      type: 'var',
+                      name: 'coluna',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 4,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'assign',
+                      name: 'coluna',
+                      value: {
+                        type: 'binop',
+                        op: '+',
+                        left: {
+                          type: 'var',
+                          name: 'coluna',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 1,
+                        },
+                      },
+                    },
+                    {
+                      type: 'assign',
+                      name: 'alvoX',
+                      value: {
+                        type: 'binop',
+                        op: '*',
+                        left: {
+                          type: 'var',
+                          name: 'coluna',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 2,
+                        },
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'g3k:seekPoint',
+              charVar: 'ela',
+              x: {
+                type: 'var',
+                name: 'alvoX',
+              },
+              z: {
+                type: 'var',
+                name: 'alvoZ',
+              },
+            },
+            {
+              type: 'g3k:hudText',
+              slot: 'top-left',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '+',
+                  left: {
+                    type: 'str',
+                    value: 'Faixa: ',
+                  },
+                  right: {
+                    type: 'var',
+                    name: 'linha',
+                  },
+                },
+                right: {
+                  type: 'str',
+                  value: ' de 20',
+                },
+              },
+            },
+          ],
+        },
+        {
+          type: 'g3k:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'assign',
+              name: 'velocidade',
+              value: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'var',
+                  name: 'velocidade',
+                },
+                right: {
+                  type: 'binop',
+                  op: '*',
+                  left: {
+                    type: 'var',
+                    name: 'dt',
+                  },
+                  right: {
+                    type: 'num',
+                    value: 0.15,
+                  },
+                },
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '>',
+                left: {
+                  type: 'var',
+                  name: 'velocidade',
+                },
+                right: {
+                  type: 'num',
+                  value: 13,
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'velocidade',
+                  value: {
+                    type: 'num',
+                    value: 13,
+                  },
+                },
+              ],
+            },
+            {
+              type: 'assign',
+              name: 'proximoCarro',
+              value: {
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'var',
+                  name: 'proximoCarro',
+                },
+                right: {
+                  type: 'var',
+                  name: 'dt',
+                },
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '<=',
+                left: {
+                  type: 'var',
+                  name: 'proximoCarro',
+                },
+                right: {
+                  type: 'num',
+                  value: 0,
+                },
+              },
+              then: [
+                {
+                  type: 'assign',
+                  name: 'proximoCarro',
+                  value: {
+                    type: 'g3k:randomBetween',
+                    from: {
+                      type: 'num',
+                      value: 0.5,
+                    },
+                    to: {
+                      type: 'num',
+                      value: 1.2,
+                    },
+                  },
+                },
+                {
+                  type: 'var',
+                  name: 'faixa',
+                  value: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'var',
+                      name: 'linha',
+                    },
+                    right: {
+                      type: 'mathUnary',
+                      fn: 'floor',
+                      arg: {
+                        type: 'g3k:randomBetween',
+                        from: {
+                          type: 'num',
+                          value: 2,
+                        },
+                        to: {
+                          type: 'num',
+                          value: 8,
+                        },
+                      },
+                    },
+                  },
+                  kind: 'const',
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'g3k:randomChance',
+                    percent: {
+                      type: 'num',
+                      value: 50,
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3k:spawnNamed',
+                      varName: 'carroD',
+                      mold: 'carro',
+                      x: {
+                        type: 'num',
+                        value: -12,
+                      },
+                      y: {
+                        type: 'num',
+                        value: 0,
+                      },
+                      z: {
+                        type: 'binop',
+                        op: '*',
+                        left: {
+                          type: 'var',
+                          name: 'faixa',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 2,
+                        },
+                      },
+                    },
+                    {
+                      type: 'g3k:setYaw',
+                      charVar: 'carroD',
+                      degrees: {
+                        type: 'num',
+                        value: 90,
+                      },
+                    },
+                    {
+                      type: 'g3k:setVelocity',
+                      charVar: 'carroD',
+                      x: {
+                        type: 'var',
+                        name: 'velocidade',
+                      },
+                      y: {
+                        type: 'num',
+                        value: 0,
+                      },
+                      z: {
+                        type: 'num',
+                        value: 0,
+                      },
+                    },
+                  ],
+                  else: [
+                    {
+                      type: 'g3k:spawnNamed',
+                      varName: 'carroE',
+                      mold: 'carro',
+                      x: {
+                        type: 'num',
+                        value: 12,
+                      },
+                      y: {
+                        type: 'num',
+                        value: 0,
+                      },
+                      z: {
+                        type: 'binop',
+                        op: '*',
+                        left: {
+                          type: 'var',
+                          name: 'faixa',
+                        },
+                        right: {
+                          type: 'num',
+                          value: 2,
+                        },
+                      },
+                    },
+                    {
+                      type: 'g3k:setYaw',
+                      charVar: 'carroE',
+                      degrees: {
+                        type: 'num',
+                        value: 270,
+                      },
+                    },
+                    {
+                      type: 'g3k:setVelocity',
+                      charVar: 'carroE',
+                      x: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'num',
+                          value: 0,
+                        },
+                        right: {
+                          type: 'var',
+                          name: 'velocidade',
+                        },
+                      },
+                      y: {
+                        type: 'num',
+                        value: 0,
+                      },
+                      z: {
+                        type: 'num',
+                        value: 0,
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'g3k:forEachAlive',
+              mold: 'carro',
+              itemName: 'c',
+              body: [
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logical',
+                    op: '||',
+                    left: {
+                      type: 'binop',
+                      op: '>',
+                      left: {
+                        type: 'g3k:posOf',
+                        axis: 'x',
+                        charVar: 'c',
+                      },
+                      right: {
+                        type: 'num',
+                        value: 16,
+                      },
+                    },
+                    right: {
+                      type: 'binop',
+                      op: '<',
+                      left: {
+                        type: 'g3k:posOf',
+                        axis: 'x',
+                        charVar: 'c',
+                      },
+                      right: {
+                        type: 'num',
+                        value: -16,
+                      },
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g3k:recycle',
+                      charVar: 'c',
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: 'g3k:hudText',
+              slot: 'top-right',
+              text: {
+                type: 'str',
+                value: 'Chegue na faixa 20!',
+              },
+            },
+            {
+              type: 'if',
+              cond: {
+                type: 'binop',
+                op: '>=',
+                left: {
+                  type: 'var',
+                  name: 'linha',
+                },
+                right: {
+                  type: 'num',
+                  value: 20,
+                },
+              },
+              then: [
+                {
+                  type: 'g3k:playEffect',
+                  fx: 'win',
+                },
+                {
+                  type: 'g3k:setState',
+                  name: 'vitoria',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+}

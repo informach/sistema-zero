@@ -11,6 +11,7 @@ import { INVERNO_SOURCE } from '../__gen_inverno'
 import { LUA_SOURCE } from '../__gen_lua'
 import { MEU_MUNDO_SOURCE } from '../__gen_meumundo'
 import { PARQUE_SOURCE } from '../__gen_parque'
+import { PISTA_MALUCA_SOURCE } from '../__gen_pistaMaluca'
 import { VILA_SOURCE } from '../__gen_vila'
 import { VOCATION_PROCEDURAL_SOURCE } from '../__gen_vocation_procedural'
 import {
@@ -24,6 +25,7 @@ import {
   luaExample,
   meuMundoExample,
   parqueExample,
+  pistaMalucaExample,
   vilaExample,
   vocationProceduralExample,
   world3DExamples,
@@ -62,6 +64,7 @@ function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string>
 const CASES = [
   { name: 'Meu Mundo', source: MEU_MUNDO_SOURCE, example: meuMundoExample },
   { name: 'Corrida do Por do Sol', source: CORRIDA_SOURCE, example: corridaExample },
+  { name: 'Pista Maluca', source: PISTA_MALUCA_SOURCE, example: pistaMalucaExample },
   { name: 'Boliche na Praca', source: BOLICHE_SOURCE, example: bolicheExample },
   { name: 'Inverno Magico', source: INVERNO_SOURCE, example: invernoExample },
   { name: 'Ilha dos Criadores', source: ILHA_SOURCE, example: ilhaExample },
@@ -83,9 +86,9 @@ const CASES = [
 ]
 
 describe('Mundo 3D — exemplos da vitrine', () => {
-  it('o manifest registra os 12 exemplos', () => {
-    expect(world3DExamples.length).toBe(12)
-    expect(world3DManifest.examples.length).toBe(12)
+  it('o manifest registra os 13 exemplos', () => {
+    expect(world3DExamples.length).toBe(13)
+    expect(world3DManifest.examples.length).toBe(13)
   })
 
   for (const { name, source, example } of CASES) {

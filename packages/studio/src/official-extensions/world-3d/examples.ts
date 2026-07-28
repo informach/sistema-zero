@@ -2287,9 +2287,151 @@ export const fazendinhaExample: ExtensionExample = {
   },
 }
 
+export const pistaMalucaExample: ExtensionExample = {
+  name: 'Pista Maluca',
+  experience: 'game',
+  description:
+    'O corredor Traffic Run recriado no Mundo 3D: dirija um carro de corrida pela cidadezinha, desvie do transito autonomo e passe pelos aneis na ordem para fechar as voltas. O recorde fica salvo. So blocos do Mundo 3D, sem imagens.',
+  ir: {
+    html: [],
+    css: [],
+    extensions: [{ extensionId: 'world-3d' }],
+    version: 2,
+    behavior: {
+      start: [
+        { type: 'w3d:setup', style: 'primavera', world: { type: 'num', value: 200 } },
+        { type: 'w3d:terrain', h: { type: 'num', value: 2 }, s: { type: 'num', value: 8 } },
+        { type: 'w3d:setTime', time: 'meiodia' },
+        { type: 'w3d:grass', amount: 'pouca' },
+        {
+          type: 'w3d:city',
+          x: { type: 'num', value: 0 },
+          z: { type: 'num', value: 0 },
+          size: 'media',
+          mode: 'dia',
+        },
+        { type: 'w3d:traffic', n: { type: 'num', value: 8 }, sem: 'semaforos' },
+        { type: 'w3d:car', style: 'corrida', color: '#ef4444' },
+        { type: 'w3d:carBoost', force: { type: 'num', value: 2 } },
+        { type: 'w3d:engineSound', on: true },
+        {
+          type: 'w3d:totemText',
+          x: { type: 'num', value: 0 },
+          z: { type: 'num', value: 14 },
+          title: 'Pista Maluca',
+          body: 'Dirija pela cidade e passe pelos aneis na ordem, desviando do transito!',
+        },
+        {
+          type: 'w3d:raceCreate',
+          x: { type: 'num', value: 0 },
+          z: { type: 'num', value: 18 },
+          deg: { type: 'num', value: 90 },
+          laps: { type: 'num', value: 2 },
+        },
+        {
+          type: 'w3d:raceCheckpoint',
+          x: { type: 'num', value: 28 },
+          z: { type: 'num', value: 0 },
+          deg: { type: 'num', value: 0 },
+        },
+        {
+          type: 'w3d:raceCheckpoint',
+          x: { type: 'num', value: 0 },
+          z: { type: 'num', value: -28 },
+          deg: { type: 'num', value: 90 },
+        },
+        {
+          type: 'w3d:raceCheckpoint',
+          x: { type: 'num', value: -28 },
+          z: { type: 'num', value: 0 },
+          deg: { type: 'num', value: 0 },
+        },
+        {
+          type: 'w3d:raceCheckpoint',
+          x: { type: 'num', value: 0 },
+          z: { type: 'num', value: 18 },
+          deg: { type: 'num', value: 90 },
+        },
+      ],
+      events: [
+        {
+          type: 'w3d:raceOnStart',
+          body: [
+            {
+              type: 'w3d:say',
+              text: { type: 'str', value: 'Valendo! Cuidado com o transito!' },
+              secs: { type: 'num', value: 2 },
+            },
+          ],
+        },
+        {
+          type: 'w3d:raceOnFinish',
+          body: [
+            {
+              type: 'w3d:say',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '+',
+                  left: { type: 'str', value: 'Chegou! Tempo: ' },
+                  right: { type: 'mathUnary', fn: 'round', arg: { type: 'w3d:raceTime' } },
+                },
+                right: { type: 'str', value: 's' },
+              },
+              secs: { type: 'num', value: 4 },
+            },
+            { type: 'w3d:confetti' },
+          ],
+        },
+      ],
+      loops: [
+        {
+          type: 'w3d:onUpdate',
+          dtName: 'dt',
+          body: [
+            {
+              type: 'w3d:hud',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '+',
+                  left: { type: 'str', value: 'Recorde: ' },
+                  right: { type: 'mathUnary', fn: 'round', arg: { type: 'w3d:raceBest' } },
+                },
+                right: { type: 'str', value: 's' },
+              },
+              corner: 'baixo-direita',
+            },
+            {
+              type: 'w3d:hud',
+              text: {
+                type: 'binop',
+                op: '+',
+                left: {
+                  type: 'binop',
+                  op: '+',
+                  left: { type: 'str', value: 'Velocidade: ' },
+                  right: { type: 'mathUnary', fn: 'round', arg: { type: 'w3d:carSpeed' } },
+                },
+                right: { type: 'str', value: ' m/s' },
+              },
+              corner: 'baixo-esquerda',
+            },
+          ],
+        },
+      ],
+    },
+  },
+}
+
 export const world3DExamples: ExtensionExample[] = [
   meuMundoExample,
   corridaExample,
+  pistaMalucaExample,
   bolicheExample,
   invernoExample,
   ilhaExample,

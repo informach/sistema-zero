@@ -4,7 +4,7 @@ import { world3DExamples } from './examples'
 export const world3DManifest: ExtensionManifest = {
   id: 'world-3d',
   name: 'Mundo 3D',
-  version: '4.2.0',
+  version: '4.3.0',
   description:
     'Crie mundos 3D abertos só com primitivas: 7 cenários, arquipélago, cidade completa, distritos, redes de ruas e casas procedurais instanciadas. Passeie a pé, de carro ou barco; use física leve própria, inventário persistente, missões, clima e qualidade adaptativa. Sem Rapier, WASM ou pacote de assets.',
   category: 'games',
