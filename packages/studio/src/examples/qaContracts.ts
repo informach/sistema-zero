@@ -72,6 +72,15 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['arrows'],
   },
   {
+    key: 'game-2d:Mundo Pirata',
+    name: 'Mundo Pirata',
+    experience: 'game',
+    promise: 'Atravessar uma fase de plataforma lateral pegando moedas e pisando nos inimigos até a bandeira.',
+    scenario:
+      'Começar, correr e pular pelas plataformas com as setas, pegar moedas, pisar nos caranguejos, desviar dos buracos, chegar na bandeira e reiniciar.',
+    interactions: ['start', 'arrows'],
+  },
+  {
     key: 'game-2d:Herói que anda',
     name: 'Herói que anda',
     experience: 'demo',
