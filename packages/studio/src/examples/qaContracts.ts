@@ -54,6 +54,15 @@ export const EXAMPLE_QA_CONTRACTS = [
     interactions: ['start', 'arrows'],
   },
   {
+    key: 'game-2d-advanced:Pong Profissional',
+    name: 'Pong Profissional',
+    experience: 'game',
+    promise: 'Ganhar o Pong no motor avançado com ângulo por contato e bola que acelera a cada troca.',
+    scenario:
+      'Começar, mover a raquete com as setas, rebater dando ângulo, ver a bola acelerar no rally, fazer sete pontos e ver vitória ou derrota.',
+    interactions: ['start', 'arrows'],
+  },
+  {
     key: 'game-2d:Herói que anda',
     name: 'Herói que anda',
     experience: 'demo',

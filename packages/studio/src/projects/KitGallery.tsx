@@ -40,6 +40,7 @@ const EXPERIENCE_BADGE_CLASS: Record<ExampleExperience, string> = {
 const KIT_EMOJI: Record<string, string> = {
   'Pegue a moeda': '💰',
   Pong: '🏓',
+  'Pong Profissional': '🎾',
   'Herói que anda': '🏃',
   'Mini plataforma': '🦘',
   'Sala com paredes': '🧱',
