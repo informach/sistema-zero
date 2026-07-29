@@ -369,6 +369,8 @@ export interface CourseView {
    * slot 1 nunca qualifica e a etapa não destrava (aviso "Sem vitrine").
    */
   hasShowcaseBlock?: boolean
+  /** Concorrência otimista: enviar de volta no PATCH do curso (o members exige). */
+  version: number
   createdAt: string
   updatedAt: string
 }
