@@ -94,12 +94,12 @@ const img = (file: string) => `${imagesBase}/${file}`
             >
             <h1>
               O mesmo foco que ele coloca no jogo <span class="hl">dos outros</span> pode virar o primeiro
-              jogo <span class="hl">dele</span>, em 3 dias
+              jogo <span class="hl">dele</span>, em 5 dias
             </h1>
             <p class="lead">
               Uma trilha guiada, uma vitória por dia, dentro de um estúdio que abre na própria aula.
-              No primeiro dia a nave dele já voa na tela. No terceiro, ele te chama pra ver o jogo
-              pronto, manda o link pros amigos, e nem percebe que passou a tarde aprendendo de
+              No primeiro dia a nave dele já voa na tela. No quinto, ele te chama pra ver o jogo
+              pronto, manda o link pros amigos, e nem percebe que passou a semana aprendendo de
               verdade. Achou que estava brincando.
             </p>
             <div class="chips">
@@ -113,7 +113,7 @@ const img = (file: string) => `${imagesBase}/${file}`
                 ><span class="material-symbols-rounded">favorite</span>Você não precisa saber nada</span
               >
               <span class="chip"
-                ><span class="material-symbols-rounded">schedule</span>1 hora por dia</span
+                ><span class="material-symbols-rounded">schedule</span>40 min por dia</span
               >
             </div>
             <div class="hero-cta">
@@ -158,7 +158,7 @@ const img = (file: string) => `${imagesBase}/${file}`
             <span class="name">Zappy</span>
           </div>
           <div class="bubble">
-            Oi, sou o Zappy. Se você curte jogo, chama seu pai ou sua mãe e senta aqui do lado. Em 3
+            Oi, sou o Zappy. Se você curte jogo, chama seu pai ou sua mãe e senta aqui do lado. Em 5
             dias a gente faz uma nave voar de verdade na tela, e o jogo é todo seu. Bora criar?
           </div>
         </div>
@@ -169,9 +169,9 @@ const img = (file: string) => `${imagesBase}/${file}`
     <section class="stats-band">
       <div class="wrap">
         <div class="stats">
-          <div class="stat"><div class="n">3 dias</div><div class="l">até o jogo pronto</div></div>
+          <div class="stat"><div class="n">5 dias</div><div class="l">até o jogo pronto</div></div>
           <div class="stat">
-            <div class="n">1 hora</div><div class="l">por dia, no ritmo dele</div>
+            <div class="n">40 min</div><div class="l">por dia, no ritmo dele</div>
           </div>
           <div class="stat">
             <div class="n">{priceLabelShort}</div><div class="l">uma vez, sem mensalidade</div>
@@ -238,13 +238,13 @@ const img = (file: string) => `${imagesBase}/${file}`
               />
             </figure>
             <p>
-              Ele senta uma hora, segue o passo a passo e vê o personagem ganhar vida por causa do
-              que ele mesmo montou. No terceiro dia, é ele quem chama você na sala pra ver o jogo
-              rodando.
+              Ele senta quarenta minutos, segue o passo a passo e vê o personagem ganhar vida por
+              causa do que ele mesmo montou. No último dia, é ele quem chama você na sala pra ver o
+              jogo rodando.
             </p>
             <div class="tags">
               <div class="tag">
-                <span class="material-symbols-rounded">stadia_controller</span>3 dias, 1 jogo
+                <span class="material-symbols-rounded">stadia_controller</span>5 dias, 1 jogo
                 jogável no fim
               </div>
               <div class="tag">
@@ -343,7 +343,7 @@ const img = (file: string) => `${imagesBase}/${file}`
         <span class="eyebrow">Do acesso ao jogo pronto</span>
         <h2 class="reveal">É mais simples do que parece.<br />Olha o caminho inteiro:</h2>
         <p class="sub">
-          Três dias, uma vitória por dia, tudo dentro do mesmo estúdio, sem instalar nada no
+          Cinco dias, uma vitória por dia, tudo dentro do mesmo estúdio, sem instalar nada no
           computador.
         </p>
       </div>
@@ -364,8 +364,8 @@ const img = (file: string) => `${imagesBase}/${file}`
               <img
                 src={img('print-dia1.webp')}
                 alt="Jogo do Dia 1: a nave voando no espaço"
-                width="857"
-                height="516"
+                width="791"
+                height="476"
                 loading="lazy"
               />
             </figure>
@@ -373,18 +373,19 @@ const img = (file: string) => `${imagesBase}/${file}`
           <div class="day reveal">
             <div class="num">2</div>
             <div>
-              <h3>O jogo ganha desafio</h3>
+              <h3>A nave atira</h3>
               <p>
-                Ele faz a nave atirar, os asteroides caírem do céu e o placar marcar um ponto a cada
-                asteroide destruído. O que era uma tela bonita vira um jogo com graça de jogar.
+                Ele monta o grupo dos tiros e a área que escuta o teclado. Aperta a tecla, o tiro
+                sai da nave com som e tudo. É aqui que ele descobre duas ideias que todo criador de
+                jogos usa: guardar muitas coisas do mesmo tipo e fazer o jogo responder na hora.
               </p>
             </div>
             <figure class="art day-art print-frame">
               <img
                 src={img('print-dia2.webp')}
-                alt="Jogo do Dia 2: a nave atirando nos asteroides com placar"
-                width="844"
-                height="510"
+                alt="Jogo do Dia 2: a nave atirando no espaço"
+                width="653"
+                height="393"
                 loading="lazy"
               />
             </figure>
@@ -392,19 +393,59 @@ const img = (file: string) => `${imagesBase}/${file}`
           <div class="day reveal">
             <div class="num">3</div>
             <div>
-              <h3>O jogo fica pronto pra mostrar</h3>
+              <h3>Os asteroides chegam</h3>
               <p>
-                Ele adiciona vidas, cria a vitória ao destruir 26 asteroides, monta as telas de
-                início, vitória e derrota, testa o jogo inteiro e gera um link pra família e os
-                amigos jogarem. Sai dali com o primeiro joguinho jogável dele.
+                Uma chuva de pedras espaciais começa a cair, cada uma num lugar sorteado, e os tiros
+                dele explodem as pedras com fogo e som. O que era uma tela bonita vira um jogo com
+                graça de jogar.
               </p>
             </div>
             <figure class="art day-art print-frame">
               <img
                 src={img('print-dia3.webp')}
-                alt="Jogo do Dia 3: tela de vitória do jogo completo"
-                width="856"
-                height="517"
+                alt="Jogo do Dia 3: os asteroides caindo enquanto a nave atira"
+                width="655"
+                height="391"
+                loading="lazy"
+              />
+            </figure>
+          </div>
+          <div class="day reveal">
+            <div class="num">4</div>
+            <div>
+              <h3>Pontos e vidas</h3>
+              <p>
+                Cada acerto passa a valer ponto no placar, e a nave ganha vidas em coraçõezinhos na
+                tela. É o dia em que entram os blocos de Programação, com a primeira variável dele
+                guardando a pontuação.
+              </p>
+            </div>
+            <figure class="art day-art print-frame">
+              <img
+                src={img('print-dia4.webp')}
+                alt="Jogo do Dia 4: o placar de pontos e os corações de vida na tela"
+                width="654"
+                height="396"
+                loading="lazy"
+              />
+            </figure>
+          </div>
+          <div class="day reveal">
+            <div class="num">5</div>
+            <div>
+              <h3>Virou jogo de verdade</h3>
+              <p>
+                Ele cria a regra da vitória ao destruir 26 asteroides, monta as telas de início,
+                vitória e derrota, testa o jogo inteiro do começo ao fim e gera um link pra família
+                e os amigos jogarem. Sai dali com o primeiro joguinho jogável dele.
+              </p>
+            </div>
+            <figure class="art day-art print-frame">
+              <img
+                src={img('print-dia5.webp')}
+                alt="Jogo do Dia 5: a tela de início do jogo pronto, com o nome Nave contra Asteroides"
+                width="875"
+                height="526"
                 loading="lazy"
               />
             </figure>
@@ -425,8 +466,9 @@ const img = (file: string) => `${imagesBase}/${file}`
             <span class="name">Dedé</span>
           </div>
           <div class="bubble">
-            No Dia 2 você faz a nave atirar. Sério. Você aperta e o tiro sai. Aí os asteroides
-            começam a cair e cada um que explode vira ponto. É aí que fica divertido de verdade.
+            No Dia 2 você faz a nave atirar. Sério. Você aperta e o tiro sai. No dia seguinte os
+            asteroides começam a cair, e cada pedra que você acerta explode na tela. É aí que fica
+            divertido de verdade.
           </div>
         </div>
         <div class="thesis compacta reveal">
@@ -460,7 +502,7 @@ const img = (file: string) => `${imagesBase}/${file}`
               src={img('print-estudio.webp')}
               alt="A plataforma por dentro: a aula, o estúdio com os blocos e o jogo rodando"
               width="1100"
-              height="1454"
+              height="1532"
               loading="lazy"
             />
           </figure>
@@ -472,7 +514,7 @@ const img = (file: string) => `${imagesBase}/${file}`
     <!-- ===== ENTREGÁVEIS ===== -->
     <section class="sec gifts">
       <div class="wrap center">
-        <span class="eyebrow">O que seu filho leva nesses 3 dias</span>
+        <span class="eyebrow">O que seu filho leva nesses 5 dias</span>
         <h2 class="reveal">Tudo que vem junto pra ele<br />chegar no jogo pronto</h2>
         <p class="sub">
           Além do desafio guiado, vem tudo que ajuda a criança a chegar no jogo pronto, e um guia
@@ -483,13 +525,13 @@ const img = (file: string) => `${imagesBase}/${file}`
             <figure class="art">
               <img
                 src={img('entrega-trilha.webp')}
-                alt="Trilha guiada de 3 dias"
+                alt="Trilha guiada de 5 dias"
                 width="760"
-                height="480"
+                height="570"
                 loading="lazy"
               />
             </figure>
-            <h4>Trilha guiada de 3 dias</h4>
+            <h4>Trilha guiada de 5 dias</h4>
             <p>Uma atividade por dia, com começo, meio e fim.</p>
           </div>
           <div class="gift reveal">
@@ -498,7 +540,7 @@ const img = (file: string) => `${imagesBase}/${file}`
                 src={img('entrega-estudio.webp')}
                 alt="Estúdio e blocos feitos pra criança"
                 width="760"
-                height="447"
+                height="376"
                 loading="lazy"
               />
             </figure>
@@ -530,7 +572,7 @@ const img = (file: string) => `${imagesBase}/${file}`
                 src={img('entrega-video.webp')}
                 alt="Passo a passo em vídeo"
                 width="760"
-                height="437"
+                height="434"
                 loading="lazy"
               />
             </figure>
@@ -559,7 +601,7 @@ const img = (file: string) => `${imagesBase}/${file}`
                 src={img('entrega-certificado.webp')}
                 alt="Certificado de conclusão"
                 width="760"
-                height="572"
+                height="569"
                 loading="lazy"
               />
             </figure>
@@ -745,7 +787,7 @@ const img = (file: string) => `${imagesBase}/${file}`
               elogiam. O mesmo hiperfoco, agora a favor dele. Foi por viver isso dentro de casa que
               a gente montou este desafio: pra outros pais pegarem o foco intenso do filho e
               transformarem uma parte dele no primeiro joguinho jogável feito pela própria criança
-              em 3 dias.
+              em 5 dias.
             </p>
           </div>
         </div>
@@ -783,7 +825,7 @@ const img = (file: string) => `${imagesBase}/${file}`
           <div class="depo reveal">
             <div class="stars">★★★★★</div>
             <p class="quote">
-              "Achei que ia ser difícil, mas fui montando os bloquinhos e deu certo. No terceiro dia
+              "Achei que ia ser difícil, mas fui montando os bloquinhos e deu certo. No último dia
               chamei a minha mãe pra ver o meu jogo."
             </p>
             <div class="who">
@@ -827,7 +869,7 @@ const img = (file: string) => `${imagesBase}/${file}`
       <div class="wrap center">
         <span class="eyebrow">O resumo de tudo</span>
         <h2 class="reveal">
-          Um pagamento, acesso pra sempre, e o<br />jogo dele funcionando em 3 dias
+          Um pagamento, acesso pra sempre, e o<br />jogo dele funcionando em 5 dias
         </h2>
         <div class="offer-card reveal">
           <div class="offer-top">
@@ -837,7 +879,7 @@ const img = (file: string) => `${imagesBase}/${file}`
           <div class="offer-body">
             <ul class="stack">
               <li>
-                <span class="material-symbols-rounded">check_circle</span>Trilha guiada de 3 dias
+                <span class="material-symbols-rounded">check_circle</span>Trilha guiada de 5 dias
               </li>
               <li>
                 <span class="material-symbols-rounded">check_circle</span>Estúdio e blocos feitos
@@ -875,7 +917,7 @@ const img = (file: string) => `${imagesBase}/${file}`
             <div class="offer-cta">
               <button type="button" class="btn big btn-oferta" data-checkout-cta>
                 <span class="material-symbols-rounded">sports_esports</span>Quero o primeiro jogo do
-                meu filho em 3 dias
+                meu filho em 5 dias
               </button>
               <p class="mini">
                 Acesso imediato · Pagamento único · Acesso vitalício · Garantia de 7 dias
@@ -929,7 +971,7 @@ const img = (file: string) => `${imagesBase}/${file}`
               ></summary
             >
             <div class="a">
-              Tudo de uma vez. Os 3 dias e os materiais ficam no mesmo acesso, então a criança segue
+              Tudo de uma vez. Os 5 dias e os materiais ficam no mesmo acesso, então a criança segue
               no ritmo dela, um dia por vez ou tudo num fim de semana.
             </div>
           </details>
@@ -1037,7 +1079,7 @@ const img = (file: string) => `${imagesBase}/${file}`
               ></summary
             >
             <div class="a">
-              Fica pronto de verdade. No fim dos 3 dias o jogo abre, responde aos comandos da
+              Fica pronto de verdade. No fim dos 5 dias o jogo abre, responde aos comandos da
               criança e pode ser jogado e mostrado pra família. É o primeiro joguinho jogável dela,
               rodando no computador de casa.
             </div>
@@ -1060,7 +1102,7 @@ const img = (file: string) => `${imagesBase}/${file}`
               ></summary
             >
             <div class="a">
-              São {priceLabelShort}, uma vez, com garantia de 7 dias. Em 3 dias você descobre, com o
+              São {priceLabelShort}, uma vez, com garantia de 7 dias. Em 5 dias você descobre, com o
               jogo na mão, se esse é o talento que vale a pena desenvolver, antes de investir num
               caminho mais caro. Se não for pra vocês, a gente devolve.
             </div>
@@ -1093,13 +1135,13 @@ const img = (file: string) => `${imagesBase}/${file}`
         </figure>
         <h2 class="reveal">Aponte o foco dele pra criação<br />já neste fim de semana</h2>
         <p class="sub">
-          Em 3 dias, seguindo a trilha, aquele foco todo vira o primeiro jogo jogável dele. Ele acha
+          Em 5 dias, seguindo a trilha, aquele foco todo vira o primeiro jogo jogável dele. Ele acha
           que passou a tarde brincando. Você sabe que ele passou a tarde criando.
         </p>
         <div class="final-cta">
           <button type="button" class="btn big" data-checkout-cta>
             <span class="material-symbols-rounded">sports_esports</span>Quero o primeiro jogo do meu
-            filho em 3 dias
+            filho em 5 dias
           </button>
         </div>
         <p class="price-line">
@@ -1115,7 +1157,7 @@ const img = (file: string) => `${imagesBase}/${file}`
 
     <!-- ===== BARRA FIXA MOBILE ===== -->
     <div class="mobar">
-      <div class="p"><s>R$ 97</s> {priceLabelShort} <span class="dias">· 3 dias</span></div>
+      <div class="p"><s>R$ 97</s> {priceLabelShort} <span class="dias">· 5 dias</span></div>
       <a href="#oferta" class="btn mobar-btn">
         <span class="material-symbols-rounded">bolt</span>Começar
       </a>
@@ -1920,8 +1962,10 @@ const img = (file: string) => `${imagesBase}/${file}`
     position: relative;
     text-align: left;
   }
+  /* nos dias pares a imagem vai pra ESQUERDA (o figure é o último no DOM, então precisa de
+     order negativa; com `order: 2` a regra não saía do lugar e a trilha ficava toda alinhada) */
   .dpj .day:nth-child(even) .day-art {
-    order: 2;
+    order: -1;
   }
   .dpj .day .num {
     position: absolute;
@@ -1944,6 +1988,12 @@ const img = (file: string) => `${imagesBase}/${file}`
   }
   .dpj .day:nth-child(3) .num {
     background: linear-gradient(150deg, #ff8fc0, #e0559a);
+  }
+  .dpj .day:nth-child(4) .num {
+    background: linear-gradient(150deg, #ffb53f, #ef6c00);
+  }
+  .dpj .day:nth-child(5) .num {
+    background: linear-gradient(150deg, #3d5896, #0c1e3e);
   }
   .dpj .day h3 {
     font-size: 1.4rem;

@@ -162,7 +162,7 @@ export const TERMOS_KIDS: LegalDoc = {
     {
       titulo: '2. O que é e como funciona o Produto',
       paragrafos: [
-        `O ${PRODUTO} é um material digital de caráter educacional: uma trilha de 3 dias em que a criança monta o primeiro joguinho jogável, com passo a passo em vídeo e um estúdio feito para crianças, sem instalar nada. A compra é feita neste site, com pagamento único via Pix ou cartão de crédito.`,
+        `O ${PRODUTO} é um material digital de caráter educacional: uma trilha de 5 dias em que a criança monta o primeiro joguinho jogável, com passo a passo em vídeo e um estúdio feito para crianças, sem instalar nada. A compra é feita neste site, com pagamento único via Pix ou cartão de crédito.`,
         'Após a confirmação do pagamento, o acesso é liberado na área de membros e as instruções de primeiro acesso são enviadas ao e-mail do Responsável informado na compra. Por isso, é essencial que os dados do checkout estejam corretos.',
         'A Empresa pode, a seu critério, atualizar o conteúdo, incluir bônus e melhorar a entrega do Produto, sempre preservando o acesso ao conteúdo adquirido.',
       ],
