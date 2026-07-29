@@ -279,7 +279,13 @@ export function CourseFormDialog({
         sequentialLock: form.sequentialLock,
       }
       if (editing) {
-        await apiSend(`/api/members/courses/${editing.id}`, 'PATCH', payload)
+        // O PATCH do members EXIGE `version` (concorrência otimista → 409 se
+        // defasada); o POST NÃO aceita o campo. Sem ele, o body reprovava na
+        // validação do members ("on":"body") em toda edição de curso.
+        await apiSend(`/api/members/courses/${editing.id}`, 'PATCH', {
+          ...payload,
+          version: editing.version,
+        })
         toast.success('Curso atualizado.')
       } else {
         await apiSend('/api/members/courses', 'POST', payload)
